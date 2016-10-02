@@ -99,6 +99,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Optimization\Algorithms\DifferentialEvolution.cs" />
+    <Compile Include="Optimization\Commons\VectorOperations.cs" />
+    <Compile Include="Optimization\Individual.cs" />
+    <Compile Include="Optimization\IObjectiveFunction.cs" />
+    <Compile Include="Optimization\IOptimizationAlgorithm.cs" />
+    <Compile Include="Optimization\IOptimizationAnalyzer.cs" />
+    <Compile Include="Optimization\ObjectiveProblem.cs" />
+    <Compile Include="Optimization\OptimizationAnalyzer.cs" />
     <Compile Include="VRFMonteCarloAnalyzerWithStochasticMaterial.cs" />
     <Compile Include="PolynomialChaosAnalyzer.cs" />
     <Compile Include="PolynomialChaosSolverPCGMatrixCalculator.cs" />
@@ -141,6 +149,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

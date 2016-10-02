@@ -173,6 +173,9 @@ ApplicationInsights.config
 AppPackages/
 BundleArtifacts/
 
+# Visual Studio class diagram files
+*.cd
+
 # Visual Studio cache files
 # files ending in .cache can be ignored
 *.[Cc]ache

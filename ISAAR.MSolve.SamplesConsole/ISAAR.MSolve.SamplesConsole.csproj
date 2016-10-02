@@ -31,6 +31,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>ISAAR.MSolve.SamplesConsole.Optimization.OptimizationTest</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -42,6 +45,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BeamBuildingBuilder.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Ackley.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Beale.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\GoldsteinPrice.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\McCormick.cs" />
+    <Compile Include="Optimization\OptimizationTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -70,6 +78,9 @@
       <Project>{5811fdb6-9b63-48ed-a153-47a673a3cc6f}</Project>
       <Name>ISAAR.MSolve.Analyzers</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ISAAR\MSolve\SamplesConsole\Optimization\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
