@@ -1,5 +1,6 @@
 ﻿using ISAAR.MSolve.Analyzers.Optimization;
-using ISAAR.MSolve.Analyzers.Optimization.Algorithms;
+using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.DifferentialEvolution;
+using ISAAR.MSolve.Analyzers.Optimization.Convergence;
 using ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions;
 using System;
 
@@ -9,29 +10,22 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
     {
         public static void Main()
         {
-            //IObjectiveFunction objective = new Ackley();
-            //double[] lowerBounds = { -5, -5 };
-            //double[] upperBounds = {  5,  5 };
+            OptimizationProblem optimizationProblem = new Ackley();
 
-            //IObjectiveFunction objective = new Beale();
-            //double[] lowerBounds = { -4.5, -4.5 };
-            //double[] upperBounds = { 4.5, 4.5 };
+            DifferentialEvolutionAlgorithm.Builder builder = new DifferentialEvolutionAlgorithm.Builder(optimizationProblem);
+            builder.PopulationSize = 100;
+            builder.MutationFactor = 0.4;
+            builder.CrossoverProbability = 0.9;
+            builder.ConvergenceCriterion = new MaxFunctionEvaluations(100000);
 
-            //IObjectiveFunction objective = new GoldsteinPrice();
-            //double[] lowerBounds = {-2, -2 };
-            //double[] upperBounds = { 2,  2 };
-
-            IObjectiveFunction objective = new McCormick();
-            double[] lowerBounds = { -1.5, -3.0 };
-            double[] upperBounds = {  4.0,  4.0 };
-
-            DifferentialEvolution de = new DifferentialEvolution(lowerBounds.Length, lowerBounds, upperBounds, objective);
+            //DifferentialEvolutionAlgorithm de = new DifferentialEvolutionAlgorithm(optimizationProblem);
+            IOptimizationAlgorithm de = builder.Build();
             IOptimizationAnalyzer analyzer = new OptimizationAnalyzer(de);
             analyzer.Optimize();
 
             // Print results
             Console.WriteLine("\n Best Position:");
-            for (int i = 0; i < lowerBounds.Length; i++)
+            for (int i = 0; i < optimizationProblem.Dimension; i++)
             {
                 Console.WriteLine(String.Format(@"  x[{0}] = {1} ", i, de.BestPosition[i]));
             }
