@@ -7,6 +7,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization
 {
     public class OptimizationAnalyzer : IOptimizationAnalyzer
     {
+        public OptimizationProblem optimizationProblem;
         public IOptimizationAlgorithm optimizationAlgorithm;
 
         public OptimizationAnalyzer(IOptimizationAlgorithm optimizationAlgorithm)
