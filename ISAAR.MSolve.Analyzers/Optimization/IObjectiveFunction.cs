@@ -18,13 +18,5 @@ namespace ISAAR.MSolve.Analyzers.Optimization
         ///     The fitness value.
         /// </returns>
         double Fitness(double[] x);
-
-        /// <summary>
-        ///     Gets the dimension of the decision variable.
-        /// </summary>
-        /// <returns>
-        ///     The dimension of the decision variable.
-        /// </returns>
-        int Dimension();
     }
 }
