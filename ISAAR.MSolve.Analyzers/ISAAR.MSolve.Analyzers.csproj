@@ -99,13 +99,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Optimization\Algorithms\DifferentialEvolution.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\DifferentialEvolution\DifferentialEvolutionAlgorithm.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\ParticleSwarmOptimizationAlgorithm.cs" />
     <Compile Include="Optimization\Commons\VectorOperations.cs" />
+    <Compile Include="Optimization\Convergence\ConvergenceChecker.cs" />
+    <Compile Include="Optimization\Convergence\IConvergenceCriterion.cs" />
+    <Compile Include="Optimization\Convergence\MaxFunctionEvaluations.cs" />
+    <Compile Include="Optimization\Convergence\MaxIterations.cs" />
     <Compile Include="Optimization\Individual.cs" />
     <Compile Include="Optimization\IObjectiveFunction.cs" />
     <Compile Include="Optimization\IOptimizationAlgorithm.cs" />
     <Compile Include="Optimization\IOptimizationAnalyzer.cs" />
-    <Compile Include="Optimization\ObjectiveProblem.cs" />
+    <Compile Include="Optimization\OptimizationProblem.cs" />
     <Compile Include="Optimization\OptimizationAnalyzer.cs" />
     <Compile Include="VRFMonteCarloAnalyzerWithStochasticMaterial.cs" />
     <Compile Include="PolynomialChaosAnalyzer.cs" />
@@ -149,7 +154,10 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Optimization\Algorithms\DerivativeBased\" />
+    <Folder Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
