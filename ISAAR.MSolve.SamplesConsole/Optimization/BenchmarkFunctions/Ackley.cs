@@ -8,19 +8,34 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
     ///         
     ///     <see href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Wikipedia: Test functions for optimization</see>
     /// </summary>
-    class Ackley : IObjectiveFunction
+    public class Ackley : OptimizationProblem
     {
-        private static int DIMENSION = 2;
+        //public static OptimizationProblem CreateProblem()
+        //{
+        //    OptimizationProblem problem = new OptimizationProblem();
+        //    problem.Dimension = 2;
+        //    problem.LowerBound = new double[] { -5, -5 };
+        //    problem.UpperBound = new double[] { 5, 5 };
+        //    problem.ObjectiveFunction = new ObjectiveFunction();
 
-        public double Fitness(double[] x)
+        //    return problem;
+        //}
+
+        public Ackley()
         {
-            return -20*Math.Exp(-0.2*Math.Sqrt(0.5*(Math.Pow(x[0],2) + Math.Pow(x[1], 2)))) -
-                Math.Exp(0.5 * (Math.Cos(2 * Math.PI * x[0]) + Math.Cos(2 * Math.PI * x[1]))) + Math.E + 20;
+            this.Dimension = 2;
+            this.LowerBound = new double[] { -5, -5 };
+            this.UpperBound = new double[] { 5, 5 };
+            this.ObjectiveFunction = new Objective();
         }
 
-        public int Dimension()
+        class Objective : IObjectiveFunction
         {
-            return DIMENSION;
+            public double Fitness(double[] x)
+            {
+                return -20 * Math.Exp(-0.2 * Math.Sqrt(0.5 * (Math.Pow(x[0], 2) + Math.Pow(x[1], 2)))) -
+                    Math.Exp(0.5 * (Math.Cos(2 * Math.PI * x[0]) + Math.Cos(2 * Math.PI * x[1]))) + Math.E + 20;
+            }
         }
     }
 }
