@@ -7,6 +7,26 @@ namespace ISAAR.MSolve.Analyzers.Optimization
 {
     public interface IOptimizationAlgorithm
     {
+        double BestFitness
+        {
+            get;
+        }
+
+        double[] BestPosition
+        {
+            get;
+        }
+
+        int CurrentIteration
+        { 
+            get; 
+        }
+
+        double CurrentFunctionEvaluations
+        {
+            get;
+        }
+
         void Solve();
     }
 }
