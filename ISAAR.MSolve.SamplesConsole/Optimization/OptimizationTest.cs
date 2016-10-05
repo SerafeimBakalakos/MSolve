@@ -59,10 +59,10 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
             //optimBuilder.Logger = new EmptyLogger();
             optimBuilder.Terminator = new ConvergenceChecker();
             optimBuilder.Terminator.AddIndependentCriterion(new MaxIterations(200));
-            optimBuilder.Encoding = new BinaryEncoding(problem.Dimension, problem.LowerBound, problem.UpperBound, 0, null, 16, 8);
+            optimBuilder.Encoding = new GrayCodes(problem.Dimension, problem.LowerBound, problem.UpperBound, 0, null, 16, 8);
             optimBuilder.PopulationSize = 100;
-            optimBuilder.Recombination = new UniformCrossover();
-            optimBuilder.Mutation = new BitFlipMutation(0.02);
+            optimBuilder.Recombination = new SinglePointCrossover();
+            optimBuilder.Mutation = new BitFlipMutation(0.05);
 
             // Start optimization
             const int repetitions = 100;

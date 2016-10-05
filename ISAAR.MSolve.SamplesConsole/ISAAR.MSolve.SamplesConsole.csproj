@@ -49,7 +49,6 @@
     <Compile Include="Optimization\BenchmarkFunctions\Beale.cs" />
     <Compile Include="Optimization\BenchmarkFunctions\GoldsteinPrice.cs" />
     <Compile Include="Optimization\BenchmarkFunctions\McCormick.cs" />
-    <Compile Include="Optimization\BenchmarkFunctions\Truss10Benchmark.cs" />
     <Compile Include="Optimization\OptimizationTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
