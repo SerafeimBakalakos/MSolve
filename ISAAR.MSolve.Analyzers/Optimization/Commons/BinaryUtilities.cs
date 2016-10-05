@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Commons
 {
-    static class BinaryUtilities
+    public static class BinaryUtilities
     {
         /// <summary>
         /// Converts a binary subarray to a decimal integer 
@@ -17,12 +17,13 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Commons
         /// <returns></returns>
         public static int BinaryToDecimal(bool[] bits, long start, long length)
         {
-            int sum = 0;
-            for (int gene = 0; gene < length; ++gene)
+            int dec = 0;
+            for (long i = start; i < start + length; ++i)
             {
-                if (bits[start + gene]) sum += (int)Math.Round(Math.Pow(2, gene));
+                dec += bits[i] ? dec + 1: dec;
+                //Console.WriteLine(dec);
             }
-            return sum;
+            return dec;
         }
 
         /// <summary>
@@ -34,7 +35,42 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Commons
         /// <returns></returns>
         public static int GrayCodeToDecimal(bool[] bits, long start, long length)
         {
-            throw new NotImplementedException();
+            bool bin = bits[start];
+            int dec = bin ? 1 : 0;
+            for (long i = start + 1; i < start + length; ++i) // n-1 repetitions
+            {
+                bin = bin != bits[i];
+                dec += bin ? dec + 1 : dec;
+            }
+            return dec;
+        }
+
+        public static void Test()
+        {
+            bool[] bits1 = new bool[] { false, false, false };
+            WriteRepresentations(bits1);
+            bool[] bits2 = new bool[] { false, false, true };
+            WriteRepresentations(bits2);
+            bool[] bits3 = new bool[] { false, true, false };
+            WriteRepresentations(bits3);
+            bool[] bits4 = new bool[] { false, true, true };
+            WriteRepresentations(bits4);
+            bool[] bits5 = new bool[] { true, false, false };
+            WriteRepresentations(bits5);
+            bool[] bits6 = new bool[] { true, false, true };
+            WriteRepresentations(bits6);
+            bool[] bits7 = new bool[] { true, true, false };
+            WriteRepresentations(bits7);
+            bool[] bits8 = new bool[] { true, true, true };
+            WriteRepresentations(bits8);
+        }
+
+        private static void WriteRepresentations(bool[] bits)
+        {
+            Console.Write("Bits = ");
+            foreach (var entry in bits) Console.Write(entry ? 1 : 0);
+            Console.Write(" -> from binary: " + BinaryToDecimal(bits, 0, bits.Length));
+            Console.WriteLine(" , from Gray code: " + GrayCodeToDecimal(bits, 0, bits.Length));
         }
     }
 }
