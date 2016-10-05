@@ -1,6 +1,7 @@
 ﻿using static ISAAR.MSolve.Analyzers.Optimization.Commons.VectorOperations;
 using ISAAR.MSolve.Analyzers.Optimization.Convergence;
 using System;
+using ISAAR.MSolve.Analyzers.Optimization.Problems;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.DifferentialEvolution
 {
@@ -34,7 +35,6 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Differen
         private DifferentialEvolutionAlgorithm(OptimizationProblem optimizationProblem, int populationSize, 
             double mutationFactor, double crossoverProbability, IConvergenceCriterion convergenceCriterion)
         {
-            optimizationProblem.CheckInput();
             this.dimension = optimizationProblem.Dimension;
             this.lowerBound = optimizationProblem.LowerBound;
             this.upperBound = optimizationProblem.UpperBound;
@@ -154,7 +154,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Differen
         {
             for (int i = 0; i < populationSize; i++)
             {
-                double fitness = objectiveFunction.Fitness(individuals[i].Position);
+                double fitness = objectiveFunction.Evaluate(individuals[i].Position);
 
                 individuals[i].ObjectiveValue = fitness;
 
@@ -246,6 +246,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Differen
 
             public IOptimizationAlgorithm Build()
             {
+                ProblemChecker.Check(optimizationProblem);
                 return new DifferentialEvolutionAlgorithm(optimizationProblem, PopulationSize, 
                     MutationFactor, CrossoverProbability, ConvergenceCriterion);
             }

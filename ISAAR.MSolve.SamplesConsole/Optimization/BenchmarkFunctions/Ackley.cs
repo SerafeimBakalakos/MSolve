@@ -1,4 +1,4 @@
-﻿using ISAAR.MSolve.Analyzers.Optimization;
+﻿using ISAAR.MSolve.Analyzers.Optimization.Problems;
 using System;
 
 namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
@@ -31,7 +31,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
 
         class Objective : IObjectiveFunction
         {
-            public double Fitness(double[] x)
+            public double Evaluate(double[] x)
             {
                 return -20 * Math.Exp(-0.2 * Math.Sqrt(0.5 * (Math.Pow(x[0], 2) + Math.Pow(x[1], 2)))) -
                     Math.Exp(0.5 * (Math.Cos(2 * Math.PI * x[0]) + Math.Cos(2 * Math.PI * x[1]))) + Math.E + 20;

@@ -1,4 +1,4 @@
-﻿using ISAAR.MSolve.Analyzers.Optimization;
+﻿using ISAAR.MSolve.Analyzers.Optimization.Problems;
 using System;
 
 namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
@@ -8,21 +8,23 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
     ///         
     ///     <see href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Wikipedia: Test functions for optimization</see>
     /// </summary>
-    public class Beale:IObjectiveFunction
-
+    public class Beale : OptimizationProblem
     {
-        private static int DIMENSION = 2;
-
-        public double Fitness(double[] x)
+        public Beale()
         {
-            return Math.Pow((1.5 - x[0] + x[0] * x[1]), 2) + Math.Pow((2.25 - x[0] + x[0] * x[1] * x[1]), 2)
-                    + Math.Pow((2.625 - x[0] + x[0] * x[1] * x[1] * x[1]), 2);
+            this.Dimension = 2;
+            this.LowerBound = new double[] { -4.5, -4.5 };
+            this.UpperBound = new double[] { 4.5, 4.5 };
+            this.ObjectiveFunction = new Objective();
         }
 
-        public int Dimension()
+        class Objective : IObjectiveFunction
         {
-            return DIMENSION;
+            public double Evaluate(double[] x)
+            {
+                return Math.Pow((1.5 - x[0] + x[0] * x[1]), 2) + Math.Pow((2.25 - x[0] + x[0] * x[1] * x[1]), 2)
+                    + Math.Pow((2.625 - x[0] + x[0] * x[1] * x[1] * x[1]), 2);
+            }
         }
     }
-
 }

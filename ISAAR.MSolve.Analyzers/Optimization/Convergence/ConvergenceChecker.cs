@@ -6,7 +6,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Convergence
     // Collection of convergence criteria. The criteria are organized into groups. 
     // Convergence is achieved if ANY group is satisfied. For a group to be satisfied ALL its criteria must be satisfied.
     // After the first termination polling request, adding criteria will throw an exception.
-    class ConvergenceChecker
+    public class ConvergenceChecker
     {
         private LinkedList<IEnumerable<IConvergenceCriterion>> criteriaGroups;
         private bool lockInput; // A builder is overkill for this class

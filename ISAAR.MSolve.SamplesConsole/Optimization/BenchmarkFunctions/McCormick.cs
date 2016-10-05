@@ -1,4 +1,4 @@
-﻿using ISAAR.MSolve.Analyzers.Optimization;
+﻿using ISAAR.MSolve.Analyzers.Optimization.Problems;
 using System;
 
 namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
@@ -13,14 +13,14 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
         public McCormick()
         {
             this.Dimension = 2;
-            this.LowerBound = new double[] { -1.5, -4.0 };
-            this.UpperBound = new double[] { 3.0, 4.0 };
+            this.LowerBound = new double[] { -1.5, -3.0 };
+            this.UpperBound = new double[] { 4.0, 4.0 };
             this.ObjectiveFunction = new Objective();
         }
 
         class Objective : IObjectiveFunction
         {
-            public double Fitness(double[] x)
+            public double Evaluate(double[] x)
             {
                 return Math.Sin(x[0] + x[1]) + Math.Pow(x[0] - x[1], 2) - 1.5 * x[0] + 2.5 * x[1] + 1;
             }
