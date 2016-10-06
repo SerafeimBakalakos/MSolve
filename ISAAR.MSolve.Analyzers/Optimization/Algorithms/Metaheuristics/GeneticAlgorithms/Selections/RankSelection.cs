@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections
 {   
@@ -11,10 +12,17 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
     {
         private readonly int rankExponent;
         private readonly IdenticalParentsHandling onCollision;
+        private readonly IGenerator rng;
 
-        public RankSelection(int rankExponent = 1, 
-                                         IdenticalParentsHandling onCollision = IdenticalParentsHandling.Reapply)
+        public RankSelection(): this(RandomNumberGenerationUtilities.troschuetzRandom)
         {
+        }
+
+        public RankSelection(IGenerator randomNumberGenerator, int rankExponent = 1, 
+                             IdenticalParentsHandling onCollision = IdenticalParentsHandling.Reapply)
+        {
+            if (randomNumberGenerator == null) throw new ArgumentException("The random number generator must not be null");
+            this.rng = randomNumberGenerator;
             if (rankExponent < 1) throw new ArgumentException("The rank exponent must be >= 1, but was " +rankExponent);
             this.rankExponent = rankExponent;
             this.onCollision = onCollision;
@@ -35,7 +43,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
                     case IdenticalParentsHandling.Allow:
                         break;
                     case IdenticalParentsHandling.ChooseRandom:
-                        while (parent1 == parent2) parent2 = RandomNumberGenerationUtilities.sysRandom.Next(offspringsCount);
+                        while (parent1 == parent2) parent2 = rng.Next(offspringsCount);
                         break;
                     case IdenticalParentsHandling.Reapply:
                         while (parent1 == parent2) parent2 = RollWheel(probabilities);
@@ -63,9 +71,9 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             return probabilities;
         }
 
-        private static int RollWheel(double[] probabilities)
+        private int RollWheel(double[] probabilities)
         {
-            double rand = RandomNumberGenerationUtilities.sysRandom.NextDouble();
+            double rand = rng.NextDouble();
             for (int i = 0; i < probabilities.Length; ++i)
             {
                 if (rand < probabilities[i]) return i;

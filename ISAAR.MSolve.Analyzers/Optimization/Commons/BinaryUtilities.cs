@@ -15,10 +15,10 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Commons
         /// <param name="start"></param>
         /// <param name="end">Exclusive</param>
         /// <returns></returns>
-        public static int BinaryToDecimal(bool[] bits, long start, long length)
+        public static int BinaryToDecimal(bool[] bits, int start, int length)
         {
             int dec = 0;
-            for (long i = start; i < start + length; ++i)
+            for (int i = start; i < start + length; ++i)
             {
                 dec += bits[i] ? dec + 1: dec;
                 //Console.WriteLine(dec);
@@ -33,11 +33,11 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Commons
         /// <param name="start"></param>
         /// <param name="end">Exclusive</param>
         /// <returns></returns>
-        public static int GrayCodeToDecimal(bool[] bits, long start, long length)
+        public static int GrayCodeToDecimal(bool[] bits, int start, int length)
         {
             bool bin = bits[start];
             int dec = bin ? 1 : 0;
-            for (long i = start + 1; i < start + length; ++i) // n-1 repetitions
+            for (int i = start + 1; i < start + length; ++i) // n-1 repetitions
             {
                 bin = bin != bits[i];
                 dec += bin ? dec + 1 : dec;

@@ -4,17 +4,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations
 {
     public class BitFlipMutation : MutationStrategy
     {
         private readonly double mutationProbability;
-        private readonly Random rng;
+        private readonly IGenerator rng;
 
-        public BitFlipMutation(double mutationProbability) : this(mutationProbability, RandomNumberGenerationUtilities.sysRandom) { }
+        public BitFlipMutation(double mutationProbability) : 
+                            this(mutationProbability, RandomNumberGenerationUtilities.troschuetzRandom)
+        {
+        }
 
-        public BitFlipMutation(double mutationProbability, Random randomNumberGenerator)
+        public BitFlipMutation(double mutationProbability, IGenerator randomNumberGenerator)
         {
             if (mutationProbability < 0 || mutationProbability > 1)
             {
@@ -22,10 +26,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
                                              + mutationProbability);
             }
             this.mutationProbability = mutationProbability;
-            if (randomNumberGenerator == null)
-            {
-                throw new ArgumentException("The random number generator must not be null");
-            }
+            if (randomNumberGenerator == null) throw new ArgumentException("The random number generator must not be null");
             this.rng = randomNumberGenerator;
         }
 
@@ -38,7 +39,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         // Running time = O(populationSize * chromosomeSize). Particularly slow for binary encoding, where chromosomeSize is large.
         private void CanonicalVersion(Individual[] population)
         {
-            long genesCount = population[0].Chromosome.LongLength; //No checking for the other chromosomes
+            int genesCount = population[0].Chromosome.Length; //No checking for the other chromosomes
             foreach (var individual in population)
             {
                 bool[] chromosome = individual.Chromosome;
@@ -55,12 +56,12 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         // Also it is possible for 2 or more mutations to occur on the same gene of the same chromosome, thus negating each other.
         private void FastVersion(Individual[] population)
         {
-            long genesCount = population[0].Chromosome.LongLength; //No checking for the other chromosomes
-            long totalMutations = (long)(population.LongLength * (mutationProbability * genesCount));
-            for (long i = 0; i < totalMutations; ++i)
+            int genesCount = population[0].Chromosome.Length; //No checking for the other chromosomes
+            int totalMutations = (int)(population.LongLength * (mutationProbability * genesCount));
+            for (int i = 0; i < totalMutations; ++i)
             {
                 int individual = rng.Next(population.Length);
-                long gene = rng.NextLong(genesCount);
+                int gene = rng.Next(genesCount);
                 population[individual].Chromosome[gene] = !population[individual].Chromosome[gene];
             }
         }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections
 {
@@ -11,9 +12,17 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
     class RouletteWheelSelection: SelectionStrategy
     {
         private readonly IdenticalParentsHandling onCollision;
+        private readonly IGenerator rng;
 
-        public RouletteWheelSelection(IdenticalParentsHandling onCollision = IdenticalParentsHandling.Reapply)
+        public RouletteWheelSelection(): this(RandomNumberGenerationUtilities.troschuetzRandom)
         {
+        }
+
+        public RouletteWheelSelection(IGenerator randomNumberGenerator, 
+                                      IdenticalParentsHandling onCollision = IdenticalParentsHandling.Reapply)
+        {
+            if (randomNumberGenerator == null) throw new ArgumentException("The random number generator must not be null");
+            this.rng = randomNumberGenerator;
             this.onCollision = onCollision;
         }
 

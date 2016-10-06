@@ -5,21 +5,19 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Recombinations
 {
     public class SinglePointCrossover : RecombinationStrategy
     {
-        private readonly Random rng;
+        private readonly IGenerator rng;
 
-        public SinglePointCrossover() : this(RandomNumberGenerationUtilities.sysRandom) { }
+        public SinglePointCrossover() : this(RandomNumberGenerationUtilities.troschuetzRandom) { }
 
-        public SinglePointCrossover(Random randomNumberGenerator)
+        public SinglePointCrossover(IGenerator randomNumberGenerator)
         {
-            if (randomNumberGenerator == null)
-            {
-                throw new ArgumentException("The random number generator must not be null");
-            }
+            if (randomNumberGenerator == null) throw new ArgumentException("The random number generator must not be null");
             this.rng = randomNumberGenerator;
         }
 
@@ -39,11 +37,11 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         private void Crossover(bool[] parent1, bool[] parent2, 
                                                 out bool[] offspring1, out bool[] offspring2)
         {
-            long genesCount = parent1.LongLength; //No checking for the other chromosomes
+            int genesCount = parent1.Length; //No checking for the other chromosomes
             offspring1 = new bool[genesCount];
             offspring2 = new bool[genesCount];
-            long crossoverPoint = rng.NextLong(genesCount + 1);
-            // These are not necessary. They boost performance for very long arrays, but then the probability that the crossover 
+            int crossoverPoint = rng.Next(genesCount + 1);
+            // These are not necessary. They boost performance for very int arrays, but then the probability that the crossover 
             // point falls on the edges is negligible. The redundant checks for normal usecases might actually cause more harm.
             //if (crossoverPoint == 0)
             //{

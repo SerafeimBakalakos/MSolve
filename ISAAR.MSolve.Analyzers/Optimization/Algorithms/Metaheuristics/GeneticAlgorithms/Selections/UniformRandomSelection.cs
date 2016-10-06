@@ -4,15 +4,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections
 {
     class UniformRandomSelection : SelectionStrategy
     {
         private readonly bool allowIdenticalParents;
+        private readonly IGenerator rng;
 
-        public UniformRandomSelection(bool allowIdenticalParents = false)
+        public UniformRandomSelection(): this(RandomNumberGenerationUtilities.troschuetzRandom)
         {
+        }
+
+        public UniformRandomSelection(IGenerator randomNumberGenerator, bool allowIdenticalParents = false)
+        {
+            if (randomNumberGenerator == null) throw new ArgumentException("The random number generator must not be null");
             this.allowIdenticalParents = allowIdenticalParents;
         }
 
