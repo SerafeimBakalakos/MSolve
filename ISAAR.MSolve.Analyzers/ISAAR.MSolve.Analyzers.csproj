@@ -120,8 +120,8 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\UniformRandomSelection.cs" />
     <Compile Include="Optimization\Commons\RandomNumberGenerationUtilities.cs" />
     <Compile Include="Optimization\Commons\VectorOperations.cs" />
-    <Compile Include="Optimization\Convergence\ConvergenceChecker.cs" />
     <Compile Include="Optimization\Convergence\IConvergenceCriterion.cs" />
+    <Compile Include="Optimization\Convergence\LogicCriteria.cs" />
     <Compile Include="Optimization\Convergence\MaxFunctionEvaluations.cs" />
     <Compile Include="Optimization\Convergence\MaxIterations.cs" />
     <Compile Include="Optimization\Individual.cs" />

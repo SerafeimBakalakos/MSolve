@@ -57,8 +57,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
             var optimBuilder = new BinaryGA.Builder(problem);
             optimBuilder.Logger = new BestOfIterationLogger();
             //optimBuilder.Logger = new EmptyLogger();
-            optimBuilder.Terminator = new ConvergenceChecker();
-            optimBuilder.Terminator.AddIndependentCriterion(new MaxIterations(200));
+            optimBuilder.ConvergenceCriterion = LogicCriteria.OR(new MaxIterations(200), new MaxFunctionEvaluations(10000));
             optimBuilder.Encoding = new GrayCodeEncoding(problem, 16, 8);
             optimBuilder.PopulationSize = 100;
             optimBuilder.Recombination = new SinglePointCrossover();

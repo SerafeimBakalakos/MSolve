@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
         // General optim algorithm params
         private readonly IOptimizationLogger logger;
-        private readonly ConvergenceChecker terminator;
+        private readonly IConvergenceCriterion convergenceCriterion;
 
         // GA params
         private readonly int populationSize;
@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         private Individual[] population;
 
         private BinaryGA(int continuousVariablesCount, int integerVariablesCount, IObjectiveFunction fitnessFunc, int populationSize,
-            IOptimizationLogger logger, ConvergenceChecker terminator, IEncoding encoding, ElitismStrategy elitism,
+            IOptimizationLogger logger, IConvergenceCriterion convergenceCriterion, IEncoding encoding, ElitismStrategy elitism,
             SelectionStrategy selection, RecombinationStrategy recombination, MutationStrategy mutation)
         {
             this.continuousVariablesCount = continuousVariablesCount;
@@ -48,7 +48,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.fitnessFunc = fitnessFunc;
             this.populationSize = populationSize;
             this.logger = logger;
-            this.terminator = terminator;
+            this.convergenceCriterion = convergenceCriterion;
             this.encoding = encoding;
             this.elitism = elitism;
             this.selection = selection;
@@ -71,7 +71,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             Initialize();
             logger.Log(this);
 
-            while (!terminator.HasConverged(this))
+            while (!convergenceCriterion.HasConverged(this))
             {
                 ++CurrentIteration;
                 Iterate();
@@ -147,7 +147,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
             // General optim algorithm params
             public IOptimizationLogger Logger { get; set; }
-            public ConvergenceChecker Terminator { get; set; }
+            public IConvergenceCriterion ConvergenceCriterion { get; set; }
 
             // GA params
             public IEncoding Encoding { get; set; }
@@ -164,7 +164,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
                 ApplyDefaultParameters();
                 Individual.Encoding = this.Encoding; // This should be done elsewhere
                 return new BinaryGA(problem.Dimension, 0, problem.ObjectiveFunction, PopulationSize, Logger,
-                                    Terminator, Encoding, Elitism, Selection, Recombination, Mutation);
+                                    ConvergenceCriterion, Encoding, Elitism, Selection, Recombination, Mutation);
             }
 
             private void ApplyDefaultParameters()
@@ -174,10 +174,9 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
                     Logger = new BestOfIterationLogger();
                 }
 
-                if (Terminator == null) // arbitrary
+                if (ConvergenceCriterion == null) // arbitrary
                 {
-                    Terminator = new ConvergenceChecker();
-                    Terminator.AddIndependentCriterion(new MaxIterations(1000));
+                    ConvergenceCriterion = new MaxIterations(100 * problem.Dimension);
                 }
 
                 if (PopulationSize == 0) // use Matlab defaults
@@ -224,15 +223,6 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             // Will ignore the default values. TODO find a better way to handle this.
             private void CheckUserParameters()
             {
-                // Adding an empty ConvergenceChecker should not happen, still ...
-                if ((Terminator != null))
-                {
-                    if (Terminator.IsEmpty)
-                    {
-                        throw new ArgumentException("There must be at least 1 convergence criterion");
-                    }
-                }
-
                 if ((PopulationSize != 0) && (PopulationSize < 1))
                 {
                     throw new ArgumentException("Population size must be at least 1, but was " + PopulationSize);

@@ -10,8 +10,8 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 {
     public class Individual : IComparable<Individual>
     {
-        // Static variables is not the best solution. Multiple GA subpopulations may exist and they might (?) use different encodings.
-        // A Factory perhaps?
+        // Static variables is not the best solution. Any method of any thread can change the encoding in the middle of the algorithm.
+        // Multiple GA subpopulations may exist and they might (?) use different encodings. A Factory perhaps?
         private static IEncoding encoding;
         private static bool isEncodingSet;
 
@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             }
             set
             {
-                if (isEncodingSet) throw new InvalidOperationException("Fitness has already been evaluated");
+                //if (isEncodingSet) throw new InvalidOperationException("Encoding has already been set. It cannot be changed.");
                 encoding = value;
                 isEncodingSet = true;
             }
