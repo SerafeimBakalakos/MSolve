@@ -9,7 +9,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
     public interface IEncoding
     {
         bool[] CreateRandomGenotype();
-        double[] Phenotype(bool[] genotype);
-        int[] IntegerPhenotype(bool[] genotype);
+        double[] ComputePhenotype(bool[] genotype);
+        //int[] IntegerPhenotype(bool[] genotype);
     }
 }

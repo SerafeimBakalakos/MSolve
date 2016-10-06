@@ -15,7 +15,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Commons
         /// <param name="start"></param>
         /// <param name="end">Exclusive</param>
         /// <returns></returns>
-        public static int BinaryToDecimal(bool[] bits, int start, int length)
+        public static int StandardBinaryToDecimal(bool[] bits, int start, int length)
         {
             int dec = 0;
             for (int i = start; i < start + length; ++i)
@@ -69,7 +69,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Commons
         {
             Console.Write("Bits = ");
             foreach (var entry in bits) Console.Write(entry ? 1 : 0);
-            Console.Write(" -> from binary: " + BinaryToDecimal(bits, 0, bits.Length));
+            Console.Write(" -> from binary: " + StandardBinaryToDecimal(bits, 0, bits.Length));
             Console.WriteLine(" , from Gray code: " + GrayCodeToDecimal(bits, 0, bits.Length));
         }
     }

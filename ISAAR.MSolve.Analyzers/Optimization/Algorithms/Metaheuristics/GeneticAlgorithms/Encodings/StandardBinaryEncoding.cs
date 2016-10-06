@@ -9,9 +9,9 @@ using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Encodings
 {
-    public class GrayCodes : AbstractBinaryEncoding
+    public class StandardBinaryEncoding : AbstractBinaryEncoding
     {
-        public GrayCodes(OptimizationProblem problem, int bitsPerContinuousVariable, int bitsPerIntegerVariable):
+        public StandardBinaryEncoding(OptimizationProblem problem, int bitsPerContinuousVariable, int bitsPerIntegerVariable) :
                         base(problem, bitsPerContinuousVariable, bitsPerIntegerVariable)
         {
         }
@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             for (int i = 0; i < continuousVariablesCount; ++i)
             {
                 int start = i * bitsPerContinuousVariable;
-                int deci = BinaryUtilities.GrayCodeToDecimal(genotype, start, bitsPerContinuousVariable);
+                int deci = BinaryUtilities.StandardBinaryToDecimal(genotype, start, bitsPerContinuousVariable);
                 double normalized = deci / (Math.Round(Math.Pow(2, bitsPerContinuousVariable)) - 1);
                 continuousVariables[i] = continuousLowerBounds[i] +
                                          normalized * (continuousUpperBounds[i] - continuousLowerBounds[i]);
@@ -39,7 +39,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             for (int i = 0; i < integerVariablesCount; ++i)
             {
                 int start = offset + i * bitsPerIntegerVariable;
-                integerVariables[i] = BinaryUtilities.GrayCodeToDecimal(genotype, start, bitsPerIntegerVariable);
+                integerVariables[i] = BinaryUtilities.StandardBinaryToDecimal(genotype, start, bitsPerIntegerVariable);
             }
             return integerVariables;
         }

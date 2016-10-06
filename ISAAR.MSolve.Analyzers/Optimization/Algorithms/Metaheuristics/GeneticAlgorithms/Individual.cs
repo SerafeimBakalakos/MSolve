@@ -8,7 +8,6 @@ using Troschuetz.Random.Generators;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms
 {
-
     public class Individual : IComparable<Individual>
     {
         // Static variables is not the best solution. Multiple GA subpopulations may exist and they might (?) use different encodings.
@@ -49,13 +48,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.fitness = fitness;
         }
 
-        //private Individual(int continuousVariablesCount, int intVariablesCount)
-        //{
-        //    this.Chromosome = new bool[continuousVariablesCount * encoding.BitsPerContinuousVariable + 
-        //                               intVariablesCount * encoding.BitsPerIntegerVariable];
-        //}
-
-        public bool[] Chromosome { get; set; }
+        public bool[] Chromosome { get; private set; }
         public bool IsEvaluated { get; private set; }
 
         public double Fitness {
@@ -77,7 +70,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
         public double[] Phenotype()
         {
-            return encoding.Phenotype(Chromosome);
+            return encoding.ComputePhenotype(Chromosome);
         }
 
         int IComparable<Individual>.CompareTo(Individual other)
