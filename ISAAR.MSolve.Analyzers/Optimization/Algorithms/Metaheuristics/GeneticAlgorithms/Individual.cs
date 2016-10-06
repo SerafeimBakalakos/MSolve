@@ -15,23 +15,19 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         private static IEncoding encoding;
         private static bool isEncodingSet;
 
+        // Can only be set once. Still this hack is not thread safe.
         public static IEncoding Encoding
         {
             get
             {
-                if (!isEncodingSet) throw new InvalidOperationException("Fitness has not been evaluated yet");
-                else return encoding;
+                if (!isEncodingSet) throw new InvalidOperationException("No encoding has been provided");
+                return encoding;
             }
             set
             {
+                if (isEncodingSet) throw new InvalidOperationException("Fitness has already been evaluated");
                 encoding = value;
                 isEncodingSet = true;
-                //if (isEncodingSet) throw new InvalidOperationException("Fitness has already been evaluated");
-                //else
-                //{
-                //    encoding = value;
-                //    isEncodingSet = true;
-                //}
             }
         }
 

@@ -196,7 +196,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
                 if (Encoding == null) // arbitrary
                 {
-                    Encoding = new GrayCodes(problem, 32, 8); // sizes of float, char 
+                    Encoding = new GrayCodeEncoding(problem, 32, 8); // sizes of float, char 
                 } 
 
                 if (Elitism == null) // use Matlab defaults

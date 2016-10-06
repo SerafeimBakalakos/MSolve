@@ -9,9 +9,9 @@ using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Encodings
 {
-    public class GrayCodes : AbstractBinaryEncoding
+    public class GrayCodeEncoding : AbstractBinaryEncoding
     {
-        public GrayCodes(OptimizationProblem problem, int bitsPerContinuousVariable, int bitsPerIntegerVariable):
+        public GrayCodeEncoding(OptimizationProblem problem, int bitsPerContinuousVariable, int bitsPerIntegerVariable):
                         base(problem, bitsPerContinuousVariable, bitsPerIntegerVariable)
         {
         }
