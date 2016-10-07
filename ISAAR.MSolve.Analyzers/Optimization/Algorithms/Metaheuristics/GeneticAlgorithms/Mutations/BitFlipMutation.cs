@@ -8,7 +8,7 @@ using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations
 {
-    public class BitFlipMutation : MutationStrategy
+    public class BitFlipMutation : IMutationStrategy
     {
         private readonly double mutationProbability;
         private readonly IGenerator rng;

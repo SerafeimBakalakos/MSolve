@@ -8,7 +8,7 @@ using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections
 {
-    class UniformRandomSelection : SelectionStrategy
+    class UniformRandomSelection : ISelectionStrategy
     {
         private readonly bool allowIdenticalParents;
         private readonly IGenerator rng;
@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.allowIdenticalParents = allowIdenticalParents;
         }
 
-        Tuple<Individual, Individual>[] SelectionStrategy.Apply(Individual[] population, int offspringsCount)
+        Tuple<Individual, Individual>[] ISelectionStrategy.Apply(Individual[] population, int offspringsCount)
         {
             int pairsCount = (offspringsCount - 1) / 2 + 1;
             var pairs = new Tuple<Individual, Individual>[pairsCount];

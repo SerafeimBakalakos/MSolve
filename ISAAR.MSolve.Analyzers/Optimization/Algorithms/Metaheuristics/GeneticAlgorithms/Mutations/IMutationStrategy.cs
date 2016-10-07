@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations
 {
-    public interface MutationStrategy
+    public interface IMutationStrategy
     {
         void Apply(Individual[] population);
     }

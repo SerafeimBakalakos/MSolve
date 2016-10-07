@@ -34,15 +34,15 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         private readonly int populationSize;
         private readonly IEncoding encoding; 
         private readonly ElitismStrategy elitism;
-        private readonly SelectionStrategy selection;
-        private readonly RecombinationStrategy recombination;
-        private readonly MutationStrategy mutation;
+        private readonly ISelectionStrategy selection;
+        private readonly IRecombinationStrategy recombination;
+        private readonly IMutationStrategy mutation;
 
         private Individual[] population;
 
         private BinaryGA(int continuousVariablesCount, int integerVariablesCount, IObjectiveFunction fitnessFunc, int populationSize,
             IOptimizationLogger logger, IConvergenceCriterion convergenceCriterion, IEncoding encoding, ElitismStrategy elitism,
-            SelectionStrategy selection, RecombinationStrategy recombination, MutationStrategy mutation)
+            ISelectionStrategy selection, IRecombinationStrategy recombination, IMutationStrategy mutation)
         {
             this.continuousVariablesCount = continuousVariablesCount;
             this.integerVariablesCount = integerVariablesCount;
@@ -158,9 +158,9 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             public IEncoding Encoding { get; set; }
             public int PopulationSize { get; set; }
             public ElitismStrategy Elitism { get; set; }
-            public SelectionStrategy Selection { get; set; }
-            public RecombinationStrategy Recombination { get; set; }
-            public MutationStrategy Mutation { get; set; }
+            public ISelectionStrategy Selection { get; set; }
+            public IRecombinationStrategy Recombination { get; set; }
+            public IMutationStrategy Mutation { get; set; }
             #endregion
 
             #region methods

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Recombinations
 {
-    public interface RecombinationStrategy
+    public interface IRecombinationStrategy
     {
         Individual[] Apply(Tuple<Individual, Individual>[] parents, int offspringsCount);
     }

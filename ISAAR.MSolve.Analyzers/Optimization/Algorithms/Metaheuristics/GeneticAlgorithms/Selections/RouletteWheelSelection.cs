@@ -9,7 +9,7 @@ using Troschuetz.Random;
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections
 {
     // TODO: There is a variant that subtracts the max fitness of this generation from all fitnesses before calculating the probabbilities
-    class RouletteWheelSelection: SelectionStrategy
+    class RouletteWheelSelection: ISelectionStrategy
     {
         private readonly IdenticalParentsHandling onCollision;
         private readonly IGenerator rng;
@@ -26,7 +26,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.onCollision = onCollision;
         }
 
-        Tuple<Individual, Individual>[] SelectionStrategy.Apply(Individual[] population, int offspringsCount)
+        Tuple<Individual, Individual>[] ISelectionStrategy.Apply(Individual[] population, int offspringsCount)
         {
             Array.Sort(population); // may already be sorted from elitism. TODO: add a population class to query if it is sorted. 
             double[] probabilities = Probabilities(population, offspringsCount); // TODO: Have a double[] field and calculate in constructor to gain performance (requires const population size)

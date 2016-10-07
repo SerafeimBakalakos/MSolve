@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections
 {
-    public interface SelectionStrategy
+    public interface ISelectionStrategy
     {
         Tuple<Individual, Individual>[] Apply(Individual[] population, int offspringsCount);
     }

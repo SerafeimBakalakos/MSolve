@@ -109,13 +109,13 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\IEncoding.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Individual.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Mutations\BitFlipMutation.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Mutations\MutationStrategy.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\RecombinationStrategy.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Mutations\IMutationStrategy.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\IRecombinationStrategy.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\SinglePointCrossover.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\UniformCrossover.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\RankSelection.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\RouletteWheelSelection.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\SelectionStrategy.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\ISelectionStrategy.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\TournamentSelection.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\UniformRandomSelection.cs" />
     <Compile Include="Optimization\Commons\RandomNumberGenerationUtilities.cs" />
@@ -126,7 +126,7 @@
     <Compile Include="Optimization\Convergence\MaxIterations.cs" />
     <Compile Include="Optimization\Individual.cs" />
     <Compile Include="Optimization\Output\BestOfIterationLogger.cs" />
-    <Compile Include="Optimization\Output\EmptyLogger.cs" />
+    <Compile Include="Optimization\Output\NoLogger.cs" />
     <Compile Include="Optimization\Output\IOptimizationLogger.cs" />
     <Compile Include="Optimization\Problems\IObjectiveFunction.cs" />
     <Compile Include="Optimization\IOptimizationAlgorithm.cs" />

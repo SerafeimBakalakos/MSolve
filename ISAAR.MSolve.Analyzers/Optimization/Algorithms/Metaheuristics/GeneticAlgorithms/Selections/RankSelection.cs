@@ -8,7 +8,7 @@ using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections
 {   
-    class RankSelection : SelectionStrategy
+    class RankSelection : ISelectionStrategy
     {
         private readonly int rankExponent;
         private readonly IdenticalParentsHandling onCollision;
@@ -28,7 +28,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.onCollision = onCollision;
         }
 
-        Tuple<Individual, Individual>[] SelectionStrategy.Apply(Individual[] population, int offspringsCount)
+        Tuple<Individual, Individual>[] ISelectionStrategy.Apply(Individual[] population, int offspringsCount)
         {
             Array.Sort(population); // may already be sorted from elitism. TODO: add a population class to query if it is sorted. 
             double[] probabilities = Probabilities(offspringsCount); // TODO: Have a double[] field and calculate in constructor to gain performance (requires const population size)

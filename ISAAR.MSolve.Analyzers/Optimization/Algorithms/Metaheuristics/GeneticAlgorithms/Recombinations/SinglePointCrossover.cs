@@ -9,7 +9,7 @@ using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Recombinations
 {
-    public class SinglePointCrossover : RecombinationStrategy
+    public class SinglePointCrossover : IRecombinationStrategy
     {
         private readonly IGenerator rng;
 
@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.rng = randomNumberGenerator;
         }
 
-        Individual[] RecombinationStrategy.Apply(Tuple<Individual, Individual>[] parents, int offspringsCount)
+        Individual[] IRecombinationStrategy.Apply(Tuple<Individual, Individual>[] parents, int offspringsCount)
         {
             var offsprings = new Individual[offspringsCount];
             bool[] offspring1, offspring2;
