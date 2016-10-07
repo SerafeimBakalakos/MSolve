@@ -16,10 +16,11 @@ using System.Threading.Tasks;
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms
 {
     /// <summary>
-    /// GA with fixed parameters
+    /// GA with non adaptive parameters
     /// </summary>
     public class BinaryGA: IOptimizationAlgorithm                                                                                        
     {
+        #region fields, properties, constructor
         // Optim problem fields
         private readonly int continuousVariablesCount;
         private readonly int integerVariablesCount;
@@ -31,7 +32,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
         // GA params
         private readonly int populationSize;
-        private readonly IEncoding encoding; // Must be abstracted behind encoding interface. Certain genetic operators only work for some encodings 
+        private readonly IEncoding encoding; 
         private readonly ElitismStrategy elitism;
         private readonly SelectionStrategy selection;
         private readonly RecombinationStrategy recombination;
@@ -64,7 +65,9 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         public double[] BestPosition { get; private set; }
         public int CurrentIteration { get; private set; }
         public double CurrentFunctionEvaluations { get; private set; }
+        #endregion
 
+        #region methods
         public void Solve()
         {
             CurrentIteration = 0;
@@ -79,12 +82,14 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             }
         }
 
+        // This should use an Initializer object
         private void Initialize()
         {
             population = new Individual[populationSize];
             for (int i = 0; i < populationSize; ++i)
             {
-                population[i] = Individual.CreateRandom(continuousVariablesCount, integerVariablesCount);
+                bool[] chromosome = encoding.CreateRandomGenotype();
+                population[i] = new Individual(chromosome);
             }
 
             EvaluateCurrentIndividuals();
@@ -112,8 +117,8 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             {
                 if (!individual.IsEvaluated)
                 {
-                    var phenotype = individual.Phenotype();
-                    individual.Fitness = fitnessFunc.Evaluate(individual.Phenotype());
+                    double[] phenotype = encoding.ComputePhenotype(individual.Chromosome);
+                    individual.Fitness = fitnessFunc.Evaluate(phenotype);
                 }
             }
             CurrentFunctionEvaluations += populationSize;
@@ -122,21 +127,21 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
         private void UpdateBest()
         {
-            // Update current best
             foreach (Individual individual in population)
             {
                 if (individual.Fitness < BestFitness)
                 {
                     BestFitness = individual.Fitness;
-                    BestPosition = individual.Phenotype();
+                    BestPosition = encoding.ComputePhenotype(individual.Chromosome); // Redundant conversion; must be removed 
                 }
             }
         }
-
+        #endregion
 
         public class Builder
         {
-            // Optim problem fields. Must be encapsulated in an OptimProblem object
+            #region fields, properties, constructor
+            // Optim problem fields.
             OptimizationProblem problem;
 
             public Builder(OptimizationProblem problem)
@@ -156,13 +161,14 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             public SelectionStrategy Selection { get; set; }
             public RecombinationStrategy Recombination { get; set; }
             public MutationStrategy Mutation { get; set; }
+            #endregion
 
+            #region methods
             public BinaryGA BuildAlgorithm()
             {
                 
                 CheckUserParameters();
                 ApplyDefaultParameters();
-                Individual.Encoding = this.Encoding; // This should be done elsewhere
                 return new BinaryGA(problem.Dimension, 0, problem.ObjectiveFunction, PopulationSize, Logger,
                                     ConvergenceCriterion, Encoding, Elitism, Selection, Recombination, Mutation);
             }
@@ -228,7 +234,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
                     throw new ArgumentException("Population size must be at least 1, but was " + PopulationSize);
                 }
             }
-
+            #endregion
         }
     }
 }

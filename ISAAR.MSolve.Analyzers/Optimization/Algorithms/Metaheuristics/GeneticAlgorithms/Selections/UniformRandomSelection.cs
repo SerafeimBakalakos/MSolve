@@ -25,7 +25,6 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
         Tuple<Individual, Individual>[] SelectionStrategy.Apply(Individual[] population, int offspringsCount)
         {
-            Random rng = RandomNumberGenerationUtilities.sysRandom;
             int pairsCount = (offspringsCount - 1) / 2 + 1;
             var pairs = new Tuple<Individual, Individual>[pairsCount];
             for (int i = 0; i < pairsCount; ++i)

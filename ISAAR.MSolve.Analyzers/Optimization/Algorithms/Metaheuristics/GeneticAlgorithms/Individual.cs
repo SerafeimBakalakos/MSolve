@@ -10,32 +10,6 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 {
     public class Individual : IComparable<Individual>
     {
-        // Static variables is not the best solution. Any method of any thread can change the encoding in the middle of the algorithm.
-        // Multiple GA subpopulations may exist and they might (?) use different encodings. A Factory perhaps?
-        private static IEncoding encoding;
-        private static bool isEncodingSet;
-
-        // Can only be set once. Still this hack is not thread safe.
-        public static IEncoding Encoding
-        {
-            get
-            {
-                if (!isEncodingSet) throw new InvalidOperationException("No encoding has been provided");
-                return encoding;
-            }
-            set
-            {
-                //if (isEncodingSet) throw new InvalidOperationException("Encoding has already been set. It cannot be changed.");
-                encoding = value;
-                isEncodingSet = true;
-            }
-        }
-
-        public static Individual CreateRandom(int continuousVariablesCount, int intVariablesCount)
-        {
-            return new Individual(encoding.CreateRandomGenotype());
-        }
-
         private double fitness = double.MaxValue;
 
         public Individual(bool[] chromosome, double fitness = double.MaxValue)
@@ -62,11 +36,6 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
                     IsEvaluated = true;
                 }
             }
-        }
-
-        public double[] Phenotype()
-        {
-            return encoding.ComputePhenotype(Chromosome);
         }
 
         int IComparable<Individual>.CompareTo(Individual other)
