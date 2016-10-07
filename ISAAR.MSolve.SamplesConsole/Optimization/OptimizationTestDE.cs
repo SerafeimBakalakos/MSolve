@@ -6,7 +6,7 @@ using System;
 
 namespace ISAAR.MSolve.SamplesConsole.Optimization
 {
-    public class OptimizationTest
+    public class OptimizationTestDE
     {
         public static void Main()
         {
