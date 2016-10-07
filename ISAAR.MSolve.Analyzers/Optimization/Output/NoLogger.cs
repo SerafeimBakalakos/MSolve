@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Output
 {
-    class NoLogger : IOptimizationLogger
+    public class NoLogger : IOptimizationLogger
     {
         public void Log(IOptimizationAlgorithm algorithm)
         {
