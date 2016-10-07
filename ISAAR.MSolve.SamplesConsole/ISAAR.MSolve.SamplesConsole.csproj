@@ -32,7 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>ISAAR.MSolve.SamplesConsole.Optimization.OptimizationTestDE</StartupObject>
+    <StartupObject>ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions.OptimizationTestMain</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -49,7 +49,9 @@
     <Compile Include="Optimization\BenchmarkFunctions\Beale.cs" />
     <Compile Include="Optimization\BenchmarkFunctions\GoldsteinPrice.cs" />
     <Compile Include="Optimization\BenchmarkFunctions\McCormick.cs" />
-    <Compile Include="Optimization\BenchmarkFunctions\Truss10Benchmark.cs" />
+    <Compile Include="Optimization\OptimizationTestGA.cs" />
+    <Compile Include="Optimization\OptimizationTestMain.cs" />
+    <Compile Include="Optimization\OptimizationTestPSO.cs" />
     <Compile Include="Optimization\OptimizationTestDE.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
