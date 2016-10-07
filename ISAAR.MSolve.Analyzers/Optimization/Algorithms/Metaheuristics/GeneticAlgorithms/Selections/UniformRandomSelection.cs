@@ -20,6 +20,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         public UniformRandomSelection(IGenerator randomNumberGenerator, bool allowIdenticalParents = false)
         {
             if (randomNumberGenerator == null) throw new ArgumentException("The random number generator must not be null");
+            this.rng = randomNumberGenerator;
             this.allowIdenticalParents = allowIdenticalParents;
         }
 

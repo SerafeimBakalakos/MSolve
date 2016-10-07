@@ -22,7 +22,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         {
             if (mutationProbability < 0 || mutationProbability > 1)
             {
-                throw new ArgumentException("The mutation probability of each gene must belong to the intrval [0,1], but was "
+                throw new ArgumentException("The mutation probability of each gene must belong to the interval [0,1], but was "
                                              + mutationProbability);
             }
             this.mutationProbability = mutationProbability;
