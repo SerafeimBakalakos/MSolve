@@ -4,9 +4,8 @@ using System;
 namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
 {
     /// <summary>
-    ///     Class for the McCormick's function.
-    ///         
-    ///     <see href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Wikipedia: Test functions for optimization</see>
+    /// Class for the McCormick's optimization problem.
+    /// <see href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Wikipedia: Test functions for optimization</see>
     /// </summary>
     public class McCormick : OptimizationProblem
     {

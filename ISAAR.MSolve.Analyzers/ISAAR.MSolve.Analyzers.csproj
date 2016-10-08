@@ -107,6 +107,8 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\StandardPopulationStrategy.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\SteadyStateStrategy.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\UnfitEliminationStrategy.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\Particle.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\ParticleSwarmOptimizationAlgorithm.cs" />
     <Compile Include="Optimization\Commons\BinaryUtilities.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\GrayCodeEncoding.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\IEncoding.cs" />
@@ -182,7 +184,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Optimization\Algorithms\DerivativeBased\" />
-    <Folder Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

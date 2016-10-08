@@ -4,16 +4,16 @@ using System;
 namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
 {
     /// <summary>
-    /// Class for the Beale's optimization problem.
+    /// Class for the Schaffer's No.4 optimization problem.
     /// <see href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Wikipedia: Test functions for optimization</see>
     /// </summary>
-    public class Beale : OptimizationProblem
+    public class Schaffer4 : OptimizationProblem
     {
-        public Beale()
+        public Schaffer4()
         {
             this.Dimension = 2;
-            this.LowerBound = new double[] { -4.5, -4.5 };
-            this.UpperBound = new double[] { 4.5, 4.5 };
+            this.LowerBound = new double[] { -100, -100 };
+            this.UpperBound = new double[] { 100, 100 };
             this.ObjectiveFunction = new Objective();
         }
 
@@ -21,8 +21,8 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
         {
             public double Evaluate(double[] x)
             {
-                return Math.Pow((1.5 - x[0] + x[0] * x[1]), 2) + Math.Pow((2.25 - x[0] + x[0] * x[1] * x[1]), 2)
-                    + Math.Pow((2.625 - x[0] + x[0] * x[1] * x[1] * x[1]), 2);
+                return 0.5 + (Math.Pow(Math.Cos(Math.Sin(Math.Abs(Math.Pow(x[0], 2) - Math.Pow(x[1], 2)))), 2) - 0.5) /
+                    Math.Pow(1 + 0.001 * (Math.Pow(x[0], 2) + Math.Pow(x[1], 2)), 2);
             }
         }
     }
