@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Encodings
 {
-    public interface IEncoding
+    public interface IEncoding<T>
     {
-        bool[] CreateRandomGenotype();
-        double[] ComputePhenotype(bool[] genotype);
-        //int[] IntegerPhenotype(bool[] genotype);
+        T[] CreateRandomGenotype(); // This should be assigned to an Initializer class instead
+        double[] ComputePhenotype(T[] genotype);
+        //int[] IntegerPhenotype(T[] genotype);
     }
 }

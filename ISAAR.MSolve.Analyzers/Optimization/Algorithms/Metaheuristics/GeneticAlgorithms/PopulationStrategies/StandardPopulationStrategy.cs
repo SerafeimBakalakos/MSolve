@@ -10,7 +10,7 @@ using ISAAR.MSolve.Analyzers.Optimization.Commons;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.PopulationStrategies
 {
-    class StandardPopulationStrategy : IPopulationStrategy
+    class StandardPopulationStrategy<T> : IPopulationStrategy<T>
     {
         private readonly int populationSize;
         private readonly int elitesCount;
@@ -38,8 +38,8 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.rng = randomNumberGenerator;
         }
 
-        public Individual[] CreateNextGeneration(Individual[] originalPopulation, ISelectionStrategy selection, 
-                                             IRecombinationStrategy recombination, IMutationStrategy mutation)
+        public Individual<T>[] CreateNextGeneration(Individual<T>[] originalPopulation, ISelectionStrategy<T> selection, 
+                                             IRecombinationStrategy<T> recombination, IMutationStrategy<T> mutation)
         {
             Array.Sort(originalPopulation); // sorting may not always be mandatory (e.g. 1-3 elites, selection does not sort)
             int offspringsCount = populationSize - elitesCount;
@@ -47,10 +47,10 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             // TODO: 1) Recombination strategies may require different selection strategies (e.g. 3 parents). 
             //          It would be better to pass the selection object to recombination.Apply()
             //       2) Redundant copying. A linked list would be better.
-            Individual[] offsprings = recombination.Apply(parents, offspringsCount);
+            Individual<T>[] offsprings = recombination.Apply(parents, offspringsCount);
             mutation.Apply(offsprings);
 
-            Individual[] nextPopulation = new Individual[populationSize];
+            Individual<T>[] nextPopulation = new Individual<T>[populationSize];
             Array.Copy(originalPopulation, nextPopulation, elitesCount);
             Array.Copy(offsprings, 0, nextPopulation, elitesCount, offsprings.Length);
             return nextPopulation;

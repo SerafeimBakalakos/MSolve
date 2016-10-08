@@ -8,7 +8,7 @@ using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations
 {
-    public class BitFlipMutation : IMutationStrategy
+    public class BitFlipMutation : IMutationStrategy<bool>
     {
         private readonly double mutationProbability;
         private readonly IGenerator rng;
@@ -30,14 +30,14 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.rng = randomNumberGenerator;
         }
 
-        public void Apply(Individual[] population)
+        public void Apply(Individual<bool>[] population)
         {
             //CanonicalVersion(population);
             FastVersion(population);
         }
 
         // Running time = O(populationSize * chromosomeSize). Particularly slow for binary encoding, where chromosomeSize is large.
-        private void CanonicalVersion(Individual[] population)
+        private void CanonicalVersion(Individual<bool>[] population)
         {
             int genesCount = population[0].Chromosome.Length; //No checking for the other chromosomes
             foreach (var individual in population)
@@ -54,7 +54,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         // The canonical version performs (populationSize * chromosomeSize * mutationProbability) mutations on average. 
         // In contrast this version always performs exactly as many mutations. 
         // Also it is possible for 2 or more mutations to occur on the same gene of the same chromosome, thus negating each other.
-        private void FastVersion(Individual[] population)
+        private void FastVersion(Individual<bool>[] population)
         {
             int genesCount = population[0].Chromosome.Length; //No checking for the other chromosomes
             int totalMutations = (int)(population.LongLength * (mutationProbability * genesCount));

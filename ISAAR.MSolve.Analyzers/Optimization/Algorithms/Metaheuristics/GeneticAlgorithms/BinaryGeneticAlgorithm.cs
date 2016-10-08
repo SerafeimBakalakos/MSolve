@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
     /// <summary>
     /// GA with non adaptive parameters
     /// </summary>
-    public class BinaryGA: IOptimizationAlgorithm                                                                                        
+    public class BinaryGeneticAlgorithm: IOptimizationAlgorithm                                                                                        
     {
         #region fields, properties, constructor
         // Optim problem fields
@@ -32,18 +32,18 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
         // GA params
         private readonly int populationSize;
-        private readonly IEncoding encoding; 
-        private readonly IPopulationStrategy populationStrategy;
-        private readonly ISelectionStrategy selection;
-        private readonly IRecombinationStrategy recombination;
-        private readonly IMutationStrategy mutation;
+        private readonly IEncoding<bool> encoding; 
+        private readonly IPopulationStrategy<bool> populationStrategy;
+        private readonly ISelectionStrategy<bool> selection;
+        private readonly IRecombinationStrategy<bool> recombination;
+        private readonly IMutationStrategy<bool> mutation;
 
-        private Individual[] population;
+        private Individual<bool>[] population;
 
-        private BinaryGA(int continuousVariablesCount, int integerVariablesCount, IObjectiveFunction fitnessFunc, 
-            int populationSize, IOptimizationLogger logger, IConvergenceCriterion convergenceCriterion, IEncoding encoding, 
-            IPopulationStrategy populationStrategy, ISelectionStrategy selection, IRecombinationStrategy recombination, 
-            IMutationStrategy mutation)
+        private BinaryGeneticAlgorithm(int continuousVariablesCount, int integerVariablesCount, IObjectiveFunction fitnessFunc, 
+            int populationSize, IOptimizationLogger logger, IConvergenceCriterion convergenceCriterion, IEncoding<bool> encoding, 
+            IPopulationStrategy<bool> populationStrategy, ISelectionStrategy<bool> selection, IRecombinationStrategy<bool> recombination, 
+            IMutationStrategy<bool> mutation)
         {
             this.continuousVariablesCount = continuousVariablesCount;
             this.integerVariablesCount = integerVariablesCount;
@@ -86,11 +86,11 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         // This should use an Initializer object
         private void Initialize()
         {
-            population = new Individual[populationSize];
+            population = new Individual<bool>[populationSize];
             for (int i = 0; i < populationSize; ++i)
             {
                 bool[] chromosome = encoding.CreateRandomGenotype();
-                population[i] = new Individual(chromosome);
+                population[i] = new Individual<bool>(chromosome);
             }
 
             EvaluateCurrentIndividuals();
@@ -105,7 +105,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
         private void EvaluateCurrentIndividuals()
         {
-            foreach (Individual individual in population)
+            foreach (Individual<bool> individual in population)
             {
                 if (!individual.IsEvaluated)
                 {
@@ -119,7 +119,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
         private void UpdateBest()
         {
-            foreach (Individual individual in population)
+            foreach (Individual<bool> individual in population)
             {
                 if (individual.Fitness < BestFitness)
                 {
@@ -147,21 +147,21 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             public IConvergenceCriterion ConvergenceCriterion { get; set; }
 
             // GA params
-            public IEncoding Encoding { get; set; }
+            public IEncoding<bool> Encoding { get; set; }
             public int PopulationSize { get; set; }
-            public IPopulationStrategy PopulationStrategy { get; set; }
-            public ISelectionStrategy Selection { get; set; }
-            public IRecombinationStrategy Recombination { get; set; }
-            public IMutationStrategy Mutation { get; set; }
+            public IPopulationStrategy<bool> PopulationStrategy { get; set; }
+            public ISelectionStrategy<bool> Selection { get; set; }
+            public IRecombinationStrategy<bool> Recombination { get; set; }
+            public IMutationStrategy<bool> Mutation { get; set; }
             #endregion
 
             #region methods
-            public BinaryGA BuildAlgorithm()
+            public BinaryGeneticAlgorithm BuildAlgorithm()
             {
                 
                 CheckUserParameters();
                 ApplyDefaultParameters();
-                return new BinaryGA(problem.Dimension, 0, problem.ObjectiveFunction, PopulationSize, Logger,
+                return new BinaryGeneticAlgorithm(problem.Dimension, 0, problem.ObjectiveFunction, PopulationSize, Logger,
                                     ConvergenceCriterion, Encoding, PopulationStrategy, Selection, Recombination, Mutation);
             }
 
@@ -198,17 +198,17 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
                 if (PopulationStrategy == null) // arbitrary strategy with Matlab's default elitism 
                 {
-                    PopulationStrategy = new StandardPopulationStrategy(PopulationSize, (int)Math.Round(0.05 * PopulationSize));
+                    PopulationStrategy = new StandardPopulationStrategy<bool>(PopulationSize, (int)Math.Round(0.05 * PopulationSize));
                 }
 
                 if (Selection == null) // arbitrary
                 {
-                    Selection = new RouletteWheelSelection();
+                    Selection = new RouletteWheelSelection<bool>();
                 }
 
                 if (Recombination == null) // use Matlab defaults
                 {
-                    Recombination = new UniformCrossover();
+                    Recombination = new UniformCrossover<bool>();
                 }
 
                 if (Mutation == null) // arbitrary

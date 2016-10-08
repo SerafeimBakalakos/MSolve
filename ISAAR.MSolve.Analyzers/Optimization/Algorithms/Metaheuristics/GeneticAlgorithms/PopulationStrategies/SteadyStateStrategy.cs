@@ -8,9 +8,10 @@ using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgor
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.PopulationStrategies
 {
-    class SteadyStateStrategy : IPopulationStrategy
+    class SteadyStateStrategy<T> : IPopulationStrategy<T>
     {
-        public Individual[] CreateNextGeneration(Individual[] originalPopulation, ISelectionStrategy selection, IRecombinationStrategy recombination, IMutationStrategy mutation)
+        public Individual<T>[] CreateNextGeneration(Individual<T>[] originalPopulation, ISelectionStrategy<T> selection, 
+                                                    IRecombinationStrategy<T> recombination, IMutationStrategy<T> mutation)
         {
             throw new NotImplementedException();
         }

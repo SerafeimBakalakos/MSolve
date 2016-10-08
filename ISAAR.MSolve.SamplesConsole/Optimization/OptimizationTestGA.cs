@@ -19,13 +19,13 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
             OptimizationProblem problem = new Ackley();
 
             // Define optim algorithm and parameters
-            var optimBuilder = new BinaryGA.Builder(problem);
+            var optimBuilder = new BinaryGeneticAlgorithm.Builder(problem);
             optimBuilder.Logger = new BestOfIterationLogger();
             //optimBuilder.Logger = new EmptyLogger();
             optimBuilder.ConvergenceCriterion = LogicCriteria.OR(new MaxIterations(200), new MaxFunctionEvaluations(10000));
             optimBuilder.Encoding = new GrayCodeEncoding(problem, 16, 8);
             optimBuilder.PopulationSize = 100;
-            optimBuilder.Recombination = new SinglePointCrossover();
+            optimBuilder.Recombination = new SinglePointCrossover<bool>();
             optimBuilder.Mutation = new BitFlipMutation(0.05);
 
             // Start optimization

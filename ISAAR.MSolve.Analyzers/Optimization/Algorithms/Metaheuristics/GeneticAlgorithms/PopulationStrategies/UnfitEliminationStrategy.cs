@@ -10,7 +10,7 @@ using ISAAR.MSolve.Analyzers.Optimization.Commons;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.PopulationStrategies
 {
-    public class UnfitEliminationStrategy : IPopulationStrategy
+    public class UnfitEliminationStrategy<T> : IPopulationStrategy<T>
     {
         private readonly int populationSize;
         private readonly int elitesCount;
@@ -50,13 +50,13 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.rng = randomNumberGenerator;
         }
 
-        public Individual[] CreateNextGeneration(Individual[] originalPopulation, ISelectionStrategy selection,
-                                             IRecombinationStrategy recombination, IMutationStrategy mutation)
+        public Individual<T>[] CreateNextGeneration(Individual<T>[] originalPopulation, ISelectionStrategy<T> selection,
+                                                    IRecombinationStrategy<T> recombination, IMutationStrategy<T> mutation)
         {
             Array.Sort(originalPopulation);
 
             // Selection: Only the elites and the rest of survivors will have a chance to reproduce
-            Individual[] selectionPool = new Individual[elitesCount + survivorsCount];
+            Individual<T>[] selectionPool = new Individual<T>[elitesCount + survivorsCount];
             Array.Copy(originalPopulation, selectionPool, selectionPool.Length);
             var parents = selection.Apply(selectionPool, offspringsCount);
             
@@ -64,16 +64,16 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             // TODO: 1) Recombination strategies may require different selection strategies (e.g. 3 parents). 
             //          It would be better to pass the selection object to recombination.Apply()
             //       2) Redundant copying. A linked list would be better.
-            Individual[] offsprings = recombination.Apply(parents, offspringsCount);
+            Individual<T>[] offsprings = recombination.Apply(parents, offspringsCount);
 
             // Mutation will be applied to the survivors and their offsprings but not on the elites
-            Individual[] mutants = new Individual[survivorsCount + offsprings.Length];
+            Individual<T>[] mutants = new Individual<T>[survivorsCount + offsprings.Length];
             Array.Copy(originalPopulation, elitesCount, mutants, 0, survivorsCount);
             Array.Copy(offsprings, 0, mutants, survivorsCount, offspringsCount);
             mutation.Apply(mutants);
 
             // The next population will contain the elites, the mutated survivors and the mutated offsprings
-            Individual[] nextPopulation = new Individual[originalPopulation.Length];
+            Individual<T>[] nextPopulation = new Individual<T>[originalPopulation.Length];
             Array.Copy(originalPopulation, nextPopulation, elitesCount);
             Array.Copy(mutants, 0, nextPopulation, elitesCount, survivorsCount + offspringsCount);
             return nextPopulation;

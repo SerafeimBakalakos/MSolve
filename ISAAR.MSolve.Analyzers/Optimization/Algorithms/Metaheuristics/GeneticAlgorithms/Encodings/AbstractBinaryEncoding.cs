@@ -8,7 +8,7 @@ using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Encodings
 {
-    public abstract class AbstractBinaryEncoding: IEncoding
+    public abstract class AbstractBinaryEncoding: IEncoding<bool>
     {
         #region fields and properties
         // Random number generation

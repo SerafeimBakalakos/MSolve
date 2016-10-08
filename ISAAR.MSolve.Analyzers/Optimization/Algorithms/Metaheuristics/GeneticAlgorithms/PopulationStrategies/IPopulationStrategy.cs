@@ -8,9 +8,9 @@ using System.Text;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.PopulationStrategies
 {
-    public interface IPopulationStrategy
+    public interface IPopulationStrategy<T>
     {
-        Individual[] CreateNextGeneration(Individual[] originalPopulation, ISelectionStrategy selection, 
-                                      IRecombinationStrategy recombination, IMutationStrategy mutation); 
+        Individual<T>[] CreateNextGeneration(Individual<T>[] originalPopulation, ISelectionStrategy<T> selection, 
+                                      IRecombinationStrategy<T> recombination, IMutationStrategy<T> mutation); 
     }
 }
