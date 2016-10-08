@@ -33,16 +33,17 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         // GA params
         private readonly int populationSize;
         private readonly IEncoding encoding; 
-        private readonly ElitismStrategy elitism;
+        private readonly IPopulationStrategy populationStrategy;
         private readonly ISelectionStrategy selection;
         private readonly IRecombinationStrategy recombination;
         private readonly IMutationStrategy mutation;
 
         private Individual[] population;
 
-        private BinaryGA(int continuousVariablesCount, int integerVariablesCount, IObjectiveFunction fitnessFunc, int populationSize,
-            IOptimizationLogger logger, IConvergenceCriterion convergenceCriterion, IEncoding encoding, ElitismStrategy elitism,
-            ISelectionStrategy selection, IRecombinationStrategy recombination, IMutationStrategy mutation)
+        private BinaryGA(int continuousVariablesCount, int integerVariablesCount, IObjectiveFunction fitnessFunc, 
+            int populationSize, IOptimizationLogger logger, IConvergenceCriterion convergenceCriterion, IEncoding encoding, 
+            IPopulationStrategy populationStrategy, ISelectionStrategy selection, IRecombinationStrategy recombination, 
+            IMutationStrategy mutation)
         {
             this.continuousVariablesCount = continuousVariablesCount;
             this.integerVariablesCount = integerVariablesCount;
@@ -51,7 +52,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.logger = logger;
             this.convergenceCriterion = convergenceCriterion;
             this.encoding = encoding;
-            this.elitism = elitism;
+            this.populationStrategy = populationStrategy;
             this.selection = selection;
             this.recombination = recombination;
             this.mutation = mutation;
@@ -97,16 +98,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
         private void Iterate()
         {
-            // TODO: Use a PopulationStrategy to handle elitism, steady state, the Matlab approach, etc. It will take as parameters the current population and the recombination, mutation and selection objects
-            Individual[] elites = elitism.Apply(population);
-            int offspringsCount = populationSize - elites.Length; // Is this correct?
-            // What about the Natural Selection/Steady State operator, where some individuals are removed from the gene pool and are replaced by offsprings before mutation? See "Practical Genetic Algorithms"
-            // Matlab implementation would be to split the offsprings into 3 parts: [a b c] where a=elitism(parents), b=recombination(parents), c=mutation(parents)
-            var parents = selection.Apply(population, offspringsCount);
-            Individual[] offsprings = recombination.Apply(parents, offspringsCount); // recombination strategies may require different selection strategies (e.g. 3 parents). It would be better to pass the selection object to recombination.Apply()
-            mutation.Apply(offsprings); 
-            Array.Copy(elites, population, elites.Length);
-            Array.Copy(offsprings, 0, population, elites.Length, offsprings.Length);
+            population = populationStrategy.CreateNextGeneration(population, selection, recombination, mutation);
 
             EvaluateCurrentIndividuals();
         }
@@ -157,7 +149,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             // GA params
             public IEncoding Encoding { get; set; }
             public int PopulationSize { get; set; }
-            public ElitismStrategy Elitism { get; set; }
+            public IPopulationStrategy PopulationStrategy { get; set; }
             public ISelectionStrategy Selection { get; set; }
             public IRecombinationStrategy Recombination { get; set; }
             public IMutationStrategy Mutation { get; set; }
@@ -170,7 +162,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
                 CheckUserParameters();
                 ApplyDefaultParameters();
                 return new BinaryGA(problem.Dimension, 0, problem.ObjectiveFunction, PopulationSize, Logger,
-                                    ConvergenceCriterion, Encoding, Elitism, Selection, Recombination, Mutation);
+                                    ConvergenceCriterion, Encoding, PopulationStrategy, Selection, Recombination, Mutation);
             }
 
             private void ApplyDefaultParameters()
@@ -204,9 +196,9 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
                     Encoding = new GrayCodeEncoding(problem, 32, 8); // sizes of float, char 
                 } 
 
-                if (Elitism == null) // use Matlab defaults
+                if (PopulationStrategy == null) // arbitrary strategy with Matlab's default elitism 
                 {
-                    Elitism = new ElitismStrategy((int)(0.05 * PopulationSize) + 1, PopulationSize);
+                    PopulationStrategy = new StandardPopulationStrategy(PopulationSize, (int)Math.Round(0.05 * PopulationSize));
                 }
 
                 if (Selection == null) // arbitrary

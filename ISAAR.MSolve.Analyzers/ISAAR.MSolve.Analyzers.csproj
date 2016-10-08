@@ -102,8 +102,11 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\DifferentialEvolution\DifferentialEvolutionAlgorithm.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\BinaryGA.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\AbstractBinaryEncoding.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\ElitismStrategy.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\StandardBinaryEncoding.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\IPopulationStrategy.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\StandardPopulationStrategy.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\SteadyStateStrategy.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\UnfitEliminationStrategy.cs" />
     <Compile Include="Optimization\Commons\BinaryUtilities.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\GrayCodeEncoding.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\IEncoding.cs" />
