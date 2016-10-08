@@ -4,9 +4,8 @@ using System;
 namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
 {
     /// <summary>
-    ///     Class for the Goldstein-Price's function.
-    ///         
-    ///     <see href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Wikipedia: Test functions for optimization</see>
+    /// Class for the Goldstein-Price's optimization problem.
+    /// <see href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Wikipedia: Test functions for optimization</see>
     /// </summary>
     public class GoldsteinPrice : OptimizationProblem
     {

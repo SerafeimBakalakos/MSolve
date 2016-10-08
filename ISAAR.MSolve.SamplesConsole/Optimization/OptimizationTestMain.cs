@@ -4,9 +4,9 @@
     {
         public static void Main()
         {
-            //OptimizationTestDE.Run();
+            OptimizationTestDE.Run();
             //OptimizationTestGA.Run();
-            OptimizationTestPSO.Run();
+            //OptimizationTestPSO.Run();
         }
     }
 }
