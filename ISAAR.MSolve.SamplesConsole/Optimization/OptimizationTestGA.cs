@@ -19,7 +19,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
             OptimizationProblem problem = new Ackley();
 
             // Define optim algorithm and parameters
-            var optimBuilder = new BinaryGeneticAlgorithm.Builder(problem);
+            var optimBuilder = new BinaryGeneticAlgorithmBuilder(problem);
             optimBuilder.Logger = new BestOfIterationLogger();
             //optimBuilder.Logger = new EmptyLogger();
             optimBuilder.ConvergenceCriterion = LogicCriteria.OR(new MaxIterations(200), new MaxFunctionEvaluations(10000));
@@ -38,8 +38,9 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
                 solutions[rep] = optimAlgorithm.BestFitness;
                 Console.WriteLine("Best objective value: " + optimAlgorithm.BestFitness);
             }
+            Console.WriteLine();
             Console.WriteLine("Average objective value: " + solutions.Average());
-
+            Console.WriteLine();
             //Print results
             //Console.WriteLine("----------- History -----------");
             //optimBuilder.Logger.PrintToConsole();
