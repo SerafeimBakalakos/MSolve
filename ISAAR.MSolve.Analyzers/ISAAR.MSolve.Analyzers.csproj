@@ -101,6 +101,7 @@
   <ItemGroup>
     <Compile Include="Optimization\Algorithms\Metaheuristics\DifferentialEvolution\DifferentialEvolutionAlgorithm.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\BinaryGeneticAlgorithmBuilder.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\Quantization.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\GeneticAlgorithm.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\AbstractBinaryEncoding.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\ContinuousEncoding.cs" />
@@ -133,6 +134,8 @@
     <Compile Include="Optimization\Convergence\MaxFunctionEvaluations.cs" />
     <Compile Include="Optimization\Convergence\MaxIterations.cs" />
     <Compile Include="Optimization\Individual.cs" />
+    <Compile Include="Optimization\Initialization\IInitializer.cs" />
+    <Compile Include="Optimization\Initialization\RealUniformRandomInitializer.cs" />
     <Compile Include="Optimization\Output\BestOfIterationLogger.cs" />
     <Compile Include="Optimization\Output\NoLogger.cs" />
     <Compile Include="Optimization\Output\IOptimizationLogger.cs" />
