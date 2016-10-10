@@ -4,23 +4,63 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Problems
 {
     public class OptimizationProblem
     {
+        private bool isChecked;
+        private int dimension;
+        private double[] lowerBounds;
+        private double[] upperBounds;
+        private IObjectiveFunction objectiveFunction;
+
         public int Dimension
         {
-            get; set;
+            get { return dimension; }
+
+            set
+            {
+                dimension = value;
+                isChecked = false;
+            }
         }
 
         public double[] LowerBound
         {
-            get; set;
+            get { return lowerBounds; }
+
+            set
+            {
+                lowerBounds = value;
+                isChecked = false;
+            }
         }
 
         public double[] UpperBound
         {
-            get; set;
+            get { return upperBounds; }
+
+            set
+            {
+                upperBounds = value;
+                isChecked = false;
+            }
         }
+
         public IObjectiveFunction ObjectiveFunction
         {
-            get; set;
+            get { return objectiveFunction; }
+
+            set
+            {
+                objectiveFunction = value;
+                isChecked = false;
+            }
+        }
+
+        public void CheckInput()
+        {
+            if (!isChecked)
+            {
+                ProblemChecker.Check(this);
+                isChecked = true;
+            }
         }
     }
 }

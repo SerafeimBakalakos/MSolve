@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
             protected Builder(OptimizationProblem problem)
             {
-                ProblemChecker.Check(problem);
+                problem.CheckInput();
                 this.problem = problem;
             }
 
