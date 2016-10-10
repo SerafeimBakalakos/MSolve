@@ -52,7 +52,37 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             return chromosome;
         }
 
-        public abstract double[] ComputePhenotype(bool[] genotype);
+        public double[] ComputePhenotype(bool[] genotype)
+        {
+            // Continuous variables
+            double[] continuousVariables = new double[continuousVariablesCount];
+            for (int i = 0; i < continuousVariablesCount; ++i)
+            {
+                int start = i * bitsPerContinuousVariable;
+                int deci = BitstringToDecimalInteger(genotype, start, bitsPerContinuousVariable);
+                double normalized = deci / (Math.Round(Math.Pow(2, bitsPerContinuousVariable)) - 1);
+                continuousVariables[i] = continuousLowerBounds[i] +
+                                         normalized * (continuousUpperBounds[i] - continuousLowerBounds[i]);
+            }
+            return continuousVariables;
+        }
+
+        public int[] IntegerPhenotype(bool[] genotype)
+        {
+            // Integer Variables
+            int[] integerVariables = new int[integerVariablesCount];
+            int offset = continuousVariablesCount * bitsPerContinuousVariable;
+            for (int i = 0; i < integerVariablesCount; ++i)
+            {
+                int start = offset + i * bitsPerIntegerVariable;
+                integerVariables[i] = BitstringToDecimalInteger(genotype, start, bitsPerIntegerVariable);
+            }
+            return integerVariables;
+        }
+        #endregion
+
+        #region abstract methods
+        protected abstract int BitstringToDecimalInteger(bool[] bits, int start, int length);
         #endregion
     }
 }
