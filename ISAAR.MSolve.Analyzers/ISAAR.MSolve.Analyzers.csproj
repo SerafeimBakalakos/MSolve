@@ -111,6 +111,8 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\StandardPopulationStrategy.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\SteadyStateStrategy.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\UnfitEliminationStrategy.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\BlendCrossoverA.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\IntermediateCrossover.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\Particle.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\ParticleSwarmOptimizationAlgorithm.cs" />
     <Compile Include="Optimization\Commons\BinaryUtilities.cs" />
