@@ -61,9 +61,9 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Commons
             DecimalToStandardBinary(dec, binary, 0, length);
             // Binary to Gray code
             bits[start] = binary[0];
-            for (int i = start + 1; i < start + length; ++i)
+            for (int i = 1; i < length; ++i)
             {
-                bits[i] = binary[i] != binary[i-1];
+                bits[start + i] = binary[i] != binary[i-1];
             }
         }
 
