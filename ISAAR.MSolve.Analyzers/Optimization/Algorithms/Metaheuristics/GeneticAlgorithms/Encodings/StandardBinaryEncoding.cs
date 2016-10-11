@@ -1,5 +1,5 @@
 ﻿using ISAAR.MSolve.Analyzers.Optimization.Commons;
-using ISAAR.MSolve.Analyzers.Optimization.Problems;
+using ISAAR.MSolve.Analyzers.Optimization.Problem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,32 +16,14 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         {
         }
 
-        public override sealed double[] ComputePhenotype(bool[] genotype)
+        protected sealed override int BitstringToDecimalInteger(bool[] bits, int start, int length)
         {
-            // Continuous variables
-            double[] continuousVariables = new double[continuousVariablesCount];
-            for (int i = 0; i < continuousVariablesCount; ++i)
-            {
-                int start = i * bitsPerContinuousVariable;
-                int deci = BinaryUtilities.StandardBinaryToDecimal(genotype, start, bitsPerContinuousVariable);
-                double normalized = deci / (Math.Round(Math.Pow(2, bitsPerContinuousVariable)) - 1);
-                continuousVariables[i] = continuousLowerBounds[i] +
-                                         normalized * (continuousUpperBounds[i] - continuousLowerBounds[i]);
-            }
-            return continuousVariables;
+            return BinaryUtilities.StandardBinaryToDecimal(bits, start, length);
         }
 
-        public int[] IntegerPhenotype(bool[] genotype)
+        protected override void DecimalIntegerToBitstring(int dec, bool[] bits, int start, int length)
         {
-            // Integer Variables
-            int[] integerVariables = new int[integerVariablesCount];
-            int offset = continuousVariablesCount * bitsPerContinuousVariable;
-            for (int i = 0; i < integerVariablesCount; ++i)
-            {
-                int start = offset + i * bitsPerIntegerVariable;
-                integerVariables[i] = BinaryUtilities.StandardBinaryToDecimal(genotype, start, bitsPerIntegerVariable);
-            }
-            return integerVariables;
+            BinaryUtilities.DecimalToStandardBinary(dec, bits, start, length);
         }
     }
 }

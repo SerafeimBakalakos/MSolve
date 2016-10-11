@@ -1,5 +1,5 @@
 ﻿using ISAAR.MSolve.Analyzers.Optimization.Commons;
-using ISAAR.MSolve.Analyzers.Optimization.Problems;
+using ISAAR.MSolve.Analyzers.Optimization.Problem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,23 +8,23 @@ using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Encodings
 {
-    public abstract class AbstractBinaryEncoding: IEncoding
+    public abstract class AbstractBinaryEncoding: IEncoding<bool>
     {
         #region fields and properties
-        // Random number generation
-        protected readonly IGenerator rng = RandomNumberGenerationUtilities.troschuetzRandom;
+        private readonly IGenerator rng = RandomNumberGenerationUtilities.troschuetzRandom;
+        private readonly Quantization quantization;
 
         // Continuous variables
-        protected readonly int continuousVariablesCount;
-        protected readonly double[] continuousLowerBounds;
-        protected readonly double[] continuousUpperBounds;
-        protected readonly int bitsPerContinuousVariable;
+        private readonly int continuousVariablesCount;
+        private readonly double[] continuousLowerBounds;
+        private readonly double[] continuousUpperBounds;
+        private readonly int bitsPerContinuousVariable;
 
         // Integer variables
-        protected readonly int integerVariablesCount;
+        private readonly int integerVariablesCount;
         //private readonly int[] integerLowerBounds; They are 0
-        protected readonly int[] integerUpperBounds;
-        protected readonly int bitsPerIntegerVariable;
+        private readonly int[] integerUpperBounds;
+        private readonly int bitsPerIntegerVariable;
         #endregion
 
         #region constructor
@@ -37,22 +37,58 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.integerVariablesCount = 0;
             this.integerUpperBounds = null;
             this.bitsPerIntegerVariable = 0;
+
+            this.quantization = new Quantization(bitsPerContinuousVariable);
         }
         #endregion
 
         #region IEncoding implementations
-        public virtual bool[] CreateRandomGenotype()
+        public bool[] ComputeGenotype(double[] phenotype)
         {
-            bool[] chromosome = new bool[continuousVariablesCount * bitsPerContinuousVariable +
-                                           integerVariablesCount * bitsPerIntegerVariable];
-            for (int i = 0; i < chromosome.LongLength; ++i)
+            // Continuous variables
+            bool[] genotype = new bool[continuousVariablesCount * bitsPerContinuousVariable];
+            for (int i = 0; i < continuousVariablesCount; ++i)
             {
-                if (rng.NextBoolean()) chromosome[i] = true;
+                double normalized = (phenotype[i] - continuousLowerBounds[i]) / (continuousUpperBounds[i] - continuousLowerBounds[i]);
+                int dec = quantization.NormalizedDoubleToInteger(normalized);
+                DecimalIntegerToBitstring(dec, genotype, i * bitsPerContinuousVariable, bitsPerContinuousVariable);
             }
-            return chromosome;
+            return genotype;
         }
 
-        public abstract double[] ComputePhenotype(bool[] genotype);
+        public double[] ComputePhenotype(bool[] genotype)
+        {
+            // Continuous variables
+            double[] continuousVariables = new double[continuousVariablesCount];
+            for (int i = 0; i < continuousVariablesCount; ++i)
+            {
+                int start = i * bitsPerContinuousVariable;
+                int dec = BitstringToDecimalInteger(genotype, start, bitsPerContinuousVariable);
+                double normalized = dec / (Math.Round(Math.Pow(2, bitsPerContinuousVariable)) - 1);
+                continuousVariables[i] = continuousLowerBounds[i] +
+                                         normalized * (continuousUpperBounds[i] - continuousLowerBounds[i]);
+            }
+            return continuousVariables;
+        }
+
+        public int[] IntegerPhenotype(bool[] genotype)
+        {
+            // Integer Variables
+            int[] integerVariables = new int[integerVariablesCount];
+            int offset = continuousVariablesCount * bitsPerContinuousVariable;
+            for (int i = 0; i < integerVariablesCount; ++i)
+            {
+                int start = offset + i * bitsPerIntegerVariable;
+                integerVariables[i] = BitstringToDecimalInteger(genotype, start, bitsPerIntegerVariable);
+            }
+            return integerVariables;
+        }
+        #endregion
+
+        #region abstract methods
+        protected abstract int BitstringToDecimalInteger(bool[] bits, int start, int length);
+        protected abstract void DecimalIntegerToBitstring(int dec, bool[] bits, int start, int length);
+
         #endregion
     }
 }

@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections
 {
-    public interface SelectionStrategy
+    public interface ISelectionStrategy<T>
     {
-        Tuple<Individual, Individual>[] Apply(Individual[] population, int offspringsCount);
+        Tuple<Individual<T>, Individual<T>>[] Apply(Individual<T>[] population, int offspringsCount);
     }
 }

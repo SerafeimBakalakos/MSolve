@@ -3,8 +3,8 @@ using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgor
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations;
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Recombinations;
 using ISAAR.MSolve.Analyzers.Optimization.Convergence;
-using ISAAR.MSolve.Analyzers.Optimization.Output;
-using ISAAR.MSolve.Analyzers.Optimization.Problems;
+using ISAAR.MSolve.Analyzers.Optimization.Logging;
+using ISAAR.MSolve.Analyzers.Optimization.Problem;
 using ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions;
 using System;
 using System.Linq;
@@ -19,13 +19,13 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
             OptimizationProblem problem = new Ackley();
 
             // Define optim algorithm and parameters
-            var optimBuilder = new BinaryGA.Builder(problem);
+            var optimBuilder = new BinaryGeneticAlgorithmBuilder(problem);
             optimBuilder.Logger = new BestOfIterationLogger();
             //optimBuilder.Logger = new EmptyLogger();
-            optimBuilder.ConvergenceCriterion = LogicCriteria.OR(new MaxIterations(200), new MaxFunctionEvaluations(10000));
+            optimBuilder.ConvergenceCriterion = CompositeCriteria.OR(new MaxIterations(200), new MaxFunctionEvaluations(10000));
             optimBuilder.Encoding = new GrayCodeEncoding(problem, 16, 8);
             optimBuilder.PopulationSize = 100;
-            optimBuilder.Recombination = new SinglePointCrossover();
+            optimBuilder.Recombination = new SinglePointCrossover<bool>();
             optimBuilder.Mutation = new BitFlipMutation(0.05);
 
             // Start optimization
@@ -38,8 +38,9 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
                 solutions[rep] = optimAlgorithm.BestFitness;
                 Console.WriteLine("Best objective value: " + optimAlgorithm.BestFitness);
             }
+            Console.WriteLine();
             Console.WriteLine("Average objective value: " + solutions.Average());
-
+            Console.WriteLine();
             //Print results
             //Console.WriteLine("----------- History -----------");
             //optimBuilder.Logger.PrintToConsole();

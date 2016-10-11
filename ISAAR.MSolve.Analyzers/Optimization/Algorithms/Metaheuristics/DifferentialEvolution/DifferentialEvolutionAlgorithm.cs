@@ -1,7 +1,7 @@
 ﻿using static ISAAR.MSolve.Analyzers.Optimization.Commons.VectorOperations;
 using ISAAR.MSolve.Analyzers.Optimization.Convergence;
 using System;
-using ISAAR.MSolve.Analyzers.Optimization.Problems;
+using ISAAR.MSolve.Analyzers.Optimization.Problem;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.DifferentialEvolution
 {

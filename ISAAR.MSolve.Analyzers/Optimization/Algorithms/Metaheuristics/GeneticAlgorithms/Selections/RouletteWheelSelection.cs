@@ -9,7 +9,7 @@ using Troschuetz.Random;
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections
 {
     // TODO: There is a variant that subtracts the max fitness of this generation from all fitnesses before calculating the probabbilities
-    class RouletteWheelSelection: SelectionStrategy
+    class RouletteWheelSelection<T> : ISelectionStrategy<T>
     {
         private readonly IdenticalParentsHandling onCollision;
         private readonly IGenerator rng;
@@ -26,12 +26,12 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.onCollision = onCollision;
         }
 
-        Tuple<Individual, Individual>[] SelectionStrategy.Apply(Individual[] population, int offspringsCount)
+        public Tuple<Individual<T>, Individual<T>>[] Apply(Individual<T>[] population, int offspringsCount)
         {
             Array.Sort(population); // may already be sorted from elitism. TODO: add a population class to query if it is sorted. 
             double[] probabilities = Probabilities(population, offspringsCount); // TODO: Have a double[] field and calculate in constructor to gain performance (requires const population size)
             int pairsCount = (offspringsCount - 1) / 2 + 1;
-            var pairs = new Tuple<Individual, Individual>[pairsCount];
+            var pairs = new Tuple<Individual<T>, Individual<T>>[pairsCount];
             for (int i = 0; i < pairsCount; ++i)
             {
                 int parent1 = RollWheel(probabilities);
@@ -47,12 +47,12 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
                         while (parent1 == parent2) parent2 = RollWheel(probabilities);
                         break;
                 }
-                pairs[i] = new Tuple<Individual, Individual>(population[parent1], population[parent2]);
+                pairs[i] = new Tuple<Individual<T>, Individual<T>>(population[parent1], population[parent2]);
             }
             return pairs;
         }
 
-        private double[] Probabilities(Individual[] population, int offspringsCount)
+        private double[] Probabilities(Individual<T>[] population, int offspringsCount)
         {
             double[] probabilities = new double[offspringsCount];
             double sumFitness = 0.0;

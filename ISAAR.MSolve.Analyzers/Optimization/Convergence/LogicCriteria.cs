@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Convergence
 {
-    public static class LogicCriteria
+    public static class CompositeCriteria
     {
         #region static methods
         public static IConvergenceCriterion NOT(IConvergenceCriterion originalCriterion)

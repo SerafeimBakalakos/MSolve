@@ -1,7 +1,7 @@
 ﻿using ISAAR.MSolve.Analyzers.Optimization;
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.DifferentialEvolution;
 using ISAAR.MSolve.Analyzers.Optimization.Convergence;
-using ISAAR.MSolve.Analyzers.Optimization.Problems;
+using ISAAR.MSolve.Analyzers.Optimization.Problem;
 using ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions;
 using System;
 

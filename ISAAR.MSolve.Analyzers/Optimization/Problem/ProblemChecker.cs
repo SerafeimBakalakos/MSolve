@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ISAAR.MSolve.Analyzers.Optimization.Problems
+namespace ISAAR.MSolve.Analyzers.Optimization.Problem
 {
     static class ProblemChecker
     {
