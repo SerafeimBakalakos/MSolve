@@ -9,7 +9,6 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
     public interface IEncoding<T>
     {
         T[] ComputeGenotype(double[] phenotype);
-        T[] CreateRandomGenotype(); // This should be assigned to an Initializer class instead
         double[] ComputePhenotype(T[] genotype);
         //int[] IntegerPhenotype(T[] genotype);
     }

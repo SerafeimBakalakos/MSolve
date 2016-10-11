@@ -4,6 +4,7 @@ using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgor
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Recombinations;
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections;
 using ISAAR.MSolve.Analyzers.Optimization.Convergence;
+using ISAAR.MSolve.Analyzers.Optimization.Initialization;
 using ISAAR.MSolve.Analyzers.Optimization.Output;
 using ISAAR.MSolve.Analyzers.Optimization.Problems;
 using System;
@@ -30,6 +31,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             // General optimiazation algorithm parameterss
             public IOptimizationLogger Logger { get; set; }
             public IConvergenceCriterion ConvergenceCriterion { get; set; }
+            public IInitializer<double> Initializer { get; set; }
 
             // GA parameters
             public IEncoding<T> Encoding { get; set; }
@@ -55,14 +57,16 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
                 CheckUserParameters();
                 ApplyDefaultParameters();
-                return new GeneticAlgorithm<T>(problem.Dimension, 0, problem.ObjectiveFunction, PopulationSize, Logger,
-                                    ConvergenceCriterion, Encoding, PopulationStrategy, Selection, Recombination, Mutation);
+                return new GeneticAlgorithm<T>(problem.Dimension, 0, problem.ObjectiveFunction, 
+                                               Logger, ConvergenceCriterion, Initializer, 
+                                               Encoding, PopulationSize, PopulationStrategy, Selection, Recombination, Mutation);
             }
 
             private void ApplyDefaultParameters()
             {
                 if (Logger == null) Logger = new BestOfIterationLogger();
                 if (ConvergenceCriterion == null) ConvergenceCriterion = new MaxIterations(100 * problem.Dimension);
+                if (Initializer == null) Initializer = new RealUniformRandomInitializer(problem);
 
                 // The GA specific default parameters are provided be the implementation of this Builder
                 if (Encoding == null) Encoding = DefaultEncoding;

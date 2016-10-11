@@ -43,17 +43,6 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         #endregion
 
         #region IEncoding implementations
-        public virtual bool[] CreateRandomGenotype()
-        {
-            bool[] chromosome = new bool[continuousVariablesCount * bitsPerContinuousVariable +
-                                           integerVariablesCount * bitsPerIntegerVariable];
-            for (int i = 0; i < chromosome.LongLength; ++i)
-            {
-                if (rng.NextBoolean()) chromosome[i] = true;
-            }
-            return chromosome;
-        }
-
         public bool[] ComputeGenotype(double[] phenotype)
         {
             // Continuous variables

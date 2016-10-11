@@ -16,10 +16,5 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         {
             return genotype;
         }
-
-        public double[] CreateRandomGenotype()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

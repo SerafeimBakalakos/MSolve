@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ISAAR.MSolve.Analyzers.Optimization.Initialization;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms
 {
@@ -29,10 +30,11 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         // General optim algorithm params
         private readonly IOptimizationLogger logger;
         private readonly IConvergenceCriterion convergenceCriterion;
+        private readonly IInitializer<double> initializer;
 
         // GA params
-        private readonly int populationSize;
         private readonly IEncoding<T> encoding;
+        private readonly int populationSize;
         private readonly IPopulationStrategy<T> populationStrategy;
         private readonly ISelectionStrategy<T> selection;
         private readonly IRecombinationStrategy<T> recombination;
@@ -41,17 +43,20 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         private Individual<T>[] population;
 
         private GeneticAlgorithm(int continuousVariablesCount, int integerVariablesCount, IObjectiveFunction fitnessFunc,
-            int populationSize, IOptimizationLogger logger, IConvergenceCriterion convergenceCriterion, IEncoding<T> encoding,
-            IPopulationStrategy<T> populationStrategy, ISelectionStrategy<T> selection, IRecombinationStrategy<T> recombination,
-            IMutationStrategy<T> mutation)
+            IOptimizationLogger logger, IConvergenceCriterion convergenceCriterion, IInitializer<double> initializer,
+            IEncoding<T> encoding, int populationSize, IPopulationStrategy<T> populationStrategy,
+            ISelectionStrategy<T> selection, IRecombinationStrategy<T> recombination, IMutationStrategy<T> mutation)
         {
             this.continuousVariablesCount = continuousVariablesCount;
             this.integerVariablesCount = integerVariablesCount;
             this.fitnessFunc = fitnessFunc;
-            this.populationSize = populationSize;
+
             this.logger = logger;
             this.convergenceCriterion = convergenceCriterion;
+            this.initializer = initializer;
+
             this.encoding = encoding;
+            this.populationSize = populationSize;
             this.populationStrategy = populationStrategy;
             this.selection = selection;
             this.recombination = recombination;
@@ -85,14 +90,13 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         #endregion
 
         #region private methods
-        // This should use an Initializer object
         private void Initialize()
         {
             population = new Individual<T>[populationSize];
             for (int i = 0; i < populationSize; ++i)
             {
-                T[] chromosome = encoding.CreateRandomGenotype();
-                population[i] = new Individual<T>(chromosome);
+                double[] phenotype = initializer.Generate();
+                population[i] = new Individual<T>(encoding.ComputeGenotype(phenotype));
             }
 
             EvaluateCurrentIndividuals();
