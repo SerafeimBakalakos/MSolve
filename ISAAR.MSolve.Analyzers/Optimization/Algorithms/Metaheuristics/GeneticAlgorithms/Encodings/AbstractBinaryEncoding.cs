@@ -11,20 +11,20 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
     public abstract class AbstractBinaryEncoding: IEncoding<bool>
     {
         #region fields and properties
-        // Random number generation
-        protected readonly IGenerator rng = RandomNumberGenerationUtilities.troschuetzRandom;
+        private readonly IGenerator rng = RandomNumberGenerationUtilities.troschuetzRandom;
+        private readonly Quantization quantization;
 
         // Continuous variables
-        protected readonly int continuousVariablesCount;
-        protected readonly double[] continuousLowerBounds;
-        protected readonly double[] continuousUpperBounds;
-        protected readonly int bitsPerContinuousVariable;
+        private readonly int continuousVariablesCount;
+        private readonly double[] continuousLowerBounds;
+        private readonly double[] continuousUpperBounds;
+        private readonly int bitsPerContinuousVariable;
 
         // Integer variables
-        protected readonly int integerVariablesCount;
+        private readonly int integerVariablesCount;
         //private readonly int[] integerLowerBounds; They are 0
-        protected readonly int[] integerUpperBounds;
-        protected readonly int bitsPerIntegerVariable;
+        private readonly int[] integerUpperBounds;
+        private readonly int bitsPerIntegerVariable;
         #endregion
 
         #region constructor
@@ -37,6 +37,8 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.integerVariablesCount = 0;
             this.integerUpperBounds = null;
             this.bitsPerIntegerVariable = 0;
+
+            this.quantization = new Quantization(bitsPerContinuousVariable);
         }
         #endregion
 
@@ -52,6 +54,19 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             return chromosome;
         }
 
+        public bool[] ComputeGenotype(double[] phenotype)
+        {
+            // Continuous variables
+            bool[] genotype = new bool[continuousVariablesCount * bitsPerContinuousVariable];
+            for (int i = 0; i < continuousVariablesCount; ++i)
+            {
+                double normalized = (phenotype[i] - continuousLowerBounds[i]) / (continuousUpperBounds[i] - continuousLowerBounds[i]);
+                int dec = quantization.NormalizedDoubleToInteger(normalized);
+                DecimalIntegerToBitstring(dec, genotype, i * bitsPerContinuousVariable, bitsPerContinuousVariable);
+            }
+            return genotype;
+        }
+
         public double[] ComputePhenotype(bool[] genotype)
         {
             // Continuous variables
@@ -59,8 +74,8 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             for (int i = 0; i < continuousVariablesCount; ++i)
             {
                 int start = i * bitsPerContinuousVariable;
-                int deci = BitstringToDecimalInteger(genotype, start, bitsPerContinuousVariable);
-                double normalized = deci / (Math.Round(Math.Pow(2, bitsPerContinuousVariable)) - 1);
+                int dec = BitstringToDecimalInteger(genotype, start, bitsPerContinuousVariable);
+                double normalized = dec / (Math.Round(Math.Pow(2, bitsPerContinuousVariable)) - 1);
                 continuousVariables[i] = continuousLowerBounds[i] +
                                          normalized * (continuousUpperBounds[i] - continuousLowerBounds[i]);
             }
@@ -83,6 +98,8 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
         #region abstract methods
         protected abstract int BitstringToDecimalInteger(bool[] bits, int start, int length);
+        protected abstract void DecimalIntegerToBitstring(int dec, bool[] bits, int start, int length);
+
         #endregion
     }
 }

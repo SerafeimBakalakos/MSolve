@@ -20,5 +20,10 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         {
             return BinaryUtilities.GrayCodeToDecimal(bits, start, length);
         }
+
+        protected override void DecimalIntegerToBitstring(int dec, bool[] bits, int start, int length)
+        {
+            BinaryUtilities.DecimalToGrayCode(dec, bits, start, length);
+        }
     }
 }
