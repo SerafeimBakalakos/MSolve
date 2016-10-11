@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ISAAR.MSolve.Analyzers.Optimization.Problems
+namespace ISAAR.MSolve.Analyzers.Optimization.Problem
 {
     public class OptimizationProblem
     {

@@ -1,6 +1,6 @@
 ﻿using ISAAR.MSolve.Analyzers.Optimization.Convergence;
-using ISAAR.MSolve.Analyzers.Optimization.Output;
-using ISAAR.MSolve.Analyzers.Optimization.Problems;
+using ISAAR.MSolve.Analyzers.Optimization.Logging;
+using ISAAR.MSolve.Analyzers.Optimization.Problem;
 using System;
 using static ISAAR.MSolve.Analyzers.Optimization.Commons.VectorOperations;
 

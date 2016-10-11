@@ -1,4 +1,4 @@
-﻿using ISAAR.MSolve.Analyzers.Optimization.Problems;
+﻿using ISAAR.MSolve.Analyzers.Optimization.Problem;
 using System.Linq;
 
 namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions

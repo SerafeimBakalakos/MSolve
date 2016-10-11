@@ -1,5 +1,5 @@
 ﻿using ISAAR.MSolve.Analyzers.Optimization.Commons;
-using ISAAR.MSolve.Analyzers.Optimization.Problems;
+using ISAAR.MSolve.Analyzers.Optimization.Problem;
 using System;
 using System.Collections.Generic;
 using System.Linq;

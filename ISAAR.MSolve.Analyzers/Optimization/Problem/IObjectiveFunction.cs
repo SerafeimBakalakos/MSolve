@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ISAAR.MSolve.Analyzers.Optimization.Problems
+namespace ISAAR.MSolve.Analyzers.Optimization.Problem
 {
     /// <summary>
     /// Represents an objective function of an optimization problem. It will be called be the selected optimization algorithm. 
