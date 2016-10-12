@@ -18,10 +18,11 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.fitness = fitness;
         }
 
-        public T[] Chromosome { get; private set; }
+        public T[] Chromosome { get; set; }
         public bool IsEvaluated { get; private set; }
 
         public double Fitness {
+            // too much trouble, unless I can use readonly vectors for the chromosome (mutation would create new Individuals then)
             get
             {
                 if (!IsEvaluated) throw new InvalidOperationException("Fitness has not been evaluated yet");
