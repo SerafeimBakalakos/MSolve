@@ -55,16 +55,11 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         {
             Array.Sort(originalPopulation);
 
-            // Selection: Only the elites and the rest of survivors will have a chance to reproduce
+            // Selection and rcombination: Only the elites and the rest of survivors will have a chance to reproduce
             Individual<T>[] selectionPool = new Individual<T>[elitesCount + survivorsCount];
             Array.Copy(originalPopulation, selectionPool, selectionPool.Length);
-            var parents = selection.Apply(selectionPool, offspringsCount);
-            
-            // Recombination
-            // TODO: 1) Recombination strategies may require different selection strategies (e.g. 3 parents). 
-            //          It would be better to pass the selection object to recombination.Apply()
-            //       2) Redundant copying. A linked list would be better.
-            Individual<T>[] offsprings = recombination.Apply(parents, offspringsCount);
+            // TODO: Redundant copying. A linked list would be better.
+            Individual<T>[] offsprings = recombination.Apply(selection, selectionPool, offspringsCount);
 
             // Mutation will be applied to the survivors and their offsprings but not on the elites
             Individual<T>[] mutants = new Individual<T>[survivorsCount + offsprings.Length];

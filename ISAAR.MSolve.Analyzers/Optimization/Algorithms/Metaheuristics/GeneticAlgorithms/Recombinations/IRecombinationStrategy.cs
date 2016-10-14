@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Recombinations
 {
     public interface IRecombinationStrategy<T>
     {
-        Individual<T>[] Apply(Tuple<Individual<T>, Individual<T>>[] parents, int offspringsCount);
+        Individual<T>[] Apply(ISelectionStrategy<T> selection, Individual<T>[] population, int offspringsCount);
     }
 }

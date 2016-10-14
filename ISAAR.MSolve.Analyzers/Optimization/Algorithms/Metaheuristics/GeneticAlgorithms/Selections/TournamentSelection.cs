@@ -8,7 +8,8 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 {
     class TournamentSelection<T> : ISelectionStrategy<T>
     {
-        public Tuple<Individual<T>, Individual<T>>[] Apply(Individual<T>[] population, int offspringsCount)
+        public Individual<T>[][] Apply(Individual<T>[] population, int parentGroupsCount, 
+                                       int parentsPerGroup, bool allowIdenticalParents)
         {
             throw new NotImplementedException();
         }

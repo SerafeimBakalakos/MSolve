@@ -43,11 +43,8 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         {
             Array.Sort(originalPopulation); // sorting may not always be mandatory (e.g. 1-3 elites, selection does not sort)
             int offspringsCount = populationSize - elitesCount;
-            var parents = selection.Apply(originalPopulation, offspringsCount);
-            // TODO: 1) Recombination strategies may require different selection strategies (e.g. 3 parents). 
-            //          It would be better to pass the selection object to recombination.Apply()
-            //       2) Redundant copying. A linked list would be better.
-            Individual<T>[] offsprings = recombination.Apply(parents, offspringsCount);
+            // TODO: Redundant copying. A linked list would be better.
+            Individual<T>[] offsprings = recombination.Apply(selection, originalPopulation, offspringsCount);
             mutation.Apply(offsprings);
 
             Individual<T>[] nextPopulation = new Individual<T>[populationSize];

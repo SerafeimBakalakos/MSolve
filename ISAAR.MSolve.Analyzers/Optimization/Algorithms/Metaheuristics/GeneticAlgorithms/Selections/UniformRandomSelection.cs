@@ -10,7 +10,6 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 {
     class UniformRandomSelection<T>: ISelectionStrategy<T>
     {
-        private readonly bool allowIdenticalParents;
         private readonly IGenerator rng;
 
         public UniformRandomSelection(): this(RandomNumberGenerationUtilities.troschuetzRandom)
@@ -21,24 +20,29 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         {
             if (randomNumberGenerator == null) throw new ArgumentException("The random number generator must not be null");
             this.rng = randomNumberGenerator;
-            this.allowIdenticalParents = allowIdenticalParents;
         }
 
-        public Tuple<Individual<T>, Individual<T>>[] Apply(Individual<T>[] population, int offspringsCount)
+        public Individual<T>[][] Apply(Individual<T>[] population, int parentGroupsCount,
+                                       int parentsPerGroup, bool allowIdenticalParents)
         {
-            int pairsCount = (offspringsCount - 1) / 2 + 1;
-            var pairs = new Tuple<Individual<T>, Individual<T>>[pairsCount];
-            for (int i = 0; i < pairsCount; ++i)
+            var parentGroups = new Individual<T>[parentGroupsCount][];
+            for (int group = 0; group < parentGroupsCount; ++group)
             {
-                int parent1 = rng.Next(population.Length);
-                int parent2 = rng.Next(population.Length);
-                if (!allowIdenticalParents)
+                parentGroups[group] = new Individual<T>[parentsPerGroup];
+                for (int parent = 0; parent < parentsPerGroup; ++parent)
                 {
-                    while (parent1 == parent2) parent2 = rng.Next(population.Length);
+                    Individual<T> individual = population[rng.Next(population.Length)];
+                    if (!allowIdenticalParents)
+                    {
+                        while (parentGroups[group].Contains<Individual<T>>(individual))
+                        {
+                            individual = population[rng.Next(population.Length)];
+                        }
+                    }
+                    parentGroups[group][parent] = individual;
                 }
-                pairs[i] = new Tuple<Individual<T>, Individual<T>>(population[parent1], population[parent2]);
             }
-            return pairs;
+            return parentGroups;
         }
     }
 }

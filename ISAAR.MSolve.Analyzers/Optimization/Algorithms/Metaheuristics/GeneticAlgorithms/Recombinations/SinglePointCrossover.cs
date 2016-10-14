@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Troschuetz.Random;
+using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Recombinations
 {
@@ -21,15 +22,20 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.rng = randomNumberGenerator;
         }
 
-        public Individual<T>[] Apply(Tuple<Individual<T>, Individual<T>>[] parents, int offspringsCount)
+        public Individual<T>[] Apply(ISelectionStrategy<T> selection, Individual<T>[] population, int offspringsCount)
         {
+            // Select the necessary parents
+            int pairsCount = (offspringsCount - 1) / 2 + 1;
+            var parentGroups = selection.Apply(population, pairsCount, 2, false);
+
+            // Create the offsprings
             var offsprings = new Individual<T>[offspringsCount];
-            T[] offspring1, offspring2;
-            for (int i = 0; i < parents.Length; ++i)
+            for (int pair = 0; pair < pairsCount; ++pair)
             {
-                Crossover(parents[i].Item1.Chromosome, parents[i].Item2.Chromosome, out offspring1, out offspring2);
-                offsprings[2 * i] = new Individual<T>(offspring1);
-                if (2 * i + 1 < offspringsCount) offsprings[2 * i + 1] = new Individual<T>(offspring2);
+                T[] offspring1, offspring2;
+                Crossover(parentGroups[pair][0].Chromosome, parentGroups[pair][1].Chromosome, out offspring1, out offspring2);
+                offsprings[2 * pair] = new Individual<T>(offspring1);
+                if (2 * pair + 1 < offspringsCount) offsprings[2 * pair + 1] = new Individual<T>(offspring2);
             }
             return offsprings;
         }
@@ -40,7 +46,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             offspring1 = new T[genesCount];
             offspring2 = new T[genesCount];
             int crossoverPoint = rng.Next(genesCount + 1);
-            // These are not necessary. They boost performance for very int arrays, but then the probability that the crossover 
+            // These are not necessary. They boost performance for very long arrays, but then the probability that the crossover 
             // point falls on the edges is negligible. The redundant checks for normal usecases might actually cause more harm.
             //if (crossoverPoint == 0)
             //{

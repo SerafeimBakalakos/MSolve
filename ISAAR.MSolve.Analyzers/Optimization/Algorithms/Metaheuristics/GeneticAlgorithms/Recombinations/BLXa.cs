@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Troschuetz.Random;
+using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Recombinations
 {
@@ -29,36 +30,34 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.rng = randomNumberGenerator;
         }
 
-        public Individual<double>[] Apply(Tuple<Individual<double>, Individual<double>>[] parents, int offspringsCount)
+        public Individual<double>[] Apply(ISelectionStrategy<double> selection, Individual<double>[] population, int offspringsCount)
         {
-            // TODO: BLX-a does not necessarily create 2 offsprings, like e.g. single point crossover. 
-            // There needs to be a way for the recombination strategy to request as many parent pairs/triads/etc it needs 
-            // from the selection strategy
+            // Select the necessary parents
+            var parentGroups = selection.Apply(population, offspringsCount, 2, false);
+
+            // Create the offsprings
             var offsprings = new Individual<double>[offspringsCount];
-            double[] offspring1, offspring2;
-            for (int i = 0; i < parents.Length; ++i)
+            for (int i = 0; i < offspringsCount; ++i)
             {
-                Blend(parents[i].Item1.Chromosome, parents[i].Item2.Chromosome, out offspring1, out offspring2);
-                offsprings[2 * i] = new Individual<double>(offspring1);
-                if (2 * i + 1 < offspringsCount) offsprings[2 * i + 1] = new Individual<double>(offspring2);
+                var parent0 = parentGroups[i][0];
+                var parent1 = parentGroups[i][1];
+                offsprings[i] = new Individual<double>(Blend(parent0.Chromosome, parent1.Chromosome));
             }
             return offsprings;
         }
 
-        private void Blend(double[] parent1, double[] parent2, out double[] offspring1, out double[] offspring2)
+        private double[] Blend(double[] parent1, double[] parent2)
         {
-            int genesCount = parent1.Length; //No checking for the other chromosomes
-            offspring1 = new double[genesCount];
-            offspring2 = new double[genesCount];
-
+            int genesCount = parent1.Length; // No checking for the other chromosomes
+            double[] offspring = new double[genesCount];
             for (int gene = 0; gene < genesCount; ++gene)
             {
                 double range = Math.Abs(parent1[gene] - parent2[gene]);
                 double min = Math.Min(parent1[gene], parent2[gene]) - alpha * range;
                 double max = Math.Max(parent1[gene], parent2[gene]) + alpha * range;
-                offspring1[gene] = rng.NextDouble(min, max);
-                offspring2[gene] = rng.NextDouble(min, max);
+                offspring[gene] = rng.NextDouble(min, max);
             }
+            return offspring;
         }
     }
 }

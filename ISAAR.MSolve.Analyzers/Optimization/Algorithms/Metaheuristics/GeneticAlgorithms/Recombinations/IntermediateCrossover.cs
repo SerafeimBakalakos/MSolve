@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Troschuetz.Random;
+using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Recombinations
 {
@@ -28,16 +29,20 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.rng = randomNumberGenerator;
         }
 
-        // TODO: this should be included in an abstract class. Also always discarding the second offspring may be biased
-        public Individual<double>[] Apply(Tuple<Individual<double>, Individual<double>>[] parents, int offspringsCount)
+        public Individual<double>[] Apply(ISelectionStrategy<double> selection, Individual<double>[] population, int offspringsCount)
         {
+            // Select the necessary parents
+            int pairsCount = (offspringsCount - 1) / 2 + 1;
+            var parentGroups = selection.Apply(population, pairsCount, 2, false);
+
+            // Create the offsprings
             var offsprings = new Individual<double>[offspringsCount];
-            double[] offspring1, offspring2;
-            for (int i = 0; i < parents.Length; ++i)
+            for (int pair = 0; pair < pairsCount; ++pair)
             {
-                Interpolate(parents[i].Item1.Chromosome, parents[i].Item2.Chromosome, out offspring1, out offspring2);
-                offsprings[2 * i] = new Individual<double>(offspring1);
-                if (2 * i + 1 < offspringsCount) offsprings[2 * i + 1] = new Individual<double>(offspring2);
+                double[] offspring1, offspring2;
+                Interpolate(parentGroups[pair][0].Chromosome, parentGroups[pair][1].Chromosome, out offspring1, out offspring2);
+                offsprings[2 * pair] = new Individual<double>(offspring1);
+                if (2 * pair + 1 < offspringsCount) offsprings[2 * pair + 1] = new Individual<double>(offspring2);
             }
             return offsprings;
         }

@@ -11,63 +11,64 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
     class RankSelection<T> : ISelectionStrategy<T>
     {
         private readonly int rankExponent;
-        private readonly IdenticalParentsHandling onCollision;
         private readonly IGenerator rng;
 
         public RankSelection(): this(RandomNumberGenerationUtilities.troschuetzRandom)
         {
         }
 
-        public RankSelection(IGenerator randomNumberGenerator, int rankExponent = 1, 
-                             IdenticalParentsHandling onCollision = IdenticalParentsHandling.Reapply)
+        public RankSelection(IGenerator randomNumberGenerator, int rankExponent = 1)
         {
             if (randomNumberGenerator == null) throw new ArgumentException("The random number generator must not be null");
             this.rng = randomNumberGenerator;
+
             if (rankExponent < 1) throw new ArgumentException("The rank exponent must be >= 1, but was " +rankExponent);
             this.rankExponent = rankExponent;
-            this.onCollision = onCollision;
         }
 
-        public Tuple<Individual<T>, Individual<T>>[] Apply(Individual<T>[] population, int offspringsCount)
+        public Individual<T>[][] Apply(Individual<T>[] population, int parentGroupsCount, 
+                                       int parentsPerGroup, bool allowIdenticalParents)
         {
             Array.Sort(population); // may already be sorted from elitism. TODO: add a population class to query if it is sorted. 
-            double[] probabilities = Probabilities(offspringsCount); // TODO: Have a double[] field and calculate in constructor to gain performance (requires const population size)
-            int pairsCount = (offspringsCount - 1) / 2 + 1;
-            var pairs = new Tuple<Individual<T>, Individual<T>>[pairsCount];
-            for (int i = 0; i < pairsCount; ++i)
+            double[] probabilities = Probabilities(population.Length);  // TODO: Have a double[] field and calculate in constructor to gain performance (requires const population size)
+
+            var parentGroups = new Individual<T>[parentGroupsCount][];
+            for (int group = 0; group < parentGroupsCount; ++group)
             {
-                int parent1 = RollWheel(probabilities);
-                int parent2 = RollWheel(probabilities);
-                switch (onCollision)
+                parentGroups[group] = new Individual<T>[parentsPerGroup];
+                for (int parent = 0; parent < parentsPerGroup; ++parent)
                 {
-                    case IdenticalParentsHandling.Allow:
-                        break;
-                    case IdenticalParentsHandling.ChooseRandom:
-                        while (parent1 == parent2) parent2 = rng.Next(offspringsCount);
-                        break;
-                    case IdenticalParentsHandling.Reapply:
-                        while (parent1 == parent2) parent2 = RollWheel(probabilities);
-                        break;
+                    Individual<T> individual = population[RollWheel(probabilities)];
+                    if (!allowIdenticalParents)
+                    {
+                        while (parentGroups[group].Contains<Individual<T>>(individual))
+                        {
+                            individual = population[RollWheel(probabilities)];
+                        }
+                    }
+                    parentGroups[group][parent] = individual;
                 }
-                pairs[i] = new Tuple<Individual<T>, Individual<T>>(population[parent1], population[parent2]);
             }
-            return pairs;
+            return parentGroups;
         }
 
-        private double[] Probabilities(int offspringsCount)
+        private double[] Probabilities(int populationSize)
         {
-            double[] probabilities = new double[offspringsCount];
-            //int sumRanks = offspringsCount*(offspringsCount+1) / 2; // n*(n+1) is even
+            // General case
             if (rankExponent > 1) throw new NotImplementedException();
-            double sumRanks = 0.0;
-            for (int i = 1; i <= offspringsCount; ++i) sumRanks += Math.Pow(i, rankExponent);
-            for (int i = 1; i <= offspringsCount; ++i)
+            //double sumRanks = 0.0;
+            //for (int i = 1; i <= populationSize; ++i) sumRanks += Math.Pow(i, rankExponent);
+
+            // Only for exponent = 1
+            double[] probabilities = new double[populationSize];
+            int sumRanks = (populationSize * (populationSize + 1)) / 2; // n*(n+1) is even
+            for (int i = 1; i <= populationSize; ++i)
             {
-                probabilities[i - 1] = (offspringsCount - i + 1) / sumRanks; // only for exponent = 1
+                probabilities[i - 1] = (populationSize - i + 1) / sumRanks; // only for exponent = 1
             }
-            for (int i = 1; i < offspringsCount; ++i) probabilities[i] += probabilities[i - 1];
+            for (int i = 1; i < populationSize; ++i) probabilities[i] += probabilities[i - 1];
             // Due to error accumulation the last addition will be 0.999... Can I get away by just setting it to 1.0?
-            probabilities[offspringsCount - 1] = 1.0; 
+            probabilities[populationSize - 1] = 1.0; 
             return probabilities;
         }
 
@@ -80,10 +81,5 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             }
             throw new ArgumentException("The provided cummulative probabilities must span the whole interval [0,1]");
         }
-
-        internal enum IdenticalParentsHandling
-        {
-            Allow, ChooseRandom, Reapply
-        };
     }
 }
