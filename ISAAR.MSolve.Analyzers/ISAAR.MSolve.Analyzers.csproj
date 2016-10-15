@@ -135,6 +135,7 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\TournamentSelection.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\UniformRandomSelection.cs" />
     <Compile Include="Optimization\Commons\RandomNumberGenerationUtilities.cs" />
+    <Compile Include="Optimization\Commons\Roulette.cs" />
     <Compile Include="Optimization\Commons\VectorOperations.cs" />
     <Compile Include="Optimization\Convergence\IConvergenceCriterion.cs" />
     <Compile Include="Optimization\Convergence\LogicCriteria.cs" />
