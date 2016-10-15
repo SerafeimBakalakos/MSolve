@@ -15,24 +15,23 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Differen
     public class DifferentialEvolutionAlgorithm : IOptimizationAlgorithm
     {
         // Differential evolution parameters
-        private readonly int populationSize = 40;
+        protected readonly int populationSize = 40;
         private double mutationFactor = 0.6;
         private double crossoverProbability = 0.9;
 
         private IConvergenceCriterion convergenceCriterion;
-        // private IConvergenceCriterion convergenceCriterion = new MaxIterations(1000);
         private readonly Random randomNumberGenerator = new Random();
 
         // Optimization problem definition
         private readonly int dimension;
-        private IObjectiveFunction objectiveFunction;
+        protected IObjectiveFunction objectiveFunction;
         private double[] lowerBound;
         private double[] upperBound;
 
         private Individual[] individuals;
         private Individual[] offsprings;
 
-        private DifferentialEvolutionAlgorithm(OptimizationProblem optimizationProblem, int populationSize, 
+        protected DifferentialEvolutionAlgorithm(OptimizationProblem optimizationProblem, int populationSize, 
             double mutationFactor, double crossoverProbability, IConvergenceCriterion convergenceCriterion)
         {
             this.dimension = optimizationProblem.Dimension;
@@ -63,7 +62,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Differen
 
         public double CurrentFunctionEvaluations
         {
-            get; private set;
+            get; protected set;
         }
 
         private void Initialize()
@@ -150,7 +149,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Differen
             }
         }
 
-        private void Evaluation(Individual[] individuals)
+        protected virtual void Evaluation(Individual[] individuals)
         {
             for (int i = 0; i < populationSize; i++)
             {
@@ -215,6 +214,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Differen
                 // Array.ForEach(BestPosition, x => Console.WriteLine(x));
             }
         }
+
         public class Builder
         {
             private readonly OptimizationProblem optimizationProblem;

@@ -99,6 +99,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Optimization\Algorithms\Metaheuristics\DifferentialEvolution\DifferentialEvolutionAlgorithmConstrained.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\DifferentialEvolution\DifferentialEvolutionAlgorithm.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\BinaryGeneticAlgorithmBuilder.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\Quantization.cs" />
@@ -137,6 +138,9 @@
     <Compile Include="Optimization\Commons\RandomNumberGenerationUtilities.cs" />
     <Compile Include="Optimization\Commons\Roulette.cs" />
     <Compile Include="Optimization\Commons\VectorOperations.cs" />
+    <Compile Include="Optimization\Constraints\Penalties\DeathPenalty.cs" />
+    <Compile Include="Optimization\Constraints\Penalties\IPenalty.cs" />
+    <Compile Include="Optimization\Constraints\Penalties\IPenaltyStatic.cs" />
     <Compile Include="Optimization\Convergence\IConvergenceCriterion.cs" />
     <Compile Include="Optimization\Convergence\LogicCriteria.cs" />
     <Compile Include="Optimization\Convergence\MaxFunctionEvaluations.cs" />
@@ -150,6 +154,7 @@
     <Compile Include="Optimization\Logging\IOptimizationLogger.cs" />
     <Compile Include="Optimization\Logging\NoLogger.cs" />
     <Compile Include="Optimization\OptimizationAnalyzer.cs" />
+    <Compile Include="Optimization\Problem\IConstraintFunction.cs" />
     <Compile Include="Optimization\Problem\IObjectiveFunction.cs" />
     <Compile Include="Optimization\Problem\OptimizationProblem.cs" />
     <Compile Include="Optimization\Problem\ProblemChecker.cs" />

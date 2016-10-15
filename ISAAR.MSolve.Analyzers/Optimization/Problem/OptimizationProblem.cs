@@ -62,5 +62,16 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Problem
                 isChecked = true;
             }
         }
+
+        /// <summary>
+        /// Feasible design: g[i](x) >= 0
+        /// </summary>
+        public IConstraintFunction[] InequalityConstraints { get; set; }
+
+        /// <summary>
+        /// Feasible design: h[i](x) = 0
+        /// </summary>
+        public IConstraintFunction[] EqualityConstraints { get; set; }
+
     }
 }
