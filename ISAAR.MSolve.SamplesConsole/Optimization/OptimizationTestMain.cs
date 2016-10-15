@@ -4,9 +4,11 @@
     {
         public static void Main()
         {
-            //OptimizationTestDE.Run();
-            OptimizationTestGA.Run();
+            OptimizationTestDE.Run();
+            //OptimizationTestGA.Run();
             //OptimizationTestPSO.Run();
+
+            //TrussExample.Truss2DExample();
         }
     }
 }

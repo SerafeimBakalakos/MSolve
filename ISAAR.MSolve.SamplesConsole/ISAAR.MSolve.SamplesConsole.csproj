@@ -66,8 +66,10 @@
     <Compile Include="Optimization\OptimizationTestMain.cs" />
     <Compile Include="Optimization\OptimizationTestPSO.cs" />
     <Compile Include="Optimization\OptimizationTestDE.cs" />
+    <Compile Include="Optimization\Truss10Benchmark.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TrussExample.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ISAAR.MSolve.Logging\ISAAR.MSolve.Logging.csproj">
