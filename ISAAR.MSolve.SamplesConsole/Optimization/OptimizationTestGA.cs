@@ -28,7 +28,8 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
             optimBuilder.ConvergenceCriterion = CompositeCriteria.OR(new MaxIterations(200), new MaxFunctionEvaluations(10000));
             optimBuilder.Encoding = new GrayCodeEncoding(problem, 16, 8);
             optimBuilder.PopulationSize = 100;
-            optimBuilder.Selection = new RouletteWheelSelection<bool>(new InverseRankExpectation<bool>(0.5));
+            //optimBuilder.Selection = new RouletteWheelSelection<bool>(new InverseRankExpectation<bool>(0.5));
+            optimBuilder.Selection = new TournamentSelection<bool>(2, false);
             optimBuilder.Recombination = new SinglePointCrossover<bool>();
             optimBuilder.Mutation = new BitFlipMutation(0.05);
 
