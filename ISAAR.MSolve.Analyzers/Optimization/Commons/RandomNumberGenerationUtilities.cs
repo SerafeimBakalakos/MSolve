@@ -63,5 +63,29 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Commons
         {
             return random.NextLong(long.MinValue, long.MaxValue);
         }
+
+        /// <summary>
+        /// Shuffles an array using the Fisher-Yates algorithm. 
+        /// It runs in O(n) time and shuffles in place, so no extra memory is required.
+        /// </summary>
+        /// <remarks> 
+        /// Copied from <see cref="http://stackoverflow.com/questions/108819/best-way-to-randomize-an-array-with-net"/></remarks>
+        /// <typeparam name="T">Can be anything</typeparam>
+        /// <param name="array">The array to be shuffled. 
+        ///                     If it is null a <see cref="NullReferenceException"/> will be thrown.</param>
+        /// <param name="randomNumberGenerator">A random number generator. 
+        ///                                     If none is provided, <see cref="troschuetzRandom"/> will be used.</param>
+        public static void Shuffle<T>(T[] array, IGenerator randomNumberGenerator = null)
+        {
+            if (randomNumberGenerator == null) randomNumberGenerator = troschuetzRandom;
+            int n = array.Length;
+            while (n > 1)
+            {
+                int k = randomNumberGenerator.Next(n--);
+                T temp = array[n];
+                array[n] = array[k];
+                array[k] = temp;
+            }
+        }
     }
 }
