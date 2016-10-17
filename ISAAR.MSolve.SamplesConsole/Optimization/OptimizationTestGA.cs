@@ -2,12 +2,15 @@
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Encodings;
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations;
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Recombinations;
+using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections;
+using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections.Expectations;
 using ISAAR.MSolve.Analyzers.Optimization.Convergence;
 using ISAAR.MSolve.Analyzers.Optimization.Logging;
 using ISAAR.MSolve.Analyzers.Optimization.Problem;
 using ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions;
 using System;
 using System.Linq;
+
 
 namespace ISAAR.MSolve.SamplesConsole.Optimization
 {
@@ -25,6 +28,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
             optimBuilder.ConvergenceCriterion = CompositeCriteria.OR(new MaxIterations(200), new MaxFunctionEvaluations(10000));
             optimBuilder.Encoding = new GrayCodeEncoding(problem, 16, 8);
             optimBuilder.PopulationSize = 100;
+            optimBuilder.Selection = new RouletteWheelSelection<bool>(new InverseRankExpectation<bool>(0.5));
             optimBuilder.Recombination = new SinglePointCrossover<bool>();
             optimBuilder.Mutation = new BitFlipMutation(0.05);
 

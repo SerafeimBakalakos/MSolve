@@ -118,10 +118,10 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\BLXa.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\BLXab.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\IntermediateCrossover.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\Exptectations\ExponentialFitnessMapping.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\Exptectations\IExpectationStrategy.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\Exptectations\InverseRankExpectation.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\Exptectations\RankExpectation.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\Expectations\ExponentialFitnessExpectation.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\Expectations\IExpectationStrategy.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\Expectations\InverseRankExpectation.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\Expectations\RankExpectation.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\Particle.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\ParticleSwarmOptimizationAlgorithm.cs" />
     <Compile Include="Optimization\Commons\BinaryUtilities.cs" />
@@ -133,7 +133,6 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\IRecombinationStrategy.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\SinglePointCrossover.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\UniformCrossover.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\RankSelection.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\RouletteWheelSelection.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\ISelectionStrategy.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\TournamentSelection.cs" />
