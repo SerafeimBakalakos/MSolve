@@ -72,9 +72,9 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Commons
         /// Copied from <see cref="http://stackoverflow.com/questions/108819/best-way-to-randomize-an-array-with-net"/></remarks>
         /// <typeparam name="T">Can be anything</typeparam>
         /// <param name="array">The array to be shuffled. 
-        ///                     If it is null a <see cref="NullReferenceException"/> will be thrown.</param>
+        ///     If it is null a <see cref="NullReferenceException"/> will be thrown.</param>
         /// <param name="randomNumberGenerator">A random number generator. 
-        ///                                     If none is provided, <see cref="troschuetzRandom"/> will be used.</param>
+        ///     If none is provided, <see cref="troschuetzRandom"/> will be used.</param>
         public static void Shuffle<T>(T[] array, IGenerator randomNumberGenerator = null)
         {
             if (randomNumberGenerator == null) randomNumberGenerator = troschuetzRandom;
@@ -86,6 +86,46 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Commons
                 array[n] = array[k];
                 array[k] = temp;
             }
+        }
+
+        /// <summary>
+        /// Generates an array of consecutive integers from min to max in random order.
+        /// </summary>
+        /// <param name="min">The minimum of the generated integers</param>
+        /// <param name="max">The maximum of the generated integers</param>
+        /// <param name="randomNumberGenerator">A random number generator. 
+        ///     If none is provided, <see cref="troschuetzRandom"/> will be used.</param>
+        /// <returns>An array of integers in random order</returns>
+        /// <exception cref="ArgumentException">Thrown when min >= max.</exception>
+        public static int[] CreatePermutation(int min, int max, IGenerator randomNumberGenerator = null)
+        {
+            if (randomNumberGenerator == null) randomNumberGenerator = troschuetzRandom;
+            if (min >= max) throw new ArgumentException("Min = " + min + " must be less than max = " + max);
+
+            int count = max - min + 1;
+            int[] array = new int[count];
+            for (int i = 0; i < count; ++i) array[i] = min + i;
+            Shuffle<int>(array);
+            return array;
+        }
+
+        /// <summary>
+        /// Generates an array of consecutive integers from 0 to count-1 in random order.
+        /// </summary>
+        /// <param name="count">The number of generated integers</param>
+        /// <param name="randomNumberGenerator">A random number generator. 
+        ///     If none is provided, <see cref="troschuetzRandom"/> will be used</param>
+        /// <returns>An array of integers in random order</returns>
+        /// <exception cref="ArgumentException">Thrown when min >= max.</exception>
+        public static int[] CreatePermutation(int count, IGenerator randomNumberGenerator = null)
+        {
+            if (randomNumberGenerator == null) randomNumberGenerator = troschuetzRandom;
+            if (count <= 1) throw new ArgumentException("Count must be > 1, but was: " + count);
+
+            int[] array = new int[count];
+            for (int i = 0; i < count; ++i) array[i] = i;
+            Shuffle<int>(array);
+            return array;
         }
     }
 }
