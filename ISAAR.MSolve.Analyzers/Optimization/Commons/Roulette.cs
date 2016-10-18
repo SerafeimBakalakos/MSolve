@@ -96,9 +96,9 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Commons
         }
 
         /// <summary>
-        /// Simulates spinning the roulette wheel with many pointers, placed at equal distances. 
+        /// Simulates spinning the roulette wheel with many pointers, placed at equal distances, and then shuffles the results. 
         /// The probability that a pointer lands in a pocket is equal to the pocket's size.
-        /// Useful for universal stochastic sampling
+        /// Useful for universal stochastic sampling.
         /// </summary>
         /// <param name="pointersCount">The number of pointers. 
         ///                             It must be >=2, otherwise an <see cref="ArgumentException"/> will be thrown</param>
@@ -116,6 +116,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Commons
                 double pointer = firstPointer + i * pointerDistance;
                 indexes[i] = LookUp(pointer);
             }
+            RandomNumberGenerationUtilities.Shuffle<int>(indexes);
             return indexes;
         }
 
