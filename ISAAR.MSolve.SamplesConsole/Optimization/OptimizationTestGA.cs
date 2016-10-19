@@ -3,7 +3,7 @@ using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgor
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations;
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Recombinations;
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections;
-using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections.Expectations;
+using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections.FitnessScaling;
 using ISAAR.MSolve.Analyzers.Optimization.Convergence;
 using ISAAR.MSolve.Analyzers.Optimization.Logging;
 using ISAAR.MSolve.Analyzers.Optimization.Problem;

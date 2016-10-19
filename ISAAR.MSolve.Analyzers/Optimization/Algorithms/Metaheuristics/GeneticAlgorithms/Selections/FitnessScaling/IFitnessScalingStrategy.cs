@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections.Expectations
+namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections.FitnessScaling
 {
-    public interface IExpectationStrategy<T>
+    public interface IFitnessScalingStrategy<T>
     {
         /// <summary>
         /// Computes the expectation of each <see cref="Individual{T}"/>. They must be positive numbers. 

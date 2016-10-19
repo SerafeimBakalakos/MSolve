@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections.Expectations
+namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections.FitnessScaling
 {
-    public class ExponentialFitnessExpectation<T> : IExpectationStrategy<T>
+    public class ExponentialFitnessScaling<T> : IFitnessScalingStrategy<T>
     {
         // The higher it is the more biased towards the fittest. 0 means equal expectations. Negative means bias towards least fit.
         private readonly double biasTowardFittest;
 
-        public ExponentialFitnessExpectation(double biasTowardFittest)
+        public ExponentialFitnessScaling(double biasTowardFittest)
         {
             this.biasTowardFittest = biasTowardFittest;
         }

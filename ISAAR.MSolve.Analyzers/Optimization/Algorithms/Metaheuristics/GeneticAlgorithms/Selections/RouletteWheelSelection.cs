@@ -5,24 +5,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Troschuetz.Random;
-using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections.Expectations;
+using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections.FitnessScaling;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections
 {
     public class RouletteWheelSelection<T> : ISelectionStrategy<T>
     {
-        private readonly IExpectationStrategy<T> expectationStrategy;
+        private readonly IFitnessScalingStrategy<T> fitnessScaling;
         private readonly IGenerator rng;
 
-        public RouletteWheelSelection(IExpectationStrategy<T> expectationStrategy):
+        public RouletteWheelSelection(IFitnessScalingStrategy<T> expectationStrategy):
             this(expectationStrategy, RandomNumberGenerationUtilities.troschuetzRandom)
         {
         }
 
-        public RouletteWheelSelection(IExpectationStrategy<T> expectationStrategy, IGenerator randomNumberGenerator)
+        public RouletteWheelSelection(IFitnessScalingStrategy<T> fitnessScaling, IGenerator randomNumberGenerator)
         {
-            if (expectationStrategy == null) throw new ArgumentException("The expectation strategy must not be null");
-            this.expectationStrategy = expectationStrategy;
+            if (fitnessScaling == null) throw new ArgumentException("The expectation strategy must not be null");
+            this.fitnessScaling = fitnessScaling;
 
             if (randomNumberGenerator == null) throw new ArgumentException("The random number generator must not be null");
             this.rng = randomNumberGenerator;
@@ -31,7 +31,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         public Individual<T>[][] Apply(Individual<T>[] population, int parentGroupsCount,
                                        int parentsPerGroup, bool allowIdenticalParents)
         {
-            double[] expectations = expectationStrategy.CalculateExpectations(population);
+            double[] expectations = fitnessScaling.CalculateExpectations(population);
             Roulette roulette = Roulette.CreateFromPositive(expectations, rng);
 
             var parentGroups = new Individual<T>[parentGroupsCount][];

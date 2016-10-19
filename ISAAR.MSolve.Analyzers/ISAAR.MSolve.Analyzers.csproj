@@ -118,10 +118,10 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\BLXa.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\BLXab.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\IntermediateCrossover.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\Expectations\ExponentialFitnessExpectation.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\Expectations\IExpectationStrategy.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\Expectations\InverseRankExpectation.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\Expectations\RankExpectation.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\FitnessScaling\ExponentialFitnessScaling.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\FitnessScaling\IFitnessScalingStrategy.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\FitnessScaling\InverseRankScaling.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\FitnessScaling\RankScaling.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\Particle.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\ParticleSwarmOptimizationAlgorithm.cs" />
     <Compile Include="Optimization\Commons\Bag.cs" />
