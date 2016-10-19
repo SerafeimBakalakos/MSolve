@@ -8,7 +8,7 @@ using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations.Gaussian
 {
-    internal abstract class AbstractPerturbationTemplate : IMutationStrategy<double>
+    public abstract class AbstractPerturbationTemplate : IMutationStrategy<double>
     {
         public void Apply(Individual<double>[] population)
         {

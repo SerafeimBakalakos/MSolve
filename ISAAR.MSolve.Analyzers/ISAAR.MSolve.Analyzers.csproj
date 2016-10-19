@@ -115,6 +115,7 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\StandardPopulationStrategy.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\SteadyStateStrategy.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\UnfitEliminationStrategy.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\RealCodedGeneticAlgorithmBuilder.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\BLXa.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\BLXab.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\IntermediateCrossover.cs" />
@@ -122,7 +123,7 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\FitnessScaling\IFitnessScalingStrategy.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\FitnessScaling\InverseRankScaling.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\FitnessScaling\RankScaling.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\RemainderSelection.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\AbstractRemainderSelection.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\RemainderStochasticSamplingWithReplacement.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\StochasticUniversalSampling.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\TruncationSelection.cs" />

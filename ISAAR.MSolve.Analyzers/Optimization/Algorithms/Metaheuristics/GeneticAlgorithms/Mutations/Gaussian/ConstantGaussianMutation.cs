@@ -9,7 +9,7 @@ using Troschuetz.Random.Distributions.Continuous;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations.Gaussian
 {
-    class ConstantGaussianMutation : AbstractPerturbationTemplate
+    public class ConstantGaussianMutation : AbstractPerturbationTemplate
     {
         private readonly int continuousVariablesCount;
         private readonly double[] standardDeviations;
