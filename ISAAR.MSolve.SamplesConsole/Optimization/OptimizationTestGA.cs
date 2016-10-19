@@ -31,7 +31,8 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
             //optimBuilder.Selection = new RouletteWheelSelection<bool>(new InverseRankScaling<bool>(0.5));
             //optimBuilder.Selection = new TournamentSelection<bool>(2, false);
             //optimBuilder.Selection = new StochasticUniversalSampling<bool>(new InverseRankScaling<bool>(2.0
-            optimBuilder.Selection = new RemainderStochasticSamplingWithReplacement<bool>(new InverseRankScaling<bool>(1.0));
+            //optimBuilder.Selection = new RemainderStochasticSamplingWithReplacement<bool>(new InverseRankScaling<bool>(1.0));
+            optimBuilder.Selection = new TruncationSelection<bool>(0.5);
             optimBuilder.Recombination = new SinglePointCrossover<bool>();
             optimBuilder.Mutation = new BitFlipMutation(0.05);
 
