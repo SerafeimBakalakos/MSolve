@@ -18,11 +18,11 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="expectationStrategy"></param>
+        /// <param name="fitnessScaling"></param>
         /// <param name="allowIdenticalParents">If set to false and the fitness scaling is too biased towards the fittest 
         ///     individuals, performance will degrade dramatically due to excessive sampling</param>
-        public RouletteWheelSelection(IFitnessScalingStrategy<T> expectationStrategy, bool allowIdenticalParents = true) :
-            this(expectationStrategy, allowIdenticalParents, RandomNumberGenerationUtilities.troschuetzRandom)
+        public RouletteWheelSelection(IFitnessScalingStrategy<T> fitnessScaling, bool allowIdenticalParents = true) :
+            this(fitnessScaling, allowIdenticalParents, RandomNumberGenerationUtilities.troschuetzRandom)
         {
         }
 

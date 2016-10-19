@@ -122,6 +122,8 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\FitnessScaling\IFitnessScalingStrategy.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\FitnessScaling\InverseRankScaling.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\FitnessScaling\RankScaling.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\RemainderSelection.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\RemainderStochasticSamplingWithReplacement.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\StochasticUniversalSampling.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\Particle.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\ParticleSwarmOptimizationAlgorithm.cs" />
