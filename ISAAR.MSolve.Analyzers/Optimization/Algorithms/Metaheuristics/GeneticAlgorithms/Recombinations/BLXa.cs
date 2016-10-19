@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         public Individual<double>[] Apply(ISelectionStrategy<double> selection, Individual<double>[] population, int offspringsCount)
         {
             // Select the necessary parents
-            var parentGroups = selection.Apply(population, offspringsCount, 2, false);
+            var parentGroups = selection.Apply(population, offspringsCount, 2);
 
             // Create the offsprings
             var offsprings = new Individual<double>[offspringsCount];

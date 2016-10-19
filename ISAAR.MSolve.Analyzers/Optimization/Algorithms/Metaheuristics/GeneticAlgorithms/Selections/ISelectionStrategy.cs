@@ -8,7 +8,6 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 {
     public interface ISelectionStrategy<T>
     {
-        Individual<T>[][] Apply(Individual<T>[] population, int parentGroupsCount, int parentsPerGroup, 
-                                bool allowIdenticalParents);
+        Individual<T>[][] Apply(Individual<T>[] population, int parentGroupsCount, int parentsPerGroup);
     }
 }

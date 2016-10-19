@@ -11,11 +11,12 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
     public class TournamentSelection<T> : ISelectionStrategy<T>
     {
         private readonly int tournamentSize;
-        private readonly IGenerator rng;
         private readonly bool sampleWithReplacement;
+        private readonly bool allowIdenticalParents;
+        private readonly IGenerator rng;
 
-        public TournamentSelection(int tournamentSize, bool sampleWithReplacement = true) :
-            this(tournamentSize, sampleWithReplacement, RandomNumberGenerationUtilities.troschuetzRandom)
+        public TournamentSelection(int tournamentSize, bool sampleWithReplacement = true, bool allowIdenticalParents = false):
+            this(tournamentSize, sampleWithReplacement, allowIdenticalParents, RandomNumberGenerationUtilities.troschuetzRandom)
         {
         }
 
@@ -29,9 +30,12 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         ///     for that generation, meaning that each individual will be selected once at most. Caution: If set to false, 
         ///     the total number of parents cannot exceed the population size and the recombination strategy cannot request more 
         ///     parents than that. In this case there won't be identical parents in the same parent group, thus opting to allow 
-        ///     identical parents will be ignored.</param>
+        ///     identical parents will have no effect.</param>
+        /// <param name="allowIdenticalParents">If set to false, sampling will be repeated until all parents of the same group are 
+        ///     uniqe. This may degrade performance, especially with large tournament sizes.</param>
         /// <param name="randomNumberGenerator">A random number generator.</param>
-        public TournamentSelection(int tournamentSize, bool sampleWithReplacement, IGenerator randomNumberGenerator)
+        public TournamentSelection(int tournamentSize, bool sampleWithReplacement, bool allowIdenticalParents, 
+            IGenerator randomNumberGenerator)
         {
             if (tournamentSize < 2)
             {
@@ -40,20 +44,19 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             this.tournamentSize = tournamentSize;
 
             this.sampleWithReplacement = sampleWithReplacement;
+            this.allowIdenticalParents = allowIdenticalParents;
 
             if (randomNumberGenerator == null) throw new ArgumentException("The random number generator must not be null");
             this.rng = randomNumberGenerator;
         }
 
-        public Individual<T>[][] Apply(Individual<T>[] population, int parentGroupsCount, 
-                                       int parentsPerGroup, bool allowIdenticalParents)
+        public Individual<T>[][] Apply(Individual<T>[] population, int parentGroupsCount, int parentsPerGroup)
         {
             if (tournamentSize > population.Length)
             {
                 throw new ArgumentException("The tournament size: " + tournamentSize + 
                     " must be at lower than or equal to the population size: " + population.Length);
             }
-
             if (!sampleWithReplacement)
             {
                 if (parentGroupsCount * parentsPerGroup > population.Length)
@@ -62,8 +65,8 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
                         + parentsPerGroup + " parents without replacement");
                 }
             }
+
             var selectionPool = new Bag<Individual<T>>(population);
-            
             var parentGroups = new Individual<T>[parentGroupsCount][];
             for (int group = 0; group < parentGroupsCount; ++group)
             {

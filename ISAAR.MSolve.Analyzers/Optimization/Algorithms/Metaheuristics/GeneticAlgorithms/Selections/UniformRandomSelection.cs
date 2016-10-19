@@ -10,20 +10,23 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 {
     class UniformRandomSelection<T>: ISelectionStrategy<T>
     {
+        private readonly bool allowIdenticalParents;
         private readonly IGenerator rng;
 
-        public UniformRandomSelection(): this(RandomNumberGenerationUtilities.troschuetzRandom)
+        public UniformRandomSelection(bool allowIdenticalParents = false) : 
+            this(allowIdenticalParents, RandomNumberGenerationUtilities.troschuetzRandom)
         {
         }
 
-        public UniformRandomSelection(IGenerator randomNumberGenerator, bool allowIdenticalParents = false)
+        public UniformRandomSelection(bool allowIdenticalParents, IGenerator randomNumberGenerator)
         {
+            this.allowIdenticalParents = allowIdenticalParents;
+
             if (randomNumberGenerator == null) throw new ArgumentException("The random number generator must not be null");
             this.rng = randomNumberGenerator;
         }
 
-        public Individual<T>[][] Apply(Individual<T>[] population, int parentGroupsCount,
-                                       int parentsPerGroup, bool allowIdenticalParents)
+        public Individual<T>[][] Apply(Individual<T>[] population, int parentGroupsCount, int parentsPerGroup)
         {
             var parentGroups = new Individual<T>[parentGroupsCount][];
             for (int group = 0; group < parentGroupsCount; ++group)

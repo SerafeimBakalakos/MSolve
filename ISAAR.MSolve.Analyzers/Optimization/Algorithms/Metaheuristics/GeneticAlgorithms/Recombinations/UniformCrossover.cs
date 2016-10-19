@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         {
             // Select the necessary parents
             int pairsCount = (offspringsCount - 1) / 2 + 1;
-            var parentGroups = selection.Apply(population, pairsCount, 2, false);
+            var parentGroups = selection.Apply(population, pairsCount, 2);
 
             // Create the offsprings
             var offsprings = new Individual<T>[offspringsCount];

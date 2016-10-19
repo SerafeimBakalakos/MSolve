@@ -12,24 +12,33 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
     public class RouletteWheelSelection<T> : ISelectionStrategy<T>
     {
         private readonly IFitnessScalingStrategy<T> fitnessScaling;
+        private readonly bool allowIdenticalParents;
         private readonly IGenerator rng;
 
-        public RouletteWheelSelection(IFitnessScalingStrategy<T> expectationStrategy):
-            this(expectationStrategy, RandomNumberGenerationUtilities.troschuetzRandom)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="expectationStrategy"></param>
+        /// <param name="allowIdenticalParents">If set to false and the fitness scaling is too biased towards the fittest 
+        ///     individuals, performance will degrade dramatically due to excessive sampling</param>
+        public RouletteWheelSelection(IFitnessScalingStrategy<T> expectationStrategy, bool allowIdenticalParents = true) :
+            this(expectationStrategy, allowIdenticalParents, RandomNumberGenerationUtilities.troschuetzRandom)
         {
         }
 
-        public RouletteWheelSelection(IFitnessScalingStrategy<T> fitnessScaling, IGenerator randomNumberGenerator)
+        public RouletteWheelSelection(IFitnessScalingStrategy<T> fitnessScaling, bool allowIdenticalParents, 
+            IGenerator randomNumberGenerator)
         {
-            if (fitnessScaling == null) throw new ArgumentException("The expectation strategy must not be null");
+            if (fitnessScaling == null) throw new ArgumentException("The fitness scaling strategy must not be null");
             this.fitnessScaling = fitnessScaling;
+
+            this.allowIdenticalParents = allowIdenticalParents;
 
             if (randomNumberGenerator == null) throw new ArgumentException("The random number generator must not be null");
             this.rng = randomNumberGenerator;
         }
 
-        public Individual<T>[][] Apply(Individual<T>[] population, int parentGroupsCount,
-                                       int parentsPerGroup, bool allowIdenticalParents)
+        public Individual<T>[][] Apply(Individual<T>[] population, int parentGroupsCount, int parentsPerGroup)
         {
             double[] expectations = fitnessScaling.CalculateExpectations(population);
             Roulette roulette = Roulette.CreateFromPositive(expectations, rng);
