@@ -8,12 +8,12 @@ using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections
 {
-    public abstract class RemainderSelection<T> : ISelectionStrategy<T>
+    public abstract class AbstractRemainderSelection<T> : ISelectionStrategy<T>
     {
         private readonly IFitnessScalingStrategy<T> fitnessScaling;
         protected IGenerator RNG { get; }
 
-        protected RemainderSelection(IFitnessScalingStrategy<T> fitnessScaling,
+        protected AbstractRemainderSelection(IFitnessScalingStrategy<T> fitnessScaling,
             IGenerator randomNumberGenerator)
         {
             if (fitnessScaling == null) throw new ArgumentException("The fitness scaling strategy must not be null");

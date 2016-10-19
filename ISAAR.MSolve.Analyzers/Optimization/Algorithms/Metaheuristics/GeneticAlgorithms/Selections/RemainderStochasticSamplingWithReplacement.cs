@@ -8,7 +8,7 @@ using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections
 {
-    public class RemainderStochasticSamplingWithReplacement<T> : RemainderSelection<T>
+    public class RemainderStochasticSamplingWithReplacement<T> : AbstractRemainderSelection<T>
     {
         public RemainderStochasticSamplingWithReplacement(IFitnessScalingStrategy<T> fitnessScaling) :
             base(fitnessScaling, RandomNumberGenerationUtilities.troschuetzRandom)
