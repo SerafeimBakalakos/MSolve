@@ -8,7 +8,7 @@ using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Encodings
 {
-    public abstract class AbstractBinaryEncoding: IEncoding<bool>
+    public abstract class AbstractBinaryCoding: IEncoding<bool>
     {
         #region fields and properties
         private readonly IGenerator rng = RandomNumberGenerationUtilities.troschuetzRandom;
@@ -28,7 +28,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         #endregion
 
         #region constructor
-        protected AbstractBinaryEncoding(OptimizationProblem problem, int bitsPerContinuousVariable, int bitsPerIntegerVariable)
+        protected AbstractBinaryCoding(OptimizationProblem problem, int bitsPerContinuousVariable, int bitsPerIntegerVariable)
         {
             this.continuousVariablesCount = problem.Dimension;
             this.continuousLowerBounds = problem.LowerBound;

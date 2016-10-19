@@ -38,7 +38,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
             optimBuilder.ConvergenceCriterion = CompositeCriteria.OR(new MaxIterations(200), new MaxFunctionEvaluations(10000));
 
             // Define encoding
-            optimBuilder.Encoding = new GrayCodeEncoding(problem, 16, 8);
+            optimBuilder.Encoding = new GrayCoding(problem, 16, 8);
 
             // Define population size
             optimBuilder.PopulationSize = 100;

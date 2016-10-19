@@ -26,7 +26,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         {
             get 
             {
-                return new ContinuousEncoding();
+                return new RealCoding();
             }
         }
 

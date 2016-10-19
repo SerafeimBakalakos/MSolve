@@ -9,21 +9,21 @@ using Troschuetz.Random;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Encodings
 {
-    public class StandardBinaryEncoding : AbstractBinaryEncoding
+    public class GrayCoding : AbstractBinaryCoding
     {
-        public StandardBinaryEncoding(OptimizationProblem problem, int bitsPerContinuousVariable, int bitsPerIntegerVariable) :
+        public GrayCoding(OptimizationProblem problem, int bitsPerContinuousVariable, int bitsPerIntegerVariable):
                         base(problem, bitsPerContinuousVariable, bitsPerIntegerVariable)
         {
         }
 
         protected sealed override int BitstringToDecimalInteger(bool[] bits, int start, int length)
         {
-            return BinaryUtilities.StandardBinaryToDecimal(bits, start, length);
+            return BinaryUtilities.GrayCodeToDecimal(bits, start, length);
         }
 
         protected override void DecimalIntegerToBitstring(int dec, bool[] bits, int start, int length)
         {
-            BinaryUtilities.DecimalToStandardBinary(dec, bits, start, length);
+            BinaryUtilities.DecimalToGrayCode(dec, bits, start, length);
         }
     }
 }

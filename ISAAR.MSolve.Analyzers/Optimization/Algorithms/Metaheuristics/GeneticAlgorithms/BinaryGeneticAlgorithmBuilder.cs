@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         {
             get // good for continuous design variables 
             {
-                return new GrayCodeEncoding(problem, 32, 8); // sizes of float, char 
+                return new GrayCoding(problem, 32, 8); // sizes of float, char 
             }
         }
 

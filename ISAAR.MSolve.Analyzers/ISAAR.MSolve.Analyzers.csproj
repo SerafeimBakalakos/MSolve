@@ -103,9 +103,9 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\BinaryGeneticAlgorithmBuilder.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\Quantization.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\GeneticAlgorithm.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\AbstractBinaryEncoding.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\ContinuousEncoding.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\StandardBinaryEncoding.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\AbstractBinaryCoding.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\RealCoding.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\StandardBinaryCoding.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\GeneticAlgorithmBuilder.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Mutations\UniformMutation.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Mutations\Gaussian\ConstantGaussianMutation.cs" />
@@ -131,7 +131,7 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\ParticleSwarmOptimizationAlgorithm.cs" />
     <Compile Include="Optimization\Commons\Bag.cs" />
     <Compile Include="Optimization\Commons\BinaryUtilities.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\GrayCodeEncoding.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\GrayCoding.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\IEncoding.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Individual.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Mutations\BitFlipMutation.cs" />
