@@ -5,7 +5,11 @@
         public static void Main()
         {
             //OptimizationTestDE.Run();
-            OptimizationTestGA.Run();
+            OptimizationTestDEConstrained.Run();
+
+            //OptimizationTestGA.Run();
+
+
             //OptimizationTestPSO.Run();
         }
     }
