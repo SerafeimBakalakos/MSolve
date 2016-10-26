@@ -152,7 +152,7 @@
     <Compile Include="Optimization\Constraints\Penalties\IPenalty.cs" />
     <Compile Include="Optimization\Constraints\Penalties\IPenaltyStatic.cs" />
     <Compile Include="Optimization\Convergence\IConvergenceCriterion.cs" />
-    <Compile Include="Optimization\Convergence\LogicCriteria.cs" />
+    <Compile Include="Optimization\Convergence\CompositeCriteria.cs" />
     <Compile Include="Optimization\Convergence\MaxFunctionEvaluations.cs" />
     <Compile Include="Optimization\Convergence\MaxIterations.cs" />
     <Compile Include="Optimization\Individual.cs" />
