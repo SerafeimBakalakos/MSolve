@@ -6,12 +6,19 @@ using System.Threading.Tasks;
 
     namespace ISAAR.MSolve.Analyzers.Optimization.Logging
 {
+    /// <summary>
+    /// An <see cref="IOptimizationLogger"/> that logs the best values of the objective function and the corresponding design 
+    /// variables found at each iteration of the <see cref="IOptimizationAlgorithm"/>.
+    /// </summary>
     public class BestOfIterationLogger: IOptimizationLogger
     {
         private List<double[]> bestContinuousVariables;
         private List<int[]> bestIntegerVariables;
         private List<double> bestObjectives;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="BestOfIterationLogger"/>.
+        /// </summary>
         public BestOfIterationLogger()
         {
             bestContinuousVariables = new List<double[]>();
@@ -26,6 +33,10 @@ using System.Threading.Tasks;
             bestObjectives.Add(algorithm.BestFitness);
         }
 
+        /// <summary>
+        /// Writes the logged values of the objective function and the corresponding design variables for each iteration 
+        /// to the console.
+        /// </summary>
         public void PrintToConsole()
         {
             Console.Write("Initialization: ");
@@ -37,6 +48,11 @@ using System.Threading.Tasks;
             }
         }
 
+        /// <summary>
+        /// Writes the logged values of the objective function and the corresponding design variables of the iteration denoted by
+        /// index to the console.
+        /// </summary>
+        /// <param name="index">The index assigned to each iteration. Initialization is assigned index = 0.</param>
         private void PrintEntryToConsole(int index)
         {
             Console.Write("continuous variables = " + ArrayToString<double>(bestContinuousVariables[index]));

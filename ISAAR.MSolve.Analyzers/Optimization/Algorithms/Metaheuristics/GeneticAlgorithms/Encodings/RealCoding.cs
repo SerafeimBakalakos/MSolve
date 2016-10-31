@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Encodings
 {
-    class ContinuousEncoding : IEncoding<double>
+    class RealCoding : IEncoding<double>
     {
         public double[] ComputeGenotype(double[] phenotype)
         {

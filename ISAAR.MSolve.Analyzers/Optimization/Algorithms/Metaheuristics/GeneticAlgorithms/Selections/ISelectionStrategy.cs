@@ -8,6 +8,6 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 {
     public interface ISelectionStrategy<T>
     {
-        Tuple<Individual<T>, Individual<T>>[] Apply(Individual<T>[] population, int offspringsCount);
+        Individual<T>[][] Apply(Individual<T>[] population, int parentGroupsCount, int parentsPerGroup);
     }
 }

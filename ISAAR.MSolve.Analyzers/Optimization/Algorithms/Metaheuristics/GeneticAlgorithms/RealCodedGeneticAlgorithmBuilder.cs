@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Encodings;
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations;
+using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations.Gaussian;
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.PopulationStrategies;
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Recombinations;
 using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections;
@@ -12,28 +13,28 @@ using ISAAR.MSolve.Analyzers.Optimization.Problem;
 
 namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms
 {
-    public class BinaryGeneticAlgorithmBuilder : GeneticAlgorithm<bool>.Builder
+    public class RealCodedGeneticAlgorithmBuilder: GeneticAlgorithm<double>.Builder
     {
         private OptimizationProblem problem;
 
-        public BinaryGeneticAlgorithmBuilder(OptimizationProblem problem) : base(problem)
+        public RealCodedGeneticAlgorithmBuilder(OptimizationProblem problem) : base(problem)
         {
             this.problem = problem;
         }
 
-        protected override IEncoding<bool> DefaultEncoding
+        protected override IEncoding<double> DefaultEncoding
         {
-            get // good for continuous design variables 
+            get 
             {
-                return new GrayCoding(problem, 32, 8); // sizes of float, char 
+                return new RealCoding();
             }
         }
 
-        protected override IMutationStrategy<bool> DefaultMutation
+        protected override IMutationStrategy<double> DefaultMutation
         {
             get // arbitrary
             {
-                return new BitFlipMutation(0.2);
+                return new ConstantGaussianMutation(problem);
             }
         }
 
@@ -42,39 +43,30 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
             get // Matlab defaults
             {
                 return (problem.Dimension <= 5) ? 50 : 200;
-
-                //if (integerVariablesCount == 0) // continuous problem
-                //{
-                //    PopulationSize = (continuousVariablesCount <= 5) ? 50 : 200;
-                //}
-                //else // Mixed integer problem
-                //{
-                //    PopulationSize = Math.Min(100, Math.Max(40, 10 * (continuousVariablesCount + integerVariablesCount)));
-                //}
             }
         }
 
-        protected override IPopulationStrategy<bool> DefaultPopulationStrategy
+        protected override IPopulationStrategy<double> DefaultPopulationStrategy
         {
             get // arbitrary strategy with Matlab's default elitism 
             {
-                return new StandardPopulationStrategy<bool>(PopulationSize, (int)Math.Round(0.05 * PopulationSize));
+                return new StandardPopulationStrategy<double>(PopulationSize, (int)Math.Round(0.05 * PopulationSize));
             }
         }
 
-        protected override IRecombinationStrategy<bool> DefaultRecombination
+        protected override IRecombinationStrategy<double> DefaultRecombination
         {
             get // Matlab defaults
             {
-                return new UniformCrossover<bool>();
+                return new UniformCrossover<double>();
             }
         }
 
-        protected override ISelectionStrategy<bool> DefaultSelection
+        protected override ISelectionStrategy<double> DefaultSelection
         {
             get // Matlab defaults
             {
-                return new RouletteWheelSelection<bool>(new InverseRankScaling<bool>(0.5));
+                return new RouletteWheelSelection<double>(new InverseRankScaling<double>(0.5));
             }
         }
     }
