@@ -1,21 +1,17 @@
-﻿using System;
-using ISAAR.MSolve.Analyzers;
-using ISAAR.MSolve.Analyzers.Interfaces;
+﻿using ISAAR.MSolve.Analyzers.Interfaces;
 using ISAAR.MSolve.Analyzers.Optimization.Problem;
-using ISAAR.MSolve.Logging;
 using ISAAR.MSolve.Matrices;
 using ISAAR.MSolve.PreProcessor;
-using ISAAR.MSolve.Problems;
-using ISAAR.MSolve.Solvers.Skyline;
 using ISAAR.MSolve.PreProcessor.Materials;
-using System.Collections.Generic;
 using ISAAR.MSolve.PreProcessor.Elements;
+using System.Collections.Generic;
+using System;
 
-namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
+namespace ISAAR.MSolve.SamplesConsole.Optimization.StructuralProblems
 {
     class Truss10Benchmark : IObjectiveFunction
     {
-        private Model truss10;
+        public Model truss10;
         IAnalyzer parentAnalyzer; 
 
         public Truss10Benchmark()
@@ -24,18 +20,20 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
             double youngModulus = 10e4;
             double poissonRatio = 0.3;
             double loadP = 100;
-            double sectionArea = 1.5;
+            double sectionArea = 1.0;
             double tesionStrength = 25;
 
             ElasticMaterial material = new ElasticMaterial() { YoungModulus = youngModulus, PoissonRatio = poissonRatio };
 
+            Model truss10 = new Model();
+
             IList<Node> nodes = new List<Node>();
             Node node1 = new Node { ID = 1, X = 720, Y = 360 };
-            Node node2 = new Node { ID = 2, X = 720, Y = 0 };
+            Node node2 = new Node { ID = 2, X = 720, Y =   0 };
             Node node3 = new Node { ID = 3, X = 360, Y = 360 };
-            Node node4 = new Node { ID = 4, X = 360, Y = 0 };
-            Node node5 = new Node { ID = 5, X = 0, Y = 360 };
-            Node node6 = new Node { ID = 6, X = 0, Y = 0 };
+            Node node4 = new Node { ID = 4, X = 360, Y =   0 };
+            Node node5 = new Node { ID = 5, X =   0, Y = 360 };
+            Node node6 = new Node { ID = 6, X =   0, Y =   0 };
 
             nodes.Add(node1);
             nodes.Add(node2);
@@ -44,9 +42,12 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
             nodes.Add(node5);
             nodes.Add(node6);
 
-            Model truss10 = new Model();
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                truss10.NodesDictionary.Add(i + 1, nodes[i]);
+            }
 
-            truss10.SubdomainsDictionary.Add(1, new Subdomain() { ID = 1 });
+            IList<Element> elements = new List<Element>();
 
             var element1 = new Element() { ID = 1, ElementType = new Rod2D(material) { Density = 0.1, SectionArea = sectionArea } };
             var element2 = new Element() { ID = 2, ElementType = new Rod2D(material) { Density = 0.1, SectionArea = sectionArea } };
@@ -91,6 +92,8 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
             truss10.ElementsDictionary.Add(element9.ID, element9);
             truss10.ElementsDictionary.Add(element10.ID, element10);
 
+            truss10.SubdomainsDictionary.Add(1, new Subdomain() { ID = 1 });
+
             truss10.SubdomainsDictionary[1].ElementsDictionary.Add(element1.ID, element1);
             truss10.SubdomainsDictionary[1].ElementsDictionary.Add(element2.ID, element2);
             truss10.SubdomainsDictionary[1].ElementsDictionary.Add(element3.ID, element3);
@@ -101,11 +104,6 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
             truss10.SubdomainsDictionary[1].ElementsDictionary.Add(element8.ID, element8);
             truss10.SubdomainsDictionary[1].ElementsDictionary.Add(element9.ID, element9);
             truss10.SubdomainsDictionary[1].ElementsDictionary.Add(element10.ID, element10);
-
-            for (int i = 0; i < nodes.Count; i++)
-            {
-                truss10.NodesDictionary.Add(i + 1, nodes[i]);
-            }
 
             truss10.NodesDictionary[5].Constraints.Add(DOFType.X);
             truss10.NodesDictionary[5].Constraints.Add(DOFType.Y);
@@ -120,10 +118,17 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
 
         public double Evaluate(double[] x)
         {
-            //for (int i = 0; i < x.Length; i++)
-            //{
-            //    truss10.Elements[i].Section = x[i];
-            //}
+            double weight = 0;
+
+            for (int i = 0; i < x.Length; i++)
+            {
+                var element_i = truss10.Elements[i].ElementType as Rod2D;
+                var nodeStart = truss10.Nodes[0];
+                var nodeEnd = truss10.Nodes[1];
+                var Length_i = Math.Sqrt(Math.Pow(nodeEnd.X - nodeStart.X, 2) + Math.Pow(nodeEnd.Y - nodeStart.Y, 2));
+
+                weight += element_i.SectionArea * Length_i;
+            }
             //SolverSkyline solution = new SolverSkyline(truss10);
             //ProblemStructural provider = new ProblemStructural(truss10, solution.SubdomainsDictionary);
             //LinearAnalyzer childAnalyzer = new LinearAnalyzer(solution, solution.SubdomainsDictionary);
@@ -133,7 +138,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
             //parentAnalyzer.Initialize();
             //parentAnalyzer.Solve();
 
-            throw new NotImplementedException();
+            return weight;
         }
     }
 }
