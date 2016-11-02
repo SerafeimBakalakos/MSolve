@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ISAAR.MSolve.Analyzers.Optimization.Problem;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,8 +12,8 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Constraints.Penalties
         /// 
         /// </summary>
         /// <param name="fitness"></param>
-        /// <param name="x">The design vector</param>
+        /// <param name="design">The current design.</param>
         /// <returns>The penalized value for the specified design</returns>
-        double Evaluate(double fitness, double[] x);
+        double Evaluate(double fitness, IDesign design);
     }
 }
