@@ -89,7 +89,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Problem
         }
 
         /// <summary>
-        /// Feasible design: g[i](x) >= 0
+        /// Feasible design: g[i](x) &lt;= 0
         /// </summary>
         public IConstraintFunction[] InequalityConstraints { get; set; }
 
