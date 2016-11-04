@@ -156,7 +156,13 @@
     <Compile Include="Optimization\Convergence\MaxFunctionEvaluations.cs" />
     <Compile Include="Optimization\Convergence\MaxIterations.cs" />
     <Compile Include="Optimization\Individual.cs" />
+    <Compile Include="Optimization\Initialization\HaltonPoints\First50PrimesGenerator.cs" />
+    <Compile Include="Optimization\Initialization\HaltonPoints\HaltonPointGenerator.cs" />
+    <Compile Include="Optimization\Initialization\HaltonPoints\HaltonSequence.cs" />
+    <Compile Include="Optimization\Initialization\HaltonPoints\HaltonPointTest.cs" />
+    <Compile Include="Optimization\Initialization\HaltonPoints\IPrimeGenerator.cs" />
     <Compile Include="Optimization\Initialization\IInitializer.cs" />
+    <Compile Include="Optimization\Initialization\RealUniformHaltonInitializer.cs" />
     <Compile Include="Optimization\Initialization\RealUniformRandomInitializer.cs" />
     <Compile Include="Optimization\IOptimizationAlgorithm.cs" />
     <Compile Include="Optimization\IOptimizationAnalyzer.cs" />
