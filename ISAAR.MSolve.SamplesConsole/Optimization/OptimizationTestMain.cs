@@ -9,8 +9,8 @@
             //OptimizationTestPSO.Run();
 
             //TrussExample.Truss2DExample();
-            //OptimizationTruss10Benchmark.Run();
-            OptimizationTestDEConstrained.Run();
+            OptimizationTruss10Benchmark.Run();
+            //OptimizationTestDEConstrained.Run();
         }
     }
 }

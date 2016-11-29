@@ -77,8 +77,8 @@
     <Compile Include="Optimization\OptimizationTestPSO.cs" />
     <Compile Include="Optimization\OptimizationTestDE.cs" />
     <Compile Include="Optimization\OptimizationTruss10Benchmark.cs" />
+    <Compile Include="Optimization\StructuralProblems\Rod2DResults.cs" />
     <Compile Include="Optimization\StructuralProblems\Truss10Benchmark.cs" />
-    <Compile Include="Optimization\StructuralProblems\Truss10Benchmark2.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TrussExample.cs" />

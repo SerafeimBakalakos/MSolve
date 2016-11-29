@@ -36,6 +36,37 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             set { dofEnumerator = value; }
         }
 
+        public IMatrix2D<double> TransformationMatrix(Element element)
+        {
+            double x2 = Math.Pow(element.Nodes[1].X - element.Nodes[0].X, 2);
+            double y2 = Math.Pow(element.Nodes[1].Y - element.Nodes[0].Y, 2);
+            double L = Math.Sqrt(x2 + y2);
+            double c = (element.Nodes[1].X - element.Nodes[0].X) / L;
+            double s = (element.Nodes[1].Y - element.Nodes[0].Y) / L;
+
+            double[,] transformation = { {  c,   s, 0.0, 0.0},
+                                         {0.0, 0.0,   c,   s}};
+            return new Matrix2D<double>(transformation);
+        }
+
+        /// <summary>
+        /// Stress0         Stress1
+        /// -> ------------ ->
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="localDisplacements"></param>
+        /// <param name="local_d_Displacements"></param>
+        /// <returns></returns>
+        public double CalculateAxialStress(Element element, double[] localDisplacements, double[] local_d_Displacements)
+        {
+            double[] globalStresses = CalculateStresses(element, localDisplacements, local_d_Displacements).Item2; // item1 = strains
+            IMatrix2D<double> transformation = TransformationMatrix(element);
+            double[] localStresses = new double[2]; // In local natural system there are 2 dofs
+            transformation.Multiply(new Vector<double>(globalStresses), localStresses);
+            // If Stress1 = localStresses[1] > 0 => tension. Else compression
+            return localStresses[1]; 
+        }
+
         #region IElementType Members
 
         public int ID
@@ -103,9 +134,13 @@ namespace ISAAR.MSolve.PreProcessor.Elements
             throw new NotImplementedException();
         }
 
-        public Tuple<double[], double[]> CalculateStresses(Element element, double[] localDisplacements, double[] localdDisplacements)
+        public Tuple<double[], double[]> CalculateStresses(Element element, double[] local_Displacements, double[] local_d_Displacements)
         {
-            throw new NotImplementedException();
+            // WARNING: 1) No strains are computed 2) localdDisplacements are not used.
+            double[] strains = null;
+            double[] forces = CalculateForces(element, local_Displacements, local_d_Displacements);
+            double[] stresses = Array.ConvertAll<double, double>(forces, x => x / SectionArea);
+            return new Tuple<double[], double[]>(strains, stresses);
         }
 
         public double[] CalculateForcesForLogging(Element element, double[] localDisplacements)
@@ -115,7 +150,10 @@ namespace ISAAR.MSolve.PreProcessor.Elements
 
         public double[] CalculateForces(Element element, double[] localDisplacements, double[] localdDisplacements)
         {
-            throw new NotImplementedException();
+            IMatrix2D<double> stiffness = StiffnessMatrix(element);
+            double[] forces = new double[localDisplacements.Length];
+            stiffness.Multiply(new Vector<double>(localDisplacements), forces);
+            return forces;
         }
 
         public double[] CalculateAccelerationForces(Element element, IList<MassAccelerationLoad> loads)

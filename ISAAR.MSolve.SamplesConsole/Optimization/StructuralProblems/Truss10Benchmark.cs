@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.StructuralProblems
             LowerBound = LowerBound.Select(i => 0.1).ToArray();
 
             this.UpperBound = new double[Dimension];
-            UpperBound = UpperBound.Select(i => 10000.0).ToArray();
+            UpperBound = UpperBound.Select(i => 35.0).ToArray();
             this.DesignFactory = new Truss10Factory();
         }
 
@@ -38,8 +38,6 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.StructuralProblems
 
         private class Truss10Design : IDesign
         {
-            private static readonly double MAX_DISPLACEMENT = 2;
-
             public double[] ObjectiveValues { get; }
 
             public double[] ConstraintValues { get; }
@@ -49,25 +47,45 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.StructuralProblems
                 // Perform simulation
                 Model model;
                 LinearAnalyzer childAnalyzer;
-                Solve(x, out model, out childAnalyzer);
+                Rod2DResults rodResults;
+                Solve(x, out model, out childAnalyzer, out rodResults);
 
                 // Get objective value
                 this.ObjectiveValues = EvaluateObjective(x, model);
 
                 // Get constraint values
-                this.ConstraintValues = EvaluateConstraints(childAnalyzer);
+                this.ConstraintValues = EvaluateConstraints(model, childAnalyzer, rodResults);
             }
 
-            private void Solve(double[] x, out Model model, out LinearAnalyzer childAnalyzer)
+            private void Solve(double[] x, out Model model, out LinearAnalyzer childAnalyzer,
+                out Rod2DResults rodResults)
             {
                 VectorExtensions.AssignTotalAffinityCount();
+
+                model = BuildModel(x);
+
+                SolverSkyline solver = new SolverSkyline(model);
+                ProblemStructural provider = new ProblemStructural(model, solver.SubdomainsDictionary);
+                childAnalyzer = new LinearAnalyzer(solver, solver.SubdomainsDictionary);
+                StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, solver.SubdomainsDictionary);
+                CreateLogs(model, childAnalyzer);
+                rodResults = new Rod2DResults(model.SubdomainsDictionary[1], 
+                    solver.SubdomainsDictionary[1]); // Let's hope this is the one!
+
+                parentAnalyzer.BuildMatrices();
+                parentAnalyzer.Initialize();
+                parentAnalyzer.Solve();
+            }
+
+            private Model BuildModel(double[] x)
+            {
                 double youngModulus = 10e4;
                 double poissonRatio = 0.3;
                 double loadP = 100;
 
                 ElasticMaterial material = new ElasticMaterial() { YoungModulus = youngModulus, PoissonRatio = poissonRatio };
 
-                model = new Model();
+                Model model = new Model();
 
                 IList<Node> nodes = new List<Node>();
                 Node node1 = new Node { ID = 1, X = 720, Y = 360 };
@@ -152,26 +170,25 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.StructuralProblems
                 model.NodesDictionary[6].Constraints.Add(DOFType.X);
                 model.NodesDictionary[6].Constraints.Add(DOFType.Y);
 
-                model.Loads.Add(new Load() { Amount = loadP, Node = model.NodesDictionary[2], DOF = DOFType.Y });
-                model.Loads.Add(new Load() { Amount = loadP, Node = model.NodesDictionary[4], DOF = DOFType.Y });
+                model.Loads.Add(new Load() { Amount = -loadP, Node = model.NodesDictionary[2], DOF = DOFType.Y });
+                model.Loads.Add(new Load() { Amount = -loadP, Node = model.NodesDictionary[4], DOF = DOFType.Y });
 
                 model.ConnectDataStructures();
+                return model;
+            }
 
-                SolverSkyline solution = new SolverSkyline(model);
-                ProblemStructural provider = new ProblemStructural(model, solution.SubdomainsDictionary);
-                childAnalyzer = new LinearAnalyzer(solution, solution.SubdomainsDictionary);
-                StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, solution.SubdomainsDictionary);
-
-                childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
+            private void CreateLogs(Model model, LinearAnalyzer childAnalyzer)
+            {
+                int[] monitoredDOFs = new int[] {
                     model.NodalDOFsDictionary[1][DOFType.Y],
                     model.NodalDOFsDictionary[2][DOFType.Y],
                     model.NodalDOFsDictionary[3][DOFType.Y],
                     model.NodalDOFsDictionary[4][DOFType.Y]
-                });
-
-                parentAnalyzer.BuildMatrices();
-                parentAnalyzer.Initialize();
-                parentAnalyzer.Solve();
+                };
+                childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(monitoredDOFs);
+                //Element[] stressElements = model.ElementsDictionary.Values.ToArray<Element>();
+                //childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(monitoredDOFs,
+                //    stressElements, new Element[0]);
             }
 
             private double[] EvaluateObjective(double[] x, Model model)
@@ -190,8 +207,13 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.StructuralProblems
                 return new double[] { weight };
             }
 
-            private double[] EvaluateConstraints(LinearAnalyzer childAnalyzer)
+            private double[] EvaluateConstraints(Model model, LinearAnalyzer childAnalyzer,
+                Rod2DResults rodResults)
             {
+                var constraints = new LinkedList<double>();
+
+                // Displacements
+                const double maxDisplacement = 2;
                 double max = 0;
 
                 foreach (var displacement in ((DOFSLog)childAnalyzer.Logs[1][0]).DOFValues.Values)
@@ -201,8 +223,29 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.StructuralProblems
                         max = Math.Abs(displacement);
                     }
                 }
+                constraints.AddLast(max / maxDisplacement - 1.0);
 
-                return new double[] { max - MAX_DISPLACEMENT };
+                // Stresses
+                double[] minStresses = new double[10];
+                minStresses = minStresses.Select(i => -25.0).ToArray();
+                double[] maxStresses = new double[10];
+                maxStresses = maxStresses.Select(i => 25.0).ToArray();
+                double[] stresses = new double[10];
+
+                rodResults.QueryResults();
+                int counter = 0;
+                foreach (var element in model.Elements)
+                {
+                    stresses[counter++] = rodResults.AxialRod2DStress(element);
+                }
+
+                for (int i = 0; i < stresses.Length; ++i)
+                {
+                    constraints.AddLast(stresses[i] / maxStresses[i] - 1.0);
+                    constraints.AddLast(stresses[i] / minStresses[i] - 1.0);
+                }
+
+                return constraints.ToArray();
             }
         }
     }
