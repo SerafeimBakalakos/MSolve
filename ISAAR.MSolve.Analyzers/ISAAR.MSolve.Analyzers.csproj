@@ -99,8 +99,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Optimization\Algorithms\Metaheuristics\DifferentialEvolution\DifferentialEvolutionAlgorithmConstrained.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\DifferentialEvolution\DifferentialEvolutionAlgorithm.cs" />
+    <Compile Include="Optimization\Algorithms\Metaheuristics\DifferentialEvolution\DifferentialEvolutionAlgorithmConstrained.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\BinaryGeneticAlgorithmBuilder.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\Quantization.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\GeneticAlgorithm.cs" />
@@ -130,6 +130,10 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\TruncationSelection.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\Particle.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\ParticleSwarmOptimizationAlgorithm.cs" />
+    <Compile Include="Optimization\Benchmarks\ProblemTypes\MultiObjectiveConstrained.cs" />
+    <Compile Include="Optimization\Benchmarks\ProblemTypes\MultiObjectiveUnconstrained.cs" />
+    <Compile Include="Optimization\Benchmarks\ProblemTypes\SingleObjectiveConstrained.cs" />
+    <Compile Include="Optimization\Benchmarks\ProblemTypes\SingleObjectiveUnconstrained.cs" />
     <Compile Include="Optimization\Commons\Bag.cs" />
     <Compile Include="Optimization\Commons\BinaryUtilities.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\GrayCoding.cs" />
@@ -151,8 +155,8 @@
     <Compile Include="Optimization\Constraints\Penalties\DeathPenalty.cs" />
     <Compile Include="Optimization\Constraints\Penalties\IPenalty.cs" />
     <Compile Include="Optimization\Constraints\Penalties\IPenaltyStatic.cs" />
-    <Compile Include="Optimization\Convergence\IConvergenceCriterion.cs" />
     <Compile Include="Optimization\Convergence\CompositeCriteria.cs" />
+    <Compile Include="Optimization\Convergence\IConvergenceCriterion.cs" />
     <Compile Include="Optimization\Convergence\MaxFunctionEvaluations.cs" />
     <Compile Include="Optimization\Convergence\MaxIterations.cs" />
     <Compile Include="Optimization\Individual.cs" />
@@ -170,9 +174,10 @@
     <Compile Include="Optimization\Logging\IOptimizationLogger.cs" />
     <Compile Include="Optimization\Logging\NoLogger.cs" />
     <Compile Include="Optimization\OptimizationAnalyzer.cs" />
-    <Compile Include="Optimization\Problem\IConstraintFunction.cs" />
-    <Compile Include="Optimization\Problem\IObjectiveFunction.cs" />
     <Compile Include="Optimization\Problem\OptimizationProblem.cs" />
+    <Compile Include="Optimization\Problem\IConstraintFunction.cs" />
+    <Compile Include="Optimization\Problem\IDesign.cs" />
+    <Compile Include="Optimization\Problem\IObjectiveFunction.cs" />
     <Compile Include="Optimization\Problem\ProblemChecker.cs" />
     <Compile Include="VRFMonteCarloAnalyzerWithStochasticMaterial.cs" />
     <Compile Include="PolynomialChaosAnalyzer.cs" />

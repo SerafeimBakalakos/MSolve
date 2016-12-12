@@ -1,16 +1,16 @@
-﻿namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
+﻿namespace ISAAR.MSolve.SamplesConsole.Optimization
 {
     class OptimizationTestMain
     {
         public static void Main()
         {
-            //OptimizationTestDE.Run();
-            OptimizationTestDEConstrained.Run();
-
+            OptimizationTestDE.Run();
             //OptimizationTestGA.Run();
-
-
             //OptimizationTestPSO.Run();
+
+            //TrussExample.Truss2DExample();
+            //OptimizationTruss10Benchmark.Run();
+            //OptimizationTestDEConstrained.Run();
         }
     }
 }

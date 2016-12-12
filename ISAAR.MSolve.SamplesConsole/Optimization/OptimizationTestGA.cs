@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
         private static void TestBinaryGA()
         {
             // Define optim problem
-            OptimizationProblem problem = new Ackley();
+            OptimizationProblem problem = new Rosenbrock();
 
             // Define optim algorithm
             var optimBuilder = new BinaryGeneticAlgorithmBuilder(problem);
@@ -84,7 +84,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
         private static void TestRealCodedGA()
         {
             // Define optim problem
-            OptimizationProblem problem = new Ackley();
+            OptimizationProblem problem = new Rosenbrock();
 
             // Define optim algorithm
             var optimBuilder = new RealCodedGeneticAlgorithmBuilder(problem);

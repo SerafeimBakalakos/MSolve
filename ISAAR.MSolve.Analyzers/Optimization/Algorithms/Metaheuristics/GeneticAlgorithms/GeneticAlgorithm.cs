@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
         // Optim problem fields
         private readonly int continuousVariablesCount;
         private readonly int integerVariablesCount;
-        private readonly IObjectiveFunction fitnessFunc;
+        private readonly IDesignFactory designFactory;
 
         // General optim algorithm params
         private readonly IOptimizationLogger logger;
@@ -42,14 +42,14 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
         private Individual<T>[] population;
 
-        private GeneticAlgorithm(int continuousVariablesCount, int integerVariablesCount, IObjectiveFunction fitnessFunc,
+        private GeneticAlgorithm(int continuousVariablesCount, int integerVariablesCount, IDesignFactory designFactory,
             IOptimizationLogger logger, IConvergenceCriterion convergenceCriterion, IInitializer<double> initializer,
             IEncoding<T> encoding, int populationSize, IPopulationStrategy<T> populationStrategy,
             ISelectionStrategy<T> selection, IRecombinationStrategy<T> recombination, IMutationStrategy<T> mutation)
         {
             this.continuousVariablesCount = continuousVariablesCount;
             this.integerVariablesCount = integerVariablesCount;
-            this.fitnessFunc = fitnessFunc;
+            this.designFactory = designFactory;
 
             this.logger = logger;
             this.convergenceCriterion = convergenceCriterion;
@@ -116,7 +116,8 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
                 if (!individual.IsEvaluated)
                 {
                     double[] phenotype = encoding.ComputePhenotype(individual.Chromosome);
-                    individual.Fitness = fitnessFunc.Evaluate(phenotype);
+                    IDesign design = designFactory.CreateDesign(phenotype);
+                    individual.Fitness = design.ObjectiveValues[0];
                 }
             }
             CurrentFunctionEvaluations += populationSize;

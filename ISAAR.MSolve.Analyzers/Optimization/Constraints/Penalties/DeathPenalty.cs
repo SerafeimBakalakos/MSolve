@@ -8,18 +8,18 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Constraints.Penalties
 {
     public class DeathPenalty : IPenaltyStatic
     {
-        private readonly IConstraintFunction[] inequalityConstraints;
+        //private readonly IConstraintFunction[] inequalityConstraints;
 
-        public DeathPenalty(IConstraintFunction[] inequalityConstraints)
-        {
-            this.inequalityConstraints = inequalityConstraints;
-        }
+        //public DeathPenalty(IConstraintFunction[] inequalityConstraints)
+        //{
+        //    this.inequalityConstraints = inequalityConstraints;
+        //}
 
-        public double Evaluate(double fitness, double[] x)
+        public double Evaluate(double fitness, IDesign design)
         {
-            foreach (var constraint in inequalityConstraints)
+            foreach (var constraintValue in design.ConstraintValues)
             {
-                if (constraint.Evaluate(x) < 0) return double.MaxValue;
+                if (constraintValue > 0) return double.MaxValue;
             }
             return fitness;
         }

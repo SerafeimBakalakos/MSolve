@@ -11,7 +11,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
     {
         public static void Run()
         {
-            OptimizationProblem optimizationProblem = new GoldsteinPrice();
+            OptimizationProblem optimizationProblem = new Rosenbrock();
 
             ParticleSwarmOptimizationAlgorithm.Builder builder = new ParticleSwarmOptimizationAlgorithm.Builder(optimizationProblem);
 

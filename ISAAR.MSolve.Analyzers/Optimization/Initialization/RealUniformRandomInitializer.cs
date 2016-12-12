@@ -22,7 +22,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Initialization
 
         public RealUniformRandomInitializer(OptimizationProblem problem, IGenerator randomNumberGenerator)
         {
-            problem.CheckInput();
+            //problem.CheckInput();
             this.continuousVariablesCount = problem.Dimension;
             this.lowerBounds = problem.LowerBound;
             this.upperBounds = problem.UpperBound;

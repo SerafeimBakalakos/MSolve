@@ -1,4 +1,5 @@
-﻿using ISAAR.MSolve.Analyzers.Optimization.Problem;
+﻿using System;
+using ISAAR.MSolve.Analyzers.Optimization.Benchmarks.ProblemTypes;
 using System.Linq;
 
 namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
@@ -7,7 +8,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
     /// Class for the Sphere's optimization problem.
     /// <see href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Wikipedia: Test functions for optimization</see>
     /// </summary>
-    public class Sphere : OptimizationProblem
+    public class Sphere : SingleObjectiveUnconstrained
     {
         public Sphere()
         {
@@ -19,21 +20,15 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
             this.UpperBound = new double[Dimension];
             UpperBound = UpperBound.Select(i => 10.0).ToArray();
 
-            this.ObjectiveFunction = new Objective();
-        }
-
-        class Objective : IObjectiveFunction
-        {
-            public double Evaluate(double[] x)
+            this.ObjectiveFunction = (x) =>
             {
                 double f = 0.0;
-
                 for (int i = 0; i < x.Length; i++)
                 {
                     f += x[i] * x[i];
                 }
                 return f;
-            }
+            };
         }
     }
 }

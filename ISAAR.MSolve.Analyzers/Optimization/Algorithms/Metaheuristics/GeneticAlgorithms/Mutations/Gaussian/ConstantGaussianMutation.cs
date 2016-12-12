@@ -30,7 +30,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
         public ConstantGaussianMutation(OptimizationProblem problem, double standardDeviation, IGenerator randomNumberGenerator)
         {
-            problem.CheckInput();
+            //problem.CheckInput();
             this.continuousVariablesCount = problem.Dimension;
 
             if (standardDeviation <= 0)
@@ -49,7 +49,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
         public ConstantGaussianMutation(OptimizationProblem problem, double[] standardDeviations, IGenerator randomNumberGenerator)
         {
-            problem.CheckInput();
+            //problem.CheckInput();
             this.continuousVariablesCount = problem.Dimension;
 
             if (standardDeviations.Length != continuousVariablesCount)

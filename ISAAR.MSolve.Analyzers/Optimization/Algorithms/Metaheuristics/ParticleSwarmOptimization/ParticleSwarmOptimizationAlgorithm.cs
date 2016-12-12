@@ -22,7 +22,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Particle
         private readonly double phip;                  // Scaling factor to search away from the particle's best known position
         private readonly double phig;                  // Scaling factor to search away from the swarm's best known position
 
-        private readonly IObjectiveFunction function;
+        private readonly IDesignFactory designFactory;
         private readonly double[] lowerBound;
         private readonly double[] upperBound;
         private readonly IConvergenceCriterion convergenceCriterion;
@@ -32,13 +32,13 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Particle
 
         private readonly Random randomNumberGenerator = new Random();
 
-        public ParticleSwarmOptimizationAlgorithm(int dimension, double[] lowerBound, double[] upperBound, IObjectiveFunction function,
+        public ParticleSwarmOptimizationAlgorithm(int dimension, double[] lowerBound, double[] upperBound, IDesignFactory designFactory,
            int swarmSize, double omega, double phip, double phig, IConvergenceCriterion convergenceCriterion, IOptimizationLogger logger)
         {
             this.dimension = dimension;
             this.lowerBound = lowerBound;
             this.upperBound = upperBound;
-            this.function = function;
+            this.designFactory = designFactory;
 
             this.swarmSize = swarmSize;
             this.omega = omega;
@@ -113,7 +113,8 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Particle
         {
             for (int i = 0; i < swarmSize; i++)
             {
-                double fitness = function.Evaluate(individuals[i].Position);
+                IDesign design = designFactory.CreateDesign(individuals[i].Position);
+                double fitness = design.ObjectiveValues[0];
 
                 individuals[i].ObjectiveValue = fitness;
             }
@@ -217,7 +218,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Particle
             public IOptimizationAlgorithm Build()
             {
                 return new ParticleSwarmOptimizationAlgorithm(optimizationProblem.Dimension,
-                    optimizationProblem.LowerBound, optimizationProblem.UpperBound, optimizationProblem.ObjectiveFunction,
+                    optimizationProblem.LowerBound, optimizationProblem.UpperBound, optimizationProblem.DesignFactory,
                     SwarmSize, Omega, PhiP, PhiG, ConvergenceCriterion, Logger);
             }
         }
