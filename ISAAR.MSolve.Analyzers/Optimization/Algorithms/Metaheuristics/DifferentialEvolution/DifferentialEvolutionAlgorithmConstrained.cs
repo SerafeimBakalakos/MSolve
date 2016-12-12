@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Differen
 
         // Optimization problem definition
         private readonly int dimension;
-        protected IDesignFactory designFactory;
+        private IDesignFactory designFactory;
         private double[] lowerBound;
         private double[] upperBound;
         private IPenaltyStatic penalty;
@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Differen
         private Individual[] individuals;
         private Individual[] offsprings;
 
-        protected DifferentialEvolutionAlgorithmConstrained(DesignProblem optimizationProblem, int populationSize,
+        private DifferentialEvolutionAlgorithmConstrained(OptimizationProblem optimizationProblem, int populationSize,
             double mutationFactor, double crossoverProbability, IConvergenceCriterion convergenceCriterion, IPenaltyStatic penalty)
         {
             this.dimension = optimizationProblem.Dimension;
@@ -221,7 +221,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Differen
 
         public class Builder
         {
-            private readonly DesignProblem optimizationProblem;
+            private readonly OptimizationProblem optimizationProblem;
 
             public int PopulationSize
             {
@@ -243,7 +243,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Differen
                 get; set;
             }
 
-            public Builder(DesignProblem optimizationProblem)
+            public Builder(OptimizationProblem optimizationProblem)
             {
                 this.optimizationProblem = optimizationProblem;
             }

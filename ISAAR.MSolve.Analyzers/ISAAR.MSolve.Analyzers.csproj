@@ -130,6 +130,10 @@
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\TruncationSelection.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\Particle.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\ParticleSwarmOptimizationAlgorithm.cs" />
+    <Compile Include="Optimization\Benchmarks\ProblemTypes\MultiObjectiveConstrained.cs" />
+    <Compile Include="Optimization\Benchmarks\ProblemTypes\MultiObjectiveUnconstrained.cs" />
+    <Compile Include="Optimization\Benchmarks\ProblemTypes\SingleObjectiveConstrained.cs" />
+    <Compile Include="Optimization\Benchmarks\ProblemTypes\SingleObjectiveUnconstrained.cs" />
     <Compile Include="Optimization\Commons\Bag.cs" />
     <Compile Include="Optimization\Commons\BinaryUtilities.cs" />
     <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\GrayCoding.cs" />
@@ -164,11 +168,10 @@
     <Compile Include="Optimization\Logging\IOptimizationLogger.cs" />
     <Compile Include="Optimization\Logging\NoLogger.cs" />
     <Compile Include="Optimization\OptimizationAnalyzer.cs" />
-    <Compile Include="Optimization\Problem\DesignProblem.cs" />
+    <Compile Include="Optimization\Problem\OptimizationProblem.cs" />
     <Compile Include="Optimization\Problem\IConstraintFunction.cs" />
     <Compile Include="Optimization\Problem\IDesign.cs" />
     <Compile Include="Optimization\Problem\IObjectiveFunction.cs" />
-    <Compile Include="Optimization\Problem\OptimizationProblem.cs" />
     <Compile Include="Optimization\Problem\ProblemChecker.cs" />
     <Compile Include="VRFMonteCarloAnalyzerWithStochasticMaterial.cs" />
     <Compile Include="PolynomialChaosAnalyzer.cs" />

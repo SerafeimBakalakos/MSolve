@@ -15,7 +15,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
     {
         public static void Run()
         {
-            DesignProblem optimizationProblem = new S_CRES();
+            OptimizationProblem optimizationProblem = new S_CRES();
 
             var builder = new DifferentialEvolutionAlgorithmConstrained.Builder(optimizationProblem);
             builder.PopulationSize = 20;

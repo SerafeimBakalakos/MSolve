@@ -12,7 +12,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
     {
         public static void Run()
         {
-            DesignProblem sizingOptimizationProblem = new Truss10Benchmark();
+            OptimizationProblem sizingOptimizationProblem = new Truss10Benchmark();
 
             var builder = new DifferentialEvolutionAlgorithmConstrained.Builder(sizingOptimizationProblem);
             builder.PopulationSize = 100;

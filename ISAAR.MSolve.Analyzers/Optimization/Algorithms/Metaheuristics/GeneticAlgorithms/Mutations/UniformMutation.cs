@@ -22,7 +22,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
         public UniformMutation(OptimizationProblem problem, double mutationProbability, IGenerator randomNumberGenerator)
         {
-            problem.CheckInput();
+            //problem.CheckInput();
             this.lowerBounds = problem.LowerBound;
             this.upperBounds = problem.UpperBound;
 

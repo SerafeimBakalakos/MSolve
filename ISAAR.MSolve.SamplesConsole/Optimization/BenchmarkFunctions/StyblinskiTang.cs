@@ -1,5 +1,5 @@
-﻿using ISAAR.MSolve.Analyzers.Optimization.Problem;
-using System;
+﻿using System;
+using ISAAR.MSolve.Analyzers.Optimization.Benchmarks.ProblemTypes;
 using System.Linq;
 
 namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
@@ -8,7 +8,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
     /// Class for the Styblinski-Tang's optimization problem.
     /// <see href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Wikipedia: Test functions for optimization</see>
     /// </summary>
-    public class StyblinskiTang : OptimizationProblem
+    public class StyblinskiTang : SingleObjectiveUnconstrained
     {
         public StyblinskiTang()
         {
@@ -20,21 +20,15 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
             this.UpperBound = new double[Dimension];
             UpperBound = UpperBound.Select(i => 10.0).ToArray();
 
-            this.ObjectiveFunction = new Objective();
-        }
-
-        class Objective : IObjectiveFunction
-        {
-            public double Evaluate(double[] x)
+            this.ObjectiveFunction = (x) =>
             {
                 double f = 0.0;
-
                 for (int i = 0; i < x.Length; i++)
                 {
                     f += Math.Pow(x[i], 4) - 16 * Math.Pow(x[i], 2) + 5 * x[i];
                 }
                 return f / 2.0;
-            }
+            };
         }
     }
 }

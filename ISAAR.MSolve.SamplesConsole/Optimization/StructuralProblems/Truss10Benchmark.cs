@@ -15,7 +15,7 @@ using ISAAR.MSolve.Analyzers.Interfaces;
 
 namespace ISAAR.MSolve.SamplesConsole.Optimization.StructuralProblems
 {
-    class Truss10Benchmark : DesignProblem
+    class Truss10Benchmark : OptimizationProblem
     {
         public Truss10Benchmark()
         {

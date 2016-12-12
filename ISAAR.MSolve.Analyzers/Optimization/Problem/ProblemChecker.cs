@@ -72,10 +72,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Problem
         /// <param name="problem">The <see cref="OptimizationProblem"/> whose properties will be checked.</param>
         private static void CheckObjectives(OptimizationProblem problem)
         {
-            if (problem.ObjectiveFunction == null)
-            {
-                throw new ArgumentException("The objective function must not be null");
-            }
+           
         }
     }
 }

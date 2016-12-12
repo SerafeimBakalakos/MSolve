@@ -24,9 +24,9 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Differen
 
         // Optimization problem definition
         private readonly int dimension;
-        protected IObjectiveFunction objectiveFunction;
-        private double[] lowerBound;
-        private double[] upperBound;
+        private readonly IDesignFactory designFactory;
+        private readonly double[] lowerBound;
+        private readonly double[] upperBound;
 
         private Individual[] individuals;
         private Individual[] offsprings;
@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Differen
             this.dimension = optimizationProblem.Dimension;
             this.lowerBound = optimizationProblem.LowerBound;
             this.upperBound = optimizationProblem.UpperBound;
-            this.objectiveFunction = optimizationProblem.ObjectiveFunction;
+            this.designFactory = optimizationProblem.DesignFactory;
 
             this.populationSize = populationSize;
             this.mutationFactor = mutationFactor;
@@ -153,10 +153,10 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.Differen
         {
             for (int i = 0; i < populationSize; i++)
             {
-                double fitness = objectiveFunction.Evaluate(individuals[i].Position);
+                IDesign design = designFactory.CreateDesign(individuals[i].Position);
+                double fitness = design.ObjectiveValues[0];
 
                 individuals[i].ObjectiveValue = fitness;
-
             }
             CurrentFunctionEvaluations += this.populationSize;
         }

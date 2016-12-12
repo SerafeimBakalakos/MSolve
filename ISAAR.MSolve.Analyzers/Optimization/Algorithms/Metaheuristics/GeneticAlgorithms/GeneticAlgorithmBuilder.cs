@@ -24,7 +24,6 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
             protected Builder(OptimizationProblem problem)
             {
-                problem.CheckInput();
                 this.problem = problem;
             }
 
@@ -57,7 +56,7 @@ namespace ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticA
 
                 CheckUserParameters();
                 ApplyDefaultParameters();
-                return new GeneticAlgorithm<T>(problem.Dimension, 0, problem.ObjectiveFunction, 
+                return new GeneticAlgorithm<T>(problem.Dimension, 0, problem.DesignFactory, 
                                                Logger, ConvergenceCriterion, Initializer, 
                                                Encoding, PopulationSize, PopulationStrategy, Selection, Recombination, Mutation);
             }
