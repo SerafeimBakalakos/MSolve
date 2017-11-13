@@ -31,7 +31,14 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>ISAAR.MSolve.SamplesConsole.Optimization.OptimizationTestMain</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PommaLabs.Thrower, Version=3.0.0.0, Culture=neutral, PublicKeyToken=2f204b7110a52060, processorArchitecture=MSIL">
+      <HintPath>..\packages\Thrower.3.0.4\lib\net40\PommaLabs.Thrower.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -39,11 +46,42 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Troschuetz.Random, Version=4.0.3.0, Culture=neutral, PublicKeyToken=2f204b7110a52060, processorArchitecture=MSIL">
+      <HintPath>..\packages\Troschuetz.Random.4.0.5\lib\net40\Troschuetz.Random.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BeamBuildingBuilder.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Ackley.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Beale.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Booth.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Bukin.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Constrained\S_CRES.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\CrossInTray.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Easom.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Eggholder.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\GoldsteinPrice.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\HolderTable.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Levy13.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Matyas.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\McCormick.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Rosenbrock.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Schaffer2.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Schaffer4.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\Sphere.cs" />
+    <Compile Include="Optimization\BenchmarkFunctions\StyblinskiTang.cs" />
+    <Compile Include="Optimization\OptimizationTestDEConstrained.cs" />
+    <Compile Include="Optimization\OptimizationTestGA.cs" />
+    <Compile Include="Optimization\OptimizationTestMain.cs" />
+    <Compile Include="Optimization\OptimizationTestPSO.cs" />
+    <Compile Include="Optimization\OptimizationTestDE.cs" />
+    <Compile Include="Optimization\OptimizationTruss10Benchmark.cs" />
+    <Compile Include="Optimization\StructuralProblems\Rod2DResults.cs" />
+    <Compile Include="Optimization\StructuralProblems\Truss10Benchmark.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TrussExample.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ISAAR.MSolve.Analyzers.Interfaces\ISAAR.MSolve.Analyzers.Interfaces.csproj">
@@ -70,6 +108,12 @@
       <Project>{5811fdb6-9b63-48ed-a153-47a673a3cc6f}</Project>
       <Name>ISAAR.MSolve.Analyzers</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ISAAR\MSolve\SamplesConsole\Optimization\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -6,6 +6,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+*.csproj
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -172,6 +173,9 @@ ApplicationInsights.config
 # Windows Store app package directory
 AppPackages/
 BundleArtifacts/
+
+# Visual Studio class diagram files
+*.cd
 
 # Visual Studio cache files
 # files ending in .cache can be ignored
