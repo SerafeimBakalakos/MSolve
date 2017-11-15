@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.Analyzers.Optimization.Problem;
-using ISAAR.MSolve.PreProcessor.Materials;
-using ISAAR.MSolve.PreProcessor;
-using ISAAR.MSolve.Matrices;
-using ISAAR.MSolve.PreProcessor.Elements;
+using ISAAR.MSolve.Numerical.Optimization.Problem;
+using ISAAR.MSolve.FEM.Problems.Structural;
+using ISAAR.MSolve.FEM.Problems.Structural.Constitutive;
+using ISAAR.MSolve.FEM.Entities;
+using ISAAR.MSolve.FEM.Logging;
+using ISAAR.MSolve.Numerical.LinearAlgebra;
+using ISAAR.MSolve.FEM.Problems.Structural.Elements;
 using ISAAR.MSolve.Solvers.Skyline;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Analyzers;
@@ -64,13 +66,13 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.StructuralProblems
 
                 model = BuildModel(x);
 
-                SolverSkyline solver = new SolverSkyline(model);
-                ProblemStructural provider = new ProblemStructural(model, solver.SubdomainsDictionary);
-                childAnalyzer = new LinearAnalyzer(solver, solver.SubdomainsDictionary);
-                StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, solver.SubdomainsDictionary);
+                var linearSystem = new SkylineLinearSystem(1, model.SubdomainsDictionary[1].Forces);
+                SolverFBSubstitution solver = new SolverFBSubstitution(linearSystem);
+                ProblemStructural provider = new ProblemStructural(model);
+                childAnalyzer = new LinearAnalyzer(solver, linearSystem);
+                StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, linearSystem);
                 CreateLogs(model, childAnalyzer);
-                rodResults = new Rod2DResults(model.SubdomainsDictionary[1], 
-                    solver.SubdomainsDictionary[1]); // Let's hope this is the one!
+                rodResults = new Rod2DResults(model.SubdomainsDictionary[1], linearSystem); // Let's hope this is the one!
 
                 parentAnalyzer.BuildMatrices();
                 parentAnalyzer.Initialize();
@@ -232,7 +234,6 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.StructuralProblems
                 maxStresses = maxStresses.Select(i => 25.0).ToArray();
                 double[] stresses = new double[10];
 
-                rodResults.QueryResults();
                 int counter = 0;
                 foreach (var element in model.Elements)
                 {

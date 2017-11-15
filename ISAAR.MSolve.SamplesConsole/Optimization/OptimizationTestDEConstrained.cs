@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.Analyzers.Optimization;
-using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.DifferentialEvolution;
-using ISAAR.MSolve.Analyzers.Optimization.Constraints.Penalties;
-using ISAAR.MSolve.Analyzers.Optimization.Convergence;
-using ISAAR.MSolve.Analyzers.Optimization.Problem;
+using ISAAR.MSolve.Numerical.Optimization;
+using ISAAR.MSolve.Numerical.Optimization.Algorithms.Metaheuristics.DifferentialEvolution;
+using ISAAR.MSolve.Numerical.Optimization.Constraints.Penalties;
+using ISAAR.MSolve.Numerical.Optimization.Convergence;
+using ISAAR.MSolve.Numerical.Optimization.Problem;
 using ISAAR.MSolve.SamplesConsole.Optimization.StructuralProblems;
 
 namespace ISAAR.MSolve.SamplesConsole.Optimization

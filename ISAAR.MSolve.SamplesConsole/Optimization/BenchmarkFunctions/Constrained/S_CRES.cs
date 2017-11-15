@@ -1,5 +1,5 @@
 ﻿using System;
-using ISAAR.MSolve.Analyzers.Optimization.Benchmarks.ProblemTypes;
+using ISAAR.MSolve.Numerical.Optimization.Benchmarks.ProblemTypes;
 
 namespace ISAAR.MSolve.SamplesConsole.Optimization.StructuralProblems
 {

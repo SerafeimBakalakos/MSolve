@@ -1,8 +1,8 @@
-﻿using ISAAR.MSolve.Analyzers.Optimization;
-using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.DifferentialEvolution;
-using ISAAR.MSolve.Analyzers.Optimization.Constraints.Penalties;
-using ISAAR.MSolve.Analyzers.Optimization.Convergence;
-using ISAAR.MSolve.Analyzers.Optimization.Problem;
+﻿using ISAAR.MSolve.Numerical.Optimization;
+using ISAAR.MSolve.Numerical.Optimization.Algorithms.Metaheuristics.DifferentialEvolution;
+using ISAAR.MSolve.Numerical.Optimization.Constraints.Penalties;
+using ISAAR.MSolve.Numerical.Optimization.Convergence;
+using ISAAR.MSolve.Numerical.Optimization.Problem;
 using ISAAR.MSolve.SamplesConsole.Optimization.StructuralProblems;
 using System;
 
@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
             builder.PopulationSize = 100;
             builder.MutationFactor = 0.6;
             builder.CrossoverProbability = 0.9;
-            builder.ConvergenceCriterion = new MaxFunctionEvaluations(100000);
+            builder.ConvergenceCriterion = new MaxFunctionEvaluations(10000000);
             builder.Penalty = new DeathPenalty();
             IOptimizationAlgorithm de = builder.Build();
 

@@ -104,10 +104,10 @@
     <Compile Include="Logging\ForcesLog.cs" />
     <Compile Include="Logging\ImplicitIntegrationAnalyzerLog.cs" />
     <Compile Include="Logging\LinearAnalyzerLogFactory.cs" />
+    <Compile Include="Problems\Structural\Elements\Rod2D.cs" />
     <Compile Include="Writers\NEUWriter.cs" />
     <Compile Include="Logging\StressesLog.cs" />
     <Compile Include="Problems\Porous\Elements\Hexa8u8pWithStochasticMaterial.cs" />
-    <Compile Include="Elements\Rod2D.cs" />
     <Compile Include="Interfaces\IMassAccelerationHistoryLoad.cs" />
     <Compile Include="Entities\MassAccelerationSinusoidalLoad.cs" />
     <Compile Include="Problems\Structural\Elements\ConcentratedMass3D.cs" />

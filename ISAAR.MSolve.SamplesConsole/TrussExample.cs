@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using ISAAR.MSolve.PreProcessor;
+using ISAAR.MSolve.FEM.Entities;
+using ISAAR.MSolve.FEM.Logging;
 using ISAAR.MSolve.Solvers.Skyline;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Logging;
-using ISAAR.MSolve.PreProcessor.Materials;
-using ISAAR.MSolve.PreProcessor.Elements;
-using ISAAR.MSolve.Matrices;
+using ISAAR.MSolve.FEM.Problems.Structural;
+using ISAAR.MSolve.FEM.Problems.Structural.Constitutive;
+using ISAAR.MSolve.FEM.Problems.Structural.Elements;
+using ISAAR.MSolve.Numerical.LinearAlgebra;
 
 namespace ISAAR.MSolve.SamplesConsole
 {
@@ -77,12 +79,12 @@ namespace ISAAR.MSolve.SamplesConsole
             trussModel.Loads.Add(new Load() { Amount = loadY, Node = trussModel.NodesDictionary[3], DOF = DOFType.Y });
 
             trussModel.ConnectDataStructures();
-            SolverSkyline solution = new SolverSkyline(trussModel);
+            var linearSystem = new SkylineLinearSystem(1, trussModel.SubdomainsDictionary[1].Forces);
+            SolverFBSubstitution solver = new SolverFBSubstitution(linearSystem);
 
-            ProblemStructural provider = new ProblemStructural(trussModel, solution.SubdomainsDictionary);
-
-            Analyzers.LinearAnalyzer childAnalyzer = new LinearAnalyzer(solution, solution.SubdomainsDictionary);
-            StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, solution.SubdomainsDictionary);
+            ProblemStructural provider = new ProblemStructural(trussModel);
+            LinearAnalyzer childAnalyzer = new LinearAnalyzer(solver, linearSystem);
+            StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, linearSystem);
 
             childAnalyzer.LogFactories[1] = new LinearAnalyzerLogFactory(new int[] {
                 trussModel.NodalDOFsDictionary[3][DOFType.X],

@@ -1,16 +1,16 @@
-﻿using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms;
-using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Encodings;
-using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations;
-using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Recombinations;
-using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections;
-using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections.FitnessScaling;
-using ISAAR.MSolve.Analyzers.Optimization.Convergence;
-using ISAAR.MSolve.Analyzers.Optimization.Logging;
-using ISAAR.MSolve.Analyzers.Optimization.Problem;
+﻿using ISAAR.MSolve.Numerical.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms;
+using ISAAR.MSolve.Numerical.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Encodings;
+using ISAAR.MSolve.Numerical.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations;
+using ISAAR.MSolve.Numerical.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Recombinations;
+using ISAAR.MSolve.Numerical.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections;
+using ISAAR.MSolve.Numerical.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Selections.FitnessScaling;
+using ISAAR.MSolve.Numerical.Optimization.Convergence;
+using ISAAR.MSolve.Numerical.Optimization.Logging;
+using ISAAR.MSolve.Numerical.Optimization.Problem;
 using ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions;
 using System;
 using System.Linq;
-using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations.Gaussian;
+using ISAAR.MSolve.Numerical.Optimization.Algorithms.Metaheuristics.GeneticAlgorithms.Mutations.Gaussian;
 
 namespace ISAAR.MSolve.SamplesConsole.Optimization
 {

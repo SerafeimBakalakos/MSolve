@@ -1,8 +1,8 @@
-﻿using ISAAR.MSolve.Analyzers.Optimization;
-using ISAAR.MSolve.Analyzers.Optimization.Algorithms.Metaheuristics.ParticleSwarmOptimization;
-using ISAAR.MSolve.Analyzers.Optimization.Convergence;
-using ISAAR.MSolve.Analyzers.Optimization.Logging;
-using ISAAR.MSolve.Analyzers.Optimization.Problem;
+﻿using ISAAR.MSolve.Numerical.Optimization;
+using ISAAR.MSolve.Numerical.Optimization.Algorithms.Metaheuristics.ParticleSwarmOptimization;
+using ISAAR.MSolve.Numerical.Optimization.Convergence;
+using ISAAR.MSolve.Numerical.Optimization.Logging;
+using ISAAR.MSolve.Numerical.Optimization.Problem;
 using System;
 
 namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions

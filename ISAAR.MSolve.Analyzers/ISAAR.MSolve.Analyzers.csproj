@@ -99,86 +99,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Optimization\Algorithms\Metaheuristics\DifferentialEvolution\DifferentialEvolutionAlgorithm.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\DifferentialEvolution\DifferentialEvolutionAlgorithmConstrained.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\BinaryGeneticAlgorithmBuilder.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\Quantization.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\GeneticAlgorithm.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\AbstractBinaryCoding.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\RealCoding.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\StandardBinaryCoding.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\GeneticAlgorithmBuilder.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Mutations\UniformMutation.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Mutations\Gaussian\ConstantGaussianMutation.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Mutations\Gaussian\AbstractPerturbationTemplate.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Mutations\BoundaryMutation.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\IPopulationStrategy.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\StandardPopulationStrategy.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\SteadyStateStrategy.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\PopulationStrategies\UnfitEliminationStrategy.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\RealCodedGeneticAlgorithmBuilder.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\BLXa.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\BLXab.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\IntermediateCrossover.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\FitnessScaling\ExponentialFitnessScaling.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\FitnessScaling\IFitnessScalingStrategy.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\FitnessScaling\InverseRankScaling.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\FitnessScaling\RankScaling.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\AbstractRemainderSelection.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\RemainderStochasticSamplingWithReplacement.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\StochasticUniversalSampling.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\TruncationSelection.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\Particle.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\ParticleSwarmOptimization\ParticleSwarmOptimizationAlgorithm.cs" />
-    <Compile Include="Optimization\Benchmarks\ProblemTypes\MultiObjectiveConstrained.cs" />
-    <Compile Include="Optimization\Benchmarks\ProblemTypes\MultiObjectiveUnconstrained.cs" />
-    <Compile Include="Optimization\Benchmarks\ProblemTypes\SingleObjectiveConstrained.cs" />
-    <Compile Include="Optimization\Benchmarks\ProblemTypes\SingleObjectiveUnconstrained.cs" />
-    <Compile Include="Optimization\Commons\Bag.cs" />
-    <Compile Include="Optimization\Commons\BinaryUtilities.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\GrayCoding.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Encodings\IEncoding.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Individual.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Mutations\BitFlipMutation.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Mutations\IMutationStrategy.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\IRecombinationStrategy.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\SinglePointCrossover.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Recombinations\UniformCrossover.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\RouletteWheelSelection.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\ISelectionStrategy.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\TournamentSelection.cs" />
-    <Compile Include="Optimization\Algorithms\Metaheuristics\GeneticAlgorithms\Selections\UniformRandomSelection.cs" />
-    <Compile Include="Optimization\Commons\Exceptions\IncompatibleStrategiesException.cs" />
-    <Compile Include="Optimization\Commons\RandomNumberGenerationUtilities.cs" />
-    <Compile Include="Optimization\Commons\Roulette.cs" />
-    <Compile Include="Optimization\Commons\VectorOperations.cs" />
-    <Compile Include="Optimization\Constraints\Penalties\DeathPenalty.cs" />
-    <Compile Include="Optimization\Constraints\Penalties\IPenalty.cs" />
-    <Compile Include="Optimization\Constraints\Penalties\IPenaltyStatic.cs" />
-    <Compile Include="Optimization\Convergence\CompositeCriteria.cs" />
-    <Compile Include="Optimization\Convergence\IConvergenceCriterion.cs" />
-    <Compile Include="Optimization\Convergence\MaxFunctionEvaluations.cs" />
-    <Compile Include="Optimization\Convergence\MaxIterations.cs" />
-    <Compile Include="Optimization\Individual.cs" />
-    <Compile Include="Optimization\Initialization\HaltonPoints\First50PrimesGenerator.cs" />
-    <Compile Include="Optimization\Initialization\HaltonPoints\HaltonPointGenerator.cs" />
-    <Compile Include="Optimization\Initialization\HaltonPoints\HaltonSequence.cs" />
-    <Compile Include="Optimization\Initialization\HaltonPoints\HaltonPointTest.cs" />
-    <Compile Include="Optimization\Initialization\HaltonPoints\IPrimeGenerator.cs" />
-    <Compile Include="Optimization\Initialization\IInitializer.cs" />
-    <Compile Include="Optimization\Initialization\RealUniformHaltonInitializer.cs" />
-    <Compile Include="Optimization\Initialization\RealUniformRandomInitializer.cs" />
-    <Compile Include="Optimization\IOptimizationAlgorithm.cs" />
-    <Compile Include="Optimization\IOptimizationAnalyzer.cs" />
-    <Compile Include="Optimization\Logging\BestOfIterationLogger.cs" />
-    <Compile Include="Optimization\Logging\IOptimizationLogger.cs" />
-    <Compile Include="Optimization\Logging\NoLogger.cs" />
-    <Compile Include="Optimization\OptimizationAnalyzer.cs" />
-    <Compile Include="Optimization\Problem\OptimizationProblem.cs" />
-    <Compile Include="Optimization\Problem\IConstraintFunction.cs" />
-    <Compile Include="Optimization\Problem\IDesign.cs" />
-    <Compile Include="Optimization\Problem\IObjectiveFunction.cs" />
-    <Compile Include="Optimization\Problem\ProblemChecker.cs" />
     <Compile Include="ImplicitIntegrationCoefficients.cs" />
     <Compile Include="LinearAnalyzer.cs" />
     <Compile Include="NewmarkDynamicAnalyzer.cs" />
@@ -208,9 +128,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Optimization\Algorithms\DerivativeBased\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

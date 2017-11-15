@@ -4,12 +4,12 @@
     {
         public static void Main()
         {
-            OptimizationTestDE.Run();
+            //OptimizationTestDE.Run();
             //OptimizationTestGA.Run();
             //OptimizationTestPSO.Run();
 
             //TrussExample.Truss2DExample();
-            //OptimizationTruss10Benchmark.Run();
+            OptimizationTruss10Benchmark.Run();
             //OptimizationTestDEConstrained.Run();
         }
     }
