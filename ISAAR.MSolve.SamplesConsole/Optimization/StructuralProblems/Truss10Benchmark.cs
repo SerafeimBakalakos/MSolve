@@ -30,6 +30,21 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.StructuralProblems
             this.DesignFactory = new Truss10Factory();
         }
 
+        public static readonly double[] Solution = new double[] { 7.9378, 0.1, 8.0621, 3.9378, 0.1, 0.1, 5.7447, 5.5689, 5.5689, 0.1 };
+
+        public static void CheckSolution(double[] computedSolution, double tolerance = 1e-5)
+        {
+            for (int i = 0; i < Solution.Length; ++i)
+            {
+                if (Math.Abs(computedSolution[i]/Solution[i] - 1) > tolerance)
+                {
+                    Console.WriteLine("Optimization did not find the correct solution");
+                    return;
+                }
+            }
+            Console.WriteLine("Optimization found the correct solution");
+        }
+
         private class Truss10Factory : IDesignFactory
         {
             public IDesign CreateDesign(double[] x)

@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization
             builder.PopulationSize = 100;
             builder.MutationFactor = 0.6;
             builder.CrossoverProbability = 0.9;
-            builder.ConvergenceCriterion = new MaxFunctionEvaluations(10000000);
+            builder.ConvergenceCriterion = new MaxFunctionEvaluations(1000000);
             builder.Penalty = new DeathPenalty();
             IOptimizationAlgorithm de = builder.Build();
 
