@@ -11,14 +11,15 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
     {
         public static void Run()
         {
-            OptimizationProblem optimizationProblem = new Rosenbrock();
+            OptimizationProblem optimizationProblem = new Ackley(2);
 
             ParticleSwarmOptimizationAlgorithm.Builder builder = new ParticleSwarmOptimizationAlgorithm.Builder(optimizationProblem);
 
-            builder.SwarmSize = 50;
+            builder.SwarmSize = 10;
             builder.PhiP = 2.0;
             builder.PhiG = 2.0;
-            builder.ConvergenceCriterion = new MaxFunctionEvaluations((int)10E3);
+            builder.Omega = 0.2;
+            builder.ConvergenceCriterion = new MaxFunctionEvaluations(10000);
             builder.Logger = new NoLogger();
 
             IOptimizationAlgorithm pso = builder.Build();

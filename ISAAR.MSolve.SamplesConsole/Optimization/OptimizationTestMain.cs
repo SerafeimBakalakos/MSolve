@@ -1,4 +1,6 @@
-﻿namespace ISAAR.MSolve.SamplesConsole.Optimization
+﻿using ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions;
+
+namespace ISAAR.MSolve.SamplesConsole.Optimization
 {
     class OptimizationTestMain
     {

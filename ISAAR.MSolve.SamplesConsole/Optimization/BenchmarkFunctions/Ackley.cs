@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using ISAAR.MSolve.Numerical.Optimization.Benchmarks.ProblemTypes;
 
 namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
@@ -9,14 +10,34 @@ namespace ISAAR.MSolve.SamplesConsole.Optimization.BenchmarkFunctions
     /// </summary>
     public class Ackley : SingleObjectiveUnconstrained
     {
-        public Ackley()
+        public Ackley(int dim)
         {
-            this.Dimension = 2;
-            this.LowerBound = new double[] { -5, -5 };
-            this.UpperBound = new double[] { 5, 5 };
+            this.Dimension = dim;
+
+            this.LowerBound = new double[Dimension];
+            LowerBound = LowerBound.Select(i => -5.0).ToArray();
+
+            this.UpperBound = new double[Dimension];
+            UpperBound = UpperBound.Select(i => 5.0).ToArray();
+
             this.ObjectiveFunction = (x) =>
-                    -20 * Math.Exp(-0.2 * Math.Sqrt(0.5 * (Math.Pow(x[0], 2) + Math.Pow(x[1], 2)))) -
-                    Math.Exp(0.5 * (Math.Cos(2 * Math.PI * x[0]) + Math.Cos(2 * Math.PI * x[1]))) + Math.E + 20;
+            {
+                double rootSum = 0.0;
+                for (int i = 0; i < this.Dimension; ++i)
+                {
+                    rootSum += Math.Pow(x[i], 2);
+                }
+                rootSum /= this.Dimension;
+
+                double expSum = 0.0;
+                for (int i = 0; i < this.Dimension; ++i)
+                {
+                    expSum += Math.Cos(2 * Math.PI * x[i]);
+                }
+                expSum /= this.Dimension;
+
+                return -20 * Math.Exp(-0.2 * Math.Sqrt(rootSum)) - Math.Exp(expSum) + Math.E + 20;
+            };
         }
     }
 }
