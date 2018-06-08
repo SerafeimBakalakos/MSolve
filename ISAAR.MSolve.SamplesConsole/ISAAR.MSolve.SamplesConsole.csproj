@@ -3,7 +3,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
-    <StartupObject>ISAAR.MSolve.Tests.PresentationTests</StartupObject>
+    <StartupObject>ISAAR.MSolve.SamplesConsole.PresentationJuly2018</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>

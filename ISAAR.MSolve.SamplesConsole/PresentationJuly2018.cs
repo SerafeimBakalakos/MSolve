@@ -12,9 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ISAAR.MSolve.Tests
+namespace ISAAR.MSolve.SamplesConsole
 {
-    public class PresentationTests
+    public class PresentationJuly2018
     {
         public static void Main()
         {
