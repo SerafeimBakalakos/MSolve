@@ -9,6 +9,7 @@ namespace ISAAR.MSolve.FEM.Entities
 {
     public class Model:IStructuralModel
     {
+        public const int constrainedDofIdx = -1;
         private int totalDOFs = 0;
         private readonly Dictionary<int, Node> nodesDictionary = new Dictionary<int, Node>();
         //private readonly IList<EmbeddedNode> embeddedNodes = new List<EmbeddedNode>();
@@ -196,7 +197,7 @@ namespace ISAAR.MSolve.FEM.Entities
                     {
                         if (constraint == dofType)
                         {
-                            dofID = -1;
+                            dofID = constrainedDofIdx;
                             break;
                         }
                     }
@@ -207,10 +208,10 @@ namespace ISAAR.MSolve.FEM.Entities
                     //var embeddedNode = embeddedNodes.Where(x => x.Node == node).FirstOrDefault();
                     ////if (node.EmbeddedInElement != null && node.EmbeddedInElement.ElementType.GetDOFTypes(null)
                     ////    .SelectMany(d => d).Count(d => d == dofType) > 0)
-                    ////    dofID = -1;
+                    ////    dofID = constrainedDofIdx;
                     //if (embeddedNode != null && embeddedNode.EmbeddedInElement.ElementType.DOFEnumerator.GetDOFTypes(null)
                     //    .SelectMany(d => d).Count(d => d == dofType) > 0)
-                    //    dofID = -1;
+                    //    dofID = constrainedDofIdx;
 
                     if (dofID == 0)
                     {
