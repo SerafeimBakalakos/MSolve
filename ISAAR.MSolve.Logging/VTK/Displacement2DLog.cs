@@ -56,8 +56,11 @@ namespace ISAAR.MSolve.Logging.VTK
             string path = pathNoExtension + $"_{iteration}.vtk";
             using (var writer = new VtkFileWriter(path))
             {
+                writer.WriteMesh(mesh.Points, mesh.Cells);
                 writer.WriteVector2DField("displacements", displacements);
             }
+
+            ++iteration;
         }
     }
 }

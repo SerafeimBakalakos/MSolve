@@ -34,7 +34,7 @@ namespace ISAAR.MSolve.Logging.VTK
             for (int i = 0; i < cells.Length; ++i)
             {
                 Element element = elements[i];
-                int code = VtkCell2D.cellTypeCodes[elements[i].GetType()];
+                int code = VtkCell2D.cellTypeCodes[elements[i].ElementType.GetType()];
                 var vertices = new VtkPoint2D[element.Nodes.Count];
                 for (int j = 0; j < vertices.Length; ++j) vertices[j] = nodes2Points[element.Nodes[j]];
                 cells[i] = new VtkCell2D(code, vertices);

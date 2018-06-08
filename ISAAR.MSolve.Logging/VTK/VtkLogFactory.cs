@@ -16,11 +16,13 @@ namespace ISAAR.MSolve.Logging.VTK
 
         public VtkLogFactory(Model model, string directory, bool logDisplacements, bool logStrains, bool logStresses)
         {
+            this.model = model;
+            this.directory = directory;
+
             if ((!logDisplacements) && (!logStrains) && (!logStresses)) throw new ArgumentException("You must log something");
             this.logDisplacements = logDisplacements;
             this.logStrains = logStrains;
             this.logStresses = logStresses;
-            this.model = model;
         }
 
         public string DisplacementsFilename { get; set; } = "displacements";

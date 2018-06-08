@@ -18,7 +18,8 @@ namespace ISAAR.MSolve.Tests
     {
         public static void Main()
         {
-            SolveStaticQuadRetainingWall();
+            //SolveStaticQuadRetainingWall();
+            SolveDynamicQuadRetainingWall();
         }
 
         private static void SolveStaticQuadRetainingWall()
@@ -31,7 +32,8 @@ namespace ISAAR.MSolve.Tests
             ElasticMaterial2D material = new ElasticMaterial2D()
             {
                 YoungModulus = youngModulus,
-                PoissonRatio = poissonRatio
+                PoissonRatio = poissonRatio,
+                StressState = "plstress"
             };
             Model model = new Model();
 
@@ -297,14 +299,14 @@ namespace ISAAR.MSolve.Tests
             model.Loads.Add(new Load() { Amount = -25800 * 2, Node = model.NodesDictionary[15], DOF = DOFType.Y });
 
             //ground horizontal loads
-            model.Loads.Add(new Load() { Amount = -2130, Node = model.NodesDictionary[28], DOF = DOFType.X });
-            model.Loads.Add(new Load() { Amount = -11490, Node = model.NodesDictionary[26], DOF = DOFType.X });
-            model.Loads.Add(new Load() { Amount = -20990, Node = model.NodesDictionary[24], DOF = DOFType.X });
-            model.Loads.Add(new Load() { Amount = -30790, Node = model.NodesDictionary[22], DOF = DOFType.X });
-            model.Loads.Add(new Load() { Amount = -40600, Node = model.NodesDictionary[22], DOF = DOFType.X });
-            model.Loads.Add(new Load() { Amount = -25800, Node = model.NodesDictionary[20], DOF = DOFType.X });
-            model.Loads.Add(new Load() { Amount = -50390, Node = model.NodesDictionary[18], DOF = DOFType.X });
-            model.Loads.Add(new Load() { Amount = -28460, Node = model.NodesDictionary[15], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 2130, Node = model.NodesDictionary[28], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 11490, Node = model.NodesDictionary[26], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 20990, Node = model.NodesDictionary[24], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 30790, Node = model.NodesDictionary[22], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 40600, Node = model.NodesDictionary[22], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 25800, Node = model.NodesDictionary[20], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 50390, Node = model.NodesDictionary[18], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 28460, Node = model.NodesDictionary[15], DOF = DOFType.X });
             #endregion
 
             model.ConnectDataStructures();
@@ -324,11 +326,10 @@ namespace ISAAR.MSolve.Tests
             StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, linearSystems);
 
             // Logging displacement, strain, and stress fields.
-            string outputDirectory = @"C:\Users\Serafeim\Desktop\Presentation";
+            string outputDirectory = @"C:\Users\Serafeim\Desktop\Presentation\Plots";
             childAnalyzer.LogFactories[0] = new VtkLogFactory(model, outputDirectory, true, false, false);
 
             // Run the analysis
-            VectorExtensions.AssignTotalAffinityCount();
             parentAnalyzer.BuildMatrices();
             parentAnalyzer.Initialize();
             parentAnalyzer.Solve();
@@ -341,12 +342,13 @@ namespace ISAAR.MSolve.Tests
             VectorExtensions.AssignTotalAffinityCount();
             double youngModulus = 2.1e09;
             double poissonRatio = 0.3;
-            double density = 20;
+            double density = 20e3;
 
             ElasticMaterial2D material = new ElasticMaterial2D()
             {
                 YoungModulus = youngModulus,
-                PoissonRatio = poissonRatio
+                PoissonRatio = poissonRatio,
+                StressState = "plstress"
             };
             Model model = new Model();
 
@@ -402,8 +404,8 @@ namespace ISAAR.MSolve.Tests
                 ElementType = new Quad4(material)
                 {
                     Density = density,
-                    RayleighAlpha=0.05,
-                    RayleighBeta=0.05
+                    RayleighAlpha = 0.05,
+                    RayleighBeta = 0.05
                 }
             };
             element0.AddNode(model.NodesDictionary[0]);
@@ -682,16 +684,17 @@ namespace ISAAR.MSolve.Tests
             model.Loads.Add(new Load() { Amount = -25800 * 2, Node = model.NodesDictionary[15], DOF = DOFType.Y });
 
             //ground horizontal loads
-            model.Loads.Add(new Load() { Amount = -2130, Node = model.NodesDictionary[28], DOF = DOFType.X });
-            model.Loads.Add(new Load() { Amount = -11490, Node = model.NodesDictionary[26], DOF = DOFType.X });
-            model.Loads.Add(new Load() { Amount = -20990, Node = model.NodesDictionary[24], DOF = DOFType.X });
-            model.Loads.Add(new Load() { Amount = -30790, Node = model.NodesDictionary[22], DOF = DOFType.X });
-            model.Loads.Add(new Load() { Amount = -40600, Node = model.NodesDictionary[22], DOF = DOFType.X });
-            model.Loads.Add(new Load() { Amount = -25800, Node = model.NodesDictionary[20], DOF = DOFType.X });
-            model.Loads.Add(new Load() { Amount = -50390, Node = model.NodesDictionary[18], DOF = DOFType.X });
-            model.Loads.Add(new Load() { Amount = -28460, Node = model.NodesDictionary[15], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 2130, Node = model.NodesDictionary[28], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 11490, Node = model.NodesDictionary[26], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 20990, Node = model.NodesDictionary[24], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 30790, Node = model.NodesDictionary[22], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 40600, Node = model.NodesDictionary[22], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 25800, Node = model.NodesDictionary[20], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 50390, Node = model.NodesDictionary[18], DOF = DOFType.X });
+            model.Loads.Add(new Load() { Amount = 28460, Node = model.NodesDictionary[15], DOF = DOFType.X });
 
-            model.MassAccelerationHistoryLoads.Add(new MassAccelerationHistoryLoad("elcentro.dat",1));
+            model.MassAccelerationHistoryLoads.Add(
+                new MassAccelerationHistoryLoad(@"C:\Users\Serafeim\Desktop\Presentation\Input\elcentro_NS.dat", 1));
             #endregion
 
             model.ConnectDataStructures();
@@ -708,8 +711,13 @@ namespace ISAAR.MSolve.Tests
 
             // Choose parent and child analyzers -> Parent: Static, Child: Linear
             LinearAnalyzer childAnalyzer = new LinearAnalyzer(solver, linearSystems);
-            NewmarkDynamicAnalyzer parentAnalyzer = new NewmarkDynamicAnalyzer(provider, childAnalyzer, linearSystems, 0.25, 0.5, 0.28, 3.36);
+            NewmarkDynamicAnalyzer parentAnalyzer = new NewmarkDynamicAnalyzer(provider, childAnalyzer, linearSystems, 0.6, 1, 0.02, 53.74);
 
+            // Logging displacement, strain, and stress fields.
+            string outputDirectory = @"C:\Users\Serafeim\Desktop\Presentation\Plots";
+            childAnalyzer.LogFactories[0] = new VtkLogFactory(model, outputDirectory, true, false, false);
+
+            // Run the analysis
             parentAnalyzer.BuildMatrices();
             parentAnalyzer.Initialize();
             parentAnalyzer.Solve();

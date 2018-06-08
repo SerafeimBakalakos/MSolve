@@ -8,9 +8,9 @@ namespace ISAAR.MSolve.Logging.VTK
     {
         public VtkPoint2D(int id, double x, double y)
         {
-            this.ID = ID;
-            this.X = X;
-            this.Y = Y;
+            this.ID = id;
+            this.X = x;
+            this.Y = y;
         }
 
         public int ID { get; }

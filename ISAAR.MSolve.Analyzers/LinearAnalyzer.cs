@@ -56,12 +56,12 @@ namespace ISAAR.MSolve.Analyzers
 
         public void Initialize()
         {
+            InitializeLogs();
             solver.Initialize();
         }
 
         public void Solve()
         {
-            InitializeLogs();
             DateTime start = DateTime.Now;
             solver.Solve();
             DateTime end = DateTime.Now;
