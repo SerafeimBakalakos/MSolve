@@ -19,6 +19,8 @@ namespace ISAAR.MSolve.SamplesConsole
 
         static void Main(string[] args)
         {
+            MPI.ModelMPI.RunSerial();
+
             //SolveBuildingInNoSoilSmall();
             //TrussExample.Run();
             //FEM.Cantilever2D.Run();

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject>ISAAR.MSolve.SamplesConsole.Program</StartupObject>
@@ -8,11 +8,16 @@
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ISAAR.MSolve.Materials\ISAAR.MSolve.Materials.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.Optimization.Structural\ISAAR.MSolve.Optimization.Structural.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.Optimization\ISAAR.MSolve.Optimization.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.Problems\ISAAR.MSolve.Problems.csproj" />
+    <ProjectReference Include="..\ISAAR.MSolve.Solvers.Tests\ISAAR.MSolve.Solvers.Tests.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.Solvers\ISAAR.MSolve.Solvers.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.Tests\ISAAR.MSolve.Tests.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.XFEM.Tests\ISAAR.MSolve.XFEM.Tests.csproj" />
@@ -23,5 +28,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="SupportiveClasses\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MPI.NET" Version="1.4.0" />
   </ItemGroup>
 </Project>
