@@ -19,7 +19,9 @@ namespace ISAAR.MSolve.SamplesConsole
 
         static void Main(string[] args)
         {
-            MPI.ModelMPI.RunSerial();
+            //Console.WriteLine("Hello World");
+            //Parallel.DistributeModelExample.RunSerial();
+            Parallel.DistributeModelExample.RunParallel(args);
 
             //SolveBuildingInNoSoilSmall();
             //TrussExample.Run();

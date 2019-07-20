@@ -77,6 +77,16 @@ namespace ISAAR.MSolve.FEM.Entities
             foreach (Element element in Elements) element.ElementType.ClearMaterialStresses();
         }
 
+        public void ConnectDataStructures()
+        {
+            DefineNodesFromElements();
+
+            foreach (Element element in Elements)
+            {
+                foreach (Node node in element.Nodes) node.ElementsDictionary[element.ID] = element;
+            }
+        }
+
         public void DefineNodesFromElements()
         {
             nodes.Clear();

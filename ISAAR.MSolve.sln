@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ISAAR.MSolve.Solvers", "ISAAR.MSolve.Solvers\ISAAR.MSolve.Solvers.csproj", "{0883B2F7-198A-4404-B13D-22100BF90A31}"
 EndProject
@@ -61,7 +61,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ISAAR.MSolve.Optimization.T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ISAAR.MSolve.XFEM", "ISAAR.MSolve.XFEM\ISAAR.MSolve.XFEM.csproj", "{F26D6DB9-F93B-4F2B-94E1-877DCFF80306}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISAAR.MSolve.XFEM.Tests", "ISAAR.MSolve.XFEM.Tests\ISAAR.MSolve.XFEM.Tests.csproj", "{1DED65B8-03C8-447A-9766-F23C1223623D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ISAAR.MSolve.XFEM.Tests", "ISAAR.MSolve.XFEM.Tests\ISAAR.MSolve.XFEM.Tests.csproj", "{1DED65B8-03C8-447A-9766-F23C1223623D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -85,5 +85,20 @@ namespace ISAAR.MSolve.Solvers.Ordering
                 return new GlobalFreeDofOrderingGeneral(numGlobalFreeDofs, globalFreeDofs, subdomainOrderings);
             }
         }
+
+        public ISubdomainFreeDofOrdering OrderFreeDofs(ISubdomain subdomain)
+        {
+            // Order subdomain dofs
+            (int numSubdomainFreeDofs, DofTable subdomainFreeDofs) = freeOrderingStrategy.OrderSubdomainDofs(subdomain);
+            ISubdomainFreeDofOrdering subdomainOrdering;
+            if (cacheElementToSubdomainDofMaps) subdomainOrdering = new SubdomainFreeDofOrderingCaching(
+                numSubdomainFreeDofs, subdomainFreeDofs);
+            else subdomainOrdering = new SubdomainFreeDofOrderingGeneral(numSubdomainFreeDofs, subdomainFreeDofs);
+
+            // Reorder subdomain dofs
+            reorderingStrategy.ReorderDofs(subdomain, subdomainOrdering);
+
+            return subdomainOrdering;
+        }
     }
 }

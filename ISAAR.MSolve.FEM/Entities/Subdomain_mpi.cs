@@ -13,6 +13,7 @@
 ////TODO: same for multiscale
 //namespace ISAAR.MSolve.FEM.Entities
 //{
+//    [Serializable]
 //    public class Subdomain_mpi : ISubdomain
 //    {
 //        private readonly List<Node> nodes = new List<Node>();
@@ -75,6 +76,16 @@
 //        public void ClearMaterialStresses()
 //        {
 //            foreach (Element element in Elements) element.ElementType.ClearMaterialStresses();
+//        }
+
+//        public void ConnectDataStructures()
+//        {
+//            DefineNodesFromElements();
+
+//            foreach (Element element in Elements)
+//            {
+//                foreach (Node node in element.Nodes) node.ElementsDictionary[element.ID] = element;
+//            }
 //        }
 
 //        public void DefineNodesFromElements()
