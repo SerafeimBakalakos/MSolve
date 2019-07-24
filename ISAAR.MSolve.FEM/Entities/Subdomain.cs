@@ -15,8 +15,6 @@ namespace ISAAR.MSolve.FEM.Entities
 {
     public class Subdomain : ISubdomain
     {
-        private readonly List<Node> nodes = new List<Node>();
-
         public Subdomain(int id)
         {
             this.ID = id;
@@ -31,8 +29,8 @@ namespace ISAAR.MSolve.FEM.Entities
 
         public int ID { get; }
 
-        IReadOnlyList<INode> ISubdomain.Nodes => nodes;
-        public IReadOnlyList<Node> Nodes => nodes;
+        IReadOnlyList<INode> ISubdomain.Nodes => Nodes;
+        public List<Node> Nodes { get; } = new List<Node>();
 
         public ISubdomainConstrainedDofOrdering ConstrainedDofOrdering { get; set; }
         public ISubdomainFreeDofOrdering FreeDofOrdering { get; set; }
@@ -89,14 +87,14 @@ namespace ISAAR.MSolve.FEM.Entities
 
         public void DefineNodesFromElements()
         {
-            nodes.Clear();
+            Nodes.Clear();
             var nodeComparer = Comparer<Node>.Create((Node node1, Node node2) => node1.ID - node2.ID);
             var nodeSet = new SortedSet<Node>(nodeComparer);
             foreach (Element element in Elements)
             {
                 foreach (Node node in element.Nodes) nodeSet.Add(node);
             }
-            nodes.AddRange(nodeSet);
+            Nodes.AddRange(nodeSet);
 
             //foreach (var e in modelEmbeddedNodes.Where(x => nodeIDs.IndexOf(x.Node.ID) >= 0))
             //    EmbeddedNodes.Add(e);

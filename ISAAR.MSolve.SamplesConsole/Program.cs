@@ -20,7 +20,6 @@ namespace ISAAR.MSolve.SamplesConsole
         static void Main(string[] args)
         {
             //Console.WriteLine("Hello World");
-            //Parallel.DistributeModelExample.RunSerial();
             Parallel.DistributeModelExample.RunParallel(args);
 
             //SolveBuildingInNoSoilSmall();
