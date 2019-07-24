@@ -89,6 +89,18 @@ namespace ISAAR.MSolve.FEM.Elements
 
         public IList<EmbeddedNode> EmbeddedNodes => embeddedNodes;
 
+        public IReadOnlyList<IFiniteElementMaterial> Materials => materialsAtGaussPoints;
+
+        public bool MaterialModified
+        {
+            get
+            {
+                foreach (ICohesiveZoneMaterial3D material in materialsAtGaussPoints)
+                    if (material.Modified) return true;
+                return false;
+            }
+        }
+
         public IQuadrature2D QuadratureForStiffness { get; }
         
         private void GetInitialGeometricDataForMidsurface(IElement element)
@@ -714,16 +726,6 @@ namespace ISAAR.MSolve.FEM.Elements
         public void ClearMaterialStresses()
         {
             foreach (ICohesiveZoneMaterial3D m in materialsAtGaussPoints) m.ClearTractions();
-        }
-
-        public bool MaterialModified
-        {
-            get
-            {
-                foreach (ICohesiveZoneMaterial3D material in materialsAtGaussPoints)
-                    if (material.Modified) return true;
-                return false;
-            }
         }
 
         public virtual IReadOnlyList<IReadOnlyList<IDofType>> GetElementDofTypes(IElement element) => dofTypes;

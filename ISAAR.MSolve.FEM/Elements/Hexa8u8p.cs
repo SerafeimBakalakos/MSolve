@@ -454,6 +454,8 @@ namespace ISAAR.MSolve.FEM.Elements
             return Q.Multiply(porePressures, true);
         }
 
+        public IReadOnlyList<IFiniteElementMaterial> Materials => materialsAtGaussPoints;
+
         public bool MaterialModified
         {
             get 

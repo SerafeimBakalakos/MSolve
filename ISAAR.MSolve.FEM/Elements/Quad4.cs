@@ -12,6 +12,7 @@ using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 
 namespace ISAAR.MSolve.FEM.Elements
 {
@@ -316,6 +317,8 @@ namespace ISAAR.MSolve.FEM.Elements
         }
 
         #endregion
+
+        public IReadOnlyList<IFiniteElementMaterial> Materials => materialsAtGaussPoints;
 
         public virtual IMatrix MassMatrix(IElement element) => CalculateConsistentMass(element);
 

@@ -515,7 +515,7 @@ namespace ISAAR.MSolve.FEM.Elements
         #endregion
 
         #region IStructuralFiniteElement Members
-
+        public IReadOnlyList<IFiniteElementMaterial> Materials => materialsAtGaussPoints;
         public bool MaterialModified
         {
             get

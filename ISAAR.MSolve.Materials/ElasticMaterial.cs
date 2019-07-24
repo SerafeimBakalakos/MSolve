@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+//TODO: Should this be called ElasticMaterial1D?
 namespace ISAAR.MSolve.Materials
 {
     public class ElasticMaterial : IFiniteElementMaterial
@@ -19,10 +20,7 @@ namespace ISAAR.MSolve.Materials
 
         #region IFiniteElementMaterial Members
 
-        public int ID
-        {
-            get { return 1; }
-        }
+        public int ID { get; set; }
 
         public bool Modified
         {

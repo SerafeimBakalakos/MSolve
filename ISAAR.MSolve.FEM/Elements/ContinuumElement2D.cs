@@ -14,6 +14,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 
 //TODO: Damping matrix calculation needs redesign for all of MSolve. For this class, see DampingMatrix().
 //TODO: Materials also need redesign. Some properties are the same for all instances of a material class, some are the same for
@@ -70,6 +71,7 @@ namespace ISAAR.MSolve.FEM.Elements
 
         public IGaussPointExtrapolation2D GaussPointExtrapolation { get; }
         public IIsoparametricInterpolation2D Interpolation { get; }
+        public IReadOnlyList<IFiniteElementMaterial> Materials => materialsAtGaussPoints;
 
         public bool MaterialModified
         {

@@ -54,7 +54,7 @@ namespace ISAAR.MSolve.Materials
 
         #region IFiniteElementMaterial Members
 
-        public int ID => 1;
+        public int ID { get; set; }
 
         public bool Modified => false;
 

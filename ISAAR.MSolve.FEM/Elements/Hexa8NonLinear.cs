@@ -69,6 +69,8 @@ namespace ISAAR.MSolve.FEM.Elements
             set { dofEnumerator = value; }
         }
 
+        public IReadOnlyList<IFiniteElementMaterial> Materials => materialsAtGaussPoints;
+
         public bool MaterialModified
         {
             get

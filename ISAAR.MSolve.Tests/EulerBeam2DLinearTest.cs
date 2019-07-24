@@ -26,6 +26,7 @@ namespace ISAAR.MSolve.Tests
             // Create new material
             var material = new ElasticMaterial()
             {
+                ID = 0,
                 YoungModulus = youngModulus,
                 PoissonRatio = poissonRatio,
             };
@@ -63,7 +64,7 @@ namespace ISAAR.MSolve.Tests
             for (int iElem = 0; iElem < nElems; iElem++)
             {
                 // Create new Beam2D section and element
-                var beam = new EulerBeam2D(youngModulus)
+                var beam = new EulerBeam2D(material)
                 {
                     Density = 7.85,
                     SectionArea = 91.04,

@@ -15,6 +15,7 @@ using ISAAR.MSolve.FEM.Interpolation.Jacobians;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 
 //TODO: Is there any point in having different material properties per Gauss point?
 namespace ISAAR.MSolve.FEM.Elements
@@ -56,6 +57,7 @@ namespace ISAAR.MSolve.FEM.Elements
         public IQuadrature2D QuadratureForStiffness { get; }
         public double Thickness { get; }
 
+        public IReadOnlyList<IFiniteElementMaterial> Materials => new IFiniteElementMaterial[] { material };
         public bool MaterialModified => throw new NotImplementedException();
 
         public IElementDofEnumerator DofEnumerator { get; set; } = new GenericDofEnumerator();

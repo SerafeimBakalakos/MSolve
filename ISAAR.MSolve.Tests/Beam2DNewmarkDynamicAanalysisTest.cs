@@ -28,6 +28,7 @@ namespace ISAAR.MSolve.Tests
 
             var material = new ElasticMaterial()
             {
+                ID = 0,
                 YoungModulus = youngModulus,
                 PoissonRatio = poissonRatio,
             };
@@ -57,7 +58,7 @@ namespace ISAAR.MSolve.Tests
             model.NodesDictionary[1].Constraints.Add(new Constraint { DOF = StructuralDof.RotationZ });
 
             // Create a new Beam2D element
-            var beam = new EulerBeam2D(youngModulus)
+            var beam = new EulerBeam2D(material)
             {
                 Density = density,
                 SectionArea = area,

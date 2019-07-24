@@ -58,11 +58,9 @@ namespace ISAAR.MSolve.Materials
             this.InitializeMatrices();
         }
 
-        ICohesiveZoneMaterial3D ICohesiveZoneMaterial3D.Clone()
-        {
-            return this.Clone();
-        }
 
+        object ICloneable.Clone() => Clone();
+        ICohesiveZoneMaterial3D ICohesiveZoneMaterial3D.Clone() => Clone();
         public BondSlipCohMat Clone()
         {
             return new BondSlipCohMat(k_elastic, k_elastic2, k_elastic_normal, t_max, s_0, a_0, tol);            
@@ -290,6 +288,9 @@ namespace ISAAR.MSolve.Materials
             //opws
             // sthn epanalhptikh diadikasia (opws px provider.Reset pou sumvainei se polles epanalipseis?)
         }
+
+        public void ClearStresses() => throw new NotImplementedException();
+
         public void ClearTractions()
         {
 

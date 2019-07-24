@@ -23,11 +23,8 @@ namespace ISAAR.MSolve.Materials
         private double tol;
         private double d_prev_step;
 
-        ICohesiveZoneMaterial3D ICohesiveZoneMaterial3D.Clone()
-        {
-            return this.Clone(); 
-        }
-
+        object ICloneable.Clone() => Clone();
+        ICohesiveZoneMaterial3D ICohesiveZoneMaterial3D.Clone() => Clone();
         public BenzeggaghKenaneCohesiveMaterial Clone()
         {
             return new BenzeggaghKenaneCohesiveMaterial()
@@ -240,6 +237,9 @@ namespace ISAAR.MSolve.Materials
             //but don't use it as elastic in other cases
             // maybe in iterative procedure (example provider.Reset ?)
         }
+
+        public void ClearStresses() => throw new NotImplementedException();
+
         public void ClearTractions()
         {
             

@@ -65,6 +65,7 @@ namespace ISAAR.MSolve.FEM.Elements
         public int ID => 100;
         public ElementDimensions ElementDimensions => ElementDimensions.ThreeD;
         public IList<EmbeddedNode> EmbeddedNodes { get { return embeddedNodes; } }
+        public IReadOnlyList<IFiniteElementMaterial> Materials => new IFiniteElementMaterial[] { material };
         public bool MaterialModified => material.Modified;
         public IElementDofEnumerator DofEnumerator
         {

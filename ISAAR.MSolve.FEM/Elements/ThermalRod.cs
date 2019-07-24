@@ -10,6 +10,7 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 
 namespace ISAAR.MSolve.FEM.Elements
 {
@@ -45,7 +46,7 @@ namespace ISAAR.MSolve.FEM.Elements
         public double CrossSectionArea { get; }
         public double Length { get; }
         public IReadOnlyList<Node> Nodes { get; }
-
+        public IReadOnlyList<IFiniteElementMaterial> Materials => new IFiniteElementMaterial[] { material };
         public bool MaterialModified => throw new NotImplementedException();
 
         public IElementDofEnumerator DofEnumerator { get; set; } = new GenericDofEnumerator();

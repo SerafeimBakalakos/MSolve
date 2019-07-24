@@ -10,6 +10,8 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 
 namespace ISAAR.MSolve.FEM.Elements
 {
@@ -17,8 +19,7 @@ namespace ISAAR.MSolve.FEM.Elements
     {
         private static readonly IDofType[] nodalDOFTypes = new IDofType[6] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ, StructuralDof.RotationX, StructuralDof.RotationY, StructuralDof.RotationZ };
         private static readonly IDofType[][] dofs = new IDofType[][] { nodalDOFTypes, nodalDOFTypes };
-        private readonly double youngModulus;
-        private readonly double poissonRatio;
+        private readonly ElasticMaterial material;
         private readonly List<EmbeddedNode> embeddedNodes = new List<EmbeddedNode>();
         private const int hostDofsPerNode = 3;
         private const int embeddedDofsPerNode = 6;
@@ -42,14 +43,13 @@ namespace ISAAR.MSolve.FEM.Elements
         public double MomentOfInertiaPolar { get; set; }
         public IList<EmbeddedNode> EmbeddedNodes { get { return embeddedNodes; } }
 
-        public EulerBeam3D(double youngModulus, double poissonRatio)
+        public EulerBeam3D(ElasticMaterial material)
         {
-            this.youngModulus = youngModulus;
-            this.poissonRatio = poissonRatio;
+            this.material = material;
         }
 
-        public EulerBeam3D(double youngModulus, double poissonRatio, Node[] rot1Nodes, Node[] rot2Nodes)
-            : this(youngModulus, poissonRatio)
+        public EulerBeam3D(ElasticMaterial material, Node[] rot1Nodes, Node[] rot2Nodes)
+            : this(material)
         {
             if (rot1Nodes != null && rot1Nodes.Length != 4)
                 throw new ArgumentException("Dependent nodes quantity for rotation1 has to be four.");
@@ -61,15 +61,15 @@ namespace ISAAR.MSolve.FEM.Elements
             InitializeDOFsWhenNoRotations();
         }
 
-        public EulerBeam3D(double youngModulus, double poissonRatio, IElementDofEnumerator dofEnumerator) :
-            this(youngModulus, poissonRatio)
+        public EulerBeam3D(ElasticMaterial material, IElementDofEnumerator dofEnumerator) :
+            this(material)
         {
             this.dofEnumerator = dofEnumerator;
         }
 
-        public EulerBeam3D(double youngModulus, double poissonRatio, Node[] rot1Nodes, Node[] rot2Nodes,
+        public EulerBeam3D(ElasticMaterial material, Node[] rot1Nodes, Node[] rot2Nodes,
             IElementDofEnumerator dofEnumerator)
-            : this(youngModulus, poissonRatio, rot1Nodes, rot2Nodes)
+            : this(material, rot1Nodes, rot2Nodes)
         {
             this.dofEnumerator = dofEnumerator;
         }
@@ -81,6 +81,8 @@ namespace ISAAR.MSolve.FEM.Elements
         }
 
         public CellType CellType { get; } = CellType.Line;
+
+        public IReadOnlyList<IFiniteElementMaterial> Materials => new IFiniteElementMaterial[] { material };
 
         private void InitializeDOFsWhenNoRotations()
         {
@@ -417,10 +419,11 @@ namespace ISAAR.MSolve.FEM.Elements
             double L2 = L * L;
             double L3 = L2 * L;
             //double EIx = m.YoungModulus * MomentOfInertiaX;
-            double EIy = this.youngModulus * MomentOfInertiaY;
-            double EIz = this.youngModulus * MomentOfInertiaZ;
-            double GJL = this.youngModulus * L * MomentOfInertiaPolar / (2 * (1 + this.poissonRatio));
-            double EAL = this.youngModulus * SectionArea * L;
+            double E = this.material.YoungModulus;
+            double EIy = E * MomentOfInertiaY;
+            double EIz = E * MomentOfInertiaZ;
+            double GJL = E * L * MomentOfInertiaPolar / (2 * (1 + this.material.PoissonRatio));
+            double EAL = E * SectionArea * L;
 
             //TODO: optimize this
             int order = 12;

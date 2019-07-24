@@ -2,6 +2,7 @@
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.FEM.Elements;
 using ISAAR.MSolve.FEM.Entities;
+using ISAAR.MSolve.Materials;
 using MGroup.Stochastic.Interfaces;
 
 namespace MGroup.Stochastic.Structural
@@ -33,16 +34,22 @@ namespace MGroup.Stochastic.Structural
 
             for (int i = 0; i < m.NodesDictionary.Count - 1; i++)
             {
-                var e = new Element()
+                var material = new ElasticMaterial()
                 {
-                    ID = i,
-                    ElementType = new EulerBeam3D(stochasticRealizer.Realize(iteration, domainMapper, 
-                        new []
+                    ID = i, PoissonRatio = 0.3,
+                    YoungModulus = stochasticRealizer.Realize(iteration, domainMapper,
+                        new[]
                         {
                             (m.NodesDictionary[i + 1].X + m.NodesDictionary[i].X)/2,
                             (m.NodesDictionary[i + 1].Y + m.NodesDictionary[i].Y)/2,
                             (m.NodesDictionary[i + 1].Z + m.NodesDictionary[i].Z)/2,
-                        }), 0.3)
+                        })
+                };
+
+                var e = new Element()
+                {
+                    ID = i,
+                    ElementType = new EulerBeam3D(material)
                     {
                         Density = 7.85,
                         SectionArea = 1,

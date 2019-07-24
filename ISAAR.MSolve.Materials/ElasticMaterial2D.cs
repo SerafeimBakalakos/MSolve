@@ -83,7 +83,7 @@ namespace ISAAR.MSolve.Materials
 
         #region IFiniteElementMaterial
 
-        public int ID => 1;
+        public int ID { get; set; }
 
         public bool Modified => false;
 
@@ -98,6 +98,7 @@ namespace ISAAR.MSolve.Materials
         {
             return new ElasticMaterial2D(StressState)
             {
+                ID = this.ID,
                 PoissonRatio = this.PoissonRatio,
                 YoungModulus = this.YoungModulus
             };

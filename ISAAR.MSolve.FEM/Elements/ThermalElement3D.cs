@@ -12,6 +12,7 @@ using ISAAR.MSolve.FEM.Interpolation.GaussPointExtrapolation;
 using ISAAR.MSolve.FEM.Interpolation.Jacobians;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 
 namespace ISAAR.MSolve.FEM.Elements
 {
@@ -47,6 +48,7 @@ namespace ISAAR.MSolve.FEM.Elements
         public IQuadrature3D QuadratureForConsistentMass { get; }
         public IQuadrature3D QuadratureForStiffness { get; }
 
+        public IReadOnlyList<IFiniteElementMaterial> Materials => new IFiniteElementMaterial[] { material };
         public bool MaterialModified => throw new NotImplementedException();
 
         public IElementDofEnumerator DofEnumerator { get; set; } = new GenericDofEnumerator();

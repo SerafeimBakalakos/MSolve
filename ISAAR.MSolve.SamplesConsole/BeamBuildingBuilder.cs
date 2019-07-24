@@ -4,6 +4,7 @@ using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.FEM.Elements;
 using ISAAR.MSolve.FEM.Entities;
+using ISAAR.MSolve.Materials;
 
 namespace ISAAR.MSolve.SamplesConsole
 {
@@ -158,6 +159,7 @@ namespace ISAAR.MSolve.SamplesConsole
             double h = 0.1;
             double youngModulus = 2.1e5;
             double poissonRatio = 0.35;
+            var material = new ElasticMaterial { ID = 0, YoungModulus = youngModulus, PoissonRatio = poissonRatio };
 
             if (isInHexaSoil)
             {
@@ -181,7 +183,7 @@ namespace ISAAR.MSolve.SamplesConsole
                         e = new Element()
                         {
                             ID = elementID,
-                            ElementType = new EulerBeam3D(youngModulus, poissonRatio, sub2AdjacentNodes, sub1AdjacentNodes)
+                            ElementType = new EulerBeam3D(material, sub2AdjacentNodes, sub1AdjacentNodes)
                             {
                                 Density = 7.85,
                                 SectionArea = b * h,
@@ -205,7 +207,7 @@ namespace ISAAR.MSolve.SamplesConsole
                         e = new Element()
                         {
                             ID = elementID,
-                            ElementType = new EulerBeam3D(youngModulus, poissonRatio, sub1AdjacentNodes, groundAdjacentNodes)
+                            ElementType = new EulerBeam3D(material, sub1AdjacentNodes, groundAdjacentNodes)
                             {
                                 Density = 7.85,
                                 SectionArea = b * h,
@@ -237,7 +239,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 e = new Element()
                 {
                     ID = elementID,
-                    ElementType = new EulerBeam3D(youngModulus, poissonRatio, isInHexaSoil ? groundAdjacentNodes : null, null)
+                    ElementType = new EulerBeam3D(material, isInHexaSoil ? groundAdjacentNodes : null, null)
                     {
                         Density = 7.85,
                         SectionArea = b * h,
@@ -266,7 +268,7 @@ namespace ISAAR.MSolve.SamplesConsole
                         e = new Element()
                         {
                             ID = elementID,
-                            ElementType = new EulerBeam3D(youngModulus, poissonRatio, null, null)
+                            ElementType = new EulerBeam3D(material, null, null)
                             {
                                 Density = dens,
                                 SectionArea = b * h,
@@ -284,7 +286,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 e = new Element()
                 {
                     ID = elementID,
-                    ElementType = new EulerBeam3D(youngModulus, poissonRatio, null, null)
+                    ElementType = new EulerBeam3D(material, null, null)
                     {
                         Density = dens,
                         SectionArea = b * h,
@@ -300,7 +302,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 e = new Element()
                 {
                     ID = elementID,
-                    ElementType = new EulerBeam3D(youngModulus, poissonRatio, null, null)
+                    ElementType = new EulerBeam3D(material, null, null)
                     {
                         Density = dens,
                         SectionArea = b * h,
@@ -321,7 +323,7 @@ namespace ISAAR.MSolve.SamplesConsole
                         e = new Element()
                         {
                             ID = elementID,
-                            ElementType = new EulerBeam3D(youngModulus, poissonRatio, null, null)
+                            ElementType = new EulerBeam3D(material, null, null)
                             {
                                 Density = dens,
                                 SectionArea = b * h,
@@ -339,7 +341,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 e = new Element()
                 {
                     ID = elementID,
-                    ElementType = new EulerBeam3D(youngModulus, poissonRatio, null, null)
+                    ElementType = new EulerBeam3D(material, null, null)
                     {
                         Density = dens,
                         SectionArea = b * h,
@@ -355,7 +357,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 e = new Element()
                 {
                     ID = elementID,
-                    ElementType = new EulerBeam3D(youngModulus, poissonRatio, null, null)
+                    ElementType = new EulerBeam3D(material, null, null)
                     {
                         Density = dens,
                         SectionArea = b * h,
@@ -371,7 +373,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 e = new Element()
                 {
                     ID = elementID,
-                    ElementType = new EulerBeam3D(youngModulus, poissonRatio, null, null)
+                    ElementType = new EulerBeam3D(material, null, null)
                     {
                         Density = dens,
                         SectionArea = b * h,
@@ -391,7 +393,7 @@ namespace ISAAR.MSolve.SamplesConsole
                     e = new Element()
                     {
                         ID = elementID,
-                        ElementType = new EulerBeam3D(youngModulus, poissonRatio, null, null)
+                        ElementType = new EulerBeam3D(material, null, null)
                         {
                             Density = dens,
                             SectionArea = b * h,

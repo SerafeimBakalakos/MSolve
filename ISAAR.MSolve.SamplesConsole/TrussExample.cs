@@ -6,6 +6,7 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Problems.Structural.Elements;
 using ISAAR.MSolve.Logging;
+using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.Direct;
@@ -33,7 +34,7 @@ namespace ISAAR.MSolve.SamplesConsole
         public static void Run()
         {
             double youngMod = 10e6;
-            //double poisson = 0.3;
+            double poisson = 0.3;
             double loadX = 500;
             double loadY = 300;
             double sectionArea = 1.5;
@@ -54,17 +55,18 @@ namespace ISAAR.MSolve.SamplesConsole
             model.NodesDictionary[2].Constraints.Add(new Constraint { DOF = StructuralDof.TranslationX });
             model.NodesDictionary[2].Constraints.Add(new Constraint { DOF = StructuralDof.TranslationY });
 
+            var material = new ElasticMaterial() { ID = 0, YoungModulus = youngMod, PoissonRatio = poisson };
 
             var element1 = new Element()
             {
                 ID = 1,
-                ElementType = new Rod2D(youngMod) { Density = 1, SectionArea = sectionArea }
+                ElementType = new Rod2D(material) { Density = 1, SectionArea = sectionArea }
             };
 
             var element2 = new Element()
             {
                 ID = 2,
-                ElementType = new Rod2D(youngMod) { Density = 1, SectionArea = sectionArea }
+                ElementType = new Rod2D(material) { Density = 1, SectionArea = sectionArea }
             };
 
             element1.AddNode(model.NodesDictionary[1]);

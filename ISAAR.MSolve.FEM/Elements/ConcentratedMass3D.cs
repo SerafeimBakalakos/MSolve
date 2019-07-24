@@ -8,6 +8,7 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.Materials.Interfaces;
 
 namespace ISAAR.MSolve.FEM.Elements
 {
@@ -43,6 +44,7 @@ namespace ISAAR.MSolve.FEM.Elements
             return d;
         }
 
+        public IReadOnlyList<IFiniteElementMaterial> Materials => null;
         public bool MaterialModified => false;
 
         public ConcentratedMass3D(double massCoefficient)

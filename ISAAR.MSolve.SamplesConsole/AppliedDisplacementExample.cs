@@ -63,7 +63,7 @@ namespace ISAAR.MSolve.SamplesConsole
             model.NodesDictionary[2].Constraints.Add(new Constraint { DOF = StructuralDof.TranslationY, Amount = -4.16666666666667E-07 });
 
             //Create a new Beam2D element
-            var beam = new EulerBeam2D(youngModulus)
+            var beam = new EulerBeam2D(material)
             {
                 SectionArea = 1,
                 MomentOfInertia = .1

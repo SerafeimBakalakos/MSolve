@@ -68,6 +68,7 @@ namespace ISAAR.MSolve.Tests
 
             var material = new ElasticMaterial()
             {
+                ID = 0,
                 YoungModulus = youngModulus,
                 PoissonRatio = poissonRatio,
             };
@@ -98,7 +99,7 @@ namespace ISAAR.MSolve.Tests
 
 
             // Create a new Beam2D element
-            var beam = new EulerBeam2D(youngModulus)
+            var beam = new EulerBeam2D(material)
             {
                 SectionArea = 1,
                 MomentOfInertia = .1
@@ -418,6 +419,8 @@ namespace ISAAR.MSolve.Tests
 
             double youngMod = 10e6;
             double poisson = 0.3;
+            var material = new ElasticMaterial() { ID = 0, YoungModulus = youngMod, PoissonRatio = poisson };
+
             double loadX = 500;
             double loadY = 300;
             double sectionArea = 1.5;
@@ -437,8 +440,8 @@ namespace ISAAR.MSolve.Tests
             trussModel.NodesDictionary[2].Constraints.Add(new Constraint { DOF = StructuralDof.TranslationY });
 
 
-            var element1 = new Element() { ID = 1, ElementType = new Rod2D(youngMod) { Density = 1, SectionArea = sectionArea } };
-            var element2 = new Element() { ID = 2, ElementType = new Rod2D(youngMod) { Density = 1, SectionArea = sectionArea } };
+            var element1 = new Element() { ID = 1, ElementType = new Rod2D(material) { Density = 1, SectionArea = sectionArea } };
+            var element2 = new Element() { ID = 2, ElementType = new Rod2D(material) { Density = 1, SectionArea = sectionArea } };
 
             element1.AddNode(trussModel.NodesDictionary[1]);
             element1.AddNode(trussModel.NodesDictionary[3]);

@@ -8,6 +8,8 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 
 namespace ISAAR.MSolve.FEM.Problems.Structural.Elements
 {
@@ -15,19 +17,19 @@ namespace ISAAR.MSolve.FEM.Problems.Structural.Elements
     {
         private static readonly IDofType[] nodalDOFTypes = new IDofType[2] { StructuralDof.TranslationX, StructuralDof.TranslationY };
         private static readonly IDofType[][] dofs = new IDofType[][] { nodalDOFTypes, nodalDOFTypes };
-        private readonly double youngModulus;
+        private readonly ElasticMaterial material;
         private IElementDofEnumerator dofEnumerator = new GenericDofEnumerator();
 
         public double Density { get; set; }
         public double SectionArea { get; set; }
 
-        public Rod2D(double youngModulus)
+        public Rod2D(ElasticMaterial material)
         {
-            this.youngModulus = youngModulus;
+            this.material = material;
         }
 
-        public Rod2D(double youngModulus, IElementDofEnumerator dofEnumerator)
-            : this(youngModulus)
+        public Rod2D(ElasticMaterial material, IElementDofEnumerator dofEnumerator)
+            : this(material)
         {
             this.dofEnumerator = dofEnumerator;
         }
@@ -39,6 +41,9 @@ namespace ISAAR.MSolve.FEM.Problems.Structural.Elements
             get { return dofEnumerator; }
             set { dofEnumerator = value; }
         }
+
+        public IReadOnlyList<IFiniteElementMaterial> Materials => new IFiniteElementMaterial[] { material };
+
 
         //TODO: this should be either cached, or even better the calculations should be incorporated into Stiffness()
         public IMatrix TransformationMatrix(Element element)
@@ -95,7 +100,7 @@ namespace ISAAR.MSolve.FEM.Problems.Structural.Elements
             double s = (element.Nodes[1].Y - element.Nodes[0].Y) / L;
             double s2 = s * s;
             double cs = c * s;
-            double E = this.youngModulus;
+            double E = this.material.YoungModulus;
             double A = SectionArea;
 
             return dofEnumerator.GetTransformedMatrix(
@@ -168,8 +173,6 @@ namespace ISAAR.MSolve.FEM.Problems.Structural.Elements
         #endregion
 
         #region IFiniteElement Members
-
-
         public bool MaterialModified => false;
 
         public void ResetMaterialModified() {}

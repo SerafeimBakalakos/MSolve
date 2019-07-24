@@ -14,6 +14,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 
 namespace ISAAR.MSolve.FEM.Elements
 {
@@ -66,7 +67,7 @@ namespace ISAAR.MSolve.FEM.Elements
             "Element type codes should be in a settings class. Even then it's a bad design choice");
 
         public IIsoparametricInterpolation3D Interpolation { get; }
-
+        public IReadOnlyList<IFiniteElementMaterial> Materials => materialsAtGaussPoints;
         public bool MaterialModified
         {
             get

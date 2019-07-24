@@ -8,6 +8,8 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 
 namespace ISAAR.MSolve.FEM.Elements
 {
@@ -15,7 +17,7 @@ namespace ISAAR.MSolve.FEM.Elements
     {
         private static readonly IDofType[] nodalDOFTypes = new IDofType[3] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.RotationZ };
         private static readonly IDofType[][] dofs = new IDofType[][] { nodalDOFTypes, nodalDOFTypes };
-        private readonly double youngModulus;
+        private readonly ElasticMaterial material;
         private IElementDofEnumerator dofEnumerator = new GenericDofEnumerator();
 
         public double Density { get; set; }
@@ -24,13 +26,13 @@ namespace ISAAR.MSolve.FEM.Elements
         public double RayleighAlpha { get; set; }
         public double RayleighBeta { get; set; }
 
-        public EulerBeam2D(double youngModulus)
+        public EulerBeam2D(ElasticMaterial material)
         {
-            this.youngModulus = youngModulus;
+            this.material = material;
         }
 
-        public EulerBeam2D(double youngModulus, IElementDofEnumerator dofEnumerator)
-            : this(youngModulus)
+        public EulerBeam2D(ElasticMaterial material, IElementDofEnumerator dofEnumerator)
+            : this(material)
         {
             this.dofEnumerator = dofEnumerator;
         }
@@ -47,6 +49,8 @@ namespace ISAAR.MSolve.FEM.Elements
         public CellType CellType { get; } = CellType.Line;
 
         public ElementDimensions ElementDimensions => ElementDimensions.TwoD;
+
+        public IReadOnlyList<IFiniteElementMaterial> Materials => new IFiniteElementMaterial[] { material };
 
         public IReadOnlyList<IReadOnlyList<IDofType>> GetElementDofTypes(IElement element) => dofs;
 
@@ -67,7 +71,7 @@ namespace ISAAR.MSolve.FEM.Elements
             double c2 = c * c;
             double s = (element.Nodes[1].Y - element.Nodes[0].Y) / L;
             double s2 = s * s;
-            double EL = this.youngModulus / L;
+            double EL = this.material.YoungModulus / L;
             double EAL = EL * SectionArea;
             double EIL = EL * MomentOfInertia;
             double EIL2 = EIL / L;
