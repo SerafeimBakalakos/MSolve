@@ -9,7 +9,8 @@ using System.Text;
 
 namespace ISAAR.MSolve.FEM.Transfer
 {
-    public struct SubdomainDto
+    [Serializable]
+    public class SubdomainDto
     {
         public int id;
         public NodeDto[] nodes;

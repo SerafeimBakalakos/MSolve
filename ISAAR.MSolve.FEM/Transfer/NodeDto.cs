@@ -5,7 +5,8 @@ using System.Text;
 
 namespace ISAAR.MSolve.FEM.Transfer
 {
-    public struct NodeDto
+    [Serializable]
+    public class NodeDto
     {
         public int id;
         public double x, y, z;

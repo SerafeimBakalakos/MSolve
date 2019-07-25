@@ -12,7 +12,8 @@ using System.Text;
 //      (continuum, structural, thermal,2 2D, 3D, etc).
 namespace ISAAR.MSolve.FEM.Transfer.Elements
 {
-    public struct Quad4Dto : IElementDto
+    [Serializable]
+    public class Quad4Dto : IElementDto
     {
         public int id;
         public int material;

@@ -6,7 +6,8 @@ using System.Text;
 
 namespace ISAAR.MSolve.Materials.Transfer
 {
-    public struct Elastic2DMaterialDto : IMaterialDto
+    [Serializable]
+    public class Elastic2DMaterialDto : IMaterialDto
     {
         public int id;
         public StressState2D stressState;

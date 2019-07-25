@@ -7,7 +7,8 @@ using System.Text;
 
 namespace ISAAR.MSolve.FEM.Transfer
 {
-    public struct NodalDisplacementDto
+    [Serializable]
+    public class NodalDisplacementDto
     {
         public double amount;
         public int node;
