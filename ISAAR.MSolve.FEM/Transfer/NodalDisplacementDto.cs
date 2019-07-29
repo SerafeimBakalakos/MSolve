@@ -1,9 +1,8 @@
-﻿using ISAAR.MSolve.Discretization;
-using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.FEM.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using ISAAR.MSolve.Discretization;
+using ISAAR.MSolve.Discretization.Transfer;
+using ISAAR.MSolve.FEM.Entities;
 
 namespace ISAAR.MSolve.FEM.Transfer
 {

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ISAAR.MSolve.Discretization.FreedomDegrees
+namespace ISAAR.MSolve.Discretization.Transfer
 {
     public enum DofTypeDto
     {

@@ -100,6 +100,16 @@ namespace ISAAR.MSolve.IGA.Entities
             //foreach (Element element in Elements) element.ElementType.ClearMaterialStresses();
         }
 
+        public void ConnectDataStructures()
+        {
+            DefineControlPointsFromElements();
+
+            foreach (Element element in Elements)
+            {
+                foreach (ControlPoint node in element.ControlPoints) node.ElementsDictionary[element.ID] = element;
+            }
+        }
+
         public void DefineControlPointsFromElements()
         {
             var cpComparer = Comparer<ControlPoint>.Create((node1, node2) => node1.ID - node2.ID);

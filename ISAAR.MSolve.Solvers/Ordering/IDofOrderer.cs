@@ -22,5 +22,11 @@ namespace ISAAR.MSolve.Solvers.Ordering
         /// </summary>
         /// <param name="model">The physical model.</param>
         IGlobalFreeDofOrdering OrderFreeDofs(IStructuralModel model);
+
+        /// <summary>
+        /// Finds an ordering for the unconstrained freedom degrees of a subdomain.
+        /// </summary>
+        /// <param name="model">The subdomain.</param>
+        ISubdomainFreeDofOrdering OrderFreeDofs(ISubdomain subdomain);
     }
 }

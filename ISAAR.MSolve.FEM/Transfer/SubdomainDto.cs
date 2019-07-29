@@ -1,4 +1,6 @@
 ﻿using ISAAR.MSolve.Discretization;
+using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Transfer.Elements;
 using ISAAR.MSolve.Materials.Interfaces;
@@ -10,7 +12,7 @@ using System.Text;
 namespace ISAAR.MSolve.FEM.Transfer
 {
     [Serializable]
-    public class SubdomainDto
+    public class SubdomainDto : ISubdomainDto
     {
         public int id;
         public NodeDto[] nodes;
@@ -61,6 +63,8 @@ namespace ISAAR.MSolve.FEM.Transfer
             }
             this.nodalDisplacements = displacements.ToArray();
         }
+
+        ISubdomain ISubdomainDto.Deserialize() => Deserialize();
 
         public Subdomain Deserialize()
         {

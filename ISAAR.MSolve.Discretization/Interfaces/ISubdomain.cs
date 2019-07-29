@@ -33,6 +33,8 @@ namespace ISAAR.MSolve.Discretization.Interfaces
 
         void ClearMaterialStresses();
 
+        void ConnectDataStructures();
+
         IVector GetRhsFromSolution(IVectorView solution, IVectorView dSolution); //TODO: this should be done by a dedicated class instead of the subdomain
 
         void ResetMaterialsModifiedProperty();

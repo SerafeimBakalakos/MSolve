@@ -101,5 +101,10 @@ namespace ISAAR.MSolve.Solvers.Ordering
                 return new GlobalFreeDofOrderingGeneral(numGlobalFreeDofs, globalFreeDofs, subdomainOrderings);
             }
         }
+
+        public ISubdomainFreeDofOrdering OrderFreeDofs(ISubdomain subdomain)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -52,6 +52,16 @@ namespace ISAAR.MSolve.XFEM.Entities
 
         public void ClearMaterialStresses() => throw new NotImplementedException();
 
+        public void ConnectDataStructures()
+        {
+            DefineNodesFromElements();
+
+            foreach (IXFiniteElement element in Elements)
+            {
+                foreach (XNode node in element.Nodes) node.ElementsDictionary[element.ID] = element;
+            }
+        }
+
         public void DefineNodesFromElements()
         {
             nodes.Clear();
