@@ -11,6 +11,7 @@ namespace ISAAR.MSolve.Discretization.Interfaces
 		double Z { get; }
 
         List<Constraint> Constraints { get; }
+        int Multiplicity { get; }
         Dictionary<int, ISubdomain> SubdomainsDictionary { get; }
     }
 }

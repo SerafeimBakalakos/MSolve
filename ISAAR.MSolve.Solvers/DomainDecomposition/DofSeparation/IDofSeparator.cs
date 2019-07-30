@@ -8,7 +8,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 //      (e.g. Feti1Solver, Feti1PreconditionerFactory) will have access to concrete DofSeparators, access appropriate boundary 
 //      dof data from there and pass it to classes that work with that data, instead of IDofSeparator 
 //      (e.g. Homogeneous/HeterogeneousStiffnessDistribution).
-namespace ISAAR.MSolve.Solvers.DomainDecomposition
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation
 {
     public interface IDofSeparator
     {

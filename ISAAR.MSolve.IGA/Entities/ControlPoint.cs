@@ -38,6 +38,7 @@ namespace ISAAR.MSolve.IGA.Entities
 
         public List<Constraint> Constraints => constraints;
 
+        public int Multiplicity => SubdomainsDictionary.Count;
         public Dictionary<int, ISubdomain> SubdomainsDictionary => throw new NotImplementedException();
 
         public void BuildPatchesDictionary()

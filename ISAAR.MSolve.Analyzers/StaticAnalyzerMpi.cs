@@ -65,7 +65,7 @@ namespace ISAAR.MSolve.Analyzers
                 solver.Subdomain.ConnectDataStructures(); 
 
                 // Order dofs
-                solver.OrderDofs(false); //TODO: What about subdomain-global mapping? Especially for boundary dofs.
+                solver.OrderDofs(false);
 
                 // Initialize linear system
                 solver.LinearSystem.Reset(); // Necessary to define the linear system's size 

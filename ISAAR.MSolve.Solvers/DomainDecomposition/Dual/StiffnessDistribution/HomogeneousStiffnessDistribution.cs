@@ -6,6 +6,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
+using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
@@ -28,7 +29,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         public Dictionary<int, double> CalcBoundaryDofCoefficients(INode node, IDofType dofType)
         {
             var coeffs = new Dictionary<int, double>();
-            double inverseMultiplicity = 1.0 / node.SubdomainsDictionary.Count;
+            double inverseMultiplicity = 1.0 / node.Multiplicity;
             foreach (int subdomainID in node.SubdomainsDictionary.Keys) coeffs[subdomainID] = inverseMultiplicity;
             return coeffs;
         }
@@ -53,7 +54,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
                     var inverseMultiplicities = new double[boundaryDofs.Length];
                     for (int i = 0; i < boundaryDofs.Length; ++i)
                     {
-                        inverseMultiplicities[i] = 1.0 / boundaryDofs[i].node.SubdomainsDictionary.Count;
+                        inverseMultiplicities[i] = 1.0 / boundaryDofs[i].node.Multiplicity;
                     }
                     this.inverseBoundaryDofMultiplicities[s] = inverseMultiplicities;
                 }

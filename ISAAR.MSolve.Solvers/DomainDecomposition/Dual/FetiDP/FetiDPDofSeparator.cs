@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
-using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
+using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
 
 //TODO: Remove code duplication between this and Feti1DofSeparator
 //TODO: Perhaps I should also find and expose the indices of boundary remainder and internal remainder dofs into the sequence 
@@ -15,18 +15,18 @@ using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 //TODO: Perhaps the corner dof logic should be moved to another class.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 {
-    public class FetiDPDofSeparator : DofSeparatorBase
+    public class FetiDPDofSeparator : IDofSeparator
     {
         /// <summary>
         /// Indices of boundary remainder dofs into the sequence of all remainder dofs of each subdomain.
         /// </summary>
-        public override Dictionary<int, int[]> BoundaryDofIndices { get; protected set; }
+        public Dictionary<int, int[]> BoundaryDofIndices { get; private set; }
 
         /// <summary>
         /// (Node, IDofType) pairs for each boundary remainder dof of each subdomain. Their order is the same one as 
         /// <see cref="BoundaryDofIndices"/>.
         /// </summary>
-        public override Dictionary<int, (INode node, IDofType dofType)[]> BoundaryDofs { get; protected set; }
+        public Dictionary<int, (INode node, IDofType dofType)[]> BoundaryDofs { get; private set; }
 
         /// <summary>
         /// Also called Bc in papers by Farhat or Lc in NTUA theses. 
@@ -37,6 +37,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         /// Indices of (boundary) corner dofs into the sequence of all free dofs of each subdomain.
         /// </summary>
         public Dictionary<int, int[]> CornerDofIndices { get; private set; }
+
+        /// <summary>
+        /// Dofs where Lagrange multipliers will be applied. These do not include corner dofs.
+        /// </summary>
+        public Dictionary<INode, IDofType[]> GlobalBoundaryDofs { get; private set; }
 
         /// <summary>
         /// Dof ordering for corner dofs of the model: Each (INode, IDofType) pair is associated with the index of that dof into 
@@ -53,7 +58,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         /// <summary>
         /// Indices of internal remainder dofs into the sequence of all remainder dofs of each subdomain.
         /// </summary>
-        public override Dictionary<int, int[]> InternalDofIndices { get; protected set; }
+        public Dictionary<int, int[]> InternalDofIndices { get; private set; }
 
         /// <summary>
         /// The number of corner dofs of the model.
@@ -93,7 +98,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         /// Bc unsigned boolean matrices that map global to subdomain corner dofs. This method must be called after 
         /// <see cref="DefineGlobalCornerDofs(IStructuralModel, Dictionary{int, HashSet{INode}})"/>.
         /// </summary>
-        public void CalcCornerMappingMatrices(IStructuralModel model, Dictionary<int, HashSet<INode>> subdomainCornerNodes)
+        public void CalcCornerMappingMatrices(IStructuralModel model)
         { //TODO: Can I reuse subdomain data? Yes if the global corner dofs have not changed.
             foreach (ISubdomain subdomain in model.Subdomains)
             {
@@ -110,33 +115,19 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             }
         }
 
-        public void DefineGlobalBoundaryDofs(IStructuralModel model, Dictionary<int, HashSet<INode>> subdomainCornerNodes)
+        public void DefineGlobalBoundaryDofs(IStructuralModel model, HashSet<INode> globalCornerNodes)
         {
-            //TODO: These might be needed elsewhere too, in which case it should probably be sorted.
-            var globalCornerNodes = new HashSet<INode>();
-            foreach (IEnumerable<INode> subdomainNodes in subdomainCornerNodes.Values)
-            {
-                globalCornerNodes.UnionWith(subdomainNodes);
-            }
             IEnumerable<INode> globalRemainderNodes = model.Nodes.Where(node => !globalCornerNodes.Contains(node));
-            base.DefineGlobalBoundaryDofs(globalRemainderNodes, model.GlobalDofOrdering); //TODO: This could also be reused in some cases
+            GlobalBoundaryDofs = DofSeparationUtilities.DefineGlobalBoundaryDofs(globalRemainderNodes, model.GlobalDofOrdering); //TODO: This could be reused in some cases
         }
 
-        public void DefineGlobalCornerDofs(IStructuralModel model, Dictionary<int, HashSet<INode>> subdomainCornerNodes)
+        public void DefineGlobalCornerDofs(IStructuralModel model, HashSet<INode> globalCornerNodes)
         {
-            // Gather all corner nodes
-            //TODO: This is also calculated in SeparateDofs(). Reuse it.
-            var globalCornerNodes = new SortedSet<INode>(); //TODO: Can this be optimized?
-            foreach (IEnumerable<INode> subdomainNodes in subdomainCornerNodes.Values)
-            {
-                foreach (INode node in subdomainNodes) globalCornerNodes.Add(node);
-            }
-
             // Order global corner dofs and create the global corner to global free map.
             var cornerToGlobalDofs = new List<int>(globalCornerNodes.Count * 3);
             var globalCornerDofOrdering = new DofTable(); //TODO: Should this be cached?
             int cornerDofCounter = 0;
-            foreach (INode cornerNode in globalCornerNodes)
+            foreach (INode cornerNode in new SortedSet<INode>(globalCornerNodes)) //TODO: Must they be sorted?
             {
                 bool hasFreeDofs = model.GlobalDofOrdering.GlobalFreeDofs.TryGetDataOfRow(cornerNode,
                     out IReadOnlyDictionary<IDofType, int> dofsOfNode);
@@ -157,21 +148,22 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         /// <summary>
         /// This must be called after <see cref="SeparateCornerRemainderDofs(ISubdomain, HashSet{INode}, IEnumerable{INode})"/>.
         /// </summary>
-        public void SeparateBoundaryInternalDofs(ISubdomain subdomain, IEnumerable<INode> remainderAndConstrainedNodes)
+        public void SeparateBoundaryInternalDofs(ISubdomain subdomain, HashSet<INode> cornerNodes)
         {
             int s = subdomain.ID;
+            IEnumerable<INode> remainderAndConstrainedNodes = subdomain.Nodes.Where(node => !cornerNodes.Contains(node));
 
             (int[] internalDofIndices, int[] boundaryDofIndices, (INode node, IDofType dofType)[] boundaryDofConnectivities)
-                = DofSeparatorBase.SeparateBoundaryInternalDofs(remainderAndConstrainedNodes, RemainderDofOrderings[s]);
+                = DofSeparationUtilities.SeparateBoundaryInternalDofs(remainderAndConstrainedNodes, RemainderDofOrderings[s]);
             InternalDofIndices[s] = internalDofIndices;
             BoundaryDofIndices[s] = boundaryDofIndices;
             BoundaryDofs[s] = boundaryDofConnectivities;
         }
 
-        public void SeparateCornerRemainderDofs(ISubdomain subdomain, HashSet<INode> cornerNodes, 
-            IEnumerable<INode> remainderAndConstrainedNodes)
+        public void SeparateCornerRemainderDofs(ISubdomain subdomain, HashSet<INode> cornerNodes)
         {
             int s = subdomain.ID;
+            IEnumerable<INode> remainderAndConstrainedNodes = subdomain.Nodes.Where(node => !cornerNodes.Contains(node));
 
             var cornerDofs = new List<int>();
             var remainderDofs = new List<int>();

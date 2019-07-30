@@ -32,10 +32,11 @@ namespace ISAAR.MSolve.FEM.Entities
         /// <param name="x">The coordinate of the point along the single axis X.</param>
         /// <param name="y">The coordinate of the point along the single axis Y.</param>
         /// <param name="z">The coordinate of the point along the single axis Z.</param>
-        public Node(int id, double x, double y = 0.0, double z = 0.0) : base(x, y, z)
+        public Node(int id, double x, double y = 0.0, double z = 0.0, int multiplicity = 1) : base(x, y, z)
         {
             if (id < 0) throw new ArgumentException("The parameter id must be non negative, but was: " + id);
             this.ID = id;
+            this.Multiplicity = multiplicity;
         }
 
         //public Element EmbeddedInElement { get; set; }
@@ -62,12 +63,15 @@ namespace ISAAR.MSolve.FEM.Entities
         public Dictionary<int, Subdomain> NonMatchingSubdomainsDictionary => nonMatchingSubdomainsDictionary;
         public Dictionary<int, ISubdomain> SubdomainsDictionary => subdomainsDictionary;
 
+        public int Multiplicity { get; private set; }
 
         public void BuildSubdomainDictionary()
         {
             foreach (Element element in elementsDictionary.Values)
-                if (!subdomainsDictionary.ContainsKey(element.Subdomain.ID))
-                    subdomainsDictionary.Add(element.Subdomain.ID, element.Subdomain);
+            {
+                subdomainsDictionary[element.Subdomain.ID] = element.Subdomain;
+            }
+            Multiplicity = subdomainsDictionary.Count;    
         }
 
         public int CompareTo(INode other) => this.ID - other.ID;

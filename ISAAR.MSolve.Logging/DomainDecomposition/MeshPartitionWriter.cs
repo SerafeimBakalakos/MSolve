@@ -39,7 +39,7 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
                 var boundaryNodes = new List<INode>();
                 foreach (INode node in model.Nodes)
                 {
-                    if (node.SubdomainsDictionary.Count > 1) boundaryNodes.Add(node);
+                    if (node.Multiplicity > 1) boundaryNodes.Add(node);
                 }
                 writer.WriteLine($"POINTS {boundaryNodes.Count} double");
                 foreach (INode node in boundaryNodes)
@@ -54,7 +54,7 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
                 writer.WriteLine("LOOKUP_TABLE default");
                 foreach (INode node in boundaryNodes)
                 {
-                    writer.WriteLine((node.SubdomainsDictionary.Count == 2) ? 0.0 : 1.0);
+                    writer.WriteLine((node.Multiplicity == 2) ? 0.0 : 1.0);
                 }
             }
         }

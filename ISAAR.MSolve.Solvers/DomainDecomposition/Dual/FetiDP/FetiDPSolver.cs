@@ -7,9 +7,7 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
-using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.Solvers.Assemblers;
 using ISAAR.MSolve.Solvers.Commons;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
@@ -105,6 +103,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         }
 
         public Dictionary<int, HashSet<INode>> CornerNodesOfSubdomains { get; private set; }
+        public HashSet<INode> CornerNodesGlobal { get; private set; }
         public IReadOnlyDictionary<int, ILinearSystem> LinearSystems { get; }
         public SolverLogger Logger { get; } = new SolverLogger(name);
         public string Name => name;
@@ -207,10 +206,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             // Identify corner nodes
             CornerNodesOfSubdomains = cornerNodeSelection.SelectCornerNodesOfSubdomains(); //TODO: Could this cause change in connectivity?
+            CornerNodesGlobal = new HashSet<INode>();
+            foreach (IEnumerable<INode> subdomainNodes in CornerNodesOfSubdomains.Values)
+            {
+                CornerNodesGlobal.UnionWith(subdomainNodes);
+            }
 
             // Define boundary / internal dofs
-            dofSeparator.DefineGlobalBoundaryDofs(model, CornerNodesOfSubdomains);
-            dofSeparator.DefineGlobalCornerDofs(model, CornerNodesOfSubdomains);
+            dofSeparator.DefineGlobalBoundaryDofs(model, CornerNodesGlobal);
+            dofSeparator.DefineGlobalCornerDofs(model, CornerNodesGlobal);
             foreach (ISubdomain subdomain in model.Subdomains)
             {
                 int s = subdomain.ID;
@@ -222,20 +226,20 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                     IEnumerable<INode> remainderAndConstrainedNodes = subdomain.Nodes.Where(node => !cornerNodes.Contains(node));
 
                     Debug.WriteLine($"{this.GetType().Name}: Separating and ordering corner-remainder dofs of subdomain {s}");
-                    dofSeparator.SeparateCornerRemainderDofs(subdomain, cornerNodes, remainderAndConstrainedNodes);
+                    dofSeparator.SeparateCornerRemainderDofs(subdomain, cornerNodes);
 
                     Debug.WriteLine($"{this.GetType().Name}: Reordering internal dofs of subdomain {s}.");
                     matrixManagers[s].ReorderRemainderDofs(dofSeparator, subdomain);
 
                     Debug.WriteLine($"{this.GetType().Name}: Separating and ordering boundary-internal dofs of subdomain {s}");
-                    dofSeparator.SeparateBoundaryInternalDofs(subdomain, remainderAndConstrainedNodes);
+                    dofSeparator.SeparateBoundaryInternalDofs(subdomain, cornerNodes);
                 }
             }
 
             // This must be called after determining the corner dofs of each subdomain
             //TODO: Perhaps the corner dofs of each subdomain should be handled in dofSeparator.DefineGlobalCornerDofs();
             coarseProblemSolver.ReorderCornerDofs(dofSeparator);
-            dofSeparator.CalcCornerMappingMatrices(model, CornerNodesOfSubdomains);
+            dofSeparator.CalcCornerMappingMatrices(model);
 
             //TODO: B matrices could also be reused in some cases
             // Define lagrange multipliers and boolean matrices. 

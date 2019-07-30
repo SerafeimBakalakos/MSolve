@@ -52,7 +52,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
 
             foreach ((INode node, IDofType dofType, double loadAmount) in globalNodalLoads)
             {
-                if (node.SubdomainsDictionary.Count == 1) // optimization for internal dof
+                if (node.Multiplicity == 1) // optimization for internal dof
                 {
                     ISubdomain subdomain = node.SubdomainsDictionary.First().Value;
                     int subdomainDofIdx = subdomain.FreeDofOrdering.FreeDofs[node, dofType];

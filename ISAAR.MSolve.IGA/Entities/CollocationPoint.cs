@@ -26,6 +26,8 @@ namespace ISAAR.MSolve.IGA.Entities
 
         public List<Constraint> Constraints => new List<Constraint>();
 
+        public int Multiplicity => SubdomainsDictionary.Count;
+
         public Dictionary<int, ISubdomain> SubdomainsDictionary => throw new NotImplementedException();
 
         public CollocationPoint2D(int id, double xi, double eta, bool isBoundary=false) : base(xi, eta)

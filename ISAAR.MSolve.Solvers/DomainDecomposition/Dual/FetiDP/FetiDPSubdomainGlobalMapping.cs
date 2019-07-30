@@ -51,7 +51,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                     // Loads at corner dofs will be distributed equally. It shouldn't matter how I distribute these, since I 
                     // will only sum them together again during the static condensation of remainder dofs phase.
                     //TODO: is that correct?
-                    double loadPerSubdomain = loadAmount / node.SubdomainsDictionary.Count;
+                    double loadPerSubdomain = loadAmount / node.Multiplicity;
                     foreach (var idSubdomain in node.SubdomainsDictionary)
                     {
                         int id = idSubdomain.Key;
@@ -62,7 +62,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 }
                 else
                 {
-                    if (node.SubdomainsDictionary.Count == 1) // optimization for internal dof
+                    if (node.Multiplicity == 1) // optimization for internal dof
                     {
                         ISubdomain subdomain = node.SubdomainsDictionary.First().Value;
                         int subdomainDofIdx = subdomain.FreeDofOrdering.FreeDofs[node, dofType];

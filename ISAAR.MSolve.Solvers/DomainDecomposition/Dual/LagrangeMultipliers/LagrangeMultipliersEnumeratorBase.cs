@@ -2,8 +2,8 @@
 using System.Linq;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
-using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
+using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
 
 //TODO: This should only calculate them. Another object should manage them.
 //TODO: The enumeration code is quite complex and error prone. It should be simplified and decomposed into smaller methods, as

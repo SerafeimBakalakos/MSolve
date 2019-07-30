@@ -10,6 +10,7 @@ using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 using MPI;
 
+//TODO: Add time logging
 //TODO: Use a base class for the code that is identical between FETI-1 and FETI-DP.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 {
@@ -80,8 +81,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         }
 
         public void OrderDofs(bool alsoOrderConstrainedDofs)
-        {
+        { //TODO: What about subdomain-global mapping? Especially for boundary dofs.
             subdomain.FreeDofOrdering = dofOrderer.OrderFreeDofs(subdomain);
+            if (alsoOrderConstrainedDofs) subdomain.ConstrainedDofOrdering = dofOrderer.OrderConstrainedDofs(subdomain);
         }
 
         public void PreventFromOverwrittingSystemMatrices() => factorizeInPlace = false;
