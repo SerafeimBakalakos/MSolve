@@ -53,12 +53,13 @@ namespace ISAAR.MSolve.FEM.Transfer
             }
 
             // Displacements
+            var dofSerializer = new StandardDofSerializer();
             var displacements = new List<NodalDisplacementDto>();
             foreach (Node node in actualNodes)
             {
                 foreach (Constraint constraint in node.Constraints)
                 {
-                    displacements.Add(new NodalDisplacementDto(node, constraint));
+                    displacements.Add(new NodalDisplacementDto(node, constraint, dofSerializer));
                 }
             }
             this.nodalDisplacements = displacements.ToArray();
@@ -87,7 +88,8 @@ namespace ISAAR.MSolve.FEM.Transfer
             foreach (IElementDto e in this.elements) subdomain.Elements.Add(e.Deserialize(allNodes, allMaterials));
 
             // Displacements
-            foreach (NodalDisplacementDto d in this.nodalDisplacements) d.Deserialize(allNodes);
+            var dofSerializer = new StandardDofSerializer();
+            foreach (NodalDisplacementDto d in this.nodalDisplacements) d.Deserialize(allNodes, dofSerializer);
 
             return subdomain;
         }
