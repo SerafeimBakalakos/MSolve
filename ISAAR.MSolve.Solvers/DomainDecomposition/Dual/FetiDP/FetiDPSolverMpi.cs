@@ -22,6 +22,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly int master;
         private readonly IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory;
         private readonly IStructuralModel model;
+        private readonly Dictionary<int, INode> nodesDictionary;
+        private readonly int rank;
         private readonly MpiTransfer transfer;
 
         private bool factorizeInPlace = true;
@@ -36,8 +38,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             this.matrixManagerFactory = matrixManagerFactory;
 
             this.comm = Communicator.world;
+            this.rank = comm.Rank;
             this.master = masterProcess;
             this.transfer = new MpiTransfer(serializer); //TODO: the serializer should be accessed by the model.
+
+            if (rank == masterProcess) this.nodesDictionary = CreateNodesDictionary(model);
         }
 
         //TODO: I do not like these dependencies. The analyzer should not have to know that it must call ScatterSubdomainData() 
@@ -103,7 +108,17 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             Console.WriteLine($"(process {rank}) Subdomain {subdomain.ID}: trace(stiffnessMatrix) = {trace}");
         }
 
-        public static double Trace(IMatrixView matrix)
+        //TODO: This should not be necessary at all. Right now I store all the nodes twice, 3 times if we count the conversion 
+        //      from Dictionary<int, Node> to IList<INode>! Also it managing in which process the extra dictionary is stored is 
+        //      annoying.
+        private static Dictionary<int, INode> CreateNodesDictionary(IStructuralModel model)
+        {
+            var nodesDictionary = new Dictionary<int, INode>();
+            foreach (INode node in model.Nodes) nodesDictionary[node.ID] = node;
+            return nodesDictionary;
+        }
+
+        private static double Trace(IMatrixView matrix)
         {
             double trace = 0.0;
             for (int i = 0; i < matrix.NumRows; ++i) trace += matrix[i, i];
