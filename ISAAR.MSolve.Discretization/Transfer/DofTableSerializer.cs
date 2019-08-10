@@ -21,9 +21,9 @@ namespace ISAAR.MSolve.Discretization.Transfer
             Debug.Assert(flatTable.Length % 3 == 0,
                 "The provided flattened table does not correspond to a dof table. It must have a length divisible by 3, where"
                 + " the first element of each triad is the node, the second is the dof type and the thrd is the dof index");
-            int entryCount = flatTable.Length / 3;
+            int numEntires = flatTable.Length / 3;
             var table = new DofTable();
-            for (int i = 0; i < entryCount; ++i)
+            for (int i = 0; i < numEntires; ++i)
             {
                 INode node = nodes[3 * i];
                 IDofType dofType = dofSerializer.Deserialize(3 * i + 1);

@@ -18,15 +18,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 {
     public class FetiDPDofSeparatorMpi //: IDofSeparatorMpi
     {
-        private const int cornerDofOrderingLengthTag = 0;
-        private const int cornerDofOrderingTag = 1;
-        private const int cornerMappingMatrixTag = 2;
+        private const int cornerDofOrderingTag = 0;
+        private const int cornerMappingMatrixTag = 1;
 
         private readonly Intracommunicator comm;
         private readonly IDofSerializer dofSerializer;
         private readonly int masterProcess;
         private readonly ModelDistribution modelDistribution;
-        private readonly Dictionary<int, INode> nodesDictionary;
+        private readonly Dictionary<int, INode> globalNodes;
         private readonly int rank;
 
         public FetiDPDofSeparatorMpi(IStructuralModel model, ISubdomain subdomain, Dictionary<int, INode> nodesDictionary, 
@@ -40,7 +39,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             SubdomainDofs = new FetiDPDofSeparatorSubdomainMpi(subdomain);
             if (rank == masterProcess) GlobalDofs = new FetiDPDofSeparatorGlobalMpi(model);
-            this.nodesDictionary = nodesDictionary;
+            this.globalNodes = nodesDictionary;
         }
 
         //TODO: Ideally the next two are not dependent on the MPI implementation. Only this class is and it handles commnication.
@@ -98,51 +97,45 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         //      MPI gather, since it is faster than send/receive.
         private void GatherCornerDofOrderingsFromSubdomains()
         {
-            ISubdomain subdomain = SubdomainDofs.Subdomain;
             var tableSerializer = new DofTableSerializer(dofSerializer);
 
             // Receive the corner dof ordering of each subdomain from the corresponding process
             if (rank == masterProcess)
             {
                 // For the subdomain of the master process, just copy the reference. Even if it isn't necessary, it is costless.
-                GlobalDofs.SubdomainCornerDofOrderings[subdomain.ID] = SubdomainDofs.CornerDofOrdering;
+                GlobalDofs.SubdomainCornerDofOrderings[this.SubdomainDofs.Subdomain.ID] = SubdomainDofs.CornerDofOrdering;
+                IEnumerable<ISubdomain> otherSubdomains = 
+                    GlobalDofs.Model.Subdomains.Except(new ISubdomain[] { this.SubdomainDofs.Subdomain });
 
                 var serializedTables = new Dictionary<ISubdomain, int[]>();
-                foreach (ISubdomain sub in GlobalDofs.Model.Subdomains)
+                foreach (ISubdomain subdomain in otherSubdomains)
                 {
                     // Receive the corner dof ordering of each subdomain, only if it has changed.
-                    if (sub == subdomain) continue;
-                    if (sub.ConnectivityModified) //TODO: Is this what I should check?
+                    if (subdomain.ConnectivityModified) //TODO: Is this what I should check?
                     {
-                        int source = modelDistribution.SubdomainsToProcesses[sub];
-
-                        // First receive the length to allocate the array and then the whole array. //TODO: Is there a shortcut to this process?
-                        int length = comm.Receive<int>(source, cornerDofOrderingLengthTag);
-                        var buffer = new int[length];
-                        comm.Receive(source, cornerDofOrderingTag, ref buffer);
-                        serializedTables[sub] = buffer;
+                        int source = modelDistribution.SubdomainsToProcesses[subdomain];
+                        serializedTables[subdomain] = MpiUtilities.ReceiveArray(comm, source, cornerDofOrderingTag);
                     }
                 }
 
                 // After finishing with all comunications deserialize the received items. //TODO: This should be done concurrently with the transfers, by another thread.
-                foreach (var subdomainTablePair in serializedTables)
+                foreach (ISubdomain subdomain in otherSubdomains)
                 {
-                    int subdomainID = subdomainTablePair.Key.ID;
-                    DofTable ordering = tableSerializer.Deserialize(subdomainTablePair.Value, nodesDictionary);
-                    GlobalDofs.SubdomainCornerDofOrderings[subdomainID] = ordering;
+                    bool isModified = serializedTables.TryGetValue(subdomain, out int[] serializedTable);
+                    if (isModified)
+                    {
+                        DofTable ordering = tableSerializer.Deserialize(serializedTable, globalNodes);
+                        GlobalDofs.SubdomainCornerDofOrderings[subdomain.ID] = ordering;
+                        serializedTables.Remove(subdomain); // Free up some temporary memory.
+                    }
                 }
             }
             else
             {
-                if (subdomain.ConnectivityModified)
+                if (this.SubdomainDofs.Subdomain.ConnectivityModified)
                 {
                     int[] serializedTable = tableSerializer.Serialize(SubdomainDofs.CornerDofOrdering);
-
-                    // Sending the length is needed to allocate buffers in master before sending the whole array. Furthermore it 
-                    // blocks the all except for the one currently processed master, preventing them from sending the whole 
-                    // arrays. Not sure if this is good or bad.
-                    comm.Send(serializedTable.Length, masterProcess, cornerDofOrderingLengthTag); 
-                    comm.Send(serializedTable, masterProcess, cornerDofOrderingTag);
+                    MpiUtilities.SendArray(comm, serializedTable, masterProcess, cornerDofOrderingTag);
                 }
             }
         }
