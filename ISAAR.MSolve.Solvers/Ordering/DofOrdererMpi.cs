@@ -7,6 +7,7 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
+using MPI;
 
 //TODO: The solver should decide which subdomains will be reused. This class only provides functionality.
 namespace ISAAR.MSolve.Solvers.Ordering
@@ -15,23 +16,28 @@ namespace ISAAR.MSolve.Solvers.Ordering
     /// Orders the unconstrained freedom degrees of each subdomain and the shole model. Also applies any reordering and other 
     /// optimizations.
     /// </summary>
-    public class DofOrderer : IDofOrderer
+    public class DofOrdererMpi //: IDofOrderer
     {
         //TODO: this should also be a strategy, so that I could have caching with fallbacks, in case of insufficient memor.
         private readonly bool cacheElementToSubdomainDofMaps = true;
-        private readonly bool doOptimizationsIfSingleSubdomain = true; // No idea why someone would want this to be false.
+        private readonly Intracommunicator comm;
         private readonly ConstrainedDofOrderingStrategy constrainedOrderingStrategy;
         private readonly IFreeDofOrderingStrategy freeOrderingStrategy;
+        private readonly int masterProcess;
+        private readonly int rank;
         private readonly IDofReorderingStrategy reorderingStrategy;
 
-        public DofOrderer(IFreeDofOrderingStrategy freeOrderingStrategy, IDofReorderingStrategy reorderingStrategy,
-            bool doOptimizationsIfSingleSubdomain = true, bool cacheElementToSubdomainDofMaps = true)
+        public DofOrdererMpi(IFreeDofOrderingStrategy freeOrderingStrategy, IDofReorderingStrategy reorderingStrategy, 
+            Intracommunicator comm, int masterProcess, bool cacheElementToSubdomainDofMaps = true)
         {
             this.constrainedOrderingStrategy = new ConstrainedDofOrderingStrategy();
             this.freeOrderingStrategy = freeOrderingStrategy;
             this.reorderingStrategy = reorderingStrategy;
-            this.doOptimizationsIfSingleSubdomain = doOptimizationsIfSingleSubdomain;
             this.cacheElementToSubdomainDofMaps = cacheElementToSubdomainDofMaps;
+
+            this.comm = comm;
+            this.rank = comm.Rank;
+            this.masterProcess = masterProcess;
         }
 
         public ISubdomainConstrainedDofOrdering OrderConstrainedDofs(ISubdomain subdomain)
@@ -45,31 +51,10 @@ namespace ISAAR.MSolve.Solvers.Ordering
             else return new SubdomainConstrainedDofOrderingGeneral(numConstrainedDofs, constrainedDofs);
         }
 
-        public IGlobalFreeDofOrdering OrderFreeDofs(IStructuralModel model)
+        public GlobalFreeDofOrderingMpi OrderFreeDofs(IStructuralModel model)
         {
-            if (doOptimizationsIfSingleSubdomain && (model.Subdomains.Count == 1))
-            {
-                // Order subdomain dofs
-                ISubdomain subdomain = model.Subdomains.First();
-                ISubdomainFreeDofOrdering subdomainOrdering = OrderFreeDofs(subdomain);
-                
-                // Order global dofs
-                return new GlobalFreeDofOrderingSingle(subdomain, subdomainOrdering);
-            }
-            else
-            {
-                // Order subdomain dofs
-                var subdomainOrderings = new Dictionary<ISubdomain, ISubdomainFreeDofOrdering>(model.Subdomains.Count);
-                foreach (ISubdomain subdomain in model.Subdomains)
-                {
-                    ISubdomainFreeDofOrdering subdomainOrdering = OrderFreeDofs(subdomain);
-                    subdomainOrderings.Add(subdomain, subdomainOrdering);
-                }
-
-                // Order global dofs
-                (int numGlobalFreeDofs, DofTable globalFreeDofs) = freeOrderingStrategy.OrderGlobalDofs(model);
-                return new GlobalFreeDofOrderingGeneral(numGlobalFreeDofs, globalFreeDofs, subdomainOrderings);
-            }
+            (int numGlobalFreeDofs, DofTable globalFreeDofs) = freeOrderingStrategy.OrderGlobalDofs(model);
+            return new GlobalFreeDofOrderingMpi(numGlobalFreeDofs, globalFreeDofs, comm, masterProcess);
         }
 
         public ISubdomainFreeDofOrdering OrderFreeDofs(ISubdomain subdomain)
