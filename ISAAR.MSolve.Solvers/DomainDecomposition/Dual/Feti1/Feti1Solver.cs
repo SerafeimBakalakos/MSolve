@@ -481,7 +481,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
             }
 
             public IDofOrderer DofOrderer { get; set; } = 
-                new ReusingDofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
+                new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
 
             public IFeti1InterfaceProblemSolver InterfaceProblemSolver { get; set; } = 
                 (new Feti1ProjectedInterfaceProblemSolver.Builder()).Build();

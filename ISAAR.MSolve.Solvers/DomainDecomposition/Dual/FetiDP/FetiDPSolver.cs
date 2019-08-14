@@ -501,7 +501,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             //TODO: We need to specify the ordering for remainder and possibly internal dofs, while IDofOrderer only works for free dofs.
             public IDofOrderer DofOrderer { get; set; } =
-                new ReusingDofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
+                new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
 
             public IFetiDPInterfaceProblemSolver InterfaceProblemSolver { get; set; } 
                 = new FetiDPInterfaceProblemSolver.Builder().Build();

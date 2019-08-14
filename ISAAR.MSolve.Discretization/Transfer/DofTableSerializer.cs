@@ -21,13 +21,13 @@ namespace ISAAR.MSolve.Discretization.Transfer
             Debug.Assert(flatTable.Length % 3 == 0,
                 "The provided flattened table does not correspond to a dof table. It must have a length divisible by 3, where"
                 + " the first element of each triad is the node, the second is the dof type and the thrd is the dof index");
-            int numEntires = flatTable.Length / 3;
+            int numEntries = flatTable.Length / 3;
             var table = new DofTable();
-            for (int i = 0; i < numEntires; ++i)
+            for (int i = 0; i < numEntries; ++i)
             {
-                INode node = nodes[3 * i];
-                IDofType dofType = dofSerializer.Deserialize(3 * i + 1);
-                int dofIdx = 3 * i + 2;
+                INode node = nodes[flatTable[3 * i]];
+                IDofType dofType = dofSerializer.Deserialize(flatTable[3 * i + 1]);
+                int dofIdx = flatTable[3 * i + 2];
                 table[node, dofType] = dofIdx; //TODO: perhaps this can be optimized to avoid checking if there is already such an entry.
             }
             return table;
@@ -35,8 +35,8 @@ namespace ISAAR.MSolve.Discretization.Transfer
 
         public int[] Serialize(DofTable table)
         {
-            int entryCount = table.EntryCount;
-            var flatTable = new int[entryCount];
+            int numEntries = table.EntryCount;
+            var flatTable = new int[3 * numEntries];
             int counter = -1;
             foreach ((INode row, IDofType col, int val) in table)
             {

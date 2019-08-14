@@ -9,10 +9,4 @@ namespace ISAAR.MSolve.Discretization.Transfer
     {
         ISubdomain Deserialize();
     }
-
-    //TODO: Find a better way to serialize than using these objects. They also need to cast.
-    public interface ISubdomainSerializer
-    {
-        ISubdomainDto Serialize(ISubdomain subdomain);
-    }
 }

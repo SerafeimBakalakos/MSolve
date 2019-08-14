@@ -28,7 +28,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly Dictionary<int, INode> globalNodes;
         private readonly int rank;
 
-        public FetiDPDofSeparatorMpi(IStructuralModel model, ISubdomain subdomain, Dictionary<int, INode> nodesDictionary, 
+        public FetiDPDofSeparatorMpi(IStructuralModel model, ISubdomain subdomain, Dictionary<int, INode> globalNodes,
+            GlobalFreeDofOrderingMpi globalDofOrdering, 
             Intracommunicator comm, int masterProcess, ModelDistribution modelDistribution, IDofSerializer dofSerializer)
         {
             this.comm = comm;
@@ -38,8 +39,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             this.dofSerializer = dofSerializer;
 
             SubdomainDofs = new FetiDPDofSeparatorSubdomainMpi(subdomain);
-            if (rank == masterProcess) GlobalDofs = new FetiDPDofSeparatorGlobalMpi(model);
-            this.globalNodes = nodesDictionary;
+            if (rank == masterProcess) GlobalDofs = new FetiDPDofSeparatorGlobalMpi(model, globalDofOrdering);
+            this.globalNodes = globalNodes;
         }
 
         //TODO: Ideally the next two are not dependent on the MPI implementation. Only this class is and it handles commnication.
@@ -75,12 +76,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         /// This must be called after <see cref="SeparateCornerRemainderDofs(ISubdomain, HashSet{INode}, IEnumerable{INode})"/> 
         /// and after a reordering for the remainder dofs is computed.
         /// </summary>
-        public void SeparateBoundaryInternalDofs(HashSet<INode> cornerNodes)
-            => SubdomainDofs.SeparateBoundaryInternalDofs(cornerNodes);
+        public void SeparateBoundaryInternalDofs(HashSet<INode> subdomainCornerNodes)
+            => SubdomainDofs.SeparateBoundaryInternalDofs(subdomainCornerNodes);
 
-        public void SeparateCornerRemainderDofs(HashSet<INode> cornerNodes)
+        public void SeparateCornerRemainderDofs(HashSet<INode> subdomainCornerNodes)
         {
-            SubdomainDofs.SeparateCornerRemainderDofs(cornerNodes);
+            SubdomainDofs.SeparateCornerRemainderDofs(subdomainCornerNodes);
             GatherCornerDofOrderingsFromSubdomains();
         }
 
@@ -104,8 +105,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             {
                 // For the subdomain of the master process, just copy the reference. Even if it isn't necessary, it is costless.
                 GlobalDofs.SubdomainCornerDofOrderings[this.SubdomainDofs.Subdomain.ID] = SubdomainDofs.CornerDofOrdering;
-                IEnumerable<ISubdomain> otherSubdomains = 
-                    GlobalDofs.Model.Subdomains.Except(new ISubdomain[] { this.SubdomainDofs.Subdomain });
+                IEnumerable<ISubdomain> otherSubdomains =
+                    GlobalDofs.Model.Subdomains.Where(sub => sub.ID != this.SubdomainDofs.Subdomain.ID);
 
                 var serializedTables = new Dictionary<ISubdomain, int[]>();
                 foreach (ISubdomain subdomain in otherSubdomains)
@@ -114,7 +115,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                     if (subdomain.ConnectivityModified) //TODO: Is this what I should check?
                     {
                         int source = modelDistribution.SubdomainsToProcesses[subdomain];
+                        //Console.WriteLine($"Process {rank} (master): Started receiving corner dof ordering from process {source}.");
                         serializedTables[subdomain] = MpiUtilities.ReceiveArray(comm, source, cornerDofOrderingTag);
+                        //Console.WriteLine($"Process {rank} (master): Finished receiving corner dof ordering from process {source}.");
                     }
                 }
 
@@ -124,7 +127,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                     bool isModified = serializedTables.TryGetValue(subdomain, out int[] serializedTable);
                     if (isModified)
                     {
+                        //Console.WriteLine($"Process {rank} (master): Started deserializing corner dof ordering of subdomain {subdomain.ID}.");
                         DofTable ordering = tableSerializer.Deserialize(serializedTable, globalNodes);
+                        //Console.WriteLine($"Process {rank} (master): Finished deserializing corner dof ordering of subdomain {subdomain.ID}.");
                         GlobalDofs.SubdomainCornerDofOrderings[subdomain.ID] = ordering;
                         serializedTables.Remove(subdomain); // Free up some temporary memory.
                     }
@@ -134,8 +139,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             {
                 if (this.SubdomainDofs.Subdomain.ConnectivityModified)
                 {
+                    //Console.WriteLine($"Process {rank}: Started serializing corner dof ordering.");
                     int[] serializedTable = tableSerializer.Serialize(SubdomainDofs.CornerDofOrdering);
+                    //Console.WriteLine($"Process {rank}: Finished serializing corner dof ordering. Started sending it to master");
                     MpiUtilities.SendArray(comm, serializedTable, masterProcess, cornerDofOrderingTag);
+                    //Console.WriteLine($"Process {rank}: Finished sending corner dof ordering to master.");
                 }
             }
         }

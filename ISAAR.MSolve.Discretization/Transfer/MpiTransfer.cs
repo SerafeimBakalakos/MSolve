@@ -30,13 +30,15 @@ namespace ISAAR.MSolve.Discretization.Transfer
             //Console.WriteLine($"(process {rank}) Hello World!"); // Run this to check if MPI works correctly.
 
             // Serialize the data of each subdomain
+            IReadOnlyList<ISubdomain> originalSubdomains = null;
             ISubdomainDto[] serializedSubdomains = null;
             if (rank == root)
             {
                 int numSubdomains = model.Subdomains.Count;
-                IReadOnlyList<ISubdomain> originalSubdomains = model.Subdomains;
+                originalSubdomains = model.Subdomains;
                 serializedSubdomains = new ISubdomainDto[numSubdomains];
-                for (int s = 0; s < numSubdomains; ++s)
+                serializedSubdomains[0] = new EmptySubdomainDto();
+                for (int s = 1; s < numSubdomains; ++s)
                 {
                     serializedSubdomains[s] = serializer.Serialize(originalSubdomains[s]);
                 }
@@ -44,9 +46,8 @@ namespace ISAAR.MSolve.Discretization.Transfer
 
             // Scatter the serialized subdomain data from master process and deserialize in each process
             ISubdomainDto serializedSubdomain = comm.Scatter(serializedSubdomains, root);
-            ISubdomain subdomain = serializedSubdomain.Deserialize();
-
-            return subdomain;
+            if (rank == root) return originalSubdomains[0];
+            else return serializedSubdomain.Deserialize();
         }
     }
 }

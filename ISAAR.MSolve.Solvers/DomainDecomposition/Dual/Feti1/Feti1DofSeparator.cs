@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
 
         public void DefineGlobalBoundaryDofs(IStructuralModel model)
         {
-            GlobalBoundaryDofs = DofSeparationUtilities.DefineGlobalBoundaryDofs(model.Nodes, model.GlobalDofOrdering);
+            GlobalBoundaryDofs = DofSeparationUtilities.DefineGlobalBoundaryDofs(model.Nodes, model.GlobalDofOrdering.GlobalFreeDofs);
         }
 
         public void SeparateBoundaryInternalDofs(ISubdomain subdomain)

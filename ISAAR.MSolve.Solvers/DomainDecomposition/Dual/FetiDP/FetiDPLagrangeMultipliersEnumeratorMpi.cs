@@ -16,7 +16,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     /// boundary dofs.
     /// Authors: Serafeim Bakalakos
     /// </summary>
-    public class LagrangeMultipliersEnumeratorBaseMpi //: ILagrangeMultipliersEnumerator
+    public class FetiDPLagrangeMultipliersEnumeratorMpi //: ILagrangeMultipliersEnumerator
     {
         private const int lagrangeDefinitionTag = 0;
 
@@ -29,7 +29,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly ISubdomain subdomain;
         private readonly Dictionary<int, INode> subdomainNodes;
 
-        protected LagrangeMultipliersEnumeratorBaseMpi(ISubdomain subdomain, Dictionary<int, INode> subdomainNodes, 
+        public FetiDPLagrangeMultipliersEnumeratorMpi(ISubdomain subdomain, Dictionary<int, INode> subdomainNodes, 
             ICrosspointStrategy crosspointStrategy, FetiDPDofSeparatorMpi dofSeparator, Intracommunicator comm,
             int masterProcess, IDofSerializer dofSerializer)
         {
@@ -58,7 +58,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         /// </summary>
         public int NumLagrangeMultipliers { get; private set; }
 
-        protected void CalcBooleanMatrices()
+        public void CalcBooleanMatrices()
         { 
             // Define the lagrange multipliers and serialize and broadcast them to other processes
             int[] serializedLagranges = null;

@@ -10,7 +10,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation
     public static class DofSeparationUtilities
     {
         public static Dictionary<INode, IDofType[]> DefineGlobalBoundaryDofs(IEnumerable<INode> allNodes, 
-            IGlobalFreeDofOrdering globalDofOrdering)
+            DofTable globalFreeDofs)
         {
             var globalBoundaryDofs = new Dictionary<INode, IDofType[]>();
 
@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation
                 if (nodeMultiplicity > 1)
                 {
                     // Access the free dofs only. Does this also filter out embedded dofs?
-                    IDofType[] dofsOfNode = globalDofOrdering.GlobalFreeDofs.GetColumnsOfRow(node).ToArray(); //TODO: interacting with the table can be optimized.
+                    IDofType[] dofsOfNode = globalFreeDofs.GetColumnsOfRow(node).ToArray(); //TODO: interacting with the table can be optimized.
 
                     // If all dofs of this node are constrained, then it is not considered boundary.
                     if (dofsOfNode.Length == 0) continue;

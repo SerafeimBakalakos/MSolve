@@ -17,7 +17,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Transfer
 {
     public static class Quad4PlateTest
     {
-        [Fact]
+        //[Fact]
         private static void RunTest()
         {
             Model model = CreateModel();

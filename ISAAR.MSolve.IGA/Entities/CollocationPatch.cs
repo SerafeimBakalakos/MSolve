@@ -36,7 +36,7 @@ namespace ISAAR.MSolve.IGA.Entities
         public Vector Forces { get; set; }
 
         public bool StiffnessModified { get; set; }
-        public bool ConnectivityModified { get; set; }
+        public bool ConnectivityModified { get; set; } = true; // At first it is modified
 
         public Table<ControlPoint, IDofType, double> ControlPointLoads { get; set; }
 
