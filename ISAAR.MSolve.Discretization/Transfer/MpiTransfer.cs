@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
         /// It can be null for processes other than the root. model.ConnectDataStructures() must have been called beforehand.
         /// </param>
         /// <param name="root">Root process where the data of <paramref name="model"/> are stored.</param>
-        public ISubdomain ScatterSubdomains(IStructuralModel model, int root)
+        public ISubdomain ScatterSubdomains(IModel model, int root)
         {
             Intracommunicator comm = Communicator.world;
             int rank = comm.Rank;

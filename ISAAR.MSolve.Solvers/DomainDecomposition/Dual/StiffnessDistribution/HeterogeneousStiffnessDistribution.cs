@@ -29,7 +29,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         //TODO: perhaps it would be faster to have a field Dictionary<int, double[]> boundaryDofStiffnesses, instead of the next
         private Table<INode, IDofType, BoundaryDofLumpedStiffness> boundaryDofStiffnesses;
 
-        public HeterogeneousStiffnessDistribution(IStructuralModel model, IDofSeparator dofSeparator)
+        public HeterogeneousStiffnessDistribution(IModel model, IDofSeparator dofSeparator)
         {
             this.subdomains = model.Subdomains;
             this.dofSeparator = dofSeparator;

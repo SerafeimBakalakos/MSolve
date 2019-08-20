@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
             analysisStep = 0;
         }
 
-        public void PlotSubdomains(IStructuralModel model)
+        public void PlotSubdomains(IModel model)
         {
             var writer = new MeshPartitionWriter(shuffleSubdomainColors);
             writer.WriteSubdomainElements($"{plotDirectoryPath}\\subdomains_{analysisStep}.vtk", model);

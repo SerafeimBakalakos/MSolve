@@ -13,9 +13,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     {
         private readonly IStiffnessDistribution distribution;
         private readonly FetiDPDofSeparator dofSeparator;
-        private readonly IStructuralModel model;
+        private readonly IModel model;
 
-        public FetiDPSubdomainGlobalMapping(IStructuralModel model, FetiDPDofSeparator dofSeparator,
+        public FetiDPSubdomainGlobalMapping(IModel model, FetiDPDofSeparator dofSeparator,
             IStiffnessDistribution distribution)
         {
             this.model = model;

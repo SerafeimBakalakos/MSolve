@@ -12,7 +12,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 //      cannot be correct.
 namespace ISAAR.MSolve.IGA.Entities
 {
-	public class Model : IStructuralModel
+	public class Model : IModel
 	{
 		private int numberOfPatches = 0;
 		private int numberOfInterfaces = 0;
@@ -31,7 +31,7 @@ namespace ISAAR.MSolve.IGA.Entities
 		public IList<Cluster> Clusters => ClustersDictionary.Values.ToList();
 		public Dictionary<int, Cluster> ClustersDictionary { get; } = new Dictionary<int, Cluster>();
 
-		IReadOnlyList<IElement> IStructuralModel.Elements => ElementsDictionary.Values.ToList();
+		IReadOnlyList<IElement> IModel.Elements => ElementsDictionary.Values.ToList();
 		public IList<Element> Elements => ElementsDictionary.Values.ToList();
 		public Dictionary<int, Element> ElementsDictionary => elementsDictionary;
 
@@ -41,7 +41,7 @@ namespace ISAAR.MSolve.IGA.Entities
 			new List<IMassAccelerationHistoryLoad>();
 
 		public IList<ControlPoint> ControlPoints => controlPointsDictionary.Values.ToList();
-		IReadOnlyList<INode> IStructuralModel.Nodes => controlPointsDictionary.Values.ToList();
+		IReadOnlyList<INode> IModel.Nodes => controlPointsDictionary.Values.ToList();
 
         public INode GetNode(int nodeID) => controlPointsDictionary[nodeID];
         public Dictionary<int, ControlPoint> ControlPointsDictionary
@@ -61,7 +61,7 @@ namespace ISAAR.MSolve.IGA.Entities
 			set { numberOfInterfaces = value; }
 		}
 
-		IReadOnlyList<ISubdomain> IStructuralModel.Subdomains => patchesDictionary.Values.ToList();
+		IReadOnlyList<ISubdomain> IModel.Subdomains => patchesDictionary.Values.ToList();
 		public IList<Patch> Patches => patchesDictionary.Values.ToList();
 
 		public Dictionary<int, Patch> PatchesDictionary

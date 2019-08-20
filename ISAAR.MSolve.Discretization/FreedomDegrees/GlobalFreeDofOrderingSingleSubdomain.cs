@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             globalVector.AddSubvectorIntoThis(0, subdomainVector, 0, subdomainVector.Length);
         }
 
-        public void CreateSubdomainGlobalMaps(IStructuralModel model)
+        public void CreateSubdomainGlobalMaps(IModel model)
         {
             // A for-loop is faster than LINQ
             this.subdomainToGlobalDofMap = new int[NumGlobalFreeDofs];

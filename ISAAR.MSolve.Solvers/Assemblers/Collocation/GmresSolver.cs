@@ -60,7 +60,7 @@ namespace ISAAR.MSolve.Solvers.Assemblers.Collocation
 
             public IDofOrderer ColumnDofOrderer { get; set; } = new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
 
-            public ISolver BuildSolver(IStructuralModel model)
+            public ISolver BuildSolver(IModel model)
             {
                 if (!(model is IStructuralAsymmetricModel asymmetricModel))
                     throw new ArgumentException("Gmres solver builder can be used only with asymmetric models.");

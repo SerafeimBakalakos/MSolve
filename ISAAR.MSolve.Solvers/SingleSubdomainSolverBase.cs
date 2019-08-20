@@ -25,12 +25,12 @@ namespace ISAAR.MSolve.Solvers
     {
         protected readonly IGlobalMatrixAssembler<TMatrix> assembler;
         protected readonly IDofOrderer dofOrderer;
-        protected readonly IStructuralModel model;
+        protected readonly IModel model;
         protected readonly string name; // for error messages
         protected readonly ISubdomain subdomain;
         protected readonly SingleSubdomainSystem<TMatrix> linearSystem;
 
-        protected SingleSubdomainSolverBase(IStructuralModel model, IDofOrderer dofOrderer, 
+        protected SingleSubdomainSolverBase(IModel model, IDofOrderer dofOrderer, 
             IGlobalMatrixAssembler<TMatrix> assembler, string name)
         {
             if (model.Subdomains.Count != 1) throw new InvalidSolverException(

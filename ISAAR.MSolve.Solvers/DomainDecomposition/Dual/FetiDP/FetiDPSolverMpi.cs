@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly Intracommunicator comm;
         private readonly int master;
         private readonly IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory;
-        private readonly IStructuralModel model;
+        private readonly IModel model;
         private readonly Dictionary<int, INode> nodesDictionary;
         private readonly int rank;
         private readonly MpiTransfer transfer;
@@ -31,7 +31,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private IFetiDPSubdomainMatrixManager matrixManager;
         private ISubdomain subdomain;
 
-        public FetiDPSolverMpi(IStructuralModel model, IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory, 
+        public FetiDPSolverMpi(IModel model, IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory, 
             int masterProcess, ISubdomainSerializer serializer)
         {
             this.model = model;
@@ -111,7 +111,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         //TODO: This should not be necessary at all. Right now I store all the nodes twice, 3 times if we count the conversion 
         //      from Dictionary<int, Node> to IList<INode>! Also it managing in which process the extra dictionary is stored is 
         //      annoying.
-        private static Dictionary<int, INode> CreateNodesDictionary(IStructuralModel model)
+        private static Dictionary<int, INode> CreateNodesDictionary(IModel model)
         {
             var nodesDictionary = new Dictionary<int, INode>();
             foreach (INode node in model.Nodes) nodesDictionary[node.ID] = node;

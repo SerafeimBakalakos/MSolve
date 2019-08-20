@@ -11,7 +11,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 {
     public class FetiDPDofSeparatorGlobalMpi
     {
-        public FetiDPDofSeparatorGlobalMpi(IStructuralModel model)
+        public FetiDPDofSeparatorGlobalMpi(IModel model)
         {
             this.Model = model;
             //BoundaryDofs = new Dictionary<int, (INode node, IDofType dofType)[]>();
@@ -47,7 +47,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         /// </summary>
         public int[] GlobalCornerToFreeDofMap { get; set; } // Only for master
 
-        public IStructuralModel Model {get;}
+        public IModel Model {get;}
 
         /// <summary>
         /// The number of corner dofs of the model.

@@ -42,7 +42,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
         /// For use in homogeneous problems, where we do not need that much info about lagrange multipliers and boundary dofs.
         /// </summary>
         /// <param name="model"></param>
-        protected void DefineBooleanMatrices(IStructuralModel model, 
+        protected void DefineBooleanMatrices(IModel model, 
             Dictionary<int, int> numRemainderDofs, Dictionary<int, DofTable> remainderDofOrderings) //TODO: Rename the "remainder"
         {
             List<(INode node, IDofType[] dofs, ISubdomain[] subdomainsPlus, ISubdomain[] subdomainsMinus)> boundaryNodeData 
@@ -84,7 +84,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
         /// Creates both <see cref="BooleanMatrices"/> and <see cref="LagrangeMultipliers"/>. For use in heterogeneous problems.
         /// </summary>
         /// <param name="model"></param>
-        protected void DefineLagrangesAndBooleanMatrices(IStructuralModel model,
+        protected void DefineLagrangesAndBooleanMatrices(IModel model,
             Dictionary<int, int> numRemainderDofs, Dictionary<int, DofTable> remainderDofOrderings) //TODO: Rename the "remainder"
         {
             List<(INode node, IDofType[] dofs, ISubdomain[] subdomainsPlus, ISubdomain[] subdomainsMinus)> boundaryNodeData

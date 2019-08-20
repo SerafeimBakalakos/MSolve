@@ -26,7 +26,7 @@ namespace ISAAR.MSolve.Solvers.Direct
         private bool mustFactorize = true;
         private CholeskySuiteSparse factorization;
 
-        private SuiteSparseSolver(IStructuralModel model, double factorizationPivotTolerance, IDofOrderer dofOrderer):
+        private SuiteSparseSolver(IModel model, double factorizationPivotTolerance, IDofOrderer dofOrderer):
             base(model, dofOrderer, new SymmetricCscAssembler(), "SkylineSolver")
         {
             this.factorizationPivotTolerance = factorizationPivotTolerance;
@@ -159,9 +159,9 @@ namespace ISAAR.MSolve.Solvers.Direct
 
             public double FactorizationPivotTolerance { get; set; } = 1E-15;
 
-            ISolver ISolverBuilder.BuildSolver(IStructuralModel model) => BuildSolver(model);
+            ISolver ISolverBuilder.BuildSolver(IModel model) => BuildSolver(model);
 
-            public SuiteSparseSolver BuildSolver(IStructuralModel model)
+            public SuiteSparseSolver BuildSolver(IModel model)
                 => new SuiteSparseSolver(model, FactorizationPivotTolerance, DofOrderer);
         }
     }

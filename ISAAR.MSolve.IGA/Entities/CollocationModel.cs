@@ -32,7 +32,7 @@ namespace ISAAR.MSolve.IGA.Entities
         public IList<Cluster> Clusters => ClustersDictionary.Values.ToList();
         public Dictionary<int, Cluster> ClustersDictionary { get; } = new Dictionary<int, Cluster>();
 
-        IReadOnlyList<IElement> IStructuralModel.Elements => ElementsDictionary.Values.ToList();
+        IReadOnlyList<IElement> IModel.Elements => ElementsDictionary.Values.ToList();
         public IList<ICollocationElement> Elements => ElementsDictionary.Values.ToList();
         public Dictionary<int, ICollocationElement> ElementsDictionary => elementsDictionary;
 
@@ -42,7 +42,7 @@ namespace ISAAR.MSolve.IGA.Entities
             new List<IMassAccelerationHistoryLoad>();
 
         public IList<ControlPoint> ControlPoints => controlPointsDictionary.Values.ToList();
-        IReadOnlyList<INode> IStructuralModel.Nodes => controlPointsDictionary.Values.ToList();
+        IReadOnlyList<INode> IModel.Nodes => controlPointsDictionary.Values.ToList();
 
 
         public INode GetNode(int nodeID) => controlPointsDictionary[nodeID];
@@ -63,7 +63,7 @@ namespace ISAAR.MSolve.IGA.Entities
             set { numberOfInterfaces = value; }
         }
 
-        IReadOnlyList<ISubdomain> IStructuralModel.Subdomains => patchesDictionary.Values.ToList();
+        IReadOnlyList<ISubdomain> IModel.Subdomains => patchesDictionary.Values.ToList();
         public IList<CollocationPatch> Patches => patchesDictionary.Values.ToList();
 
         public Dictionary<int, CollocationPatch> PatchesDictionary

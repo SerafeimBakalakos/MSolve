@@ -9,7 +9,7 @@ namespace ISAAR.MSolve.Discretization.Interfaces
     public delegate Dictionary<int, SparseVector> NodalLoadsToSubdomainsDistributor(
         Table<INode, IDofType, double> globalNodalLoads);
 
-    public interface IStructuralModel
+    public interface IModel
     {
         Table<INode, IDofType, double> Constraints { get; }
         IReadOnlyList<IElement> Elements { get; }

@@ -16,12 +16,12 @@ namespace ISAAR.MSolve.Analyzers
     {
         private readonly Intracommunicator comm;
         private readonly int master;
-        private readonly IStructuralModel model;
+        private readonly IModel model;
         //private readonly IStaticProvider provider; //TODO: Use this instead
         private readonly IElementMatrixProvider provider;
         private readonly ISolverMpi solver;
 
-        public StaticAnalyzerMpi(IStructuralModel model, ISolverMpi solver, IElementMatrixProvider provider,
+        public StaticAnalyzerMpi(IModel model, ISolverMpi solver, IElementMatrixProvider provider,
             IChildAnalyzer childAnalyzer, int masterProcess) 
         {
             this.model = model;

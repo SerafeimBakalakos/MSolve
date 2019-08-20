@@ -70,7 +70,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
         {
             public override bool ReorderInternalDofsForFactorization => true;
 
-            public override IFetiPreconditioner CreatePreconditioner(IStructuralModel model,
+            public override IFetiPreconditioner CreatePreconditioner(IModel model,
                 IStiffnessDistribution stiffnessDistribution, IDofSeparator dofSeparator,
                 ILagrangeMultipliersEnumerator lagrangeEnumerator, Dictionary<int, IFetiSubdomainMatrixManager> matrixManagers)
             {

@@ -13,12 +13,12 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
     public class HomogenizationAnalyzer
     {
         private readonly IReadOnlyDictionary<int, ILinearSystem> linearSystems;
-        private readonly IStructuralModel model;
+        private readonly IModel model;
         private readonly IStaticProvider provider;
         private readonly IReferenceVolumeElement rve;
         private readonly ISolver solver;
 
-        public HomogenizationAnalyzer(IStructuralModel model, ISolver solver, IStaticProvider provider, 
+        public HomogenizationAnalyzer(IModel model, ISolver solver, IStaticProvider provider, 
             IReferenceVolumeElement rve)
         {
             this.model = model;

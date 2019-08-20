@@ -15,6 +15,6 @@ namespace ISAAR.MSolve.Solvers
         /// Creates a new solver for the provided model.
         /// </summary>
         /// <param name="model">The model that will be analyzed.</param>
-        ISolver BuildSolver(IStructuralModel model);
+        ISolver BuildSolver(IModel model);
     }
 }

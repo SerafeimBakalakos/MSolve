@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.Analyzers.Dynamic
     {
         private readonly double beta, gamma, timeStep, totalTime;
         private readonly double a0, a1, a2, a3, a4, a5, a6, a7;
-        private readonly IStructuralModel model;
+        private readonly IModel model;
         private readonly IReadOnlyDictionary<int, ILinearSystem> linearSystems;
         private readonly ISolver solver;
         private readonly IImplicitIntegrationProvider provider;
@@ -32,7 +32,7 @@ namespace ISAAR.MSolve.Analyzers.Dynamic
         private Dictionary<int, IVector> v1 = new Dictionary<int, IVector>();
         private Dictionary<int, IVector> v2 = new Dictionary<int, IVector>();
 
-        private NewmarkDynamicAnalyzer(IStructuralModel model, ISolver solver, IImplicitIntegrationProvider provider,
+        private NewmarkDynamicAnalyzer(IModel model, ISolver solver, IImplicitIntegrationProvider provider,
             IChildAnalyzer childAnalyzer, double timeStep, double totalTime, double alpha, double delta)
         {
             this.model = model;
@@ -371,12 +371,12 @@ namespace ISAAR.MSolve.Analyzers.Dynamic
         {
             private readonly double timeStep, totalTime; //TODO: perhaps totalTime should be numTimeSteps
             private readonly IChildAnalyzer childAnalyzer;
-            private readonly IStructuralModel model;
+            private readonly IModel model;
             private readonly ISolver solver;
             private readonly IImplicitIntegrationProvider provider;
             private double beta = 0.25, gamma = 0.5; // constant acceleration is the default
 
-            public Builder(IStructuralModel model, ISolver solver, IImplicitIntegrationProvider provider,
+            public Builder(IModel model, ISolver solver, IImplicitIntegrationProvider provider,
                 IChildAnalyzer childAnalyzer, double timeStep, double totalTime)
             {
                 this.model = model;

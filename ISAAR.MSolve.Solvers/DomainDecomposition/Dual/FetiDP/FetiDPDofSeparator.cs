@@ -96,9 +96,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         /// <summary>
         /// Bc unsigned boolean matrices that map global to subdomain corner dofs. This method must be called after 
-        /// <see cref="DefineGlobalCornerDofs(IStructuralModel, Dictionary{int, HashSet{INode}})"/>.
+        /// <see cref="DefineGlobalCornerDofs(IModel, Dictionary{int, HashSet{INode}})"/>.
         /// </summary>
-        public void CalcCornerMappingMatrices(IStructuralModel model)
+        public void CalcCornerMappingMatrices(IModel model)
         { //TODO: Can I reuse subdomain data? Yes if the global corner dofs have not changed.
             foreach (ISubdomain subdomain in model.Subdomains)
             {
@@ -115,14 +115,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             }
         }
 
-        public void DefineGlobalBoundaryDofs(IStructuralModel model, HashSet<INode> globalCornerNodes)
+        public void DefineGlobalBoundaryDofs(IModel model, HashSet<INode> globalCornerNodes)
         {
             IEnumerable<INode> globalRemainderNodes = model.Nodes.Where(node => !globalCornerNodes.Contains(node));
             GlobalBoundaryDofs = 
                 DofSeparationUtilities.DefineGlobalBoundaryDofs(globalRemainderNodes, model.GlobalDofOrdering.GlobalFreeDofs); //TODO: This could be reused in some cases
         }
 
-        public void DefineGlobalCornerDofs(IStructuralModel model, HashSet<INode> globalCornerNodes)
+        public void DefineGlobalCornerDofs(IModel model, HashSet<INode> globalCornerNodes)
         {
             // Order global corner dofs and create the global corner to global free map.
             var cornerToGlobalDofs = new List<int>(globalCornerNodes.Count * 3);

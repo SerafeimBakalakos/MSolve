@@ -36,7 +36,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers;
         private readonly Dictionary<int, IFetiSubdomainMatrixManager> matrixManagersGeneral; //TODO: redesign. They are the same as above, but Dictionary is not covariant
         private readonly Dictionary<int, ISingleSubdomainLinearSystem> linearSystems;
-        private readonly IStructuralModel model;
+        private readonly IModel model;
         private readonly IFetiPreconditionerFactory preconditionerFactory;
         private readonly bool problemIsHomogeneous;
         private readonly IStiffnessDistribution stiffnessDistribution;
@@ -53,7 +53,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private IFetiPreconditioner preconditioner;
         private FetiDPSubdomainGlobalMapping subdomainGlobalMapping;
 
-        private FetiDPSolver(IStructuralModel model, ICornerNodeSelection cornerNodeSelection,
+        private FetiDPSolver(IModel model, ICornerNodeSelection cornerNodeSelection,
             IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory, IDofOrderer dofOrderer, 
             IFetiPreconditionerFactory preconditionerFactory, bool problemIsHomogeneous, 
             IFetiDPInterfaceProblemSolver interfaceProblemSolver)
@@ -505,7 +505,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             public IFetiPreconditionerFactory PreconditionerFactory { get; set; } = new LumpedPreconditioner.Factory();
             public bool ProblemIsHomogeneous { get; set; } = true;
 
-            public FetiDPSolver BuildSolver(IStructuralModel model)
+            public FetiDPSolver BuildSolver(IModel model)
                 => new FetiDPSolver(model, cornerNodeSelection, matrixManagerFactory, DofOrderer, PreconditionerFactory,
                         ProblemIsHomogeneous, InterfaceProblemSolver);            
         }

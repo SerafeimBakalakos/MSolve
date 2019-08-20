@@ -19,7 +19,7 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
 
         protected readonly IReadOnlyDictionary<int, ILinearSystem> linearSystems;
         protected readonly int maxIterationsPerIncrement;
-        protected readonly IStructuralModel model;
+        protected readonly IModel model;
         protected readonly int numIncrements;
         protected readonly int numIterationsForMatrixRebuild;
         protected readonly INonLinearProvider provider;
@@ -34,7 +34,7 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
         protected double globalRhsNormInitial; //TODO: This can probably be a local variable.
         protected INonLinearParentAnalyzer parentAnalyzer = null;
 
-        internal NonLinearAnalyzerBase(IStructuralModel model, ISolver solver, INonLinearProvider provider,
+        internal NonLinearAnalyzerBase(IModel model, ISolver solver, INonLinearProvider provider,
             IReadOnlyDictionary<int, INonLinearSubdomainUpdater> subdomainUpdaters,
             int numIncrements, int maxIterationsPerIncrement, int numIterationsForMatrixRebuild, double residualTolerance)
         {

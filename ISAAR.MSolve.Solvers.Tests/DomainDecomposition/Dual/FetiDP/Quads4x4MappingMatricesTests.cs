@@ -441,7 +441,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         }
 
         //TODO: This should be provided by the model itself
-        private static Dictionary<int, INode> GetNodesDictionary(this IStructuralModel model)
+        private static Dictionary<int, INode> GetNodesDictionary(this IModel model)
         {
             var globalNodes = new Dictionary<int, INode>();
             foreach (INode node in model.Nodes) globalNodes[node.ID] = node;

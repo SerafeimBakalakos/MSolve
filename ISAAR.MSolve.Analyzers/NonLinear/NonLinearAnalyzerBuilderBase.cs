@@ -9,14 +9,14 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
     public abstract class NonLinearAnalyzerBuilderBase
     {
         protected int maxIterationsPerIncrement = 1000;
-        protected readonly IStructuralModel model;
+        protected readonly IModel model;
         protected readonly int numIncrements;
         protected int numIterationsForMatrixRebuild = 1;
         protected readonly INonLinearProvider provider;
         protected double residualTolerance = 1e-8;
         protected readonly ISolver solver;
 
-        protected NonLinearAnalyzerBuilderBase(IStructuralModel model, ISolver solver, INonLinearProvider provider, 
+        protected NonLinearAnalyzerBuilderBase(IModel model, ISolver solver, INonLinearProvider provider, 
             int numIncrements)
         {
             //TODO: this should belong to all (child) analyzer builders

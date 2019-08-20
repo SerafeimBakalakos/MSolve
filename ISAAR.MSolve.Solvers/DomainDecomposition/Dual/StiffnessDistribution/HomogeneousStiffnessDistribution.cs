@@ -17,7 +17,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         private readonly IDofSeparator dofSeparator;
         private readonly IReadOnlyList<ISubdomain> subdomains;
 
-        public HomogeneousStiffnessDistribution(IStructuralModel model, IDofSeparator dofSeparator)
+        public HomogeneousStiffnessDistribution(IModel model, IDofSeparator dofSeparator)
         {
             this.subdomains = model.Subdomains;
             this.dofSeparator = dofSeparator;

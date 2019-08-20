@@ -22,7 +22,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
         /// For use in homogeneous problems, where we do not need that much info about lagrange multipliers and boundary dofs.
         /// </summary>
         /// <param name="model"></param>
-        public void DefineBooleanMatrices(IStructuralModel model)
+        public void DefineBooleanMatrices(IModel model)
         {
             var numFreeDofs = new Dictionary<int, int>();
             var freeDofOrderings = new Dictionary<int, DofTable>();
@@ -38,7 +38,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
         /// Creates both <see cref="BooleanMatrices"/> and <see cref="LagrangeMultipliers"/>. For use in heterogeneous problems.
         /// </summary>
         /// <param name="model"></param>
-        public void DefineLagrangesAndBooleanMatrices(IStructuralModel model)
+        public void DefineLagrangesAndBooleanMatrices(IModel model)
         {
             var numFreeDofs = new Dictionary<int, int>();
             var freeDofOrderings = new Dictionary<int, DofTable>();

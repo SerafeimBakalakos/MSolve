@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.Analyzers.Dynamic
     public class ThermalDynamicAnalyzer : INonLinearParentAnalyzer //TODO: why is this non linear
     {
         private readonly double beta, timeStep, totalTime;
-        private readonly IStructuralModel model;
+        private readonly IModel model;
         private readonly IReadOnlyDictionary<int, ILinearSystem> linearSystems;
         private readonly ISolver solver;
         private readonly IImplicitIntegrationProvider provider;
@@ -31,7 +31,7 @@ namespace ISAAR.MSolve.Analyzers.Dynamic
         private Dictionary<int, IVector> capacityTimesTemperature = new Dictionary<int, IVector>();
         private Dictionary<int, IVector> conductivityTimesTemperature = new Dictionary<int, IVector>();
 
-        public ThermalDynamicAnalyzer(IStructuralModel model, ISolver solver, IImplicitIntegrationProvider provider,
+        public ThermalDynamicAnalyzer(IModel model, ISolver solver, IImplicitIntegrationProvider provider,
             IChildAnalyzer childAnalyzer, double beta, double timeStep, double totalTime)
         {
             this.model = model;

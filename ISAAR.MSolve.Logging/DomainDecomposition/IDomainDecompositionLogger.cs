@@ -7,6 +7,6 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
 {
     public interface IDomainDecompositionLogger
     {
-        void PlotSubdomains(IStructuralModel model);
+        void PlotSubdomains(IModel model);
     }
 }

@@ -29,7 +29,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly Dictionary<int, INode> globalNodes;
         private readonly int rank;
 
-        public FetiDPDofSeparatorMpi(IStructuralModel model, ISubdomain subdomain, Dictionary<int, INode> globalNodes,
+        public FetiDPDofSeparatorMpi(IModel model, ISubdomain subdomain, Dictionary<int, INode> globalNodes,
             Intracommunicator comm, int masterProcess, ProcessDistribution processDistribution, IDofSerializer dofSerializer)
         {
             this.comm = comm;

@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
             BoundaryDofs = new Dictionary<int, (INode node, IDofType dofType)[]>();
         }
 
-        public void DefineGlobalBoundaryDofs(IStructuralModel model)
+        public void DefineGlobalBoundaryDofs(IModel model)
         {
             GlobalBoundaryDofs = DofSeparationUtilities.DefineGlobalBoundaryDofs(model.Nodes, model.GlobalDofOrdering.GlobalFreeDofs);
         }

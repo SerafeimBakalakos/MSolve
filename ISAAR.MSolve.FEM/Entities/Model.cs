@@ -18,7 +18,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 //      IGA, XFEM?
 namespace ISAAR.MSolve.FEM.Entities
 {
-    public class Model : IStructuralModel
+    public class Model : IModel
     {
         //public IList<EmbeddedNode> EmbeddedNodes { get; } = new List<EmbeddedNode>();
 
@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.FEM.Entities
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();//TODOMaria: maybe it's useless in model class
 
-        IReadOnlyList<IElement> IStructuralModel.Elements => ElementsDictionary.Values.ToList();
+        IReadOnlyList<IElement> IModel.Elements => ElementsDictionary.Values.ToList();
         public IList<Element> Elements => ElementsDictionary.Values.ToList();
         public Dictionary<int, Element> ElementsDictionary { get; } = new Dictionary<int, Element>();
 
@@ -40,10 +40,10 @@ namespace ISAAR.MSolve.FEM.Entities
         public IList<IMassAccelerationHistoryLoad> MassAccelerationHistoryLoads { get; } = new List<IMassAccelerationHistoryLoad>();
 
         public IList<Node> Nodes => NodesDictionary.Values.ToList();
-        IReadOnlyList<INode> IStructuralModel.Nodes => NodesDictionary.Values.ToList();
+        IReadOnlyList<INode> IModel.Nodes => NodesDictionary.Values.ToList();
         public Dictionary<int, Node> NodesDictionary { get; } = new Dictionary<int, Node>();
 
-        IReadOnlyList<ISubdomain> IStructuralModel.Subdomains => SubdomainsDictionary.Values.ToList();
+        IReadOnlyList<ISubdomain> IModel.Subdomains => SubdomainsDictionary.Values.ToList();
         public IReadOnlyList<Subdomain> Subdomains => SubdomainsDictionary.Values.ToList();
         public Dictionary<int, Subdomain> SubdomainsDictionary { get; } = new Dictionary<int, Subdomain>();
 

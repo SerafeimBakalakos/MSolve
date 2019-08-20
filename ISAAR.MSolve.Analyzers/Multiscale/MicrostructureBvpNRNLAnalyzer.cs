@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
     public class MicrostructureBvpNRNLAnalyzer : IChildAnalyzer
     {
         private readonly IReadOnlyDictionary<int, ILinearSystem> linearSystems;
-        protected readonly IStructuralModel model;
+        protected readonly IModel model;
         private readonly Dictionary<int,NonLinearSubdomainUpdaterWithInitialConditions> subdomainUpdaters;
         //private readonly ISubdomainGlobalMapping[] mappings; 
         private readonly int increments;
@@ -47,7 +47,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         private readonly Dictionary<int, LinearAnalyzerLogFactory> logFactories = new Dictionary<int, LinearAnalyzerLogFactory>();
         private readonly Dictionary<int, IAnalyzerLog[]> logs = new Dictionary<int, IAnalyzerLog[]>();
 
-        public MicrostructureBvpNRNLAnalyzer(IStructuralModel model, ISolver solver, Dictionary<int, NonLinearSubdomainUpdaterWithInitialConditions> subdomainUpdaters,
+        public MicrostructureBvpNRNLAnalyzer(IModel model, ISolver solver, Dictionary<int, NonLinearSubdomainUpdaterWithInitialConditions> subdomainUpdaters,
             INonLinearProvider provider, int increments, Dictionary<int, IVector> uInitialFreeDOFDisplacementsPerSubdomain,
             Dictionary<int, Node> boundaryNodes, Dictionary<int, Dictionary<IDofType, double>> initialConvergedBoundaryDisplacements, Dictionary<int, Dictionary<IDofType, double>> totalBoundaryDisplacements,
             Dictionary<int, EquivalentContributionsAssebler> equivalentContributionsAssemblers)//, ISubdomainGlobalMapping[] mappings)

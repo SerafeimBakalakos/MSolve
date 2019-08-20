@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
             this.shuffleSubdomainColors = shuffleSubdomainColors;
         }
 
-        public void WriteBoundaryNodes(string path, IStructuralModel model)
+        public void WriteBoundaryNodes(string path, IModel model)
         {
             using (var writer = new StreamWriter(path))
             {
@@ -142,7 +142,7 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
             }
         }
 
-        public void WriteSubdomainElements(string path, IStructuralModel model)
+        public void WriteSubdomainElements(string path, IModel model)
         {
             using (var writer = new StreamWriter(path))
             {

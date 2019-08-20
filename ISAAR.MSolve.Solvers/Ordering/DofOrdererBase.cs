@@ -52,6 +52,6 @@ namespace ISAAR.MSolve.Solvers.Ordering
             return subdomainOrdering;
         }
 
-        public abstract void OrderFreeDofs(IStructuralModel model);
+        public abstract void OrderFreeDofs(IModel model);
     }
 }

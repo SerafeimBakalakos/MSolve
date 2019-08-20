@@ -35,7 +35,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
         private readonly Dictionary<int, ISingleSubdomainLinearSystem> linearSystems;
         private readonly Dictionary<int, IFeti1SubdomainMatrixManager> matrixManagers;
         private readonly Dictionary<int, IFetiSubdomainMatrixManager> matrixManagersGeneral; //TODO: redesign. They are the same as above, but Dictionary is not covariant
-        private readonly IStructuralModel model;
+        private readonly IModel model;
         //private readonly PdeOrder pde; // Instead the user explicitly sets Q.
         private readonly IFetiPreconditionerFactory preconditionerFactory;
         private readonly bool problemIsHomogeneous;
@@ -55,7 +55,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
         private Feti1Projection projection;
         private Feti1SubdomainGlobalMapping subdomainGlobalMapping;
 
-        private Feti1Solver(IStructuralModel model, IFeti1SubdomainMatrixManagerFactory matrixManagerFactory, 
+        private Feti1Solver(IModel model, IFeti1SubdomainMatrixManagerFactory matrixManagerFactory, 
             IDofOrderer dofOrderer, Dictionary<int, double> factorPivotTolerances, 
             IFetiPreconditionerFactory preconditionerFactory, IFeti1InterfaceProblemSolver interfaceProblemSolver, 
             bool problemIsHomogeneous, bool projectionMatrixQIsIdentity)
@@ -489,7 +489,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
             public bool ProjectionMatrixQIsIdentity { get; set; } = true;
             //public PdeOrder PdeOrder { get; set; } = PdeOrder.Second; // Instead the user explicitly sets Q.
 
-            public Feti1Solver BuildSolver(IStructuralModel model)
+            public Feti1Solver BuildSolver(IModel model)
                 => new Feti1Solver(model, matrixManagerFactory, DofOrderer, factorPivotTolerances, PreconditionerFactory,
                      InterfaceProblemSolver, ProblemIsHomogeneous, ProjectionMatrixQIsIdentity);
         }

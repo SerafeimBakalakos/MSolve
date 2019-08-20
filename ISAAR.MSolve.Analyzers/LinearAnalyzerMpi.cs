@@ -12,11 +12,11 @@ namespace ISAAR.MSolve.Analyzers
 {
     public class LinearAnalyzerMpi : IChildAnalyzer
     {
-        private readonly IStructuralModel model;
+        private readonly IModel model;
         private readonly IAnalyzerProvider provider;
         private readonly ISolverMpi solver;
 
-        public LinearAnalyzerMpi(IStructuralModel model, ISolverMpi solver, IAnalyzerProvider provider)
+        public LinearAnalyzerMpi(IModel model, ISolverMpi solver, IAnalyzerProvider provider)
         {
             this.model = model;
             this.solver = solver;

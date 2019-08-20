@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         private const int numDimensions = 2;
 
         private readonly Vector2 macroscopicTemperatureGradient;
-        private readonly IStructuralModel model;
+        private readonly IModel model;
         private readonly double xMin, yMin, xMax, yMax;
         private readonly double thickness;
         private readonly HashSet<INode> leftNodes, rightNodes, bottomNodes, topNodes;
@@ -34,7 +34,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         /// <param name="thickness"></param>
         /// <param name="macroscopicTemperatureGradient"></param>
         /// <param name="meshTolerance">The default is 1E-10 * min(|xMax-xMin|, |yMax-yMin|)</param>
-        public ThermalSquareRve(IStructuralModel model, Vector2 bottomLeftCoords, Vector2 topRightCoords, double thickness,
+        public ThermalSquareRve(IModel model, Vector2 bottomLeftCoords, Vector2 topRightCoords, double thickness,
             Vector2 macroscopicTemperatureGradient, double meshTolerance)
         {
             this.model = model;
@@ -60,7 +60,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
             }
         }
 
-        public ThermalSquareRve(IStructuralModel model, Vector2 bottomLeftCoords, Vector2 topRightCoords, double thickness,
+        public ThermalSquareRve(IModel model, Vector2 bottomLeftCoords, Vector2 topRightCoords, double thickness,
             Vector2 macroscopicTemperatureGradient) : 
             this(model, bottomLeftCoords, topRightCoords, thickness, macroscopicTemperatureGradient, 
                 1E-10 * topRightCoords.Subtract(bottomLeftCoords).MinAbsolute())

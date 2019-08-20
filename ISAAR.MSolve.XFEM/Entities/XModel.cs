@@ -16,13 +16,13 @@ using ISAAR.MSolve.XFEM.Elements;
 //      be moved to a common class. Same goes for the interconnection methods of XSubdomain.
 namespace ISAAR.MSolve.XFEM.Entities
 {
-    public class XModel : IStructuralModel
+    public class XModel : IModel
     {
         public IDomain2DBoundary Boundary { get; set; }
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();
 
-        IReadOnlyList<IElement> IStructuralModel.Elements => Elements;
+        IReadOnlyList<IElement> IModel.Elements => Elements;
         public List<IXFiniteElement> Elements { get; } = new List<IXFiniteElement>();
 
         public IGlobalFreeDofOrdering GlobalDofOrdering { get; set; }
@@ -31,10 +31,10 @@ namespace ISAAR.MSolve.XFEM.Entities
 
         public IList<IMassAccelerationHistoryLoad> MassAccelerationHistoryLoads => throw new NotImplementedException();
 
-        IReadOnlyList<INode> IStructuralModel.Nodes => Nodes;
+        IReadOnlyList<INode> IModel.Nodes => Nodes;
         public List<XNode> Nodes { get; } = new List<XNode>();
 
-        IReadOnlyList<ISubdomain> IStructuralModel.Subdomains => Subdomains.Values.ToList();
+        IReadOnlyList<ISubdomain> IModel.Subdomains => Subdomains.Values.ToList();
         public Dictionary<int, XSubdomain> Subdomains { get; } = new Dictionary<int, XSubdomain>();
 
         public void AssignLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)

@@ -15,7 +15,7 @@ namespace ISAAR.MSolve.Solvers.Ordering
     /// </summary>
     public class SimpleDofOrderingStrategy //: IFreeDofOrderingStrategy
     {
-        public (int numGlobalFreeDofs, DofTable globalFreeDofs) OrderGlobalDofs(IStructuralModel model)
+        public (int numGlobalFreeDofs, DofTable globalFreeDofs) OrderGlobalDofs(IModel model)
             => OrderFreeDofsOfElementSet(model.Elements, model.Constraints);
 
         public (int numSubdomainFreeDofs, DofTable subdomainFreeDofs) OrderSubdomainDofs(ISubdomain subdomain)

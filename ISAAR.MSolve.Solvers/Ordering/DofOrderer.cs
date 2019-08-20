@@ -26,7 +26,7 @@ namespace ISAAR.MSolve.Solvers.Ordering
             this.doOptimizationsIfSingleSubdomain = doOptimizationsIfSingleSubdomain;
         }
 
-        public override void OrderFreeDofs(IStructuralModel model)
+        public override void OrderFreeDofs(IModel model)
         {
             if (doOptimizationsIfSingleSubdomain && (model.Subdomains.Count == 1))
             {

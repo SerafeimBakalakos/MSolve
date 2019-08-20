@@ -121,7 +121,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             IVector globalVector) => throw new NotImplementedException();
 
 
-        public void CreateSubdomainGlobalMaps(IStructuralModel model)
+        public void CreateSubdomainGlobalMaps(IModel model)
         {
             //TODO: This should be deleted, since this method is explicitly called by the solver or analyzer. No need to decide 
             //      privately when to do actually run this code

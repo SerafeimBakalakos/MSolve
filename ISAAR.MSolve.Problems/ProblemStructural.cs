@@ -21,14 +21,14 @@ namespace ISAAR.MSolve.Problems
     {
         private Dictionary<int, IMatrix> mass, damping, stiffnessFreeFree;
         private Dictionary<int, IMatrixView> stiffnessFreeConstr, stiffnessConstrFree, stiffnessConstrConstr;
-        private readonly IStructuralModel model;
+        private readonly IModel model;
         private readonly ISolver solver;
         private IReadOnlyDictionary<int, ILinearSystem> linearSystems;
         private ElementStructuralStiffnessProvider stiffnessProvider = new ElementStructuralStiffnessProvider();
         private ElementStructuralMassProvider massProvider = new ElementStructuralMassProvider();
         private ElementStructuralDampingProvider dampingProvider = new ElementStructuralDampingProvider();
 
-        public ProblemStructural(IStructuralModel model, ISolver solver)
+        public ProblemStructural(IModel model, ISolver solver)
         {
             this.model = model;
             this.linearSystems = solver.LinearSystems;

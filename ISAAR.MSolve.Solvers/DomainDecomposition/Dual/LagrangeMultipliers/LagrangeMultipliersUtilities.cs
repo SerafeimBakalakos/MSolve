@@ -79,12 +79,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
         }
 
         /// <summary>
-        /// This method is slower than <see cref="CalcBooleanMatricesAndLagranges(IStructuralModel, int, 
+        /// This method is slower than <see cref="CalcBooleanMatricesAndLagranges(IModel, int, 
         /// List{(INode node, IDofType[] dofs, ISubdomain[] subdomainsPlus, ISubdomain[] subdomainsMinus)}, Dictionary{int, int}, 
         /// Dictionary{int, DofTable})"/>. It probably does not matter that much though.
         /// </summary>
         public static Dictionary<int, SignedBooleanMatrixColMajor> CalcBooleanMatrices(LagrangeMultiplier[] globalLagranges,
-            IStructuralModel model, Dictionary<int, int> numRemainderDofs, Dictionary<int, DofTable> remainderDofOrderings) 
+            IModel model, Dictionary<int, int> numRemainderDofs, Dictionary<int, DofTable> remainderDofOrderings) 
         {
             //TODO: This is method is slower than CalcSignedBooleanMatricesAndLagranges(), the one that used 
             //      List<(INode node, IDofType[] dofs, ISubdomain[] subdomainsPlus, ISubdomain[] subdomainsMinus)>
@@ -116,7 +116,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
         }
 
         public static (Dictionary<int, SignedBooleanMatrixColMajor> booleanMatrices, LagrangeMultiplier[] lagranges)
-            CalcBooleanMatricesAndLagranges(IStructuralModel model, int numLagrangeMultipliers,
+            CalcBooleanMatricesAndLagranges(IModel model, int numLagrangeMultipliers,
             List<(INode node, IDofType[] dofs, ISubdomain[] subdomainsPlus, ISubdomain[] subdomainsMinus)> boundaryNodeData,
             Dictionary<int, int> numRemainderDofs, Dictionary<int, DofTable> remainderDofOrderings) //TODO: Rename the "remainder"
         {

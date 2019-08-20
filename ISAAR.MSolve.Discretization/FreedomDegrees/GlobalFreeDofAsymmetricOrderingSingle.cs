@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
 			throw new NotImplementedException();
 		}
 
-        public void CreateSubdomainGlobalMaps(IStructuralModel model)
+        public void CreateSubdomainGlobalMaps(IModel model)
         {
             throw new NotImplementedException();
         }

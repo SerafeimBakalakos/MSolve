@@ -15,7 +15,7 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
     /// </summary>
     public class DisplacementControlAnalyzer : NonLinearAnalyzerBase
     {
-        private DisplacementControlAnalyzer(IStructuralModel model, ISolver solver, INonLinearProvider provider,
+        private DisplacementControlAnalyzer(IModel model, ISolver solver, INonLinearProvider provider,
             IReadOnlyDictionary<int, INonLinearSubdomainUpdater> subdomainUpdaters,
             int numIncrements, int maxIterationsPerIncrement, int numIterationsForMatrixRebuild, double residualTolerance) :
             base(model, solver, provider, subdomainUpdaters, numIncrements, maxIterationsPerIncrement,
@@ -121,7 +121,7 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
 
         public class Builder: NonLinearAnalyzerBuilderBase
         {
-            public Builder(IStructuralModel model, ISolver solver, INonLinearProvider provider, int numIncrements):
+            public Builder(IModel model, ISolver solver, INonLinearProvider provider, int numIncrements):
                 base(model, solver, provider, numIncrements)
             {
                 MaxIterationsPerIncrement = 1000;

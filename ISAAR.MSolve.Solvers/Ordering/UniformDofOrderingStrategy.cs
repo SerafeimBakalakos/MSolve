@@ -20,7 +20,7 @@ namespace ISAAR.MSolve.Solvers.Ordering
             this.dofsPerNode = dofsPerNode;
         }
 
-        public (int numGlobalFreeDofs, DofTable globalFreeDofs) OrderGlobalDofs(IStructuralModel model)
+        public (int numGlobalFreeDofs, DofTable globalFreeDofs) OrderGlobalDofs(IModel model)
             => OrderFreeDofsOfNodeSet(model.Nodes, model.Constraints);
 
 

@@ -17,12 +17,12 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
     public class MSParentAnalyzer : INonLinearParentAnalyzer
     {
         private readonly IReadOnlyDictionary<int, ILinearSystem> linearSystems;
-        private readonly IStructuralModel model;
+        private readonly IModel model;
         private readonly IStaticProvider provider;
         private readonly ISolver solver;
         private bool firstInitialization;
 
-        public MSParentAnalyzer(IStructuralModel model, ISolver solver, IStaticProvider provider, 
+        public MSParentAnalyzer(IModel model, ISolver solver, IStaticProvider provider, 
             IChildAnalyzer childAnalyzer)
         {
             this.model = model;

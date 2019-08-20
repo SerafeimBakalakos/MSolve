@@ -13,11 +13,11 @@ namespace ISAAR.MSolve.Analyzers
     public class StaticAnalyzer : INonLinearParentAnalyzer
     {
         private readonly IReadOnlyDictionary<int, ILinearSystem> linearSystems;
-        private readonly IStructuralModel model;
+        private readonly IModel model;
         private readonly IStaticProvider provider;
         private readonly ISolver solver;
 
-        public StaticAnalyzer(IStructuralModel model, ISolver solver, IStaticProvider provider, 
+        public StaticAnalyzer(IModel model, ISolver solver, IStaticProvider provider, 
             IChildAnalyzer childAnalyzer)
         {
             this.model = model;

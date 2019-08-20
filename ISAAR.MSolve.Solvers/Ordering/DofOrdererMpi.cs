@@ -42,7 +42,7 @@ namespace ISAAR.MSolve.Solvers.Ordering
             this.subdomain = subdomain;
         }
 
-        public override void OrderFreeDofs(IStructuralModel model)
+        public override void OrderFreeDofs(IModel model)
         {
             // Each process orders its subdomain dofs
             ISubdomainFreeDofOrdering subdomainOrdering = OrderFreeDofs(subdomain);
