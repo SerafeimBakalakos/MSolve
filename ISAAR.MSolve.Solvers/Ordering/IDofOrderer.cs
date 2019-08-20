@@ -18,10 +18,10 @@ namespace ISAAR.MSolve.Solvers.Ordering
         ISubdomainConstrainedDofOrdering OrderConstrainedDofs(ISubdomain subdomain);
 
         /// <summary>
-        /// Finds an ordering for the unconstrained freedom degrees of the physical model and its subdomains.
+        /// Orders the unconstrained freedom degrees of the physical model and its subdomains.
         /// </summary>
         /// <param name="model">The physical model.</param>
-        IGlobalFreeDofOrdering OrderFreeDofs(IStructuralModel model);
+        void OrderFreeDofs(IStructuralModel model);
 
         /// <summary>
         /// Finds an ordering for the unconstrained freedom degrees of a subdomain.

@@ -11,9 +11,9 @@ namespace ISAAR.MSolve.Discretization.Transfer
     /// <summary>
     /// This meant for the master process that handles communication. It should not be transfered to other processes.
     /// </summary>
-    public class ModelDistribution
+    public class ProcessDistribution
     {
-        public ModelDistribution(ISubdomain[] processesToSubdomains)
+        public ProcessDistribution(ISubdomain[] processesToSubdomains)
         {
             this.ProcesesToSubdomains = processesToSubdomains;
             this.SubdomainsToProcesses = new Dictionary<ISubdomain, int>();

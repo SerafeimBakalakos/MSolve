@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 using MPI;
@@ -16,62 +17,45 @@ namespace ISAAR.MSolve.Solvers.Ordering
     /// Orders the unconstrained freedom degrees of each subdomain and the shole model. Also applies any reordering and other 
     /// optimizations.
     /// </summary>
-    public class DofOrdererMpi //: IDofOrderer
+    public class DofOrdererMpi : DofOrdererBase
     {
         //TODO: this should also be a strategy, so that I could have caching with fallbacks, in case of insufficient memor.
-        private readonly bool cacheElementToSubdomainDofMaps = true;
         private readonly Intracommunicator comm;
-        private readonly ConstrainedDofOrderingStrategy constrainedOrderingStrategy;
-        private readonly IFreeDofOrderingStrategy freeOrderingStrategy;
-        private readonly int masterProcess;
+        private readonly IDofSerializer dofSerializer;
+        private readonly Dictionary<int, INode> globalNodes_master;
+        private readonly int masterProcess; 
+        private readonly ProcessDistribution processDistribution;
         private readonly int rank;
-        private readonly IDofReorderingStrategy reorderingStrategy;
+        private readonly ISubdomain subdomain;
 
         public DofOrdererMpi(IFreeDofOrderingStrategy freeOrderingStrategy, IDofReorderingStrategy reorderingStrategy, 
-            Intracommunicator comm, int masterProcess, bool cacheElementToSubdomainDofMaps = true)
+            Intracommunicator comm, int masterProcess, ProcessDistribution processDistribution, IDofSerializer dofSerializer,
+            Dictionary<int, INode> globalNodes, ISubdomain subdomain, bool cacheElementToSubdomainDofMaps = true):
+            base(freeOrderingStrategy, reorderingStrategy, cacheElementToSubdomainDofMaps)
         {
-            this.constrainedOrderingStrategy = new ConstrainedDofOrderingStrategy();
-            this.freeOrderingStrategy = freeOrderingStrategy;
-            this.reorderingStrategy = reorderingStrategy;
-            this.cacheElementToSubdomainDofMaps = cacheElementToSubdomainDofMaps;
-
             this.comm = comm;
             this.rank = comm.Rank;
             this.masterProcess = masterProcess;
+            this.processDistribution = processDistribution;
+            this.dofSerializer = dofSerializer;
+            this.globalNodes_master = globalNodes;
+            this.subdomain = subdomain;
         }
 
-        public ISubdomainConstrainedDofOrdering OrderConstrainedDofs(ISubdomain subdomain)
+        public override void OrderFreeDofs(IStructuralModel model)
         {
-            (int numConstrainedDofs, DofTable constrainedDofs) =
-                constrainedOrderingStrategy.OrderSubdomainDofs(subdomain);
-            if (cacheElementToSubdomainDofMaps)
-            {
-                return new SubdomainConstrainedDofOrderingCaching(numConstrainedDofs, constrainedDofs);
-            }
-            else return new SubdomainConstrainedDofOrderingGeneral(numConstrainedDofs, constrainedDofs);
-        }
+            // Each process orders its subdomain dofs
+            ISubdomainFreeDofOrdering subdomainOrdering = OrderFreeDofs(subdomain);
+            subdomain.FreeDofOrdering = subdomainOrdering;
 
-        public GlobalFreeDofOrderingMpi OrderFreeDofs(IStructuralModel model)
-        {
-            (int numGlobalFreeDofs, DofTable globalFreeDofs) = freeOrderingStrategy.OrderGlobalDofs(model);
-            return new GlobalFreeDofOrderingMpi(numGlobalFreeDofs, globalFreeDofs, comm, masterProcess);
-        }
-
-        public ISubdomainFreeDofOrdering OrderFreeDofs(ISubdomain subdomain)
-        {
-            if (!subdomain.ConnectivityModified) return subdomain.FreeDofOrdering;
-
-            // Order subdomain dofs
-            (int numSubdomainFreeDofs, DofTable subdomainFreeDofs) = freeOrderingStrategy.OrderSubdomainDofs(subdomain);
-            ISubdomainFreeDofOrdering subdomainOrdering;
-            if (cacheElementToSubdomainDofMaps) subdomainOrdering = new SubdomainFreeDofOrderingCaching(
-                numSubdomainFreeDofs, subdomainFreeDofs);
-            else subdomainOrdering = new SubdomainFreeDofOrderingGeneral(numSubdomainFreeDofs, subdomainFreeDofs);
-
-            // Reorder subdomain dofs
-            reorderingStrategy.ReorderDofs(subdomain, subdomainOrdering);
-
-            return subdomainOrdering;
+            // Order global dofs
+            int numGlobalFreeDofs = -1;
+            DofTable globalFreeDofs = null;
+            if (rank == masterProcess) (numGlobalFreeDofs, globalFreeDofs) = freeOrderingStrategy.OrderGlobalDofs(model);
+            var globalOrdering = new GlobalFreeDofOrderingMpi(numGlobalFreeDofs, globalFreeDofs, globalNodes_master, subdomain, 
+                comm, masterProcess, processDistribution, dofSerializer);
+            globalOrdering.CreateSubdomainGlobalMaps(model);
+            model.GlobalDofOrdering = globalOrdering;
         }
     }
 }

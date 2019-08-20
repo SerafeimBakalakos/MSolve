@@ -11,12 +11,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 {
     public class FetiDPDofSeparatorGlobalMpi
     {
-        private readonly GlobalFreeDofOrderingMpi globalDofOrdering; //TODO: This should be accessed by IModelMpi instead of being injected in the constructor
-
-        public FetiDPDofSeparatorGlobalMpi(IStructuralModel model, GlobalFreeDofOrderingMpi globalDofOrdering)
+        public FetiDPDofSeparatorGlobalMpi(IStructuralModel model)
         {
             this.Model = model;
-            this.globalDofOrdering = globalDofOrdering;
             //BoundaryDofs = new Dictionary<int, (INode node, IDofType dofType)[]>();
             CornerBooleanMatrices = new Dictionary<int, UnsignedBooleanMatrix>();
             SubdomainCornerDofOrderings = new Dictionary<int, DofTable>();
@@ -88,7 +85,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         {
             IEnumerable<INode> globalRemainderNodes = Model.Nodes.Where(node => !globalCornerNodes.Contains(node));
             GlobalBoundaryDofs =
-                DofSeparationUtilities.DefineGlobalBoundaryDofs(globalRemainderNodes, globalDofOrdering.GlobalFreeDofs); //TODO: This could be reused in some cases
+                DofSeparationUtilities.DefineGlobalBoundaryDofs(globalRemainderNodes, Model.GlobalDofOrdering.GlobalFreeDofs); //TODO: This could be reused in some cases
         }
 
         public void DefineGlobalCornerDofs(HashSet<INode> globalCornerNodes)
@@ -99,7 +96,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             int cornerDofCounter = 0;
             foreach (INode cornerNode in new SortedSet<INode>(globalCornerNodes)) //TODO: Must they be sorted?
             {
-                bool hasFreeDofs = globalDofOrdering.GlobalFreeDofs.TryGetDataOfRow(cornerNode,
+                bool hasFreeDofs = Model.GlobalDofOrdering.GlobalFreeDofs.TryGetDataOfRow(cornerNode,
                     out IReadOnlyDictionary<IDofType, int> dofsOfNode);
                 if (!hasFreeDofs) throw new Exception($"Corner node {cornerNode.ID} has only constrained or embedded dofs.");
                 foreach (var dofTypeIdxPair in dofsOfNode)

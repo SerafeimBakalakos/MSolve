@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
@@ -252,14 +253,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
             watch.Start();
 
             // Order dofs
-            IGlobalFreeDofOrdering globalOrdering = dofOrderer.OrderFreeDofs(model);
-            model.GlobalDofOrdering = globalOrdering;
-            foreach (ISubdomain subdomain in model.Subdomains)
+            IEnumerable<ISubdomain> modifiedSubdomains = model.Subdomains.Where(sub => sub.ConnectivityModified); //TODO: Not sure about this
+            foreach (ISubdomain subdomain in modifiedSubdomains) matrixManagers[subdomain.ID].HandleDofOrderingWillBeModified();
+            dofOrderer.OrderFreeDofs(model);
+            foreach (ISubdomain subdomain in modifiedSubdomains)
             {
-                if (!subdomain.ConnectivityModified) continue; //TODO: Not sure about this
-
-                matrixManagers[subdomain.ID].HandleDofOrderingWillBeModified();
-                subdomain.FreeDofOrdering = globalOrdering.SubdomainDofOrderings[subdomain];
                 if (alsoOrderConstrainedDofs) subdomain.ConstrainedDofOrdering = dofOrderer.OrderConstrainedDofs(subdomain);
 
                 // The next must done by the analyzer, so that subdomain.Forces is retained when doing back to back analyses.
@@ -269,7 +267,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
             // Log dof statistics
             watch.Stop();
             Logger.LogTaskDuration("Dof ordering", watch.ElapsedMilliseconds);
-            Logger.LogNumDofs("Global dofs", globalOrdering.NumGlobalFreeDofs);
+            Logger.LogNumDofs("Global dofs", model.GlobalDofOrdering.NumGlobalFreeDofs);
         }
 
         public void PreventFromOverwrittingSystemMatrices() => factorizeInPlace = false;

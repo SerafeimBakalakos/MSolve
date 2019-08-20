@@ -236,12 +236,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.Feti1
 
             // Order freedom degrees
             var orderer = new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
-            IGlobalFreeDofOrdering globalOrdering = orderer.OrderFreeDofs(model);
-            model.GlobalDofOrdering = globalOrdering;
-            foreach (Subdomain subdomain in model.Subdomains)
-            {
-                subdomain.FreeDofOrdering = globalOrdering.SubdomainDofOrderings[subdomain];
-            }
+            orderer.OrderFreeDofs(model);
 
             // Create boolean matrices
             var dofSeparator = new Feti1DofSeparator();

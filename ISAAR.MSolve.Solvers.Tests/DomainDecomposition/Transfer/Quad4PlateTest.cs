@@ -89,12 +89,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Transfer
 
             // Order dofs
             var dofOrderer = new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
-            IGlobalFreeDofOrdering globalOrdering = dofOrderer.OrderFreeDofs(model);
-            model.GlobalDofOrdering = globalOrdering;
-            foreach (ISubdomain subdomain in model.Subdomains)
-            {
-                subdomain.FreeDofOrdering = globalOrdering.SubdomainDofOrderings[subdomain];
-            }
+            dofOrderer.OrderFreeDofs(model);
 
             // Create linear systems
             var linearSystems = new List<SingleSubdomainSystem<SkylineMatrix>>();

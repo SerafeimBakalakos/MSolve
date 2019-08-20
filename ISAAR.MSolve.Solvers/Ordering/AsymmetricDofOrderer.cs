@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.Solvers.Ordering
 			(int numSubdomainFreeRowDofs, DofTable subdomainFreeRowDofs) = _rowOrderingStrategy.OrderSubdomainDofs(subdomain);
 			ISubdomainFreeDofOrdering subdomainRowOrdering= new SubdomainFreeRowDofOrderingGeneral(numSubdomainFreeRowDofs, subdomainFreeRowDofs);
 
-			return  new GlobalFreeDofOrderingSingle((ISubdomain)subdomain, subdomainRowOrdering);
+			return  new GlobalFreeDofOrderingSingleSubdomain((ISubdomain)subdomain, subdomainRowOrdering);
 		}
 
         public ISubdomainConstrainedDofOrdering OrderConstrainedDofs(ISubdomain subdomain)

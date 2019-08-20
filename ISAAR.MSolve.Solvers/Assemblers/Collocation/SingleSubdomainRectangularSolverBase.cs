@@ -101,17 +101,20 @@ namespace ISAAR.MSolve.Solvers.Assemblers.Collocation
             var watch = new Stopwatch();
             watch.Start();
 
-            IGlobalFreeDofOrdering globalRowOrdering = dofRowOrderer.OrderFreeDofs(model);
-            IGlobalFreeDofOrdering globalColOrdering = dofColOrderer.OrderFreeDofs(model);
             assembler.HandleDofOrderingWillBeModified();
 
+            //TODO xwsimo: Update AsymmetricDofOrderer so that it does the following itself, like DofOrderer does. 
+            IGlobalFreeDofOrdering previousOrdering = model.GlobalDofOrdering; // will be overwritten
+            dofColOrderer.OrderFreeDofs(model);
+            IGlobalFreeDofOrdering globalRowOrdering = dofRowOrderer.OrderFreeDofs(model);
+
             model.GlobalRowDofOrdering = globalRowOrdering;
-            model.GlobalColDofOrdering = globalColOrdering;
+            model.GlobalColDofOrdering = model.GlobalDofOrdering;
 
             foreach (var subdomain in model.Subdomains)
             {
-                subdomain.FreeDofRowOrdering = globalRowOrdering.SubdomainDofOrderings[subdomain];
-                subdomain.FreeDofColOrdering = globalColOrdering.SubdomainDofOrderings[subdomain];
+                subdomain.FreeDofRowOrdering = globalRowOrdering.GetSubdomainDofOrdering(subdomain);
+                subdomain.FreeDofColOrdering = model.GlobalColDofOrdering.GetSubdomainDofOrdering(subdomain);
 
                 if (alsoOrderConstrainedDofs)
                 {
@@ -123,7 +126,7 @@ namespace ISAAR.MSolve.Solvers.Assemblers.Collocation
             watch.Stop();
             Logger.LogTaskDuration("Dof ordering", watch.ElapsedMilliseconds);
             Logger.LogNumDofs("Global rows", globalRowOrdering.NumGlobalFreeDofs);
-            Logger.LogNumDofs("Global columns", globalColOrdering.NumGlobalFreeDofs);
+            Logger.LogNumDofs("Global columns", model.GlobalColDofOrdering.NumGlobalFreeDofs);
         }
 
         public abstract void Initialize();

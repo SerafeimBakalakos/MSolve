@@ -89,7 +89,7 @@ namespace ISAAR.MSolve.FEM.Entities
                 ISubdomain subdomain = element.Subdomain;
                 var accelerationForces = element.ElementType.CalculateAccelerationForces(
                     load.Element, (new MassAccelerationLoad[] { hl }).ToList());
-                GlobalDofOrdering.SubdomainDofOrderings[subdomain].AddVectorElementToSubdomain(element, accelerationForces,
+                GlobalDofOrdering.GetSubdomainDofOrdering(subdomain).AddVectorElementToSubdomain(element, accelerationForces,
                     subdomain.Forces);
             }
         }
@@ -149,6 +149,8 @@ namespace ISAAR.MSolve.FEM.Entities
             //AssignLoads();
         }
 
+        public INode GetNode(int nodeID) => NodesDictionary[nodeID];
+
         //TODO: constraints should not be saved inside the nodes. As it is right now (22/11/2018) the same constraint 
         //      is saved in the node, the model constraints table and the subdomain constraints table. Furthermore,
         //      displacement control analyzer updates the subdomain constraints table only (another bad design decision).  
@@ -171,7 +173,7 @@ namespace ISAAR.MSolve.FEM.Entities
                 ISubdomain subdomain = load.Element.Subdomain;
                 var accelerationForces = load.Element.ElementType.CalculateAccelerationForces(
                     load.Element, MassAccelerationLoads);
-                GlobalDofOrdering.SubdomainDofOrderings[subdomain].AddVectorElementToSubdomain(load.Element,
+                GlobalDofOrdering.GetSubdomainDofOrdering(subdomain).AddVectorElementToSubdomain(load.Element,
                     accelerationForces, subdomain.Forces);
             }
         }

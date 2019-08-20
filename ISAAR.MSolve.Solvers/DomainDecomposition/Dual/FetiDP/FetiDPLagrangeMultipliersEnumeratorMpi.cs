@@ -18,8 +18,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     /// </summary>
     public class FetiDPLagrangeMultipliersEnumeratorMpi //: ILagrangeMultipliersEnumerator
     {
-        private const int lagrangeDefinitionTag = 0;
-
         private readonly Intracommunicator comm;
         private readonly ICrosspointStrategy crosspointStrategy;
         private readonly FetiDPDofSeparatorMpi dofSeparator;
@@ -69,7 +67,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 NumLagrangeMultipliers = LagrangeMultipliers.Length;
                 serializedLagranges = lagrangeSerializer.Serialize(LagrangeMultipliers);
             }
-            MpiUtilities.BroadcastArray(comm, ref serializedLagranges, masterProcess, lagrangeDefinitionTag);
+            MpiUtilities.BroadcastArray(comm, ref serializedLagranges, masterProcess);
 
             // Deserialize the lagrange multipliers in other processes and calculate the boolean matrices
             int numRemainderDofs = dofSeparator.SubdomainDofs.RemainderDofIndices.Length;

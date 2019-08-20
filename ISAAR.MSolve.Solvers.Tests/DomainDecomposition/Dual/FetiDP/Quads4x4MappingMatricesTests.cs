@@ -246,12 +246,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Order free dofs.
             var dofOrderer = new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
-            IGlobalFreeDofOrdering globalOrdering = dofOrderer.OrderFreeDofs(model);
-            model.GlobalDofOrdering = globalOrdering;
-            foreach (ISubdomain subdomain in model.Subdomains)
-            {
-                subdomain.FreeDofOrdering = globalOrdering.SubdomainDofOrderings[subdomain];
-            }
+            dofOrderer.OrderFreeDofs(model);
 
             // Separate dofs
             var dofSeparator = new FetiDPDofSeparator();
@@ -286,12 +281,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Order free dofs.
             var dofOrderer = new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
-            IGlobalFreeDofOrdering globalOrdering = dofOrderer.OrderFreeDofs(model);
-            model.GlobalDofOrdering = globalOrdering;
-            foreach (ISubdomain subdomain in model.Subdomains)
-            {
-                subdomain.FreeDofOrdering = globalOrdering.SubdomainDofOrderings[subdomain];
-            }
+            dofOrderer.OrderFreeDofs(model);
 
             // Separate dofs
             var dofSeparator = new FetiDPDofSeparator();
@@ -332,12 +322,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Order free dofs.
             var dofOrderer = new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
-            IGlobalFreeDofOrdering globalOrdering = dofOrderer.OrderFreeDofs(model);
-            model.GlobalDofOrdering = globalOrdering;
-            foreach (ISubdomain subdomain in model.Subdomains)
-            {
-                subdomain.FreeDofOrdering = globalOrdering.SubdomainDofOrderings[subdomain];
-            }
+            dofOrderer.OrderFreeDofs(model);
 
             // Separate dofs
             var dofSeparator = new FetiDPDofSeparator();
@@ -375,7 +360,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
                 // Create the model in master process
                 Model model = null;
                 Dictionary<int, INode> globalNodes = null;
-                ModelDistribution modelDistribution = null; 
+                ProcessDistribution processDistribution = null; 
                 if (rank == master)
                 {
                     model = CreateModel();
@@ -383,7 +368,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
                     //TODO: These should be automated
                     globalNodes = model.GetNodesDictionary();
-                    modelDistribution = new ModelDistribution(new ISubdomain[] 
+                    processDistribution = new ProcessDistribution(new ISubdomain[] 
                     {
                         model.SubdomainsDictionary[0], model.SubdomainsDictionary[1],
                         model.SubdomainsDictionary[2], model.SubdomainsDictionary[3]
@@ -397,15 +382,15 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
                 // Order dofs
                 subdomain.ConnectDataStructures();
-                var dofOrderer = new DofOrdererMpi(new NodeMajorDofOrderingStrategy(), new NullReordering(), comm, master);
+                var dofSerializer = new StandardDofSerializer();
+                var dofOrderer = new DofOrdererMpi(new NodeMajorDofOrderingStrategy(), new NullReordering(), comm, master, 
+                    processDistribution, dofSerializer, globalNodes, subdomain);
                 subdomain.FreeDofOrdering = dofOrderer.OrderFreeDofs(subdomain);
-                GlobalFreeDofOrderingMpi globalDofOrdering = null;
-                if (rank == master) globalDofOrdering = dofOrderer.OrderFreeDofs(model);
+                dofOrderer.OrderFreeDofs(model);
 
                 // Separate dofs and corner boolean matrices
-                var dofSerializer = new StandardDofSerializer();
-                var dofSeparator = new FetiDPDofSeparatorMpi(model, subdomain, globalNodes, globalDofOrdering, 
-                    comm, master, modelDistribution, dofSerializer);
+                var dofSeparator = new FetiDPDofSeparatorMpi(model, subdomain, globalNodes, comm, master, processDistribution, 
+                    dofSerializer);
                 if (rank == master)
                 {
                     HashSet<INode> globalCornerNodes = DefineGlobalCornerNodes(model);

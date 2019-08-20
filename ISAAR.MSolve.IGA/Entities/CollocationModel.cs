@@ -44,6 +44,8 @@ namespace ISAAR.MSolve.IGA.Entities
         public IList<ControlPoint> ControlPoints => controlPointsDictionary.Values.ToList();
         IReadOnlyList<INode> IStructuralModel.Nodes => controlPointsDictionary.Values.ToList();
 
+
+        public INode GetNode(int nodeID) => controlPointsDictionary[nodeID];
         public Dictionary<int, ControlPoint> ControlPointsDictionary
         {
             get => controlPointsDictionary;
@@ -80,7 +82,7 @@ namespace ISAAR.MSolve.IGA.Entities
                 globalDofOrdering = value;
                 foreach (var patch in Patches)
                 {
-                    patch.FreeDofRowOrdering = GlobalDofOrdering.SubdomainDofOrderings[patch];
+                    patch.FreeDofRowOrdering = GlobalDofOrdering.GetSubdomainDofOrdering(patch);
                 }
 
                 //EnumerateSubdomainLagranges();
@@ -97,7 +99,7 @@ namespace ISAAR.MSolve.IGA.Entities
                 globalRowDofOrdering = value;
                 foreach (var patch in Patches)
                 {
-                    patch.FreeDofColOrdering = GlobalRowDofOrdering.SubdomainDofOrderings[patch];
+                    patch.FreeDofColOrdering = GlobalRowDofOrdering.GetSubdomainDofOrdering(patch);
                     patch.Forces = Vector.CreateZero(patch.FreeDofColOrdering.NumFreeDofs);
                 }
 
@@ -115,7 +117,7 @@ namespace ISAAR.MSolve.IGA.Entities
                 globalColDofOrdering = value;
                 foreach (var patch in Patches)
                 {
-                    patch.FreeDofColOrdering = GlobalColDofOrdering.SubdomainDofOrderings[patch];
+                    patch.FreeDofColOrdering = GlobalColDofOrdering.GetSubdomainDofOrdering(patch);
                     patch.Forces = Vector.CreateZero(patch.FreeDofColOrdering.NumFreeDofs);
                 }
 

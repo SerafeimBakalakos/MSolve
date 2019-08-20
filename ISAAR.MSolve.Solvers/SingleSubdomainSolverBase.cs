@@ -111,13 +111,11 @@ namespace ISAAR.MSolve.Solvers
             var watch = new Stopwatch();
             watch.Start();
 
-            IGlobalFreeDofOrdering globalOrdering = dofOrderer.OrderFreeDofs(model);
             assembler.HandleDofOrderingWillBeModified();
+            dofOrderer.OrderFreeDofs(model);
 
-            model.GlobalDofOrdering = globalOrdering;
             foreach (ISubdomain subdomain in model.Subdomains)
             {
-                subdomain.FreeDofOrdering = globalOrdering.SubdomainDofOrderings[subdomain];
                 if (alsoOrderConstrainedDofs) subdomain.ConstrainedDofOrdering = dofOrderer.OrderConstrainedDofs(subdomain);
 
                 // The next must done by the analyzer, so that subdomain.Forces is retained when doing back to back analyses.
@@ -128,7 +126,7 @@ namespace ISAAR.MSolve.Solvers
 
             watch.Stop();
             Logger.LogTaskDuration("Dof ordering", watch.ElapsedMilliseconds);
-            Logger.LogNumDofs("Global dofs", globalOrdering.NumGlobalFreeDofs);
+            Logger.LogNumDofs("Global dofs", model.GlobalDofOrdering.NumGlobalFreeDofs);
         }
 
         public abstract void Initialize();

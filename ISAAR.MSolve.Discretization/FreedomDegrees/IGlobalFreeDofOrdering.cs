@@ -5,7 +5,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 //TODO: Perhaps the ISubdomainDofOrderings should be accessed through IClusterDofOrdering. For now they are stored in Subdomain
-//TODO: Perhaps this doulbe be IObservable and noty observers (e.g. solver, assembler) when the ordering changes.
+//TODO: Perhaps this doulbe be IObservable and notify observers (e.g. solver, assembler) when the ordering changes.
 namespace ISAAR.MSolve.Discretization.FreedomDegrees
 {
     public interface IGlobalFreeDofOrdering
@@ -17,15 +17,17 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
 
         int NumGlobalFreeDofs { get; }
 
-        IReadOnlyDictionary<ISubdomain, ISubdomainFreeDofOrdering> SubdomainDofOrderings { get; }
+        ISubdomainFreeDofOrdering GetSubdomainDofOrdering(ISubdomain subdomain);
 
         void AddVectorSubdomainToGlobal(ISubdomain subdomain, IVectorView subdomainVector, IVector globalVector);
 
         void AddVectorSubdomainToGlobalMeanValue(ISubdomain subdomain, IVectorView subdomainVector, IVector globalVector);
 
+        void CreateSubdomainGlobalMaps(IStructuralModel model);
+
         void ExtractVectorSubdomainFromGlobal(ISubdomain subdomain, IVectorView globalVector, IVector subdomainVector);
 
         //TODO: the returned array should be readonly
-        int[] MapFreeDofsSubdomainToGlobal(ISubdomain subdomain);
+        int[] GetSubdomainToGlobalMap(ISubdomain subdomain);
     }
 }

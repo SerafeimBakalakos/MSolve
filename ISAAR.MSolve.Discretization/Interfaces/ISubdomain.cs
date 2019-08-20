@@ -16,7 +16,7 @@ namespace ISAAR.MSolve.Discretization.Interfaces
         /// This should be set when the analyzer decides. E.g. an XFEM or adaptive FEM analyzer would need to create a new dof 
         /// ordering, whenever the crack propagates or the mesh is refined respectively.
         /// </summary>
-        ISubdomainFreeDofOrdering FreeDofOrdering { get; set; }
+        ISubdomainFreeDofOrdering FreeDofOrdering { get; set; } //TODO: this should not be managed by the subdomain. Update after 6 months: yeap, see the mess in collocation
 
         IReadOnlyList<IElement> Elements { get; } //TODO: perhaps this should be a set
 

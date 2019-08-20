@@ -6,6 +6,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
+using ISAAR.MSolve.Discretization.Transfer.Utilities;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
 using MPI;
@@ -24,22 +25,21 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly Intracommunicator comm;
         private readonly IDofSerializer dofSerializer;
         private readonly int masterProcess;
-        private readonly ModelDistribution modelDistribution;
+        private readonly ProcessDistribution processDistribution;
         private readonly Dictionary<int, INode> globalNodes;
         private readonly int rank;
 
         public FetiDPDofSeparatorMpi(IStructuralModel model, ISubdomain subdomain, Dictionary<int, INode> globalNodes,
-            GlobalFreeDofOrderingMpi globalDofOrdering, 
-            Intracommunicator comm, int masterProcess, ModelDistribution modelDistribution, IDofSerializer dofSerializer)
+            Intracommunicator comm, int masterProcess, ProcessDistribution processDistribution, IDofSerializer dofSerializer)
         {
             this.comm = comm;
             this.masterProcess = masterProcess;
             this.rank = comm.Rank;
-            this.modelDistribution = modelDistribution;
+            this.processDistribution = processDistribution;
             this.dofSerializer = dofSerializer;
 
             SubdomainDofs = new FetiDPDofSeparatorSubdomainMpi(subdomain);
-            if (rank == masterProcess) GlobalDofs = new FetiDPDofSeparatorGlobalMpi(model, globalDofOrdering);
+            if (rank == masterProcess) GlobalDofs = new FetiDPDofSeparatorGlobalMpi(model);
             this.globalNodes = globalNodes;
         }
 
@@ -100,51 +100,32 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         {
             var tableSerializer = new DofTableSerializer(dofSerializer);
 
-            // Receive the corner dof ordering of each subdomain from the corresponding process
+            // Gather the corner dof ordering of each subdomain from the corresponding process to master
+            var transfer = new DofTableTransfer(comm, masterProcess, processDistribution, dofSerializer);
+            IEnumerable<ISubdomain> modifiedSubdomains = null;
             if (rank == masterProcess)
             {
-                // For the subdomain of the master process, just copy the reference. Even if it isn't necessary, it is costless.
-                GlobalDofs.SubdomainCornerDofOrderings[this.SubdomainDofs.Subdomain.ID] = SubdomainDofs.CornerDofOrdering;
-                IEnumerable<ISubdomain> otherSubdomains =
-                    GlobalDofs.Model.Subdomains.Where(sub => sub.ID != this.SubdomainDofs.Subdomain.ID);
-
-                var serializedTables = new Dictionary<ISubdomain, int[]>();
-                foreach (ISubdomain subdomain in otherSubdomains)
-                {
-                    // Receive the corner dof ordering of each subdomain, only if it has changed.
-                    if (subdomain.ConnectivityModified) //TODO: Is this what I should check?
-                    {
-                        int source = modelDistribution.SubdomainsToProcesses[subdomain];
-                        //Console.WriteLine($"Process {rank} (master): Started receiving corner dof ordering from process {source}.");
-                        serializedTables[subdomain] = MpiUtilities.ReceiveArray(comm, source, cornerDofOrderingTag);
-                        //Console.WriteLine($"Process {rank} (master): Finished receiving corner dof ordering from process {source}.");
-                    }
-                }
-
-                // After finishing with all comunications deserialize the received items. //TODO: This should be done concurrently with the transfers, by another thread.
-                foreach (ISubdomain subdomain in otherSubdomains)
-                {
-                    bool isModified = serializedTables.TryGetValue(subdomain, out int[] serializedTable);
-                    if (isModified)
-                    {
-                        //Console.WriteLine($"Process {rank} (master): Started deserializing corner dof ordering of subdomain {subdomain.ID}.");
-                        DofTable ordering = tableSerializer.Deserialize(serializedTable, globalNodes);
-                        //Console.WriteLine($"Process {rank} (master): Finished deserializing corner dof ordering of subdomain {subdomain.ID}.");
-                        GlobalDofs.SubdomainCornerDofOrderings[subdomain.ID] = ordering;
-                        serializedTables.Remove(subdomain); // Free up some temporary memory.
-                    }
-                }
+                // Only process the subdomains that have changed and need to update their dof orderings.
+                modifiedSubdomains = GlobalDofs.Model.Subdomains.Where(sub => sub.ConnectivityModified); //TODO: Is this what I should check?
+                transfer.DefineModelData_master(modifiedSubdomains, globalNodes);
             }
             else
             {
-                if (this.SubdomainDofs.Subdomain.ConnectivityModified)
+                transfer.DefineSubdomainData_slave(SubdomainDofs.Subdomain.ConnectivityModified,
+                    SubdomainDofs.CornerDofOrdering);
+            }
+            transfer.Transfer(cornerDofOrderingTag);
+
+            if (rank == masterProcess)
+            {
+                // Assign the received orderings
+                foreach (int s in transfer.SubdomainDofOrderings_master.Keys)
                 {
-                    //Console.WriteLine($"Process {rank}: Started serializing corner dof ordering.");
-                    int[] serializedTable = tableSerializer.Serialize(SubdomainDofs.CornerDofOrdering);
-                    //Console.WriteLine($"Process {rank}: Finished serializing corner dof ordering. Started sending it to master");
-                    MpiUtilities.SendArray(comm, serializedTable, masterProcess, cornerDofOrderingTag);
-                    //Console.WriteLine($"Process {rank}: Finished sending corner dof ordering to master.");
+                    GlobalDofs.SubdomainCornerDofOrderings[s] = transfer.SubdomainDofOrderings_master[s];
                 }
+
+                // For the subdomain of the master process, just copy the reference. Even if it isn't updated, it is costless.
+                GlobalDofs.SubdomainCornerDofOrderings[this.SubdomainDofs.Subdomain.ID] = SubdomainDofs.CornerDofOrdering;
             }
         }
 
@@ -162,7 +143,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 matricesBc = new UnsignedBooleanMatrix[comm.Size];
                 for (int p = 0; p < comm.Size; ++p)
                 {
-                    int subdomainID = modelDistribution.ProcesesToSubdomains[p].ID;
+                    int subdomainID = processDistribution.ProcesesToSubdomains[p].ID;
                     matricesBc[p] = GlobalDofs.CornerBooleanMatrices[subdomainID];
                 }
             }

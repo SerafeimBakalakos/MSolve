@@ -12,7 +12,7 @@ namespace ISAAR.MSolve.Solvers.Ordering
     /// Orders the constrained dofs of a subdomain, independendtly from the free ones.
     /// Authors: Serafeim Bakalakos
     /// </summary>
-    internal class ConstrainedDofOrderingStrategy
+    public class ConstrainedDofOrderingStrategy
     {
         /// <summary>
         /// Orders the constrained freedom degrees of one of the model's subdomains.

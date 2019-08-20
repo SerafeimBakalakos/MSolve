@@ -87,7 +87,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
             foreach (var subdomain in model.Subdomains)
             {
                 int id = subdomain.ID;
-                int[] subdomainToGlobalDofs = model.GlobalDofOrdering.MapFreeDofsSubdomainToGlobal(subdomain);
+                int[] subdomainToGlobalDofs = model.GlobalDofOrdering.GetSubdomainToGlobalMap(subdomain);
                 IVectorView displacements = subdomainDisplacements[id]; //TODO: benchmark the performance if this was concrete Vector
 
                 // Internal dofs are copied without averaging.
@@ -122,7 +122,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
             foreach (var subdomain in model.Subdomains)
             {
                 int id = subdomain.ID;
-                int[] subdomainToGlobalDofs = model.GlobalDofOrdering.MapFreeDofsSubdomainToGlobal(subdomain);
+                int[] subdomainToGlobalDofs = model.GlobalDofOrdering.GetSubdomainToGlobalMap(subdomain);
                 IVectorView forces = subdomainForces[id]; //TODO: benchmark the performance if this was concrete Vector
 
                 for (int i = 0; i < forces.Length; ++i)

@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
 
 		public DofTable GlobalFreeDofs { get; }
 		public int NumGlobalFreeDofs { get; }
-		public IReadOnlyDictionary<ISubdomain, ISubdomainFreeDofOrdering> SubdomainDofOrderings { get; }
+		private IReadOnlyDictionary<ISubdomain, ISubdomainFreeDofOrdering> SubdomainDofOrderings { get; }
 
 		public void AddVectorSubdomainToGlobal(ISubdomain subdomain, IVectorView subdomainVector,
 			IVector globalVector)
@@ -37,13 +37,21 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
 			throw new NotImplementedException();
 		}
 
-		public void ExtractVectorSubdomainFromGlobal(ISubdomain subdomain, IVectorView globalVector,
+        public void CreateSubdomainGlobalMaps(IStructuralModel model)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ExtractVectorSubdomainFromGlobal(ISubdomain subdomain, IVectorView globalVector,
 			IVector subdomainVector)
 		{
 			throw new NotImplementedException();
 		}
 
-		public int[] MapFreeDofsSubdomainToGlobal(ISubdomain subdomain)
+        public ISubdomainFreeDofOrdering GetSubdomainDofOrdering(ISubdomain subdomain)
+            => SubdomainDofOrderings[subdomain];
+
+        public int[] GetSubdomainToGlobalMap(ISubdomain subdomain)
 		{
 			throw new NotImplementedException();
 		}

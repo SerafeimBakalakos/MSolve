@@ -26,8 +26,6 @@ namespace ISAAR.MSolve.IGA.Entities
 		private readonly IList<IMassAccelerationHistoryLoad> massAccelerationHistoryLoads =
 			new List<IMassAccelerationHistoryLoad>();
 
-		private IGlobalFreeDofOrdering globalDofOrdering;
-
 		//public IList<EmbeddedNode> EmbeddedNodes { get; } = new List<EmbeddedNode>();
 
 		public IList<Cluster> Clusters => ClustersDictionary.Values.ToList();
@@ -45,7 +43,8 @@ namespace ISAAR.MSolve.IGA.Entities
 		public IList<ControlPoint> ControlPoints => controlPointsDictionary.Values.ToList();
 		IReadOnlyList<INode> IStructuralModel.Nodes => controlPointsDictionary.Values.ToList();
 
-		public Dictionary<int, ControlPoint> ControlPointsDictionary
+        public INode GetNode(int nodeID) => controlPointsDictionary[nodeID];
+        public Dictionary<int, ControlPoint> ControlPointsDictionary
 		{
 			get => controlPointsDictionary;
 		}
@@ -73,21 +72,7 @@ namespace ISAAR.MSolve.IGA.Entities
 		public Table<INode, IDofType, double> Constraints { get; private set; } =
 			new Table<INode, IDofType, double>(); //TODOMaria: maybe it's useless in model class
 
-		public IGlobalFreeDofOrdering GlobalDofOrdering
-		{
-			get => globalDofOrdering;
-			set
-			{
-				globalDofOrdering = value;
-				foreach (Patch patch in Patches)
-				{
-					patch.FreeDofRowOrdering = GlobalDofOrdering.SubdomainDofOrderings[patch];
-				}
-
-				//EnumerateSubdomainLagranges();
-				//EnumerateDOFMultiplicity();
-			}
-		}
+		public IGlobalFreeDofOrdering GlobalDofOrdering { get; set; }
 
         private IGlobalFreeDofOrdering globalRowDofOrdering;
         public IGlobalFreeDofOrdering GlobalRowDofOrdering 
@@ -98,7 +83,7 @@ namespace ISAAR.MSolve.IGA.Entities
                 globalRowDofOrdering = value;
                 foreach (Patch patch in Patches)
                 {
-                    patch.FreeDofColOrdering = GlobalRowDofOrdering.SubdomainDofOrderings[patch];
+                    patch.FreeDofColOrdering = GlobalRowDofOrdering.GetSubdomainDofOrdering(patch);
                     patch.Forces = Vector.CreateZero(patch.FreeDofColOrdering.NumFreeDofs);
                 }
 
@@ -116,7 +101,7 @@ namespace ISAAR.MSolve.IGA.Entities
                 globalColDofOrdering = value;
                 foreach (Patch patch in Patches)
                 {
-                    patch.FreeDofColOrdering = GlobalColDofOrdering.SubdomainDofOrderings[patch];
+                    patch.FreeDofColOrdering = GlobalColDofOrdering.GetSubdomainDofOrdering(patch);
                     patch.Forces = Vector.CreateZero(patch.FreeDofColOrdering.NumFreeDofs);
                 }
 
@@ -208,7 +193,7 @@ namespace ISAAR.MSolve.IGA.Entities
 			PatchesDictionary.Clear();
 			ElementsDictionary.Clear();
 			ControlPointsDictionary.Clear();
-			globalDofOrdering = null;
+			GlobalDofOrdering = null;
 			Constraints.Clear();
 			MassAccelerationHistoryLoads.Clear();
 		}
