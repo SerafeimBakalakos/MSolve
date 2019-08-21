@@ -241,12 +241,12 @@ namespace ISAAR.MSolve.XFEM.Tests
         private void ApplyBoundaryConditions()
         {
             double meshTol = 1E-6;
-            XNode leftTopCorner = Model.Nodes.Where(
+            XNode leftTopCorner = Model.Nodes.Values.Where(
                 node => (Math.Abs(node.X - minX) <= meshTol) && (Math.Abs(node.Y - maxY) <= meshTol)).First();
-            XNode rightBottomCorner = Model.Nodes.Where(
+            XNode rightBottomCorner = Model.Nodes.Values.Where(
                 node => (Math.Abs(node.X - maxX) <= meshTol) && (Math.Abs(node.Y - minY) <= meshTol)).First();
-            XNode[] bottomNodes = Model.Nodes.Where(node => Math.Abs(node.Y - minY) <= meshTol).ToArray();
-            XNode[] topNodes = Model.Nodes.Where(node => Math.Abs(node.Y - maxY) <= meshTol).ToArray();
+            XNode[] bottomNodes = Model.Nodes.Values.Where(node => Math.Abs(node.Y - minY) <= meshTol).ToArray();
+            XNode[] topNodes = Model.Nodes.Values.Where(node => Math.Abs(node.Y - maxY) <= meshTol).ToArray();
 
             if (bc == BoundaryConditions.BottomConstrainXY_TopDisplacementY)
             {
@@ -325,7 +325,7 @@ namespace ISAAR.MSolve.XFEM.Tests
                 (id, x, y, z) => new XNode(id, x, y, z));
 
             // Nodes
-            foreach (XNode node in nodes) Model.Nodes.Add(node);
+            foreach (XNode node in nodes) Model.Nodes.Add(node.ID, node);
 
             // Integration rules
             var integration = new IntegrationForCrackPropagation2D(
@@ -349,7 +349,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             // Mesh usable for crack-mesh interaction
             var boundary = new HolesBoundary();
             Model.Boundary = boundary;
-            Mesh = new BidirectionalMesh2D<XNode, XContinuumElement2D>(Model.Nodes, cells, boundary);
+            Mesh = new BidirectionalMesh2D<XNode, XContinuumElement2D>(Model.Nodes.Values.ToArray(), cells, boundary);
         }
 
         private void InitializeCrack()

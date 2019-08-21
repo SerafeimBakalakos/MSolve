@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
 
                 // Write all nodes without repeating the boundary ones
                 var boundaryNodes = new List<INode>();
-                foreach (INode node in model.Nodes)
+                foreach (INode node in model.EnumerateNodes())
                 {
                     if (node.Multiplicity > 1) boundaryNodes.Add(node);
                 }

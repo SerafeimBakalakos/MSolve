@@ -21,8 +21,8 @@ namespace ISAAR.MSolve.FEM.Postprocessing
         public StrainStressField2D(Model model)
         {
             this.model = model;
-            this.data = new Dictionary<Node, (double[] strains, double[] stresses)>(model.Nodes.Count);
-            foreach (var node in model.Nodes)
+            this.data = new Dictionary<Node, (double[] strains, double[] stresses)>(model.NumNodes);
+            foreach (var node in model.NodesDictionary.Values)
             {
                 data.Add(node, (new double[numTensorEntries], new double[numTensorEntries]));
             }
@@ -38,7 +38,7 @@ namespace ISAAR.MSolve.FEM.Postprocessing
         public void CalculateNodalTensors(IVectorView freeDisplacements)
         {
             var nodeMultiplicities = new Dictionary<Node, int>();
-            foreach (Node node in model.Nodes) nodeMultiplicities.Add(node, 0); // how many elements each node belongs to
+            foreach (Node node in model.NodesDictionary.Values) nodeMultiplicities.Add(node, 0); // how many elements each node belongs to
 
             foreach (Subdomain subdomain in model.EnumerateSubdomains())
             {
@@ -69,7 +69,7 @@ namespace ISAAR.MSolve.FEM.Postprocessing
             }
 
             // Divide via the node multiplicity to find the average
-            foreach (Node node in model.Nodes)
+            foreach (Node node in model.NodesDictionary.Values)
             {
                 int multiplicity = nodeMultiplicities[node];
                 Debug.Assert(multiplicity > 0); 

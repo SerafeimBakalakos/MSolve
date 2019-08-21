@@ -100,7 +100,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             // Locate nodes
             double tol = 1E-6;
             double L = DoubleCantileverBeam.beamLength;
-            IEnumerable<XNode> rightNodes = model.Nodes.Where(n => Math.Abs(n.X - L) <= tol);
+            IEnumerable<XNode> rightNodes = model.Nodes.Values.Where(n => Math.Abs(n.X - L) <= tol);
             XNode[] crackMouthNodes = rightNodes.Where(n => n.EnrichmentItems.Count > 0).ToArray();
             Assert.Equal(2, crackMouthNodes.Length);
 

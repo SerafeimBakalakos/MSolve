@@ -26,7 +26,7 @@ namespace ISAAR.MSolve.Logging.VTK
             this.directory = directory;
             try
             {
-                Node[] nodes = model.Nodes.ToArray();
+                Node[] nodes = model.NodesDictionary.Values.ToArray();
                 ICell<Node>[] elements = model.ElementsDictionary.Values.Select(element => (ICell<Node>)element).ToArray();
                 this.vtkMesh = new VtkMesh<Node>(nodes, elements);
             }

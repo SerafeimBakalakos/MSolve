@@ -115,7 +115,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private static Dictionary<int, INode> CreateNodesDictionary(IModel model)
         {
             var nodesDictionary = new Dictionary<int, INode>();
-            foreach (INode node in model.Nodes) nodesDictionary[node.ID] = node;
+            foreach (INode node in model.EnumerateNodes()) nodesDictionary[node.ID] = node;
             return nodesDictionary;
         }
 

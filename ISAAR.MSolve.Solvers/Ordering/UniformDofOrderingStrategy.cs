@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.Solvers.Ordering
         }
 
         public (int numGlobalFreeDofs, DofTable globalFreeDofs) OrderGlobalDofs(IModel model)
-            => OrderFreeDofsOfNodeSet(model.Nodes, model.Constraints);
+            => OrderFreeDofsOfNodeSet(model.EnumerateNodes(), model.Constraints);
 
 
         public (int numSubdomainFreeDofs, DofTable subdomainFreeDofs) OrderSubdomainDofs(ISubdomain subdomain)

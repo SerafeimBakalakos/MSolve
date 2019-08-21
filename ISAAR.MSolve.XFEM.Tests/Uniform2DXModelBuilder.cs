@@ -114,7 +114,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
             // Define model, subdomains, nodes
             var model = new XModel();
             for (int s = 0; s < numTotalSubdomains; ++s) model.Subdomains.Add(s, new XSubdomain(s));
-            for (int n = 0; n < vertices.Count; ++n) model.Nodes.Add(vertices[n]);
+            for (int n = 0; n < vertices.Count; ++n) model.Nodes.Add(n, vertices[n]);
 
             // Elements
             XContinuumElement2DFactory[] elementFactories = materials.Select(
@@ -177,25 +177,25 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
             double minX = 0.0, minY = 0.0, maxX = DomainLengthX, maxY = DomainLengthY; // for brevity
 
             IEnumerable<XNode> nodes;
-            if (region == BoundaryRegion.LeftSide) nodes = model.Nodes.Where(node => Math.Abs(node.X - minX) <= tol);
-            else if (region == BoundaryRegion.RightSide) nodes = model.Nodes.Where(node => Math.Abs(node.X - maxX) <= tol);
-            else if (region == BoundaryRegion.LowerSide) nodes = model.Nodes.Where(node => Math.Abs(node.Y - minY) <= tol);
-            else if (region == BoundaryRegion.UpperSide) nodes = model.Nodes.Where(node => Math.Abs(node.Y - maxY) <= tol);
+            if (region == BoundaryRegion.LeftSide) nodes = model.Nodes.Values.Where(node => Math.Abs(node.X - minX) <= tol);
+            else if (region == BoundaryRegion.RightSide) nodes = model.Nodes.Values.Where(node => Math.Abs(node.X - maxX) <= tol);
+            else if (region == BoundaryRegion.LowerSide) nodes = model.Nodes.Values.Where(node => Math.Abs(node.Y - minY) <= tol);
+            else if (region == BoundaryRegion.UpperSide) nodes = model.Nodes.Values.Where(node => Math.Abs(node.Y - maxY) <= tol);
             else if (region == BoundaryRegion.LowerLeftCorner)
             {
-                nodes = model.Nodes.Where(node => (Math.Abs(node.X - minX) <= tol) && (Math.Abs(node.Y - minY) <= tol));
+                nodes = model.Nodes.Values.Where(node => (Math.Abs(node.X - minX) <= tol) && (Math.Abs(node.Y - minY) <= tol));
             }
             else if (region == BoundaryRegion.LowerRightCorner)
             {
-                nodes = model.Nodes.Where(node => (Math.Abs(node.X - maxX) <= tol) && (Math.Abs(node.Y - minY) <= tol));
+                nodes = model.Nodes.Values.Where(node => (Math.Abs(node.X - maxX) <= tol) && (Math.Abs(node.Y - minY) <= tol));
             }
             else if (region == BoundaryRegion.UpperLeftCorner)
             {
-                nodes = model.Nodes.Where(node => (Math.Abs(node.X - minX) <= tol) && (Math.Abs(node.Y - maxY) <= tol));
+                nodes = model.Nodes.Values.Where(node => (Math.Abs(node.X - minX) <= tol) && (Math.Abs(node.Y - maxY) <= tol));
             }
             else if (region == BoundaryRegion.UpperRightCorner)
             {
-                nodes = model.Nodes.Where(node => (Math.Abs(node.X - maxX) <= tol) && (Math.Abs(node.Y - maxY) <= tol));
+                nodes = model.Nodes.Values.Where(node => (Math.Abs(node.X - maxX) <= tol) && (Math.Abs(node.Y - maxY) <= tol));
             }
             else throw new Exception("Should not have reached this code");
 

@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.Logging
             this.model = model;
             this.lsm = lsm;
             this.outputDirectory = outputDirectory;
-            this.vtkMesh = new VtkMesh<XNode>(model.Nodes, model.Elements.Values.ToArray());
+            this.vtkMesh = new VtkMesh<XNode>(model.Nodes.Values.ToArray(), model.Elements.Values.ToArray());
         }
 
         // This could be handled better by having LSM storing the crack path (which is all around useful). However having an

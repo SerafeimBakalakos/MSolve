@@ -30,11 +30,11 @@ namespace ISAAR.MSolve.XFEM.Entities
 
         public IList<IMassAccelerationHistoryLoad> MassAccelerationHistoryLoads => throw new NotImplementedException();
 
-        IReadOnlyList<INode> IModel.Nodes => Nodes;
-        public List<XNode> Nodes { get; } = new List<XNode>();
+        public Dictionary<int, XNode> Nodes { get; } = new Dictionary<int, XNode>();
 
         public int NumElements => Elements.Count;
-        public int NumSubdomains => Subdomains.Count();
+        public int NumNodes => Nodes.Count;
+        public int NumSubdomains => Subdomains.Count;
 
         public Dictionary<int, XSubdomain> Subdomains { get; } = new Dictionary<int, XSubdomain>();
 
@@ -66,14 +66,16 @@ namespace ISAAR.MSolve.XFEM.Entities
         }
 
         public IEnumerable<IElement> EnumerateElements() => Elements.Values;
+        public IEnumerable<INode> EnumerateNodes() => Nodes.Values;
         public IEnumerable<ISubdomain> EnumerateSubdomains() => Subdomains.Values;
 
         public IElement GetElement(int elementID) => Elements[elementID];
+        public INode GetNode(int nodeID) => Nodes[nodeID];
         public ISubdomain GetSubdomain(int subdomainID) => Subdomains[subdomainID];
 
         private void AssignConstraints()
         {
-            foreach (XNode node in Nodes)
+            foreach (XNode node in Nodes.Values)
             {
                 if (node.Constraints == null) continue;
                 foreach (Constraint constraint in node.Constraints) Constraints[node, constraint.DOF] = constraint.Amount;
@@ -90,7 +92,7 @@ namespace ISAAR.MSolve.XFEM.Entities
             BuildElementDictionaryOfEachNode();
 
             // TODO: Storing the subdomains of each node should be done by another class, if necessary.
-            foreach (XNode node in Nodes) node.BuildXSubdomainDictionary();
+            foreach (XNode node in Nodes.Values) node.BuildXSubdomainDictionary();
 
             foreach (XSubdomain subdomain in Subdomains.Values) subdomain.DefineNodesFromElements();
         }

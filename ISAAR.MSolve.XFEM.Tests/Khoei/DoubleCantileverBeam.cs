@@ -63,14 +63,14 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             this.Model = model;
 
             //Nodes
-            model.Nodes.Add(new XNode(0, 0.0, 0.0));
-            model.Nodes.Add(new XNode(1, elementSize, 0.0));
-            model.Nodes.Add(new XNode(2, elementSize, elementSize));
-            model.Nodes.Add(new XNode(3, 0.0, elementSize));
-            model.Nodes.Add(new XNode(4, 2 * elementSize, 0.0));
-            model.Nodes.Add(new XNode(5, 3 * elementSize, 0.0));
-            model.Nodes.Add(new XNode(6, 3 * elementSize, elementSize));
-            model.Nodes.Add(new XNode(7, 2 * elementSize, elementSize));
+            model.Nodes.Add(0, new XNode(0, 0.0, 0.0));
+            model.Nodes.Add(1, new XNode(1, elementSize, 0.0));
+            model.Nodes.Add(2, new XNode(2, elementSize, elementSize));
+            model.Nodes.Add(3, new XNode(3, 0.0, elementSize));
+            model.Nodes.Add(4, new XNode(4, 2 * elementSize, 0.0));
+            model.Nodes.Add(5, new XNode(5, 3 * elementSize, 0.0));
+            model.Nodes.Add(6, new XNode(6, 3 * elementSize, elementSize));
+            model.Nodes.Add(7, new XNode(7, 2 * elementSize, elementSize));
 
             // Elements
             XNode[][] connectivity = new XNode[3][];
@@ -89,7 +89,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             }
 
             // Mesh
-            var mesh = new BidirectionalMesh2D<XNode, XContinuumElement2D>(model.Nodes,
+            var mesh = new BidirectionalMesh2D<XNode, XContinuumElement2D>(model.Nodes.Values.ToArray(),
                 model.Elements.Values.Select(e => (XContinuumElement2D)e).ToArray(), beamBoundary);
 
             // Boundary conditions
@@ -116,7 +116,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
                 meshGenerator.CreateMesh((id, x, y, z) => new XNode(id, x, y, z));
 
             // Nodes
-            foreach (XNode node in nodes) model.Nodes.Add(node);
+            foreach (XNode node in nodes) model.Nodes.Add(node.ID, node);
 
             // Elements
             var factory = new XContinuumElement2DFactory(integration, jIntegration, material);
@@ -130,18 +130,18 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             }
 
             // Mesh
-            var mesh = new BidirectionalMesh2D<XNode, XContinuumElement2D>(model.Nodes,
+            var mesh = new BidirectionalMesh2D<XNode, XContinuumElement2D>(model.Nodes.Values.ToArray(),
                 model.Elements.Values.Select(e => (XContinuumElement2D)e).ToArray(), beamBoundary);
 
             // Boundary conditions
             double tol = 1E-6;
             double L = DoubleCantileverBeam.beamLength;
             double H = DoubleCantileverBeam.beamHeight;
-            XNode topRight = model.Nodes.Where(n => Math.Abs(n.X - L) <= tol && Math.Abs(n.Y - H) <= tol).First();
-            XNode bottomRight = model.Nodes.Where(n => Math.Abs(n.X - L) <= tol && Math.Abs(n.Y) <= tol).First();
+            XNode topRight = model.Nodes.Values.Where(n => Math.Abs(n.X - L) <= tol && Math.Abs(n.Y - H) <= tol).First();
+            XNode bottomRight = model.Nodes.Values.Where(n => Math.Abs(n.X - L) <= tol && Math.Abs(n.Y) <= tol).First();
             topRight.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = +0.05 });
             bottomRight.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = -0.05 });
-            foreach (XNode node in model.Nodes.Where(n => Math.Abs(n.X) <= tol))
+            foreach (XNode node in model.Nodes.Values.Where(n => Math.Abs(n.X) <= tol))
             {
                 node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = 0.0 });
                 node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = 0.0 });

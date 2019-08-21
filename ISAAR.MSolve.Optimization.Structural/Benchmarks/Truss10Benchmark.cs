@@ -207,8 +207,8 @@ namespace ISAAR.MSolve.Optimization.Structural.Benchmarks
                 for (int i = 0; i < x.Length; i++)
                 {
                     var element_i = (Rod2D)allElements[i].ElementType;
-                    var nodeStart = model.Nodes[0];
-                    var nodeEnd = model.Nodes[1];
+                    var nodeStart = model.NodesDictionary[0];
+                    var nodeEnd = model.NodesDictionary[1];
                     var Length_i = Math.Sqrt(Math.Pow(nodeEnd.X - nodeStart.X, 2) + Math.Pow(nodeEnd.Y - nodeStart.Y, 2));
 
                     weight += element_i.SectionArea * Length_i;

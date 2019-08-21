@@ -208,7 +208,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             // Constraints
             if (rigidBCs)
             {
-                foreach (var node in Model.Nodes.Where(n => Math.Abs(n.Y) <= meshTol))
+                foreach (var node in Model.Nodes.Values.Where(n => Math.Abs(n.Y) <= meshTol))
                 {
                     node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = 0.0 });
                     node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = 0.0 });
@@ -216,8 +216,8 @@ namespace ISAAR.MSolve.XFEM.Tests
             }
             else // flexible
             {
-                XNode bottomLeftNode = Model.Nodes.Where(n => (Math.Abs(n.X) <= meshTol) && (Math.Abs(n.Y) <= meshTol)).First();
-                XNode bottomRightNode = Model.Nodes.Where(
+                XNode bottomLeftNode = Model.Nodes.Values.Where(n => (Math.Abs(n.X) <= meshTol) && (Math.Abs(n.Y) <= meshTol)).First();
+                XNode bottomRightNode = Model.Nodes.Values.Where(
                     n => (Math.Abs(n.X - bottomWidth) <= meshTol) && (Math.Abs(n.Y) <= meshTol)).First();
                 bottomLeftNode.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = 0.0 });
                 bottomLeftNode.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = 0.0 });
@@ -226,7 +226,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             }
 
             // Distribute load amongst top nodes uniformly
-            XNode[] topNodes = Model.Nodes.Where(n => Math.Abs(n.Y - totalHeight) <= meshTol).ToArray();
+            XNode[] topNodes = Model.Nodes.Values.Where(n => Math.Abs(n.Y - totalHeight) <= meshTol).ToArray();
             //double distributedLoad = load / topWidth;
             for (int i = 0; i < topNodes.Length; ++i)
             {
@@ -244,7 +244,7 @@ namespace ISAAR.MSolve.XFEM.Tests
                 (id, x, y, z) => new XNode(id, x, y, z));
 
             // Nodes
-            foreach (XNode node in nodes) Model.Nodes.Add(node);
+            foreach (XNode node in nodes) Model.Nodes.Add(node.ID, node);
 
             // Integration rules
             var integration = new IntegrationForCrackPropagation2D(
@@ -268,7 +268,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             // Mesh usable for crack-mesh interaction
             var boundary = new FilletBoundary();
             Model.Boundary = boundary;
-            mesh = new BidirectionalMesh2D<XNode, XContinuumElement2D>(Model.Nodes, cells, boundary);
+            mesh = new BidirectionalMesh2D<XNode, XContinuumElement2D>(Model.Nodes.Values.ToArray(), cells, boundary);
         }
 
         private void InitializeCrack()

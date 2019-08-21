@@ -27,10 +27,10 @@ namespace ISAAR.MSolve.Tests
 
             HexaSimpleCantileverBeam.MakeCantileverBeam(model, 0, 0, 0, model.NodesDictionary.Count + 1, model.ElementsDictionary.Count + 1, 1);
 
-            model.Loads.Add(new Load() { Amount = -0.25, Node = model.Nodes[16], DOF = StructuralDof.TranslationZ });
-            model.Loads.Add(new Load() { Amount = -0.25, Node = model.Nodes[17], DOF = StructuralDof.TranslationZ });
-            model.Loads.Add(new Load() { Amount = -0.25, Node = model.Nodes[18], DOF = StructuralDof.TranslationZ });
-            model.Loads.Add(new Load() { Amount = -0.25, Node = model.Nodes[19], DOF = StructuralDof.TranslationZ });
+            model.Loads.Add(new Load() { Amount = -0.25, Node = model.NodesDictionary[17], DOF = StructuralDof.TranslationZ });
+            model.Loads.Add(new Load() { Amount = -0.25, Node = model.NodesDictionary[18], DOF = StructuralDof.TranslationZ });
+            model.Loads.Add(new Load() { Amount = -0.25, Node = model.NodesDictionary[19], DOF = StructuralDof.TranslationZ });
+            model.Loads.Add(new Load() { Amount = -0.25, Node = model.NodesDictionary[20], DOF = StructuralDof.TranslationZ });
 
             var solverBuilder = new SkylineSolver.Builder();
             ISolver solver = solverBuilder.BuildSolver(model);

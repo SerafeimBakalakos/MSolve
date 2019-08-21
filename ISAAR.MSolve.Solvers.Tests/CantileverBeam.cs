@@ -144,14 +144,14 @@ namespace ISAAR.MSolve.Solvers.Tests
 
                 // Clamp boundary condition at one end
                 double tol = 1E-10; //TODO: this should be chosen w.r.t. the element size along X
-                foreach (var node in model.Nodes.Where(node => Math.Abs(node.X) <= tol))
+                foreach (var node in model.NodesDictionary.Values.Where(node => Math.Abs(node.X) <= tol))
                 {
                     node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = 0.0 });
                     node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = 0.0 });
                 }
 
                 // Apply concentrated load at the other end
-                Node[] loadedNodes = model.Nodes.Where(node => Math.Abs(node.X - Length) <= tol).ToArray();
+                Node[] loadedNodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.X - Length) <= tol).ToArray();
                 foreach (var node in loadedNodes)
                 {
                     model.Loads.Add(new Load() { Amount = EndPointLoad / loadedNodes.Length, Node = node, DOF = StructuralDof.TranslationY });

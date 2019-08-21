@@ -392,19 +392,19 @@ namespace ISAAR.MSolve.IGA.Tests
 			model.Loads.Add(new Load()
 			{
 				Amount = -1,
-				ControlPoint = model.ControlPoints[9],
+				ControlPoint = model.ControlPointsDictionary[9],
 				DOF = StructuralDof.TranslationZ
 			});
 			model.Loads.Add(new Load()
 			{
 				Amount = -1,
-				ControlPoint = model.ControlPoints[10],
+				ControlPoint = model.ControlPointsDictionary[10],
 				DOF = StructuralDof.TranslationZ
 			});
 			model.Loads.Add(new Load()
 			{
 				Amount = -1,
-				ControlPoint = model.ControlPoints[11],
+				ControlPoint = model.ControlPointsDictionary[11],
 				DOF = StructuralDof.TranslationZ
 			});
 
@@ -460,19 +460,19 @@ namespace ISAAR.MSolve.IGA.Tests
 				model.Loads.Add(new Load()
 				{
 					Amount = loadVector.At(0, i),
-					ControlPoint = model.ControlPoints[indexCP],
+					ControlPoint = model.ControlPointsDictionary[indexCP],
 					DOF = StructuralDof.TranslationX
 				});
 				model.Loads.Add(new Load()
 				{
 					Amount = loadVector.At(0, i + 1),
-					ControlPoint = model.ControlPoints[indexCP],
+					ControlPoint = model.ControlPointsDictionary[indexCP],
 					DOF = StructuralDof.TranslationY
 				});
 				model.Loads.Add(new Load()
 				{
 					Amount = loadVector.At(0, i + 2),
-					ControlPoint = model.ControlPoints[indexCP],
+					ControlPoint = model.ControlPointsDictionary[indexCP],
 					DOF = StructuralDof.TranslationZ
 				});
 			}

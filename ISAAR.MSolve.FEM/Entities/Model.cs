@@ -37,11 +37,10 @@ namespace ISAAR.MSolve.FEM.Entities
         public IList<MassAccelerationLoad> MassAccelerationLoads { get; } = new List<MassAccelerationLoad>();
         public IList<IMassAccelerationHistoryLoad> MassAccelerationHistoryLoads { get; } = new List<IMassAccelerationHistoryLoad>();
 
-        public IList<Node> Nodes => NodesDictionary.Values.ToList();
-        IReadOnlyList<INode> IModel.Nodes => NodesDictionary.Values.ToList();
         public Dictionary<int, Node> NodesDictionary { get; } = new Dictionary<int, Node>();
 
         public int NumElements => ElementsDictionary.Count;
+        public int NumNodes => NodesDictionary.Count;
         public int NumSubdomains => SubdomainsDictionary.Count;
 
         public Dictionary<int, Subdomain> SubdomainsDictionary { get; } = new Dictionary<int, Subdomain>();
@@ -149,9 +148,11 @@ namespace ISAAR.MSolve.FEM.Entities
         }
 
         public IEnumerable<IElement> EnumerateElements() => ElementsDictionary.Values;
+        public IEnumerable<INode> EnumerateNodes() => NodesDictionary.Values;
         public IEnumerable<ISubdomain> EnumerateSubdomains() => SubdomainsDictionary.Values;
 
         public IElement GetElement(int elementID) => ElementsDictionary[elementID];
+        public INode GetNode(int nodeID) => NodesDictionary[nodeID];
         public ISubdomain GetSubdomain(int subdomainID) => SubdomainsDictionary[subdomainID];
 
         //TODO: constraints should not be saved inside the nodes. As it is right now (22/11/2018) the same constraint 

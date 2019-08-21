@@ -62,7 +62,7 @@ namespace ISAAR.MSolve.SamplesConsole
             model.SubdomainsDictionary.Add(subdomainID, new Subdomain(subdomainID));
             BeamBuildingBuilder.MakeBeamBuilding(model, 20, 20, 20, 5, 4, model.NodesDictionary.Count + 1,
                 model.ElementsDictionary.Count + 1, subdomainID, 4, false, false);
-            model.Loads.Add(new Load() { Amount = -100, Node = model.Nodes[21], DOF = StructuralDof.TranslationX });
+            model.Loads.Add(new Load() { Amount = -100, Node = model.NodesDictionary[21], DOF = StructuralDof.TranslationX });
 
             // Solver
             var solverBuilder = new SkylineSolver.Builder();

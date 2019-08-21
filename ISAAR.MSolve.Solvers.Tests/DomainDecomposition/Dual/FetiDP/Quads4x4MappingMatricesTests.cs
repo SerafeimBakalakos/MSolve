@@ -78,16 +78,16 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // 0 ----- 1 ----- 2   2 ---- 3 ----- 4
 
             var cornerNodes = new Dictionary<int, HashSet<INode>>();
-            cornerNodes[0] = new HashSet<INode>(new INode[] { model.Nodes[2], model.Nodes[12] });
-            cornerNodes[1] = new HashSet<INode>(new INode[] { model.Nodes[2], model.Nodes[12], model.Nodes[14] });
-            cornerNodes[2] = new HashSet<INode>(new INode[] { model.Nodes[12], model.Nodes[22] });
-            cornerNodes[3] = new HashSet<INode>(new INode[] { model.Nodes[12], model.Nodes[14], model.Nodes[22] });
+            cornerNodes[0] = new HashSet<INode>(new INode[] { model.NodesDictionary[2], model.NodesDictionary[12] });
+            cornerNodes[1] = new HashSet<INode>(new INode[] { model.NodesDictionary[2], model.NodesDictionary[12], model.NodesDictionary[14] });
+            cornerNodes[2] = new HashSet<INode>(new INode[] { model.NodesDictionary[12], model.NodesDictionary[22] });
+            cornerNodes[3] = new HashSet<INode>(new INode[] { model.NodesDictionary[12], model.NodesDictionary[14], model.NodesDictionary[22] });
             return cornerNodes;
         }
 
         public static HashSet<INode> DefineGlobalCornerNodes(Model model)
         {
-            return new HashSet<INode>(new INode[] { model.Nodes[2], model.Nodes[12], model.Nodes[14], model.Nodes[22] });
+            return new HashSet<INode>(new INode[] { model.NodesDictionary[2], model.NodesDictionary[12], model.NodesDictionary[14], model.NodesDictionary[22] });
         }
 
         public static HashSet<INode> DefineSubdomainCornerNodes(ISubdomain subdomain)
@@ -444,7 +444,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         private static Dictionary<int, INode> GetNodesDictionary(this IModel model)
         {
             var globalNodes = new Dictionary<int, INode>();
-            foreach (INode node in model.Nodes) globalNodes[node.ID] = node;
+            foreach (INode node in model.EnumerateNodes()) globalNodes[node.ID] = node;
             return globalNodes;
         }
 

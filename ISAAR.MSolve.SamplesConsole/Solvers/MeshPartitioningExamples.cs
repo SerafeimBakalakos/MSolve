@@ -169,7 +169,7 @@ namespace ISAAR.MSolve.SamplesConsole.Solvers
 
             // Nodes
             var model = new XModel();
-            foreach (XNode node in nodes) model.Nodes.Add(node);
+            foreach (XNode node in nodes) model.Nodes.Add(node.ID, node);
 
             // Integration rules
             var integration = new IntegrationForCrackPropagation2D(
@@ -193,7 +193,7 @@ namespace ISAAR.MSolve.SamplesConsole.Solvers
             //var boundary = new FilletBoundary();
             IDomain2DBoundary boundary = null;
             model.Boundary = boundary;
-            var mesh = new BidirectionalMesh2D<XNode, XContinuumElement2D>(model.Nodes, cells, boundary);
+            var mesh = new BidirectionalMesh2D<XNode, XContinuumElement2D>(model.Nodes.Values.ToArray(), cells, boundary);
 
             return (model, mesh);
         }

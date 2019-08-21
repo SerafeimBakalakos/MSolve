@@ -195,7 +195,7 @@ namespace ISAAR.MSolve.SamplesConsole.Preprocessing
         /// <param name="signedMagnitude">The magnitude of the prescribed displacement with its sign.</param>
         public void ApplyPrescribedDisplacements(Func<Node, bool> nodeSelector, IDofType freedomDegree, double signedMagnitude)
         {
-            ApplyPrescribedDisplacements(model.Nodes.Where(nodeSelector), freedomDegree, signedMagnitude);
+            ApplyPrescribedDisplacements(model.NodesDictionary.Values.Where(nodeSelector), freedomDegree, signedMagnitude);
         }
 
         /// <summary>
@@ -228,7 +228,7 @@ namespace ISAAR.MSolve.SamplesConsole.Preprocessing
         /// <param name="signedMagnitudeIndividual">The magnitude of the nodal load with its sign.</param>
         public void ApplyNodalLoads(Func<Node, bool> nodeSelector, IDofType freedomDegree, double signedMagnitudeIndividual)
         {
-            ApplyNodalLoads(model.Nodes.Where(nodeSelector), freedomDegree, signedMagnitudeIndividual);
+            ApplyNodalLoads(model.NodesDictionary.Values.Where(nodeSelector), freedomDegree, signedMagnitudeIndividual);
         }
 
         /// <summary>
@@ -252,7 +252,7 @@ namespace ISAAR.MSolve.SamplesConsole.Preprocessing
         /// <param name="signedMagnitudeTotal">The magnitude of the nodal load with its sign.</param>
         public void DistributeNodalLoadEvenly(Func<Node, bool> nodeSelector, IDofType freedomDegree, double signedMagnitudeTotal)
         {
-            DistributeNodalLoadEvenly(model.Nodes.Where(nodeSelector), freedomDegree, signedMagnitudeTotal);
+            DistributeNodalLoadEvenly(model.NodesDictionary.Values.Where(nodeSelector), freedomDegree, signedMagnitudeTotal);
         }
 
         /// <summary>

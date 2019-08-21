@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Analyzers.NonLinear;
 using ISAAR.MSolve.Discretization;
@@ -33,10 +34,10 @@ namespace ISAAR.MSolve.Tests
             m.ElementsDictionary.Add(1, new Element()
             {
                 ID = 1,
-                ElementType = new Beam3DCorotationalQuaternion(m.Nodes, new ElasticMaterial3D() { YoungModulus = 2.1e6, PoissonRatio = 0.2 }, 1,
+                ElementType = new Beam3DCorotationalQuaternion(m.NodesDictionary.Values.ToList(), new ElasticMaterial3D() { YoungModulus = 2.1e6, PoissonRatio = 0.2 }, 1,
                 new BeamSection3D(0.06, 0.0002, 0.00045, 0.000818, 0.05, 0.05))
             });
-            m.ElementsDictionary[1].AddNodes(m.Nodes);
+            m.ElementsDictionary[1].AddNodes(m.NodesDictionary.Values.ToList());
             m.SubdomainsDictionary.Add(1, new Subdomain(1));
             m.SubdomainsDictionary[1].Elements.Add(1, m.ElementsDictionary[1]);
             m.Loads.Add(new Load() { Node = m.NodesDictionary[2], Amount = 100, DOF = StructuralDof.TranslationY });

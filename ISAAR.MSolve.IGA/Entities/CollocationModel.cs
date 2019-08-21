@@ -39,11 +39,7 @@ namespace ISAAR.MSolve.IGA.Entities
         public IList<IMassAccelerationHistoryLoad> MassAccelerationHistoryLoads { get; } =
             new List<IMassAccelerationHistoryLoad>();
 
-        public IList<ControlPoint> ControlPoints => controlPointsDictionary.Values.ToList();
-        IReadOnlyList<INode> IModel.Nodes => controlPointsDictionary.Values.ToList();
 
-
-        public INode GetNode(int nodeID) => controlPointsDictionary[nodeID];
         public Dictionary<int, ControlPoint> ControlPointsDictionary
         {
             get => controlPointsDictionary;
@@ -62,12 +58,10 @@ namespace ISAAR.MSolve.IGA.Entities
         }
 
         public int NumElements => ElementsDictionary.Count;
+        public int NumNodes => ControlPointsDictionary.Count;
         public int NumSubdomains => PatchesDictionary.Count;
 
-        public Dictionary<int, CollocationPatch> PatchesDictionary
-        {
-            get => patchesDictionary;
-        }
+        public Dictionary<int, CollocationPatch> PatchesDictionary => patchesDictionary;
 
         public Table<INode, IDofType, double> Constraints { get; private set; } =
             new Table<INode, IDofType, double>(); //TODOMaria: maybe it's useless in model class
@@ -222,9 +216,11 @@ namespace ISAAR.MSolve.IGA.Entities
         }
 
         public IEnumerable<IElement> EnumerateElements() => ElementsDictionary.Values;
+        public IEnumerable<INode> EnumerateNodes() => controlPointsDictionary.Values;
         public IEnumerable<ISubdomain> EnumerateSubdomains() => PatchesDictionary.Values;
 
         public IElement GetElement(int elementID) => ElementsDictionary[elementID];
+        public INode GetNode(int nodeID) => controlPointsDictionary[nodeID];
         public ISubdomain GetSubdomain(int subdomainID) => PatchesDictionary[subdomainID];
 
         //TODO: constraints should not be saved inside the nodes. As it is right now (22/11/2018) the same constraint 

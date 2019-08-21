@@ -83,7 +83,7 @@ namespace ISAAR.MSolve.Optimization.Structural.Tests.Topology.SIMP
 
             // Clamp boundary condition at left edge
             double tol = 1E-10; //TODO: this should be chosen w.r.t. the element size along X
-            foreach (var node in model.Nodes.Where(node => Math.Abs(node.X) <= tol))
+            foreach (var node in model.NodesDictionary.Values.Where(node => Math.Abs(node.X) <= tol))
             {
                 node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = 0.0 });
                 node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = 0.0 });
@@ -91,7 +91,7 @@ namespace ISAAR.MSolve.Optimization.Structural.Tests.Topology.SIMP
 
             // Apply concentrated load at the bottom right corner
             double load = 1.0;
-            var cornerNode = model.Nodes.Where(
+            var cornerNode = model.NodesDictionary.Values.Where(
                 node => (Math.Abs(node.X - lengthX) <= tol) && (Math.Abs(node.Y - depthY) <= tol));
             Assert.True(cornerNode.Count() == 1);
             model.Loads.Add(new Load() { Amount = load, Node = cornerNode.First(), DOF = StructuralDof.TranslationY });
@@ -229,20 +229,20 @@ namespace ISAAR.MSolve.Optimization.Structural.Tests.Topology.SIMP
 
             // Roller boundary condition at left edge
             double tol = 1E-10; //TODO: this should be chosen w.r.t. the element size along X
-            foreach (var node in model.Nodes.Where(node => Math.Abs(node.X) <= tol))
+            foreach (var node in model.NodesDictionary.Values.Where(node => Math.Abs(node.X) <= tol))
             {
                 node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = 0.0 });
             }
 
             // Roller boundary condition at bottom right corner
-            var bottomRightNode = model.Nodes.Where(
+            var bottomRightNode = model.NodesDictionary.Values.Where(
                 node => (Math.Abs(node.X - lengthX) <= tol) && (Math.Abs(node.Y - depthY) <= tol));
             Assert.True(bottomRightNode.Count() == 1);
             bottomRightNode.First().Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = 0.0 });
 
             // Apply concentrated load at top left corner
             double load = 1.0;
-            var topLeftNode = model.Nodes.Where(
+            var topLeftNode = model.NodesDictionary.Values.Where(
                 node => (Math.Abs(node.X) <= tol) && (Math.Abs(node.Y) <= tol));
             Assert.True(topLeftNode.Count() == 1);
             model.Loads.Add(new Load() { Amount = load, Node = topLeftNode.First(), DOF = StructuralDof.TranslationY });

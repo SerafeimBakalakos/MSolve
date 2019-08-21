@@ -17,7 +17,7 @@ namespace ISAAR.MSolve.FEM.Postprocessing
         public DisplacementField2D(Model model)
         {
             this.model = model;
-            this.data = new Dictionary<Node, double[]>(model.Nodes.Count);
+            this.data = new Dictionary<Node, double[]>(model.NumNodes);
         }
 
         public void FindNodalDisplacements(IVectorView solution)

@@ -83,7 +83,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         public void DefineGlobalBoundaryDofs(HashSet<INode> globalCornerNodes)
         {
-            IEnumerable<INode> globalRemainderNodes = Model.Nodes.Where(node => !globalCornerNodes.Contains(node));
+            IEnumerable<INode> globalRemainderNodes = Model.EnumerateNodes().Where(node => !globalCornerNodes.Contains(node));
             GlobalBoundaryDofs =
                 DofSeparationUtilities.DefineGlobalBoundaryDofs(globalRemainderNodes, Model.GlobalDofOrdering.GlobalFreeDofs); //TODO: This could be reused in some cases
         }

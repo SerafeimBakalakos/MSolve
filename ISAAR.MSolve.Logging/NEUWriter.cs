@@ -93,7 +93,7 @@ namespace ISAAR.MSolve.Logging
             lines.Add("0,1,1,");
 
             var embeddedNodeValues = CalculateEmbeddedNodeValues();
-            foreach (var node in model.Nodes)
+            foreach (var node in model.NodesDictionary.Values)
             {
                 var key = new Tuple<int, IDofType>(node.ID, vectorProperties.DOFType);
                 if (embeddedNodeValues.ContainsKey(key))
@@ -202,7 +202,7 @@ namespace ISAAR.MSolve.Logging
             lines.Add("0,");
             lines.Add(String.Format("{0},{1},1,7,", 0, 0));
             lines.Add("1,1,1,");
-            foreach (var node in model.Nodes)
+            foreach (var node in model.NodesDictionary.Values)
             {
                 double translation = 0;
                 bool nodeExists = model.GlobalDofOrdering.GlobalFreeDofs.TryGetDataOfRow(node, 
@@ -227,7 +227,7 @@ namespace ISAAR.MSolve.Logging
             lines.Add("0,");
             lines.Add(String.Format("{0},{1},1,7,", 0, 0));
             lines.Add("1,1,1,");
-            foreach (var node in model.Nodes)
+            foreach (var node in model.NodesDictionary.Values)
             {
                 double translation = 0;
                 bool nodeExists = model.GlobalDofOrdering.GlobalFreeDofs.TryGetDataOfRow(node, 

@@ -50,7 +50,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
             rightNodes = new HashSet<INode>();
             bottomNodes = new HashSet<INode>();
             topNodes = new HashSet<INode>();
-            foreach (INode node in model.Nodes)
+            foreach (INode node in model.EnumerateNodes())
             {
                 // Top and right edges are prioritized for corner nodes. //TODO: should the corner nodes be handled differently?
                 if (Math.Abs(node.Y - yMax) <= meshTolerance) topNodes.Add(node);

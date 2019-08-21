@@ -56,9 +56,8 @@ namespace ISAAR.MSolve.FEM.Postprocessing
                 outputFile.WriteLine($"<PointData Vectors=\"U\">");
                 outputFile.WriteLine($"<DataArray type=\"Float32\" Name=\"U\" format=\"ascii\" NumberOfComponents=\"3\">");
 
-                for (int i = 0; i < numberOfPoints; i++)
+                foreach (INode node in _model.EnumerateNodes())
                 {
-                    var node = _model.Nodes[i];
                     var dx = (!_model.GlobalDofOrdering.GlobalFreeDofs.Contains(node, StructuralDof.TranslationX))
                             ? 0.0
                             : _solution[_model.GlobalDofOrdering.GlobalFreeDofs[node, StructuralDof.TranslationX]];
@@ -80,8 +79,8 @@ namespace ISAAR.MSolve.FEM.Postprocessing
                 outputFile.WriteLine("<Points>");
                 outputFile.WriteLine("<DataArray type=\"Float32\" NumberOfComponents=\"3\">");
 
-                for (int i = 0; i < numberOfPoints; i++)
-                    outputFile.WriteLine($"{_model.Nodes[i].X} {_model.Nodes[i].Y} {_model.Nodes[i].Z}");
+                foreach (INode node in _model.EnumerateNodes())
+                    outputFile.WriteLine($"{node.X} {node.Y} {node.Z}");
 
                 outputFile.WriteLine("</DataArray>");
                 outputFile.WriteLine("</Points>");

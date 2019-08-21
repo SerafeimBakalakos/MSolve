@@ -180,17 +180,18 @@ namespace ISAAR.MSolve.IGA.Tests
 			};
 			model.PatchesDictionary[0].Thickness = 1;
 
+            ControlPoint[] points = model.ControlPointsDictionary.Values.ToArray();
 			for (int i = 0; i < 100; i++)
 			{
-				var id = model.ControlPoints[i].ID;
+				var id = points[i].ID;
 				model.ControlPointsDictionary[id].Constrains.Add(new Constraint(){DOF = StructuralDof.TranslationX});
 				model.ControlPointsDictionary[id].Constrains.Add(new Constraint() { DOF = StructuralDof.TranslationY });
 				model.ControlPointsDictionary[id].Constrains.Add(new Constraint() { DOF = StructuralDof.TranslationZ });
 			}
 
-			for (int i = model.ControlPoints.Count-100; i < model.ControlPoints.Count; i++)
+			for (int i = model.NumNodes-100; i < model.NumNodes; i++)
 			{
-				var id = model.ControlPoints[i].ID;
+				var id = points[i].ID;
 				model.Loads.Add(new Load()
 				{
 					Amount = 100,
@@ -234,18 +235,19 @@ namespace ISAAR.MSolve.IGA.Tests
 			}, thickness);
 			
 
+            ControlPoint[] points = model.ControlPointsDictionary.Values.ToArray();
 			for (int i = 0; i < 100; i++)
-			{
-				var id = model.ControlPoints[i].ID;
+            {
+				var id = points[i].ID;
 				model.ControlPointsDictionary[id].Constrains.Add(new Constraint(){DOF = StructuralDof.TranslationX});
 				model.ControlPointsDictionary[id].Constrains.Add(new Constraint() { DOF = StructuralDof.TranslationY });
 				model.ControlPointsDictionary[id].Constrains.Add(new Constraint() { DOF = StructuralDof.TranslationZ });
 			}
 
-			for (int i = model.ControlPoints.Count - 100; i < model.ControlPoints.Count; i++)
+			for (int i = model.NumNodes - 100; i < model.NumNodes; i++)
 			{
-				var id = model.ControlPoints[i].ID;
-				model.Loads.Add(new Load()
+				var id = points[i].ID;
+                model.Loads.Add(new Load()
 				{
 					Amount = 100,
 					ControlPoint = model.ControlPointsDictionary[id],
