@@ -55,7 +55,7 @@ namespace ISAAR.MSolve.IGA.Postprocessing
 			var knotDisplacements = new double[knots.GetLength(0), 3];
 
 
-			foreach (var element in _model.Elements)
+			foreach (var element in _model.ElementsDictionary.Values)
 			{
 				var localDisplacements = new double[element.ControlPoints.Count, 3];
 				var counterCP = 0;

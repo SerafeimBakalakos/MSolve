@@ -30,9 +30,9 @@ namespace ISAAR.MSolve.IGA.Postprocessing
 		{
 			var projectiveControlPoints = CalculateProjectiveControlPoints();
 			var numberOfPointsPerElement = 4;
-			var nodes = new double[_model.Elements.Count * numberOfPointsPerElement, 3];
+			var nodes = new double[_model.NumElements * numberOfPointsPerElement, 3];
 			var pointIndex = 0;
-			foreach (var element in _model.Elements)
+			foreach (var element in _model.ElementsDictionary.Values)
 			{
 				//double[,] elementPoints;
 				//switch (shellType)
@@ -67,7 +67,7 @@ namespace ISAAR.MSolve.IGA.Postprocessing
 			var elementConnectivity = CreateTsplineConnectivity();
 
 			var pointDisplacements = new double[nodes.GetLength(0), 3];
-			foreach (var element in _model.Elements)
+			foreach (var element in _model.ElementsDictionary.Values)
 			{
 				var localDisplacements = new double[element.ControlPoints.Count, 3];
 				var counterCP = 0;
@@ -170,9 +170,9 @@ namespace ISAAR.MSolve.IGA.Postprocessing
 
 		private int[,] CreateTsplineConnectivity()
 		{
-			var elementConnectivity = new int[_model.Elements.Count, 4];
+			var elementConnectivity = new int[_model.NumElements, 4];
 			var pointCounter = 0;
-			for (int i = 0; i < _model.Elements.Count; i++)
+			for (int i = 0; i < _model.NumElements; i++)
 			{
 				elementConnectivity[i, 0] = pointCounter++;
 				elementConnectivity[i, 1] = pointCounter++;

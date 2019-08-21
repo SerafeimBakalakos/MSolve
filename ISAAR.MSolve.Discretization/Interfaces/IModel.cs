@@ -12,17 +12,21 @@ namespace ISAAR.MSolve.Discretization.Interfaces
     public interface IModel
     {
         Table<INode, IDofType, double> Constraints { get; }
-        IReadOnlyList<IElement> Elements { get; }
         IGlobalFreeDofOrdering GlobalDofOrdering { get; set; } //TODO: this should not be managed by the model. Update after 6 months: yeap, see the mess in collocation
         IList<IMassAccelerationHistoryLoad> MassAccelerationHistoryLoads { get; }
         IReadOnlyList<INode> Nodes { get; }
+
+        int NumElements { get; }
         int NumSubdomains { get; }
 
         void AssignLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads); //TODOMaria: Here is where the element loads are assembled
         void AssignMassAccelerationHistoryLoads(int timeStep);
         void ConnectDataStructures();
 
+        IEnumerable<IElement> EnumerateElements();
         IEnumerable<ISubdomain> EnumerateSubdomains();
+
+        IElement GetElement(int elementID);
         ISubdomain GetSubdomain(int subdomainID);
 
         ////TODO: This circumvents the covariance issue between Dictionary<int, Node> and Dictionary<int, INode>. Is there a more elegant solution?

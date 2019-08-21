@@ -133,7 +133,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
                         // Create the element
                         XContinuumElement2D element = elementFactories[s].CreateElement(e, cell.CellType, cell.Vertices);
                         elements[e] = element;
-                        model.Elements.Add(element);
+                        model.Elements.Add(e, element);
                         model.Subdomains[s].Elements.Add(element);
                     }
                 }

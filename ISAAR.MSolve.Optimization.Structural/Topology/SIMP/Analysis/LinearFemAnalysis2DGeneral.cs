@@ -39,8 +39,8 @@ namespace ISAAR.MSolve.Optimization.Structural.Topology.SIMP.Analysis
             this.solver = solver;
 
             // Elements
-            IList<Element> modelElements = model.Elements;
-            NumElements = modelElements.Count;
+            IList<Element> modelElements = model.ElementsDictionary.Values.ToArray();
+            NumElements = model.NumElements;
             elementTypes = new ContinuumElement2D[NumElements];
             elementWrappers = new IElement[NumElements];
             penalizers = new ScalingDofEnumerator[NumElements];

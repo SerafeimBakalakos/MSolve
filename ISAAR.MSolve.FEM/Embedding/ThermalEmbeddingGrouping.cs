@@ -50,7 +50,7 @@ namespace ISAAR.MSolve.FEM.Embedding
                             elType.EmbeddedNodes.Add(embeddedNode);
 
                         // Update embedded node information for elements that are not inside the embedded group but contain an embedded node.
-                        foreach (var element in model.Elements.Except(EmbeddedGroup))
+                        foreach (var element in model.ElementsDictionary.Values.Except(EmbeddedGroup))
                             if (element.ElementType is IEmbeddedElement && element.Nodes.Contains(embeddedNode.Node))
                             {
                                 var currentElementType = (IEmbeddedElement)element.ElementType;

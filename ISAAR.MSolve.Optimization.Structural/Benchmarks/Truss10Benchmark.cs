@@ -203,7 +203,7 @@ namespace ISAAR.MSolve.Optimization.Structural.Benchmarks
             private double[] EvaluateObjective(double[] x, Model model)
             {
                 double weight = 0;
-                IList<Element> allElements = model.Elements;
+                IList<Element> allElements = model.ElementsDictionary.Values.ToArray();
                 for (int i = 0; i < x.Length; i++)
                 {
                     var element_i = (Rod2D)allElements[i].ElementType;
@@ -242,7 +242,7 @@ namespace ISAAR.MSolve.Optimization.Structural.Benchmarks
                 double[] stresses = new double[10];
 
                 int counter = 0;
-                foreach (var element in model.Elements)
+                foreach (var element in model.ElementsDictionary.Values)
                 {
                     stresses[counter++] = rodResults.AxialRod2DStress(element);
                 }

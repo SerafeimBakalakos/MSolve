@@ -31,7 +31,7 @@ namespace ISAAR.MSolve.FEM.Postprocessing
         private int[] conn = new int[] { 6, 7, 4, 5, 2, 3, 0, 1 };
         private void WriteParaviewFile3D()
         {
-            var elements = _model.Elements.Where(e=>e.ElementType is Hexa8NonLinear).ToList();
+            var elements = _model.ElementsDictionary.Values.Where(e=>e.ElementType is Hexa8NonLinear).ToList();
             var nodes = new List<INode>();
             elements.ForEach(e => nodes.AddRange(e.Nodes));
             nodes = nodes.Distinct().ToList();
@@ -90,8 +90,8 @@ namespace ISAAR.MSolve.FEM.Postprocessing
 
                 for (int i = 0; i < numberOfCells; i++)
                 {
-                    for (int j = 0; j < _model.Elements[i].Nodes.Count; j++)
-                        outputFile.Write($"{_model.Elements[i].Nodes[conn[j]].ID} ");
+                    for (int j = 0; j < _model.GetElement(i).Nodes.Count; j++)
+                        outputFile.Write($"{_model.GetElement(i).Nodes[conn[j]].ID} ");
                     outputFile.WriteLine("");
                 }
 

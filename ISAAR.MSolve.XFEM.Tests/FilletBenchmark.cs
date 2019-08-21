@@ -261,7 +261,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             {
                 XContinuumElement2D element = factory.CreateElement(e, CellType.Quad4, elementConnectivities[e].Vertices);
                 cells[e] = element;
-                Model.Elements.Add(element);
+                Model.Elements.Add(e, element);
                 Model.Subdomains[subdomainID].Elements.Add(Model.Elements[e]);
             }
 

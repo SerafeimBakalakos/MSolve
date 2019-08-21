@@ -22,8 +22,7 @@ namespace ISAAR.MSolve.XFEM.Entities
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();
 
-        IReadOnlyList<IElement> IModel.Elements => Elements;
-        public List<IXFiniteElement> Elements { get; } = new List<IXFiniteElement>();
+        public Dictionary<int, IXFiniteElement> Elements { get; } = new Dictionary<int, IXFiniteElement>();
 
         public IGlobalFreeDofOrdering GlobalDofOrdering { get; set; }
 
@@ -34,6 +33,7 @@ namespace ISAAR.MSolve.XFEM.Entities
         IReadOnlyList<INode> IModel.Nodes => Nodes;
         public List<XNode> Nodes { get; } = new List<XNode>();
 
+        public int NumElements => Elements.Count;
         public int NumSubdomains => Subdomains.Count();
 
         public Dictionary<int, XSubdomain> Subdomains { get; } = new Dictionary<int, XSubdomain>();
@@ -65,8 +65,10 @@ namespace ISAAR.MSolve.XFEM.Entities
             RemoveInactiveNodalLoads();
         }
 
+        public IEnumerable<IElement> EnumerateElements() => Elements.Values;
         public IEnumerable<ISubdomain> EnumerateSubdomains() => Subdomains.Values;
 
+        public IElement GetElement(int elementID) => Elements[elementID];
         public ISubdomain GetSubdomain(int subdomainID) => Subdomains[subdomainID];
 
         private void AssignConstraints()
@@ -95,7 +97,7 @@ namespace ISAAR.MSolve.XFEM.Entities
 
         private void BuildElementDictionaryOfEachNode()
         {
-            foreach (IXFiniteElement element in Elements)
+            foreach (IXFiniteElement element in Elements.Values)
             {
                 foreach (XNode node in element.Nodes) node.ElementsDictionary[element.ID] = element;
             }

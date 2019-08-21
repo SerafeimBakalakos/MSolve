@@ -84,13 +84,13 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             {
                 XContinuumElement2D element = factory.CreateElement(e, CellType.Quad4, connectivity[e]);
                 cells[e] = element;
-                model.Elements.Add(element);
+                model.Elements.Add(e, element);
                 model.Subdomains[subdomainID].Elements.Add(model.Elements[e]);
             }
 
             // Mesh
             var mesh = new BidirectionalMesh2D<XNode, XContinuumElement2D>(model.Nodes,
-                model.Elements.Select(e => (XContinuumElement2D)e).ToArray(), beamBoundary);
+                model.Elements.Values.Select(e => (XContinuumElement2D)e).ToArray(), beamBoundary);
 
             // Boundary conditions
             model.Nodes[0].Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = 0.0 });
@@ -125,13 +125,13 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             {
                 XContinuumElement2D element = factory.CreateElement(e, CellType.Quad4, elementConnectivities[e].Vertices);
                 cells[e] = element;
-                model.Elements.Add(element);
+                model.Elements.Add(e, element);
                 model.Subdomains[subdomainID].Elements.Add(model.Elements[e]);
             }
 
             // Mesh
             var mesh = new BidirectionalMesh2D<XNode, XContinuumElement2D>(model.Nodes,
-                model.Elements.Select(e => (XContinuumElement2D)e).ToArray(), beamBoundary);
+                model.Elements.Values.Select(e => (XContinuumElement2D)e).ToArray(), beamBoundary);
 
             // Boundary conditions
             double tol = 1E-6;

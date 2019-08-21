@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         {
             Dictionary<int, Element> boundaryElements = new Dictionary<int, Element>();
 
-            foreach(Element element in model.Elements)
+            foreach (Element element in model.ElementsDictionary.Values)
             {
                 bool containsBoundaryNode = false;
 

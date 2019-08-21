@@ -162,7 +162,7 @@ namespace ISAAR.MSolve.SamplesConsole.FEM
             try
             {
                 Node[] nodes = model.Nodes.ToArray();
-                ICell<Node>[] elements = model.Elements.Select(element => (ICell<Node>)element).ToArray();
+                ICell<Node>[] elements = model.EnumerateElements().Select(element => (ICell<Node>)element).ToArray();
                 var mesh = new VtkMesh<Node>(nodes, elements);
                 using (var writer = new VtkFileWriter(workingDirectory + "\\mesh.vtk"))
                 {

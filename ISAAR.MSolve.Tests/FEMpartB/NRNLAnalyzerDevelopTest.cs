@@ -83,7 +83,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB
             var linearSystems = solver.LinearSystems; // elegxos me model.subdomainsDictionary[1]
             ProblemStructural provider = new ProblemStructural(model, solver);
             var subdomainUpdaters = new Dictionary<int, NonLinearSubdomainUpdaterWithInitialConditions>(1);
-            subdomainUpdaters.Add( 1 ,new NonLinearSubdomainUpdaterWithInitialConditions(model.SubdomainsDictionary[0]));
+            subdomainUpdaters.Add( 1 ,new NonLinearSubdomainUpdaterWithInitialConditions(model.SubdomainsDictionary[1]));
             var increments = 1;
 
             var childAnalyzer = new MicrostructureBvpNRNLAnalyzer(model,solver, subdomainUpdaters,  provider, increments, uInitialFreeDOFDisplacementsPerSubdomain,
@@ -140,7 +140,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB
             ProblemStructural provider2 = new ProblemStructural(model, solver2);
             //var linearSystemsArray = new[] { linearSystems[1] };
             var subdomainUpdaters2 = new Dictionary<int, NonLinearSubdomainUpdaterWithInitialConditions>(1);
-            subdomainUpdaters2.Add(1, new NonLinearSubdomainUpdaterWithInitialConditions(model.SubdomainsDictionary[0]));
+            subdomainUpdaters2.Add(1, new NonLinearSubdomainUpdaterWithInitialConditions(model.SubdomainsDictionary[1]));
             //var subdomainMappers = new[] { new SubdomainGlobalMapping(model.Subdomains[0]) };
             var increments2 = 1;
 

@@ -34,8 +34,8 @@ namespace ISAAR.MSolve.Optimization.Structural.Topology.SIMP.Filtering
             this.filterAreaRadius = filterAreaRadius;
 
             // Cast the continuum elements. //TODO: this process is already performed in LinearFemAnalysis2DGeneral.
-            IList<Element> modelElements = model.Elements;
-            numElements = modelElements.Count;
+            IList<Element> modelElements = model.ElementsDictionary.Values.ToArray();
+            numElements = model.NumElements;
             elements = new ContinuumElement2D[numElements];
             for (int e = 0; e < numElements; ++e)
             {

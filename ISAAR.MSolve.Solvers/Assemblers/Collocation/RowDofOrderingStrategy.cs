@@ -12,9 +12,9 @@ namespace ISAAR.MSolve.Solvers.Assemblers.Collocation
 	public class RowDofOrderingStrategy : IAsymmetricDofOrderingStrategy
 	{
 		public (int numGlobalFreeDofs, DofTable globalFreeDofs) OrderGlobalDofs(IStructuralAsymmetricModel model)
-			=> OrderFreeDofsOfElementSet(model.Elements, model.Constraints);
+			=> OrderFreeDofsOfElementSet(model.EnumerateElements(), model.Constraints);
 
-        private (int numGlobalFreeDofs, DofTable globalFreeDofs) OrderFreeDofsOfElementSet(IReadOnlyList<IElement> elements, Table<INode, IDofType, double> constraints)
+        private (int numGlobalFreeDofs, DofTable globalFreeDofs) OrderFreeDofsOfElementSet(IEnumerable<IElement> elements, Table<INode, IDofType, double> constraints)
         {
             var freeDofs = new DofTable();
             int dofCounter = 0;

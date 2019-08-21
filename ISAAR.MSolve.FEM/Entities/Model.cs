@@ -27,8 +27,6 @@ namespace ISAAR.MSolve.FEM.Entities
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();//TODOMaria: maybe it's useless in model class
 
-        IReadOnlyList<IElement> IModel.Elements => ElementsDictionary.Values.ToList();
-        public IList<Element> Elements => ElementsDictionary.Values.ToList();
         public Dictionary<int, Element> ElementsDictionary { get; } = new Dictionary<int, Element>();
 
         public IList<ElementMassAccelerationHistoryLoad> ElementMassAccelerationHistoryLoads { get; } 
@@ -43,6 +41,7 @@ namespace ISAAR.MSolve.FEM.Entities
         IReadOnlyList<INode> IModel.Nodes => NodesDictionary.Values.ToList();
         public Dictionary<int, Node> NodesDictionary { get; } = new Dictionary<int, Node>();
 
+        public int NumElements => ElementsDictionary.Count;
         public int NumSubdomains => SubdomainsDictionary.Count;
 
         public Dictionary<int, Subdomain> SubdomainsDictionary { get; } = new Dictionary<int, Subdomain>();
@@ -149,8 +148,10 @@ namespace ISAAR.MSolve.FEM.Entities
             //AssignLoads();
         }
 
+        public IEnumerable<IElement> EnumerateElements() => ElementsDictionary.Values;
         public IEnumerable<ISubdomain> EnumerateSubdomains() => SubdomainsDictionary.Values;
 
+        public IElement GetElement(int elementID) => ElementsDictionary[elementID];
         public ISubdomain GetSubdomain(int subdomainID) => SubdomainsDictionary[subdomainID];
 
         //TODO: constraints should not be saved inside the nodes. As it is right now (22/11/2018) the same constraint 

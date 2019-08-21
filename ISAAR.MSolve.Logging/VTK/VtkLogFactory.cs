@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.Logging.VTK
             try
             {
                 Node[] nodes = model.Nodes.ToArray();
-                ICell<Node>[] elements = model.Elements.Select(element => (ICell<Node>)element).ToArray();
+                ICell<Node>[] elements = model.ElementsDictionary.Values.Select(element => (ICell<Node>)element).ToArray();
                 this.vtkMesh = new VtkMesh<Node>(nodes, elements);
             }
             catch (InvalidCastException ex)

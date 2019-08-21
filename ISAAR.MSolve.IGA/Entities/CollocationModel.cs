@@ -32,8 +32,6 @@ namespace ISAAR.MSolve.IGA.Entities
         public IList<Cluster> Clusters => ClustersDictionary.Values.ToList();
         public Dictionary<int, Cluster> ClustersDictionary { get; } = new Dictionary<int, Cluster>();
 
-        IReadOnlyList<IElement> IModel.Elements => ElementsDictionary.Values.ToList();
-        public IList<ICollocationElement> Elements => ElementsDictionary.Values.ToList();
         public Dictionary<int, ICollocationElement> ElementsDictionary => elementsDictionary;
 
         public IList<Load> Loads { get; private set; } = new List<Load>();
@@ -63,7 +61,8 @@ namespace ISAAR.MSolve.IGA.Entities
             set { numberOfInterfaces = value; }
         }
 
-        public int NumSubdomains => PatchesDictionary.Count();
+        public int NumElements => ElementsDictionary.Count;
+        public int NumSubdomains => PatchesDictionary.Count;
 
         public Dictionary<int, CollocationPatch> PatchesDictionary
         {
@@ -222,8 +221,10 @@ namespace ISAAR.MSolve.IGA.Entities
             RemoveInactiveNodalLoads();
         }
 
+        public IEnumerable<IElement> EnumerateElements() => ElementsDictionary.Values;
         public IEnumerable<ISubdomain> EnumerateSubdomains() => PatchesDictionary.Values;
 
+        public IElement GetElement(int elementID) => ElementsDictionary[elementID];
         public ISubdomain GetSubdomain(int subdomainID) => PatchesDictionary[subdomainID];
 
         //TODO: constraints should not be saved inside the nodes. As it is right now (22/11/2018) the same constraint 

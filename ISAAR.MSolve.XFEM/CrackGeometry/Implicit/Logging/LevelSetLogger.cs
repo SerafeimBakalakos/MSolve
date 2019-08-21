@@ -5,6 +5,7 @@ using ISAAR.MSolve.XFEM.Entities;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.XFEM.Output.VTK;
 using ISAAR.MSolve.Logging.VTK;
+using System.Linq;
 
 //TODO: Decide between 1) push observer, 2) pull observer with the observable injected in observer.Observe(observarble) and  
 //      possibly generics for specific concrete observables or 3) pull observer with the observable injected during construction,
@@ -24,7 +25,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.Logging
             this.model = model;
             this.lsm = lsm;
             this.outputDirectory = outputDirectory;
-            this.vtkMesh = new VtkMesh<XNode>(model.Nodes, model.Elements);
+            this.vtkMesh = new VtkMesh<XNode>(model.Nodes, model.Elements.Values.ToArray());
         }
 
         // This could be handled better by having LSM storing the crack path (which is all around useful). However having an

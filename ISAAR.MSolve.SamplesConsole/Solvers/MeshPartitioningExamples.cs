@@ -186,7 +186,7 @@ namespace ISAAR.MSolve.SamplesConsole.Solvers
             {
                 XContinuumElement2D element = factory.CreateElement(e, CellType.Quad4, elementConnectivities[e].Vertices);
                 cells[e] = element;
-                model.Elements.Add(element);
+                model.Elements.Add(e, element);
             }
 
             // Mesh usable for crack-mesh interaction

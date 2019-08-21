@@ -121,7 +121,7 @@ namespace ISAAR.MSolve.Logging
         {
             var embeddedNodeValues = new Dictionary<Tuple<int, IDofType>, double>();
 
-            foreach (var element in model.Elements)
+            foreach (var element in model.ElementsDictionary.Values)
             {
                 IEmbeddedElement e = element.ElementType as IEmbeddedElement;
                 if (e == null) continue;
