@@ -101,7 +101,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int id = subdomain.ID;
-                int[] freeToGlobalDofs = model.GlobalDofOrdering.GetSubdomainToGlobalMap(subdomain);
+                int[] freeToGlobalDofs = model.GlobalDofOrdering.MapSubdomainToGlobalDofs(subdomain);
                 int[] remainderToFreeDofs = dofSeparator.RemainderDofIndices[id];
                 IVectorView remainderDisplacements = subdomainRemainderDisplacements[id]; //TODO: benchmark the performance if this was concrete Vector
 
@@ -140,7 +140,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             foreach (var subdomain in model.EnumerateSubdomains())
             {
                 int id = subdomain.ID;
-                int[] subdomainToGlobalDofs = model.GlobalDofOrdering.GetSubdomainToGlobalMap(subdomain);
+                int[] subdomainToGlobalDofs = model.GlobalDofOrdering.MapSubdomainToGlobalDofs(subdomain);
                 int[] remainderToSubdomainDofs = dofSeparator.RemainderDofIndices[id];
                 int[] cornerToSubdomainDofs = dofSeparator.CornerDofIndices[id];
                 IVectorView freeDisplacements = subdomainDisplacements[id]; //TODO: benchmark the performance if this was concrete Vector
@@ -181,7 +181,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int id = subdomain.ID;
-                int[] subdomainFreeToGlobalDofs = model.GlobalDofOrdering.GetSubdomainToGlobalMap(subdomain);
+                int[] subdomainFreeToGlobalDofs = model.GlobalDofOrdering.MapSubdomainToGlobalDofs(subdomain);
                 IVectorView forces = subdomainForces[id]; //TODO: benchmark the performance if this was concrete Vector
 
                 for (int i = 0; i < forces.Length; ++i)

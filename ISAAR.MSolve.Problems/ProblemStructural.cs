@@ -203,7 +203,7 @@ namespace ISAAR.MSolve.Problems
 
                 foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
-                    int[] subdomainToGlobalDofs = model.GlobalDofOrdering.GetSubdomainToGlobalMap(subdomain);
+                    int[] subdomainToGlobalDofs = model.GlobalDofOrdering.MapSubdomainToGlobalDofs(subdomain);
                     foreach ((INode node, IDofType dofType, int subdomainDofIdx) in subdomain.FreeDofOrdering.FreeDofs)
                     {
                         int globalDofIdx = subdomainToGlobalDofs[subdomainDofIdx];

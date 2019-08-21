@@ -28,6 +28,6 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         void ExtractVectorSubdomainFromGlobal(ISubdomain subdomain, IVectorView globalVector, IVector subdomainVector);
 
         //TODO: the returned array should be readonly
-        int[] GetSubdomainToGlobalMap(ISubdomain subdomain);
+        int[] MapSubdomainToGlobalDofs(ISubdomain subdomain);
     }
 }

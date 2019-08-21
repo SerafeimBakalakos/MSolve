@@ -60,7 +60,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         }
 
         //TODO: Using this map is a waste of computational power: map[i] = i
-        public int[] GetSubdomainToGlobalMap(ISubdomain subdomain)
+        public int[] MapSubdomainToGlobalDofs(ISubdomain subdomain)
         {
             Debug.Assert(subdomain == this.subdomain);
             return subdomainToGlobalDofMap;

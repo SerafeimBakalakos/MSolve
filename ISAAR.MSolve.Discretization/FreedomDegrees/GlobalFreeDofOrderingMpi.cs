@@ -198,7 +198,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
                 $"Process {procs.OwnRank}: This process does not have access to subdomain {subdomain.ID})");
         }
 
-        public int[] GetSubdomainToGlobalMap(ISubdomain subdomain)
+        public int[] MapSubdomainToGlobalDofs(ISubdomain subdomain)
         {
             if (procs.IsMasterProcess) return subdomainToGlobalDofMaps[subdomain.ID];
             else

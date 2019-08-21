@@ -51,7 +51,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         public ISubdomainFreeDofOrdering GetSubdomainDofOrdering(ISubdomain subdomain)
             => SubdomainDofOrderings[subdomain];
 
-        public int[] GetSubdomainToGlobalMap(ISubdomain subdomain)
+        public int[] MapSubdomainToGlobalDofs(ISubdomain subdomain)
 		{
 			throw new NotImplementedException();
 		}

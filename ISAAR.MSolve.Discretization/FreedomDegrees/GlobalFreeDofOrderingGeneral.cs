@@ -28,6 +28,6 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
 
         public ISubdomainFreeDofOrdering GetSubdomainDofOrdering(ISubdomain subdomain) => subdomainDofOrderings[subdomain.ID];
 
-        public int[] GetSubdomainToGlobalMap(ISubdomain subdomain) => subdomainToGlobalDofMaps[subdomain.ID];
+        public int[] MapSubdomainToGlobalDofs(ISubdomain subdomain) => subdomainToGlobalDofMaps[subdomain.ID];
     }
 }
