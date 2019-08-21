@@ -157,13 +157,13 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
                 IReadOnlyList<ISubdomain> subdomains = model.EnumerateSubdomains().ToArray();
                 var subdomainNodes = new Dictionary<ISubdomain, Dictionary<INode, int>>();
                 int numNodes = 0;
-                foreach (ISubdomain subdomain in subdomains) numNodes += subdomain.Nodes.Count;
+                foreach (ISubdomain subdomain in subdomains) numNodes += subdomain.NumNodes;
                 writer.WriteLine($"POINTS {numNodes} double");
                 int nodeCounter = 0;
                 foreach (ISubdomain subdomain in subdomains)
                 {
                     subdomainNodes[subdomain] = new Dictionary<INode, int>();
-                    foreach (INode node in subdomain.Nodes)
+                    foreach (INode node in subdomain.EnumerateNodes())
                     {
                         writer.WriteLine($"{node.X} {node.Y} {node.Z}");
                         subdomainNodes[subdomain][node] = nodeCounter++;
@@ -214,7 +214,7 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
                 if (shuffleSubdomainColors) ShuffleFischerYates(subdomainColors);
                 for (int s = 0; s < subdomains.Count; ++s)
                 {
-                    foreach (var node in subdomains[s].Nodes)
+                    foreach (var node in subdomains[s].EnumerateNodes())
                     {
                         writer.WriteLine(subdomainColors[s]);
                     }

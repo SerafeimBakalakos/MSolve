@@ -10,8 +10,6 @@ namespace ISAAR.MSolve.XFEM.Entities
 {
     public class XSubdomain : ISubdomain
     {
-        private readonly List<XNode> nodes = new List<XNode>();
-
         public XSubdomain(int id)
         {
             this.ID = id;
@@ -22,7 +20,7 @@ namespace ISAAR.MSolve.XFEM.Entities
         public ISubdomainConstrainedDofOrdering ConstrainedDofOrdering { get ; set; }
         public ISubdomainFreeDofOrdering FreeDofOrdering { get; set; }
 
-        public Dictionary<int, IXFiniteElement> Elements { get; } = new Dictionary<int, IXFiniteElement>();
+        public SortedDictionary<int, IXFiniteElement> Elements { get; } = new SortedDictionary<int, IXFiniteElement>();
 
         public Vector Forces { get; set; } //TODO: this doesn't belong here
 
@@ -31,10 +29,10 @@ namespace ISAAR.MSolve.XFEM.Entities
         public bool StiffnessModified { get; set; } = true; // At first it is modified
         public bool ConnectivityModified { get; set; } = true; // At first it is modified
 
-        IReadOnlyList<INode> ISubdomain.Nodes => nodes;
-        public IReadOnlyList<XNode> Nodes => nodes;
+        public Dictionary<int, XNode> Nodes { get; } = new Dictionary<int, XNode>();
 
         public int NumElements => Elements.Count;
+        public int NumNodes => Nodes.Count;
 
         public double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor)
         {
@@ -65,24 +63,22 @@ namespace ISAAR.MSolve.XFEM.Entities
 
         public void DefineNodesFromElements()
         {
-            nodes.Clear();
-            var nodeComparer = Comparer<XNode>.Create((XNode node1, XNode node2) => node1.ID - node2.ID);
-            var nodeSet = new SortedSet<XNode>(nodeComparer);
+            Nodes.Clear();
             foreach (IXFiniteElement element in Elements.Values)
             {
-                foreach (XNode node in element.Nodes) nodeSet.Add(node);
+                foreach (XNode node in element.Nodes) Nodes[node.ID] = node;
             }
-            nodes.AddRange(nodeSet);
         }
 
         public IEnumerable<IElement> EnumerateElements() => Elements.Values;
+        public IEnumerable<INode> EnumerateNodes() => Nodes.Values;
 
         public void ExtractConstraintsFromGlobal(Table<INode, IDofType, double> globalConstraints)
         {
             //TODO: perhaps it is more efficient to traverse the global constraints instead of the subdomain's nodes, provided
             //      the latter are stored as a set. 
             //TODO: the next could be a Table method: Table.KeepDataOfRows(IEnumerable<TRow> rows)
-            foreach (XNode node in Nodes)
+            foreach (INode node in EnumerateNodes())
             {
                 bool isNodeConstrained = globalConstraints.TryGetDataOfRow(node,
                     out IReadOnlyDictionary<IDofType, double> constraintsOfNode);
@@ -97,6 +93,7 @@ namespace ISAAR.MSolve.XFEM.Entities
         }
 
         public IElement GetElement(int elementID) => Elements[elementID];
+        public INode GetNode(int nodeID) => Nodes[nodeID];
 
         public IVector GetRhsFromSolution(IVectorView solution, IVectorView dSolution)
         {

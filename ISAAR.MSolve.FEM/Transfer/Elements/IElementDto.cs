@@ -8,6 +8,6 @@ namespace ISAAR.MSolve.FEM.Transfer.Elements
 {
     public interface IElementDto
     {
-        Element Deserialize(Dictionary<int, Node> allNodes, Dictionary<int, IFiniteElementMaterial> allMaterials);
+        Element Deserialize(IReadOnlyDictionary<int, Node> allNodes, Dictionary<int, IFiniteElementMaterial> allMaterials);
     }
 }

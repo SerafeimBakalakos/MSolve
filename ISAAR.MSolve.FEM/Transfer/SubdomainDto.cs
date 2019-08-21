@@ -25,18 +25,15 @@ namespace ISAAR.MSolve.FEM.Transfer
             this.id = subdomain.ID;
 
             // Nodes
-            IReadOnlyList<Node> actualNodes = subdomain.Nodes;
-            this.nodes = new NodeDto[actualNodes.Count];
-            for (int n = 0; n < actualNodes.Count; ++n) this.nodes[n] = new NodeDto(actualNodes[n]);
+            this.nodes = new NodeDto[subdomain.NumNodes];
+            int n = 0;
+            foreach (Node node in subdomain.Nodes.Values) this.nodes[n++] = new NodeDto(node);
 
             // Elements
             this.elements = new IElementDto[subdomain.NumElements];
             var elementSerializer = new ElementSerializer();
             int e = 0;
-            foreach (Element element in subdomain.Elements.Values)
-            {
-                this.elements[e++] = elementSerializer.Serialize(element);
-            }
+            foreach (Element element in subdomain.Elements.Values) this.elements[e++] = elementSerializer.Serialize(element);
 
             // Materials
             // More than 1 elements may have the same material properties. First gather the unique ones.
@@ -58,7 +55,7 @@ namespace ISAAR.MSolve.FEM.Transfer
             // Displacements
             var dofSerializer = new StandardDofSerializer();
             var displacements = new List<NodalDisplacementDto>();
-            foreach (Node node in actualNodes)
+            foreach (Node node in subdomain.Nodes.Values)
             {
                 foreach (Constraint constraint in node.Constraints)
                 {
@@ -75,12 +72,10 @@ namespace ISAAR.MSolve.FEM.Transfer
             var subdomain = new Subdomain(this.id);
 
             // Nodes
-            var allNodes = new Dictionary<int, Node>();
             foreach (NodeDto n in this.nodes)
             {
                 Node node = n.Deserialize();
-                subdomain.Nodes.Add(node);
-                allNodes[node.ID] = node;
+                subdomain.Nodes[node.ID] = node;
             }
 
             // Materials
@@ -90,13 +85,13 @@ namespace ISAAR.MSolve.FEM.Transfer
             // Elements
             foreach (IElementDto e in this.elements)
             {
-                Element element = e.Deserialize(allNodes, allMaterials);
+                Element element = e.Deserialize(subdomain.Nodes, allMaterials);
                 subdomain.Elements.Add(element.ID, element);
             }
 
             // Displacements
             var dofSerializer = new StandardDofSerializer();
-            foreach (NodalDisplacementDto d in this.nodalDisplacements) d.Deserialize(allNodes, dofSerializer);
+            foreach (NodalDisplacementDto d in this.nodalDisplacements) d.Deserialize(subdomain.Nodes, dofSerializer);
 
             return subdomain;
         }

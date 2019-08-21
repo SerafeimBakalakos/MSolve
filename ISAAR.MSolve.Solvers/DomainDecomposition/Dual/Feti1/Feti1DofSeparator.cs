@@ -34,7 +34,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
         {
             int s = subdomain.ID;
             (int[] internalDofIndices, int[] boundaryDofIndices, (INode node, IDofType dofType)[] boundaryDofConnectivities)
-                = DofSeparationUtilities.SeparateBoundaryInternalDofs(subdomain.Nodes, subdomain.FreeDofOrdering.FreeDofs);
+                = DofSeparationUtilities.SeparateBoundaryInternalDofs(subdomain.EnumerateNodes(), subdomain.FreeDofOrdering.FreeDofs);
 
             InternalDofIndices[s] = internalDofIndices;
             BoundaryDofIndices[s] = boundaryDofIndices;

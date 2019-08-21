@@ -86,11 +86,14 @@ namespace ISAAR.MSolve.IGA
                 };
                 
                 for (int j = 0; j < ControlPointIDsDictionary[patchID].Length; j++)
-                    ((List<ControlPoint>)patch.ControlPoints).Add(ControlPointsDictionary[ControlPointIDsDictionary[patchID][j]]);
+                {
+                    ControlPoint cp = ControlPointsDictionary[ControlPointIDsDictionary[patchID][j]];
+                    patch.ControlPoints[cp.ID] = cp; 
+                }
                 patch.CreatePatchData();
                 foreach (var element in patch.Elements.Values)
                     Model.ElementsDictionary.Add(counterElementID++, element);
-                foreach (var controlPoint in patch.ControlPoints)
+                foreach (var controlPoint in patch.ControlPoints.Values)
                     Model.ControlPointsDictionary.Add(counterCPID++, controlPoint);
 
                 this.Model.PatchesDictionary.Add(patchID, patch);
@@ -150,7 +153,8 @@ namespace ISAAR.MSolve.IGA
 
                             for (int m = 0; m < controlPointIDs[i,j,k].Length; m++)
                             {
-                                ((List<ControlPoint>)patch.ControlPoints).Add(ControlPointsDictionary[ControlPointIDsDictionary[patchID][controlPointIDs[i, j, k][m]]]);
+                                ControlPoint cp = ControlPointsDictionary[ControlPointIDsDictionary[patchID][controlPointIDs[i, j, k][m]]];
+                                patch.ControlPoints[cp.ID] = cp;
                             }
                             patch.CreatePatchData();
                             this.Model.PatchesDictionary.Add(counterPatch++, patch);
@@ -435,11 +439,14 @@ namespace ISAAR.MSolve.IGA
 		        };
 
 		        for (int j = 0; j < ControlPointIDsDictionary[patchID].Length; j++)
-			        ((List<ControlPoint>)patch.ControlPoints).Add(ControlPointsDictionary[ControlPointIDsDictionary[patchID][j]]);
+                {
+                    ControlPoint cp = ControlPointsDictionary[ControlPointIDsDictionary[patchID][j]];
+                    patch.ControlPoints[cp.ID] = cp;
+                }
 		        patch.CreateCollocationPatchData();
 		        foreach (var element in patch.Elements.Values)
 			        CollocationModel.ElementsDictionary.Add(counterElementID++, element);
-		        foreach (var controlPoint in patch.ControlPoints)
+		        foreach (var controlPoint in patch.ControlPoints.Values)
                     CollocationModel.ControlPointsDictionary.Add(counterCPID++, controlPoint);
 
 		        this.CollocationModel.PatchesDictionary.Add(patchID, patch);

@@ -25,9 +25,8 @@ namespace ISAAR.MSolve.Discretization.Interfaces
         bool ConnectivityModified { get; set; }
         bool StiffnessModified { get; set; }
 
-        IReadOnlyList<INode> Nodes { get; } //TODO: perhaps this should be a set
-
         int NumElements { get; }
+        int NumNodes { get; }
 
         double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor); //TODO: this should be done by a dedicated class instead of the subdomain
 
@@ -36,8 +35,10 @@ namespace ISAAR.MSolve.Discretization.Interfaces
         void ConnectDataStructures();
 
         IEnumerable<IElement> EnumerateElements();
+        IEnumerable<INode> EnumerateNodes();
 
         IElement GetElement(int elementID);
+        INode GetNode(int nodeID);
 
         IVector GetRhsFromSolution(IVectorView solution, IVectorView dSolution); //TODO: this should be done by a dedicated class instead of the subdomain
 

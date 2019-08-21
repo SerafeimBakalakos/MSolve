@@ -323,7 +323,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.Feti1
             // Other stats
             int numUniqueGlobalDofs = multiSubdomainModel.Nodes.Count * 2;
             int numExtenedDomainDofs = 0;
-            foreach (var subdomain in multiSubdomainModel.EnumerateSubdomains()) numExtenedDomainDofs += 2 * subdomain.Nodes.Count;
+            foreach (var subdomain in multiSubdomainModel.EnumerateSubdomains()) numExtenedDomainDofs += 2 * subdomain.NumNodes;
 
             return (globalDisplacements, fetiSolver.Logger, numUniqueGlobalDofs, numExtenedDomainDofs);
         }

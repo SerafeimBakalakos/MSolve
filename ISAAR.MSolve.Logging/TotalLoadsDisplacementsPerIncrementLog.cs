@@ -74,7 +74,7 @@ namespace ISAAR.MSolve.Logging
                 writer.WriteLine($", Total internal force (Node {monitorNode.ID} - dof {monitorDof})");
             }
 
-            if (!subdomain.Nodes.Contains(monitorNode)) throw new ArgumentException(
+            if (!subdomain.Nodes.ContainsKey(monitorNode.ID)) throw new ArgumentException(
                 "The requested monitor node does not belong to this subdomain");
         }
 

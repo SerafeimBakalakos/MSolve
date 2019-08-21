@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes
             double zmin = Double.MaxValue;
             double zmax = Double.MinValue;
 
-            foreach (INode node in subdomain.Nodes)
+            foreach (INode node in subdomain.EnumerateNodes())
             {
                 if (node.X < xmin) xmin = node.X;
                 if (node.X > xmax) xmax = node.X;
@@ -62,7 +62,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes
             double ymin = Double.MaxValue;
             double ymax = Double.MinValue;
             
-            foreach (INode node in subdomain.Nodes)
+            foreach (INode node in subdomain.EnumerateNodes())
             {
                 if (node.X < xmin) xmin = node.X;
                 if (node.X > xmax) xmax = node.X;

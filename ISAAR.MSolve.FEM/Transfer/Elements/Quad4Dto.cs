@@ -47,7 +47,7 @@ namespace ISAAR.MSolve.FEM.Transfer.Elements
             this.material = quad4.Materials[0].ID; // Assuming that the (initial at least) properties are the same across all GPs
         }
 
-        public Element Deserialize(Dictionary<int, Node> allNodes, Dictionary<int, IFiniteElementMaterial> allMaterials)
+        public Element Deserialize(IReadOnlyDictionary<int, Node> allNodes, Dictionary<int, IFiniteElementMaterial> allMaterials)
         {
             var factory = new ContinuumElement2DFactory(0, null, null);
             Node[] elemNodes = { allNodes[node0], allNodes[node1], allNodes[node2], allNodes[node3] };

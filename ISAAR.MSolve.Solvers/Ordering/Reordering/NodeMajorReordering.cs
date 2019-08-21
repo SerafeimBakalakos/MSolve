@@ -1,4 +1,5 @@
-﻿using ISAAR.MSolve.Discretization.FreedomDegrees;
+﻿using System.Linq;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 
 namespace ISAAR.MSolve.Solvers.Ordering.Reordering
@@ -11,6 +12,6 @@ namespace ISAAR.MSolve.Solvers.Ordering.Reordering
     public class NodeMajorReordering : IDofReorderingStrategy
     {
         public void ReorderDofs(ISubdomain subdomain, ISubdomainFreeDofOrdering originalOrdering)
-            => originalOrdering.ReorderNodeMajor(subdomain.Nodes);
+            => originalOrdering.ReorderNodeMajor(subdomain.EnumerateNodes().ToArray());
     }
 }

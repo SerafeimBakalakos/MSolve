@@ -28,10 +28,13 @@ namespace ISAAR.MSolve.FEM.Entities
 
         public int ID { get; }
 
-        IReadOnlyList<INode> ISubdomain.Nodes => Nodes;
-        public List<Node> Nodes { get; } = new List<Node>();
+        //TODO: I would prefer a Dictionary for fast random access, but a lot of tests break. Also having them sorted results in
+        //      better orderings for structured meshes, although that can be implemented as a reordering or by ordering them 
+        //      with LINQ before starting the ordering procedure
+        public SortedDictionary<int, Node> Nodes { get; } = new SortedDictionary<int, Node>();
 
         public int NumElements => Elements.Count;
+        public int NumNodes => Nodes.Count;
 
         public ISubdomainConstrainedDofOrdering ConstrainedDofOrdering { get; set; }
         public ISubdomainFreeDofOrdering FreeDofOrdering { get; set; }
@@ -89,19 +92,17 @@ namespace ISAAR.MSolve.FEM.Entities
         public void DefineNodesFromElements()
         {
             Nodes.Clear();
-            var nodeComparer = Comparer<Node>.Create((Node node1, Node node2) => node1.ID - node2.ID);
-            var nodeSet = new SortedSet<Node>(nodeComparer);
             foreach (Element element in Elements.Values)
             {
-                foreach (Node node in element.Nodes) nodeSet.Add(node);
+                foreach (Node node in element.Nodes) Nodes[node.ID] = node; // It may already be contained
             }
-            Nodes.AddRange(nodeSet);
 
             //foreach (var e in modelEmbeddedNodes.Where(x => nodeIDs.IndexOf(x.Node.ID) >= 0))
             //    EmbeddedNodes.Add(e);
         }
 
         public IEnumerable<IElement> EnumerateElements() => Elements.Values;
+        public IEnumerable<INode> EnumerateNodes() => Nodes.Values;
 
         //TODO: constraints should not be saved inside the nodes. As it is right now (22/11/2018) the same constraint 
         //      is saved in the node, the model constraints table and the subdomain constraints table. Furthermore,
@@ -112,7 +113,7 @@ namespace ISAAR.MSolve.FEM.Entities
             //TODO: perhaps it is more efficient to traverse the global constraints instead of the subdomain's nodes, provided
             //      the latter are stored as a set. 
             //TODO: the next could be a Table method: Table.KeepDataOfRows(IEnumerable<TRow> rows)
-            foreach (Node node in Nodes)
+            foreach (INode node in EnumerateNodes())
             {
                 bool isNodeConstrained = globalConstraints.TryGetDataOfRow(node,
                     out IReadOnlyDictionary<IDofType, double> constraintsOfNode);
@@ -134,6 +135,7 @@ namespace ISAAR.MSolve.FEM.Entities
         }
 
         public IElement GetElement(int elementID) => Elements[elementID];
+        public INode GetNode(int nodeID) => Nodes[nodeID];
 
         public IVector GetRhsFromSolution(IVectorView solution, IVectorView dSolution)
         {

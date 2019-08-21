@@ -94,7 +94,7 @@ namespace ISAAR.MSolve.IGA.Readers
 							WeightFactor = Double.Parse(line[4], CultureInfo.InvariantCulture)
 						};
 						Model.ControlPointsDictionary.Add(controlPointIDcounter, controlPoint);
-						((List<ControlPoint>)Model.PatchesDictionary[0].ControlPoints).Add(controlPoint);
+						Model.PatchesDictionary[0].ControlPoints[controlPoint.ID] = controlPoint;
 						controlPointIDcounter++;
 						break;
 					case Attributes.belem:

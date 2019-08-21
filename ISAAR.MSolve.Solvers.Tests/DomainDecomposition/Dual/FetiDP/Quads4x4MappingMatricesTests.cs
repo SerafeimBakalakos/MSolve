@@ -452,7 +452,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         private static Dictionary<int, INode> GetNodesDictionary(this ISubdomain subdomain)
         {
             var subdomainNodes = new Dictionary<int, INode>();
-            foreach (INode node in subdomain.Nodes) subdomainNodes[node.ID] = node;
+            foreach (INode node in subdomain.EnumerateNodes()) subdomainNodes[node.ID] = node;
             return subdomainNodes;
         }
     }

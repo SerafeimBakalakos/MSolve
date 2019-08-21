@@ -61,7 +61,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         public void SeparateBoundaryInternalDofs(HashSet<INode> cornerNodes)
         {
-            IEnumerable<INode> remainderAndConstrainedNodes = Subdomain.Nodes.Where(node => !cornerNodes.Contains(node));
+            IEnumerable<INode> remainderAndConstrainedNodes = 
+                Subdomain.EnumerateNodes().Where(node => !cornerNodes.Contains(node));
 
             (int[] internalDofIndices, int[] boundaryDofIndices, (INode node, IDofType dofType)[] boundaryDofConnectivities)
                 = DofSeparationUtilities.SeparateBoundaryInternalDofs(remainderAndConstrainedNodes, RemainderDofOrdering);
@@ -72,7 +73,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         public void SeparateCornerRemainderDofs(HashSet<INode> cornerNodes)
         {
-            IEnumerable<INode> remainderAndConstrainedNodes = Subdomain.Nodes.Where(node => !cornerNodes.Contains(node));
+            IEnumerable<INode> remainderAndConstrainedNodes = 
+                Subdomain.EnumerateNodes().Where(node => !cornerNodes.Contains(node));
 
             var cornerDofs = new List<int>();
             var remainderDofs = new List<int>();

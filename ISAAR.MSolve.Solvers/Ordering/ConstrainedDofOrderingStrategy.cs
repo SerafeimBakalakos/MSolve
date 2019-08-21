@@ -22,7 +22,7 @@ namespace ISAAR.MSolve.Solvers.Ordering
         {
             var constrainedDofs = new DofTable();
             int dofCounter = 0;
-            foreach (INode node in subdomain.Nodes)
+            foreach (INode node in subdomain.EnumerateNodes())
             {
                 foreach (Constraint constraint in node.Constraints) constrainedDofs[node, constraint.DOF] = dofCounter++;
             }

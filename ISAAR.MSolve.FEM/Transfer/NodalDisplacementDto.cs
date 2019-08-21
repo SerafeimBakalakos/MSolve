@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.FEM.Transfer
             this.dofID = dofSerializer.Serialize(constraint.DOF);
         }
 
-        public void Deserialize(Dictionary<int, Node> allNodes, IDofSerializer dofSerializer)
+        public void Deserialize(IReadOnlyDictionary<int, Node> allNodes, IDofSerializer dofSerializer)
         {
             Node targetNode = allNodes[this.node];
             var constraint = new Constraint() { Amount = this.amount, DOF = dofSerializer.Deserialize(this.dofID) };

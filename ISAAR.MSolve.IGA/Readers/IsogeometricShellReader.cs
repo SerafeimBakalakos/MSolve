@@ -151,7 +151,10 @@ namespace ISAAR.MSolve.IGA.Readers
 						break;
 					case IsogeometricShellReader.Attributes.end:
 						for (int j = 0; j < ControlPointIDsDictionary[patchID].Length; j++)
-							((List<ControlPoint>)Model.PatchesDictionary[patchID].ControlPoints).Add( Model.ControlPointsDictionary[ControlPointIDsDictionary[patchID][j]]);
+                        {
+                            ControlPoint cp = Model.ControlPointsDictionary[ControlPointIDsDictionary[patchID][j]];
+                            Model.PatchesDictionary[patchID].ControlPoints[cp.ID] = cp;
+                        }
 
 						Model.PatchesDictionary[patchID].CreateNurbsShell();
 						foreach (var element in Model.PatchesDictionary[patchID].Elements.Values)

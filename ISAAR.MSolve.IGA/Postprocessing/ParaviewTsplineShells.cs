@@ -186,7 +186,7 @@ namespace ISAAR.MSolve.IGA.Postprocessing
 		private double[,] CalculateProjectiveControlPoints()
 		{
 			var projectiveCPs = new double[_model.PatchesDictionary[0].ControlPoints.Count, 4];
-			foreach (var controlPoint in _model.PatchesDictionary[0].ControlPoints)
+			foreach (var controlPoint in _model.PatchesDictionary[0].ControlPoints.Values)
 			{
 				var weight = controlPoint.WeightFactor;
 				projectiveCPs[controlPoint.ID, 0] = controlPoint.X * weight;

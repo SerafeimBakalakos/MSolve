@@ -18,16 +18,13 @@ namespace ISAAR.MSolve.IGA.Entities
 		private readonly Dictionary<int, Edge> edgesDictionary = new Dictionary<int, Edge>();
 		private readonly Dictionary<int, Face> facesDictionary = new Dictionary<int, Face>();
 		
-		private readonly List<ControlPoint> controlPoints = new List<ControlPoint>();
-
 		public Table<INode, IDofType, double> Constraints { get; } = new Table<INode, IDofType, double>();
 
 		public Dictionary<int, Element> Elements { get; } = new Dictionary<int, Element>();
 		
 		public int ID { get; }
 
-		IReadOnlyList<INode> ISubdomain.Nodes => controlPoints;
-		public IReadOnlyList<ControlPoint> ControlPoints => controlPoints;
+        public SortedDictionary<int, ControlPoint> ControlPoints { get; } = new SortedDictionary<int, ControlPoint>();
 
         public ISubdomainConstrainedDofOrdering ConstrainedDofOrdering { get; set; }
         public ISubdomainFreeDofOrdering FreeDofOrdering { get; set; }
@@ -50,6 +47,7 @@ namespace ISAAR.MSolve.IGA.Entities
 		}
 
         public int NumElements => Elements.Count;
+        public int NumNodes => ControlPoints.Count;
 
         public double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor)
 		{
@@ -83,20 +81,18 @@ namespace ISAAR.MSolve.IGA.Entities
 
         public void DefineControlPointsFromElements()
 		{
-			var cpComparer = Comparer<ControlPoint>.Create((node1, node2) => node1.ID - node2.ID);
-			var cpSet = new SortedSet<ControlPoint>(cpComparer);
 			foreach (Element element in Elements.Values)
 			{
-				foreach (ControlPoint node in element.ControlPoints) cpSet.Add(node);
+				foreach (ControlPoint node in element.ControlPoints) ControlPoints[node.ID] = node;
 			}
-			controlPoints.AddRange(cpSet);
 		}
 
         public IEnumerable<IElement> EnumerateElements() => Elements.Values;
+        public IEnumerable<INode> EnumerateNodes() => ControlPoints.Values;
 
         public void ExtractConstraintsFromGlobal(Table<INode, IDofType, double> globalConstraints)
 		{
-			foreach (ControlPoint controlPoint in ControlPoints)
+			foreach (INode controlPoint in EnumerateNodes())
 			{
 				bool isControlPointConstrained = globalConstraints.TryGetDataOfRow(controlPoint,
 					out IReadOnlyDictionary<IDofType, double> constraintsOfNode);
@@ -118,6 +114,7 @@ namespace ISAAR.MSolve.IGA.Entities
 		}
 
         public IElement GetElement(int elementID) => Elements[elementID];
+        public INode GetNode(int nodeID) => ControlPoints[nodeID];
 
         public IVector GetRhsFromSolution(IVectorView solution, IVectorView dSolution)
 		{

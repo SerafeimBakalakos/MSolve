@@ -223,7 +223,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 {
                     //TODO: should I cache this somewhere?
                     //TODO: should I use subdomain.Nodes.Except(cornerNodes) instead?
-                    IEnumerable<INode> remainderAndConstrainedNodes = subdomain.Nodes.Where(node => !cornerNodes.Contains(node));
+                    IEnumerable<INode> remainderAndConstrainedNodes = 
+                        subdomain.EnumerateNodes().Where(node => !cornerNodes.Contains(node));
 
                     Debug.WriteLine($"{this.GetType().Name}: Separating and ordering corner-remainder dofs of subdomain {s}");
                     dofSeparator.SeparateCornerRemainderDofs(subdomain, cornerNodes);
