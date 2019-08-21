@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.Discretization.Transfer.Utilities;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
-using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
 using MPI;
 
 //TODO: Perhaps I should also find and expose the indices of boundary remainder and internal remainder dofs into the sequence 
@@ -22,25 +20,16 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private const int cornerDofOrderingTag = 0;
         private const int cornerMappingMatrixTag = 1;
 
-        private readonly Intracommunicator comm;
-        private readonly IDofSerializer dofSerializer;
-        private readonly int masterProcess;
-        private readonly ProcessDistribution processDistribution;
-        private readonly Dictionary<int, INode> globalNodes;
-        private readonly int rank;
+        private readonly IModel model;
+        private readonly ProcessDistribution procs;
 
-        public FetiDPDofSeparatorMpi(IModel model, ISubdomain subdomain, Dictionary<int, INode> globalNodes,
-            Intracommunicator comm, int masterProcess, ProcessDistribution processDistribution, IDofSerializer dofSerializer)
+        public FetiDPDofSeparatorMpi(ProcessDistribution processDistribution, IModel model)
         {
-            this.comm = comm;
-            this.masterProcess = masterProcess;
-            this.rank = comm.Rank;
-            this.processDistribution = processDistribution;
-            this.dofSerializer = dofSerializer;
+            this.model = model;
+            this.procs = processDistribution;
 
-            SubdomainDofs = new FetiDPDofSeparatorSubdomainMpi(subdomain);
-            if (rank == masterProcess) GlobalDofs = new FetiDPDofSeparatorGlobalMpi(model);
-            this.globalNodes = globalNodes;
+            SubdomainDofs = new FetiDPDofSeparatorSubdomainMpi(model.GetSubdomain(procs.OwnSubdomainID));
+            if (procs.IsMasterProcess) GlobalDofs = new FetiDPDofSeparatorGlobalMpi(model);
         }
 
         //TODO: Ideally the next two are not dependent on the MPI implementation. Only this class is and it handles commnication.
@@ -55,7 +44,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         public void CalcCornerMappingMatrices()
         { 
             // Create the corner mapping matrices
-            if (rank == masterProcess) GlobalDofs.CalcCornerMappingMatrices();
+            if (procs.IsMasterProcess) GlobalDofs.CalcCornerMappingMatrices();
             ScatterCornerBooleanMatricesToSubdomains();
 
             // Send the corner mapping matrix of each subdomain to the corresponding process
@@ -64,12 +53,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         public void DefineGlobalBoundaryDofs(HashSet<INode> globalCornerNodes)
         {
-            if (rank == masterProcess) GlobalDofs.DefineGlobalBoundaryDofs(globalCornerNodes);
+            if (procs.IsMasterProcess) GlobalDofs.DefineGlobalBoundaryDofs(globalCornerNodes);
         }
 
         public void DefineGlobalCornerDofs(HashSet<INode> globalCornerNodes)
         {
-            if (rank == masterProcess) GlobalDofs.DefineGlobalCornerDofs(globalCornerNodes);
+            if (procs.IsMasterProcess) GlobalDofs.DefineGlobalCornerDofs(globalCornerNodes);
         }
 
         /// <summary>
@@ -98,16 +87,16 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         //      MPI gather, since it is faster than send/receive.
         private void GatherCornerDofOrderingsFromSubdomains()
         {
-            var tableSerializer = new DofTableSerializer(dofSerializer);
+            var tableSerializer = new DofTableSerializer(model.DofSerializer);
 
             // Gather the corner dof ordering of each subdomain from the corresponding process to master
-            var transfer = new DofTableTransfer(comm, masterProcess, processDistribution, dofSerializer);
+            var transfer = new DofTableTransfer(model, procs);
             IEnumerable<ISubdomain> modifiedSubdomains = null;
-            if (rank == masterProcess)
+            if (procs.IsMasterProcess)
             {
                 // Only process the subdomains that have changed and need to update their dof orderings.
-                modifiedSubdomains = GlobalDofs.Model.EnumerateSubdomains().Where(sub => sub.ConnectivityModified); //TODO: Is this what I should check?
-                transfer.DefineModelData_master(modifiedSubdomains, globalNodes);
+                modifiedSubdomains = model.EnumerateSubdomains().Where(sub => sub.ConnectivityModified); //TODO: Is this what I should check?
+                transfer.DefineModelData_master(modifiedSubdomains);
             }
             else
             {
@@ -116,7 +105,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             }
             transfer.Transfer(cornerDofOrderingTag);
 
-            if (rank == masterProcess)
+            if (procs.IsMasterProcess)
             {
                 // Assign the received orderings
                 foreach (int s in transfer.SubdomainDofOrderings_master.Keys)
@@ -138,18 +127,18 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             UnsignedBooleanMatrix[] matricesBc = null;
             
             // Place the data to scatter in an array, since MPI does not work with dictionaries
-            if (rank == masterProcess)
+            if (procs.IsMasterProcess)
             {
-                matricesBc = new UnsignedBooleanMatrix[comm.Size];
-                for (int p = 0; p < comm.Size; ++p)
+                matricesBc = new UnsignedBooleanMatrix[procs.Communicator.Size];
+                for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    int subdomainID = processDistribution.ProcesesToSubdomains[p].ID;
+                    int subdomainID = procs.GetSubdomainIdOfProcess(p);
                     matricesBc[p] = GlobalDofs.CornerBooleanMatrices[subdomainID];
                 }
             }
 
             // Scatter the matrices. // TODO: This will use the automatic serialization of MPI.NET. Should I write something custom for this matrix type?
-            SubdomainDofs.CornerBooleanMatrix = comm.Scatter(matricesBc, masterProcess);
+            SubdomainDofs.CornerBooleanMatrix = procs.Communicator.Scatter(matricesBc, procs.MasterProcess);
         }
     }
 }

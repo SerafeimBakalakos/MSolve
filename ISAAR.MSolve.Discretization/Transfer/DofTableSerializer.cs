@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
             return serializedTable.Length / 3;
         }
 
-        public DofTable Deserialize(int[] serializedTable, Dictionary<int, INode> nodes)
+        public DofTable Deserialize(int[] serializedTable, Func<int, INode> getGlobalNode)
         {
             Debug.Assert(serializedTable.Length % 3 == 0,
                 "The provided flattened table does not correspond to a dof table. It must have a length divisible by 3, where"
@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
             var table = new DofTable();
             for (int i = 0; i < numEntries; ++i)
             {
-                INode node = nodes[serializedTable[3 * i]];
+                INode node = getGlobalNode(serializedTable[3 * i]);
                 IDofType dofType = dofSerializer.Deserialize(serializedTable[3 * i + 1]);
                 int dofIdx = serializedTable[3 * i + 2];
                 table[node, dofType] = dofIdx; //TODO: perhaps this can be optimized to avoid checking if there is already such an entry.

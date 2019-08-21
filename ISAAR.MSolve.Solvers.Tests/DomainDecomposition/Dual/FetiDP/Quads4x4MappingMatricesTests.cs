@@ -87,27 +87,29 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
         public static HashSet<INode> DefineGlobalCornerNodes(Model model)
         {
-            return new HashSet<INode>(new INode[] { model.NodesDictionary[2], model.NodesDictionary[12], model.NodesDictionary[14], model.NodesDictionary[22] });
+            return new HashSet<INode>(new INode[] 
+            {
+                model.NodesDictionary[2], model.NodesDictionary[12], model.NodesDictionary[14], model.NodesDictionary[22]
+            });
         }
 
         public static HashSet<INode> DefineSubdomainCornerNodes(ISubdomain subdomain)
         {
-            Dictionary<int, INode> subdomainNodes = subdomain.GetNodesDictionary();
             if (subdomain.ID == 0)
             {
-                return new HashSet<INode>(new INode[] { subdomainNodes[2], subdomainNodes[12] });
+                return new HashSet<INode>(new INode[] { subdomain.GetNode(2), subdomain.GetNode(12) });
             }
             else if (subdomain.ID == 1)
             {
-                return new HashSet<INode>(new INode[] { subdomainNodes[2], subdomainNodes[12], subdomainNodes[14] });
+                return new HashSet<INode>(new INode[] { subdomain.GetNode(2), subdomain.GetNode(12), subdomain.GetNode(14) });
             }
             else if (subdomain.ID == 2)
             {
-                return new HashSet<INode>(new INode[] { subdomainNodes[12], subdomainNodes[22] });
+                return new HashSet<INode>(new INode[] { subdomain.GetNode(12), subdomain.GetNode(22) });
             }
             else if (subdomain.ID == 3)
             {
-                return new HashSet<INode>(new INode[] { subdomainNodes[12], subdomainNodes[14], subdomainNodes[22] });
+                return new HashSet<INode>(new INode[] { subdomain.GetNode(12), subdomain.GetNode(14), subdomain.GetNode(22) });
             }
             else throw new ArgumentException("Subdomain ID must be 0, 1, 2 or 3");
         }
@@ -353,26 +355,15 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             using (new MPI.Environment(ref args))
             {
                 int master = 0;
-                Intracommunicator comm = Communicator.world;
-                int rank = comm.Rank;
-                //Console.WriteLine($"(process {rank}) Hello World!"); // Run this to check if MPI works correctly.
+                var procs = new ProcessDistribution(Communicator.world, 0, new int[] { 0, 1, 2, 3 });
+                //Console.WriteLine($"(process {procs.OwnRank}) Hello World!"); // Run this to check if MPI works correctly.
 
                 // Create the model in master process
                 Model model = null;
-                Dictionary<int, INode> globalNodes = null;
-                ProcessDistribution processDistribution = null; 
-                if (rank == master)
+                if (procs.IsMasterProcess)
                 {
                     model = CreateModel();
                     model.ConnectDataStructures();
-
-                    //TODO: These should be automated
-                    globalNodes = model.GetNodesDictionary();
-                    processDistribution = new ProcessDistribution(new ISubdomain[] 
-                    {
-                        model.SubdomainsDictionary[0], model.SubdomainsDictionary[1],
-                        model.SubdomainsDictionary[2], model.SubdomainsDictionary[3]
-                    });
                 }
 
                 // Scatter subdomain data to each process
@@ -383,15 +374,13 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
                 // Order dofs
                 subdomain.ConnectDataStructures();
                 var dofSerializer = new StandardDofSerializer();
-                var dofOrderer = new DofOrdererMpi(new NodeMajorDofOrderingStrategy(), new NullReordering(), comm, master, 
-                    processDistribution, dofSerializer, globalNodes, subdomain);
+                var dofOrderer = new DofOrdererMpi(procs, new NodeMajorDofOrderingStrategy(), new NullReordering());
                 subdomain.FreeDofOrdering = dofOrderer.OrderFreeDofs(subdomain);
                 dofOrderer.OrderFreeDofs(model);
 
                 // Separate dofs and corner boolean matrices
-                var dofSeparator = new FetiDPDofSeparatorMpi(model, subdomain, globalNodes, comm, master, processDistribution, 
-                    dofSerializer);
-                if (rank == master)
+                var dofSeparator = new FetiDPDofSeparatorMpi(procs, model);
+                if (procs.IsMasterProcess)
                 {
                     HashSet<INode> globalCornerNodes = DefineGlobalCornerNodes(model);
                     dofSeparator.DefineGlobalBoundaryDofs(globalCornerNodes);
@@ -415,7 +404,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
                 Matrix expectedLc = GetExpectedCornerBooleanMatrix(subdomain.ID);
                 double tolerance = 1E-13;
                 Assert.True(expectedLc.Equals(Lc, tolerance));
-                if (rank == master)
+                if (procs.IsMasterProcess)
                 {
                     Assert.Equal(8, dofSeparator.GlobalDofs.NumGlobalCornerDofs);
                     for (int s = 0; s < 4; ++s)
@@ -429,8 +418,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
                 // Create and check lagrange boolean matrices
                 var crosspointStrategy = new FullyRedundantConstraints();
-                var lagrangeEnumerator = new FetiDPLagrangeMultipliersEnumeratorMpi(subdomain, subdomain.GetNodesDictionary(),
-                    crosspointStrategy, dofSeparator, comm, master, dofSerializer);
+                var lagrangeEnumerator = new FetiDPLagrangeMultipliersEnumeratorMpi(procs, model, crosspointStrategy, dofSeparator);
                 lagrangeEnumerator.CalcBooleanMatrices();
 
                 Assert.Equal(8, lagrangeEnumerator.NumLagrangeMultipliers);
@@ -438,22 +426,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
                 Matrix expectedBr = GetExpectedLagrangeBooleanMatrix(subdomain.ID);
                 Assert.True(expectedBr.Equals(Br, tolerance));
             }
-        }
-
-        //TODO: This should be provided by the model itself
-        private static Dictionary<int, INode> GetNodesDictionary(this IModel model)
-        {
-            var globalNodes = new Dictionary<int, INode>();
-            foreach (INode node in model.EnumerateNodes()) globalNodes[node.ID] = node;
-            return globalNodes;
-        }
-
-        //TODO: This should be provided by the subdomain itself
-        private static Dictionary<int, INode> GetNodesDictionary(this ISubdomain subdomain)
-        {
-            var subdomainNodes = new Dictionary<int, INode>();
-            foreach (INode node in subdomain.EnumerateNodes()) subdomainNodes[node.ID] = node;
-            return subdomainNodes;
         }
     }
 }

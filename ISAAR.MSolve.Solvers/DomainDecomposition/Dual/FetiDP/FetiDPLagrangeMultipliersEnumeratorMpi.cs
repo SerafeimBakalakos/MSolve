@@ -18,27 +18,20 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     /// </summary>
     public class FetiDPLagrangeMultipliersEnumeratorMpi //: ILagrangeMultipliersEnumerator
     {
-        private readonly Intracommunicator comm;
         private readonly ICrosspointStrategy crosspointStrategy;
         private readonly FetiDPDofSeparatorMpi dofSeparator;
         private readonly LagrangeMultiplierSerializer lagrangeSerializer;
-        private readonly int masterProcess;
-        private readonly int rank;
-        private readonly ISubdomain subdomain;
-        private readonly Dictionary<int, INode> subdomainNodes;
+        private readonly IModel model;
+        private readonly ProcessDistribution procs;
 
-        public FetiDPLagrangeMultipliersEnumeratorMpi(ISubdomain subdomain, Dictionary<int, INode> subdomainNodes, 
-            ICrosspointStrategy crosspointStrategy, FetiDPDofSeparatorMpi dofSeparator, Intracommunicator comm,
-            int masterProcess, IDofSerializer dofSerializer)
+        public FetiDPLagrangeMultipliersEnumeratorMpi(ProcessDistribution processDistribution, IModel model, 
+            ICrosspointStrategy crosspointStrategy, FetiDPDofSeparatorMpi dofSeparator)
         {
-            this.subdomain = subdomain;
-            this.subdomainNodes = subdomainNodes;
+            this.procs = processDistribution;
+            this.model = model;
             this.crosspointStrategy = crosspointStrategy;
             this.dofSeparator = dofSeparator;
-            this.comm = comm;
-            this.rank = comm.Rank;
-            this.masterProcess = masterProcess;
-            this.lagrangeSerializer = new LagrangeMultiplierSerializer(dofSerializer);
+            this.lagrangeSerializer = new LagrangeMultiplierSerializer(model.DofSerializer);
         }
 
         /// <summary>
@@ -60,27 +53,28 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         { 
             // Define the lagrange multipliers and serialize and broadcast them to other processes
             int[] serializedLagranges = null;
-            if (rank == masterProcess)
+            if (procs.IsMasterProcess)
             {
                 LagrangeMultipliers = LagrangeMultipliersUtilities.DefineLagrangeMultipliers(
                     dofSeparator.GlobalDofs, crosspointStrategy).ToArray();
                 NumLagrangeMultipliers = LagrangeMultipliers.Length;
                 serializedLagranges = lagrangeSerializer.Serialize(LagrangeMultipliers);
             }
-            MpiUtilities.BroadcastArray(comm, ref serializedLagranges, masterProcess);
+            MpiUtilities.BroadcastArray(procs.Communicator, ref serializedLagranges, procs.MasterProcess);
 
             // Deserialize the lagrange multipliers in other processes and calculate the boolean matrices
+            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
             int numRemainderDofs = dofSeparator.SubdomainDofs.RemainderDofIndices.Length;
             DofTable remainderDofOrdering = dofSeparator.SubdomainDofs.RemainderDofOrdering;
-            if (rank == masterProcess)
+            if (procs.IsMasterProcess)
             {
-                BooleanMatrix = LagrangeMultipliersUtilities.CalcBooleanMatrix(
-                    subdomain, LagrangeMultipliers, numRemainderDofs, remainderDofOrdering);
+                BooleanMatrix = LagrangeMultipliersUtilities.CalcBooleanMatrix(subdomain,
+                    LagrangeMultipliers, numRemainderDofs, remainderDofOrdering);
             }
             else
             {
                 (int numGlobalLagranges, List<SubdomainLagrangeMultiplier> subdomainLagranges) = 
-                    lagrangeSerializer.Deserialize(serializedLagranges, subdomain, subdomainNodes);
+                    lagrangeSerializer.Deserialize(serializedLagranges, subdomain);
                 NumLagrangeMultipliers = numGlobalLagranges;
                 BooleanMatrix = LagrangeMultipliersUtilities.CalcBooleanMatrix(
                     subdomain, numGlobalLagranges, subdomainLagranges, numRemainderDofs, remainderDofOrdering);

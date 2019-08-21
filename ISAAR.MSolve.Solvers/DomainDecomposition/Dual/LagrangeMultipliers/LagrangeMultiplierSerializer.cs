@@ -19,7 +19,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
         }
 
         public (int numGlobalLagranges, List<SubdomainLagrangeMultiplier> subdomainLagranges) Deserialize(
-            int[] serializedLagranges, ISubdomain subdomain, Dictionary<int, INode> subdomainNodes)
+            int[] serializedLagranges, ISubdomain subdomain)
         {
             CheckSerializedLength(serializedLagranges);
             int numGlobalLagranges = serializedLagranges.Length / 4;
@@ -34,7 +34,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
 
                 if (sign != 0)
                 {
-                    INode node = subdomainNodes[serializedLagranges[4 * i]];
+                    INode node = subdomain.GetNode(serializedLagranges[4 * i]);
                     IDofType dofType = dofSerializer.Deserialize(serializedLagranges[4 * i + 1]);
                     subdomainLagranges.Add(new SubdomainLagrangeMultiplier(i, node, dofType, sign > 0));
                 }

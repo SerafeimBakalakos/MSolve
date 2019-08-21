@@ -14,8 +14,8 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
     {
         protected readonly DofTable globalFreeDofs;
         protected readonly int numGlobalFreeDofs;
-        protected Dictionary<ISubdomain, ISubdomainFreeDofOrdering> subdomainDofOrderings;
-        protected Dictionary<ISubdomain, int[]> subdomainToGlobalDofMaps;
+        protected Dictionary<int, ISubdomainFreeDofOrdering> subdomainDofOrderings;
+        protected Dictionary<int, int[]> subdomainToGlobalDofMaps;
 
         protected GlobalFreeDofOrderingBase(int numGlobalFreeDofs, DofTable globalFreeDofs)
         {
@@ -25,8 +25,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
 
         public virtual void AddVectorSubdomainToGlobal(ISubdomain subdomain, IVectorView subdomainVector, IVector globalVector)
         {
-            ISubdomainFreeDofOrdering subdomainOrdering = subdomainDofOrderings[subdomain];
-            int[] subdomainToGlobalDofs = subdomainToGlobalDofMaps[subdomain];
+            int[] subdomainToGlobalDofs = subdomainToGlobalDofMaps[subdomain.ID];
             globalVector.AddIntoThisNonContiguouslyFrom(subdomainToGlobalDofs, subdomainVector);
         }
 
@@ -35,14 +34,13 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
 
         public virtual void ExtractVectorSubdomainFromGlobal(ISubdomain subdomain, IVectorView globalVector, IVector subdomainVector)
         {
-            ISubdomainFreeDofOrdering subdomainOrdering = subdomainDofOrderings[subdomain];
-            int[] subdomainToGlobalDofs = subdomainToGlobalDofMaps[subdomain];
+            int[] subdomainToGlobalDofs = subdomainToGlobalDofMaps[subdomain.ID];
             subdomainVector.CopyNonContiguouslyFrom(globalVector, subdomainToGlobalDofs);
         }
 
         protected virtual void CalcSubdomainGlobalMappings()
         {
-            subdomainToGlobalDofMaps = new Dictionary<ISubdomain, int[]>(subdomainDofOrderings.Count);
+            subdomainToGlobalDofMaps = new Dictionary<int, int[]>(subdomainDofOrderings.Count);
             foreach (var subdomainOrderingPair in subdomainDofOrderings)
             {
                 var subdomainToGlobalDofs = new int[subdomainOrderingPair.Value.NumFreeDofs];

@@ -20,44 +20,29 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
     {
         private const int freeDofOrderingTag = 0;
 
-        private readonly Intracommunicator comm;
-        private readonly Dictionary<int, INode> globalNodes_master;
-        private readonly int masterProcess;
-        private readonly ProcessDistribution processDistribution;
-        private readonly int rank;
-        private readonly ISubdomain subdomain;
+        private readonly ProcessDistribution procs;
+        private readonly IModel model;
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="numGlobalFreeDofs">Will be ignored for every process other than <paramref name="masterProcess"/>.</param>
-        /// <param name="globalFreeDofs">Will be ignored for every process other than <paramref name="masterProcess"/>.</param>
-        /// <param name="subdomainDofOrdering"></param>
-        /// <param name="comm"></param>
-        /// <param name="masterProcess"></param>
-        public GlobalFreeDofOrderingMpi(int numGlobalFreeDofs, DofTable globalFreeDofs,
-            Dictionary<int, INode> globalNodes, ISubdomain subdomain, 
-            Intracommunicator comm, int masterProcess, ProcessDistribution processDistribution):
+        /// <param name="numGlobalFreeDofs">Will be ignored for every process other than <paramref name="processes.MasterProcess"/>.</param>
+        /// <param name="globalFreeDofs">Will be ignored for every process other than <paramref name="processes.MasterProcess"/>.</param>
+        public GlobalFreeDofOrderingMpi(ProcessDistribution processDistribution, int numGlobalFreeDofs, DofTable globalFreeDofs, 
+            IModel model):
             base(numGlobalFreeDofs, globalFreeDofs)
         {
-            this.globalNodes_master = globalNodes;
-            this.subdomain = subdomain;
-
-            this.comm = comm;
-            this.rank = comm.Rank;
-            this.masterProcess = masterProcess;
-            this.processDistribution = processDistribution;
-
-            //TODO: This should be evaluated lazily by the right process.
-            //base.CalcSubdomainGlobalMappings();
+            this.model = model;
+            this.procs = processDistribution;
         }
 
         public DofTable GlobalFreeDofs
         {
             get
             {
-                if (rank == masterProcess) return globalFreeDofs;
-                else throw new MpiException($"Process {rank}: Only defined for master process (rank = {masterProcess})");
+                if (procs.IsMasterProcess) return globalFreeDofs;
+                else throw new MpiException(
+                    $"Process {procs.OwnRank}: Only defined for master process (rank = {procs.MasterProcess})");
             }
         }
 
@@ -65,8 +50,9 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         {
             get
             {
-                if (rank == masterProcess) return numGlobalFreeDofs;
-                else throw new MpiException($"Process {rank}: Only defined for master process (rank = {masterProcess})");
+                if (procs.IsMasterProcess) return numGlobalFreeDofs;
+                else throw new MpiException(
+                    $"Process {procs.OwnRank}: Only defined for master process (rank = {procs.MasterProcess})");
             }
         }
 
@@ -79,19 +65,19 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         /// <param name="globalVector">Only exists in master process.</param>
         public override void AddVectorSubdomainToGlobal(ISubdomain subdomain, IVectorView subdomainVector, IVector globalVector)
         {
-            if (subdomain.ID != this.subdomain.ID) throw new MpiException(
-                $"Process {rank}: This process does not have access to subdomain {subdomain.ID})");
+            if (subdomain.ID != procs.OwnSubdomainID) throw new MpiException(
+                $"Process {procs.OwnRank}: This process does not have access to subdomain {subdomain.ID})");
 
             // Gather the subdomain vectors to master
             //TODO: Perhaps client master can work with vectors that have the different portions of the gathered flattened array 
             //      as their backing end. I need dedicated classes for these (e.g. OffsetVector)
             int[] arrayLengths = null;
-            if (rank == masterProcess)
+            if (procs.IsMasterProcess)
             {
-                arrayLengths = new int[comm.Size];
-                for (int p = 0; p < comm.Size; ++p)
+                arrayLengths = new int[procs.Communicator.Size];
+                for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    ISubdomain sub = processDistribution.ProcesesToSubdomains[p];
+                    int sub = procs.GetSubdomainIdOfProcess(p);
                     arrayLengths[p] = subdomainDofOrderings[sub].NumFreeDofs;
                 }
             }
@@ -99,17 +85,21 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             //      most cases. I need a class that handles transfering the concrete vector class. That would live in an 
             //      LinearAlgebra.MPI project
             double[] subdomainArray = null;
-            if (rank != masterProcess) subdomainArray = subdomainVector.CopyToArray();
-            double[][] subdomainArrays = MpiUtilities.GatherArrays<double>(comm, subdomainArray, arrayLengths, masterProcess);
+            if (!procs.IsMasterProcess) subdomainArray = subdomainVector.CopyToArray();
+            double[][] subdomainArrays = MpiUtilities.GatherArrays<double>(procs.Communicator, subdomainArray, arrayLengths, 
+                procs.MasterProcess);
 
             // Call base method for each vector
-            if (rank == masterProcess)
+            if (procs.IsMasterProcess)
             {
-                for (int p = 0; p < comm.Size; ++p)
+                for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    ISubdomain sub = processDistribution.ProcesesToSubdomains[p];
-                    if (p == masterProcess) base.AddVectorSubdomainToGlobal(subdomain, subdomainVector, globalVector);
-                    else base.AddVectorSubdomainToGlobal(subdomain, Vector.CreateFromArray(subdomainArrays[p]), globalVector);
+                    if (p == procs.MasterProcess) base.AddVectorSubdomainToGlobal(subdomain, subdomainVector, globalVector);
+                    else
+                    {
+                        ISubdomain sub = model.GetSubdomain(procs.GetSubdomainIdOfProcess(p));
+                        base.AddVectorSubdomainToGlobal(sub, Vector.CreateFromArray(subdomainArrays[p]), globalVector);
+                    }
                 }
             }
             throw new NotImplementedException();
@@ -127,48 +117,51 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             //if (subdomainToGlobalDofMaps != null) return;
 
             // Gather the dof tables to master
-            var transfer = new DofTableTransfer(comm, masterProcess, processDistribution, model.DofSerializer);
-            if (rank == masterProcess) transfer.DefineModelData_master(model.EnumerateSubdomains(), globalNodes_master);
-            else transfer.DefineSubdomainData_slave(true, subdomainDofOrderings[subdomain].FreeDofs);
+            var transfer = new DofTableTransfer(model, procs);
+            if (procs.IsMasterProcess) transfer.DefineModelData_master(model.EnumerateSubdomains());
+            else transfer.DefineSubdomainData_slave(true, subdomainDofOrderings[procs.OwnSubdomainID].FreeDofs);
             transfer.Transfer(freeDofOrderingTag);
             
             // Assign the subdomain dof orderings
-            this.subdomainDofOrderings = new Dictionary<ISubdomain, ISubdomainFreeDofOrdering>();
-            if (rank == masterProcess)
+            this.subdomainDofOrderings = new Dictionary<int, ISubdomainFreeDofOrdering>();
+            if (procs.IsMasterProcess)
             {
                 foreach (ISubdomain sub in model.EnumerateSubdomains())
                 {
-                    if (sub.ID == this.subdomain.ID) subdomainDofOrderings[sub] = this.subdomain.FreeDofOrdering;
+                    if (sub.ID == procs.OwnSubdomainID)
+                    {
+                        subdomainDofOrderings[sub.ID] = model.GetSubdomain(procs.OwnSubdomainID).FreeDofOrdering;
+                    }
                     else
                     {
-                        subdomainDofOrderings[sub] = new SubdomainFreeDofOrderingCaching(
+                        subdomainDofOrderings[sub.ID] = new SubdomainFreeDofOrderingCaching(
                             transfer.NumSubdomainDofs_master[sub.ID], transfer.SubdomainDofOrderings_master[sub.ID]);
                     }
                 }
             }
 
             // Create and store all mapping arrays in master
-            if (rank == masterProcess) base.CalcSubdomainGlobalMappings();
+            if (procs.IsMasterProcess) base.CalcSubdomainGlobalMappings();
 
             // Scatter them to the corresponding processes
             int[][] allMappings = null;
-            if (rank == masterProcess)
+            if (procs.IsMasterProcess)
             {
-                allMappings = new int[comm.Size][];
-                for (int p = 0; p < comm.Size; ++p)
+                allMappings = new int[procs.Communicator.Size][];
+                for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    ISubdomain sub = processDistribution.ProcesesToSubdomains[p];
+                    int sub = procs.GetSubdomainIdOfProcess(p);
                     allMappings[p] = subdomainToGlobalDofMaps[sub];
                 }
             }
-            int numSubdomainDofs = subdomainDofOrderings[subdomain].NumFreeDofs;
-            int[] mapping = MpiUtilities.ScatterArrays<int>(comm, allMappings, numSubdomainDofs, masterProcess);
+            int numSubdomainDofs = subdomainDofOrderings[procs.OwnSubdomainID].NumFreeDofs;
+            int[] mapping = MpiUtilities.ScatterArrays<int>(procs.Communicator, allMappings, numSubdomainDofs, procs.MasterProcess);
 
             // Store each one in processes other than master, since it already has all of them.
-            if (rank != masterProcess)
+            if (!procs.IsMasterProcess)
             {
-                subdomainToGlobalDofMaps = new Dictionary<ISubdomain, int[]>();
-                subdomainToGlobalDofMaps[subdomain] = mapping;
+                subdomainToGlobalDofMaps = new Dictionary<int, int[]>();
+                subdomainToGlobalDofMaps[procs.OwnSubdomainID] = mapping;
             }
         }
 
@@ -181,17 +174,17 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         /// <param name="subdomainVector">Each process has its own.</param>
         public override void ExtractVectorSubdomainFromGlobal(ISubdomain subdomain, IVectorView globalVector, IVector subdomainVector)
         {
-            if (subdomain.ID != this.subdomain.ID) throw new MpiException(
-                $"Process {rank}: This process does not have access to subdomain {subdomain.ID})");
+            if (subdomain.ID != procs.OwnSubdomainID) throw new MpiException(
+                $"Process {procs.OwnRank}: This process does not have access to subdomain {subdomain.ID})");
 
             // Broadcast globalVector
             //TODO: The next is stupid, since it copies the vector to an array, while I could access its backing storage in 
             //      most cases. I need a class that handles transfering the concrete vector class. That would live in an 
             //      LinearAlgebra.MPI project
             double[] globalArray = null;
-            if (rank == masterProcess) globalArray = globalVector.CopyToArray();
-            MpiUtilities.BroadcastArray<double>(comm, ref globalArray, masterProcess);
-            if (rank != masterProcess) globalVector = Vector.CreateFromArray(globalArray);
+            if (procs.IsMasterProcess) globalArray = globalVector.CopyToArray();
+            MpiUtilities.BroadcastArray<double>(procs.Communicator, ref globalArray, procs.MasterProcess);
+            if (!procs.IsMasterProcess) globalVector = Vector.CreateFromArray(globalArray);
 
             // Then call base method
             base.ExtractVectorSubdomainFromGlobal(subdomain, globalVector, subdomainVector);
@@ -199,18 +192,20 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
 
         public ISubdomainFreeDofOrdering GetSubdomainDofOrdering(ISubdomain subdomain)
         {
-            if (subdomain.ID == this.subdomain.ID) return subdomainDofOrderings[subdomain]; // No MPI communication needed
-            else if (rank == masterProcess) return subdomainDofOrderings[subdomain];
-            else throw new MpiException($"Process {rank}: This process does not have access to subdomain {subdomain.ID})");
+            if (subdomain.ID == procs.OwnSubdomainID) return subdomainDofOrderings[subdomain.ID]; // No MPI communication needed
+            else if (procs.IsMasterProcess) return subdomainDofOrderings[subdomain.ID];
+            else throw new MpiException(
+                $"Process {procs.OwnRank}: This process does not have access to subdomain {subdomain.ID})");
         }
 
         public int[] GetSubdomainToGlobalMap(ISubdomain subdomain)
         {
-            if (rank == masterProcess) return subdomainToGlobalDofMaps[subdomain];
+            if (procs.IsMasterProcess) return subdomainToGlobalDofMaps[subdomain.ID];
             else
             {
-                if (subdomain.ID == this.subdomain.ID) return subdomainToGlobalDofMaps[subdomain];
-                else throw new MpiException($"Process {rank}: This process does not have access to subdomain {subdomain.ID})");
+                if (subdomain.ID == procs.OwnSubdomainID) return subdomainToGlobalDofMaps[subdomain.ID];
+                else throw new MpiException(
+                    $"Process {procs.OwnRank}: This process does not have access to subdomain {subdomain.ID})");
             }
         }
     }

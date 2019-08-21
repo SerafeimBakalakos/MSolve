@@ -9,22 +9,33 @@ using MPI;
 namespace ISAAR.MSolve.Discretization.Transfer
 {
     /// <summary>
-    /// This meant for the master process that handles communication. It should not be transfered to other processes.
+    /// This should be present in all processes.
     /// </summary>
     public class ProcessDistribution
     {
-        public ProcessDistribution(ISubdomain[] processesToSubdomains)
+        private readonly int[] processesToSubdomains;
+        private readonly Dictionary<int, int> subdomainsToProcesses;
+
+        public ProcessDistribution(Intracommunicator comm, int masterProcess, int[] processRanksToSubdomainIDs)
         {
-            this.ProcesesToSubdomains = processesToSubdomains;
-            this.SubdomainsToProcesses = new Dictionary<ISubdomain, int>();
-            for (int p = 0; p < processesToSubdomains.Length; ++p)
-            {
-                this.SubdomainsToProcesses[processesToSubdomains[p]] = p;
-            }
+            this.Communicator = comm;
+            this.IsMasterProcess = comm.Rank == masterProcess;
+            this.MasterProcess = masterProcess;
+            this.OwnRank = comm.Rank;
+            this.OwnSubdomainID = processRanksToSubdomainIDs[OwnRank];
+
+            this.processesToSubdomains = processRanksToSubdomainIDs;
+            this.subdomainsToProcesses = new Dictionary<int, int>();
+            for (int p = 0; p < comm.Size; ++p) this.subdomainsToProcesses[processRanksToSubdomainIDs[p]] = p;
         }
 
-        //TODO: These should be readonly, unless some other need arises.
-        public ISubdomain[] ProcesesToSubdomains { get; }
-        public Dictionary<ISubdomain, int> SubdomainsToProcesses { get; }
+        public Intracommunicator Communicator { get; }
+        public bool IsMasterProcess { get; }
+        public int MasterProcess { get; }
+        public int OwnRank { get; }
+        public int OwnSubdomainID { get; }
+
+        public int GetProcessOfSubdomain(int subdomainID) => subdomainsToProcesses[subdomainID];
+        public int GetSubdomainIdOfProcess(int processRank) => processesToSubdomains[processRank];
     }
 }

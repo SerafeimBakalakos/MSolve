@@ -19,41 +19,27 @@ namespace ISAAR.MSolve.Solvers.Ordering
     /// </summary>
     public class DofOrdererMpi : DofOrdererBase
     {
-        //TODO: this should also be a strategy, so that I could have caching with fallbacks, in case of insufficient memor.
-        private readonly Intracommunicator comm;
-        private readonly IDofSerializer dofSerializer;
-        private readonly Dictionary<int, INode> globalNodes_master;
-        private readonly int masterProcess; 
-        private readonly ProcessDistribution processDistribution;
-        private readonly int rank;
-        private readonly ISubdomain subdomain;
+        private readonly ProcessDistribution procs;
 
-        public DofOrdererMpi(IFreeDofOrderingStrategy freeOrderingStrategy, IDofReorderingStrategy reorderingStrategy, 
-            Intracommunicator comm, int masterProcess, ProcessDistribution processDistribution, IDofSerializer dofSerializer,
-            Dictionary<int, INode> globalNodes, ISubdomain subdomain, bool cacheElementToSubdomainDofMaps = true):
+        public DofOrdererMpi(ProcessDistribution processDistribution, IFreeDofOrderingStrategy freeOrderingStrategy,
+            IDofReorderingStrategy reorderingStrategy, bool cacheElementToSubdomainDofMaps = true):
             base(freeOrderingStrategy, reorderingStrategy, cacheElementToSubdomainDofMaps)
         {
-            this.comm = comm;
-            this.rank = comm.Rank;
-            this.masterProcess = masterProcess;
-            this.processDistribution = processDistribution;
-            this.dofSerializer = dofSerializer;
-            this.globalNodes_master = globalNodes;
-            this.subdomain = subdomain;
+            this.procs = processDistribution;
         }
 
         public override void OrderFreeDofs(IModel model)
         {
             // Each process orders its subdomain dofs
+            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
             ISubdomainFreeDofOrdering subdomainOrdering = OrderFreeDofs(subdomain);
             subdomain.FreeDofOrdering = subdomainOrdering;
 
             // Order global dofs
             int numGlobalFreeDofs = -1;
             DofTable globalFreeDofs = null;
-            if (rank == masterProcess) (numGlobalFreeDofs, globalFreeDofs) = freeOrderingStrategy.OrderGlobalDofs(model);
-            var globalOrdering = new GlobalFreeDofOrderingMpi(numGlobalFreeDofs, globalFreeDofs, globalNodes_master, subdomain, 
-                comm, masterProcess, processDistribution, dofSerializer);
+            if (procs.IsMasterProcess) (numGlobalFreeDofs, globalFreeDofs) = freeOrderingStrategy.OrderGlobalDofs(model);
+            var globalOrdering = new GlobalFreeDofOrderingMpi(procs, numGlobalFreeDofs, globalFreeDofs, model);
             globalOrdering.CreateSubdomainGlobalMaps(model);
             model.GlobalDofOrdering = globalOrdering;
         }

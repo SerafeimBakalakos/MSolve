@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
-using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 namespace ISAAR.MSolve.Discretization.FreedomDegrees
 {
@@ -19,13 +18,16 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
 
         public void CreateSubdomainGlobalMaps(IModel model)
         {
-            subdomainDofOrderings = new Dictionary<ISubdomain, ISubdomainFreeDofOrdering>();
-            foreach (ISubdomain subdomain in model.EnumerateSubdomains()) subdomainDofOrderings[subdomain] = subdomain.FreeDofOrdering;
+            subdomainDofOrderings = new Dictionary<int, ISubdomainFreeDofOrdering>();
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                subdomainDofOrderings[subdomain.ID] = subdomain.FreeDofOrdering;
+            }
             CalcSubdomainGlobalMappings();
         }
 
-        public ISubdomainFreeDofOrdering GetSubdomainDofOrdering(ISubdomain subdomain) => subdomainDofOrderings[subdomain];
+        public ISubdomainFreeDofOrdering GetSubdomainDofOrdering(ISubdomain subdomain) => subdomainDofOrderings[subdomain.ID];
 
-        public int[] GetSubdomainToGlobalMap(ISubdomain subdomain) => subdomainToGlobalDofMaps[subdomain];
+        public int[] GetSubdomainToGlobalMap(ISubdomain subdomain) => subdomainToGlobalDofMaps[subdomain.ID];
     }
 }
