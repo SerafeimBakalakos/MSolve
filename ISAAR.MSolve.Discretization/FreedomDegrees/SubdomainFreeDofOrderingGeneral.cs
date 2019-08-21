@@ -124,7 +124,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         public void Reorder(IReorderingAlgorithm reorderingAlgorithm, ISubdomain subdomain)
         {
             var pattern = SparsityPatternSymmetric.CreateEmpty(NumFreeDofs);
-            foreach (var element in subdomain.Elements)
+            foreach (var element in subdomain.EnumerateElements())
             {
                 (int[] elementDofIndices, int[] subdomainDofIndices) = MapFreeDofsElementToSubdomain(element);
 

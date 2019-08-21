@@ -123,7 +123,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 {
                     Debug.WriteLine($"{this.GetType().Name}: Assembling the free-free stiffness matrix of subdomain {s}");
                     Kff = matrixManagers[s].BuildGlobalMatrix(subdomain.FreeDofOrdering,
-                        subdomain.Elements, elementMatrixProvider);
+                        subdomain.EnumerateElements(), elementMatrixProvider);
                     linearSystems[s].Matrix = Kff; //TODO: This should be done by the solver not the analyzer. This method should return void.
                 }
                 else
@@ -162,7 +162,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 }
                 (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) =
                     matrixManagers[s].BuildGlobalSubmatrices(subdomain.FreeDofOrdering, subdomain.ConstrainedDofOrdering, 
-                    subdomain.Elements, elementMatrixProvider);
+                    subdomain.EnumerateElements(), elementMatrixProvider);
                 matrices[s] = (Kff, Kfc, Kcf, Kcc);
                 linearSystems[s].Matrix = Kff; //TODO: This should be done by the solver not the analyzer. This method should return void.
             }

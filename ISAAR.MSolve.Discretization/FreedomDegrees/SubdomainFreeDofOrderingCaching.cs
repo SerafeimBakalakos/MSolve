@@ -61,7 +61,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         {
             elementDofsCache.Clear();
             var pattern = SparsityPatternSymmetric.CreateEmpty(NumFreeDofs);
-            foreach (var element in subdomain.Elements)
+            foreach (var element in subdomain.EnumerateElements())
             {
                 // Do not cache anything at this point
                 (int numAllElementDofs, int[] elementDofIndices, int[] subdomainDofIndices) = ProcessElement(element);

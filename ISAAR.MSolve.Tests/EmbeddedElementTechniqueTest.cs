@@ -113,7 +113,7 @@ namespace ISAAR.MSolve.Tests
 
                 // Add Hexa element to the element and subdomains dictionary of the model
                 model.ElementsDictionary.Add(hexa8NLelement.ID, hexa8NLelement);
-                model.SubdomainsDictionary[1].Elements.Add(hexa8NLelement);
+                model.SubdomainsDictionary[1].Elements.Add(hexa8NLelement.ID, hexa8NLelement);
 
                 // Add nodal load values at the top nodes of the model
                 model.Loads.Add(new Load() { Amount = 25, Node = model.NodesDictionary[1], DOF = StructuralDof.TranslationZ });
@@ -159,7 +159,7 @@ namespace ISAAR.MSolve.Tests
                 beamElement.NodesDictionary.Add(10, model.NodesDictionary[10]);
 
                 model.ElementsDictionary.Add(beamElement.ID, beamElement);
-                model.SubdomainsDictionary[1].Elements.Add(beamElement);
+                model.SubdomainsDictionary[1].Elements.Add(beamElement.ID, beamElement);
             }
 
             public static void ExampleWithEmbedded(Model model)

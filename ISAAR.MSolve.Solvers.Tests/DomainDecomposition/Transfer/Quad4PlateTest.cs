@@ -65,7 +65,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Transfer
                 ISubdomain subdomain = ls.Subdomain;
                 var provider = new ElementStructuralStiffnessProvider();
                 var assembler = new SkylineAssembler();
-                SkylineMatrix stiffness = assembler.BuildGlobalMatrix(subdomain.FreeDofOrdering, subdomain.Elements, provider);
+                SkylineMatrix stiffness = assembler.BuildGlobalMatrix(subdomain.FreeDofOrdering, 
+                    subdomain.EnumerateElements(), provider);
                 ls.Matrix = stiffness;
             }
 
@@ -107,7 +108,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Transfer
             {
                 ISubdomain subdomain = ls.Subdomain;
                 var assembler = new SkylineAssembler();
-                SkylineMatrix stiffness = assembler.BuildGlobalMatrix(subdomain.FreeDofOrdering, subdomain.Elements, provider);
+                SkylineMatrix stiffness = assembler.BuildGlobalMatrix(subdomain.FreeDofOrdering, 
+                    subdomain.EnumerateElements(), provider);
                 ls.Matrix = stiffness;
             }
 

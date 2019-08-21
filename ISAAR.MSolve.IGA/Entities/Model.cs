@@ -245,7 +245,7 @@ namespace ISAAR.MSolve.IGA.Entities
 		private void BuildPatchOfEachElement()
 		{
 			foreach (Patch patch in patchesDictionary.Values)
-			foreach (Element element in patch.Elements)
+			foreach (Element element in patch.Elements.Values)
 			{
 				element.Patch = patch;
 				element.Model = this;

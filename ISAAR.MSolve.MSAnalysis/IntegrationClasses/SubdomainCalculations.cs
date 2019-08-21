@@ -118,7 +118,7 @@ namespace ISAAR.MSolve.FEM
             times.Add("rowIndexCalculation", DateTime.Now - totalStart);
             times.Add("element", TimeSpan.Zero);
             times.Add("addition", TimeSpan.Zero);
-            foreach (Element element in subdomain.Elements)
+            foreach (Element element in subdomain.Elements.Values)
             {
                 var isEmbeddedElement = element.ElementType is ISAAR.MSolve.FEM.Interfaces.IEmbeddedElement;
                 var elStart = DateTime.Now;
@@ -174,7 +174,7 @@ namespace ISAAR.MSolve.FEM
             times.Add("rowIndexCalculation", DateTime.Now - totalStart);
             times.Add("element", TimeSpan.Zero);
             times.Add("addition", TimeSpan.Zero);
-            foreach (Element element in subdomain.Elements) //.3 ElementsDictionary.Values)
+            foreach (Element element in subdomain.Elements.Values)
             {
                 var isEmbeddedElement = element.ElementType is ISAAR.MSolve.FEM.Interfaces.IEmbeddedElement;
                 var elStart = DateTime.Now;

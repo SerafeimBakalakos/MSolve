@@ -88,7 +88,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element0.AddNode(model.NodesDictionary[3]);
             element0.AddNode(model.NodesDictionary[2]);
             model.ElementsDictionary.Add(element0.ID, element0);
-            model.SubdomainsDictionary[0].Elements.Add(element0);
+            model.SubdomainsDictionary[0].Elements.Add(element0.ID, element0);
             #endregion
 
             #region element1
@@ -102,7 +102,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element1.AddNode(model.NodesDictionary[11]);
             element1.AddNode(model.NodesDictionary[10]);
             model.ElementsDictionary.Add(element1.ID, element1);
-            model.SubdomainsDictionary[0].Elements.Add(element1);
+            model.SubdomainsDictionary[0].Elements.Add(element1.ID, element1);
             #endregion
 
             #region element2
@@ -116,7 +116,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element2.AddNode(model.NodesDictionary[12]);
             element2.AddNode(model.NodesDictionary[11]);
             model.ElementsDictionary.Add(element2.ID, element2);
-            model.SubdomainsDictionary[0].Elements.Add(element2);
+            model.SubdomainsDictionary[0].Elements.Add(element2.ID, element2);
             #endregion
 
             #region element3
@@ -130,7 +130,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element3.AddNode(model.NodesDictionary[13]);
             element3.AddNode(model.NodesDictionary[12]);
             model.ElementsDictionary.Add(element3.ID, element3);
-            model.SubdomainsDictionary[0].Elements.Add(element3);
+            model.SubdomainsDictionary[0].Elements.Add(element3.ID, element3);
             #endregion
 
             #region element4
@@ -144,7 +144,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element4.AddNode(model.NodesDictionary[14]);
             element4.AddNode(model.NodesDictionary[13]);
             model.ElementsDictionary.Add(element4.ID, element4);
-            model.SubdomainsDictionary[0].Elements.Add(element4);
+            model.SubdomainsDictionary[0].Elements.Add(element4.ID, element4);
             #endregion
 
             #region element5
@@ -158,7 +158,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element5.AddNode(model.NodesDictionary[15]);
             element5.AddNode(model.NodesDictionary[14]);
             model.ElementsDictionary.Add(element5.ID, element5);
-            model.SubdomainsDictionary[0].Elements.Add(element5);
+            model.SubdomainsDictionary[0].Elements.Add(element5.ID, element5);
             #endregion
 
             #region element6
@@ -172,7 +172,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element6.AddNode(model.NodesDictionary[16]);
             element6.AddNode(model.NodesDictionary[15]);
             model.ElementsDictionary.Add(element6.ID, element6);
-            model.SubdomainsDictionary[0].Elements.Add(element6);
+            model.SubdomainsDictionary[0].Elements.Add(element6.ID, element6);
             #endregion
 
             #region element7
@@ -186,7 +186,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element7.AddNode(model.NodesDictionary[17]);
             element7.AddNode(model.NodesDictionary[16]);
             model.ElementsDictionary.Add(element7.ID, element7);
-            model.SubdomainsDictionary[0].Elements.Add(element7);
+            model.SubdomainsDictionary[0].Elements.Add(element7.ID, element7);
             #endregion
 
             #region element8
@@ -200,7 +200,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element8.AddNode(model.NodesDictionary[19]);
             element8.AddNode(model.NodesDictionary[18]);
             model.ElementsDictionary.Add(element8.ID, element8);
-            model.SubdomainsDictionary[0].Elements.Add(element8);
+            model.SubdomainsDictionary[0].Elements.Add(element8.ID, element8);
             #endregion
 
             #region element9
@@ -214,7 +214,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element9.AddNode(model.NodesDictionary[21]);
             element9.AddNode(model.NodesDictionary[20]);
             model.ElementsDictionary.Add(element9.ID, element9);
-            model.SubdomainsDictionary[0].Elements.Add(element9);
+            model.SubdomainsDictionary[0].Elements.Add(element9.ID, element9);
             #endregion
 
             #region element10
@@ -228,7 +228,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element10.AddNode(model.NodesDictionary[23]);
             element10.AddNode(model.NodesDictionary[22]);
             model.ElementsDictionary.Add(element10.ID, element10);
-            model.SubdomainsDictionary[0].Elements.Add(element10);
+            model.SubdomainsDictionary[0].Elements.Add(element10.ID, element10);
             #endregion
 
             #region element11
@@ -242,7 +242,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element11.AddNode(model.NodesDictionary[25]);
             element11.AddNode(model.NodesDictionary[24]);
             model.ElementsDictionary.Add(element11.ID, element11);
-            model.SubdomainsDictionary[0].Elements.Add(element11);
+            model.SubdomainsDictionary[0].Elements.Add(element11.ID, element11);
             #endregion
 
             #region element12
@@ -256,7 +256,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element12.AddNode(model.NodesDictionary[27]);
             element12.AddNode(model.NodesDictionary[26]);
             model.ElementsDictionary.Add(element12.ID, element12);
-            model.SubdomainsDictionary[0].Elements.Add(element12);
+            model.SubdomainsDictionary[0].Elements.Add(element12.ID, element12);
             #endregion
 
             #region element13
@@ -270,7 +270,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element13.AddNode(model.NodesDictionary[29]);
             element13.AddNode(model.NodesDictionary[28]);
             model.ElementsDictionary.Add(element13.ID, element13);
-            model.SubdomainsDictionary[0].Elements.Add(element13);
+            model.SubdomainsDictionary[0].Elements.Add(element13.ID, element13);
             #endregion
             #endregion
 
@@ -397,7 +397,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element0.AddNode(model.NodesDictionary[3]);
             element0.AddNode(model.NodesDictionary[2]);
             model.ElementsDictionary.Add(element0.ID, element0);
-            model.SubdomainsDictionary[0].Elements.Add(element0);
+            model.SubdomainsDictionary[0].Elements.Add(element0.ID, element0);
             #endregion
 
             #region element1
@@ -416,7 +416,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element1.AddNode(model.NodesDictionary[11]);
             element1.AddNode(model.NodesDictionary[10]);
             model.ElementsDictionary.Add(element1.ID, element1);
-            model.SubdomainsDictionary[0].Elements.Add(element1);
+            model.SubdomainsDictionary[0].Elements.Add(element1.ID, element1);
             #endregion
 
             #region element2
@@ -435,7 +435,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element2.AddNode(model.NodesDictionary[12]);
             element2.AddNode(model.NodesDictionary[11]);
             model.ElementsDictionary.Add(element2.ID, element2);
-            model.SubdomainsDictionary[0].Elements.Add(element2);
+            model.SubdomainsDictionary[0].Elements.Add(element2.ID, element2);
             #endregion
 
             #region element3
@@ -454,7 +454,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element3.AddNode(model.NodesDictionary[13]);
             element3.AddNode(model.NodesDictionary[12]);
             model.ElementsDictionary.Add(element3.ID, element3);
-            model.SubdomainsDictionary[0].Elements.Add(element3);
+            model.SubdomainsDictionary[0].Elements.Add(element3.ID, element3);
             #endregion
 
             #region element4
@@ -473,7 +473,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element4.AddNode(model.NodesDictionary[14]);
             element4.AddNode(model.NodesDictionary[13]);
             model.ElementsDictionary.Add(element4.ID, element4);
-            model.SubdomainsDictionary[0].Elements.Add(element4);
+            model.SubdomainsDictionary[0].Elements.Add(element4.ID, element4);
             #endregion
 
             #region element5
@@ -492,7 +492,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element5.AddNode(model.NodesDictionary[15]);
             element5.AddNode(model.NodesDictionary[14]);
             model.ElementsDictionary.Add(element5.ID, element5);
-            model.SubdomainsDictionary[0].Elements.Add(element5);
+            model.SubdomainsDictionary[0].Elements.Add(element5.ID, element5);
             #endregion
 
             #region element6
@@ -511,7 +511,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element6.AddNode(model.NodesDictionary[16]);
             element6.AddNode(model.NodesDictionary[15]);
             model.ElementsDictionary.Add(element6.ID, element6);
-            model.SubdomainsDictionary[0].Elements.Add(element6);
+            model.SubdomainsDictionary[0].Elements.Add(element6.ID, element6);
             #endregion
 
             #region element7
@@ -530,7 +530,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element7.AddNode(model.NodesDictionary[17]);
             element7.AddNode(model.NodesDictionary[16]);
             model.ElementsDictionary.Add(element7.ID, element7);
-            model.SubdomainsDictionary[0].Elements.Add(element7);
+            model.SubdomainsDictionary[0].Elements.Add(element7.ID, element7);
             #endregion
 
             #region element8
@@ -549,7 +549,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element8.AddNode(model.NodesDictionary[19]);
             element8.AddNode(model.NodesDictionary[18]);
             model.ElementsDictionary.Add(element8.ID, element8);
-            model.SubdomainsDictionary[0].Elements.Add(element8);
+            model.SubdomainsDictionary[0].Elements.Add(element8.ID, element8);
             #endregion
 
             #region element9
@@ -568,7 +568,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element9.AddNode(model.NodesDictionary[21]);
             element9.AddNode(model.NodesDictionary[20]);
             model.ElementsDictionary.Add(element9.ID, element9);
-            model.SubdomainsDictionary[0].Elements.Add(element9);
+            model.SubdomainsDictionary[0].Elements.Add(element9.ID, element9);
             #endregion
 
             #region element10
@@ -587,7 +587,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element10.AddNode(model.NodesDictionary[23]);
             element10.AddNode(model.NodesDictionary[22]);
             model.ElementsDictionary.Add(element10.ID, element10);
-            model.SubdomainsDictionary[0].Elements.Add(element10);
+            model.SubdomainsDictionary[0].Elements.Add(element10.ID, element10);
             #endregion
 
             #region element11
@@ -606,7 +606,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element11.AddNode(model.NodesDictionary[25]);
             element11.AddNode(model.NodesDictionary[24]);
             model.ElementsDictionary.Add(element11.ID, element11);
-            model.SubdomainsDictionary[0].Elements.Add(element11);
+            model.SubdomainsDictionary[0].Elements.Add(element11.ID, element11);
             #endregion
 
             #region element12
@@ -625,7 +625,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element12.AddNode(model.NodesDictionary[27]);
             element12.AddNode(model.NodesDictionary[26]);
             model.ElementsDictionary.Add(element12.ID, element12);
-            model.SubdomainsDictionary[0].Elements.Add(element12);
+            model.SubdomainsDictionary[0].Elements.Add(element12.ID, element12);
             #endregion
 
             #region element13
@@ -644,7 +644,7 @@ namespace ISAAR.MSolve.SamplesConsole
             element13.AddNode(model.NodesDictionary[29]);
             element13.AddNode(model.NodesDictionary[28]);
             model.ElementsDictionary.Add(element13.ID, element13);
-            model.SubdomainsDictionary[0].Elements.Add(element13);
+            model.SubdomainsDictionary[0].Elements.Add(element13.ID, element13);
             #endregion
             #endregion
 
@@ -744,7 +744,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 var elementWrapper = new Element() { ID = i, ElementType = element };
                 foreach (Node node in element.Nodes) elementWrapper.AddNode(node);
                 model.ElementsDictionary.Add(i, elementWrapper);
-                model.SubdomainsDictionary[0].Elements.Add(elementWrapper);
+                model.SubdomainsDictionary[0].Elements.Add(elementWrapper.ID, elementWrapper);
             }
 
             // Constraints
@@ -841,7 +841,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 var elementWrapper = new Element() { ID = i, ElementType = element };
                 foreach (Node node in element.Nodes) elementWrapper.AddNode(node);
                 model.ElementsDictionary.Add(i, elementWrapper);
-                model.SubdomainsDictionary[0].Elements.Add(elementWrapper);
+                model.SubdomainsDictionary[0].Elements.Add(elementWrapper.ID, elementWrapper);
             }
 
             // Constraints
@@ -939,7 +939,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 var elementWrapper = new Element() { ID = i, ElementType = element };
                 foreach (Node node in element.Nodes) elementWrapper.AddNode(node);
                 model.ElementsDictionary.Add(i, elementWrapper);
-                model.SubdomainsDictionary[0].Elements.Add(elementWrapper);
+                model.SubdomainsDictionary[0].Elements.Add(elementWrapper.ID, elementWrapper);
             }
 
             // Constraints
@@ -1057,10 +1057,10 @@ namespace ISAAR.MSolve.SamplesConsole
 
             #region subdomains
             var subdomain0 = new Subdomain(0);
-            subdomain0.Elements.Add(element0);
-            subdomain0.Elements.Add(element1);
-            subdomain0.Elements.Add(element2);
-            subdomain0.Elements.Add(element3);
+            subdomain0.Elements.Add(element0.ID, element0);
+            subdomain0.Elements.Add(element1.ID, element1);
+            subdomain0.Elements.Add(element2.ID, element2);
+            subdomain0.Elements.Add(element3.ID, element3);
             #endregion
 
             #region model

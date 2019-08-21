@@ -42,7 +42,7 @@ namespace ISAAR.MSolve.FEM.Postprocessing
 
             foreach (Subdomain subdomain in model.EnumerateSubdomains())
             {
-                foreach (Element element in subdomain.Elements)
+                foreach (Element element in subdomain.Elements.Values)
                 {
                     ContinuumElement2D elementType = (ContinuumElement2D)(element.ElementType); //TODO: remove cast
 

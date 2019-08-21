@@ -292,7 +292,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
                             e1.NodesDictionary.Add(globalNodeIDforlocalNode_i[j], model.NodesDictionary[globalNodeIDforlocalNode_i[j]]);
                         }
                         model.ElementsDictionary.Add(e1.ID, e1);
-                        model.SubdomainsDictionary[subdomainID].Elements.Add(e1);
+                        model.SubdomainsDictionary[subdomainID].Elements.Add(e1.ID, e1);
                         elementCounter++;
                     }
                 }
@@ -453,7 +453,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
                     e2.NodesDictionary.Add(renumbering.GetNewNodeNumbering(midsurfaceNodeIDforlocalShellNode_i[j1] + PreviousNodesNumberValue), model.NodesDictionary[renumbering.GetNewNodeNumbering(midsurfaceNodeIDforlocalShellNode_i[j1] + PreviousNodesNumberValue)]);
                 }
                 model.ElementsDictionary.Add(e2.ID, e2);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(e2);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e2.ID, e2);
                 eswterikosElementCounter++;
             }
             int arithmosShellElements = eswterikosElementCounter;
@@ -525,7 +525,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
                         model.NodesDictionary[renumbering.GetNewNodeNumbering(midsurfaceNodeIDforlocalCohesiveNode_i[j1] + PreviousNodesNumberValue + arithmosShmeiwnShellMidsurface)]);
                 }
                 model.ElementsDictionary.Add(e2.ID, e2);
-                model.SubdomainsDictionary[subdomainID].Elements.Add( e2);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e2.ID, e2);
                 eswterikosElementCounter++;
             }
             // orismos elements katw strwshs ews edw
@@ -583,7 +583,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
                         model.NodesDictionary[renumbering.GetNewNodeNumbering(midsurfaceNodeIDforlocalCohesiveNode_i[j1] + PreviousNodesNumberValue + 2 * arithmosShmeiwnShellMidsurface)]);
                 }
                 model.ElementsDictionary.Add(e2.ID, e2);
-                model.SubdomainsDictionary[subdomainID].Elements.Add( e2);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e2.ID, e2);
                 eswterikosElementCounter++;
             }
             // orismos elements anw strwshs ews edw
@@ -748,7 +748,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
                     e2.NodesDictionary.Add(renumbering.GetNewNodeNumbering(midsurfaceNodeIDforlocalShellNode_i[j1] + PreviousNodesNumberValue), model.NodesDictionary[renumbering.GetNewNodeNumbering(midsurfaceNodeIDforlocalShellNode_i[j1] + PreviousNodesNumberValue)]);
                 }
                 model.ElementsDictionary.Add(e2.ID, e2);
-                model.SubdomainsDictionary[subdomainID].Elements.Add( e2);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e2.ID, e2);
                 eswterikosElementCounter++;
             }
             int arithmosShellElements = eswterikosElementCounter;
@@ -811,7 +811,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
                         model.NodesDictionary[renumbering.GetNewNodeNumbering(midsurfaceNodeIDforlocalCohesiveNode_i[j1] + PreviousNodesNumberValue + arithmosShmeiwnShellMidsurface)]);
                 }
                 model.ElementsDictionary.Add(e2.ID, e2);
-                model.SubdomainsDictionary[subdomainID].Elements.Add( e2);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e2.ID, e2);
                 eswterikosElementCounter++;
             }
             // orismos elements katw strwshs ews edw
@@ -870,7 +870,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
                         model.NodesDictionary[renumbering.GetNewNodeNumbering(midsurfaceNodeIDforlocalCohesiveNode_i[j1] + PreviousNodesNumberValue + 2 * arithmosShmeiwnShellMidsurface)]);
                 }
                 model.ElementsDictionary.Add(e2.ID, e2);
-                model.SubdomainsDictionary[subdomainID].Elements.Add( e2);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e2.ID, e2);
                 eswterikosElementCounter++;
             }
 
@@ -968,7 +968,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
                             e1.NodesDictionary.Add(globalNodeIDforlocalNode_i[j], model.NodesDictionary[globalNodeIDforlocalNode_i[j]]);
                         }
                         model.ElementsDictionary.Add(e1.ID, e1);
-                        model.SubdomainsDictionary[subdomainID].Elements.Add(e1);
+                        model.SubdomainsDictionary[subdomainID].Elements.Add(e1.ID, e1);
                         elementCounter++;
                     }
                 }
@@ -1095,7 +1095,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
                             e1.NodesDictionary.Add(globalNodeIDforlocalNode_i[j], model.NodesDictionary[globalNodeIDforlocalNode_i[j]]);
                         }
                         model.ElementsDictionary.Add(e1.ID, e1);
-                        model.SubdomainsDictionary[subdomainID].Elements.Add(e1);
+                        model.SubdomainsDictionary[subdomainID].Elements.Add(e1.ID, e1);
                         elementCounter++;
                     }
                 }

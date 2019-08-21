@@ -107,7 +107,7 @@ namespace ISAAR.MSolve.XFEM.Entities
         {
             foreach (XSubdomain subdomain in Subdomains.Values)
             {
-                foreach (IXFiniteElement element in subdomain.Elements) element.Subdomain = subdomain;
+                foreach (IXFiniteElement element in subdomain.Elements.Values) element.Subdomain = subdomain;
             }
         }
 

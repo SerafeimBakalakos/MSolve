@@ -56,7 +56,7 @@ namespace ISAAR.MSolve.SamplesConsole.Solvers
                 var elementWrapper = new Element() { ID = e, ElementType = element };
                 foreach (Node node in element.Nodes) elementWrapper.AddNode(node);
                 model.ElementsDictionary.Add(e, elementWrapper);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper.ID, elementWrapper);
             }
 
             // Solver
@@ -123,7 +123,7 @@ namespace ISAAR.MSolve.SamplesConsole.Solvers
                 var elementWrapper = new Element() { ID = e, ElementType = element };
                 foreach (Node node in element.Nodes) elementWrapper.AddNode(node);
                 model.ElementsDictionary.Add(e, elementWrapper);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper.ID, elementWrapper);
             }
 
             // Solver

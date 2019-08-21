@@ -164,16 +164,16 @@ namespace ISAAR.MSolve.Optimization.Structural.Benchmarks
                 model.ElementsDictionary.Add(element10.ID, element10);
 
                 model.SubdomainsDictionary.Add(subdomainID, new Subdomain(subdomainID));
-                model.SubdomainsDictionary[subdomainID].Elements.Add(element1);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(element2);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(element3);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(element4);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(element5);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(element6);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(element7);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(element8);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(element9);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(element10);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(element1.ID, element1);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(element2.ID, element2);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(element3.ID, element3);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(element4.ID, element4);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(element5.ID, element5);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(element6.ID, element6);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(element7.ID, element7);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(element8.ID, element8);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(element9.ID, element9);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(element10.ID, element10);
 
                 model.NodesDictionary[5].Constraints.Add(new Constraint { DOF = StructuralDof.TranslationX, Amount = 0.0 });
                 model.NodesDictionary[5].Constraints.Add(new Constraint { DOF = StructuralDof.TranslationY, Amount = 0.0 });

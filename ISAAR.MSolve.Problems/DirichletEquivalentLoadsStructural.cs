@@ -31,7 +31,7 @@ namespace ISAAR.MSolve.Problems
             //times.Add("addition", TimeSpan.Zero);
 
             var subdomainEquivalentForces = Vector.CreateZero(subdomain.FreeDofOrdering.NumFreeDofs);
-            foreach (IElement element in subdomain.Elements) //TODO: why go through all the elements? Most of them will not have Dirichlet bc.
+            foreach (IElement element in subdomain.EnumerateElements()) //TODO: why go through all the elements? Most of them will not have Dirichlet bc.
             {
                 //var elStart = DateTime.Now;
                 IMatrix elementK = elementProvider.Matrix(element);

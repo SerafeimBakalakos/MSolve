@@ -85,7 +85,7 @@ namespace ISAAR.MSolve.Tests
 
                 // Add Hexa element to the element and subdomains dictionary of the model
                 model.ElementsDictionary.Add(element.ID, element);
-                model.SubdomainsDictionary[1].Elements.Add(element);
+                model.SubdomainsDictionary[1].Elements.Add(element.ID, element);
                 iNode++;
             }
 

@@ -134,7 +134,7 @@ namespace ISAAR.MSolve.IGA.Readers
 								element.AddControlPoint(Model.ControlPointsDictionary[connectivity[cp]]);
 							}
 							Model.ElementsDictionary.Add(elementIDCounter++, element);
-							Model.PatchesDictionary[0].Elements.Add(element);
+							Model.PatchesDictionary[0].Elements.Add(element.ID, element);
 						}
 						else
 						{
@@ -178,7 +178,7 @@ namespace ISAAR.MSolve.IGA.Readers
 			}
 
 			Model.ElementsDictionary.Add(elementIDCounter++, element);
-			Model.PatchesDictionary[0].Elements.Add(element);
+			Model.PatchesDictionary[0].Elements.Add(element.ID, element);
 		}
 
 		private void CreateSectionMaterialShell(int elementDegreeKsi, int elementDegreeHeta, Matrix extractionOperator,
@@ -200,7 +200,7 @@ namespace ISAAR.MSolve.IGA.Readers
 			}
 
 			Model.ElementsDictionary.Add(elementIDCounter++, element);
-			Model.PatchesDictionary[0].Elements.Add(element);
+			Model.PatchesDictionary[0].Elements.Add(element.ID, element);
 		}
 
 		private void CreateThicknessShell(int elementDegreeKsi, int elementDegreeHeta, Matrix extractionOperator,
@@ -220,7 +220,7 @@ namespace ISAAR.MSolve.IGA.Readers
 			}
 
 			Model.ElementsDictionary.Add(elementIDCounter++, element);
-			Model.PatchesDictionary[0].Elements.Add(element);
+			Model.PatchesDictionary[0].Elements.Add(element.ID, element);
 		}
 	}
 }

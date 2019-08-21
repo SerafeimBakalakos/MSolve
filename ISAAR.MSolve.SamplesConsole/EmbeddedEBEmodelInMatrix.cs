@@ -202,7 +202,7 @@ namespace ISAAR.MSolve.SamplesConsole
                         // Add Hexa element to the element and subdomains dictionary of the model
                         model.ElementsDictionary.Add(hexa8NLelement.ID, hexa8NLelement);
                         //model.SubdomainsDictionary[0].ElementsDictionary.Add(hexa8NLelement.ID, hexa8NLelement);
-                        model.SubdomainsDictionary[0].Elements.Add(hexa8NLelement);
+                        model.SubdomainsDictionary[0].Elements.Add(hexa8NLelement.ID, hexa8NLelement);
                     }
                 }
 
@@ -346,7 +346,7 @@ namespace ISAAR.MSolve.SamplesConsole
                         // Add beam element to the element and subdomains dictionary of the model
                         model.ElementsDictionary.Add(beamElement.ID, beamElement);
                         //model.SubdomainsDictionary[0].ElementsDictionary.Add(beamElement.ID, beamElement);
-                        model.SubdomainsDictionary[0].Elements.Add(beamElement);
+                        model.SubdomainsDictionary[0].Elements.Add(beamElement.ID, beamElement);
                     }
                 }
             }

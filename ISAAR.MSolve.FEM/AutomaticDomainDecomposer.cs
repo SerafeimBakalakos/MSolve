@@ -48,7 +48,8 @@ namespace ISAAR.MSolve.FEM
                 for (int j = 0; j < numberOfElementsPerSubdomain; j++)
                 {
                     if (indexElement >= ElementsRenumbered.Count) break;
-                    Model.SubdomainsDictionary[i].Elements.Add(ElementsRenumbered[indexElement++]);
+                    int e = indexElement++;
+                    Model.SubdomainsDictionary[i].Elements.Add(e, ElementsRenumbered[e]);
                 }
             }
 
@@ -59,7 +60,7 @@ namespace ISAAR.MSolve.FEM
         {
             foreach (Subdomain subdomain in Model.SubdomainsDictionary.Values)
             {
-                foreach (Element element in subdomain.Elements)
+                foreach (Element element in subdomain.Elements.Values)
                     element.Subdomain = subdomain;
             }
 

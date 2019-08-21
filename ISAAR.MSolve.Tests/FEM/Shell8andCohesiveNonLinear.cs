@@ -236,7 +236,7 @@ namespace ISAAR.MSolve.Tests.FEM
             e1.NodesDictionary.Add(7, model.NodesDictionary[7]);
 
             model.ElementsDictionary.Add(e1.ID, e1);
-            model.SubdomainsDictionary[subdomainID].Elements.Add(e1);
+            model.SubdomainsDictionary[subdomainID].Elements.Add(e1.ID, e1);
             //eisagwgh shell ews edw
 
             // eisagwgh tou cohesive element
@@ -261,7 +261,7 @@ namespace ISAAR.MSolve.Tests.FEM
             }
 
             model.ElementsDictionary.Add(e2.ID, e2);
-            model.SubdomainsDictionary[subdomainID].Elements.Add(e2);
+            model.SubdomainsDictionary[subdomainID].Elements.Add(e2.ID, e2);
             // eisagwgh cohesive ews edw
 
             // perioxh loads

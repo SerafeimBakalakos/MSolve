@@ -81,7 +81,7 @@ namespace ISAAR.MSolve.Tests.FEM
                 var elementWrapper = new Element() { ID = i, ElementType = elements[i] };
                 foreach (var node in elements[i].Nodes) elementWrapper.AddNode(node);
                 model.ElementsDictionary[i] = elementWrapper;
-                model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper.ID, elementWrapper);
             }
 
             // Dirichlet BC

@@ -56,7 +56,7 @@ namespace ISAAR.MSolve.Tests
             };
             elementWrapper.AddNodes(nodes);
             model.ElementsDictionary.Add(elementWrapper.ID, elementWrapper);
-            model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper);
+            model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper.ID, elementWrapper);
 
             //var a = quad.StiffnessMatrix(element);
 

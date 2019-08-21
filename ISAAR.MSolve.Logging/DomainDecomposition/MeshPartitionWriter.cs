@@ -176,13 +176,13 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
                 int numElements = 0;
                 foreach (ISubdomain subdomain in subdomains)
                 {
-                    numElements += subdomain.Elements.Count;
-                    foreach (IElement element in subdomain.Elements) numElementData += 1 + element.Nodes.Count;
+                    numElements += subdomain.NumElements;
+                    foreach (IElement element in subdomain.EnumerateElements()) numElementData += 1 + element.Nodes.Count;
                 }
                 writer.WriteLine($"CELLS {numElements} {numElementData}");
                 foreach (ISubdomain subdomain in subdomains)
                 {
-                    foreach (IElement element in subdomain.Elements)
+                    foreach (IElement element in subdomain.EnumerateElements())
                     {
                         writer.Write(element.Nodes.Count);
                         foreach (INode node in element.Nodes) writer.Write(" " + subdomainNodes[subdomain][node]);
@@ -195,7 +195,7 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
                 writer.WriteLine("CELL_TYPES " + numElements);
                 foreach (ISubdomain subdomain in subdomains)
                 {
-                    foreach (IElement element in subdomain.Elements)
+                    foreach (IElement element in subdomain.EnumerateElements())
                     {
                         CellType cellType = element.ElementType.CellType;
                         bool canBePlotted = VtkCell.CellTypeCodes.TryGetValue(cellType, out int vtkCellCode);

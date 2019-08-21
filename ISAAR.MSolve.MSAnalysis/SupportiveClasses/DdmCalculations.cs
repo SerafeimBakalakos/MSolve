@@ -114,7 +114,8 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
                 model.SubdomainsDictionary.Add(subdID, new Subdomain(subdID));
                 for (int i1 = 0; i1 < subdElementIds[subdID].GetLength(0); i1++)
                 {
-                    model.SubdomainsDictionary[subdID].Elements.Add(model.ElementsDictionary[subdElementIds[subdID][i1]]);//.ElementsDictionary.Add(subdElementIds[subdID][i1], model.ElementsDictionary[subdElementIds[subdID][i1]]);
+                    int e = subdElementIds[subdID][i1];
+                    model.SubdomainsDictionary[subdID].Elements.Add(e, model.ElementsDictionary[e]);//.ElementsDictionary.Add(subdElementIds[subdID][i1], model.ElementsDictionary[subdElementIds[subdID][i1]]);
                 }
             }
 
@@ -843,7 +844,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
             //private void BuildSubdomainOfEachElement()
             foreach (Subdomain subdomain in model.SubdomainsDictionary.Values)
             {
-                foreach (Element element in subdomain.Elements)
+                foreach (Element element in subdomain.Elements.Values)
                 { element.Subdomain = subdomain; }
             }
 
@@ -869,7 +870,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
             //private void BuildSubdomainOfEachElement()
             foreach (Subdomain subdomain in model.SubdomainsDictionary.Values)
             {
-                foreach (Element element in subdomain.Elements)
+                foreach (Element element in subdomain.Elements.Values)
                 { element.Subdomain = null; }  // subdomain; }
             }
 
@@ -905,7 +906,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
                 var subdomain = model.SubdomainsDictionary[subdomainId]; //ZERo based model.subdomainsDictionary access == model.Subdomains access
                 subdomainsAndHexas[subdomainId] = new int[subdomain.Elements.Count()];
                 int hexaPositionInArray = 0;
-                foreach (Element element in subdomain.Elements)
+                foreach (Element element in subdomain.Elements.Values)
                 {
                     subdomainsAndHexas[subdomainId][hexaPositionInArray] = element.ID;
                     hexaPositionInArray++;

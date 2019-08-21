@@ -51,7 +51,7 @@ namespace ISAAR.MSolve.Solvers.Assemblers.Collocation
             var watch = new Stopwatch();
             watch.Start();
             TMatrix matrix = assembler.BuildGlobalMatrix(subdomain.FreeDofRowOrdering, subdomain.FreeDofColOrdering,
-                    subdomain.Elements, elementMatrixProvider);
+                    subdomain.EnumerateElements(), elementMatrixProvider);
             watch.Stop();
             Logger.LogTaskDuration("Matrix assembly", watch.ElapsedMilliseconds);
             return new Dictionary<int, IMatrix> { { subdomain.ID, matrix } };
@@ -71,7 +71,7 @@ namespace ISAAR.MSolve.Solvers.Assemblers.Collocation
             }
             (IMatrix Aff, IMatrixView Afc, IMatrixView Acf, IMatrixView Acc) = assembler.BuildGlobalSubmatrices(
                 subdomain.FreeDofRowOrdering, subdomain.FreeDofColOrdering, subdomain.ConstrainedDofRowOrdering,
-                subdomain.ConstrainedDofColOrdering, subdomain.Elements, elementMatrixProvider);
+                subdomain.ConstrainedDofColOrdering, subdomain.EnumerateElements(), elementMatrixProvider);
             watch.Stop();
             Logger.LogTaskDuration("Matrix assembly", watch.ElapsedMilliseconds);
             return new Dictionary<int, (IMatrix, IMatrixView, IMatrixView, IMatrixView)>

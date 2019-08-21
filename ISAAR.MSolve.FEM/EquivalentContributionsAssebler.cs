@@ -44,7 +44,7 @@ namespace ISAAR.MSolve.FEM
             times.Add("element", TimeSpan.Zero);
             times.Add("addition", TimeSpan.Zero);
 
-            foreach (Element element in subdomain.Elements) //.3 ElementsDictionary.Values)    // TODOGerasimos edw mporei na xrhsimopoihthei to dictionary twn eleement pou exoun fp nodes
+            foreach (Element element in subdomain.Elements.Values) //.3 ElementsDictionary.Values)    // TODOGerasimos edw mporei na xrhsimopoihthei to dictionary twn eleement pou exoun fp nodes
             {
                 var isEmbeddedElement = element.ElementType is IEmbeddedElement;
                 var elStart = DateTime.Now;

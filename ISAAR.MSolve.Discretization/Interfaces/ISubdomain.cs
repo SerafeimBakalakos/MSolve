@@ -18,8 +18,6 @@ namespace ISAAR.MSolve.Discretization.Interfaces
         /// </summary>
         ISubdomainFreeDofOrdering FreeDofOrdering { get; set; } //TODO: this should not be managed by the subdomain. Update after 6 months: yeap, see the mess in collocation
 
-        IReadOnlyList<IElement> Elements { get; } //TODO: perhaps this should be a set
-
         Vector Forces { get; set; } //TODO: this should be a Vector or IVector and stored elsewhere.
 
         int ID { get; }
@@ -29,11 +27,17 @@ namespace ISAAR.MSolve.Discretization.Interfaces
 
         IReadOnlyList<INode> Nodes { get; } //TODO: perhaps this should be a set
 
+        int NumElements { get; }
+
         double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor); //TODO: this should be done by a dedicated class instead of the subdomain
 
         void ClearMaterialStresses();
 
         void ConnectDataStructures();
+
+        IEnumerable<IElement> EnumerateElements();
+
+        IElement GetElement(int elementID);
 
         IVector GetRhsFromSolution(IVectorView solution, IVectorView dSolution); //TODO: this should be done by a dedicated class instead of the subdomain
 

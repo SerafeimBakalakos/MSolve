@@ -263,7 +263,7 @@ namespace ISAAR.MSolve.IGA.Entities
         private void BuildPatchOfEachElement()
         {
             foreach (var patch in patchesDictionary.Values)
-                foreach (var element in patch.Elements)
+                foreach (var element in patch.Elements.Values)
                 {
                     element.Patch = patch;
                     element.Model = this;

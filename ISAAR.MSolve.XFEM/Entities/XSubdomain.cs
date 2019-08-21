@@ -22,8 +22,7 @@ namespace ISAAR.MSolve.XFEM.Entities
         public ISubdomainConstrainedDofOrdering ConstrainedDofOrdering { get ; set; }
         public ISubdomainFreeDofOrdering FreeDofOrdering { get; set; }
 
-        IReadOnlyList<IElement> ISubdomain.Elements => Elements;
-        public List<IXFiniteElement> Elements { get; } = new List<IXFiniteElement>();
+        public Dictionary<int, IXFiniteElement> Elements { get; } = new Dictionary<int, IXFiniteElement>();
 
         public Vector Forces { get; set; } //TODO: this doesn't belong here
 
@@ -34,6 +33,8 @@ namespace ISAAR.MSolve.XFEM.Entities
 
         IReadOnlyList<INode> ISubdomain.Nodes => nodes;
         public IReadOnlyList<XNode> Nodes => nodes;
+
+        public int NumElements => Elements.Count;
 
         public double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor)
         {
@@ -56,7 +57,7 @@ namespace ISAAR.MSolve.XFEM.Entities
         {
             DefineNodesFromElements();
 
-            foreach (IXFiniteElement element in Elements)
+            foreach (IXFiniteElement element in Elements.Values)
             {
                 foreach (XNode node in element.Nodes) node.ElementsDictionary[element.ID] = element;
             }
@@ -67,12 +68,14 @@ namespace ISAAR.MSolve.XFEM.Entities
             nodes.Clear();
             var nodeComparer = Comparer<XNode>.Create((XNode node1, XNode node2) => node1.ID - node2.ID);
             var nodeSet = new SortedSet<XNode>(nodeComparer);
-            foreach (IXFiniteElement element in Elements)
+            foreach (IXFiniteElement element in Elements.Values)
             {
                 foreach (XNode node in element.Nodes) nodeSet.Add(node);
             }
             nodes.AddRange(nodeSet);
         }
+
+        public IEnumerable<IElement> EnumerateElements() => Elements.Values;
 
         public void ExtractConstraintsFromGlobal(Table<INode, IDofType, double> globalConstraints)
         {
@@ -92,6 +95,8 @@ namespace ISAAR.MSolve.XFEM.Entities
                 }
             }
         }
+
+        public IElement GetElement(int elementID) => Elements[elementID];
 
         public IVector GetRhsFromSolution(IVectorView solution, IVectorView dSolution)
         {

@@ -36,6 +36,6 @@ namespace ISAAR.MSolve.Solvers.Assemblers.Collocation
 
 
 		public (int numSubdomainFreeDofs, DofTable subdomainFreeDofs) OrderSubdomainDofs(IAsymmetricSubdomain subdomain)
-			=> OrderFreeDofsOfElementSet(((ISubdomain)subdomain).Elements, ((ISubdomain)subdomain).Constraints);
+			=> OrderFreeDofsOfElementSet(subdomain.EnumerateElements(), ((ISubdomain)subdomain).Constraints);
 	}
 }

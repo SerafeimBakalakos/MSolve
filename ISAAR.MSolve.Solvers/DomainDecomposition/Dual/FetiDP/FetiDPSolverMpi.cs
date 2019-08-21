@@ -70,7 +70,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         public IMatrix BuildGlobalMatrices(IElementMatrixProvider elementMatrixProvider)
         {
-            IMatrix Kff = matrixManager.BuildGlobalMatrix(subdomain.FreeDofOrdering, subdomain.Elements, elementMatrixProvider);
+            IMatrix Kff = matrixManager.BuildGlobalMatrix(subdomain.FreeDofOrdering, subdomain.EnumerateElements(), 
+                elementMatrixProvider);
             linearSystem.Matrix = Kff;
             return Kff;
         }

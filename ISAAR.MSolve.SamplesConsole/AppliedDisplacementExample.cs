@@ -84,7 +84,7 @@ namespace ISAAR.MSolve.SamplesConsole
 
             // Add Hexa element to the element and subdomains dictionary of the model
             model.ElementsDictionary.Add(element.ID, element);
-            model.SubdomainsDictionary[subdomainID].Elements.Add(element);
+            model.SubdomainsDictionary[subdomainID].Elements.Add(element.ID, element);
 
             // Add nodal load values at the top nodes of the model
             //model.Loads.Add(new Load() { Amount = -nodalLoad, Node = model.NodesDictionary[2], DOF = DOFType.Y });

@@ -85,7 +85,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
                 XContinuumElement2D element = factory.CreateElement(e, CellType.Quad4, connectivity[e]);
                 cells[e] = element;
                 model.Elements.Add(e, element);
-                model.Subdomains[subdomainID].Elements.Add(model.Elements[e]);
+                model.Subdomains[subdomainID].Elements.Add(e, model.Elements[e]);
             }
 
             // Mesh
@@ -126,7 +126,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
                 XContinuumElement2D element = factory.CreateElement(e, CellType.Quad4, elementConnectivities[e].Vertices);
                 cells[e] = element;
                 model.Elements.Add(e, element);
-                model.Subdomains[subdomainID].Elements.Add(model.Elements[e]);
+                model.Subdomains[subdomainID].Elements.Add(e, model.Elements[e]);
             }
 
             // Mesh

@@ -61,7 +61,7 @@ namespace MGroup.Stochastic.Structural
                 e.AddNodes(new[] { m.NodesDictionary[i], m.NodesDictionary[i + 1] });
 
                 m.ElementsDictionary.Add(i, e);
-                m.SubdomainsDictionary[0].Elements.Add(e);
+                m.SubdomainsDictionary[0].Elements.Add(e.ID, e);
             }
 
             m.NodesDictionary[0].Constraints.Add(new Constraint { DOF = StructuralDof.TranslationX, Amount = 0 });

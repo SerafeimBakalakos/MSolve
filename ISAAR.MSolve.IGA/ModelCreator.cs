@@ -88,7 +88,7 @@ namespace ISAAR.MSolve.IGA
                 for (int j = 0; j < ControlPointIDsDictionary[patchID].Length; j++)
                     ((List<ControlPoint>)patch.ControlPoints).Add(ControlPointsDictionary[ControlPointIDsDictionary[patchID][j]]);
                 patch.CreatePatchData();
-                foreach (var element in patch.Elements)
+                foreach (var element in patch.Elements.Values)
                     Model.ElementsDictionary.Add(counterElementID++, element);
                 foreach (var controlPoint in patch.ControlPoints)
                     Model.ControlPointsDictionary.Add(counterCPID++, controlPoint);
@@ -437,7 +437,7 @@ namespace ISAAR.MSolve.IGA
 		        for (int j = 0; j < ControlPointIDsDictionary[patchID].Length; j++)
 			        ((List<ControlPoint>)patch.ControlPoints).Add(ControlPointsDictionary[ControlPointIDsDictionary[patchID][j]]);
 		        patch.CreateCollocationPatchData();
-		        foreach (var element in patch.Elements)
+		        foreach (var element in patch.Elements.Values)
 			        CollocationModel.ElementsDictionary.Add(counterElementID++, element);
 		        foreach (var controlPoint in patch.ControlPoints)
                     CollocationModel.ControlPointsDictionary.Add(counterCPID++, controlPoint);

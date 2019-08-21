@@ -60,7 +60,8 @@ namespace ISAAR.MSolve.SamplesConsole.Parallel
                 // Create the stiffness matrices
                 var provider = new ElementStructuralStiffnessProvider();
                 var assembler = new SkylineAssembler();
-                SkylineMatrix stiffness = assembler.BuildGlobalMatrix(subdomain.FreeDofOrdering, subdomain.Elements, provider);
+                SkylineMatrix stiffness = assembler.BuildGlobalMatrix(subdomain.FreeDofOrdering, 
+                    subdomain.EnumerateElements(), provider);
                 ls.Matrix = stiffness;
 
                 // Print the trace of each stiffness matrix

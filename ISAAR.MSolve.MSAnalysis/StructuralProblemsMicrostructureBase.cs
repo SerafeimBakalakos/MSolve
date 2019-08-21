@@ -56,7 +56,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         {
             Dictionary<int, Element> subdomainBoundaryElements = new Dictionary<int, Element>();
 
-            foreach (Element element in subdomain.Elements)
+            foreach (Element element in subdomain.Elements.Values)
             {
                 bool containsBoundaryNode = false;
 

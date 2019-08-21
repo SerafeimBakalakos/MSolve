@@ -22,8 +22,7 @@ namespace ISAAR.MSolve.IGA.Entities
 
 		public Table<INode, IDofType, double> Constraints { get; } = new Table<INode, IDofType, double>();
 
-		IReadOnlyList<IElement> ISubdomain.Elements => Elements;
-		public List<Element> Elements { get; } = new List<Element>();
+		public Dictionary<int, Element> Elements { get; } = new Dictionary<int, Element>();
 		
 		public int ID { get; }
 
@@ -50,7 +49,9 @@ namespace ISAAR.MSolve.IGA.Entities
 			get { return facesDictionary; }
 		}
 
-		public double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor)
+        public int NumElements => Elements.Count;
+
+        public double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor)
 		{
 			var elementNodalDisplacements = new double[FreeDofOrdering.CountElementDofs(element)];
             SubdomainConstrainedDofOrderingBase.ApplyConstraintDisplacements(element, elementNodalDisplacements, Constraints);
@@ -74,7 +75,7 @@ namespace ISAAR.MSolve.IGA.Entities
         {
             DefineControlPointsFromElements();
 
-            foreach (Element element in Elements)
+            foreach (Element element in Elements.Values)
             {
                 foreach (ControlPoint node in element.ControlPoints) node.ElementsDictionary[element.ID] = element;
             }
@@ -84,14 +85,16 @@ namespace ISAAR.MSolve.IGA.Entities
 		{
 			var cpComparer = Comparer<ControlPoint>.Create((node1, node2) => node1.ID - node2.ID);
 			var cpSet = new SortedSet<ControlPoint>(cpComparer);
-			foreach (Element element in Elements)
+			foreach (Element element in Elements.Values)
 			{
 				foreach (ControlPoint node in element.ControlPoints) cpSet.Add(node);
 			}
 			controlPoints.AddRange(cpSet);
 		}
 
-		public void ExtractConstraintsFromGlobal(Table<INode, IDofType, double> globalConstraints)
+        public IEnumerable<IElement> EnumerateElements() => Elements.Values;
+
+        public void ExtractConstraintsFromGlobal(Table<INode, IDofType, double> globalConstraints)
 		{
 			foreach (ControlPoint controlPoint in ControlPoints)
 			{
@@ -114,10 +117,12 @@ namespace ISAAR.MSolve.IGA.Entities
 			//}
 		}
 
-		public IVector GetRhsFromSolution(IVectorView solution, IVectorView dSolution)
+        public IElement GetElement(int elementID) => Elements[elementID];
+
+        public IVector GetRhsFromSolution(IVectorView solution, IVectorView dSolution)
 		{
 			var forces = Vector.CreateZero(FreeDofOrdering.NumFreeDofs); //TODO: use Vector
-			foreach (Element element in Elements)
+			foreach (Element element in Elements.Values)
 			{
 				double[] localSolution = CalculateElementDisplacements(element, solution);
 				double[] localdSolution = CalculateElementDisplacements(element, dSolution);
@@ -133,7 +138,7 @@ namespace ISAAR.MSolve.IGA.Entities
 		public void ResetMaterialsModifiedProperty()
 		{
 			this.StiffnessModified = false;
-			foreach (Element element in Elements) element.ElementType.ResetMaterialModified();
+			foreach (Element element in Elements.Values) element.ElementType.ResetMaterialModified();
 
 		}
 
@@ -573,7 +578,7 @@ namespace ISAAR.MSolve.IGA.Entities
 					};
 					element.AddKnots(knotsOfElement);
 					element.AddControlPoints(elementControlPoints.ToList<ControlPoint>());
-					Elements.Add(element);
+					Elements.Add(elementID, element);
 					//this.PatchesDictionary[1].ElementsDictionary.Add(element.ID, element);
 				}
 			}
@@ -655,7 +660,7 @@ namespace ISAAR.MSolve.IGA.Entities
 					};
 					element.AddKnots(knotsOfElement);
 					element.AddControlPoints(elementControlPoints.ToList<ControlPoint>());
-					Elements.Add(element);
+					Elements.Add(elementID, element);
 					//this.PatchesDictionary[1].ElementsDictionary.Add(element.ID, element);
 				}
 			}
@@ -774,7 +779,7 @@ namespace ISAAR.MSolve.IGA.Entities
 						};
 						element.AddKnots(knotsOfElement);
 						element.AddControlPoints(elementControlPoints.ToList<ControlPoint>());
-						Elements.Add(element);
+						Elements.Add(elementID, element);
 						//this.PatchesDictionary[0].ElementsDictionary.Add(element.ID, element);
 					}
 				}

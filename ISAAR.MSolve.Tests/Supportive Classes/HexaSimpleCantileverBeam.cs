@@ -77,7 +77,7 @@ namespace ISAAR.MSolve.Tests
                 e.NodesDictionary.Add(startNodeID + 4 * i + 3, model.NodesDictionary[startNodeID + 4 * i + 3]);
 
                 model.ElementsDictionary.Add(e.ID, e);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(e);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e.ID, e);
 
 
                 elementID++;

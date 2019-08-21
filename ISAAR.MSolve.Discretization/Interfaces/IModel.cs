@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.Discretization.Interfaces
         void AssignMassAccelerationHistoryLoads(int timeStep);
         void ConnectDataStructures();
 
-        IEnumerable<IElement> EnumerateElements();
+        IEnumerable<IElement> EnumerateElements(); //TODO: At some point I must do the same for concrete classes
         IEnumerable<ISubdomain> EnumerateSubdomains();
 
         IElement GetElement(int elementID);

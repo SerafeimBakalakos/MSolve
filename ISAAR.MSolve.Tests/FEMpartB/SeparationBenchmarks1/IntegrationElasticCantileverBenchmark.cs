@@ -123,7 +123,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks1
                     e1.NodesDictionary.Add(elementData[nElement, j + 1], model.NodesDictionary[elementData[nElement, j + 1]]);
                 }
                 model.ElementsDictionary.Add(e1.ID, e1);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(e1);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e1.ID, e1);
             }
 
             // constraint vashh opou z=-1

@@ -22,8 +22,7 @@ namespace ISAAR.MSolve.FEM.Entities
 
         public Table<INode, IDofType, double> Constraints { get; } = new Table<INode, IDofType, double>();
 
-        IReadOnlyList<IElement> ISubdomain.Elements => Elements;
-        public List<Element> Elements { get; } = new List<Element>();
+        public Dictionary<int, Element> Elements { get; } = new Dictionary<int, Element>();
 
         //public IList<EmbeddedNode> EmbeddedNodes { get; } = new List<EmbeddedNode>();
 
@@ -31,6 +30,8 @@ namespace ISAAR.MSolve.FEM.Entities
 
         IReadOnlyList<INode> ISubdomain.Nodes => Nodes;
         public List<Node> Nodes { get; } = new List<Node>();
+
+        public int NumElements => Elements.Count;
 
         public ISubdomainConstrainedDofOrdering ConstrainedDofOrdering { get; set; }
         public ISubdomainFreeDofOrdering FreeDofOrdering { get; set; }
@@ -72,14 +73,14 @@ namespace ISAAR.MSolve.FEM.Entities
 
         public void ClearMaterialStresses()
         {
-            foreach (Element element in Elements) element.ElementType.ClearMaterialStresses();
+            foreach (Element element in Elements.Values) element.ElementType.ClearMaterialStresses();
         }
 
         public void ConnectDataStructures()
         {
             DefineNodesFromElements();
 
-            foreach (Element element in Elements)
+            foreach (Element element in Elements.Values)
             {
                 foreach (Node node in element.Nodes) node.ElementsDictionary[element.ID] = element;
             }
@@ -90,7 +91,7 @@ namespace ISAAR.MSolve.FEM.Entities
             Nodes.Clear();
             var nodeComparer = Comparer<Node>.Create((Node node1, Node node2) => node1.ID - node2.ID);
             var nodeSet = new SortedSet<Node>(nodeComparer);
-            foreach (Element element in Elements)
+            foreach (Element element in Elements.Values)
             {
                 foreach (Node node in element.Nodes) nodeSet.Add(node);
             }
@@ -99,6 +100,8 @@ namespace ISAAR.MSolve.FEM.Entities
             //foreach (var e in modelEmbeddedNodes.Where(x => nodeIDs.IndexOf(x.Node.ID) >= 0))
             //    EmbeddedNodes.Add(e);
         }
+
+        public IEnumerable<IElement> EnumerateElements() => Elements.Values;
 
         //TODO: constraints should not be saved inside the nodes. As it is right now (22/11/2018) the same constraint 
         //      is saved in the node, the model constraints table and the subdomain constraints table. Furthermore,
@@ -130,10 +133,12 @@ namespace ISAAR.MSolve.FEM.Entities
             //}
         }
 
+        public IElement GetElement(int elementID) => Elements[elementID];
+
         public IVector GetRhsFromSolution(IVectorView solution, IVectorView dSolution)
         {
             var forces = Vector.CreateZero(FreeDofOrdering.NumFreeDofs); //TODO: use Vector
-            foreach (Element element in Elements)
+            foreach (Element element in Elements.Values)
             {
                 //var localSolution = GetLocalVectorFromGlobal(element, solution);//TODOMaria: This is where the element displacements are calculated //removeMaria
                 //var localdSolution = GetLocalVectorFromGlobal(element, dSolution);//removeMaria
@@ -153,12 +158,12 @@ namespace ISAAR.MSolve.FEM.Entities
         public void ResetMaterialsModifiedProperty()
         {
             this.StiffnessModified = false;
-            foreach (Element element in Elements) element.ElementType.ResetMaterialModified();
+            foreach (Element element in Elements.Values) element.ElementType.ResetMaterialModified();
         }
 
         public void SaveMaterialState()
         {
-            foreach (Element element in Elements) element.ElementType.SaveMaterialState();
+            foreach (Element element in Elements.Values) element.ElementType.SaveMaterialState();
         }
 
         //TODO: I am against modifying the constraints table of the subdomain. Instead the analyzer should keep a constraint
@@ -181,7 +186,7 @@ namespace ISAAR.MSolve.FEM.Entities
             //WriteToFileVector(solution_data, path);
 
             var forces = Vector.CreateZero(FreeDofOrdering.NumFreeDofs); //TODO: use Vector
-            foreach (Element element in Elements)
+            foreach (Element element in Elements.Values)
             {
                 var localSolution = GetLocalVectorFromGlobalWithoutPrescribedDisplacements(element, solution);
                 ImposePrescribedDisplacementsWithInitialConditionSEffect(element, localSolution, boundaryNodes, initialConvergedBoundaryDisplacements, totalBoundaryDisplacements, nIncrement, totalIncrements);

@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.Tests
             e.ElementType = m.Object;
             model.NodesDictionary.Add(0, n);
             model.ElementsDictionary.Add(0, e);
-            model.SubdomainsDictionary[subdomainID].Elements.Add(e);
+            model.SubdomainsDictionary[subdomainID].Elements.Add(e.ID, e);
             model.Loads.Add(new Load() { Amount = 10, Node = n, DOF = StructuralDof.TranslationY });
             var lX = new Mock<IMassAccelerationHistoryLoad>();
             lX.SetupGet(x => x.DOF).Returns(StructuralDof.TranslationX);

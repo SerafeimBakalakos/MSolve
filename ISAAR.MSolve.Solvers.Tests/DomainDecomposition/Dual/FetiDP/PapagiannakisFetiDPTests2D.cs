@@ -124,7 +124,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             model.SubdomainsDictionary.Clear();
             var subdomain = new Subdomain(singleSubdomainID);
             model.SubdomainsDictionary.Add(singleSubdomainID, subdomain);
-            foreach (Element element in model.ElementsDictionary.Values) subdomain.Elements.Add(element);
+            foreach (Element element in model.ElementsDictionary.Values) subdomain.Elements.Add(element.ID, element);
             return model;
         }
 

@@ -78,7 +78,7 @@ namespace ISAAR.MSolve.Optimization.Structural.Tests.Topology.SIMP
                 var elementWrapper = new Element() { ID = e, ElementType = element };
                 foreach (Node node in element.Nodes) elementWrapper.AddNode(node);
                 model.ElementsDictionary.Add(e, elementWrapper);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper.ID, elementWrapper);
             }
 
             // Clamp boundary condition at left edge
@@ -224,7 +224,7 @@ namespace ISAAR.MSolve.Optimization.Structural.Tests.Topology.SIMP
                 var elementWrapper = new Element() { ID = e, ElementType = element };
                 foreach (Node node in element.Nodes) elementWrapper.AddNode(node);
                 model.ElementsDictionary.Add(e, elementWrapper);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper.ID, elementWrapper);
             }
 
             // Roller boundary condition at left edge

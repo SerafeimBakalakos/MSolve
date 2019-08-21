@@ -154,7 +154,7 @@ namespace ISAAR.MSolve.IGA.Readers
 							((List<ControlPoint>)Model.PatchesDictionary[patchID].ControlPoints).Add( Model.ControlPointsDictionary[ControlPointIDsDictionary[patchID][j]]);
 
 						Model.PatchesDictionary[patchID].CreateNurbsShell();
-						foreach (var element in Model.PatchesDictionary[patchID].Elements)
+						foreach (var element in Model.PatchesDictionary[patchID].Elements.Values)
 							Model.ElementsDictionary.Add(counterElementID++, element);
 						return;
 				}

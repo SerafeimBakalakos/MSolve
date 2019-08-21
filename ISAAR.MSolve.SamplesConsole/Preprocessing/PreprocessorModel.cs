@@ -123,7 +123,7 @@ namespace ISAAR.MSolve.SamplesConsole.Preprocessing
             var elementWrapper = new Element() { ID = numElementsTotal, ElementType = element };
             foreach (Node node in elementNodes) elementWrapper.AddNode(node);
             model.ElementsDictionary.Add(numElementsTotal, elementWrapper);
-            model.SubdomainsDictionary[0].Elements.Add(elementWrapper); //TODO: let the user decide which subdomain it will be added to.
+            model.SubdomainsDictionary[0].Elements.Add(elementWrapper.ID, elementWrapper); //TODO: let the user decide which subdomain it will be added to.
         }
 
         /// <summary>
@@ -157,7 +157,7 @@ namespace ISAAR.MSolve.SamplesConsole.Preprocessing
                 var elementWrapper = new Element() { ID = numElementsCurrent + i, ElementType = element };
                 foreach (Node node in element.Nodes) elementWrapper.AddNode(node);
                 model.ElementsDictionary.Add(numElementsCurrent + i, elementWrapper);
-                model.SubdomainsDictionary[0].Elements.Add(elementWrapper); //TODO: let the user decide which subdomain it will be added to.
+                model.SubdomainsDictionary[0].Elements.Add(elementWrapper.ID, elementWrapper); //TODO: let the user decide which subdomain it will be added to.
             }
         }
 

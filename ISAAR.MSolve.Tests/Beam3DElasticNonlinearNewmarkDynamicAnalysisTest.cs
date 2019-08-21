@@ -98,7 +98,7 @@ namespace ISAAR.MSolve.Tests
 
                 // Add beam element to the element and subdomains dictionary of the model
                 model.ElementsDictionary.Add(element.ID, element);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(element);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(element.ID, element);
                 iNode++;
             }
 

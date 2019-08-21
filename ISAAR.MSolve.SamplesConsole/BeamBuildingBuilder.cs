@@ -196,7 +196,7 @@ namespace ISAAR.MSolve.SamplesConsole
                         foreach (Node node in sub2AdjacentNodes) e.NodesDictionary.Add(node.ID, node);
                         foreach (Node node in sub1AdjacentNodes) e.NodesDictionary.Add(node.ID, node);
                         model.ElementsDictionary.Add(e.ID, e);
-                        model.SubdomainsDictionary[subdomainID].Elements.Add(e);
+                        model.SubdomainsDictionary[subdomainID].Elements.Add(e.ID, e);
                         elementID++;
                     }
                     // Create sub1 piles
@@ -220,7 +220,7 @@ namespace ISAAR.MSolve.SamplesConsole
                         foreach (Node node in sub1AdjacentNodes) e.NodesDictionary.Add(node.ID, node);
                         foreach (Node node in groundAdjacentNodes) e.NodesDictionary.Add(node.ID, node);
                         model.ElementsDictionary.Add(e.ID, e);
-                        model.SubdomainsDictionary[subdomainID].Elements.Add(e);
+                        model.SubdomainsDictionary[subdomainID].Elements.Add(e.ID, e);
                         elementID++;
                     }
                 }
@@ -253,7 +253,7 @@ namespace ISAAR.MSolve.SamplesConsole
                     foreach (Node node in groundAdjacentNodes)
                         e.NodesDictionary.Add(node.ID, node);
                 model.ElementsDictionary.Add(e.ID, e);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(e);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e.ID, e);
                 elementID++;
             }
 
@@ -279,7 +279,7 @@ namespace ISAAR.MSolve.SamplesConsole
                         e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + j * 5 + k, model.NodesDictionary[startNodeID + i * nodesPerFloor + j * 5 + k]);
                         e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + j * 5 + k + 1, model.NodesDictionary[startNodeID + i * nodesPerFloor + j * 5 + k + 1]);
                         model.ElementsDictionary.Add(e.ID, e);
-                        model.SubdomainsDictionary[subdomainID].Elements.Add(e);
+                        model.SubdomainsDictionary[subdomainID].Elements.Add(e.ID, e);
                         elementID++;
                     }
                 }
@@ -297,7 +297,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + 3 * 5, model.NodesDictionary[startNodeID + i * nodesPerFloor + 3 * 5]);
                 e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + 3 * 5 + 1, model.NodesDictionary[startNodeID + i * nodesPerFloor + 3 * 5 + 1]);
                 model.ElementsDictionary.Add(e.ID, e);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(e);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e.ID, e);
                 elementID++;
                 e = new Element()
                 {
@@ -313,7 +313,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + 3 * 5 + 1, model.NodesDictionary[startNodeID + i * nodesPerFloor + 3 * 5 + 1]);
                 e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + 3 * 5 + 2, model.NodesDictionary[startNodeID + i * nodesPerFloor + 3 * 5 + 2]);
                 model.ElementsDictionary.Add(e.ID, e);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(e);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e.ID, e);
                 elementID++;
                 // Vertical elements
                 for (int j = 0; j < 5; j++)
@@ -334,7 +334,7 @@ namespace ISAAR.MSolve.SamplesConsole
                         e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + k * 5 + j, model.NodesDictionary[startNodeID + i * nodesPerFloor + k * 5 + j]);
                         e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + (k + 1) * 5 + j, model.NodesDictionary[startNodeID + i * nodesPerFloor + (k + 1) * 5 + j]);
                         model.ElementsDictionary.Add(e.ID, e);
-                        model.SubdomainsDictionary[subdomainID].Elements.Add(e);
+                        model.SubdomainsDictionary[subdomainID].Elements.Add(e.ID, e);
                         elementID++;
                     }
                 }
@@ -352,7 +352,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + 2 * 5 + 2, model.NodesDictionary[startNodeID + i * nodesPerFloor + 2 * 5 + 2]);
                 e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + 2 * 5 + 5, model.NodesDictionary[startNodeID + i * nodesPerFloor + 2 * 5 + 5]);
                 model.ElementsDictionary.Add(e.ID, e);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(e);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e.ID, e);
                 elementID++;
                 e = new Element()
                 {
@@ -368,7 +368,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + 2 * 5 + 3, model.NodesDictionary[startNodeID + i * nodesPerFloor + 2 * 5 + 3]);
                 e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + 2 * 5 + 6, model.NodesDictionary[startNodeID + i * nodesPerFloor + 2 * 5 + 6]);
                 model.ElementsDictionary.Add(e.ID, e);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(e);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e.ID, e);
                 elementID++;
                 e = new Element()
                 {
@@ -384,7 +384,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + 2 * 5 + 4, model.NodesDictionary[startNodeID + i * nodesPerFloor + 2 * 5 + 4]);
                 e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + 2 * 5 + 7, model.NodesDictionary[startNodeID + i * nodesPerFloor + 2 * 5 + 7]);
                 model.ElementsDictionary.Add(e.ID, e);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(e);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e.ID, e);
                 elementID++;
                 // Floor-to-floor beams
                 if (i == floors - 1) continue;
@@ -404,7 +404,7 @@ namespace ISAAR.MSolve.SamplesConsole
                     e.NodesDictionary.Add(startNodeID + i * nodesPerFloor + j, model.NodesDictionary[startNodeID + i * nodesPerFloor + j]);
                     e.NodesDictionary.Add(startNodeID + (i + 1) * nodesPerFloor + j, model.NodesDictionary[startNodeID + (i + 1) * nodesPerFloor + j]);
                     model.ElementsDictionary.Add(e.ID, e);
-                    model.SubdomainsDictionary[subdomainID].Elements.Add(e);
+                    model.SubdomainsDictionary[subdomainID].Elements.Add(e.ID, e);
                     elementID++;
                 }
             }

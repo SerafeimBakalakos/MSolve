@@ -71,7 +71,7 @@ namespace ISAAR.MSolve.Tests.FEM
                 var elementWrapper = new Element() { ID = e + hostElementsIDStart, ElementType = element };
                 foreach (Node node in element.Nodes) elementWrapper.AddNode(node);
                 model.ElementsDictionary.Add(elementWrapper.ID, elementWrapper);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper.ID, elementWrapper);
             }
         }
 
@@ -98,7 +98,7 @@ namespace ISAAR.MSolve.Tests.FEM
             var elementWrapper = new Element() { ID = embeddedElementID, ElementType = elementType };
             foreach (var node in startEndNodes) elementWrapper.AddNode(node);
             model.ElementsDictionary[elementWrapper.ID] = elementWrapper;
-            model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper);
+            model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper.ID, elementWrapper);
 
             // Apply embedding
             var embeddedGrouping = new ThermalEmbeddedGrouping(model,

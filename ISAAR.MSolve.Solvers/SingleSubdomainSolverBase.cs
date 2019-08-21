@@ -55,7 +55,8 @@ namespace ISAAR.MSolve.Solvers
         {
             var watch = new Stopwatch();
             watch.Start();
-            TMatrix matrix = assembler.BuildGlobalMatrix(subdomain.FreeDofOrdering, subdomain.Elements, elementMatrixProvider);
+            TMatrix matrix = assembler.BuildGlobalMatrix(subdomain.FreeDofOrdering, 
+                subdomain.EnumerateElements(), elementMatrixProvider);
             watch.Stop();
             Logger.LogTaskDuration("Matrix assembly", watch.ElapsedMilliseconds);
             return new Dictionary<int, IMatrix> { { subdomain.ID, matrix } };
@@ -72,7 +73,7 @@ namespace ISAAR.MSolve.Solvers
                     + " they must have been ordered first.");
             }
             (IMatrix Aff, IMatrixView Afc, IMatrixView Acf, IMatrixView Acc) = assembler.BuildGlobalSubmatrices(
-                subdomain.FreeDofOrdering, subdomain.ConstrainedDofOrdering, subdomain.Elements, elementMatrixProvider);
+                subdomain.FreeDofOrdering, subdomain.ConstrainedDofOrdering, subdomain.EnumerateElements(), elementMatrixProvider);
             watch.Stop();
             Logger.LogTaskDuration("Matrix assembly", watch.ElapsedMilliseconds);
             return new Dictionary<int, (IMatrix, IMatrixView, IMatrixView, IMatrixView)>

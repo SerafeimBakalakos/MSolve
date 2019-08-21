@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
@@ -119,7 +120,7 @@ namespace ISAAR.MSolve.Tests
 
             // Add Hexa element to the element and subdomains dictionary of the model
             model.ElementsDictionary.Add(element.ID, element);
-            model.SubdomainsDictionary[1].Elements.Add(element);
+            model.SubdomainsDictionary[1].Elements.Add(element.ID, element);
 
             // Add nodal load values at the top nodes of the model
             model.Loads.Add(new Load() { Amount = -nodalLoad, Node = model.NodesDictionary[2], DOF = StructuralDof.TranslationY });
@@ -190,7 +191,7 @@ namespace ISAAR.MSolve.Tests
                     element.AddNode(model.NodesDictionary[(i + 1) * 5 + j + 1]);
                     element.AddNode(model.NodesDictionary[i * 5 + j + 1]);
                     model.ElementsDictionary.Add(indexElement, element);
-                    model.SubdomainsDictionary[0].Elements.Add(element);
+                    model.SubdomainsDictionary[0].Elements.Add(element.ID, element);
                     indexElement++;
                 }
             }
@@ -215,7 +216,7 @@ namespace ISAAR.MSolve.Tests
 
             for (int i = 0; i < expectedSubdomains.Count; i++)
             {
-                var subdomainElements = model.SubdomainsDictionary[i].Elements;
+                Element[] subdomainElements = model.SubdomainsDictionary[i].Elements.Values.ToArray();
                 Assert.Equal(expectedSubdomains[i].Length, model.SubdomainsDictionary[i].Elements.Count);
                 for (int j = 0; j < expectedSubdomains[i].Length; j++)
                 {
@@ -277,7 +278,7 @@ namespace ISAAR.MSolve.Tests
                     element.AddNode(model.NodesDictionary[(i + 1) * 5 + j + 1]);
                     element.AddNode(model.NodesDictionary[i * 5 + j + 1]);
                     model.ElementsDictionary.Add(indexElement, element);
-                    model.SubdomainsDictionary[0].Elements.Add(element);
+                    model.SubdomainsDictionary[0].Elements.Add(element.ID, element);
                     indexElement++;
                 }
             }
@@ -307,7 +308,7 @@ namespace ISAAR.MSolve.Tests
 
             for (int i = 0; i < expectedSubdomains.Count; i++)
             {
-                var subdomainElements = model.SubdomainsDictionary[i].Elements;
+                Element[] subdomainElements = model.SubdomainsDictionary[i].Elements.Values.ToArray();
                 Assert.Equal(expectedSubdomains[i].Length, model.SubdomainsDictionary[i].Elements.Count);
                 for (int j = 0; j < expectedSubdomains[i].Length; j++)
                 {
@@ -369,7 +370,7 @@ namespace ISAAR.MSolve.Tests
                     element.AddNode(model.NodesDictionary[(i + 1) * 3 + j + 1]);
                     element.AddNode(model.NodesDictionary[i * 3 + j + 1]);
                     model.ElementsDictionary.Add(indexElement, element);
-                    model.SubdomainsDictionary[0].Elements.Add(element);
+                    model.SubdomainsDictionary[0].Elements.Add(element.ID, element);
                     indexElement++;
                 }
             }
@@ -394,7 +395,7 @@ namespace ISAAR.MSolve.Tests
 
             for (int i = 0; i < expectedSubdomains.Count; i++)
             {
-                var subdomainElements = model.SubdomainsDictionary[i].Elements;
+                Element[] subdomainElements = model.SubdomainsDictionary[i].Elements.Values.ToArray();
                 Assert.Equal(expectedSubdomains[i].Length, model.SubdomainsDictionary[i].Elements.Count);
                 for (int j = 0; j < expectedSubdomains[i].Length; j++)
                 {
@@ -452,8 +453,8 @@ namespace ISAAR.MSolve.Tests
             trussModel.ElementsDictionary.Add(element1.ID, element1);
             trussModel.ElementsDictionary.Add(element2.ID, element2);
 
-            trussModel.SubdomainsDictionary[0].Elements.Add(element1);
-            trussModel.SubdomainsDictionary[0].Elements.Add(element2);
+            trussModel.SubdomainsDictionary[0].Elements.Add(element1.ID, element1);
+            trussModel.SubdomainsDictionary[0].Elements.Add(element2.ID, element2);
 
             trussModel.Loads.Add(new Load() { Amount = loadX, Node = trussModel.NodesDictionary[3], DOF = StructuralDof.TranslationX });
             trussModel.Loads.Add(new Load() { Amount = loadY, Node = trussModel.NodesDictionary[3], DOF = StructuralDof.TranslationY });

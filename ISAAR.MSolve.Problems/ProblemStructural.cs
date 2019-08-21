@@ -143,7 +143,7 @@ namespace ISAAR.MSolve.Problems
         {
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                foreach (IElement element in subdomain.Elements)
+                foreach (IElement element in subdomain.EnumerateElements())
                 {
                     ((IFiniteElement)element.ElementType).ClearMaterialState();
                 }

@@ -82,7 +82,8 @@ namespace ISAAR.MSolve.Solvers.Direct
 
             var watch = new Stopwatch();
             watch.Start();
-            Matrix matrix = assembler.BuildGlobalMatrix(subdomain.FreeDofOrdering, subdomain.Elements, elementMatrixProvider);
+            Matrix matrix = assembler.BuildGlobalMatrix(subdomain.FreeDofOrdering, subdomain.EnumerateElements(), 
+                elementMatrixProvider);
             watch.Stop();
             Logger.LogTaskDuration("Matrix assembly", watch.ElapsedMilliseconds);
             return new Dictionary<int, IMatrix> { { subdomain.ID, matrix } };

@@ -78,8 +78,8 @@ namespace ISAAR.MSolve.SamplesConsole
             model.ElementsDictionary.Add(element1.ID, element1);
             model.ElementsDictionary.Add(element2.ID, element2);
 
-            model.SubdomainsDictionary[subdomainID].Elements.Add(element1);
-            model.SubdomainsDictionary[subdomainID].Elements.Add(element2);
+            model.SubdomainsDictionary[subdomainID].Elements.Add(element1.ID, element1);
+            model.SubdomainsDictionary[subdomainID].Elements.Add(element2.ID, element2);
 
             model.Loads.Add(new Load() { Amount = loadX, Node = model.NodesDictionary[3], DOF = StructuralDof.TranslationX });
             model.Loads.Add(new Load() { Amount = loadY, Node = model.NodesDictionary[3], DOF = StructuralDof.TranslationY });

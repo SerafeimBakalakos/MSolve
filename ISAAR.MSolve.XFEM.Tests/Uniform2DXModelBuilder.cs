@@ -134,7 +134,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
                         XContinuumElement2D element = elementFactories[s].CreateElement(e, cell.CellType, cell.Vertices);
                         elements[e] = element;
                         model.Elements.Add(e, element);
-                        model.Subdomains[s].Elements.Add(element);
+                        model.Subdomains[s].Elements.Add(e, element);
                     }
                 }
                 Debug.Assert(NumSubdomainsContainingThis == 1);

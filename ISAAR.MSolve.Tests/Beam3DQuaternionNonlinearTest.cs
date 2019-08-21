@@ -38,7 +38,7 @@ namespace ISAAR.MSolve.Tests
             });
             m.ElementsDictionary[1].AddNodes(m.Nodes);
             m.SubdomainsDictionary.Add(1, new Subdomain(1));
-            m.SubdomainsDictionary[1].Elements.Add(m.ElementsDictionary[1]);
+            m.SubdomainsDictionary[1].Elements.Add(1, m.ElementsDictionary[1]);
             m.Loads.Add(new Load() { Node = m.NodesDictionary[2], Amount = 100, DOF = StructuralDof.TranslationY });
 
             // Solver
@@ -143,7 +143,7 @@ namespace ISAAR.MSolve.Tests
 
                 // Add beam element to the element and subdomains dictionary of the model
                 model.ElementsDictionary.Add(element.ID, element);
-                model.SubdomainsDictionary[1].Elements.Add(element);
+                model.SubdomainsDictionary[1].Elements.Add(element.ID, element);
                 iNode++;
             }
 
@@ -265,7 +265,7 @@ namespace ISAAR.MSolve.Tests
 
                 // Add beam element to the element and subdomains dictionary of the model
                 model.ElementsDictionary.Add(element.ID, element);
-                model.SubdomainsDictionary[1].Elements.Add(element);
+                model.SubdomainsDictionary[1].Elements.Add(element.ID, element);
                 iNode++;
             }
 

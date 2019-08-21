@@ -123,7 +123,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
                         var elementWrapper = new Element() { ID = e, ElementType = element };
                         foreach (Node node in element.Nodes) elementWrapper.AddNode(node);
                         model.ElementsDictionary.Add(e, elementWrapper);
-                        model.SubdomainsDictionary[s].Elements.Add(elementWrapper);
+                        model.SubdomainsDictionary[s].Elements.Add(elementWrapper.ID, elementWrapper);
                     }
                 }
                 Debug.Assert(NumSubdomainsContainingThis == 1);

@@ -64,7 +64,7 @@ namespace ISAAR.MSolve.SamplesConsole.Solvers
             {
                 foreach (XContinuumElement2D element in idElementsPair.Value)
                 {
-                    model.Subdomains[idElementsPair.Key].Elements.Add(element);
+                    model.Subdomains[idElementsPair.Key].Elements.Add(element.ID, element);
                 }
             }
             model.ConnectDataStructures();
@@ -76,7 +76,7 @@ namespace ISAAR.MSolve.SamplesConsole.Solvers
             foreach (int subdomainID in model.Subdomains.Keys)
             {
                 nodesPerSubdomain[subdomainID] = model.Subdomains[subdomainID].Nodes;
-                elementsPerSubdomain[subdomainID] = model.Subdomains[subdomainID].Elements;
+                elementsPerSubdomain[subdomainID] = model.Subdomains[subdomainID].Elements.Values.ToArray();
             }
             writer.WriteSubdomainElements(plotPath, nodesPerSubdomain, elementsPerSubdomain);
         }
@@ -143,7 +143,7 @@ namespace ISAAR.MSolve.SamplesConsole.Solvers
             {
                 foreach (XContinuumElement2D element in idElementsPair.Value)
                 {
-                    model.Subdomains[idElementsPair.Key].Elements.Add(element);
+                    model.Subdomains[idElementsPair.Key].Elements.Add(element.ID, element);
                 }
             }
             model.ConnectDataStructures();
@@ -155,7 +155,7 @@ namespace ISAAR.MSolve.SamplesConsole.Solvers
             foreach (int subdomainID in model.Subdomains.Keys)
             {
                 nodesPerSubdomain[subdomainID] = model.Subdomains[subdomainID].Nodes;
-                elementsPerSubdomain[subdomainID] = model.Subdomains[subdomainID].Elements;
+                elementsPerSubdomain[subdomainID] = model.Subdomains[subdomainID].Elements.Values.ToArray();
             }
             writer.WriteSubdomainElements(plotPath, nodesPerSubdomain, elementsPerSubdomain);
         }

@@ -121,7 +121,7 @@ namespace ISAAR.MSolve.Problems
             int numFreeDofs = subdomain.FreeDofOrdering.NumFreeDofs;
             var qSubdomain = DokRowMajor.CreateEmpty(numFreeDofs, numFreeDofs);
             DofTable allDofs = subdomain.FreeDofOrdering.FreeDofs;
-            foreach (Element element in subdomain.Elements)
+            foreach (Element element in subdomain.Elements.Values)
             {
                 if (!(element.ElementType is IPorousFiniteElement)) continue;
 
@@ -188,7 +188,7 @@ namespace ISAAR.MSolve.Problems
         public void Reset()
         {
             foreach (Subdomain subdomain in model.SubdomainsDictionary.Values)
-                foreach (Element element in subdomain.Elements)
+                foreach (Element element in subdomain.Elements.Values)
                     element.ElementType.ClearMaterialState();
 
             cs = null;

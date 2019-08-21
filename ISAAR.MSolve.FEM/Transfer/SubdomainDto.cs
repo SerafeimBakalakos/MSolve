@@ -30,15 +30,18 @@ namespace ISAAR.MSolve.FEM.Transfer
             for (int n = 0; n < actualNodes.Count; ++n) this.nodes[n] = new NodeDto(actualNodes[n]);
 
             // Elements
-            IReadOnlyList<Element> actualElements = subdomain.Elements;
-            this.elements = new IElementDto[actualElements.Count];
+            this.elements = new IElementDto[subdomain.NumElements];
             var elementSerializer = new ElementSerializer();
-            for (int e = 0; e < actualElements.Count; ++e) this.elements[e] = elementSerializer.Serialize(actualElements[e]);
+            int e = 0;
+            foreach (Element element in subdomain.Elements.Values)
+            {
+                this.elements[e++] = elementSerializer.Serialize(element);
+            }
 
             // Materials
             // More than 1 elements may have the same material properties. First gather the unique ones.
             var uniqueMaterials = new Dictionary<int, IFiniteElementMaterial>();
-            foreach (Element element in actualElements)
+            foreach (Element element in subdomain.Elements.Values)
             {
                 // Each element is assumed to have the same material at all GPs.
                 IFiniteElementMaterial elementMaterial = element.ElementType.Materials[0];
@@ -85,7 +88,11 @@ namespace ISAAR.MSolve.FEM.Transfer
             foreach (IMaterialDto m in this.materials) allMaterials[m.ID] = m.Deserialize();
 
             // Elements
-            foreach (IElementDto e in this.elements) subdomain.Elements.Add(e.Deserialize(allNodes, allMaterials));
+            foreach (IElementDto e in this.elements)
+            {
+                Element element = e.Deserialize(allNodes, allMaterials);
+                subdomain.Elements.Add(element.ID, element);
+            }
 
             // Displacements
             var dofSerializer = new StandardDofSerializer();

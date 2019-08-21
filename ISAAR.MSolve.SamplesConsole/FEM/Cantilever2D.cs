@@ -87,7 +87,7 @@ namespace ISAAR.MSolve.SamplesConsole.FEM
                 var elementWrapper = new Element() { ID = i, ElementType = element };
                 foreach (Node node in element.Nodes) elementWrapper.AddNode(node);
                 model.ElementsDictionary.Add(i, elementWrapper);
-                model.SubdomainsDictionary[0].Elements.Add(elementWrapper);
+                model.SubdomainsDictionary[0].Elements.Add(elementWrapper.ID, elementWrapper);
             }
 
             // Constraints

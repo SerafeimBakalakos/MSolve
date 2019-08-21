@@ -70,7 +70,7 @@ namespace ISAAR.MSolve.FEM.Entities
 
                 foreach (Subdomain subdomain in SubdomainsDictionary.Values)
                 {
-                    foreach (Element element in subdomain.Elements)
+                    foreach (Element element in subdomain.Elements.Values)
                     {
                         double[] accelerationForces = element.ElementType.CalculateAccelerationForces(element, m);
                         subdomain.FreeDofOrdering.AddVectorElementToSubdomain(element, accelerationForces, subdomain.Forces);
@@ -187,7 +187,7 @@ namespace ISAAR.MSolve.FEM.Entities
 
             foreach (Subdomain subdomain in SubdomainsDictionary.Values)
             {
-                foreach (Element element in subdomain.Elements)
+                foreach (Element element in subdomain.Elements.Values)
                 {
                     subdomain.FreeDofOrdering.AddVectorElementToSubdomain(element,
                         element.ElementType.CalculateAccelerationForces(element, MassAccelerationLoads),
@@ -220,7 +220,7 @@ namespace ISAAR.MSolve.FEM.Entities
         {
             foreach (Subdomain subdomain in SubdomainsDictionary.Values)
             {
-                foreach (Element element in subdomain.Elements) element.Subdomain = subdomain;
+                foreach (Element element in subdomain.Elements.Values) element.Subdomain = subdomain;
             }
         }
 
@@ -259,8 +259,7 @@ namespace ISAAR.MSolve.FEM.Entities
             foreach (var e in ElementsDictionary.Values.Where(x => x.ElementType is IEmbeddedElement))
             {
                 var subs = ((IEmbeddedElement)e.ElementType).EmbeddedNodes.Select(x => x.EmbeddedInElement.Subdomain).Distinct();
-                foreach (var s in subs.Where(x => x.ID != e.Subdomain.ID))
-                    s.Elements.Add(e);
+                foreach (var s in subs.Where(x => x.ID != e.Subdomain.ID)) s.Elements.Add(e.ID, e);
             }
         }
 

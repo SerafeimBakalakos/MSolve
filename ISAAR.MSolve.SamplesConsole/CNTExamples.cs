@@ -130,7 +130,7 @@ namespace ISAAR.MSolve.SamplesConsole
                     var a = beam_1.StiffnessMatrix(element);
                     // Add beam element to the element and subdomains dictionary of the model
                     model.ElementsDictionary.Add(element.ID, element);
-                    model.SubdomainsDictionary[1].Elements.Add(element);
+                    model.SubdomainsDictionary[1].Elements.Add(element.ID, element);
                 }
                 for (int i = (nElems - 16); i < nElems; i++)
                 {
@@ -153,7 +153,7 @@ namespace ISAAR.MSolve.SamplesConsole
                     var a = beam_2.StiffnessMatrix(element);
                     // Add beam element to the element and subdomains dictionary of the model
                     model.ElementsDictionary.Add(element.ID, element);
-                    model.SubdomainsDictionary[1].Elements.Add(element);
+                    model.SubdomainsDictionary[1].Elements.Add(element.ID, element);
                 }
             }
 
@@ -295,7 +295,7 @@ namespace ISAAR.MSolve.SamplesConsole
                     var a = beam_1.StiffnessMatrix(element);
                     // Add beam element to the element and subdomains dictionary of the model
                     model.ElementsDictionary.Add(element.ID, element);
-                    model.SubdomainsDictionary[1].Elements.Add(element);
+                    model.SubdomainsDictionary[1].Elements.Add(element.ID, element);
                 }
                 for (int i = (nElems - 16); i < nElems; i++)
                 {
@@ -318,7 +318,7 @@ namespace ISAAR.MSolve.SamplesConsole
                     var a = beam_2.StiffnessMatrix(element);
                     // Add beam element to the element and subdomains dictionary of the model
                     model.ElementsDictionary.Add(element.ID, element);
-                    model.SubdomainsDictionary[1].Elements.Add(element);
+                    model.SubdomainsDictionary[1].Elements.Add(element.ID, element);
                 }
             }
 
