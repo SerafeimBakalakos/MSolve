@@ -21,7 +21,6 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         private const int freeDofOrderingTag = 0;
 
         private readonly Intracommunicator comm;
-        private readonly IDofSerializer dofSerializer;
         private readonly Dictionary<int, INode> globalNodes_master;
         private readonly int masterProcess;
         private readonly ProcessDistribution processDistribution;
@@ -38,7 +37,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         /// <param name="masterProcess"></param>
         public GlobalFreeDofOrderingMpi(int numGlobalFreeDofs, DofTable globalFreeDofs,
             Dictionary<int, INode> globalNodes, ISubdomain subdomain, 
-            Intracommunicator comm, int masterProcess, ProcessDistribution processDistribution, IDofSerializer dofSerializer):
+            Intracommunicator comm, int masterProcess, ProcessDistribution processDistribution):
             base(numGlobalFreeDofs, globalFreeDofs)
         {
             this.globalNodes_master = globalNodes;
@@ -48,7 +47,6 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             this.rank = comm.Rank;
             this.masterProcess = masterProcess;
             this.processDistribution = processDistribution;
-            this.dofSerializer = dofSerializer;
 
             //TODO: This should be evaluated lazily by the right process.
             //base.CalcSubdomainGlobalMappings();
@@ -129,7 +127,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             //if (subdomainToGlobalDofMaps != null) return;
 
             // Gather the dof tables to master
-            var transfer = new DofTableTransfer(comm, masterProcess, processDistribution, dofSerializer);
+            var transfer = new DofTableTransfer(comm, masterProcess, processDistribution, model.DofSerializer);
             if (rank == masterProcess) transfer.DefineModelData_master(model.EnumerateSubdomains(), globalNodes_master);
             else transfer.DefineSubdomainData_slave(true, subdomainDofOrderings[subdomain].FreeDofs);
             transfer.Transfer(freeDofOrderingTag);

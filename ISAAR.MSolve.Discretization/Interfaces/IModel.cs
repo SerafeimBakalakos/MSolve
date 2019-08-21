@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
+using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
@@ -12,6 +13,9 @@ namespace ISAAR.MSolve.Discretization.Interfaces
     public interface IModel
     {
         Table<INode, IDofType, double> Constraints { get; }
+
+        IDofSerializer DofSerializer { get; }
+
         IGlobalFreeDofOrdering GlobalDofOrdering { get; set; } //TODO: this should not be managed by the model. Update after 6 months: yeap, see the mess in collocation
         IList<IMassAccelerationHistoryLoad> MassAccelerationHistoryLoads { get; }
 

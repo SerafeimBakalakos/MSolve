@@ -7,6 +7,7 @@ using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
+using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
@@ -21,6 +22,8 @@ namespace ISAAR.MSolve.XFEM.Entities
         public IDomain2DBoundary Boundary { get; set; }
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();
+
+        public IDofSerializer DofSerializer => throw new NotImplementedException();
 
         public Dictionary<int, IXFiniteElement> Elements { get; } = new Dictionary<int, IXFiniteElement>();
 

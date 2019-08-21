@@ -6,7 +6,9 @@ using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.FEM.Interfaces;
+using ISAAR.MSolve.FEM.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 //TODO: find what is going on with the dynamic loads and refactor them. That 564000000 in AssignMassAccelerationHistoryLoads()
@@ -26,6 +28,8 @@ namespace ISAAR.MSolve.FEM.Entities
         public Dictionary<int, Cluster> ClustersDictionary { get; } = new Dictionary<int, Cluster>();
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();//TODOMaria: maybe it's useless in model class
+
+        public IDofSerializer DofSerializer { get; } = new StandardDofSerializer();
 
         public Dictionary<int, Element> ElementsDictionary { get; } = new Dictionary<int, Element>();
 

@@ -5,6 +5,7 @@ using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
@@ -31,7 +32,9 @@ namespace ISAAR.MSolve.IGA.Entities
 		public IList<Cluster> Clusters => ClustersDictionary.Values.ToList();
 		public Dictionary<int, Cluster> ClustersDictionary { get; } = new Dictionary<int, Cluster>();
 
-		public Dictionary<int, Element> ElementsDictionary => elementsDictionary;
+        public IDofSerializer DofSerializer => throw new NotImplementedException();
+
+        public Dictionary<int, Element> ElementsDictionary => elementsDictionary;
 
 		public IList<Load> Loads { get; private set; } = new List<Load>();
 
