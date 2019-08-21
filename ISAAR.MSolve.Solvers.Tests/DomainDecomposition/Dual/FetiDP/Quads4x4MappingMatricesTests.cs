@@ -250,7 +250,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Separate dofs
             var dofSeparator = new FetiDPDofSeparator();
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int s = subdomain.ID;
                 dofSeparator.SeparateCornerRemainderDofs(subdomain, cornerNodes[s]);
@@ -286,7 +286,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Separate dofs
             var dofSeparator = new FetiDPDofSeparator();
             dofSeparator.DefineGlobalBoundaryDofs(model, cornerNodesGlobal);
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int s = subdomain.ID;
                 dofSeparator.SeparateCornerRemainderDofs(subdomain, cornerNodes[s]);
@@ -327,7 +327,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Separate dofs
             var dofSeparator = new FetiDPDofSeparator();
             dofSeparator.DefineGlobalCornerDofs(model, cornerNodesGlobal);
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int s = subdomain.ID;
                 //IEnumerable<INode> remainderAndConstrainedNodes = subdomain.Nodes.Where(node => !cornerNodes[s].Contains(node));

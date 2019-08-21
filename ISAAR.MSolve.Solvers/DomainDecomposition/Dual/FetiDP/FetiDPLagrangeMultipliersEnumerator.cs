@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         {
             var numRemainderDofs = new Dictionary<int, int>();
             var remainderDofOrderings = new Dictionary<int, DofTable>();
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 numRemainderDofs[subdomain.ID] = dofSeparator.RemainderDofIndices[subdomain.ID].Length;
                 remainderDofOrderings[subdomain.ID] = dofSeparator.RemainderDofOrderings[subdomain.ID];
@@ -49,7 +49,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         {
             var numRemainderDofs = new Dictionary<int, int>();
             var remainderDofOrderings = new Dictionary<int, DofTable>();
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 numRemainderDofs[subdomain.ID] = dofSeparator.RemainderDofIndices[subdomain.ID].Length;
                 remainderDofOrderings[subdomain.ID] = dofSeparator.RemainderDofOrderings[subdomain.ID];

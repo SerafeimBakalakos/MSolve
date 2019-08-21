@@ -33,10 +33,10 @@ namespace ISAAR.MSolve.Solvers
         protected SingleSubdomainSolverBase(IModel model, IDofOrderer dofOrderer, 
             IGlobalMatrixAssembler<TMatrix> assembler, string name)
         {
-            if (model.Subdomains.Count != 1) throw new InvalidSolverException(
+            if (model.NumSubdomains != 1) throw new InvalidSolverException(
                 $"{name} can be used if there is only 1 subdomain");
             this.model = model;
-            subdomain = model.Subdomains[0];
+            subdomain = model.EnumerateSubdomains().First();
 
             linearSystem = new SingleSubdomainSystem<TMatrix>(subdomain);
             LinearSystems = new Dictionary<int, ILinearSystem>() { { subdomain.ID, linearSystem } };
@@ -114,7 +114,7 @@ namespace ISAAR.MSolve.Solvers
             assembler.HandleDofOrderingWillBeModified();
             dofOrderer.OrderFreeDofs(model);
 
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 if (alsoOrderConstrainedDofs) subdomain.ConstrainedDofOrdering = dofOrderer.OrderConstrainedDofs(subdomain);
 

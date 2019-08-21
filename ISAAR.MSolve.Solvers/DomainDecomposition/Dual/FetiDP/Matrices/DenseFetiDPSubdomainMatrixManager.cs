@@ -366,8 +366,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
 
         public class Factory : IFetiDPSubdomainMatrixManagerFactory
         {
-            public IFetiDPCoarseProblemSolver CreateCoarseProblemSolver(IReadOnlyList<ISubdomain> subdomains)
-                => new DenseFetiDPCoarseProblemSolver(subdomains);
+            public IFetiDPCoarseProblemSolver CreateCoarseProblemSolver(IModel model)
+                => new DenseFetiDPCoarseProblemSolver(model);
 
             public IFetiDPSubdomainMatrixManager CreateMatricesManager(ISubdomain subdomain)
                 => new DenseFetiDPSubdomainMatrixManager(subdomain);

@@ -59,21 +59,21 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             IFetiDPInterfaceProblemSolver interfaceProblemSolver)
         {
             // Model
-            if (model.Subdomains.Count == 1) throw new InvalidSolverException(
+            if (model.NumSubdomains == 1) throw new InvalidSolverException(
                 $"{name} cannot be used if there is only 1 subdomain");
             this.model = model;
             this.cornerNodeSelection = cornerNodeSelection;
 
             // Subdomains
             subdomains = new Dictionary<int, ISubdomain>();
-            foreach (ISubdomain subdomain in model.Subdomains) subdomains[subdomain.ID] = subdomain;
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains()) subdomains[subdomain.ID] = subdomain;
 
             // Matrix managers and linear systems
             matrixManagers = new Dictionary<int, IFetiDPSubdomainMatrixManager>();
             matrixManagersGeneral = new Dictionary<int, IFetiSubdomainMatrixManager>();
             this.linearSystems = new Dictionary<int, ISingleSubdomainLinearSystem>();
             var externalLinearSystems = new Dictionary<int, ILinearSystem>();
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int s = subdomain.ID;
                 var matrixManager = matrixManagerFactory.CreateMatricesManager(subdomain);
@@ -93,7 +93,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             this.preconditionerFactory = preconditionerFactory;
 
             // Interface problem
-            this.coarseProblemSolver = matrixManagerFactory.CreateCoarseProblemSolver(model.Subdomains);
+            this.coarseProblemSolver = matrixManagerFactory.CreateCoarseProblemSolver(model);
             this.interfaceProblemSolver = interfaceProblemSolver;
 
             // Homogeneous/heterogeneous problems
@@ -115,7 +115,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             var watch = new Stopwatch();
             watch.Start();
             var matrices = new Dictionary<int, IMatrix>();
-            foreach (ISubdomain subdomain in model.Subdomains) //TODO: this must be done in parallel
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains()) //TODO: this must be done in parallel
             {
                 int s = subdomain.ID;
                 IMatrix Kff;
@@ -148,7 +148,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             var watch = new Stopwatch();
             watch.Start();
             var matrices = new Dictionary<int, (IMatrix Aff, IMatrixView Afc, IMatrixView Acf, IMatrixView Acc)>();
-            foreach (ISubdomain subdomain in model.Subdomains) //TODO: this must be done in parallel
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains()) //TODO: this must be done in parallel
             {
                 int s = subdomain.ID;
                 if (!subdomain.StiffnessModified)
@@ -215,7 +215,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             // Define boundary / internal dofs
             dofSeparator.DefineGlobalBoundaryDofs(model, CornerNodesGlobal);
             dofSeparator.DefineGlobalCornerDofs(model, CornerNodesGlobal);
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int s = subdomain.ID;
                 HashSet<INode> cornerNodes = CornerNodesOfSubdomains[s];
@@ -251,7 +251,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             watch.Stop();
             Logger.LogTaskDuration("Dof ordering", watch.ElapsedMilliseconds);
             int numExpandedDomainFreeDofs = 0;
-            foreach (var subdomain in model.Subdomains)
+            foreach (var subdomain in model.EnumerateSubdomains())
             {
                 numExpandedDomainFreeDofs += subdomain.FreeDofOrdering.NumFreeDofs;
             }
@@ -278,7 +278,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             watch.Start();
 
             // Order dofs
-            IEnumerable<ISubdomain> modifiedSubdomains = model.Subdomains.Where(sub => sub.ConnectivityModified); //TODO: Not sure about this
+            IEnumerable<ISubdomain> modifiedSubdomains = model.EnumerateSubdomains().Where(sub => sub.ConnectivityModified); //TODO: Not sure about this
             foreach (ISubdomain subdomain in modifiedSubdomains) matrixManagers[subdomain.ID].HandleDofOrderingWillBeModified();
             dofOrderer.OrderFreeDofs(model);
             foreach (ISubdomain subdomain in modifiedSubdomains)
@@ -343,7 +343,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 watch.Start();
                 if (preconditionerFactory.ReorderInternalDofsForFactorization)
                 {
-                    foreach (ISubdomain subdomain in model.Subdomains)
+                    foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                     {
                         if (subdomain.ConnectivityModified)
                         {

@@ -53,7 +53,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         {
             Dictionary<int, double[]> FppReactionVectorSubdomains = new Dictionary<int, double[]>();
 
-            foreach (Subdomain subdomain in model.Subdomains)
+            foreach (Subdomain subdomain in model.SubdomainsDictionary.Values)
             {
                 FppReactionVectorSubdomains.Add(subdomain.ID, SubdomainCalculations.CalculateFppReactionsVector(subdomain, elementProvider, scaleTransitions, boundaryNodes,
                 solution[subdomain.ID], dSolution[subdomain.ID], initialConvergedBoundaryDisplacements, totalBoundaryDisplacements, nIncrement, totalIncrements));
@@ -158,7 +158,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         {
             Dictionary<int, double[][]> f3_vectorsSubdomains = new Dictionary<int, double[][]>();
 
-            foreach (Subdomain subdomain in model.Subdomains)
+            foreach (Subdomain subdomain in model.SubdomainsDictionary.Values)
             {
                 f3_vectorsSubdomains.Add(subdomain.ID, SubdomainCalculations.CalculateKpfKffinverseKfpDq(f2_vectorsSubdomains[subdomain.ID], subdomain, elementProvider, scaleTransitions, boundaryNodes));
             }

@@ -15,11 +15,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
     {
         private readonly Dictionary<int, double[]> inverseBoundaryDofMultiplicities;
         private readonly IDofSeparator dofSeparator;
-        private readonly IReadOnlyList<ISubdomain> subdomains;
+        private readonly IModel model;
 
         public HomogeneousStiffnessDistribution(IModel model, IDofSeparator dofSeparator)
         {
-            this.subdomains = model.Subdomains;
+            this.model = model;
             this.dofSeparator = dofSeparator;
             this.inverseBoundaryDofMultiplicities = new Dictionary<int, double[]>();
         }
@@ -46,7 +46,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             foreach (var idBoundaryDofs in dofSeparator.BoundaryDofs)
             {
                 int s = idBoundaryDofs.Key;
-                if (subdomains[s].ConnectivityModified)
+                if (model.GetSubdomain(s).ConnectivityModified)
                 {
                     Debug.WriteLine(
                         $"{this.GetType().Name}: Calculating the inverse multiplicities of the boundary dofs of subdomain {s}");

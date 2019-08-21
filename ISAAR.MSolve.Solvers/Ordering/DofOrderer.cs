@@ -28,10 +28,10 @@ namespace ISAAR.MSolve.Solvers.Ordering
 
         public override void OrderFreeDofs(IModel model)
         {
-            if (doOptimizationsIfSingleSubdomain && (model.Subdomains.Count == 1))
+            if (doOptimizationsIfSingleSubdomain && (model.NumSubdomains == 1))
             {
                 // Order subdomain dofs
-                ISubdomain subdomain = model.Subdomains.First();
+                ISubdomain subdomain = model.EnumerateSubdomains().First();
                 ISubdomainFreeDofOrdering subdomainOrdering = OrderFreeDofs(subdomain);
                 subdomain.FreeDofOrdering = subdomainOrdering;
 
@@ -43,8 +43,8 @@ namespace ISAAR.MSolve.Solvers.Ordering
             else
             {
                 // Order subdomain dofs
-                var subdomainOrderings = new Dictionary<ISubdomain, ISubdomainFreeDofOrdering>(model.Subdomains.Count);
-                foreach (ISubdomain subdomain in model.Subdomains)
+                var subdomainOrderings = new Dictionary<ISubdomain, ISubdomainFreeDofOrdering>(model.NumSubdomains);
+                foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
                     ISubdomainFreeDofOrdering subdomainOrdering = OrderFreeDofs(subdomain);
                     subdomainOrderings.Add(subdomain, subdomainOrdering);

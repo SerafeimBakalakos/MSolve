@@ -43,8 +43,8 @@ namespace ISAAR.MSolve.FEM.Entities
         IReadOnlyList<INode> IModel.Nodes => NodesDictionary.Values.ToList();
         public Dictionary<int, Node> NodesDictionary { get; } = new Dictionary<int, Node>();
 
-        IReadOnlyList<ISubdomain> IModel.Subdomains => SubdomainsDictionary.Values.ToList();
-        public IReadOnlyList<Subdomain> Subdomains => SubdomainsDictionary.Values.ToList();
+        public int NumSubdomains => SubdomainsDictionary.Count;
+
         public Dictionary<int, Subdomain> SubdomainsDictionary { get; } = new Dictionary<int, Subdomain>();
 
         public IList<ITimeDependentNodalLoad> TimeDependentNodalLoads { get; private set; } = new List<ITimeDependentNodalLoad>();
@@ -149,7 +149,9 @@ namespace ISAAR.MSolve.FEM.Entities
             //AssignLoads();
         }
 
-        public INode GetNode(int nodeID) => NodesDictionary[nodeID];
+        public IEnumerable<ISubdomain> EnumerateSubdomains() => SubdomainsDictionary.Values;
+
+        public ISubdomain GetSubdomain(int subdomainID) => SubdomainsDictionary[subdomainID];
 
         //TODO: constraints should not be saved inside the nodes. As it is right now (22/11/2018) the same constraint 
         //      is saved in the node, the model constraints table and the subdomain constraints table. Furthermore,

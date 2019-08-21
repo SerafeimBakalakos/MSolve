@@ -83,7 +83,7 @@ namespace ISAAR.MSolve.Solvers.Tests
             double tolerance = 1E-10;
 
             Model model = CreateModel();
-            int id = model.Subdomains.First().ID;
+            int id = model.EnumerateSubdomains().First().ID;
 
             var solver = (new SkylineSolver.Builder()).BuildSolver(model);
             var problem = new ProblemStructural(model, solver);
@@ -98,7 +98,7 @@ namespace ISAAR.MSolve.Solvers.Tests
 
             // Build and assign global matrices
             (IMatrixView Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) = 
-                problem.CalculateSubMatrices(model.Subdomains.First());
+                problem.CalculateSubMatrices(model.EnumerateSubdomains().First());
             linearSystem.Matrix = Kff;
 
             // Static condensation: Kcondensed = Kcc - Kcf * inv(Kff) * Kfc
@@ -116,7 +116,7 @@ namespace ISAAR.MSolve.Solvers.Tests
             double tolerance = 1E-10;
 
             Model model = CreateModel();
-            int id = model.Subdomains.First().ID;
+            int id = model.EnumerateSubdomains().First().ID;
 
             var solver = (new SkylineSolver.Builder()).BuildSolver(model);
             var problem = new ProblemStructural(model, solver);
@@ -131,7 +131,7 @@ namespace ISAAR.MSolve.Solvers.Tests
 
             // Build and assign global matrices
             (IMatrixView Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) = 
-                problem.CalculateSubMatrices(model.Subdomains.First());
+                problem.CalculateSubMatrices(model.EnumerateSubdomains().First());
 
             // Checks
             Assert.True(expectedKff.Equals(Kff, tolerance));

@@ -118,7 +118,7 @@ namespace ISAAR.MSolve.SamplesConsole.Preprocessing
         public void AddElement(IFiniteElement element, IReadOnlyList<Node> elementNodes)
         {
             int numElementsTotal = model.Elements.Count;
-            int numElementsSubdomain = model.Subdomains[0].Elements.Count;
+            int numElementsSubdomain = model.SubdomainsDictionary[0].Elements.Count;
 
             var elementWrapper = new Element() { ID = numElementsTotal, ElementType = element };
             foreach (Node node in elementNodes) elementWrapper.AddNode(node);
@@ -149,7 +149,7 @@ namespace ISAAR.MSolve.SamplesConsole.Preprocessing
 
             // Elements
             int numElementsCurrent = model.Elements.Count;
-            int numElementsSubdomain = model.Subdomains[0].Elements.Count;
+            int numElementsSubdomain = model.SubdomainsDictionary[0].Elements.Count;
             var factory = new ContinuumElement2DFactory(thickness, (ElasticMaterial2D)material, dynamicProperties); //TODO: extend the factory to other materials
             for (int i = 0; i < elements.Count; ++i)
             {

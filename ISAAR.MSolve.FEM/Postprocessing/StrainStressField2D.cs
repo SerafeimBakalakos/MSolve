@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.FEM.Postprocessing
             var nodeMultiplicities = new Dictionary<Node, int>();
             foreach (Node node in model.Nodes) nodeMultiplicities.Add(node, 0); // how many elements each node belongs to
 
-            foreach (Subdomain subdomain in model.Subdomains)
+            foreach (Subdomain subdomain in model.EnumerateSubdomains())
             {
                 foreach (Element element in subdomain.Elements)
                 {

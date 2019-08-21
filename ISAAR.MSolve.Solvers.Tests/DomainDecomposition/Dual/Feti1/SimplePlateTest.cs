@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
@@ -84,7 +85,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.Feti1
 
             // Solver
             var factorizationTolerances = new Dictionary<int, double>();
-            foreach (Subdomain s in multiSubdomainModel.Subdomains) factorizationTolerances[s.ID] = factorizationTolerance;
+            foreach (ISubdomain s in multiSubdomainModel.EnumerateSubdomains()) factorizationTolerances[s.ID] = factorizationTolerance;
             //var fetiMatrices = new DenseFeti1SubdomainMatrixManager.Factory();
             //var fetiMatrices = new SkylineFeti1SubdomainMatrixManager.Factory();
             var fetiMatrices = new SkylineFeti1SubdomainMatrixManager.Factory(new OrderingAmdSuiteSparse());

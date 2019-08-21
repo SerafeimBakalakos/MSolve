@@ -87,7 +87,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         {
             Dictionary<int, Dictionary<int, Element>> subdomainsBoundaryElements = new Dictionary<int, Dictionary<int, Element>>();
 
-            foreach (Subdomain subdomain in model.Subdomains)
+            foreach (Subdomain subdomain in model.SubdomainsDictionary.Values)
             {
                 Dictionary<int, Element> subdBoundaryElements = GetBoundaryFiniteElementsDictionary(subdomain, boundaryNodes);
                 subdomainsBoundaryElements.Add(subdomain.ID, subdBoundaryElements);
@@ -109,7 +109,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             var subdomainUpdaters = new Dictionary<int, NonLinearSubdomainUpdaterWithInitialConditions>(1); //v2.2
             //var subdomainUpdaters = new NonLinearSubdomainUpdaterWithInitialConditions[totalSubdomains];
             
-            foreach (Subdomain subdomain in model.Subdomains)//TODO : or else "in model.SubdomainsDictionary.Values)"
+            foreach (Subdomain subdomain in model.SubdomainsDictionary.Values)
             {
                 subdomainUpdaters.Add(subdomain.ID, new NonLinearSubdomainUpdaterWithInitialConditions(subdomain)); //v2.3
                 //subdomainUpdaters[counter] = new NonLinearSubdomainUpdaterWithInitialConditions(subdomain);

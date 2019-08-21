@@ -61,11 +61,12 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
 
         private IReadOnlyDictionary<int, INonLinearSubdomainUpdater> CreateDefaultSubdomainUpdaters()
         {
-            int numSubdomains = model.Subdomains.Count;
+            int numSubdomains = model.NumSubdomains;
             var subdomainUpdaters = new Dictionary<int, INonLinearSubdomainUpdater>(numSubdomains);
-            for (int i = 0; i < numSubdomains; ++i)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                subdomainUpdaters[model.Subdomains[i].ID] = new NonLinearSubdomainUpdater(model.Subdomains[i]);
+                subdomainUpdaters[subdomain.ID] = new NonLinearSubdomainUpdater(subdomain);
+
             }
             return subdomainUpdaters;
 

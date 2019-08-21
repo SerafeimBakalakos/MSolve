@@ -221,7 +221,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
 
         private void UpdateSubdomains()
         {
-            if (model.Subdomains.Count == 1) return;
+            if (model.NumSubdomains == 1) return;
 
             if (newTipEnrichedSubdomains == null) 
             {

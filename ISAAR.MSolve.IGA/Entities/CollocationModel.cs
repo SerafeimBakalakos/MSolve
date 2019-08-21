@@ -63,8 +63,7 @@ namespace ISAAR.MSolve.IGA.Entities
             set { numberOfInterfaces = value; }
         }
 
-        IReadOnlyList<ISubdomain> IModel.Subdomains => patchesDictionary.Values.ToList();
-        public IList<CollocationPatch> Patches => patchesDictionary.Values.ToList();
+        public int NumSubdomains => PatchesDictionary.Count();
 
         public Dictionary<int, CollocationPatch> PatchesDictionary
         {
@@ -80,7 +79,7 @@ namespace ISAAR.MSolve.IGA.Entities
             set
             {
                 globalDofOrdering = value;
-                foreach (var patch in Patches)
+                foreach (var patch in PatchesDictionary.Values)
                 {
                     patch.FreeDofRowOrdering = GlobalDofOrdering.GetSubdomainDofOrdering(patch);
                 }
@@ -97,7 +96,7 @@ namespace ISAAR.MSolve.IGA.Entities
             set
             {
                 globalRowDofOrdering = value;
-                foreach (var patch in Patches)
+                foreach (var patch in PatchesDictionary.Values)
                 {
                     patch.FreeDofColOrdering = GlobalRowDofOrdering.GetSubdomainDofOrdering(patch);
                     patch.Forces = Vector.CreateZero(patch.FreeDofColOrdering.NumFreeDofs);
@@ -115,7 +114,7 @@ namespace ISAAR.MSolve.IGA.Entities
             set
             {
                 globalColDofOrdering = value;
-                foreach (var patch in Patches)
+                foreach (var patch in PatchesDictionary.Values)
                 {
                     patch.FreeDofColOrdering = GlobalColDofOrdering.GetSubdomainDofOrdering(patch);
                     patch.Forces = Vector.CreateZero(patch.FreeDofColOrdering.NumFreeDofs);
@@ -222,6 +221,10 @@ namespace ISAAR.MSolve.IGA.Entities
             AssignConstraints();
             RemoveInactiveNodalLoads();
         }
+
+        public IEnumerable<ISubdomain> EnumerateSubdomains() => PatchesDictionary.Values;
+
+        public ISubdomain GetSubdomain(int subdomainID) => PatchesDictionary[subdomainID];
 
         //TODO: constraints should not be saved inside the nodes. As it is right now (22/11/2018) the same constraint 
         //      is saved in the node, the model constraints table and the subdomain constraints table. Furthermore,

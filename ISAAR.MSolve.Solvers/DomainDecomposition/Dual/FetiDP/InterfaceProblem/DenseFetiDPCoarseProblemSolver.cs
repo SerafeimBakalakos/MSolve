@@ -12,12 +12,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 {
     public class DenseFetiDPCoarseProblemSolver : IFetiDPCoarseProblemSolver
     {
-        private readonly IReadOnlyList<ISubdomain> subdomains;
+        private readonly IModel model;
         private Matrix inverseGlobalKccStar;
 
-        public DenseFetiDPCoarseProblemSolver(IReadOnlyList<ISubdomain> subdomains)
+        public DenseFetiDPCoarseProblemSolver(IModel model)
         {
-            this.subdomains = subdomains;
+            this.model = model;
         }
 
         public void ClearCoarseProblemMatrix()
@@ -38,7 +38,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         {
             // Static condensation for the force vectors
             var globalFcStar = Vector.CreateZero(dofSeparator.NumGlobalCornerDofs);
-            for (int s = 0; s < subdomains.Count; ++s)
+            for (int s = 0; s < model.NumSubdomains; ++s)
             {
                 IFetiDPSubdomainMatrixManager matrices = matrixManagers[s];
 
@@ -65,12 +65,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         {
             // Static condensation of remainder dofs (Schur complement).
             var globalKccStar = Matrix.CreateZero(dofSeparator.NumGlobalCornerDofs, dofSeparator.NumGlobalCornerDofs);
-            for (int s = 0; s < subdomains.Count; ++s)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
+                int s = subdomain.ID;
                 IFetiDPSubdomainMatrixManager matrices = matrixManagers[s];
 
                 // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s]
-                if (subdomains[s].StiffnessModified)
+                if (subdomain.StiffnessModified)
                 {
                     Debug.WriteLine($"{this.GetType().Name}: Calculating Schur complement of remainder dofs"
                         + " for the stiffness of subdomain {s}");

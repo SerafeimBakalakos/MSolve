@@ -61,8 +61,7 @@ namespace ISAAR.MSolve.IGA.Entities
 			set { numberOfInterfaces = value; }
 		}
 
-		IReadOnlyList<ISubdomain> IModel.Subdomains => patchesDictionary.Values.ToList();
-		public IList<Patch> Patches => patchesDictionary.Values.ToList();
+        public int NumSubdomains => PatchesDictionary.Count();
 
 		public Dictionary<int, Patch> PatchesDictionary
 		{
@@ -81,7 +80,7 @@ namespace ISAAR.MSolve.IGA.Entities
             set
             {
                 globalRowDofOrdering = value;
-                foreach (Patch patch in Patches)
+                foreach (Patch patch in PatchesDictionary.Values)
                 {
                     patch.FreeDofColOrdering = GlobalRowDofOrdering.GetSubdomainDofOrdering(patch);
                     patch.Forces = Vector.CreateZero(patch.FreeDofColOrdering.NumFreeDofs);
@@ -99,7 +98,7 @@ namespace ISAAR.MSolve.IGA.Entities
             set
             {
                 globalColDofOrdering = value;
-                foreach (Patch patch in Patches)
+                foreach (Patch patch in PatchesDictionary.Values)
                 {
                     patch.FreeDofColOrdering = GlobalColDofOrdering.GetSubdomainDofOrdering(patch);
                     patch.Forces = Vector.CreateZero(patch.FreeDofColOrdering.NumFreeDofs);
@@ -205,11 +204,15 @@ namespace ISAAR.MSolve.IGA.Entities
             RemoveInactiveNodalLoads();
         }
 
-		//TODO: constraints should not be saved inside the nodes. As it is right now (22/11/2018) the same constraint 
-		//      is saved in the node, the model constraints table and the subdomain constraints table. Furthermore,
-		//      displacement control analyzer updates the subdomain constraints table only (another bad design decision).  
-		//      It is too easy to access the wrong instance of the constraint. 
-		private void AssignConstraints()
+        public IEnumerable<ISubdomain> EnumerateSubdomains() => PatchesDictionary.Values;
+
+        public ISubdomain GetSubdomain(int subdomainID) => PatchesDictionary[subdomainID];
+
+        //TODO: constraints should not be saved inside the nodes. As it is right now (22/11/2018) the same constraint 
+        //      is saved in the node, the model constraints table and the subdomain constraints table. Furthermore,
+        //      displacement control analyzer updates the subdomain constraints table only (another bad design decision).  
+        //      It is too easy to access the wrong instance of the constraint. 
+        private void AssignConstraints()
 		{
 			foreach (ControlPoint controlPoint in ControlPointsDictionary.Values)
 			{

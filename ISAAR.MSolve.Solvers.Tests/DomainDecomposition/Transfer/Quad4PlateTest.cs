@@ -26,7 +26,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Transfer
 
             // Serialize each subdomain
             int numSubdomains = model.SubdomainsDictionary.Count;
-            IReadOnlyList<Subdomain> originalSubdomains = model.Subdomains;
+            IReadOnlyList<Subdomain> originalSubdomains = model.SubdomainsDictionary.Values.ToArray();
             var serializedSubdomains = new SubdomainDto[numSubdomains];
             for (int s = 0; s < numSubdomains; ++s)
             {
@@ -93,7 +93,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Transfer
 
             // Create linear systems
             var linearSystems = new List<SingleSubdomainSystem<SkylineMatrix>>();
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 var ls = new SingleSubdomainSystem<SkylineMatrix>(subdomain);
                 linearSystems.Add(ls);

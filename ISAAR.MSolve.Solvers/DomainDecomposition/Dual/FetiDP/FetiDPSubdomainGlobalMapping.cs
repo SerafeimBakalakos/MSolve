@@ -98,7 +98,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             var globalDisplacements = Vector.CreateZero(model.GlobalDofOrdering.NumGlobalFreeDofs);
 
             // Remainder dofs
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int id = subdomain.ID;
                 int[] freeToGlobalDofs = model.GlobalDofOrdering.GetSubdomainToGlobalMap(subdomain);
@@ -137,7 +137,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             var globalDisplacements = Vector.CreateZero(model.GlobalDofOrdering.NumGlobalFreeDofs);
 
             // Remainder dofs
-            foreach (var subdomain in model.Subdomains)
+            foreach (var subdomain in model.EnumerateSubdomains())
             {
                 int id = subdomain.ID;
                 int[] subdomainToGlobalDofs = model.GlobalDofOrdering.GetSubdomainToGlobalMap(subdomain);
@@ -178,7 +178,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         public Vector GatherGlobalForces(Dictionary<int, IVectorView> subdomainForces)
         {
             var globalForces = Vector.CreateZero(model.GlobalDofOrdering.NumGlobalFreeDofs);
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int id = subdomain.ID;
                 int[] subdomainFreeToGlobalDofs = model.GlobalDofOrdering.GetSubdomainToGlobalMap(subdomain);

@@ -34,7 +34,8 @@ namespace ISAAR.MSolve.XFEM.Entities
         IReadOnlyList<INode> IModel.Nodes => Nodes;
         public List<XNode> Nodes { get; } = new List<XNode>();
 
-        IReadOnlyList<ISubdomain> IModel.Subdomains => Subdomains.Values.ToList();
+        public int NumSubdomains => Subdomains.Count();
+
         public Dictionary<int, XSubdomain> Subdomains { get; } = new Dictionary<int, XSubdomain>();
 
         public void AssignLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
@@ -63,6 +64,10 @@ namespace ISAAR.MSolve.XFEM.Entities
             AssignConstraints();
             RemoveInactiveNodalLoads();
         }
+
+        public IEnumerable<ISubdomain> EnumerateSubdomains() => Subdomains.Values;
+
+        public ISubdomain GetSubdomain(int subdomainID) => Subdomains[subdomainID];
 
         private void AssignConstraints()
         {

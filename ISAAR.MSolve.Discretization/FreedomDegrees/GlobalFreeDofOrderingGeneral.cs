@@ -20,7 +20,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         public void CreateSubdomainGlobalMaps(IModel model)
         {
             subdomainDofOrderings = new Dictionary<ISubdomain, ISubdomainFreeDofOrdering>();
-            foreach (ISubdomain subdomain in model.Subdomains) subdomainDofOrderings[subdomain] = subdomain.FreeDofOrdering;
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains()) subdomainDofOrderings[subdomain] = subdomain.FreeDofOrdering;
             CalcSubdomainGlobalMappings();
         }
 

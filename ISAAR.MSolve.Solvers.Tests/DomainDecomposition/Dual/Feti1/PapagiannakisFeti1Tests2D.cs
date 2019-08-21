@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
@@ -222,7 +223,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.Feti1
 
             // Solver
             var factorizationTolerances = new Dictionary<int, double>();
-            foreach (Subdomain s in multiSubdomainModel.Subdomains) factorizationTolerances[s.ID] = factorizationTolerance;
+            foreach (ISubdomain s in multiSubdomainModel.EnumerateSubdomains()) factorizationTolerances[s.ID] = factorizationTolerance;
             //var fetiMatrices = new DenseFeti1SubdomainMatrixManager.Factory();
             //var fetiMatrices = new SkylineFeti1SubdomainMatrixManager.Factory();
             var fetiMatrices = new SkylineFeti1SubdomainMatrixManager.Factory(new OrderingAmdSuiteSparse());
@@ -322,7 +323,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.Feti1
             // Other stats
             int numUniqueGlobalDofs = multiSubdomainModel.Nodes.Count * 2;
             int numExtenedDomainDofs = 0;
-            foreach (var subdomain in multiSubdomainModel.Subdomains) numExtenedDomainDofs += subdomain.Nodes.Count * 2;
+            foreach (var subdomain in multiSubdomainModel.EnumerateSubdomains()) numExtenedDomainDofs += 2 * subdomain.Nodes.Count;
 
             return (globalDisplacements, fetiSolver.Logger, numUniqueGlobalDofs, numExtenedDomainDofs);
         }

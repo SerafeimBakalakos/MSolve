@@ -154,8 +154,7 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
                 writer.WriteLine("DATASET UNSTRUCTURED_GRID");
 
                 // Write all nodes by repeating the boundary ones
-                IReadOnlyList<ISubdomain> subdomains = model.Subdomains;
-                int numSubdomains = subdomains.Count;
+                IReadOnlyList<ISubdomain> subdomains = model.EnumerateSubdomains().ToArray();
                 var subdomainNodes = new Dictionary<ISubdomain, Dictionary<INode, int>>();
                 int numNodes = 0;
                 foreach (ISubdomain subdomain in subdomains) numNodes += subdomain.Nodes.Count;

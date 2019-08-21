@@ -130,7 +130,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
 
             // Gather the dof tables to master
             var transfer = new DofTableTransfer(comm, masterProcess, processDistribution, dofSerializer);
-            if (rank == masterProcess) transfer.DefineModelData_master(model.Subdomains, globalNodes_master);
+            if (rank == masterProcess) transfer.DefineModelData_master(model.EnumerateSubdomains(), globalNodes_master);
             else transfer.DefineSubdomainData_slave(true, subdomainDofOrderings[subdomain].FreeDofs);
             transfer.Transfer(freeDofOrderingTag);
             
@@ -138,7 +138,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             this.subdomainDofOrderings = new Dictionary<ISubdomain, ISubdomainFreeDofOrdering>();
             if (rank == masterProcess)
             {
-                foreach (ISubdomain sub in model.Subdomains)
+                foreach (ISubdomain sub in model.EnumerateSubdomains())
                 {
                     if (sub.ID == this.subdomain.ID) subdomainDofOrderings[sub] = this.subdomain.FreeDofOrdering;
                     else

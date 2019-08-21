@@ -898,11 +898,11 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
 
         public static int[][] DetermineHexaElementsSubdomainsFromModel(Model model)
         {
-            int[][] subdomainsAndHexas = new int[model.Subdomains.Count()][];
+            int[][] subdomainsAndHexas = new int[model.NumSubdomains][];
 
-            for (int subdomainId = 0; subdomainId < model.Subdomains.Count(); subdomainId++)
+            for (int subdomainId = 0; subdomainId < model.NumSubdomains; subdomainId++)
             {
-                var subdomain = model.Subdomains[subdomainId]; //ZERo based model.subdomainsDictionary access == model.Subdomains access
+                var subdomain = model.SubdomainsDictionary[subdomainId]; //ZERo based model.subdomainsDictionary access == model.Subdomains access
                 subdomainsAndHexas[subdomainId] = new int[subdomain.Elements.Count()];
                 int hexaPositionInArray = 0;
                 foreach (Element element in subdomain.Elements)

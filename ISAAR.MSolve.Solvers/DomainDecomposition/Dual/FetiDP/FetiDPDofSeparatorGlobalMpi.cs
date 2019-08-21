@@ -66,7 +66,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         /// </summary>
         public void CalcCornerMappingMatrices()
         { //TODO: Can I reuse subdomain data? Yes if the global corner dofs have not changed.
-            foreach (ISubdomain subdomain in Model.Subdomains)
+            foreach (ISubdomain subdomain in Model.EnumerateSubdomains())
             {
                 int s = subdomain.ID;
                 DofTable localCornerDofOrdering = SubdomainCornerDofOrderings[s];

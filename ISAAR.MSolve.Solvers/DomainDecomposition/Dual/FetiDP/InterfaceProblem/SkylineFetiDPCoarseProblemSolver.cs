@@ -18,13 +18,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 {
     public class SkylineFetiDPCoarseProblemSolver : IFetiDPCoarseProblemSolver
     {
+        private readonly IModel model;
         private readonly IReorderingAlgorithm reordering;
-        private readonly IReadOnlyList<ISubdomain> subdomains;
         private LdlSkyline inverseGlobalKccStar;
 
-        public SkylineFetiDPCoarseProblemSolver(IReadOnlyList<ISubdomain> subdomains, IReorderingAlgorithm reordering)
+        public SkylineFetiDPCoarseProblemSolver(IModel model, IReorderingAlgorithm reordering)
         {
-            this.subdomains = subdomains;
+            this.model = model;
             this.reordering = reordering;
         }
 
@@ -46,7 +46,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         {
             // Static condensation for the force vectors
             var globalFcStar = Vector.CreateZero(dofSeparator.NumGlobalCornerDofs);
-            for (int s = 0; s < subdomains.Count; ++s)
+            for (int s = 0; s < model.NumSubdomains; ++s)
             {
                 IFetiDPSubdomainMatrixManager matrices = matrixManagers[s];
 
@@ -67,7 +67,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         {
             if (reordering == null) return; // Use the natural ordering and do not modify any stored dof data
             var pattern = SparsityPatternSymmetric.CreateEmpty(dofSeparator.NumGlobalCornerDofs);
-            for (int s = 0; s < subdomains.Count; ++s) 
+            for (int s = 0; s < model.NumSubdomains; ++s) 
             {
                 // Treat each subdomain as a superelement with only its corner nodes.
                 var localCornerDofOrdering = dofSeparator.SubdomainCornerDofOrderings[s];
@@ -93,12 +93,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             int[] skylineColHeights = FindSkylineColumnHeights(cornerNodesOfSubdomains, dofSeparator);
             var skylineBuilder = SkylineBuilder.Create(dofSeparator.NumGlobalCornerDofs, skylineColHeights);
 
-            for (int s = 0; s < subdomains.Count; ++s)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
+                int s = subdomain.ID;
                 IFetiDPSubdomainMatrixManager matrices = matrixManagers[s];
 
                 // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s]
-                if (subdomains[s].StiffnessModified)
+                if (subdomain.StiffnessModified)
                 {
                     Debug.WriteLine($"{this.GetType().Name}: Calculating Schur complement of remainder dofs"
                         + " for the stiffness of subdomain {s}");
@@ -118,7 +119,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         {
             //only entries above the diagonal count towards the column height
             int[] colHeights = new int[dofSeparator.NumGlobalCornerDofs]; 
-            for (int s = 0; s < subdomains.Count; ++s)
+            for (int s = 0; s < model.NumSubdomains; ++s)
             {
                 HashSet<INode> cornerNodes = cornerNodesOfSubdomains[s];
 

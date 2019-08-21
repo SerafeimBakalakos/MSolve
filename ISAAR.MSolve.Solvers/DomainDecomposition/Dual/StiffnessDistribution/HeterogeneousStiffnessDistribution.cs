@@ -22,7 +22,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
     public class HeterogeneousStiffnessDistribution : IStiffnessDistribution
     {
         private readonly IDofSeparator dofSeparator;
-        private readonly IReadOnlyList<ISubdomain> subdomains;
+        private readonly IModel model;
         private readonly Dictionary<int, DiagonalMatrix> inverseDbMatrices;
 
         //TODO: Is it more efficient to use (INode node, DOFType[] dofTypes)[]? It would reduce the cost of accessing node data?
@@ -31,7 +31,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 
         public HeterogeneousStiffnessDistribution(IModel model, IDofSeparator dofSeparator)
         {
-            this.subdomains = model.Subdomains;
+            this.model = model;
             this.dofSeparator = dofSeparator;
             inverseDbMatrices = new Dictionary<int, DiagonalMatrix>();
         }
@@ -180,7 +180,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 
                 Matrix Dlambda = stiffnessDistribution.BuildDlambda(lagrangeEnumerator).CopyToFullMatrix(); // Common for all subdomains
                 var matricesBpb = new Dictionary<int, IMappingMatrix>();
-                foreach (ISubdomain subdomain in stiffnessDistribution.subdomains)
+                foreach (ISubdomain subdomain in stiffnessDistribution.model.EnumerateSubdomains())
                 {
                     SignedBooleanMatrixColMajor Bb = boundarySignedBooleanMatrices[subdomain.ID];
                     Matrix invDb = stiffnessDistribution.InvertBoundaryDofStiffnesses(subdomain).CopyToFullMatrix(); //TODO: This can be reused from previous analysis steps
@@ -241,7 +241,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 
                 DiagonalMatrix Dlambda = stiffnessDistribution.BuildDlambda(lagrangeEnumerator); // Common for all subdomains
                 var matricesBpb = new Dictionary<int, IMappingMatrix>();
-                foreach (ISubdomain subdomain in stiffnessDistribution.subdomains)
+                foreach (ISubdomain subdomain in stiffnessDistribution.model.EnumerateSubdomains())
                 {
                     //if (!subdomain.MaterialsModified) continue;
                     SignedBooleanMatrixColMajor Bb = boundarySignedBooleanMatrices[subdomain.ID];

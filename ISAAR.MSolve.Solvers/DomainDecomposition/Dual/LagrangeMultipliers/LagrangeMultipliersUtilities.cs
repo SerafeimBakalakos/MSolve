@@ -93,7 +93,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
             // Initialize the signed boolean matrices
             int numGlobalLagranges = globalLagranges.Length;
             var booleanMatrices = new Dictionary<int, SignedBooleanMatrixColMajor>();
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 booleanMatrices[subdomain.ID] =
                     new SignedBooleanMatrixColMajor(numGlobalLagranges, numRemainderDofs[subdomain.ID]);
@@ -122,7 +122,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
         {
             // Initialize the signed boolean matrices.
             var booleanMatrices = new Dictionary<int, SignedBooleanMatrixColMajor>();
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 booleanMatrices[subdomain.ID] =
                     new SignedBooleanMatrixColMajor(numLagrangeMultipliers, numRemainderDofs[subdomain.ID]);

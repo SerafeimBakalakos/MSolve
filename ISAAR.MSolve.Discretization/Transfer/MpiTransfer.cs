@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using MPI;
@@ -30,12 +31,12 @@ namespace ISAAR.MSolve.Discretization.Transfer
             //Console.WriteLine($"(process {rank}) Hello World!"); // Run this to check if MPI works correctly.
 
             // Serialize the data of each subdomain
-            IReadOnlyList<ISubdomain> originalSubdomains = null;
+            ISubdomain[] originalSubdomains = null;
             ISubdomainDto[] serializedSubdomains = null;
             if (rank == root)
             {
-                int numSubdomains = model.Subdomains.Count;
-                originalSubdomains = model.Subdomains;
+                int numSubdomains = model.NumSubdomains;
+                originalSubdomains = model.EnumerateSubdomains().ToArray();
                 serializedSubdomains = new ISubdomainDto[numSubdomains];
                 serializedSubdomains[0] = new EmptySubdomainDto();
                 for (int s = 1; s < numSubdomains; ++s)

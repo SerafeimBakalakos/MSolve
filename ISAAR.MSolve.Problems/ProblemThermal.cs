@@ -63,11 +63,11 @@ namespace ISAAR.MSolve.Problems
             Dictionary<int, (IMatrix Cff, IMatrixView Cfc, IMatrixView Ccf, IMatrixView Ccc)> matrices =
                 solver.BuildGlobalSubmatrices(conductivityProvider);
 
-            conductivityFreeFree = new Dictionary<int, IMatrix>(model.Subdomains.Count);
-            conductivityFreeConstr = new Dictionary<int, IMatrixView>(model.Subdomains.Count);
-            conductivityConstrFree = new Dictionary<int, IMatrixView>(model.Subdomains.Count);
-            conductivityConstrConstr = new Dictionary<int, IMatrixView>(model.Subdomains.Count);
-            foreach (ISubdomain subdomain in model.Subdomains)
+            conductivityFreeFree = new Dictionary<int, IMatrix>(model.NumSubdomains);
+            conductivityFreeConstr = new Dictionary<int, IMatrixView>(model.NumSubdomains);
+            conductivityConstrFree = new Dictionary<int, IMatrixView>(model.NumSubdomains);
+            conductivityConstrConstr = new Dictionary<int, IMatrixView>(model.NumSubdomains);
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int id = subdomain.ID;
                 conductivityFreeFree.Add(id, matrices[id].Cff);
@@ -83,7 +83,7 @@ namespace ISAAR.MSolve.Problems
             //      Optimize this, by passing a flag foreach subdomain to solver.BuildGlobalSubmatrices().
 
             bool mustRebuild = false;
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 if (subdomain.StiffnessModified)
                 {
@@ -92,7 +92,7 @@ namespace ISAAR.MSolve.Problems
                 }
             }
             if (mustRebuild) conductivityFreeFree = solver.BuildGlobalMatrices(conductivityProvider);
-            foreach (ISubdomain subdomain in model.Subdomains) subdomain.ResetMaterialsModifiedProperty();
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains()) subdomain.ResetMaterialsModifiedProperty();
         }
 
         private void BuildCapacity() => capacity = solver.BuildGlobalMatrices(capacityProvider);
@@ -109,7 +109,7 @@ namespace ISAAR.MSolve.Problems
 
         public void Reset()
         {
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 foreach (IElement element in subdomain.Elements)
                 {
@@ -152,13 +152,13 @@ namespace ISAAR.MSolve.Problems
 
         public IDictionary<int, IVector> GetRhsFromHistoryLoad(int timeStep)
         {
-            foreach (ISubdomain subdomain in model.Subdomains) subdomain.Forces.Clear(); //TODO: this is also done by model.AssignLoads()
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains()) subdomain.Forces.Clear(); //TODO: this is also done by model.AssignLoads()
 
             model.AssignNodalLoads(solver.DistributeNodalLoads); // Time-independent nodal loads
             model.AssignTimeDependentNodalLoads(timeStep, solver.DistributeNodalLoads); // Time-dependent nodal loads
 
             var rhsVectors = new Dictionary<int, IVector>();
-            foreach (ISubdomain subdomain in model.Subdomains) rhsVectors.Add(subdomain.ID, subdomain.Forces.Copy());
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains()) rhsVectors.Add(subdomain.ID, subdomain.Forces.Copy());
             return rhsVectors;
         }
 

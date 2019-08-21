@@ -156,7 +156,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             TrackingExteriorCrackLSM crack = dcb.Crack;
             (IVectorView globalU, IMatrixView globalK) = dcb.SolveModel();
             var freeDisplacementsPerSubdomain = new Dictionary<int, Vector>();
-            freeDisplacementsPerSubdomain[model.Subdomains.First().Key] = (Vector)globalU;
+            freeDisplacementsPerSubdomain[model.EnumerateSubdomains().First().ID] = (Vector)globalU;
             (double jIntegral, double sifMode1) = dcb.Propagate(freeDisplacementsPerSubdomain);
 
             // Check the results. For now, they are allowed to be more accurate.

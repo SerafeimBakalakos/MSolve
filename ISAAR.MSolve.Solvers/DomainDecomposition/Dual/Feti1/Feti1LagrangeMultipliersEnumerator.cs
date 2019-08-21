@@ -26,7 +26,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
         {
             var numFreeDofs = new Dictionary<int, int>();
             var freeDofOrderings = new Dictionary<int, DofTable>();
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 numFreeDofs[subdomain.ID] = subdomain.FreeDofOrdering.NumFreeDofs;
                 freeDofOrderings[subdomain.ID] = subdomain.FreeDofOrdering.FreeDofs;
@@ -42,7 +42,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
         {
             var numFreeDofs = new Dictionary<int, int>();
             var freeDofOrderings = new Dictionary<int, DofTable>();
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 numFreeDofs[subdomain.ID] = subdomain.FreeDofOrdering.NumFreeDofs;
                 freeDofOrderings[subdomain.ID] = subdomain.FreeDofOrdering.FreeDofs;

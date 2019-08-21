@@ -43,7 +43,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
             KfpDqVectors = new Dictionary<int, double[][]>(model.SubdomainsDictionary.Count);
             KppDqVectors = new Dictionary<int, double[][]>(model.SubdomainsDictionary.Count);
-            foreach (Subdomain subdomain in model.Subdomains)
+            foreach (Subdomain subdomain in model.SubdomainsDictionary.Values)
             {
                 #region Create KfpDq and KppDq vectors 
                 KfpDqVectors[subdomain.ID] = new double[scaleTransitions.MacroscaleVariableDimension()][];
@@ -64,7 +64,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             var StiffnessProvider = new StiffnessProviderSimu(this);
             Dictionary<int, IMatrix> subdomainKs = solver.BuildGlobalMatrices(StiffnessProvider);
 
-            foreach (Subdomain subdomain in model.Subdomains)
+            foreach (Subdomain subdomain in model.SubdomainsDictionary.Values)
             {
                 //dofOrdering = subdomain.FreeDofOrdering; //.1
                 //FreeDofs = subdomain.FreeDofOrdering.FreeDofs;//.1 nodalDOFsDictionary = subdomain.NodalDOFsDictionary;

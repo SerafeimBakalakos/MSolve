@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Analyzers.Interfaces;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
@@ -87,13 +88,13 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual
             private readonly Func<Model, ISolver, IStaticProvider> createProblemProvider;
             private readonly IDofOrderer originalDofOrderer;
             private readonly Model singleSubdomainModel;
-            private readonly Subdomain singleSubdomain;
+            private readonly ISubdomain singleSubdomain;
 
             public Factory(Model singleSubdomainModel, IDofOrderer originalDofOrderer,
                 Func<Model, ISolver, IStaticProvider> createProblemProvider)
             {
                 this.singleSubdomainModel = singleSubdomainModel;
-                this.singleSubdomain = singleSubdomainModel.Subdomains.First();
+                this.singleSubdomain = singleSubdomainModel.EnumerateSubdomains().First();
                 this.originalDofOrderer = originalDofOrderer;
                 this.createProblemProvider = createProblemProvider;
             }

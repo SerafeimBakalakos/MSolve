@@ -432,7 +432,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var dofSeparator = (FetiDPDofSeparator)fi.GetValue(solver);
 
             // Calculate the coarse problem matrix and rhs
-            var coarseSolver = new DenseFetiDPCoarseProblemSolver(model.Subdomains);
+            var coarseSolver = new DenseFetiDPCoarseProblemSolver(model);
             Vector globalFcStar = coarseSolver.CreateCoarseProblemRhs(dofSeparator, matrixManagers, fr, fbc);
             MethodInfo method = coarseSolver.GetType().GetMethod("CreateGlobalKccStar",
                 BindingFlags.NonPublic | BindingFlags.Instance); // reflection for the private method
@@ -535,7 +535,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var dofSeparator = (FetiDPDofSeparator)fi.GetValue(solver);
 
             // Hardcoded coarse problem matrix and rhs
-            var coarseSolver = new DenseFetiDPCoarseProblemSolver(model.Subdomains);
+            var coarseSolver = new DenseFetiDPCoarseProblemSolver(model);
             Vector globalFcStar = VectorFcStar;
             Matrix inverseKccStar = MatrixKccStar.Invert(); // It must be set as a private field using reflection.
             fi = typeof(DenseFetiDPCoarseProblemSolver).GetField("inverseGlobalKccStar",
@@ -588,7 +588,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var dofSeparator = (FetiDPDofSeparator)fi.GetValue(solver);
 
             // Hardcoded coarse problem matrix and rhs
-            var coarseSolver = new DenseFetiDPCoarseProblemSolver(model.Subdomains);
+            var coarseSolver = new DenseFetiDPCoarseProblemSolver(model);
             Vector globalFcStar = VectorFcStar;
             Matrix inverseKccStar = MatrixKccStar.Invert(); // It must be set as a private field using reflection.
             fi = typeof(DenseFetiDPCoarseProblemSolver).GetField("inverseGlobalKccStar",

@@ -417,8 +417,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
                 this.reordering = reordering;
             }
 
-            public IFetiDPCoarseProblemSolver CreateCoarseProblemSolver(IReadOnlyList<ISubdomain> subdomains)
-                => new SkylineFetiDPCoarseProblemSolver(subdomains, reordering);
+            public IFetiDPCoarseProblemSolver CreateCoarseProblemSolver(IModel model)
+                => new SkylineFetiDPCoarseProblemSolver(model, reordering);
 
             public IFetiDPSubdomainMatrixManager CreateMatricesManager(ISubdomain subdomain)
                 => new SkylineFetiDPSubdomainMatrixManager(subdomain, reordering);

@@ -267,7 +267,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         public void SaveState()
         {
             var subdomainUpdaters = new Dictionary<int, NonLinearSubdomainUpdaterWithInitialConditions>(1); 
-            foreach (Subdomain subdomain in model.Subdomains)//TODO : or else "in model.SubdomainsDictionary.Values)"
+            foreach (Subdomain subdomain in model.SubdomainsDictionary.Values)
             {
                 subdomainUpdaters.Add(subdomain.ID, new NonLinearSubdomainUpdaterWithInitialConditions(subdomain)); //v2.3
                 //subdomainUpdaters[counter] = new NonLinearSubdomainUpdaterWithInitialConditions(subdomain);

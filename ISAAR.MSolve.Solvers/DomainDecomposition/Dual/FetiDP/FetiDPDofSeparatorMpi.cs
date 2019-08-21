@@ -106,7 +106,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             if (rank == masterProcess)
             {
                 // Only process the subdomains that have changed and need to update their dof orderings.
-                modifiedSubdomains = GlobalDofs.Model.Subdomains.Where(sub => sub.ConnectivityModified); //TODO: Is this what I should check?
+                modifiedSubdomains = GlobalDofs.Model.EnumerateSubdomains().Where(sub => sub.ConnectivityModified); //TODO: Is this what I should check?
                 transfer.DefineModelData_master(modifiedSubdomains, globalNodes);
             }
             else

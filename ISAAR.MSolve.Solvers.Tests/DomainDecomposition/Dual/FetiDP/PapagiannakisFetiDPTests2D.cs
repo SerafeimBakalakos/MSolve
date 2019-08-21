@@ -137,7 +137,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Corner nodes
             double meshTol = 1E-6;
             var cornerNodesOfEachSubdomain = new Dictionary<int, HashSet<INode>>();
-            foreach (Subdomain subdomain in multiSubdomainModel.Subdomains)
+            foreach (Subdomain subdomain in multiSubdomainModel.SubdomainsDictionary.Values)
             {
                 subdomain.DefineNodesFromElements(); //TODO: This will also be called by the analyzer.
                 INode[] corners = CornerNodeUtilities.FindCornersOfRectangle2D(subdomain);

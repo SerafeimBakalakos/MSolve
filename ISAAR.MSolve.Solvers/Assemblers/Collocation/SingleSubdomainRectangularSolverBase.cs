@@ -28,7 +28,7 @@ namespace ISAAR.MSolve.Solvers.Assemblers.Collocation
 		protected SingleSubdomainRectangularSolverBase(IStructuralAsymmetricModel model, IAsymmetricDofOrderer dofRowOrderer,
 			IDofOrderer dofColOrderer, IGlobalMatrixRectangularAssembler<TMatrix> assembler, string name)
 		{
-			if (model.Subdomains.Count != 1) throw new InvalidSolverException(
+			if (model.NumSubdomains != 1) throw new InvalidSolverException(
 				$"{name} can be used if there is only 1 subdomain");
 			this.model = model;
 			subdomain= model.Subdomains[0];

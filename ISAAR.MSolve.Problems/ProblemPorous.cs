@@ -89,7 +89,7 @@ namespace ISAAR.MSolve.Problems
             //      Optimize this, by passing a flag foreach subdomain to solver.BuildGlobalSubmatrices().
 
             bool mustRebuild = false;
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 if (subdomain.StiffnessModified)
                 {
@@ -98,7 +98,7 @@ namespace ISAAR.MSolve.Problems
                 }
             }
             if (mustRebuild) ks = solver.BuildGlobalMatrices(stiffnessProvider);
-            foreach (ISubdomain subdomain in model.Subdomains) subdomain.ResetMaterialsModifiedProperty();
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains()) subdomain.ResetMaterialsModifiedProperty();
         }
 
         private void BuildMs() => ms = solver.BuildGlobalMatrices(massProvider);
@@ -215,13 +215,13 @@ namespace ISAAR.MSolve.Problems
 
         public IDictionary<int, IVector> GetRhsFromHistoryLoad(int timeStep)
         {
-            foreach (Subdomain subdomain in model.Subdomains) subdomain.Forces.Clear(); //TODO: this is also done by model.AssignLoads()
+            foreach (Subdomain subdomain in model.EnumerateSubdomains()) subdomain.Forces.Clear(); //TODO: this is also done by model.AssignLoads()
 
             model.AssignLoads(solver.DistributeNodalLoads);
             model.AssignMassAccelerationHistoryLoads(timeStep);
 
             var rhsVectors = new Dictionary<int, IVector>();
-            foreach (Subdomain subdomain in model.Subdomains) rhsVectors.Add(subdomain.ID, subdomain.Forces);
+            foreach (Subdomain subdomain in model.EnumerateSubdomains()) rhsVectors.Add(subdomain.ID, subdomain.Forces);
             return rhsVectors;
         }
 
@@ -239,7 +239,7 @@ namespace ISAAR.MSolve.Problems
                 foreach (IMassAccelerationHistoryLoad l in model.MassAccelerationHistoryLoads)
                     m.Add(new MassAccelerationLoad() { Amount = l[timeStep], DOF = l.DOF });
 
-                foreach (ISubdomain subdomain in model.Subdomains)
+                foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
                     int[] subdomainToGlobalDofs = model.GlobalDofOrdering.GetSubdomainToGlobalMap(subdomain);
                     foreach ((INode node, IDofType dofType, int subdomainDofIdx) in subdomain.FreeDofOrdering.FreeDofs)

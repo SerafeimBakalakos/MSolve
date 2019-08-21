@@ -84,7 +84,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
         public Vector GatherGlobalDisplacements(Dictionary<int, IVectorView> subdomainDisplacements)
         {
             var globalDisplacements = Vector.CreateZero(model.GlobalDofOrdering.NumGlobalFreeDofs);
-            foreach (var subdomain in model.Subdomains)
+            foreach (var subdomain in model.EnumerateSubdomains())
             {
                 int id = subdomain.ID;
                 int[] subdomainToGlobalDofs = model.GlobalDofOrdering.GetSubdomainToGlobalMap(subdomain);
@@ -119,7 +119,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
             // distributed to each subdomain, according to the multiplicity or relative stiffness of the corresponding dof.
 
             var globalForces = Vector.CreateZero(model.GlobalDofOrdering.NumGlobalFreeDofs);
-            foreach (var subdomain in model.Subdomains)
+            foreach (var subdomain in model.EnumerateSubdomains())
             {
                 int id = subdomain.ID;
                 int[] subdomainToGlobalDofs = model.GlobalDofOrdering.GetSubdomainToGlobalMap(subdomain);
@@ -149,7 +149,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
         //    //TODO: Is this correct? For the residual, it would be wrong to find f-K*u for each subdomain and then call this.
 
         //    double globalSum = 0.0;
-        //    foreach (ISubdomain subdomain in model.Subdomains)
+        //    foreach (ISubdomain subdomain in model.EnumerateSubdomains())
         //    {
         //        int id = subdomain.ID;
         //        double subdomainSum = 0.0;

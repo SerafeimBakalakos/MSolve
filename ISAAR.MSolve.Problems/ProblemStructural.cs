@@ -81,11 +81,11 @@ namespace ISAAR.MSolve.Problems
             Dictionary<int, (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc)> matrices =
                 solver.BuildGlobalSubmatrices(stiffnessProvider);
 
-            stiffnessFreeFree = new Dictionary<int, IMatrix>(model.Subdomains.Count);
-            stiffnessFreeConstr = new Dictionary<int, IMatrixView>(model.Subdomains.Count);
-            stiffnessConstrFree = new Dictionary<int, IMatrixView>(model.Subdomains.Count);
-            stiffnessConstrConstr = new Dictionary<int, IMatrixView>(model.Subdomains.Count);
-            foreach (ISubdomain subdomain in model.Subdomains)
+            stiffnessFreeFree = new Dictionary<int, IMatrix>(model.NumSubdomains);
+            stiffnessFreeConstr = new Dictionary<int, IMatrixView>(model.NumSubdomains);
+            stiffnessConstrFree = new Dictionary<int, IMatrixView>(model.NumSubdomains);
+            stiffnessConstrConstr = new Dictionary<int, IMatrixView>(model.NumSubdomains);
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int id = subdomain.ID;
                 stiffnessFreeFree.Add(id, matrices[id].Kff);
@@ -101,7 +101,7 @@ namespace ISAAR.MSolve.Problems
             //      Optimize this, by passing a flag foreach subdomain to solver.BuildGlobalSubmatrices().
 
             bool mustRebuild = false;
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 if (subdomain.StiffnessModified)
                 {
@@ -110,10 +110,10 @@ namespace ISAAR.MSolve.Problems
                 }
             }
             if (mustRebuild) stiffnessFreeFree = solver.BuildGlobalMatrices(stiffnessProvider);
-            foreach (ISubdomain subdomain in model.Subdomains) subdomain.ResetMaterialsModifiedProperty();
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains()) subdomain.ResetMaterialsModifiedProperty();
 
             // Original code kept, in case we need to reproduce its behavior.
-            //foreach (ISubdomain subdomain in model.Subdomains)
+            //foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             //{
             //    if (subdomain.MaterialsModified)
             //    {
@@ -141,7 +141,7 @@ namespace ISAAR.MSolve.Problems
 
         public void Reset()
         {
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 foreach (IElement element in subdomain.Elements)
                 {
@@ -201,7 +201,7 @@ namespace ISAAR.MSolve.Problems
                 foreach (IMassAccelerationHistoryLoad l in model.MassAccelerationHistoryLoads)
                     m.Add(new MassAccelerationLoad() { Amount = l[timeStep], DOF = l.DOF });
 
-                foreach (ISubdomain subdomain in model.Subdomains)
+                foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
                     int[] subdomainToGlobalDofs = model.GlobalDofOrdering.GetSubdomainToGlobalMap(subdomain);
                     foreach ((INode node, IDofType dofType, int subdomainDofIdx) in subdomain.FreeDofOrdering.FreeDofs)
@@ -254,13 +254,13 @@ namespace ISAAR.MSolve.Problems
 
         public IDictionary<int, IVector> GetRhsFromHistoryLoad(int timeStep)
         {
-            foreach (ISubdomain subdomain in model.Subdomains) subdomain.Forces.Clear(); //TODO: this is also done by model.AssignLoads()
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains()) subdomain.Forces.Clear(); //TODO: this is also done by model.AssignLoads()
 
             model.AssignLoads(solver.DistributeNodalLoads);
             model.AssignMassAccelerationHistoryLoads(timeStep);
 
             var rhsVectors = new Dictionary<int, IVector>();
-            foreach (ISubdomain subdomain in model.Subdomains) rhsVectors.Add(subdomain.ID, subdomain.Forces);
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains()) rhsVectors.Add(subdomain.ID, subdomain.Forces);
             return rhsVectors;
         }
 
