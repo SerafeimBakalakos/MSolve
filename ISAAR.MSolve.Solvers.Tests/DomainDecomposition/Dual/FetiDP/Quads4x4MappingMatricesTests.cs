@@ -85,11 +85,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             return cornerNodes;
         }
 
-        public static HashSet<INode> DefineGlobalCornerNodes(Model model)
+        public static HashSet<INode> DefineGlobalCornerNodes(IModel model)
         {
             return new HashSet<INode>(new INode[] 
             {
-                model.NodesDictionary[2], model.NodesDictionary[12], model.NodesDictionary[14], model.NodesDictionary[22]
+                model.GetNode(2), model.GetNode(12), model.GetNode(14), model.GetNode(22)
             });
         }
 
@@ -355,27 +355,20 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             using (new MPI.Environment(ref args))
             {
                 int master = 0;
-                var procs = new ProcessDistribution(Communicator.world, 0, new int[] { 0, 1, 2, 3 });
+                var procs = new ProcessDistribution(Communicator.world, master, new int[] { 0, 1, 2, 3 });
                 //Console.WriteLine($"(process {procs.OwnRank}) Hello World!"); // Run this to check if MPI works correctly.
 
                 // Create the model in master process
-                Model model = null;
-                if (procs.IsMasterProcess)
-                {
-                    model = CreateModel();
-                    model.ConnectDataStructures();
-                }
+                var model = new ModelMpi(procs, CreateModel);
+                model.ConnectDataStructures();
 
                 // Scatter subdomain data to each process
-                var transfer = new MpiTransfer(new SubdomainSerializer());
-                ISubdomain subdomain = transfer.ScatterSubdomains(model, master);
-                //Console.WriteLine($"(process { rank}) Subdomain { subdomain.ID}");
+                model.ScatterSubdomains();
+                ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
+                //Console.WriteLine($"(process {procs.OwnRank}) Subdomain {model.GetSubdomain(procs.OwnSubdomainID).ID}");
 
                 // Order dofs
-                subdomain.ConnectDataStructures();
-                var dofSerializer = new StandardDofSerializer();
                 var dofOrderer = new DofOrdererMpi(procs, new NodeMajorDofOrderingStrategy(), new NullReordering());
-                subdomain.FreeDofOrdering = dofOrderer.OrderFreeDofs(subdomain);
                 dofOrderer.OrderFreeDofs(model);
 
                 // Separate dofs and corner boolean matrices

@@ -23,8 +23,8 @@ namespace ISAAR.MSolve.Discretization.Transfer.Utilities
             this.procs = processDistribution;
         }
 
-        public Dictionary<int, int> NumSubdomainDofs_master { get; }
-        public Dictionary<int, DofTable> SubdomainDofOrderings_master { get; }
+        public Dictionary<int, int> NumSubdomainDofs_master { get; private set; }
+        public Dictionary<int, DofTable> SubdomainDofOrderings_master { get; private set; }
 
         public void DefineModelData_master(IEnumerable<ISubdomain> subdomainsToGatherFrom)
         {
@@ -51,22 +51,23 @@ namespace ISAAR.MSolve.Discretization.Transfer.Utilities
                 {
                     // Receive the corner dof ordering of each subdomain
                     int source = procs.GetProcessOfSubdomain(subdomain.ID);
-                    //Console.WriteLine($"Process {comm.Rank} (master): Started receiving dof ordering from process {source}.");
+                    //Console.WriteLine($"Process {procs.OwnRank} (master): Started receiving dof ordering from process {source}.");
                     serializedTables[subdomain] = MpiUtilities.ReceiveArray<int>(procs.Communicator, source, mpiTag);
-                    //Console.WriteLine($"Process {comm.Rank} (master): Finished receiving dof ordering from process {source}.");
+                    //Console.WriteLine($"Process {procs.OwnRank} (master): Finished receiving dof ordering from process {source}.");
                 }
 
                 // After finishing with all comunications deserialize the received items. //TODO: This should be done concurrently with the transfers, by another thread.
+                NumSubdomainDofs_master = new Dictionary<int, int>();
+                SubdomainDofOrderings_master = new Dictionary<int, DofTable>();
                 foreach (ISubdomain subdomain in subdomainsToGatherFrom_master)
                 {
                     bool isModified = serializedTables.TryGetValue(subdomain, out int[] serializedTable);
                     if (isModified)
                     {
-                        //Console.WriteLine($"Process {comm.Rank} (master): Started deserializing corner dof ordering of subdomain {subdomain.ID}.");
+                        //Console.WriteLine($"Process {procs.OwnRank} (master): Started deserializing corner dof ordering of subdomain {subdomain.ID}.");
                         NumSubdomainDofs_master[subdomain.ID] = tableSerializer.CountEntriesOf(serializedTable);
-                        SubdomainDofOrderings_master[subdomain.ID] = 
-                            tableSerializer.Deserialize(serializedTable, model.GetNode);
-                        //Console.WriteLine($"Process {comm.Rank} (master): Finished deserializing corner dof ordering of subdomain {subdomain.ID}.");
+                        SubdomainDofOrderings_master[subdomain.ID] = tableSerializer.Deserialize(serializedTable, model.GetNode);
+                        //Console.WriteLine($"Process {procs.OwnRank} (master): Finished deserializing corner dof ordering of subdomain {subdomain.ID}.");
                         serializedTables.Remove(subdomain); // Free up some temporary memory.
                     }
                 }
@@ -75,11 +76,11 @@ namespace ISAAR.MSolve.Discretization.Transfer.Utilities
             {
                 if (gatherFromThisSubdomain_slave)
                 {
-                    //Console.WriteLine($"Process {rank}: Started serializing dof ordering.");
+                    //Console.WriteLine($"Process {procs.OwnRank}: Started serializing dof ordering.");
                     int[] serializedTable = tableSerializer.Serialize(dofsToSend_slave);
-                    //Console.WriteLine($"Process {rank}: Finished serializing dof ordering. Started sending it to master");
+                    //Console.WriteLine($"Process {procs.OwnRank}: Finished serializing dof ordering. Started sending it to master");
                     MpiUtilities.SendArray(procs.Communicator, serializedTable, procs.MasterProcess, mpiTag);
-                    //Console.WriteLine($"Process {rank}: Finished sending corner dof ordering to master.");
+                    //Console.WriteLine($"Process {procs.OwnRank}: Finished sending corner dof ordering to master.");
                 }
             }
         }

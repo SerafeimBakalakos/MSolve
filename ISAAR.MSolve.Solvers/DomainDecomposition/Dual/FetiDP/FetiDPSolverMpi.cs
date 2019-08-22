@@ -17,32 +17,24 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     public class FetiDPSolverMpi : ISolverMpi
     {
         internal const string name = "FETI-DP Solver"; // for error messages
-        private readonly IDofOrderer dofOrderer = new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
-        private readonly Intracommunicator comm;
-        private readonly int master;
+        private readonly DofOrdererMpi dofOrderer;
         private readonly IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory;
-        private readonly IModel model;
-        private readonly Dictionary<int, INode> nodesDictionary;
+        private readonly IModelMpi model;
+        private readonly ProcessDistribution procs;
         private readonly int rank;
-        private readonly MpiTransfer transfer;
 
         private bool factorizeInPlace = true;
         private ISingleSubdomainLinearSystem linearSystem;
         private IFetiDPSubdomainMatrixManager matrixManager;
-        private ISubdomain subdomain;
+        //private ISubdomain subdomain;
 
-        public FetiDPSolverMpi(IModel model, IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory, 
-            int masterProcess, ISubdomainSerializer serializer)
+        public FetiDPSolverMpi(ProcessDistribution processDistribution, IModelMpi model, 
+            IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory)
         {
+            this.procs = processDistribution;
             this.model = model;
             this.matrixManagerFactory = matrixManagerFactory;
-
-            this.comm = Communicator.world;
-            this.rank = comm.Rank;
-            this.master = masterProcess;
-            this.transfer = new MpiTransfer(serializer); //TODO: the serializer should be accessed by the model.
-
-            if (rank == masterProcess) this.nodesDictionary = CreateNodesDictionary(model);
+            this.dofOrderer = new DofOrdererMpi(processDistribution, new NodeMajorDofOrderingStrategy(), new NullReordering());
         }
 
         //TODO: I do not like these dependencies. The analyzer should not have to know that it must call ScatterSubdomainData() 
@@ -51,8 +43,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         {
             get
             {
-                if (linearSystem == null) throw new InvalidOperationException("The subdomain data must be scattered first.");
-                return linearSystem;
+                try
+                {
+                    return linearSystem;
+                }
+                catch (Exception)
+                {
+                    throw new InvalidOperationException("The subdomain data must be scattered first.");
+                }
             }
         }
 
@@ -60,8 +58,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         {
             get
             {
-                if (subdomain == null) throw new InvalidOperationException("The subdomain data must be scattered first.");
-                return subdomain;
+                try
+                {
+                    return model.GetSubdomain(procs.OwnSubdomainID);
+                }
+                catch (Exception)
+                {
+                    throw new InvalidOperationException("The subdomain data must be scattered first.");
+                }
             }
         }
 
@@ -70,6 +74,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         public IMatrix BuildGlobalMatrices(IElementMatrixProvider elementMatrixProvider)
         {
+            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
             IMatrix Kff = matrixManager.BuildGlobalMatrix(subdomain.FreeDofOrdering, subdomain.EnumerateElements(), 
                 elementMatrixProvider);
             linearSystem.Matrix = Kff;
@@ -87,8 +92,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         }
 
         public void OrderDofs(bool alsoOrderConstrainedDofs)
-        { //TODO: What about subdomain-global mapping? Especially for boundary dofs.
-            subdomain.FreeDofOrdering = dofOrderer.OrderFreeDofs(subdomain);
+        {
+            // This should not create subdomain-global mappings which require MPI communication
+            //TODO: What about subdomain-global mappings, especially for boundary dofs? Who should create them? 
+            dofOrderer.OrderFreeDofs(model); 
+
+            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
             if (alsoOrderConstrainedDofs) subdomain.ConstrainedDofOrdering = dofOrderer.OrderConstrainedDofs(subdomain);
         }
 
@@ -96,27 +105,16 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         public void ScatterSubdomainData()
         {
-            subdomain = transfer.ScatterSubdomains(model, master);
-            matrixManager = matrixManagerFactory.CreateMatricesManager(subdomain);
+            model.ScatterSubdomains();
+            matrixManager = matrixManagerFactory.CreateMatricesManager(model.GetSubdomain(procs.OwnSubdomainID));
             linearSystem = matrixManager.LinearSystem;
         }
 
         public void Solve()
         {
             // Print the trace of each stiffness matrix
-            int rank = comm.Rank;
             double trace = Trace(linearSystem.Matrix);
-            Console.WriteLine($"(process {rank}) Subdomain {subdomain.ID}: trace(stiffnessMatrix) = {trace}");
-        }
-
-        //TODO: This should not be necessary at all. Right now I store all the nodes twice, 3 times if we count the conversion 
-        //      from Dictionary<int, Node> to IList<INode>! Also it managing in which process the extra dictionary is stored is 
-        //      annoying.
-        private static Dictionary<int, INode> CreateNodesDictionary(IModel model)
-        {
-            var nodesDictionary = new Dictionary<int, INode>();
-            foreach (INode node in model.EnumerateNodes()) nodesDictionary[node.ID] = node;
-            return nodesDictionary;
+            Console.WriteLine($"(process {procs.OwnRank}) Subdomain {procs.OwnSubdomainID}: trace(stiffnessMatrix) = {trace}");
         }
 
         private static double Trace(IMatrixView matrix)

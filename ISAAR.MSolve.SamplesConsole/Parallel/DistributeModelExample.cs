@@ -30,25 +30,21 @@ namespace ISAAR.MSolve.SamplesConsole.Parallel
         {
             using (new MPI.Environment(ref args))
             {
-                Intracommunicator comm = Communicator.world;
-                int rank = comm.Rank;
-                //Console.WriteLine($"(process {rank}) Hello World!"); // Run this to check if MPI works correctly.
+                //Console.WriteLine($"(process {Communicator.rank}) Hello World!"); // Run this to check if MPI works correctly.
+
+                int master = 0;
+                var procs = new ProcessDistribution(Communicator.world, master, new int[] { 0, 1, 2, 3 });
 
                 // Create the model in master process
-                Model model = null;
-                if (rank == master)
-                {
-                    model = Quad4PlateTest.CreateModel();
-                    model.ConnectDataStructures();
-                }
+                var model = new ModelMpi(procs, Quad4PlateTest.CreateModel);
+                model.ConnectDataStructures();
 
                 // Scatter subdomain data to each process
-                var transfer = new MpiTransfer(new SubdomainSerializer());
-                ISubdomain subdomain = transfer.ScatterSubdomains(model, master);
-                //Console.WriteLine($"(process { rank}) Subdomain { subdomain.ID}");
+                model.ScatterSubdomains();
+                ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
+                //Console.WriteLine($"(process {procs.OwnRank}) Subdomain {model.GetSubdomain(procs.OwnSubdomainID).ID}");
 
                 // Order dofs
-                subdomain.ConnectDataStructures();
                 var dofOrderer = new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
                 subdomain.FreeDofOrdering = dofOrderer.OrderFreeDofs(subdomain);
 
@@ -66,7 +62,7 @@ namespace ISAAR.MSolve.SamplesConsole.Parallel
 
                 // Print the trace of each stiffness matrix
                 double trace = ls.Matrix.Trace();
-                Console.WriteLine($"(process {rank}) Subdomain {subdomain.ID}: trace(stiffnessMatrix) = {trace}");
+                Console.WriteLine($"(process {procs.OwnRank}) Subdomain {subdomain.ID}: trace(stiffnessMatrix) = {trace}");
             }
         }
 
@@ -74,18 +70,18 @@ namespace ISAAR.MSolve.SamplesConsole.Parallel
         {
             using (new MPI.Environment(ref args))
             {
-                Intracommunicator comm = Communicator.world;
-                int rank = comm.Rank;
-                //Console.WriteLine($"(process {rank}) Hello World!"); // Run this to check if MPI works correctly.
+                //Console.WriteLine($"(process {Communicator.Rank}) Hello World!"); // Run this to check if MPI works correctly.
+
+                int master = 0;
+                var procs = new ProcessDistribution(Communicator.world, master, new int[] { 0, 1, 2, 3 });
 
                 // Create the model in master process
-                Model model = null;
-                if (rank == master) model = Quad4PlateTest.CreateModel();
+                var model = new ModelMpi(procs, Quad4PlateTest.CreateModel);
+                model.ConnectDataStructures();
 
                 // Setup solvers, analyzers
-                var subdomainSerializer = new SubdomainSerializer();
                 var matrixManagers = new SkylineFetiDPSubdomainMatrixManager.Factory();
-                var solver = new FetiDPSolverMpi(model, matrixManagers, master, subdomainSerializer);
+                var solver = new FetiDPSolverMpi(procs, model, matrixManagers);
                 //var problem = new ProblemStructural(model, null);
                 var provider = new ElementStructuralStiffnessProvider();
                 var childAnalyzer = new LinearAnalyzerMpi(model, solver, null);
@@ -96,7 +92,7 @@ namespace ISAAR.MSolve.SamplesConsole.Parallel
 
                 // Print the trace of each stiffness matrix
                 double trace = solver.LinearSystem.Matrix.Trace();
-                Console.WriteLine($"(process {rank}) Subdomain {solver.Subdomain.ID}: trace(stiffnessMatrix) = {trace}");
+                Console.WriteLine($"(process {procs.OwnRank}) Subdomain {solver.Subdomain.ID}: trace(stiffnessMatrix) = {trace}");
             }
         }
     }

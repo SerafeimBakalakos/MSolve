@@ -30,7 +30,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Transfer
             var serializedSubdomains = new SubdomainDto[numSubdomains];
             for (int s = 0; s < numSubdomains; ++s)
             {
-                serializedSubdomains[s] = new SubdomainDto(originalSubdomains[s]);
+                serializedSubdomains[s] = SubdomainDto.Serialize(originalSubdomains[s]);
             }
 
             // Deserialize each subdomain

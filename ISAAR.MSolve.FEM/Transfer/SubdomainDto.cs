@@ -12,7 +12,7 @@ using System.Text;
 namespace ISAAR.MSolve.FEM.Transfer
 {
     [Serializable]
-    public class SubdomainDto : ISubdomainDto
+    public class SubdomainDto
     {
         public int id;
         public NodeDto[] nodes;
@@ -20,20 +20,23 @@ namespace ISAAR.MSolve.FEM.Transfer
         public IMaterialDto[] materials;
         public NodalDisplacementDto[] nodalDisplacements;
 
-        public SubdomainDto(Subdomain subdomain)
+        public static SubdomainDto CreateEmpty() => new SubdomainDto();
+
+        public static SubdomainDto Serialize(Subdomain subdomain)
         {
-            this.id = subdomain.ID;
+            var dto = new SubdomainDto();
+            dto.id = subdomain.ID;
 
             // Nodes
-            this.nodes = new NodeDto[subdomain.NumNodes];
+            dto.nodes = new NodeDto[subdomain.NumNodes];
             int n = 0;
-            foreach (Node node in subdomain.Nodes.Values) this.nodes[n++] = new NodeDto(node);
+            foreach (Node node in subdomain.Nodes.Values) dto.nodes[n++] = new NodeDto(node);
 
             // Elements
-            this.elements = new IElementDto[subdomain.NumElements];
+            dto.elements = new IElementDto[subdomain.NumElements];
             var elementSerializer = new ElementSerializer();
             int e = 0;
-            foreach (Element element in subdomain.Elements.Values) this.elements[e++] = elementSerializer.Serialize(element);
+            foreach (Element element in subdomain.Elements.Values) dto.elements[e++] = elementSerializer.Serialize(element);
 
             // Materials
             // More than 1 elements may have the same material properties. First gather the unique ones.
@@ -44,12 +47,12 @@ namespace ISAAR.MSolve.FEM.Transfer
                 IFiniteElementMaterial elementMaterial = element.ElementType.Materials[0];
                 uniqueMaterials[elementMaterial.ID] = elementMaterial;
             }
-            this.materials = new IMaterialDto[uniqueMaterials.Count];
+            dto.materials = new IMaterialDto[uniqueMaterials.Count];
             var materialSerializer = new MaterialSerializer();
             int counter = 0;
             foreach (IFiniteElementMaterial material in uniqueMaterials.Values)
             {
-                materials[counter++] = materialSerializer.Serialize(material);
+                dto.materials[counter++] = materialSerializer.Serialize(material);
             }
 
             // Displacements
@@ -62,10 +65,10 @@ namespace ISAAR.MSolve.FEM.Transfer
                     displacements.Add(new NodalDisplacementDto(node, constraint, dofSerializer));
                 }
             }
-            this.nodalDisplacements = displacements.ToArray();
-        }
+            dto.nodalDisplacements = displacements.ToArray();
 
-        ISubdomain ISubdomainDto.Deserialize() => Deserialize();
+            return dto;
+        }
 
         public Subdomain Deserialize()
         {
