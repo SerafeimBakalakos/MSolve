@@ -48,6 +48,7 @@ namespace ISAAR.MSolve.IGA.Entities
         }
 
         public int NumElements => Elements.Count;
+        public int NumNodalLoads => throw new NotImplementedException();
         public int NumNodes => ControlPoints.Count;
 
         public double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor)
@@ -119,6 +120,7 @@ namespace ISAAR.MSolve.IGA.Entities
         }
 
         public IEnumerable<IElement> EnumerateElements() => Elements.Values;
+        public IEnumerable<INodalLoad> EnumerateNodalLoads() => throw new NotImplementedException();
         public IEnumerable<INode> EnumerateNodes() => ControlPoints.Values;
 
         public void ExtractConstraintsFromGlobal(Table<INode, IDofType, double> globalConstraints)

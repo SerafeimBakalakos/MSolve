@@ -19,10 +19,11 @@ namespace ISAAR.MSolve.FEM.Transfer
         public IElementDto[] elements;
         public IMaterialDto[] materials;
         public NodalDisplacementDto[] nodalDisplacements;
+        public NodalLoadDto[] nodalLoads;
 
         public static SubdomainDto CreateEmpty() => new SubdomainDto();
 
-        public static SubdomainDto Serialize(Subdomain subdomain)
+        public static SubdomainDto Serialize(Subdomain subdomain, IDofSerializer dofSerializer)
         {
             var dto = new SubdomainDto();
             dto.id = subdomain.ID;
@@ -56,7 +57,6 @@ namespace ISAAR.MSolve.FEM.Transfer
             }
 
             // Displacements
-            var dofSerializer = new StandardDofSerializer();
             var displacements = new List<NodalDisplacementDto>();
             foreach (Node node in subdomain.Nodes.Values)
             {
@@ -67,10 +67,17 @@ namespace ISAAR.MSolve.FEM.Transfer
             }
             dto.nodalDisplacements = displacements.ToArray();
 
+            // Nodal loads
+            dto.nodalLoads = new NodalLoadDto[subdomain.NodalLoads.Count];
+            for (int i = 0; i < subdomain.NodalLoads.Count; ++i)
+            {
+                dto.nodalLoads[i] = new NodalLoadDto(subdomain.NodalLoads[i], dofSerializer);
+            }
+
             return dto;
         }
 
-        public Subdomain Deserialize()
+        public Subdomain Deserialize(IDofSerializer dofSerializer)
         {
             var subdomain = new Subdomain(this.id);
 
@@ -93,8 +100,10 @@ namespace ISAAR.MSolve.FEM.Transfer
             }
 
             // Displacements
-            var dofSerializer = new StandardDofSerializer();
             foreach (NodalDisplacementDto d in this.nodalDisplacements) d.Deserialize(subdomain.Nodes, dofSerializer);
+
+            // Nodal loads
+            foreach (NodalLoadDto nl in this.nodalLoads) subdomain.NodalLoads.Add(nl.Deserialize(subdomain.Nodes, dofSerializer));
 
             return subdomain;
         }

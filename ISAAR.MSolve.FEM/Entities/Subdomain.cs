@@ -28,12 +28,15 @@ namespace ISAAR.MSolve.FEM.Entities
 
         public int ID { get; }
 
+        public IList<Load> NodalLoads { get; private set; } = new List<Load>();
+
         //TODO: I would prefer a Dictionary for fast random access, but a lot of tests break. Also having them sorted results in
         //      better orderings for structured meshes, although that can be implemented as a reordering or by ordering them 
         //      with LINQ before starting the ordering procedure
         public SortedDictionary<int, Node> Nodes { get; } = new SortedDictionary<int, Node>();
 
         public int NumElements => Elements.Count;
+        public int NumNodalLoads => NodalLoads.Count;
         public int NumNodes => Nodes.Count;
 
         public ISubdomainConstrainedDofOrdering ConstrainedDofOrdering { get; set; }
@@ -102,6 +105,7 @@ namespace ISAAR.MSolve.FEM.Entities
         }
 
         public IEnumerable<IElement> EnumerateElements() => Elements.Values;
+        public IEnumerable<INodalLoad> EnumerateNodalLoads() => NodalLoads;
         public IEnumerable<INode> EnumerateNodes() => Nodes.Values;
 
         //TODO: constraints should not be saved inside the nodes. As it is right now (22/11/2018) the same constraint 

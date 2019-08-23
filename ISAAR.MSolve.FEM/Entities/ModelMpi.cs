@@ -30,7 +30,7 @@ namespace ISAAR.MSolve.FEM.Entities
                     else
                     {
                         Subdomain subdomain = model.SubdomainsDictionary[procs.GetSubdomainIdOfProcess(p)];
-                        serializedSubdomains[p] = SubdomainDto.Serialize(subdomain);
+                        serializedSubdomains[p] = SubdomainDto.Serialize(subdomain, DofSerializer);
                     }
                 }
             }
@@ -42,7 +42,7 @@ namespace ISAAR.MSolve.FEM.Entities
             if (!procs.IsMasterProcess)
             {
                 model = new Model();
-                Subdomain subdomain = serializedSubdomain.Deserialize();
+                Subdomain subdomain = serializedSubdomain.Deserialize(DofSerializer);
                 model.SubdomainsDictionary[subdomain.ID] = subdomain;
                 subdomain.ConnectDataStructures();
             }

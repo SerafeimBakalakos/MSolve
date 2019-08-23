@@ -217,8 +217,8 @@ namespace ISAAR.MSolve.Problems
         {
             foreach (Subdomain subdomain in model.EnumerateSubdomains()) subdomain.Forces.Clear(); //TODO: this is also done by model.AssignLoads()
 
-            model.AssignLoads(solver.DistributeNodalLoads);
-            model.AssignMassAccelerationHistoryLoads(timeStep);
+            model.ApplyLoads(solver.DistributeNodalLoads);
+            model.ApplyMassAccelerationHistoryLoads(timeStep);
 
             var rhsVectors = new Dictionary<int, IVector>();
             foreach (Subdomain subdomain in model.EnumerateSubdomains()) rhsVectors.Add(subdomain.ID, subdomain.Forces);

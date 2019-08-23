@@ -30,14 +30,14 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Transfer
             var serializedSubdomains = new SubdomainDto[numSubdomains];
             for (int s = 0; s < numSubdomains; ++s)
             {
-                serializedSubdomains[s] = SubdomainDto.Serialize(originalSubdomains[s]);
+                serializedSubdomains[s] = SubdomainDto.Serialize(originalSubdomains[s], model.DofSerializer);
             }
 
             // Deserialize each subdomain
             var deserializedSubdomains = new Subdomain[numSubdomains];
             for (int s = 0; s < numSubdomains; ++s)
             {
-                deserializedSubdomains[s] = serializedSubdomains[s].Deserialize();
+                deserializedSubdomains[s] = serializedSubdomains[s].Deserialize(model.DofSerializer);
             }
 
             // Order dofs

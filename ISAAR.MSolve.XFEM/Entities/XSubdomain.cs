@@ -32,7 +32,9 @@ namespace ISAAR.MSolve.XFEM.Entities
         public Dictionary<int, XNode> Nodes { get; } = new Dictionary<int, XNode>();
 
         public int NumElements => Elements.Count;
+        public int NumNodalLoads => throw new NotImplementedException();
         public int NumNodes => Nodes.Count;
+
 
         public double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor)
         {
@@ -71,6 +73,7 @@ namespace ISAAR.MSolve.XFEM.Entities
         }
 
         public IEnumerable<IElement> EnumerateElements() => Elements.Values;
+        public IEnumerable<INodalLoad> EnumerateNodalLoads() => throw new NotImplementedException();
         public IEnumerable<INode> EnumerateNodes() => Nodes.Values;
 
         public void ExtractConstraintsFromGlobal(Table<INode, IDofType, double> globalConstraints)
@@ -105,5 +108,6 @@ namespace ISAAR.MSolve.XFEM.Entities
         public void SaveMaterialState() => throw new NotImplementedException();
 
         public void ScaleConstraints(double scalingFactor) => throw new NotImplementedException();
+
     }
 }

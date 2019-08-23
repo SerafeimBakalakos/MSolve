@@ -80,9 +80,9 @@ namespace ISAAR.MSolve.Solvers.Assemblers.Collocation
             };
         }
 
-        public Dictionary<int, SparseVector> DistributeNodalLoads(Table<INode, IDofType, double> globalNodalLoads)
+        public SparseVector DistributeNodalLoads(ISubdomain subdomain)
         {
-            return new Dictionary<int, SparseVector>();
+            return SparseVector.CreateFromDictionary(subdomain.FreeDofOrdering.NumFreeDofs, new SortedDictionary<int, double>());
         }
 
         public Dictionary<int, Matrix> InverseSystemMatrixTimesOtherMatrix(Dictionary<int, IMatrixView> otherMatrix)

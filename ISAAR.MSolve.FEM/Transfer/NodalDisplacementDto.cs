@@ -9,7 +9,6 @@ namespace ISAAR.MSolve.FEM.Transfer
     [Serializable]
     public class NodalDisplacementDto
     {
-
         public double amount;
         public int node;
         public int dofID;

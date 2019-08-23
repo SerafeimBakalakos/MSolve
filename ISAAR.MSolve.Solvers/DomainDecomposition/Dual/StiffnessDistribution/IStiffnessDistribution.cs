@@ -12,8 +12,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
     public interface IStiffnessDistribution
     {
+        double CalcBoundaryDofCoefficient(INode node, IDofType dofType, ISubdomain subdomain);
         double[] CalcBoundaryDofCoefficients(ISubdomain subdomain);
-
         Dictionary<int, double> CalcBoundaryDofCoefficients(INode node, IDofType dofType);
 
         Dictionary<int, IMappingMatrix> CalcBoundaryPreconditioningSignedBooleanMatrices(

@@ -105,14 +105,14 @@ namespace ISAAR.MSolve.IGA.Entities
             }
         }
         
-        public void AssignLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
+        public void ApplyLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
 		{
 			foreach (Patch patch in PatchesDictionary.Values) patch.Forces.Clear();
-			AssignControlPointLoads(distributeNodalLoads);
+			ApplyControlPointLoads(distributeNodalLoads);
 			AssignBoundaryLoads();
 		}
 
-		public void AssignMassAccelerationHistoryLoads(int timeStep)
+		public void ApplyMassAccelerationHistoryLoads(int timeStep)
 		{
 			throw new NotImplementedException();
 		}
@@ -139,49 +139,50 @@ namespace ISAAR.MSolve.IGA.Entities
 			}
 		}
 
-		private void AssignControlPointLoads(NodalLoadsToSubdomainsDistributor distributeControlPointLoads)
+		private void ApplyControlPointLoads(NodalLoadsToSubdomainsDistributor distributeControlPointLoads)
 		{
-            var globalPointLoads = new Table<INode, IDofType, double>();
-            foreach (Load load in Loads) globalPointLoads.TryAdd(load.ControlPoint, load.DOF, load.Amount);
+            //var globalPointLoads = new Table<INode, IDofType, double>();
+            //foreach (Load load in Loads) globalPointLoads.TryAdd(load.ControlPoint, load.DOF, load.Amount);
 
-            Dictionary<int, SparseVector> patchPointLoads = distributeControlPointLoads(globalPointLoads);
-            foreach (var idPatchLoads in patchPointLoads)
-            {
-                PatchesDictionary[idPatchLoads.Key].Forces.AddIntoThis(idPatchLoads.Value);
-            }
-      
+            //Dictionary<int, SparseVector> patchPointLoads = distributeControlPointLoads(globalPointLoads);
+            //foreach (var idPatchLoads in patchPointLoads)
+            //{
+            //    PatchesDictionary[idPatchLoads.Key].Forces.AddIntoThis(idPatchLoads.Value);
+            //}
+            throw new NotImplementedException();
+
 
             // Old code. It should probably be deleted.
             //foreach (Patch patch in PatchesDictionary.Values)
-			//{
-			//	patch.ControlPointLoads = new Table<ControlPoint, DOFType, double>();
-			//}
+            //{
+            //	patch.ControlPointLoads = new Table<ControlPoint, DOFType, double>();
+            //}
 
-			//foreach (Load load in Loads)
-			//{
-			//	var cp = ((ControlPoint) load.ControlPoint);
-			//	double amountPerPatch = load.Amount / cp.PatchesDictionary.Count;
-			//	foreach (Patch patch in cp.PatchesDictionary.Values)
-			//	{
-			//		bool wasNotContained = patch.ControlPointLoads.TryAdd(cp, load.DOF, amountPerPatch);
-			//	}
-			//}
+            //foreach (Load load in Loads)
+            //{
+            //	var cp = ((ControlPoint) load.ControlPoint);
+            //	double amountPerPatch = load.Amount / cp.PatchesDictionary.Count;
+            //	foreach (Patch patch in cp.PatchesDictionary.Values)
+            //	{
+            //		bool wasNotContained = patch.ControlPointLoads.TryAdd(cp, load.DOF, amountPerPatch);
+            //	}
+            //}
 
-			////TODO: this should be done by the subdomain when the analyzer decides.
-			//foreach (Patch patch in PatchesDictionary.Values)
-			//{
-			//	foreach ((ControlPoint node, DOFType dofType, double amount) in patch.ControlPointLoads)
-			//	{
-			//		if (!patch.DofOrdering.FreeDofs.Contains(node, dofType)) continue;
-			//		int patchDofIdx = patch.DofOrdering.FreeDofs[node, dofType];
-			//		patch.Forces[patchDofIdx] = amount;
-			//	}
-			//}
-		}
+            ////TODO: this should be done by the subdomain when the analyzer decides.
+            //foreach (Patch patch in PatchesDictionary.Values)
+            //{
+            //	foreach ((ControlPoint node, DOFType dofType, double amount) in patch.ControlPointLoads)
+            //	{
+            //		if (!patch.DofOrdering.FreeDofs.Contains(node, dofType)) continue;
+            //		int patchDofIdx = patch.DofOrdering.FreeDofs[node, dofType];
+            //		patch.Forces[patchDofIdx] = amount;
+            //	}
+            //}
+        }
 
 
-		//What is the purpose of this method? If someone wanted to clear the Model, they could just create a new one.
-		public void Clear()
+        //What is the purpose of this method? If someone wanted to clear the Model, they could just create a new one.
+        public void Clear()
 		{
 			Loads.Clear();
 			ClustersDictionary.Clear();

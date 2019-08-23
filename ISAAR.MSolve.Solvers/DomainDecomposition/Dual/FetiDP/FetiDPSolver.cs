@@ -173,9 +173,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             return matrices;
         }
 
-        //TODO: this and the fields should be handled by a class that handles dof mappings.
-        public Dictionary<int, SparseVector> DistributeNodalLoads(Table<INode, IDofType, double> globalNodalLoads)
-            => subdomainGlobalMapping.DistributeNodalLoads(subdomains, globalNodalLoads);
+        public SparseVector DistributeNodalLoads(ISubdomain subdomain) => subdomainGlobalMapping.DistributeNodalLoads(subdomain);
 
         //TODO: this and the fields should be handled by a class that handles dof mappings.
         public Vector GatherGlobalDisplacements(Dictionary<int, IVectorView> subdomainDisplacements)

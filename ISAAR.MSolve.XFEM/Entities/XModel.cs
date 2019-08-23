@@ -41,25 +41,22 @@ namespace ISAAR.MSolve.XFEM.Entities
 
         public Dictionary<int, XSubdomain> Subdomains { get; } = new Dictionary<int, XSubdomain>();
 
-        public void AssignLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
+        public void ApplyLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
         {
             foreach (XSubdomain subdomain in Subdomains.Values) subdomain.Forces.Clear();
-            AssignNodalLoads(distributeNodalLoads);
+            ApplyNodalLoads(distributeNodalLoads);
         }
 
-        public void AssignNodalLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
-        {
-            var globalNodalLoads = new Table<INode, IDofType, double>();
-            foreach (NodalLoad load in NodalLoads) globalNodalLoads.TryAdd(load.Node, load.DofType, load.Value);
+        public void ApplyMassAccelerationHistoryLoads(int timeStep) => throw new NotImplementedException();
 
-            Dictionary<int, SparseVector> subdomainNodalLoads = distributeNodalLoads(globalNodalLoads);
-            foreach (var idSubdomainLoads in subdomainNodalLoads)
+        public void ApplyNodalLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
+        {
+            foreach (ISubdomain subdomain in EnumerateSubdomains())
             {
-                Subdomains[idSubdomainLoads.Key].Forces.AddIntoThis(idSubdomainLoads.Value);
+                SparseVector nodalLoadsVector = distributeNodalLoads(subdomain);
+                subdomain.Forces.AddIntoThis(nodalLoadsVector);
             }
         }
-
-        public void AssignMassAccelerationHistoryLoads(int timeStep) => throw new NotImplementedException();
 
         public void ConnectDataStructures()
         {

@@ -26,6 +26,7 @@ namespace ISAAR.MSolve.Discretization.Interfaces
         bool StiffnessModified { get; set; }
 
         int NumElements { get; }
+        int NumNodalLoads { get; }
         int NumNodes { get; }
 
         double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor); //TODO: this should be done by a dedicated class instead of the subdomain
@@ -35,6 +36,7 @@ namespace ISAAR.MSolve.Discretization.Interfaces
         void ConnectDataStructures();
 
         IEnumerable<IElement> EnumerateElements();
+        IEnumerable<INodalLoad> EnumerateNodalLoads();
         IEnumerable<INode> EnumerateNodes();
 
         IElement GetElement(int elementID);

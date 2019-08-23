@@ -82,18 +82,15 @@ namespace ISAAR.MSolve.Solvers
             };
         }
 
-        public Dictionary<int, SparseVector> DistributeNodalLoads(Table<INode, IDofType, double> globalNodalLoads)
+        public SparseVector DistributeNodalLoads(ISubdomain subdomain)
         {
             var subdomainLoads = new SortedDictionary<int, double>();
-            foreach ((INode node, IDofType dofType, double amount) in globalNodalLoads)
+            foreach (INodalLoad load in subdomain.EnumerateNodalLoads())
             {
-                int subdomainDofIdx = subdomain.FreeDofOrdering.FreeDofs[node, dofType];
-                subdomainLoads[subdomainDofIdx] = amount;
+                int subdomainDofIdx = subdomain.FreeDofOrdering.FreeDofs[load.Node, load.DOF];
+                subdomainLoads[subdomainDofIdx] = load.Amount;
             }
-            return new Dictionary<int, SparseVector>
-            {
-                { subdomain.ID, SparseVector.CreateFromDictionary(subdomain.FreeDofOrdering.NumFreeDofs, subdomainLoads) }
-            };
+            return SparseVector.CreateFromDictionary(subdomain.FreeDofOrdering.NumFreeDofs, subdomainLoads);
         }
 
         public Dictionary<int, Matrix> InverseSystemMatrixTimesOtherMatrix(Dictionary<int, IMatrixView> otherMatrix)

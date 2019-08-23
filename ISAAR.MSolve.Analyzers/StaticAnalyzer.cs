@@ -76,7 +76,7 @@ namespace ISAAR.MSolve.Analyzers
 
             // Loads must be created after building the matrices.
             //TODO: Some loads may not have to be recalculated each time the stiffness changes.
-            model.AssignLoads(solver.DistributeNodalLoads); 
+            model.ApplyLoads(solver.DistributeNodalLoads); 
             foreach (ILinearSystem linearSystem in linearSystems.Values)
             {
                 linearSystem.RhsVector = linearSystem.Subdomain.Forces;

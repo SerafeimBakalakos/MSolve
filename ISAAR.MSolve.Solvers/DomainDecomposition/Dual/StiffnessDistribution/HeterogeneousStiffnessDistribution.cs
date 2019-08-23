@@ -36,6 +36,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             inverseDbMatrices = new Dictionary<int, DiagonalMatrix>();
         }
 
+        public double CalcBoundaryDofCoefficient(INode node, IDofType dofType, ISubdomain subdomain)
+        {
+            BoundaryDofLumpedStiffness dofStiffness = boundaryDofStiffnesses[node, dofType];
+            return dofStiffness.SubdomainStiffnesses[subdomain] / dofStiffness.TotalStiffness;
+        }
+
         public double[] CalcBoundaryDofCoefficients(ISubdomain subdomain)
         {
             //TODO: Should this be cached? It stores the same info as HeterogeneousStiffnessDistribution.BoundaryDofStiffnesses.

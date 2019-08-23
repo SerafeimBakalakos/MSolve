@@ -123,14 +123,14 @@ namespace ISAAR.MSolve.IGA.Entities
 
         public IReadOnlyList<IAsymmetricSubdomain> Subdomains => patchesDictionary.Values.ToList();
 
-        public void AssignLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
+        public void ApplyLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
         {
             foreach (var patch in PatchesDictionary.Values) patch.Forces.Clear();
             AssignControlPointLoads(distributeNodalLoads);
             AssignBoundaryLoads();
         }
 
-        public void AssignMassAccelerationHistoryLoads(int timeStep)
+        public void ApplyMassAccelerationHistoryLoads(int timeStep)
         {
             throw new NotImplementedException();
         }
@@ -159,14 +159,15 @@ namespace ISAAR.MSolve.IGA.Entities
 
         private void AssignControlPointLoads(NodalLoadsToSubdomainsDistributor distributeControlPointLoads)
         {
-            var globalPointLoads = new Table<INode, IDofType, double>();
-            foreach (Load load in Loads) globalPointLoads.TryAdd(load.ControlPoint, load.DOF, load.Amount);
+            //var globalPointLoads = new Table<INode, IDofType, double>();
+            //foreach (Load load in Loads) globalPointLoads.TryAdd(load.ControlPoint, load.DOF, load.Amount);
 
-            Dictionary<int, SparseVector> patchPointLoads = distributeControlPointLoads(globalPointLoads);
-            foreach (var idPatchLoads in patchPointLoads)
-            {
-                PatchesDictionary[idPatchLoads.Key].Forces.AddIntoThis(idPatchLoads.Value);
-            }
+            //Dictionary<int, SparseVector> patchPointLoads = distributeControlPointLoads(globalPointLoads);
+            //foreach (var idPatchLoads in patchPointLoads)
+            //{
+            //    PatchesDictionary[idPatchLoads.Key].Forces.AddIntoThis(idPatchLoads.Value);
+            //}
+            throw new NotImplementedException();
 
 
             // Old code. It should probably be deleted.

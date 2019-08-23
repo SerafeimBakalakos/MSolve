@@ -41,7 +41,32 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
             return GatherGlobalForces(subdomainForces).Norm2();
         }
 
-        public Dictionary<int, SparseVector> DistributeNodalLoads(Dictionary<int, ISubdomain> subdomains, 
+        public SparseVector DistributeNodalLoads(ISubdomain subdomain)
+        {
+            // Contrary to the previous version, this method processes each subdomain independently, which is slower for serial 
+            // code but necessary for parallel.
+
+            var loadVectorBuilder = new SortedDictionary<int, double>();
+            foreach (INodalLoad load in subdomain.EnumerateNodalLoads())
+            {
+                INode node = load.Node;
+                IDofType dof = load.DOF;
+
+                // Find the scaling coefficient for each load
+                double scaling = 1.0; // For internal dofs
+                if (node.Multiplicity > 1) // For boundary dofs
+                {
+                    scaling = distribution.CalcBoundaryDofCoefficient(node, dof, subdomain);
+                }
+
+                // Add it to the vector builder
+                int subdomainDofIdx = subdomain.FreeDofOrdering.FreeDofs[node, dof];
+                loadVectorBuilder[subdomainDofIdx] = load.Amount * scaling;
+            }
+            return SparseVector.CreateFromDictionary(subdomain.FreeDofOrdering.NumFreeDofs, loadVectorBuilder);
+        }
+
+        public Dictionary<int, SparseVector> DistributeNodalLoadsOLD(Dictionary<int, ISubdomain> subdomains, 
             Table<INode, IDofType, double> globalNodalLoads)
         {
             //TODO: Should I implement this as fb(s) = Lpb(s) * fb, with a) Lpb(s) = Lb(s) * inv(Mb) for homogeneous and 
@@ -58,7 +83,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
                     int subdomainDofIdx = subdomain.FreeDofOrdering.FreeDofs[node, dofType];
                     subdomainLoads[subdomain.ID][subdomainDofIdx] = loadAmount;
                 }
-                else // boundary dof: regularize with respect to the diagonal entries of the stiffness matrix at this dof
+                else // boundary dof
                 {
                     Dictionary<int, double> boundaryDofCoeffs = distribution.CalcBoundaryDofCoefficients(node, dofType);
                     foreach (var idSubdomain in node.SubdomainsDictionary)

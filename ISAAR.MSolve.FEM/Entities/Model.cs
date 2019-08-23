@@ -53,15 +53,15 @@ namespace ISAAR.MSolve.FEM.Entities
 
         public IGlobalFreeDofOrdering GlobalDofOrdering { get; set; }
 
-        public void AssignLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
+        public void ApplyLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
         {
             foreach (Subdomain subdomain in SubdomainsDictionary.Values) subdomain.Forces.Clear();
-            AssignNodalLoads(distributeNodalLoads);
+            ApplyNodalLoads(distributeNodalLoads);
             AssignElementMassLoads();
             AssignMassAccelerationLoads();
         }
 
-        public void AssignMassAccelerationHistoryLoads(int timeStep)
+        public void ApplyMassAccelerationHistoryLoads(int timeStep)
         {
             if (MassAccelerationHistoryLoads.Count > 0)
             {
@@ -96,31 +96,29 @@ namespace ISAAR.MSolve.FEM.Entities
             }
         }
 
-        public void AssignNodalLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
+        public void ApplyNodalLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
         {
-            var globalNodalLoads = new Table<INode, IDofType, double>();
-            foreach (Load load in Loads) globalNodalLoads.TryAdd(load.Node, load.DOF, load.Amount);
-
-            Dictionary<int, SparseVector> subdomainNodalLoads = distributeNodalLoads(globalNodalLoads);
-            foreach (var idSubdomainLoads in subdomainNodalLoads)
+            foreach (ISubdomain subdomain in EnumerateSubdomains())
             {
-                SubdomainsDictionary[idSubdomainLoads.Key].Forces.AddIntoThis(idSubdomainLoads.Value);
+                SparseVector nodalLoadsVector = distributeNodalLoads(subdomain);
+                subdomain.Forces.AddIntoThis(nodalLoadsVector);
             }
         }
 
         public void AssignTimeDependentNodalLoads(int timeStep, NodalLoadsToSubdomainsDistributor distributeNodalLoads)
         {
-            var globalNodalLoads = new Table<INode, IDofType, double>();
-            foreach (ITimeDependentNodalLoad load in TimeDependentNodalLoads)
-            {
-                globalNodalLoads.TryAdd(load.Node, load.DOF, load.GetLoadAmount(timeStep));
-            }
+            throw new NotImplementedException();
+            //var globalNodalLoads = new Table<INode, IDofType, double>();
+            //foreach (ITimeDependentNodalLoad load in TimeDependentNodalLoads)
+            //{
+            //    globalNodalLoads.TryAdd(load.Node, load.DOF, load.GetLoadAmount(timeStep));
+            //}
 
-            Dictionary<int, SparseVector> subdomainNodalLoads = distributeNodalLoads(globalNodalLoads);
-            foreach (var idSubdomainLoads in subdomainNodalLoads)
-            {
-                SubdomainsDictionary[idSubdomainLoads.Key].Forces.AddIntoThis(idSubdomainLoads.Value);
-            }
+            //Dictionary<int, SparseVector> subdomainNodalLoads = distributeNodalLoads(globalNodalLoads);
+            //foreach (var idSubdomainLoads in subdomainNodalLoads)
+            //{
+            //    SubdomainsDictionary[idSubdomainLoads.Key].Forces.AddIntoThis(idSubdomainLoads.Value);
+            //}
         }
 
         //What is the purpose of this method? If someone wanted to clear the Model, they could just create a new one.
@@ -146,6 +144,7 @@ namespace ISAAR.MSolve.FEM.Entities
             BuildInterconnectionData();
             AssignConstraints();
             RemoveInactiveNodalLoads();
+            AssignNodalLoadsToSubdomains();
 
             //TODOSerafeim: This should be called by the analyzer, which defines when the dofs are ordered and when the global vectors/matrices are built.
             //AssignLoads();
@@ -198,6 +197,16 @@ namespace ISAAR.MSolve.FEM.Entities
                         element.ElementType.CalculateAccelerationForces(element, MassAccelerationLoads),
                         subdomain.Forces);
                 }
+            }
+        }
+
+        private void AssignNodalLoadsToSubdomains()
+        {
+            //TODO: Call remove inactive nodal loads here or just cut paste that code here
+
+            foreach (Load load in Loads)
+            {
+                foreach (Subdomain subdomain in load.Node.SubdomainsDictionary.Values) subdomain.NodalLoads.Add(load);
             }
         }
 
