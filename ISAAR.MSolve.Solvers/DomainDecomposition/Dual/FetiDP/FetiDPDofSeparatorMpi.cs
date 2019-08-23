@@ -91,11 +91,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             // Gather the corner dof ordering of each subdomain from the corresponding process to master
             var transfer = new DofTableTransfer(model, procs);
-            IEnumerable<ISubdomain> modifiedSubdomains = null;
             if (procs.IsMasterProcess)
             {
                 // Only process the subdomains that have changed and need to update their dof orderings.
-                modifiedSubdomains = model.EnumerateSubdomains().Where(sub => sub.ConnectivityModified); //TODO: Is this what I should check?
+                IEnumerable<ISubdomain> modifiedSubdomains = model.EnumerateSubdomains().Where(sub => sub.ConnectivityModified); //TODO: Is this what I should check?
                 transfer.DefineModelData_master(modifiedSubdomains);
             }
             else

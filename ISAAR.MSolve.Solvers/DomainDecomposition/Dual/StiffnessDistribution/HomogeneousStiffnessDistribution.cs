@@ -38,7 +38,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             ILagrangeMultipliersEnumerator lagrangeEnumerator,
             Dictionary<int, SignedBooleanMatrixColMajor> boundarySignedBooleanMatrices)
         {
-            return ScalingBooleanMatrixImplicit.CreateBpbOfSubdomains(this, lagrangeEnumerator, boundarySignedBooleanMatrices);
+            return ScalingBooleanMatrixImplicit.CreateBpbOfSubdomains(this, boundarySignedBooleanMatrices);
         }
 
         public void Update(Dictionary<int, IMatrixView> stiffnessesFreeFree)
@@ -79,7 +79,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             public int NumRows => explicitBpb.NumRows;
 
             internal static Dictionary<int, IMappingMatrix> CreateBpbOfSubdomains(
-                HomogeneousStiffnessDistribution stiffnessDistribution, ILagrangeMultipliersEnumerator lagrangeEnumerator,
+                HomogeneousStiffnessDistribution stiffnessDistribution,
                 Dictionary<int, SignedBooleanMatrixColMajor> boundarySignedBooleanMatrices)
             {
                 var matricesBpb = new Dictionary<int, IMappingMatrix>();
@@ -127,7 +127,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             public int NumRows => Bb.NumRows;
 
             internal static Dictionary<int, IMappingMatrix> CreateBpbOfSubdomains(
-                HomogeneousStiffnessDistribution stiffnessDistribution, ILagrangeMultipliersEnumerator lagrangeEnumerator,
+                HomogeneousStiffnessDistribution stiffnessDistribution,
                 Dictionary<int, SignedBooleanMatrixColMajor> boundarySignedBooleanMatrices)
             {
                 var matricesBpb = new Dictionary<int, IMappingMatrix>();

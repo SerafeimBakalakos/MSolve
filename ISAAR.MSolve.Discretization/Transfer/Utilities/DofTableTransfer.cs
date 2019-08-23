@@ -43,13 +43,13 @@ namespace ISAAR.MSolve.Discretization.Transfer.Utilities
         {
             var tableSerializer = new DofTableSerializer(model.DofSerializer);
 
-            // Receive the corner dof ordering of each subdomain from the corresponding process
+            // Gather the dof ordering of each subdomain from the corresponding process
             if (procs.IsMasterProcess)
             {
+                // Receive the dof ordering of each subdomain
                 var serializedTables = new Dictionary<ISubdomain, int[]>();
                 foreach (ISubdomain subdomain in subdomainsToGatherFrom_master)
                 {
-                    // Receive the corner dof ordering of each subdomain
                     int source = procs.GetProcessOfSubdomain(subdomain.ID);
                     //Console.WriteLine($"Process {procs.OwnRank} (master): Started receiving dof ordering from process {source}.");
                     serializedTables[subdomain] = MpiUtilities.ReceiveArray<int>(procs.Communicator, source, mpiTag);
@@ -61,15 +61,12 @@ namespace ISAAR.MSolve.Discretization.Transfer.Utilities
                 SubdomainDofOrderings_master = new Dictionary<int, DofTable>();
                 foreach (ISubdomain subdomain in subdomainsToGatherFrom_master)
                 {
-                    bool isModified = serializedTables.TryGetValue(subdomain, out int[] serializedTable);
-                    if (isModified)
-                    {
-                        //Console.WriteLine($"Process {procs.OwnRank} (master): Started deserializing corner dof ordering of subdomain {subdomain.ID}.");
-                        NumSubdomainDofs_master[subdomain.ID] = tableSerializer.CountEntriesOf(serializedTable);
-                        SubdomainDofOrderings_master[subdomain.ID] = tableSerializer.Deserialize(serializedTable, model.GetNode);
-                        //Console.WriteLine($"Process {procs.OwnRank} (master): Finished deserializing corner dof ordering of subdomain {subdomain.ID}.");
-                        serializedTables.Remove(subdomain); // Free up some temporary memory.
-                    }
+                    int[] serializedTable = serializedTables[subdomain];
+                    //Console.WriteLine($"Process {procs.OwnRank} (master): Started deserializing corner dof ordering of subdomain {subdomain.ID}.");
+                    NumSubdomainDofs_master[subdomain.ID] = tableSerializer.CountEntriesOf(serializedTable);
+                    SubdomainDofOrderings_master[subdomain.ID] = tableSerializer.Deserialize(serializedTable, model.GetNode);
+                    //Console.WriteLine($"Process {procs.OwnRank} (master): Finished deserializing corner dof ordering of subdomain {subdomain.ID}.");
+                    serializedTables.Remove(subdomain); // Free up some temporary memory.
                 }
             }
             else
