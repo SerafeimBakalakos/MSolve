@@ -85,9 +85,9 @@ namespace ISAAR.MSolve.Discretization.Transfer
             => new MpiException($"Process {procs.OwnRank}: Only defined for master process (rank = {procs.MasterProcess})");
 
 
-        public void ApplyLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
+        public void ApplyLoads()
         {
-            if (procs.IsMasterProcess) model.ApplyLoads(distributeNodalLoads);
+            if (procs.IsMasterProcess) model.ApplyLoads();
             else throw StandardProcessException;
         }
 

@@ -105,10 +105,10 @@ namespace ISAAR.MSolve.IGA.Entities
             }
         }
         
-        public void ApplyLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
+        public void ApplyLoads()
 		{
 			foreach (Patch patch in PatchesDictionary.Values) patch.Forces.Clear();
-			ApplyControlPointLoads(distributeNodalLoads);
+			ApplyControlPointLoads();
 			AssignBoundaryLoads();
 		}
 
@@ -139,7 +139,7 @@ namespace ISAAR.MSolve.IGA.Entities
 			}
 		}
 
-		private void ApplyControlPointLoads(NodalLoadsToSubdomainsDistributor distributeControlPointLoads)
+		private void ApplyControlPointLoads()
 		{
             //var globalPointLoads = new Table<INode, IDofType, double>();
             //foreach (Load load in Loads) globalPointLoads.TryAdd(load.ControlPoint, load.DOF, load.Amount);

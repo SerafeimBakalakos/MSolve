@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.Problems
         //public double AboserberE { get; set; }
         //public double Aboseberv { get; set; }
 
-        public DirichletEquivalentLoadsAssembler DirichletLoadsAssembler { get; } 
+        public IDirichletEquivalentLoadsAssembler DirichletLoadsAssembler { get; } 
 
         private IDictionary<int, IMatrix> Mass
         {
@@ -257,7 +257,8 @@ namespace ISAAR.MSolve.Problems
         {
             foreach (ISubdomain subdomain in model.EnumerateSubdomains()) subdomain.Forces.Clear(); //TODO: this is also done by model.AssignLoads()
 
-            model.ApplyLoads(solver.DistributeNodalLoads);
+            model.ApplyLoads();
+            LoadingUtilities.ApplyNodalLoads(model, solver);
             model.ApplyMassAccelerationHistoryLoads(timeStep);
 
             var rhsVectors = new Dictionary<int, IVector>();

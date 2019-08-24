@@ -25,15 +25,17 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         }
 
         public double CalcBoundaryDofCoefficient(INode node, IDofType dofType, ISubdomain subdomain) => 1.0 / node.Multiplicity;
-        public double[] CalcBoundaryDofCoefficients(ISubdomain subdomain) => inverseBoundaryDofMultiplicities[subdomain.ID];
 
-        public Dictionary<int, double> CalcBoundaryDofCoefficients(INode node, IDofType dofType)
+
+        public Dictionary<int, double> CalcBoundaryDofCoefficientsOLD(INode node, IDofType dofType)
         {
             var coeffs = new Dictionary<int, double>();
             double inverseMultiplicity = 1.0 / node.Multiplicity;
             foreach (int subdomainID in node.SubdomainsDictionary.Keys) coeffs[subdomainID] = inverseMultiplicity;
             return coeffs;
         }
+
+        public double[] CalcBoundaryDofCoefficients(ISubdomain subdomain) => inverseBoundaryDofMultiplicities[subdomain.ID];
 
         public Dictionary<int, IMappingMatrix> CalcBoundaryPreconditioningSignedBooleanMatrices(
             ILagrangeMultipliersEnumerator lagrangeEnumerator,

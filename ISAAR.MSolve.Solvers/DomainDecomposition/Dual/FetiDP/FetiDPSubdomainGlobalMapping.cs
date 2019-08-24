@@ -9,7 +9,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 {
-    public class FetiDPSubdomainGlobalMapping
+    public class FetiDPSubdomainGlobalMapping : INodalLoadDistributor
     {
         private readonly IStiffnessDistribution distribution;
         private readonly FetiDPDofSeparator dofSeparator;
@@ -32,39 +32,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             //TODO: Is this correct? For the residual, it would be wrong to find f-K*u for each subdomain and then call this.
 
             return GatherGlobalForces(subdomainForces).Norm2();
-        }
-
-        public SparseVector DistributeNodalLoads(ISubdomain subdomain)
-        {
-            // Contrary to the previous version, this method processes each subdomain independently, which is slower for serial 
-            // code but necessary for parallel.
-
-            var loadVectorBuilder = new SortedDictionary<int, double>();
-            foreach (INodalLoad load in subdomain.EnumerateNodalLoads())
-            {
-                INode node = load.Node;
-                IDofType dof = load.DOF;
-
-                // Find the scaling coefficient for each load
-                double scaling = 1.0; // For internal dofs
-                bool isCornerDof = dofSeparator.GlobalCornerDofOrdering.Contains(node, dof);
-                if (isCornerDof)
-                {
-                    // Loads at corner dofs will be distributed equally. It shouldn't matter how I distribute these, since I 
-                    // will only sum them together again during the static condensation of remainder dofs phase.
-                    //TODO: is that correct?
-                    scaling = 1.0 / node.Multiplicity;
-                }
-                else if (node.Multiplicity > 1) // For boundary dofs
-                {
-                    scaling = distribution.CalcBoundaryDofCoefficient(node, dof, subdomain);
-                }
-
-                // Add it to the vector builder
-                int subdomainDofIdx = subdomain.FreeDofOrdering.FreeDofs[node, dof];
-                loadVectorBuilder[subdomainDofIdx] = load.Amount * scaling;
-            }
-            return SparseVector.CreateFromDictionary(subdomain.FreeDofOrdering.NumFreeDofs, loadVectorBuilder);
         }
 
         public Dictionary<int, SparseVector> DistributeNodalLoadsOLD(Dictionary<int, ISubdomain> subdomains,
@@ -103,7 +70,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                     }
                     else // boundary dof
                     {
-                        Dictionary<int, double> boundaryDofCoeffs = distribution.CalcBoundaryDofCoefficients(node, dofType);
+                        Dictionary<int, double> boundaryDofCoeffs = distribution.CalcBoundaryDofCoefficientsOLD(node, dofType);
                         foreach (var idSubdomain in node.SubdomainsDictionary)
                         {
                             int id = idSubdomain.Key;
@@ -228,6 +195,21 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 }
             }
             return globalForces;
+        }
+
+        //TODO: This should be moved to a FETI-DP related distribution class
+        public double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load)
+        {
+            INode node = load.Node;
+            IDofType dof = load.DOF;
+
+            // Loads at corner dofs will be distributed equally. It shouldn't matter how I distribute these, since I 
+            // will only sum them together again during the static condensation of remainder dofs phase.
+            //TODO: is that correct?
+            bool isCornerDof = dofSeparator.GlobalCornerDofOrdering.Contains(node, dof);
+            if (isCornerDof) return load.Amount / node.Multiplicity;
+            else if (node.Multiplicity > 1) return distribution.CalcBoundaryDofCoefficient(node, dof, subdomain) * load.Amount;
+            else return load.Amount;
         }
     }
 }

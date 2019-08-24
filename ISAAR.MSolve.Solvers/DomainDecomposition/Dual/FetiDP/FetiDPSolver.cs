@@ -108,6 +108,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         public SolverLogger Logger { get; } = new SolverLogger(name);
         public string Name => name;
 
+        public INodalLoadDistributor NodalLoadDistributor => subdomainGlobalMapping;
+
         public Dictionary<int, IMatrix> BuildGlobalMatrices(IElementMatrixProvider elementMatrixProvider)
         {
             HandleMatrixWillBeSet(); //TODO: temporary solution to avoid this getting called once for each linear system/observable
@@ -172,8 +174,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             this.Initialize(); //TODO: Should this be called by the analyzer? Probably not, since it must be called before DistributeBoundaryLoads().
             return matrices;
         }
-
-        public SparseVector DistributeNodalLoads(ISubdomain subdomain) => subdomainGlobalMapping.DistributeNodalLoads(subdomain);
 
         //TODO: this and the fields should be handled by a class that handles dof mappings.
         public Vector GatherGlobalDisplacements(Dictionary<int, IVectorView> subdomainDisplacements)

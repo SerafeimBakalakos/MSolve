@@ -51,6 +51,9 @@ namespace ISAAR.MSolve.Solvers
         public SolverLogger Logger { get; }
         public string Name { get; }
 
+        //TODO: This should be defined only for DDM solvers
+        public INodalLoadDistributor NodalLoadDistributor => throw new NotImplementedException();
+
         public virtual Dictionary<int, IMatrix> BuildGlobalMatrices(IElementMatrixProvider elementMatrixProvider)
         {
             var watch = new Stopwatch();
@@ -80,17 +83,6 @@ namespace ISAAR.MSolve.Solvers
             {
                 { subdomain.ID, (Aff, Afc, Acf, Acc) }
             };
-        }
-
-        public SparseVector DistributeNodalLoads(ISubdomain subdomain)
-        {
-            var subdomainLoads = new SortedDictionary<int, double>();
-            foreach (INodalLoad load in subdomain.EnumerateNodalLoads())
-            {
-                int subdomainDofIdx = subdomain.FreeDofOrdering.FreeDofs[load.Node, load.DOF];
-                subdomainLoads[subdomainDofIdx] = load.Amount;
-            }
-            return SparseVector.CreateFromDictionary(subdomain.FreeDofOrdering.NumFreeDofs, subdomainLoads);
         }
 
         public Dictionary<int, Matrix> InverseSystemMatrixTimesOtherMatrix(Dictionary<int, IMatrixView> otherMatrix)

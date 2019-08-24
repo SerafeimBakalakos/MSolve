@@ -39,7 +39,7 @@ namespace ISAAR.MSolve.Problems
             this.linearSystems = solver.LinearSystems;
         }
 
-        public DirichletEquivalentLoadsAssembler DirichletLoadsAssembler => throw new NotImplementedException();
+        public IDirichletEquivalentLoadsAssembler DirichletLoadsAssembler => throw new NotImplementedException();
 
         private IDictionary<int, IMatrix> Ms
         {
@@ -218,7 +218,8 @@ namespace ISAAR.MSolve.Problems
         {
             foreach (Subdomain subdomain in model.EnumerateSubdomains()) subdomain.Forces.Clear(); //TODO: this is also done by model.AssignLoads()
 
-            model.ApplyLoads(solver.DistributeNodalLoads);
+            model.ApplyLoads();
+            LoadingUtilities.ApplyNodalLoads(model, solver);
             model.ApplyMassAccelerationHistoryLoads(timeStep);
 
             var rhsVectors = new Dictionary<int, IVector>();

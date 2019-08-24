@@ -17,7 +17,7 @@ namespace ISAAR.MSolve.Analyzers.Loading
     /// Calculates the equivalent nodal forces (at the subdomain level) due to Dirichlet boundary conditions.
     /// Authors: Maria Tavlaki
     /// </summary>
-    public class DirichletEquivalentLoadsAssembler
+    public class DirichletEquivalentLoadsAssembler : IDirichletEquivalentLoadsAssembler
     {
         //TODO: not sure if df = K * du is the best way to calcuate df.
         private IElementMatrixProvider elementProvider; 

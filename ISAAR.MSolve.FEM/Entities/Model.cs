@@ -53,10 +53,10 @@ namespace ISAAR.MSolve.FEM.Entities
 
         public IGlobalFreeDofOrdering GlobalDofOrdering { get; set; }
 
-        public void ApplyLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
+        //TODO: nodal loads and prescribed displacements are calculated by dedicated objects. The rest should follow asap.
+        public void ApplyLoads()
         {
             foreach (Subdomain subdomain in SubdomainsDictionary.Values) subdomain.Forces.Clear();
-            ApplyNodalLoads(distributeNodalLoads);
             AssignElementMassLoads();
             AssignMassAccelerationLoads();
         }
@@ -96,16 +96,7 @@ namespace ISAAR.MSolve.FEM.Entities
             }
         }
 
-        public void ApplyNodalLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
-        {
-            foreach (ISubdomain subdomain in EnumerateSubdomains())
-            {
-                SparseVector nodalLoadsVector = distributeNodalLoads(subdomain);
-                subdomain.Forces.AddIntoThis(nodalLoadsVector);
-            }
-        }
-
-        public void AssignTimeDependentNodalLoads(int timeStep, NodalLoadsToSubdomainsDistributor distributeNodalLoads)
+        public void AssignTimeDependentNodalLoads(int timeStep)
         {
             throw new NotImplementedException();
             //var globalNodalLoads = new Table<INode, IDofType, double>();

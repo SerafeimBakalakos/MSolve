@@ -146,6 +146,20 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             GlobalCornerDofOrdering = globalCornerDofOrdering;
         }
 
+        //TODO: Should this be stored?
+        public int[] GetBoundaryIntoFreeDofIndices(ISubdomain subdomain)
+        {
+            int[] remainderIntoFreeIndices = RemainderDofIndices[subdomain.ID];
+            int[] boundaryIntoRemainderIndices = BoundaryDofIndices[subdomain.ID];
+            int numBoundaryDofs = boundaryIntoRemainderIndices.Length;
+            int[] boundaryIntoFreeIndices = new int[numBoundaryDofs];
+            for (int i = 0; i < numBoundaryDofs; ++i)
+            {
+                boundaryIntoFreeIndices[i] = remainderIntoFreeIndices[boundaryIntoRemainderIndices[i]];
+            }
+            return boundaryIntoFreeIndices;
+        }
+
         /// <summary>
         /// This must be called after <see cref="SeparateCornerRemainderDofs(ISubdomain, HashSet{INode}, IEnumerable{INode})"/>.
         /// </summary>

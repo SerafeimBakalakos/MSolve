@@ -123,10 +123,10 @@ namespace ISAAR.MSolve.IGA.Entities
 
         public IReadOnlyList<IAsymmetricSubdomain> Subdomains => patchesDictionary.Values.ToList();
 
-        public void ApplyLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
+        public void ApplyLoads()
         {
             foreach (var patch in PatchesDictionary.Values) patch.Forces.Clear();
-            AssignControlPointLoads(distributeNodalLoads);
+            AssignControlPointLoads();
             AssignBoundaryLoads();
         }
 
@@ -157,7 +157,7 @@ namespace ISAAR.MSolve.IGA.Entities
             }
         }
 
-        private void AssignControlPointLoads(NodalLoadsToSubdomainsDistributor distributeControlPointLoads)
+        private void AssignControlPointLoads()
         {
             //var globalPointLoads = new Table<INode, IDofType, double>();
             //foreach (Load load in Loads) globalPointLoads.TryAdd(load.ControlPoint, load.DOF, load.Amount);

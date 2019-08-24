@@ -97,7 +97,8 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 // Create the stiffness matrix and then the forces vector
                 //problem.ClearMatrices();
                 BuildMatrices();
-                model.ApplyLoads(solver.DistributeNodalLoads);
+                model.ApplyLoads();
+                LoadingUtilities.ApplyNodalLoads(model, solver);
                 foreach (ILinearSystem linearSystem in linearSystems.Values)
                 {
                     linearSystem.RhsVector = linearSystem.Subdomain.Forces;

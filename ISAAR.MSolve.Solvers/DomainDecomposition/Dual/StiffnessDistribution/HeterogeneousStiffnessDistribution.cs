@@ -42,6 +42,19 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             return dofStiffness.SubdomainStiffnesses[subdomain] / dofStiffness.TotalStiffness;
         }
 
+        public Dictionary<int, double> CalcBoundaryDofCoefficientsOLD(INode node, IDofType dofType)
+        {
+            var coeffs = new Dictionary<int, double>();
+            BoundaryDofLumpedStiffness dofStiffness = boundaryDofStiffnesses[node, dofType];
+            foreach (var idSubdomainPair in node.SubdomainsDictionary)
+            {
+                int id = idSubdomainPair.Key;
+                ISubdomain subdomain = idSubdomainPair.Value;
+                coeffs[id] = dofStiffness.SubdomainStiffnesses[subdomain] / dofStiffness.TotalStiffness;
+            }
+            return coeffs;
+        }
+
         public double[] CalcBoundaryDofCoefficients(ISubdomain subdomain)
         {
             //TODO: Should this be cached? It stores the same info as HeterogeneousStiffnessDistribution.BoundaryDofStiffnesses.
@@ -63,19 +76,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
                 relativeStiffnesses[i] = relativeStiffness;
             }
             return relativeStiffnesses;
-        }
-
-        public Dictionary<int, double> CalcBoundaryDofCoefficients(INode node, IDofType dofType)
-        {
-            var coeffs = new Dictionary<int, double>();
-            BoundaryDofLumpedStiffness dofStiffness = boundaryDofStiffnesses[node, dofType];
-            foreach (var idSubdomainPair in node.SubdomainsDictionary)
-            {
-                int id = idSubdomainPair.Key;
-                ISubdomain subdomain = idSubdomainPair.Value;
-                coeffs[id] = dofStiffness.SubdomainStiffnesses[subdomain] / dofStiffness.TotalStiffness;
-            }
-            return coeffs;
         }
 
         public Dictionary<int, IMappingMatrix> CalcBoundaryPreconditioningSignedBooleanMatrices(

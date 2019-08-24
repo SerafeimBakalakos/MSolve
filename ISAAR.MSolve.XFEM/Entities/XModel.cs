@@ -41,21 +41,22 @@ namespace ISAAR.MSolve.XFEM.Entities
 
         public Dictionary<int, XSubdomain> Subdomains { get; } = new Dictionary<int, XSubdomain>();
 
-        public void ApplyLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
+        public void ApplyLoads()
         {
             foreach (XSubdomain subdomain in Subdomains.Values) subdomain.Forces.Clear();
-            ApplyNodalLoads(distributeNodalLoads);
+            ApplyNodalLoads();
         }
 
         public void ApplyMassAccelerationHistoryLoads(int timeStep) => throw new NotImplementedException();
 
-        public void ApplyNodalLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
+        public void ApplyNodalLoads()
         {
-            foreach (ISubdomain subdomain in EnumerateSubdomains())
-            {
-                SparseVector nodalLoadsVector = distributeNodalLoads(subdomain);
-                subdomain.Forces.AddIntoThis(nodalLoadsVector);
-            }
+            //foreach (ISubdomain subdomain in EnumerateSubdomains())
+            //{
+            //    SparseVector nodalLoadsVector = distributeNodalLoads(subdomain);
+            //    subdomain.Forces.AddIntoThis(nodalLoadsVector);
+            //}
+            throw new NotImplementedException();
         }
 
         public void ConnectDataStructures()

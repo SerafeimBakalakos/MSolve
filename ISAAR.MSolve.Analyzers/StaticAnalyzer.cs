@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ISAAR.MSolve.Analyzers.Interfaces;
+using ISAAR.MSolve.Analyzers.Loading;
 using ISAAR.MSolve.Analyzers.NonLinear;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
@@ -76,7 +77,9 @@ namespace ISAAR.MSolve.Analyzers
 
             // Loads must be created after building the matrices.
             //TODO: Some loads may not have to be recalculated each time the stiffness changes.
-            model.ApplyLoads(solver.DistributeNodalLoads); 
+            model.ApplyLoads();
+            LoadingUtilities.ApplyNodalLoads(model, solver);
+
             foreach (ILinearSystem linearSystem in linearSystems.Values)
             {
                 linearSystem.RhsVector = linearSystem.Subdomain.Forces;

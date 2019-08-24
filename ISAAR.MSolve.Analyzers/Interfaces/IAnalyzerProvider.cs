@@ -4,7 +4,7 @@ namespace ISAAR.MSolve.Analyzers.Interfaces
 {
     public interface IAnalyzerProvider
     {
-        DirichletEquivalentLoadsAssembler DirichletLoadsAssembler { get; }
+        IDirichletEquivalentLoadsAssembler DirichletLoadsAssembler { get; }
 
         void ClearMatrices();
         void Reset();

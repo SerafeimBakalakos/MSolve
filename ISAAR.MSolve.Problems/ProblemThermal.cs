@@ -36,7 +36,7 @@ namespace ISAAR.MSolve.Problems
             this.DirichletLoadsAssembler = new DirichletEquivalentLoadsAssembler(conductivityProvider);
         }
 
-        public DirichletEquivalentLoadsAssembler DirichletLoadsAssembler { get; }
+        public IDirichletEquivalentLoadsAssembler DirichletLoadsAssembler { get; }
 
         private IDictionary<int, IMatrix> Capacity
         {
@@ -155,8 +155,8 @@ namespace ISAAR.MSolve.Problems
         {
             foreach (ISubdomain subdomain in model.EnumerateSubdomains()) subdomain.Forces.Clear(); //TODO: this is also done by model.AssignLoads()
 
-            model.ApplyNodalLoads(solver.DistributeNodalLoads); // Time-independent nodal loads
-            model.AssignTimeDependentNodalLoads(timeStep, solver.DistributeNodalLoads); // Time-dependent nodal loads
+            LoadingUtilities.ApplyNodalLoads(model, solver); // Time-independent nodal loads
+            model.AssignTimeDependentNodalLoads(timeStep); // Time-dependent nodal loads
 
             var rhsVectors = new Dictionary<int, IVector>();
             foreach (ISubdomain subdomain in model.EnumerateSubdomains()) rhsVectors.Add(subdomain.ID, subdomain.Forces.Copy());

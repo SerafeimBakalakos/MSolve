@@ -7,8 +7,6 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 namespace ISAAR.MSolve.Discretization.Interfaces
 {
-    public delegate SparseVector NodalLoadsToSubdomainsDistributor(ISubdomain subdomain);
-
     public interface IModel
     {
         Table<INode, IDofType, double> Constraints { get; }
@@ -25,8 +23,9 @@ namespace ISAAR.MSolve.Discretization.Interfaces
         //TODO: Applying loads is not the job of the model. An analyzer should decide when that happens and the job should be 
         //      delegated to dedicated classes for each load type. Distributing the loads between subdomains is then performed 
         //      by the solver, which the model has no knowledge of, but the analyzer does. Assigning the loads to the subdomains
-        //      or otherwise converting them to a usable form should be incorporated in ConnectDataStructures()
-        void ApplyLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads); //TODOMaria: Here is where the element loads are assembled
+        //      or otherwise converting them to a usable form should be incorporated in ConnectDataStructures(). This logic has 
+        //      already been implemented for nodal loads and prescribed displacements. The rest should follow.
+        void ApplyLoads(); //TODOMaria: Here is where the element loads are assembled
         void ApplyMassAccelerationHistoryLoads(int timeStep);
 
         void ConnectDataStructures();
