@@ -29,8 +29,6 @@ namespace ISAAR.MSolve.Discretization.Interfaces
         int NumNodalLoads { get; }
         int NumNodes { get; }
 
-        double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor); //TODO: this should be done by a dedicated class instead of the subdomain
-
         void ClearMaterialStresses();
 
         void ConnectDataStructures();

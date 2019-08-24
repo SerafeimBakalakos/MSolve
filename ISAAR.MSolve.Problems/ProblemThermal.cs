@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Analyzers.Dynamic;
 using ISAAR.MSolve.Analyzers.Interfaces;
+using ISAAR.MSolve.Analyzers.Loading;
 using ISAAR.MSolve.Analyzers.NonLinear;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
@@ -32,10 +33,10 @@ namespace ISAAR.MSolve.Problems
             this.model = model;
             this.linearSystems = solver.LinearSystems;
             this.solver = solver;
-            this.DirichletLoadsAssembler = new DirichletEquivalentLoadsStructural(conductivityProvider);
+            this.DirichletLoadsAssembler = new DirichletEquivalentLoadsAssembler(conductivityProvider);
         }
 
-        public IDirichletEquivalentLoadsAssembler DirichletLoadsAssembler { get; }
+        public DirichletEquivalentLoadsAssembler DirichletLoadsAssembler { get; }
 
         private IDictionary<int, IMatrix> Capacity
         {

@@ -35,14 +35,7 @@ namespace ISAAR.MSolve.XFEM.Entities
         public int NumNodalLoads => throw new NotImplementedException();
         public int NumNodes => Nodes.Count;
 
-
-        public double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor)
-        {
-            var elementNodalDisplacements = new double[FreeDofOrdering.CountElementDofs(element)];
-            SubdomainConstrainedDofOrderingBase.ApplyConstraintDisplacements(element, elementNodalDisplacements, Constraints);
-            return elementNodalDisplacements;
-        }
-
+        //TODO: This belongs somewhere else. It is not the Subdomain's job to calculate loading vectors
         public double[] CalculateElementDisplacements(IXFiniteElement element, IVectorView globalDisplacementVector)
         {
             double[] elementNodalDisplacements = 

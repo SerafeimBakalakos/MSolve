@@ -96,10 +96,10 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
             {
                 int id = linearSystem.Subdomain.ID;
 
-                double scalingFactor = 1; //((double)currentIncrement + 2) / (currentIncrement + 1); //2; //
-                IVector equivalentNodalLoads = provider.DirichletLoadsAssembler.GetEquivalentNodalLoads(linearSystem.Subdomain, 
-                    u[id], scalingFactor);
-                linearSystem.RhsVector.SubtractIntoThis(equivalentNodalLoads);
+                double scalingFactor = 1; //((double)currentIncrement + 2) / (currentIncrement + 1); //2;
+
+                //TODO: Shouldn't this need the current displacements "u[id]" as an argument?
+                provider.DirichletLoadsAssembler.ApplyEquivalentNodalLoads(linearSystem.Subdomain, linearSystem.RhsVector);
 
                 model.GlobalDofOrdering.AddVectorSubdomainToGlobal(linearSystem.Subdomain, linearSystem.RhsVector, globalRhs);
             }

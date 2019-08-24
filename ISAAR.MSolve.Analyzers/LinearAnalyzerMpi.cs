@@ -62,24 +62,8 @@ namespace ISAAR.MSolve.Analyzers
 
         private void AddEquivalentNodalLoadsToRHS() //TODO: This must be distributed
         {
-            try
-            {
-                // Make sure there is at least one non zero prescribed displacement.
-                (INode node, IDofType dof, double displacement) = solver.LinearSystem.Subdomain.Constraints.Find(du => du != 0.0);
-
-                //TODO: the following 2 lines are meaningless outside diplacement control (and even then, they are not so clear).
-                double scalingFactor = 1;
-                IVector initialFreeSolution = solver.LinearSystem.CreateZeroVector();
-
-                IVector equivalentNodalLoads = provider.DirichletLoadsAssembler.GetEquivalentNodalLoads(
-                    solver.LinearSystem.Subdomain, initialFreeSolution, scalingFactor);
-                solver.LinearSystem.RhsVector.SubtractIntoThis(equivalentNodalLoads);
-            }
-            catch (KeyNotFoundException)
-            {
-                // There aren't any non zero prescribed displacements, therefore we do not have to calculate the equivalent 
-                // nodal loads, which is an expensive operation (all elements are accessed, their stiffness is built, etc..)
-            }
+            provider.DirichletLoadsAssembler.ApplyEquivalentNodalLoads(
+                solver.LinearSystem.Subdomain, solver.LinearSystem.RhsVector);
         }
 
         private void InitializeLogs()

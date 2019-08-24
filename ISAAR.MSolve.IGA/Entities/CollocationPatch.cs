@@ -51,13 +51,6 @@ namespace ISAAR.MSolve.IGA.Entities
         public int NumNodalLoads => throw new NotImplementedException();
         public int NumNodes => ControlPoints.Count;
 
-        public double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor)
-        {
-            var elementNodalDisplacements = new double[FreeDofOrdering.CountElementDofs(element)];
-            ApplyConstraintDisplacements(element, elementNodalDisplacements, Constraints);
-            return elementNodalDisplacements;
-        }
-
         private static void ApplyConstraintDisplacements(IElement element, double[] elementNodalDisplacements,
             Table<INode, IDofType, double> constraints)
         {

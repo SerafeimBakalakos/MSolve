@@ -61,15 +61,7 @@ namespace ISAAR.MSolve.FEM.Entities
         public bool StiffnessModified { get; set; } = true; // At first it is modified
         public bool ConnectivityModified { get; set; } = true; // At first it is modified
 
-        //TODO: This belongs in EquivalentLoadsAssembler
-        //TODO: the constraintScalingFactor parameter is not used.
-        public double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor)//QUESTION: would it be maybe more clear if we passed the constraintsDictionary as argument??
-        {
-            var elementNodalDisplacements = new double[FreeDofOrdering.CountElementDofs(element)];
-            SubdomainConstrainedDofOrderingBase.ApplyConstraintDisplacements(element, elementNodalDisplacements, Constraints);
-            return elementNodalDisplacements;
-        }
-
+        //TODO: This belongs somewhere else (e.g. in EquivalentLoadsAssembler). It is not the Subdomain's job to calculate loading vectors
         public double[] CalculateElementDisplacements(Element element, IVectorView globalDisplacementVector)//QUESTION: would it be maybe more clear if we passed the constraintsDictionary as argument??
         {
             double[] elementNodalDisplacements = FreeDofOrdering.ExtractVectorElementFromSubdomain(element, globalDisplacementVector);
@@ -112,6 +104,7 @@ namespace ISAAR.MSolve.FEM.Entities
         //      is saved in the node, the model constraints table and the subdomain constraints table. Furthermore,
         //      displacement control analyzer updates the subdomain constraints table only (another bad design decision).  
         //      It is too easy to access the wrong instance of the constraint. 
+        //TODO: perhaps this code should be in Model. Assigning global data to each subdomain is usually done by the model.
         public void ExtractConstraintsFromGlobal(Table<INode, IDofType, double> globalConstraints)
         {
             //TODO: perhaps it is more efficient to traverse the global constraints instead of the subdomain's nodes, provided

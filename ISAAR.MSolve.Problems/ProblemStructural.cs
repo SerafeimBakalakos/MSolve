@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Analyzers.Interfaces;
+using ISAAR.MSolve.Analyzers.Loading;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
@@ -33,13 +34,13 @@ namespace ISAAR.MSolve.Problems
             this.model = model;
             this.linearSystems = solver.LinearSystems;
             this.solver = solver;
-            this.DirichletLoadsAssembler = new DirichletEquivalentLoadsStructural(stiffnessProvider);
+            this.DirichletLoadsAssembler = new DirichletEquivalentLoadsAssembler(stiffnessProvider);
         }
 
         //public double AboserberE { get; set; }
         //public double Aboseberv { get; set; }
 
-        public IDirichletEquivalentLoadsAssembler DirichletLoadsAssembler { get; } 
+        public DirichletEquivalentLoadsAssembler DirichletLoadsAssembler { get; } 
 
         private IDictionary<int, IMatrix> Mass
         {

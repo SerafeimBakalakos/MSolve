@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using ISAAR.MSolve.Analyzers.Interfaces;
+using ISAAR.MSolve.Analyzers.Loading;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
 
         //private readonly IStaticProvider problem; //TODO: refactor and use this instead
         private readonly ElementStructuralStiffnessProvider problem = new ElementStructuralStiffnessProvider();
-        private readonly DirichletEquivalentLoadsStructural loadsAssembler; 
+        private readonly DirichletEquivalentLoadsAssembler loadsAssembler; 
 
         private readonly ISolver solver;
         private HashSet<ISubdomain> newTipEnrichedSubdomains;
@@ -51,7 +51,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
 
             //TODO: Refactor problem structural and remove the next
             problem = new ElementStructuralStiffnessProvider();
-            loadsAssembler = new DirichletEquivalentLoadsStructural(problem); ;
+            loadsAssembler = new DirichletEquivalentLoadsAssembler(problem); ;
         }
 
         public IDomainDecompositionLogger DDLogger { get; set; }
@@ -149,26 +149,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
         {
             foreach (ILinearSystem linearSystem in linearSystems.Values)
             {
-                try
-                {
-                    // Make sure there is at least one non zero prescribed displacement.
-                    (INode node, IDofType dof, double displacement) = linearSystem.Subdomain.Constraints.Find(du => du != 0.0);
-
-                    //TODO: the following 2 lines are meaningless outside diplacement control (and even then, they are not so clear).
-                    double scalingFactor = 1;
-                    IVector initialFreeSolution = linearSystem.CreateZeroVector();
-
-                    //IVector equivalentNodalLoads = problem.DirichletLoadsAssembler.GetEquivalentNodalLoads(
-                    //    linearSystem.Subdomain, initialFreeSolution, scalingFactor);
-                    IVector equivalentNodalLoads = loadsAssembler.GetEquivalentNodalLoads(linearSystem.Subdomain, 
-                        initialFreeSolution, scalingFactor);
-                    linearSystem.RhsVector.SubtractIntoThis(equivalentNodalLoads);
-                }
-                catch (KeyNotFoundException)
-                {
-                    // There aren't any non zero prescribed displacements, therefore we do not have to calculate the equivalent 
-                    // nodal loads, which is an expensive operation (all elements are accessed, their stiffness is built, etc..)
-                }
+                loadsAssembler.ApplyEquivalentNodalLoads(linearSystem.Subdomain, linearSystem.RhsVector);
             }
         }
 

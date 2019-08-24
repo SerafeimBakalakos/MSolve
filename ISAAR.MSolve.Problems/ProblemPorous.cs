@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Analyzers.Dynamic;
 using ISAAR.MSolve.Analyzers.Interfaces;
+using ISAAR.MSolve.Analyzers.Loading;
 using ISAAR.MSolve.Analyzers.NonLinear;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
@@ -38,7 +39,7 @@ namespace ISAAR.MSolve.Problems
             this.linearSystems = solver.LinearSystems;
         }
 
-        public IDirichletEquivalentLoadsAssembler DirichletLoadsAssembler => throw new NotImplementedException();
+        public DirichletEquivalentLoadsAssembler DirichletLoadsAssembler => throw new NotImplementedException();
 
         private IDictionary<int, IMatrix> Ms
         {

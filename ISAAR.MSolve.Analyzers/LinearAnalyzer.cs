@@ -57,24 +57,7 @@ namespace ISAAR.MSolve.Analyzers
         {
             foreach (ILinearSystem linearSystem in linearSystems.Values)
             {
-                try
-                {
-                    // Make sure there is at least one non zero prescribed displacement.
-                    (INode node, IDofType dof, double displacement) = linearSystem.Subdomain.Constraints.Find(du => du != 0.0);
-
-                    //TODO: the following 2 lines are meaningless outside diplacement control (and even then, they are not so clear).
-                    double scalingFactor = 1;
-                    IVector initialFreeSolution = linearSystem.CreateZeroVector();
-
-                    IVector equivalentNodalLoads = provider.DirichletLoadsAssembler.GetEquivalentNodalLoads(
-                        linearSystem.Subdomain, initialFreeSolution, scalingFactor);
-                    linearSystem.RhsVector.SubtractIntoThis(equivalentNodalLoads);
-                }
-                catch (KeyNotFoundException)
-                {
-                    // There aren't any non zero prescribed displacements, therefore we do not have to calculate the equivalent 
-                    // nodal loads, which is an expensive operation (all elements are accessed, their stiffness is built, etc..)
-                }
+                provider.DirichletLoadsAssembler.ApplyEquivalentNodalLoads(linearSystem.Subdomain, linearSystem.RhsVector);
             }
         }
 

@@ -50,14 +50,7 @@ namespace ISAAR.MSolve.IGA.Entities
         public int NumNodalLoads => throw new NotImplementedException();
         public int NumNodes => ControlPoints.Count;
 
-        public double[] CalculateElementIncrementalConstraintDisplacements(IElement element, double constraintScalingFactor)
-		{
-			var elementNodalDisplacements = new double[FreeDofOrdering.CountElementDofs(element)];
-            SubdomainConstrainedDofOrderingBase.ApplyConstraintDisplacements(element, elementNodalDisplacements, Constraints);
-			return elementNodalDisplacements;
-		}
-
-		public double[] CalculateElementDisplacements(Element element, IVectorView globalDisplacementVector)//QUESTION: would it be maybe more clear if we passed the constraintsDictionary as argument??
+        public double[] CalculateElementDisplacements(Element element, IVectorView globalDisplacementVector)//QUESTION: would it be maybe more clear if we passed the constraintsDictionary as argument??
 		{
 			var elementNodalDisplacements = new double[FreeDofOrdering.CountElementDofs(element)];
 			FreeDofOrdering.ExtractVectorElementFromSubdomain(element, globalDisplacementVector);
