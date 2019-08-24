@@ -1,20 +1,26 @@
 ﻿using ISAAR.MSolve.Discretization.FreedomDegrees;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.XFEM.FreedomDegrees;
 
+//TODO: Use the same class as FEM for this
 namespace ISAAR.MSolve.XFEM.Entities
 {
-    public class NodalLoad
+    public class NodalLoad : INodalLoad
     {
-        public Node Node { get; }
-        public StructuralDof DofType { get; }
-        public double Value { get; }
+        INode INodalLoad.Node => Node;
+        public XNode Node { get; }
 
-        public NodalLoad(Node node, StructuralDof dofType, double value)
+        IDofType INodalLoad.DOF => DofType;
+        public StructuralDof DofType { get; }
+
+        public double Amount { get; }
+
+        public NodalLoad(XNode node, StructuralDof dofType, double value)
         {
             this.Node = node;
             this.DofType = dofType;
-            this.Value = value;
+            this.Amount = value;
         }
     }
 }

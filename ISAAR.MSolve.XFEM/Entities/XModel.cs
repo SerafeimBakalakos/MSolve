@@ -44,26 +44,15 @@ namespace ISAAR.MSolve.XFEM.Entities
         public void ApplyLoads()
         {
             foreach (XSubdomain subdomain in Subdomains.Values) subdomain.Forces.Clear();
-            ApplyNodalLoads();
         }
 
         public void ApplyMassAccelerationHistoryLoads(int timeStep) => throw new NotImplementedException();
-
-        public void ApplyNodalLoads()
-        {
-            //foreach (ISubdomain subdomain in EnumerateSubdomains())
-            //{
-            //    SparseVector nodalLoadsVector = distributeNodalLoads(subdomain);
-            //    subdomain.Forces.AddIntoThis(nodalLoadsVector);
-            //}
-            throw new NotImplementedException();
-        }
 
         public void ConnectDataStructures()
         {
             BuildInterconnectionData();
             AssignConstraints();
-            RemoveInactiveNodalLoads();
+            AssignNodalLoadsToSubdomains();
         }
 
         public IEnumerable<IElement> EnumerateElements() => Elements.Values;
@@ -83,6 +72,28 @@ namespace ISAAR.MSolve.XFEM.Entities
             }
 
             foreach (XSubdomain subdomain in Subdomains.Values) subdomain.ExtractConstraintsFromGlobal(Constraints);
+        }
+
+        private void AssignNodalLoadsToSubdomains()
+        {
+            // Remove inactive loads added by the user
+            var activeLoads = new List<NodalLoad>(NodalLoads.Count);
+            foreach (NodalLoad load in NodalLoads)
+            {
+                bool isConstrained = Constraints.Contains(load.Node, load.DofType);
+                if (!isConstrained) activeLoads.Add(load);
+            }
+            NodalLoads = activeLoads;
+
+            // Assign the rest to their subdomains without scaling them. That will be done later by the analyzer and solver.
+            foreach (NodalLoad load in NodalLoads)
+            {
+                foreach (ISubdomain subdomain in load.Node.SubdomainsDictionary.Values)
+                {
+                    //TODO: remove this cast after correctly implementing XNode
+                    ((XSubdomain)subdomain).NodalLoads.Add(load);
+                }
+            }
         }
 
         private void BuildInterconnectionData()
@@ -112,18 +123,6 @@ namespace ISAAR.MSolve.XFEM.Entities
             {
                 foreach (IXFiniteElement element in subdomain.Elements.Values) element.Subdomain = subdomain;
             }
-        }
-
-        private void RemoveInactiveNodalLoads()
-        {
-            // Static loads
-            var activeLoadsStatic = new List<NodalLoad>(NodalLoads.Count);
-            foreach (NodalLoad load in NodalLoads)
-            {
-                bool isConstrained = Constraints.Contains(load.Node, load.DofType);
-                if (!isConstrained) activeLoadsStatic.Add(load);
-            }
-            NodalLoads = activeLoadsStatic;
         }
     }
 }

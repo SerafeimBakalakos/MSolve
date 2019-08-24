@@ -29,10 +29,12 @@ namespace ISAAR.MSolve.XFEM.Entities
         public bool StiffnessModified { get; set; } = true; // At first it is modified
         public bool ConnectivityModified { get; set; } = true; // At first it is modified
 
+        public List<NodalLoad> NodalLoads { get; } = new List<NodalLoad>();
+
         public Dictionary<int, XNode> Nodes { get; } = new Dictionary<int, XNode>();
 
         public int NumElements => Elements.Count;
-        public int NumNodalLoads => throw new NotImplementedException();
+        public int NumNodalLoads => NodalLoads.Count;
         public int NumNodes => Nodes.Count;
 
         //TODO: This belongs somewhere else. It is not the Subdomain's job to calculate loading vectors
@@ -66,7 +68,7 @@ namespace ISAAR.MSolve.XFEM.Entities
         }
 
         public IEnumerable<IElement> EnumerateElements() => Elements.Values;
-        public IEnumerable<INodalLoad> EnumerateNodalLoads() => throw new NotImplementedException();
+        public IEnumerable<INodalLoad> EnumerateNodalLoads() => NodalLoads;
         public IEnumerable<INode> EnumerateNodes() => Nodes.Values;
 
         public void ExtractConstraintsFromGlobal(Table<INode, IDofType, double> globalConstraints)

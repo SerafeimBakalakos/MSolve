@@ -36,18 +36,14 @@ namespace ISAAR.MSolve.IGA.Entities
 
         public Table<ControlPoint, IDofType, double> ControlPointLoads { get; set; }
 
-		public Dictionary<int, Edge> EdgesDictionary
-		{
-			get { return edgesDictionary; }
-		}
+		public Dictionary<int, Edge> EdgesDictionary => edgesDictionary;
 
-		public Dictionary<int, Face> FacesDictionary
-		{
-			get { return facesDictionary; }
-		}
+        public Dictionary<int, Face> FacesDictionary => facesDictionary;
+
+        public List<Load> NodalLoads { get; } = new List<Load>();
 
         public int NumElements => Elements.Count;
-        public int NumNodalLoads => throw new NotImplementedException();
+        public int NumNodalLoads => NodalLoads.Count;
         public int NumNodes => ControlPoints.Count;
 
         public double[] CalculateElementDisplacements(Element element, IVectorView globalDisplacementVector)//QUESTION: would it be maybe more clear if we passed the constraintsDictionary as argument??
@@ -82,7 +78,7 @@ namespace ISAAR.MSolve.IGA.Entities
 		}
 
         public IEnumerable<IElement> EnumerateElements() => Elements.Values;
-        public IEnumerable<INodalLoad> EnumerateNodalLoads() => throw new NotImplementedException();
+        public IEnumerable<INodalLoad> EnumerateNodalLoads() => NodalLoads;
         public IEnumerable<INode> EnumerateNodes() => ControlPoints.Values;
 
         public void ExtractConstraintsFromGlobal(Table<INode, IDofType, double> globalConstraints)

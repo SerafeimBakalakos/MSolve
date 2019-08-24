@@ -28,7 +28,7 @@ namespace ISAAR.MSolve.FEM.Entities
 
         public int ID { get; }
 
-        public IList<Load> NodalLoads { get; private set; } = new List<Load>();
+        public List<Load> NodalLoads { get; } = new List<Load>();
 
         //TODO: I would prefer a Dictionary for fast random access, but a lot of tests break. Also having them sorted results in
         //      better orderings for structured meshes, although that can be implemented as a reordering or by ordering them 

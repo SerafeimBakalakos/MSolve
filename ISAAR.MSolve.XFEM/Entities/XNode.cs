@@ -8,6 +8,9 @@ using ISAAR.MSolve.XFEM.Elements;
 using ISAAR.MSolve.XFEM.Enrichments.Items;
 using ISAAR.MSolve.XFEM.FreedomDegrees;
 
+//TODO: It is not a good idea to inherit from Node. It creates many problems usually due to lack of covariance. It is better
+//      to implement INode directly, but INode itself should be refactored to not expose non covariant data structures 
+//      (IElement must too).
 namespace ISAAR.MSolve.XFEM.Entities
 {
     public class XNode : Node
@@ -48,7 +51,6 @@ namespace ISAAR.MSolve.XFEM.Entities
         //TODO: Redesign these and their counterparts in Node. Connectivity should be done using the Dircetization interfaces.
         #region connectivity
         public new Dictionary<int, IXFiniteElement> ElementsDictionary { get; } = new Dictionary<int, IXFiniteElement>();
-        //public new Dictionary<int, XSubdomain> SubdomainsDictionary { get; } = new Dictionary<int, XSubdomain>();
 
         public void BuildXSubdomainDictionary()
         {

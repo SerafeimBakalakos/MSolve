@@ -96,20 +96,18 @@ namespace ISAAR.MSolve.FEM.Entities
             }
         }
 
+        //TODO: These are not distributed correctly. They should be handled like steady state nodal loads.
         public void AssignTimeDependentNodalLoads(int timeStep)
         {
-            throw new NotImplementedException();
-            //var globalNodalLoads = new Table<INode, IDofType, double>();
-            //foreach (ITimeDependentNodalLoad load in TimeDependentNodalLoads)
-            //{
-            //    globalNodalLoads.TryAdd(load.Node, load.DOF, load.GetLoadAmount(timeStep));
-            //}
-
-            //Dictionary<int, SparseVector> subdomainNodalLoads = distributeNodalLoads(globalNodalLoads);
-            //foreach (var idSubdomainLoads in subdomainNodalLoads)
-            //{
-            //    SubdomainsDictionary[idSubdomainLoads.Key].Forces.AddIntoThis(idSubdomainLoads.Value);
-            //}
+            foreach (ITimeDependentNodalLoad load in TimeDependentNodalLoads)
+            {
+                double amountPerSubdomain = load.GetLoadAmount(timeStep) / load.Node.Multiplicity;
+                foreach (ISubdomain subdomain in load.Node.SubdomainsDictionary.Values)
+                {
+                    int idx = subdomain.FreeDofOrdering.FreeDofs[load.Node, load.DOF];
+                    subdomain.Forces[idx] += amountPerSubdomain;
+                }
+            }
         }
 
         //What is the purpose of this method? If someone wanted to clear the Model, they could just create a new one.
@@ -134,8 +132,8 @@ namespace ISAAR.MSolve.FEM.Entities
         {         
             BuildInterconnectionData();
             AssignConstraints();
-            RemoveInactiveNodalLoads();
             AssignNodalLoadsToSubdomains();
+            RemoveInactiveTransientNodalLoads();
 
             //TODOSerafeim: This should be called by the analyzer, which defines when the dofs are ordered and when the global vectors/matrices are built.
             //AssignLoads();
@@ -193,8 +191,16 @@ namespace ISAAR.MSolve.FEM.Entities
 
         private void AssignNodalLoadsToSubdomains()
         {
-            //TODO: Call remove inactive nodal loads here or just cut paste that code here
+            // Remove inactive loads added by the user
+            var activeLoads = new List<Load>(Loads.Count);
+            foreach (Load load in Loads)
+            {
+                bool isConstrained = Constraints.Contains(load.Node, load.DOF);
+                if (!isConstrained) activeLoads.Add(load);
+            }
+            Loads = activeLoads;
 
+            // Assign the rest to their subdomains without scaling them. That will be done later by the analyzer and solver.
             foreach (Load load in Loads)
             {
                 foreach (Subdomain subdomain in load.Node.SubdomainsDictionary.Values) subdomain.NodalLoads.Add(load);
@@ -268,18 +274,8 @@ namespace ISAAR.MSolve.FEM.Entities
             }
         }
 
-        private void RemoveInactiveNodalLoads()
+        private void RemoveInactiveTransientNodalLoads()
         {
-            // Static loads
-            var activeLoadsStatic = new List<Load>(Loads.Count);
-            foreach (Load load in Loads)
-            {
-                bool isConstrained = Constraints.Contains(load.Node, load.DOF);
-                if (!isConstrained) activeLoadsStatic.Add(load);
-            }
-            Loads = activeLoadsStatic;
-
-            // Dynamic loads
             var activeLoadsDynamic = new List<ITimeDependentNodalLoad>(TimeDependentNodalLoads.Count);
             foreach (ITimeDependentNodalLoad load in TimeDependentNodalLoads)
             {

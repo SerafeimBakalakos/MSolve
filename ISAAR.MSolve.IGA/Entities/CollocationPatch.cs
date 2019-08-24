@@ -47,8 +47,10 @@ namespace ISAAR.MSolve.IGA.Entities
             get { return facesDictionary; }
         }
 
+        public List<Load> NodalLoads { get; } = new List<Load>();
+
         public int NumElements => Elements.Count;
-        public int NumNodalLoads => throw new NotImplementedException();
+        public int NumNodalLoads => NodalLoads.Count;
         public int NumNodes => ControlPoints.Count;
 
         private static void ApplyConstraintDisplacements(IElement element, double[] elementNodalDisplacements,
@@ -113,7 +115,7 @@ namespace ISAAR.MSolve.IGA.Entities
         }
 
         public IEnumerable<IElement> EnumerateElements() => Elements.Values;
-        public IEnumerable<INodalLoad> EnumerateNodalLoads() => throw new NotImplementedException();
+        public IEnumerable<INodalLoad> EnumerateNodalLoads() => NodalLoads;
         public IEnumerable<INode> EnumerateNodes() => ControlPoints.Values;
 
         public void ExtractConstraintsFromGlobal(Table<INode, IDofType, double> globalConstraints)
