@@ -15,6 +15,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessDistribution;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
@@ -599,7 +600,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var precondFactory = new DirichletPreconditioner.Factory();
             var repackagedKrr = new Dictionary<int, IMatrixView>();
             foreach (var idMatrixPair in Krr) repackagedKrr[idMatrixPair.Key] = idMatrixPair.Value;
-            var stiffnessDistribution = new HomogeneousStiffnessDistribution(model, dofSeparator);
+            var stiffnessDistribution = new FetiDPHomogeneousStiffnessDistribution(model, dofSeparator);
             stiffnessDistribution.Update(null);
             IFetiPreconditioner preconditioner = precondFactory.CreatePreconditioner(model,
                 stiffnessDistribution, dofSeparator, lagrangeEnumerator, matrixManagersPreconditioning);

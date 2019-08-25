@@ -12,6 +12,7 @@ using ISAAR.MSolve.Solvers.Commons;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.InterfaceProblem;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Matrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Projection;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.StiffnessDistribution;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
@@ -100,15 +101,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
             // Homogeneous/heterogeneous problems
             this.problemIsHomogeneous = problemIsHomogeneous;
             this.projectionMatrixQIsIdentity = projectionMatrixQIsIdentity;
-            if (problemIsHomogeneous) this.stiffnessDistribution = new HomogeneousStiffnessDistribution(model, dofSeparator);
-            else this.stiffnessDistribution = new HeterogeneousStiffnessDistribution(model, dofSeparator);
+            if (problemIsHomogeneous) this.stiffnessDistribution = new Feti1HomogeneousStiffnessDistribution(model, dofSeparator);
+            else this.stiffnessDistribution = new Feti1HeterogeneousStiffnessDistribution(model, dofSeparator);
         }
 
         public IReadOnlyDictionary<int, ILinearSystem> LinearSystems { get; }
         public SolverLogger Logger { get; } = new SolverLogger(name);
         public string Name => name;
 
-        public INodalLoadDistributor NodalLoadDistributor => subdomainGlobalMapping;
+        public INodalLoadDistributor NodalLoadDistributor => stiffnessDistribution;
 
         public Dictionary<int, IMatrix> BuildGlobalMatrices(IElementMatrixProvider elementMatrixProvider)
         {

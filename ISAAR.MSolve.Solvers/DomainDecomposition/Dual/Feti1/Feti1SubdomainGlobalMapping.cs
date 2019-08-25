@@ -16,7 +16,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 //TODO: Should the vectors be Vector instead of IVectorView?
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
 {
-    public class Feti1SubdomainGlobalMapping : INodalLoadDistributor
+    public class Feti1SubdomainGlobalMapping
     {
         private readonly IStiffnessDistribution distribution;
         private readonly Feti1DofSeparator dofSeparator;
@@ -39,46 +39,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
             //TODO: Is this correct? For the residual, it would be wrong to find f-K*u for each subdomain and then call this.
 
             return GatherGlobalForces(subdomainForces).Norm2();
-        }
-
-        public Dictionary<int, SparseVector> DistributeNodalLoadsOLD(Dictionary<int, ISubdomain> subdomains, 
-            Table<INode, IDofType, double> globalNodalLoads)
-        {
-            //TODO: Should I implement this as fb(s) = Lpb(s) * fb, with a) Lpb(s) = Lb(s) * inv(Mb) for homogeneous and 
-            //      b) Lpb(s) = Db(s)*Lb(s) * inv(Lb^T*Db*Lb) for heterogeneous?
-
-            var subdomainLoads = new Dictionary<int, SortedDictionary<int, double>>();
-            foreach (var subdomainID in subdomains.Keys) subdomainLoads[subdomainID] = new SortedDictionary<int, double>();
-
-            foreach ((INode node, IDofType dofType, double loadAmount) in globalNodalLoads)
-            {
-                if (node.Multiplicity == 1) // optimization for internal dof
-                {
-                    ISubdomain subdomain = node.SubdomainsDictionary.First().Value;
-                    int subdomainDofIdx = subdomain.FreeDofOrdering.FreeDofs[node, dofType];
-                    subdomainLoads[subdomain.ID][subdomainDofIdx] = loadAmount;
-                }
-                else // boundary dof
-                {
-                    Dictionary<int, double> boundaryDofCoeffs = distribution.CalcBoundaryDofCoefficientsOLD(node, dofType);
-                    foreach (var idSubdomain in node.SubdomainsDictionary)
-                    {
-                        int id = idSubdomain.Key;
-                        ISubdomain subdomain = idSubdomain.Value;
-                        int subdomainDofIdx = subdomain.FreeDofOrdering.FreeDofs[node, dofType];
-                        subdomainLoads[id][subdomainDofIdx] = loadAmount * boundaryDofCoeffs[id];
-                    }
-                }
-            }
-
-            var vectors = new Dictionary<int, SparseVector>();
-            foreach (var idSubdomains in subdomains)
-            {
-                int id = idSubdomains.Key;
-                int numSubdomainDofs = idSubdomains.Value.FreeDofOrdering.NumFreeDofs;
-                vectors[id] = SparseVector.CreateFromDictionary(numSubdomainDofs, subdomainLoads[id]);
-            }
-            return vectors;
         }
 
         public Vector GatherGlobalDisplacements(Dictionary<int, IVectorView> subdomainDisplacements)
@@ -133,14 +93,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
                 }
             }
             return globalForces;
-        }
-
-        //TODO: This should be moved to a FETI-DP related distribution class
-        public double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load)
-        {
-            INode node = load.Node;
-            if (node.Multiplicity > 1) return distribution.CalcBoundaryDofCoefficient(node, load.DOF, subdomain) * load.Amount;
-            else return load.Amount;
         }
 
         #region incorrect implementation

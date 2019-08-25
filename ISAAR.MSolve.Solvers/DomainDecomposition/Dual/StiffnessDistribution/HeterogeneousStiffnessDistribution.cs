@@ -19,40 +19,21 @@ using ISAAR.MSolve.Solvers.LinearSystems;
 //      global loads are distributed, which is when the IStiffnessDistribution is first created.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
-    public class HeterogeneousStiffnessDistribution : IStiffnessDistribution
+    public abstract class HeterogeneousStiffnessDistribution : IStiffnessDistribution
     {
-        private readonly IDofSeparator dofSeparator;
-        private readonly IModel model;
-        private readonly Dictionary<int, DiagonalMatrix> inverseDbMatrices;
-
         //TODO: Is it more efficient to use (INode node, DOFType[] dofTypes)[]? It would reduce the cost of accessing node data?
         //TODO: perhaps it would be faster to have a field Dictionary<int, double[]> boundaryDofStiffnesses, instead of the next
-        private Table<INode, IDofType, BoundaryDofLumpedStiffness> boundaryDofStiffnesses;
+        protected Table<INode, IDofType, BoundaryDofLumpedStiffness> boundaryDofStiffnesses;
+
+        private readonly Dictionary<int, DiagonalMatrix> inverseDbMatrices;
+        private readonly IModel model;
+        private readonly IDofSeparator dofSeparator;
 
         public HeterogeneousStiffnessDistribution(IModel model, IDofSeparator dofSeparator)
         {
             this.model = model;
             this.dofSeparator = dofSeparator;
             inverseDbMatrices = new Dictionary<int, DiagonalMatrix>();
-        }
-
-        public double CalcBoundaryDofCoefficient(INode node, IDofType dofType, ISubdomain subdomain)
-        {
-            BoundaryDofLumpedStiffness dofStiffness = boundaryDofStiffnesses[node, dofType];
-            return dofStiffness.SubdomainStiffnesses[subdomain] / dofStiffness.TotalStiffness;
-        }
-
-        public Dictionary<int, double> CalcBoundaryDofCoefficientsOLD(INode node, IDofType dofType)
-        {
-            var coeffs = new Dictionary<int, double>();
-            BoundaryDofLumpedStiffness dofStiffness = boundaryDofStiffnesses[node, dofType];
-            foreach (var idSubdomainPair in node.SubdomainsDictionary)
-            {
-                int id = idSubdomainPair.Key;
-                ISubdomain subdomain = idSubdomainPair.Value;
-                coeffs[id] = dofStiffness.SubdomainStiffnesses[subdomain] / dofStiffness.TotalStiffness;
-            }
-            return coeffs;
         }
 
         public double[] CalcBoundaryDofCoefficients(ISubdomain subdomain)
@@ -71,12 +52,23 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             for (int i = 0; i < boundaryDofIndices.Length; ++i)
             {
                 (INode node, IDofType dofType) = boundaryDofs[i];
-                BoundaryDofLumpedStiffness dofStiffness = boundaryDofStiffnesses[node, dofType];
-                double relativeStiffness = dofStiffness.SubdomainStiffnesses[subdomain] / dofStiffness.TotalStiffness;
-                relativeStiffnesses[i] = relativeStiffness;
+                relativeStiffnesses[i] = boundaryDofStiffnesses[node, dofType].CalcRelativeStiffness(subdomain);
             }
             return relativeStiffnesses;
         }
+
+        //public Dictionary<int, double> CalcBoundaryDofCoefficientsOLD(INode node, IDofType dofType)
+        //{
+        //    var coeffs = new Dictionary<int, double>();
+        //    BoundaryDofLumpedStiffness dofStiffness = boundaryDofStiffnesses[node, dofType];
+        //    foreach (var idSubdomainPair in node.SubdomainsDictionary)
+        //    {
+        //        int id = idSubdomainPair.Key;
+        //        ISubdomain subdomain = idSubdomainPair.Value;
+        //        coeffs[id] = dofStiffness.SubdomainStiffnesses[subdomain] / dofStiffness.TotalStiffness;
+        //    }
+        //    return coeffs;
+        //}
 
         public Dictionary<int, IMappingMatrix> CalcBoundaryPreconditioningSignedBooleanMatrices(
             ILagrangeMultipliersEnumerator lagrangeEnumerator, 
@@ -157,6 +149,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             }
             else return inverseDbMatrices[subdomain.ID];
         }
+
+        public abstract double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load);
 
         //TODO: This should be modified to CSR or CSC format and then benchmarked against the implicit alternative.
         /// <summary>

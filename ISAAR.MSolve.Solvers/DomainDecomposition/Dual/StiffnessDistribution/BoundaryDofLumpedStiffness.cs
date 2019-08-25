@@ -20,6 +20,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         internal Dictionary<ISubdomain, double> SubdomainStiffnesses { get; }
         internal double TotalStiffness { get; }
 
+        internal double CalcRelativeStiffness(ISubdomain subdomain) => SubdomainStiffnesses[subdomain] / TotalStiffness;
+
         //TODO: Is it more efficient to use (INode node, DOFType[] dofTypes)[]? It would reduce the cost of accessing node data?
         public static Table<INode, IDofType, BoundaryDofLumpedStiffness> ExtractBoundaryDofLumpedStiffnesses(
             Dictionary<INode, IDofType[]> dualDofs, Dictionary<int, IMatrixView> stiffnesses)

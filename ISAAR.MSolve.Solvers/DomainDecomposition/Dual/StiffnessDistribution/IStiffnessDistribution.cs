@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 //TODO: This should be an enum class. There are only 2 possible cases.
 //TODO: This should work for both FETI-1 and FETI-DP
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution 
 {
-    public interface IStiffnessDistribution
+    public interface IStiffnessDistribution : INodalLoadDistributor
     {
-        double CalcBoundaryDofCoefficient(INode node, IDofType dofType, ISubdomain subdomain);
-        Dictionary<int, double> CalcBoundaryDofCoefficientsOLD(INode node, IDofType dofType);
         double[] CalcBoundaryDofCoefficients(ISubdomain subdomain);
 
         Dictionary<int, IMappingMatrix> CalcBoundaryPreconditioningSignedBooleanMatrices(
@@ -21,5 +21,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             Dictionary<int, SignedBooleanMatrixColMajor> boundarySignedBooleanMatrices);
 
         void Update(Dictionary<int, IMatrixView> stiffnessesFreeFree);
+
+        //Dictionary<int, SparseVector> DistributeNodalLoadsOLD(Dictionary<int, ISubdomain> subdomains,
+        //    Table<INode, IDofType, double> globalNodalLoads);
     }
 }
