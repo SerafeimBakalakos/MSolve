@@ -23,7 +23,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
         protected Dictionary<int, IMappingMatrix> CalcBoundaryPreconditioningBooleanMatrices(IStiffnessDistribution stiffnessDistribution,
             IDofSeparator dofSeparator, ILagrangeMultipliersEnumerator lagrangeEnumerator)
         {
-            int numContinuityEquations = lagrangeEnumerator.NumLagrangeMultipliers;
             var matricesBb = new Dictionary<int, SignedBooleanMatrixColMajor>();
             foreach (int s in dofSeparator.BoundaryDofIndices.Keys)
             {

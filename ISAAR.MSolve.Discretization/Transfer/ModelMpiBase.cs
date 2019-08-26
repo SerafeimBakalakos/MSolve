@@ -32,8 +32,8 @@ namespace ISAAR.MSolve.Discretization.Transfer
         {
             get
             {
-                if (procs.IsMasterProcess) return model.Constraints;
-                else throw StandardProcessException;
+                MpiException.CheckProcessIsMaster(procs);
+                return model.Constraints;
             }
         }
 
@@ -49,8 +49,8 @@ namespace ISAAR.MSolve.Discretization.Transfer
         {
             get
             {
-                if (procs.IsMasterProcess) return model.MassAccelerationHistoryLoads;
-                else throw StandardProcessException;
+                MpiException.CheckProcessIsMaster(procs);
+                return model.MassAccelerationHistoryLoads;
             }
         }
 
@@ -58,8 +58,8 @@ namespace ISAAR.MSolve.Discretization.Transfer
         {
             get
             {
-                if (procs.IsMasterProcess) return model.NumElements;
-                else throw StandardProcessException;
+                MpiException.CheckProcessIsMaster(procs);
+                return model.NumElements;
             }
         }
 
@@ -67,8 +67,8 @@ namespace ISAAR.MSolve.Discretization.Transfer
         {
             get
             {
-                if (procs.IsMasterProcess) return model.NumNodes;
-                else throw StandardProcessException;
+                MpiException.CheckProcessIsMaster(procs);
+                return model.NumNodes;
             }
         }
 
@@ -76,25 +76,21 @@ namespace ISAAR.MSolve.Discretization.Transfer
         {
             get
             {
-                if (procs.IsMasterProcess) return model.NumSubdomains;
-                else throw StandardProcessException;
+                MpiException.CheckProcessIsMaster(procs);
+                return model.NumSubdomains;
             }
         }
 
-        private MpiException StandardProcessException
-            => new MpiException($"Process {procs.OwnRank}: Only defined for master process (rank = {procs.MasterProcess})");
-
-
         public void ApplyLoads()
         {
-            if (procs.IsMasterProcess) model.ApplyLoads();
-            else throw StandardProcessException;
+            MpiException.CheckProcessIsMaster(procs);
+            model.ApplyLoads();
         }
 
         public void ApplyMassAccelerationHistoryLoads(int timeStep)
         {
-            if (procs.IsMasterProcess) model.ApplyMassAccelerationHistoryLoads(timeStep);
-            else throw StandardProcessException;
+            MpiException.CheckProcessIsMaster(procs);
+            model.ApplyMassAccelerationHistoryLoads(timeStep);
         }
 
         public void ConnectDataStructures()
@@ -105,32 +101,32 @@ namespace ISAAR.MSolve.Discretization.Transfer
 
         public IEnumerable<IElement> EnumerateElements()
         {
-            if (procs.IsMasterProcess) return model.EnumerateElements();
-            else throw StandardProcessException;
+            MpiException.CheckProcessIsMaster(procs);
+            return model.EnumerateElements();
         }
 
         public IEnumerable<INode> EnumerateNodes()
         {
-            if (procs.IsMasterProcess) return model.EnumerateNodes();
-            else throw StandardProcessException;
+            MpiException.CheckProcessIsMaster(procs);
+            return model.EnumerateNodes();
         }
 
         public IEnumerable<ISubdomain> EnumerateSubdomains()
         {
-            if (procs.IsMasterProcess) return model.EnumerateSubdomains();
-            else throw StandardProcessException;
+            MpiException.CheckProcessIsMaster(procs);
+            return model.EnumerateSubdomains();
         }
 
         public IElement GetElement(int elementID)
         {
-            if (procs.IsMasterProcess) return model.GetElement(elementID);
-            else throw StandardProcessException;
+            MpiException.CheckProcessIsMaster(procs);
+            return model.GetElement(elementID);
         }
 
         public INode GetNode(int nodeID)
         {
-            if (procs.IsMasterProcess) return model.GetNode(nodeID);
-            else throw StandardProcessException;
+            MpiException.CheckProcessIsMaster(procs);
+            return model.GetNode(nodeID);
         }
 
         public ISubdomain GetSubdomain(int subdomainID) => model.GetSubdomain(subdomainID);

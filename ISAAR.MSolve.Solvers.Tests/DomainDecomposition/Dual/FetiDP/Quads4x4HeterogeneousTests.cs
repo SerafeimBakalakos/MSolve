@@ -27,8 +27,61 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 {
     public static class Quads4x4HeterogeneousTests
     {
+        private static Dictionary<int, Matrix> MatricesBpbr
+        {
+            get
+            {
+                var Bpbr = new Dictionary<int, Matrix>();
+                Bpbr[0] = Matrix.CreateFromArray(new double[,]
+                {
+                    { 0.5, 0, 0, 0 },
+                    { 0, 0.5, 0, 0 },
+                    { 0, 0, 0.5, 0 },
+                    { 0, 0, 0, 0.5 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 }
+                });
+                Bpbr[1] = Matrix.CreateFromArray(new double[,]
+                {
+                    { -0.5, 0, 0, 0 },
+                    { 0, -0.5, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0.00990099009900990, 0 },
+                    { 0, 0, 0, 0.00990099009900990 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 }
+                });
+                Bpbr[2] = Matrix.CreateFromArray(new double[,]
+                {
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { -0.5, 0, 0, 0 },
+                    { 0, -0.5, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0.00990099009900990, 0 },
+                    { 0, 0, 0, 0.00990099009900990 }
+                });
+                Bpbr[3] = Matrix.CreateFromArray(new double[,]
+                {
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { -0.990099009900990, 0, 0, 0 },
+                    { 0, -0.990099009900990, 0, 0 },
+                    { 0, 0, -0.990099009900990, 0 },
+                    { 0, 0, 0, -0.990099009900990 }
+                });
+                return Bpbr;
+            }
+        }
+
         [Fact]
-        public static void TestScalingMatrices()
+        public static void TestScalingMatrices() //TODO: Most of the code is the same as the homogeneous case. Remove duplication.
         {
             #region Replace the next with hardcoded matrices and mocking objects
             // Run the analysis so that all objects are created
@@ -70,57 +123,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
                 new object[] { stiffnessDistribution, dofSeparator, lagrangeEnumerator });
 
             // Compare the mapping matrices against the expected ones
-            var expectedBpbr = new Dictionary<int, Matrix>();
-            expectedBpbr[0] = Matrix.CreateFromArray(new double[,]
-            {
-                { 0.5, 0, 0, 0 },
-                { 0, 0.5, 0, 0 },
-                { 0, 0, 0.5, 0 },
-                { 0, 0, 0, 0.5 },
-                { 0, 0, 0, 0 },
-                { 0, 0, 0, 0 },
-                { 0, 0, 0, 0 },
-                { 0, 0, 0, 0 }
-            });
-            expectedBpbr[1] = Matrix.CreateFromArray(new double[,]
-            {
-                { -0.5, 0, 0, 0 },
-                { 0, -0.5, 0, 0 },
-                { 0, 0, 0, 0 },
-                { 0, 0, 0, 0 },
-                { 0, 0, 0.00990099009900990, 0 },
-                { 0, 0, 0, 0.00990099009900990 },
-                { 0, 0, 0, 0 },
-                { 0, 0, 0, 0 }
-            });
-            expectedBpbr[2] = Matrix.CreateFromArray(new double[,]
-            {
-                { 0, 0, 0, 0 },
-                { 0, 0, 0, 0 },
-                { -0.5, 0, 0, 0 },
-                { 0, -0.5, 0, 0 },
-                { 0, 0, 0, 0 },
-                { 0, 0, 0, 0 },
-                { 0, 0, 0.00990099009900990, 0 },
-                { 0, 0, 0, 0.00990099009900990 }
-            });
-            expectedBpbr[3] = Matrix.CreateFromArray(new double[,]
-            {
-                { 0, 0, 0, 0 },
-                { 0, 0, 0, 0 },
-                { 0, 0, 0, 0 },
-                { 0, 0, 0, 0 },
-                { -0.990099009900990, 0, 0, 0 },
-                { 0, -0.990099009900990, 0, 0 },
-                { 0, 0, -0.990099009900990, 0 },
-                { 0, 0, 0, -0.990099009900990 }
-            });
-
             double tol = 1E-13;
-            foreach (int s in expectedBpbr.Keys)
+            for (int s = 0; s < 4; ++s)
             {
                 Matrix explicitBpr = Bpbr[s].MultiplyRight(Matrix.CreateIdentity(Bpbr[s].NumColumns));
-                Assert.True(expectedBpbr[s].Equals(explicitBpr, tol));
+                Assert.True(MatricesBpbr[s].Equals(explicitBpr, tol));
             }
         }
 

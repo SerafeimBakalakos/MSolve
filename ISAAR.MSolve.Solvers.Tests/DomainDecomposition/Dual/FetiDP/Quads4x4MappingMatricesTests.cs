@@ -18,6 +18,8 @@ using MPI;
 using Xunit;
 
 //TODO: Remove redundancies between the methods that define corner nodes
+//TODO: Have all expected stuff in a separate class that works for homegeneous and heterogeneous. The tests belong to individual 
+//      classes.
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 {
     public static class Quads4x4MappingMatricesTests

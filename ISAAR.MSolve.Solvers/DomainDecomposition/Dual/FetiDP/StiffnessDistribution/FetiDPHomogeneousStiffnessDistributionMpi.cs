@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.Discretization.Exceptions;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
@@ -22,9 +23,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessDistribu
 
         public override double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load)
         {
-            // This method will be called for each load, so the next check should only be performed in Debug configurations.
-            Debug.Assert(subdomain.ID == procs.OwnSubdomainID,
-                $"Process {procs.OwnRank}: This method cannot be called for subdomain {subdomain.ID}");
+            MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
             INode node = load.Node;
             IDofType dof = load.DOF;
 

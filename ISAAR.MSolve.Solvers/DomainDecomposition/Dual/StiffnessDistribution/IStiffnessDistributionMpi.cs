@@ -14,7 +14,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
     {
         double[] CalcBoundaryDofCoefficients(ISubdomain subdomain);
 
-        IMappingMatrix CalcBoundaryPreconditioningSignedBooleanMatrices(ILagrangeMultipliersEnumerator lagrangeEnumerator, 
+        IMappingMatrix CalcBoundaryPreconditioningSignedBooleanMatrix(ILagrangeMultipliersEnumeratorMpi lagrangeEnumerator, 
             ISubdomain subdomain, SignedBooleanMatrixColMajor boundarySignedBooleanMatrices); //TODO: LagrangeEnumerator is only useful for heterogeneous. It should be injected in that contructor.
 
         void Update();

@@ -36,18 +36,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 
         public double[] CalcBoundaryDofCoefficients(ISubdomain subdomain) => inverseBoundaryDofMultiplicities[subdomain.ID];
 
-        public IMappingMatrix CalcBoundaryPreconditioningSignedBooleanMatrices(ILagrangeMultipliersEnumerator lagrangeEnumerator,
+        public IMappingMatrix CalcBoundaryPreconditioningSignedBooleanMatrix(ILagrangeMultipliersEnumeratorMpi lagrangeEnumerator,
             ISubdomain subdomain, SignedBooleanMatrixColMajor boundarySignedBooleanMatrix)
         {
-            if (subdomain.ID == procs.OwnSubdomainID)
-            {
-                return new HomogeneousStiffnessDistributionUtilities.ScalingBooleanMatrixImplicit(
-                    inverseBoundaryDofMultiplicities[procs.OwnSubdomainID], boundarySignedBooleanMatrix);
-            }
-            else
-            {
-                throw new MpiException($"Process {procs.OwnRank}: This method cannot be called for subdomain {subdomain.ID}");
-            }
+            MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
+            return new HomogeneousStiffnessDistributionUtilities.ScalingBooleanMatrixImplicit(
+                inverseBoundaryDofMultiplicities[procs.OwnSubdomainID], boundarySignedBooleanMatrix);
         }
 
         public void Update() 

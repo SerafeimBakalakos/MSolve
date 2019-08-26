@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using ISAAR.MSolve.Discretization.Exceptions;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
@@ -16,13 +17,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     /// boundary dofs.
     /// Authors: Serafeim Bakalakos
     /// </summary>
-    public class FetiDPLagrangeMultipliersEnumeratorMpi //: ILagrangeMultipliersEnumerator
+    public class FetiDPLagrangeMultipliersEnumeratorMpi : ILagrangeMultipliersEnumeratorMpi
     {
         private readonly ICrosspointStrategy crosspointStrategy;
         private readonly FetiDPDofSeparatorMpi dofSeparator;
         private readonly LagrangeMultiplierSerializer lagrangeSerializer;
         private readonly IModel model;
         private readonly ProcessDistribution procs;
+        private LagrangeMultiplier[] lagrangeMultipliers_master;
 
         public FetiDPLagrangeMultipliersEnumeratorMpi(ProcessDistribution processDistribution, IModel model, 
             ICrosspointStrategy crosspointStrategy, FetiDPDofSeparatorMpi dofSeparator)
@@ -39,10 +41,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         /// </summary>
         public SignedBooleanMatrixColMajor BooleanMatrix { get; private set; }
 
-        /// <summary>
-        /// This is only available in the master process.
-        /// </summary>
-        public LagrangeMultiplier[] LagrangeMultipliers { get; private set; }
+        public LagrangeMultiplier[] LagrangeMultipliers
+        {
+            get
+            {
+                MpiException.CheckProcessIsMaster(procs);
+                return lagrangeMultipliers_master;
+            }
+        }
 
         /// <summary>
         /// One of this is stored per process.
@@ -55,10 +61,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             int[] serializedLagranges = null;
             if (procs.IsMasterProcess)
             {
-                LagrangeMultipliers = LagrangeMultipliersUtilities.DefineLagrangeMultipliers(
+                lagrangeMultipliers_master = LagrangeMultipliersUtilities.DefineLagrangeMultipliers(
                     dofSeparator.GlobalDofs, crosspointStrategy).ToArray();
-                NumLagrangeMultipliers = LagrangeMultipliers.Length;
-                serializedLagranges = lagrangeSerializer.Serialize(LagrangeMultipliers);
+                NumLagrangeMultipliers = lagrangeMultipliers_master.Length;
+                serializedLagranges = lagrangeSerializer.Serialize(lagrangeMultipliers_master);
             }
             MpiUtilities.BroadcastArray(procs.Communicator, ref serializedLagranges, procs.MasterProcess);
 
@@ -69,7 +75,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             if (procs.IsMasterProcess)
             {
                 BooleanMatrix = LagrangeMultipliersUtilities.CalcBooleanMatrix(subdomain,
-                    LagrangeMultipliers, numRemainderDofs, remainderDofOrdering);
+                    lagrangeMultipliers_master, numRemainderDofs, remainderDofOrdering);
             }
             else
             {

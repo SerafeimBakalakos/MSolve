@@ -5,8 +5,10 @@ using System.Reflection;
 using System.Text;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
@@ -16,9 +18,13 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessDistribution;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
+using ISAAR.MSolve.Solvers.Ordering;
+using ISAAR.MSolve.Solvers.Ordering.Reordering;
+using MPI;
 using Xunit;
 
 //TODO: Also test stiffness distribution and preconditioners in other classes.
@@ -101,6 +107,59 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             -14.9810838729735, -5.69975426333296, -10.5434726428584, 0.244121938779135, -5.89291361392317,
             -13.1189445403298, 16.4060122931895, -5.93260749341458
         });
+
+        private static Dictionary<int, Matrix> MatricesBpbr
+        {
+            get
+            {
+                var Bpbr = new Dictionary<int, Matrix>();
+                Bpbr[0] = Matrix.CreateFromArray(new double[,]
+                {
+                    { 0.5, 0, 0, 0 },
+                    { 0, 0.5, 0, 0 },
+                    { 0, 0, 0.5, 0 },
+                    { 0, 0, 0, 0.5 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 }
+                });
+                Bpbr[1] = Matrix.CreateFromArray(new double[,]
+                {
+                    { -0.5, 0, 0, 0 },
+                    { 0, -0.5, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0.5, 0 },
+                    { 0, 0, 0, 0.5 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 }
+                });
+                Bpbr[2] = Matrix.CreateFromArray(new double[,]
+                {
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { -0.5, 0, 0, 0 },
+                    { 0, -0.5, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0.5, 0 },
+                    { 0, 0, 0, 0.5 }
+                });
+                Bpbr[3] = Matrix.CreateFromArray(new double[,]
+                {
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { 0, 0, 0, 0 },
+                    { -0.5, 0, 0, 0 },
+                    { 0, -0.5, 0, 0 },
+                    { 0, 0, -0.5, 0 },
+                    { 0, 0, 0, -0.5 }
+                });
+                return Bpbr;
+            }
+        }
 
         private static Dictionary<int, Matrix> MatricesKbb //TODO: This should be hardcoded instead
         {
@@ -616,6 +675,110 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             double tol = 1E-7;
             Assert.True(SolutionLagrangeMultipliers.Equals(lagranges, tol));
             Assert.True(SolutionCornerDisplacements.Equals(uc, tol));
+        }
+
+        [Fact]
+        public static void TestScalingMatrices()
+        {
+            #region Replace the next with hardcoded matrices and mocking objects
+            // Run the analysis so that all objects are created
+            // Setup the model
+            Model model = Quads4x4MappingMatricesTests.CreateModel();
+            Dictionary<int, HashSet<INode>> cornerNodes = Quads4x4MappingMatricesTests.DefineCornerNodes(model);
+
+            // Setup solver
+            var interfaceSolverBuilder = new FetiDPInterfaceProblemSolver.Builder();
+            interfaceSolverBuilder.PcgConvergenceTolerance = 1E-7;
+            var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
+            var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
+            var fetiSolverBuilder = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices);
+            fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
+            fetiSolverBuilder.ProblemIsHomogeneous = false;
+            var preconditionerFactory = new DirichletPreconditioner.Factory();
+            fetiSolverBuilder.PreconditionerFactory = preconditionerFactory;
+            FetiDPSolver fetiSolver = fetiSolverBuilder.BuildSolver(model);
+
+            // Run the analysis
+            var problem = new ProblemStructural(model, fetiSolver);
+            var linearAnalyzer = new LinearAnalyzer(model, fetiSolver, problem);
+            var staticAnalyzer = new StaticAnalyzer(model, fetiSolver, problem, linearAnalyzer);
+            staticAnalyzer.Initialize();
+            staticAnalyzer.Solve();
+            #endregion
+
+            // Access private fields of FetiDPSolver and DirichletPreconditioner.Factory using reflection
+            FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
+            var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumerator)fi.GetValue(fetiSolver);
+            fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
+            var dofSeparator = (FetiDPDofSeparator)fi.GetValue(fetiSolver);
+            fi = typeof(FetiDPSolver).GetField("stiffnessDistribution", BindingFlags.NonPublic | BindingFlags.Instance);
+            var stiffnessDistribution = (IStiffnessDistribution)fi.GetValue(fetiSolver);
+            MethodInfo method = preconditionerFactory.GetType().GetMethod("CalcBoundaryPreconditioningBooleanMatrices",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+            var Bpbr = (Dictionary<int, IMappingMatrix>)method.Invoke(preconditionerFactory,
+                new object[] { stiffnessDistribution, dofSeparator, lagrangeEnumerator });
+
+            // Compare the mapping matrices against the expected ones
+            double tol = 1E-13;
+            for (int s = 0; s < 4; ++s)
+            {
+                Matrix explicitBpr = Bpbr[s].MultiplyRight(Matrix.CreateIdentity(Bpbr[s].NumColumns));
+                Assert.True(MatricesBpbr[s].Equals(explicitBpr, tol));
+            }
+        }
+
+        public static void TestScalingMatricesMpi(string[] args)
+        {
+            using (new MPI.Environment(ref args))
+            {
+                int master = 0;
+                var procs = new ProcessDistribution(Communicator.world, master, new int[] { 0, 1, 2, 3 });
+                //Console.WriteLine($"(process {procs.OwnRank}) Hello World!"); // Run this to check if MPI works correctly.
+
+                // Create the model in master process
+                var model = new ModelMpi(procs, Quads4x4MappingMatricesTests.CreateModel);
+                model.ConnectDataStructures();
+
+                // Scatter subdomain data to each process
+                model.ScatterSubdomains();
+                ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
+                //Console.WriteLine($"(process {procs.OwnRank}) Subdomain {model.GetSubdomain(procs.OwnSubdomainID).ID}");
+
+                // Order dofs
+                var dofOrderer = new DofOrdererMpi(procs, new NodeMajorDofOrderingStrategy(), new NullReordering());
+                dofOrderer.OrderFreeDofs(model);
+
+                // Separate dofs and corner boolean matrices
+                var dofSeparator = new FetiDPDofSeparatorMpi(procs, model);
+                if (procs.IsMasterProcess)
+                {
+                    HashSet<INode> globalCornerNodes = Quads4x4MappingMatricesTests.DefineGlobalCornerNodes(model);
+                    dofSeparator.DefineGlobalBoundaryDofs(globalCornerNodes);
+                    dofSeparator.DefineGlobalCornerDofs(globalCornerNodes);
+                }
+                HashSet<INode> subdomainCornerNodes = Quads4x4MappingMatricesTests.DefineSubdomainCornerNodes(subdomain);
+                dofSeparator.SeparateCornerRemainderDofs(subdomainCornerNodes);
+                dofSeparator.SeparateBoundaryInternalDofs(subdomainCornerNodes);
+                dofSeparator.CalcCornerMappingMatrices();
+
+                // Calculate lagrange multipliers and corresponding boolean matrices
+                var crosspointStrategy = new FullyRedundantConstraints();
+                var lagrangeEnumerator = new FetiDPLagrangeMultipliersEnumeratorMpi(procs, model, crosspointStrategy, dofSeparator);
+                lagrangeEnumerator.CalcBooleanMatrices();
+
+                // Calculate Bpbr matrices
+                var stiffnessDistribution = new FetiDPHomogeneousStiffnessDistributionMpi(procs, model, dofSeparator);
+                stiffnessDistribution.Update();
+                SignedBooleanMatrixColMajor Bb = 
+                    lagrangeEnumerator.BooleanMatrix.GetColumns(dofSeparator.SubdomainDofs.BoundaryDofIndices, false);
+                IMappingMatrix Bpbr = 
+                    stiffnessDistribution.CalcBoundaryPreconditioningSignedBooleanMatrix(lagrangeEnumerator, subdomain, Bb);
+
+                // Check Bpbr matrices
+                double tol = 1E-13;
+                Matrix explicitBpr = Bpbr.MultiplyRight(Matrix.CreateIdentity(Bpbr.NumColumns));
+                Assert.True(MatricesBpbr[subdomain.ID].Equals(explicitBpr, tol));
+            }
         }
 
         [Fact]

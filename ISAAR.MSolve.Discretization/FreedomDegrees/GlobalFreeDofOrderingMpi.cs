@@ -40,9 +40,8 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         {
             get
             {
-                if (procs.IsMasterProcess) return globalFreeDofs;
-                else throw new MpiException(
-                    $"Process {procs.OwnRank}: Only defined for master process (rank = {procs.MasterProcess})");
+                MpiException.CheckProcessIsMaster(procs);
+                return globalFreeDofs;
             }
         }
 
@@ -50,9 +49,8 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         {
             get
             {
-                if (procs.IsMasterProcess) return numGlobalFreeDofs;
-                else throw new MpiException(
-                    $"Process {procs.OwnRank}: Only defined for master process (rank = {procs.MasterProcess})");
+                MpiException.CheckProcessIsMaster(procs);
+                return numGlobalFreeDofs;
             }
         }
 
@@ -65,8 +63,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         /// <param name="globalVector">Only exists in master process.</param>
         public override void AddVectorSubdomainToGlobal(ISubdomain subdomain, IVectorView subdomainVector, IVector globalVector)
         {
-            if (subdomain.ID != procs.OwnSubdomainID) throw new MpiException(
-                $"Process {procs.OwnRank}: This process does not have access to subdomain {subdomain.ID})");
+            MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
 
             // Gather the subdomain vectors to master
             //TODO: Perhaps client master can work with vectors that have the different portions of the gathered flattened array 
@@ -174,8 +171,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         /// <param name="subdomainVector">Each process has its own.</param>
         public override void ExtractVectorSubdomainFromGlobal(ISubdomain subdomain, IVectorView globalVector, IVector subdomainVector)
         {
-            if (subdomain.ID != procs.OwnSubdomainID) throw new MpiException(
-                $"Process {procs.OwnRank}: This process does not have access to subdomain {subdomain.ID})");
+            MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
 
             // Broadcast globalVector
             //TODO: The next is stupid, since it copies the vector to an array, while I could access its backing storage in 
@@ -192,21 +188,14 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
 
         public ISubdomainFreeDofOrdering GetSubdomainDofOrdering(ISubdomain subdomain)
         {
-            if (subdomain.ID == procs.OwnSubdomainID) return subdomainDofOrderings[subdomain.ID]; // No MPI communication needed
-            else if (procs.IsMasterProcess) return subdomainDofOrderings[subdomain.ID];
-            else throw new MpiException(
-                $"Process {procs.OwnRank}: This process does not have access to subdomain {subdomain.ID})");
+            MpiException.CheckProcessMatchesSubdomainUnlessMaster(procs, subdomain.ID);
+            return subdomainDofOrderings[subdomain.ID];
         }
 
         public int[] MapSubdomainToGlobalDofs(ISubdomain subdomain)
         {
-            if (procs.IsMasterProcess) return subdomainToGlobalDofMaps[subdomain.ID];
-            else
-            {
-                if (subdomain.ID == procs.OwnSubdomainID) return subdomainToGlobalDofMaps[subdomain.ID];
-                else throw new MpiException(
-                    $"Process {procs.OwnRank}: This process does not have access to subdomain {subdomain.ID})");
-            }
+            MpiException.CheckProcessMatchesSubdomainUnlessMaster(procs, subdomain.ID);
+            return subdomainToGlobalDofMaps[subdomain.ID];
         }
     }
 }

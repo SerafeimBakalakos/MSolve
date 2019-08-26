@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
+using ISAAR.MSolve.Discretization.Transfer;
 
 namespace ISAAR.MSolve.Discretization.Exceptions
 {
@@ -33,5 +35,27 @@ namespace ISAAR.MSolve.Discretization.Exceptions
         ///     a null reference, the current exception is raised in a catch block that handles the inner exception. </param>
         public MpiException(string message, Exception inner) : base(message, inner)
         { }
+
+        [Conditional("DEBUG")]
+        public static void CheckProcessIsMaster(ProcessDistribution procs)
+        {
+            if (!procs.IsMasterProcess) throw new MpiException(
+                $"Process {procs.OwnRank}: Only defined for master process (rank = {procs.MasterProcess})");
+        }
+
+        [Conditional("DEBUG")]
+        public static void CheckProcessMatchesSubdomain(ProcessDistribution procs, int subdomainID)
+        {
+            if (subdomainID != procs.OwnSubdomainID) throw new MpiException(
+                $"Process {procs.OwnRank}: This process does not have access to subdomain {subdomainID}");
+        }
+
+        [Conditional("DEBUG")]
+        public static void CheckProcessMatchesSubdomainUnlessMaster(ProcessDistribution procs, int subdomainID)
+        {
+            if (procs.IsMasterProcess) return;
+            if (subdomainID != procs.OwnSubdomainID) throw new MpiException(
+                $"Process {procs.OwnRank}: This process does not have access to subdomain {subdomainID}");
+        }
     }
 }
