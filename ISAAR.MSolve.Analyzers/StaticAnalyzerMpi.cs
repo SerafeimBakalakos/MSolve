@@ -16,12 +16,12 @@ namespace ISAAR.MSolve.Analyzers
     {
         private readonly Intracommunicator comm;
         private readonly int master;
-        private readonly IModel model;
+        private readonly IModelMpi model;
         //private readonly IStaticProvider provider; //TODO: Use this instead
         private readonly IElementMatrixProvider provider;
         private readonly ISolverMpi solver;
 
-        public StaticAnalyzerMpi(IModel model, ISolverMpi solver, IElementMatrixProvider provider,
+        public StaticAnalyzerMpi(IModelMpi model, ISolverMpi solver, IElementMatrixProvider provider,
             IChildAnalyzer childAnalyzer, int masterProcess) 
         {
             this.model = model;
@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.Analyzers
 
         public void BuildMatrices()
         {
-            solver.LinearSystem.Matrix = solver.BuildGlobalMatrices(provider);
+            solver.LinearSystem.Matrix = solver.BuildGlobalMatrix(provider);
         }
 
         public IVector GetOtherRhsComponents(ILinearSystem linearSystem, IVector currentSolution)
@@ -55,14 +55,8 @@ namespace ISAAR.MSolve.Analyzers
             int rank = comm.Rank;
             if (isFirstAnalysis)
             {
-                if (rank == master)
-                {
-                    model.ConnectDataStructures();
-                }
-
-                // Scatter subdomain data to each process and recreate them there
-                solver.ScatterSubdomainData();
-                solver.Subdomain.ConnectDataStructures(); 
+                model.ConnectDataStructures();
+                model.ScatterSubdomains(); 
 
                 // Order dofs
                 solver.OrderDofs(false);

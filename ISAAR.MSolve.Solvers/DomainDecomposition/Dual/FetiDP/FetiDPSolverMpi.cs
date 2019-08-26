@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Text;
+using ISAAR.MSolve.Discretization.Exceptions;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.Solvers.Commons;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessDistribution;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Solvers.Ordering;
@@ -19,29 +26,40 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     public class FetiDPSolverMpi : ISolverMpi
     {
         internal const string name = "FETI-DP Solver"; // for error messages
+        private readonly ICornerNodeSelectionMpi cornerNodeSelection;
+        private readonly ICrosspointStrategy crosspointStrategy = new FullyRedundantConstraints();
         private readonly DofOrdererMpi dofOrderer;
         private readonly FetiDPDofSeparatorMpi dofSeparator;
-        private readonly IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory;
         private readonly IModelMpi model;
         private readonly bool problemIsHomogeneous;
         private readonly ProcessDistribution procs;
         private readonly IStiffnessDistributionMpi stiffnessDistribution;
 
-
+        private HashSet<INode> cornerNodesGlobal_master;
         private bool factorizeInPlace = true;
-        private ISingleSubdomainLinearSystem linearSystem;
+        private FetiDPLagrangeMultipliersEnumeratorMpi lagrangeEnumerator;
         private IFetiDPSubdomainMatrixManager matrixManager;
         //private ISubdomain subdomain;
 
         public FetiDPSolverMpi(ProcessDistribution processDistribution, IModelMpi model, 
-            IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory, bool problemIsHomogeneous)
+            ICornerNodeSelectionMpi cornerNodeSelection, IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory, 
+            bool problemIsHomogeneous)
         {
             this.procs = processDistribution;
+            if (model.NumSubdomains == 1) throw new InvalidSolverException(
+                $"Process {processDistribution.OwnRank}: {name} cannot be used if there is only 1 subdomain");
             this.model = model;
-            this.matrixManagerFactory = matrixManagerFactory;
+            this.Subdomain = model.GetSubdomain(processDistribution.OwnSubdomainID);
+            this.cornerNodeSelection = cornerNodeSelection;
 
             this.dofOrderer = new DofOrdererMpi(processDistribution, new NodeMajorDofOrderingStrategy(), new NullReordering());
-            this.dofSeparator = new FetiDPDofSeparatorMpi(procs, model);
+            this.dofSeparator = new FetiDPDofSeparatorMpi(processDistribution, model);
+
+            // Matrix managers and linear systems
+            matrixManager = matrixManagerFactory.CreateMatricesManager(this.Subdomain);
+            //TODO: This will call HandleMatrixWillBeSet() once for each subdomain. For now I will clear the data when 
+            //      BuildMatrices() is called. Redesign this.
+            //matrixManager.LinearSystem.MatrixObservers.Add(this); 
 
             // Homogeneous/heterogeneous problems
             this.problemIsHomogeneous = problemIsHomogeneous;
@@ -52,49 +70,52 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             else throw new NotImplementedException();
         }
 
+        public HashSet<INode> CornerNodesGlobal
+        {
+            get
+            {
+                MpiException.CheckProcessIsMaster(procs);
+                return cornerNodesGlobal_master;
+            }
+        }
+
+        public HashSet<INode> CornerNodesSubdomain { get; private set; }
+
         //TODO: I do not like these dependencies. The analyzer should not have to know that it must call ScatterSubdomainData() 
         //      before accessing the linear system or the subdomain.
-        public ILinearSystem LinearSystem
-        {
-            get
-            {
-                try
-                {
-                    return linearSystem;
-                }
-                catch (Exception)
-                {
-                    throw new InvalidOperationException("The subdomain data must be scattered first.");
-                }
-            }
-        }
-
-        public ISubdomain Subdomain
-        {
-            get
-            {
-                try
-                {
-                    return model.GetSubdomain(procs.OwnSubdomainID);
-                }
-                catch (Exception)
-                {
-                    throw new InvalidOperationException("The subdomain data must be scattered first.");
-                }
-            }
-        }
-
+        public ILinearSystem LinearSystem => matrixManager.LinearSystem;
         public SolverLogger Logger { get; } = new SolverLogger(name);
         public string Name => name;
         public INodalLoadDistributor NodalLoadDistributor => stiffnessDistribution;
+        public ISubdomain Subdomain { get; }
 
+        private string Header => $"Process {procs.OwnRank}, {this.GetType().Name}: ";
 
-        public IMatrix BuildGlobalMatrices(IElementMatrixProvider elementMatrixProvider)
+        public IMatrix BuildGlobalMatrix(IElementMatrixProvider elementMatrixProvider)
         {
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            IMatrix Kff = matrixManager.BuildGlobalMatrix(subdomain.FreeDofOrdering, subdomain.EnumerateElements(), 
-                elementMatrixProvider);
-            linearSystem.Matrix = Kff;
+            HandleMatrixWillBeSet(); //TODO: temporary solution to avoid this getting called once for each linear system/observable
+
+            var watch = new Stopwatch();
+            watch.Start();
+
+            IMatrix Kff;
+            if (Subdomain.StiffnessModified)
+            {
+                Debug.WriteLine($"Process {procs.OwnRank}, {this.GetType().Name}:" 
+                    + $" Assembling the free-free stiffness matrix of subdomain {procs.OwnSubdomainID}");
+                Kff = matrixManager.BuildGlobalMatrix(Subdomain.FreeDofOrdering, Subdomain.EnumerateElements(),
+                    elementMatrixProvider);
+                matrixManager.LinearSystem.Matrix = Kff; //TODO: This should be done by the solver not the analyzer. This method should return void.
+            }
+            else
+            {
+                Kff = (IMatrix)(matrixManager.LinearSystem.Matrix); //TODO: remove the cast
+            }
+
+            watch.Stop();
+            if (procs.IsMasterProcess) Logger.LogTaskDuration("Matrix assembly", watch.ElapsedMilliseconds);
+
+            this.Initialize(); //TODO: Should this be called by the analyzer? Probably not, since it must be called before DistributeBoundaryLoads().
             return Kff;
         }
 
@@ -105,32 +126,91 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         public void Initialize()
         {
-            throw new NotImplementedException();
+            //var watch = new Stopwatch();
+            //watch.Start();
+
+            //// Identify corner nodes
+            //CornerNodesSubdomain = cornerNodeSelection.GetCornerNodesOfSubdomain(Subdomain); // This may cause a change in connectivity TODO: Query ICornerNodeSelectionMpi and act accordingly
+            //if (procs.IsMasterProcess)
+            //{
+            //    cornerNodesGlobal_master = new HashSet<INode>();
+            //    foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            //    {
+            //        cornerNodesGlobal_master.UnionWith(cornerNodeSelection.GetCornerNodesOfSubdomain(subdomain));
+            //    }
+            //}
+
+            //// Define boundary / internal dofs
+            //dofSeparator.DefineGlobalBoundaryDofs(cornerNodesGlobal_master);
+            //if (Subdomain.ConnectivityModified)
+            //{
+            //    //TODO: should I cache this somewhere?
+            //    //TODO: should I use subdomain.Nodes.Except(cornerNodes) instead?
+            //    IEnumerable<INode> remainderAndConstrainedNodes =
+            //        Subdomain.EnumerateNodes().Where(node => !CornerNodesSubdomain.Contains(node));
+
+            //    Debug.WriteLine(Header + $"Separating and ordering corner-remainder dofs of subdomain {procs.OwnSubdomainID}");
+            //    dofSeparator.SeparateCornerRemainderDofs(CornerNodesSubdomain);
+
+            //    Debug.WriteLine(Header + $"Reordering internal dofs of subdomain {procs.OwnSubdomainID}.");
+            //    matrixManager.ReorderRemainderDofs(dofSeparator, Subdomain); //TODO: DofSeparator and DofSeparatorMpi should have the same interface
+
+            //    Debug.WriteLine(Header + $"Separating and ordering boundary-internal dofs of subdomain {procs.OwnSubdomainID}");
+            //    dofSeparator.SeparateBoundaryInternalDofs(CornerNodesSubdomain);
+            //}
+
+            //// This must be called after determining the corner dofs of each subdomain
+            ////TODO: Perhaps the corner dofs of each subdomain should be handled in dofSeparator.DefineGlobalCornerDofs();
+            //coarseProblemSolver.ReorderCornerDofs(dofSeparator);
+            //dofSeparator.CalcCornerMappingMatrices();
+
+            ////TODO: B matrices could also be reused in some cases
+            //// Define lagrange multipliers and boolean matrices. 
+            //this.lagrangeEnumerator = new FetiDPLagrangeMultipliersEnumeratorMpi(procs, model, crosspointStrategy, dofSeparator);
+            //lagrangeEnumerator.CalcBooleanMatrices();
+
+            //// Log dof statistics
+            //watch.Stop();
+            //if (procs.IsMasterProcess)
+            //{
+            //    Logger.LogTaskDuration("Dof ordering", watch.ElapsedMilliseconds);
+            //    Logger.LogNumDofs("Expanded domain dofs", -1); //TODO: There must be MPI communication to fill in this data, which is pretty useless. Remove it.
+            //    Logger.LogNumDofs("Lagrange multipliers", lagrangeEnumerator.NumLagrangeMultipliers);
+            //    if (procs.IsMasterProcess) Logger.LogNumDofs("Corner dofs", dofSeparator.GlobalDofs.NumGlobalCornerDofs);
+            //}
+
+            //// Use the newly created stiffnesses to determine the stiffness distribution between subdomains.
+            ////TODO: Should this be done here or before factorizing by checking that isMatrixModified? 
+            //stiffnessDistribution.Update();
+            //subdomainGlobalMapping = new FetiDPSubdomainGlobalMappingMpi(model, dofSeparator, stiffnessDistribution);
         }
 
         public void OrderDofs(bool alsoOrderConstrainedDofs)
         {
+            var watch = new Stopwatch();
+            watch.Start();
+
+            // Order dofs
+            if (Subdomain.ConnectivityModified) matrixManager.HandleDofOrderingWillBeModified(); //TODO: Not sure about this
+
             // This should not create subdomain-global mappings which require MPI communication
             //TODO: What about subdomain-global mappings, especially for boundary dofs? Who should create them? 
             dofOrderer.OrderFreeDofs(model); 
 
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            if (alsoOrderConstrainedDofs) subdomain.ConstrainedDofOrdering = dofOrderer.OrderConstrainedDofs(subdomain);
+            if (alsoOrderConstrainedDofs) Subdomain.ConstrainedDofOrdering = dofOrderer.OrderConstrainedDofs(Subdomain);
+
+            // Log dof statistics
+            watch.Stop();
+            Logger.LogTaskDuration("Dof ordering", watch.ElapsedMilliseconds);
+            Logger.LogNumDofs("Global dofs", model.GlobalDofOrdering.NumGlobalFreeDofs);
         }
 
         public void PreventFromOverwrittingSystemMatrices() => factorizeInPlace = false;
 
-        public void ScatterSubdomainData()
-        {
-            model.ScatterSubdomains();
-            matrixManager = matrixManagerFactory.CreateMatricesManager(model.GetSubdomain(procs.OwnSubdomainID));
-            linearSystem = matrixManager.LinearSystem;
-        }
-
         public void Solve()
         {
             // Print the trace of each stiffness matrix
-            double trace = Trace(linearSystem.Matrix);
+            double trace = Trace(LinearSystem.Matrix);
             Console.WriteLine($"(process {procs.OwnRank}) Subdomain {procs.OwnSubdomainID}: trace(stiffnessMatrix) = {trace}");
         }
 
