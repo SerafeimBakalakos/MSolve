@@ -10,11 +10,9 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 //TODO: This should work for both FETI-1 and FETI-DP
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution 
 {
-    public interface IStiffnessDistributionMpi
+    public interface IStiffnessDistributionMpi : INodalLoadDistributor
     {
         double[] CalcBoundaryDofCoefficients(ISubdomain subdomain);
-
-        Dictionary<int, double> CalcBoundaryDofCoefficients(INode node, IDofType dofType); //TODO: Better return Dictionary<ISubdomain, double>
 
         IMappingMatrix CalcBoundaryPreconditioningSignedBooleanMatrices(ILagrangeMultipliersEnumerator lagrangeEnumerator, 
             ISubdomain subdomain, SignedBooleanMatrixColMajor boundarySignedBooleanMatrices); //TODO: LagrangeEnumerator is only useful for heterogeneous. It should be injected in that contructor.

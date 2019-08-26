@@ -81,7 +81,7 @@ namespace ISAAR.MSolve.SamplesConsole.Parallel
 
                 // Setup solvers, analyzers
                 var matrixManagers = new SkylineFetiDPSubdomainMatrixManager.Factory();
-                var solver = new FetiDPSolverMpi(procs, model, matrixManagers);
+                var solver = new FetiDPSolverMpi(procs, model, matrixManagers, true);
                 //var problem = new ProblemStructural(model, null);
                 var provider = new ElementStructuralStiffnessProvider();
                 var childAnalyzer = new LinearAnalyzerMpi(model, solver, null);

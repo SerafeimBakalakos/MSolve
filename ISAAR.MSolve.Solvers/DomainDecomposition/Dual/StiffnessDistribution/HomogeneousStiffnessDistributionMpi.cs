@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ISAAR.MSolve.Discretization.Exceptions;
-using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
@@ -12,18 +11,19 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
-    public class HomogeneousStiffnessDistributionMpi : IStiffnessDistributionMpi
+    public abstract class HomogeneousStiffnessDistributionMpi : IStiffnessDistributionMpi
     {
         private const int multiplicityTag = 0;
+
+        protected readonly ProcessDistribution procs;
+        private readonly FetiDPDofSeparatorMpi dofSeparator;
 
         /// <summary>
         /// Each process stores only the ones corresponding to its subdomain. Master stores all of them.
         /// </summary>
-        private readonly Dictionary<int, double[]> inverseBoundaryDofMultiplicities; 
+        private readonly Dictionary<int, double[]> inverseBoundaryDofMultiplicities;
 
-        private readonly FetiDPDofSeparatorMpi dofSeparator;
         private readonly IModel model;
-        private readonly ProcessDistribution procs;
 
         public HomogeneousStiffnessDistributionMpi(ProcessDistribution processDistribution, IModel model,
             FetiDPDofSeparatorMpi dofSeparator)
@@ -36,9 +36,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 
         public double[] CalcBoundaryDofCoefficients(ISubdomain subdomain) => inverseBoundaryDofMultiplicities[subdomain.ID];
 
-        public Dictionary<int, double> CalcBoundaryDofCoefficients(INode node, IDofType dofType)
-            => HomogeneousStiffnessDistributionUtilities.CalcBoundaryDofCoefficients(node, dofType);
-
         public IMappingMatrix CalcBoundaryPreconditioningSignedBooleanMatrices(ILagrangeMultipliersEnumerator lagrangeEnumerator,
             ISubdomain subdomain, SignedBooleanMatrixColMajor boundarySignedBooleanMatrix)
         {
@@ -49,8 +46,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             }
             else
             {
-                throw new MpiException(
-                    $"Process {procs.OwnRank}: Only defined for master process (rank = {procs.MasterProcess})");
+                throw new MpiException($"Process {procs.OwnRank}: This method cannot be called for subdomain {subdomain.ID}");
             }
         }
 
@@ -107,5 +103,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             for (int i = 0; i < multiplicities.Length; ++i) inverse[i] = 1.0 / multiplicities[i];
             return inverse;
         }
+
+        public abstract double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load);
     }
 }

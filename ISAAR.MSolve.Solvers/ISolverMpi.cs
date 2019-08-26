@@ -35,6 +35,11 @@ namespace ISAAR.MSolve.Solvers
         /// </summary>
         string Name { get; }
 
+        //TODO: This should be defined only for DDM solvers. Alternatively, it would be nice if the solver exposed its 
+        //      INodalLoadAssembler directly, but then the interface could not be defined in Analyzers project. Not sure where 
+        //      it belongs to.
+        INodalLoadDistributor NodalLoadDistributor { get; }
+
         /// <summary>
         /// Assembles the matrix that corresponds to the free freedom degrees of each whole subdomain from the matrices of its 
         /// elements.
@@ -56,15 +61,6 @@ namespace ISAAR.MSolve.Solvers
         ///// </param>
         //Dictionary<int, (IMatrix matrixFreeFree, IMatrixView matrixFreeConstr, IMatrixView matrixConstrFree,
         //    IMatrixView matrixConstrConstr)> BuildGlobalSubmatrices(IElementMatrixProvider elementMatrixProvider);
-
-        ///// <summary>
-        ///// Distributes the nodal loads defined by the preprocessor to each subdomain.
-        ///// </summary>
-        ///// <param name="globalNodalLoads">
-        ///// A collection of loads applied to nodes along certain freedom degrees. These are usually defined by the pre-processor 
-        ///// or other entities of the analysis.
-        ///// </param>
-        //Dictionary<int, SparseVector> DistributeNodalLoads(Table<INode, IDofType, double> globalNodalLoads);
 
         /// <summary>
         /// Initializes the state of this <see cref="ISolver"/> instance. This needs to be called only once, since it  

@@ -5,6 +5,8 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessDistribution;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
@@ -18,10 +20,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     {
         internal const string name = "FETI-DP Solver"; // for error messages
         private readonly DofOrdererMpi dofOrderer;
+        private readonly FetiDPDofSeparatorMpi dofSeparator;
         private readonly IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory;
         private readonly IModelMpi model;
+        private readonly bool problemIsHomogeneous;
         private readonly ProcessDistribution procs;
-        private readonly int rank;
+        private readonly IStiffnessDistributionMpi stiffnessDistribution;
+
 
         private bool factorizeInPlace = true;
         private ISingleSubdomainLinearSystem linearSystem;
@@ -29,12 +34,22 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         //private ISubdomain subdomain;
 
         public FetiDPSolverMpi(ProcessDistribution processDistribution, IModelMpi model, 
-            IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory)
+            IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory, bool problemIsHomogeneous)
         {
             this.procs = processDistribution;
             this.model = model;
             this.matrixManagerFactory = matrixManagerFactory;
+
             this.dofOrderer = new DofOrdererMpi(processDistribution, new NodeMajorDofOrderingStrategy(), new NullReordering());
+            this.dofSeparator = new FetiDPDofSeparatorMpi(procs, model);
+
+            // Homogeneous/heterogeneous problems
+            this.problemIsHomogeneous = problemIsHomogeneous;
+            if (problemIsHomogeneous)
+            {
+                this.stiffnessDistribution = new FetiDPHomogeneousStiffnessDistributionMpi(processDistribution, model, dofSeparator);
+            }
+            else throw new NotImplementedException();
         }
 
         //TODO: I do not like these dependencies. The analyzer should not have to know that it must call ScatterSubdomainData() 
@@ -71,6 +86,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         public SolverLogger Logger { get; } = new SolverLogger(name);
         public string Name => name;
+        public INodalLoadDistributor NodalLoadDistributor => stiffnessDistribution;
+
 
         public IMatrix BuildGlobalMatrices(IElementMatrixProvider elementMatrixProvider)
         {

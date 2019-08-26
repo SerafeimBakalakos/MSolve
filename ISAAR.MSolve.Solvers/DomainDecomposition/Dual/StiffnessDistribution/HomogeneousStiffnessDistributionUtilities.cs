@@ -6,22 +6,12 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 //TODO: Perhaps the code here should be exposed as static utility methods, not through inheritence
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
     internal static class HomogeneousStiffnessDistributionUtilities
     {
-        internal static Dictionary<int, double> CalcBoundaryDofCoefficients(INode node, IDofType dofType)
-        {
-            var coeffs = new Dictionary<int, double>();
-            double inverseMultiplicity = 1.0 / node.Multiplicity;
-            foreach (int subdomainID in node.SubdomainsDictionary.Keys) coeffs[subdomainID] = inverseMultiplicity;
-            return coeffs;
-        }
-
         internal static (int[] multiplicities, double[] inverseMultiplicities) CalcBoundaryDofMultiplicities(
             ISubdomain subdomain, (INode node, IDofType dofType)[] boundaryDofs)
         {
