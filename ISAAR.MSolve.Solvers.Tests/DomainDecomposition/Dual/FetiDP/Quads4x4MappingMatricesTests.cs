@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
@@ -9,6 +10,7 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
+using ISAAR.MSolve.LinearAlgebra.Output;
 using ISAAR.MSolve.Solvers.Direct;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
@@ -376,6 +378,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
                 var procs = new ProcessDistribution(Communicator.world, master, new int[] { 0, 1, 2, 3 });
                 //Console.WriteLine($"(process {procs.OwnRank}) Hello World!"); // Run this to check if MPI works correctly.
 
+                // Output
+                string outputDirectory = @"C:\Users\Serafeim\Desktop\MPI\Tests";
+                string outputFile = outputDirectory + $"\\MappingMatricesTests_process{procs.OwnRank}.txt";
+                //File.Create(outputFile);
+                //var writer = new FullMatrixWriter();
+
                 // Create the model in master process
                 var model = new ModelMpi(procs, CreateModel);
                 model.ConnectDataStructures();
@@ -411,15 +419,16 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
                 // Check dof separation 
                 (int[] cornerDofs, int[] remainderDofs, int[] boundaryRemainderDofs, int[] internalRemainderDofs) =
                     GetExpectedDofSeparation(subdomain.ID);
-                Utilities.CheckEqual(cornerDofs, dofSeparator.GetCornerDofIndices(subdomain));
-                Utilities.CheckEqual(remainderDofs, dofSeparator.GetRemainderDofIndices(subdomain));
-                Utilities.CheckEqual(boundaryRemainderDofs, dofSeparator.GetBoundaryDofIndices(subdomain));
-                Utilities.CheckEqual(internalRemainderDofs, dofSeparator.GetInternalDofIndices(subdomain));
+                Utilities.CheckEqualMpi(procs, cornerDofs, dofSeparator.GetCornerDofIndices(subdomain));
+                Utilities.CheckEqualMpi(procs, remainderDofs, dofSeparator.GetRemainderDofIndices(subdomain));
+                Utilities.CheckEqualMpi(procs, boundaryRemainderDofs, dofSeparator.GetBoundaryDofIndices(subdomain));
+                Utilities.CheckEqualMpi(procs, internalRemainderDofs, dofSeparator.GetInternalDofIndices(subdomain));
 
                 // Check corner boolean matrices
                 UnsignedBooleanMatrix Lc = dofSeparator.GetCornerBooleanMatrix(subdomain);
                 Matrix expectedLc = GetExpectedCornerBooleanMatrix(subdomain.ID);
                 double tolerance = 1E-13;
+                //writer.WriteToFile(Lc, outputFile, true);
                 Assert.True(expectedLc.Equals(Lc, tolerance));
                 if (procs.IsMasterProcess)
                 {
@@ -433,7 +442,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
                     }
                 }
 
-                // Create and check lagrange boolean matrices
+                // Check lagrange boolean matrices
                 var crosspointStrategy = new FullyRedundantConstraints();
                 var lagrangeEnumerator = new FetiDPLagrangeMultipliersEnumeratorMpi(procs, model, crosspointStrategy, dofSeparator);
                 lagrangeEnumerator.CalcBooleanMatrices();

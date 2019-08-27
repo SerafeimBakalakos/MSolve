@@ -232,7 +232,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
                 matricesBc = new UnsignedBooleanMatrix[procs.Communicator.Size];
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    matricesBc[p] = subdomainCornerBooleanMatrices_master[processSubdomain];
+                    matricesBc[p] = subdomainCornerBooleanMatrices_master[model.GetSubdomain(p)];
                 }
             }
 

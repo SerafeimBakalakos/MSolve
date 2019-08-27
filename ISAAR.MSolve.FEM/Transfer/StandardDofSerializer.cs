@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.FEM.Transfer
 
         public IDofType Deserialize(int dofID)
         {
-            Debug.Assert((dofID > 0) && (dofID < ids2Dofs.Length), 
+            Debug.Assert((dofID >= 0) && (dofID < ids2Dofs.Length), 
                 $"Illegal dof id = {dofID}. Must belong to [0, {ids2Dofs.Length})");
             return ids2Dofs[dofID];
         }
