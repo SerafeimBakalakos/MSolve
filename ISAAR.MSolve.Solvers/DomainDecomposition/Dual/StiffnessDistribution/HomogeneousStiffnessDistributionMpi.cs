@@ -7,6 +7,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
@@ -53,7 +54,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             {
                 (multiplicities, this.inverseBoundaryDofMultiplicities[subdomain.ID]) =
                     HomogeneousStiffnessDistributionUtilities.CalcBoundaryDofMultiplicities(
-                        subdomain, dofSeparator.SubdomainDofs.BoundaryDofs);
+                        subdomain, dofSeparator.GetBoundaryDofs(subdomain));
             }
 
             // Gather all boundary dof multiplicites in master

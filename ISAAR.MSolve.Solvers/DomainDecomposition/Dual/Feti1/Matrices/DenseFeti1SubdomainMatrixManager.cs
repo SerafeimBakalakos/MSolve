@@ -8,6 +8,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.Assemblers;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.DofSeparation;
 using ISAAR.MSolve.Solvers.LinearSystems;
 
 //TODO: Add state checking for all the managed matrices. A state machine (using State pattern) should help.

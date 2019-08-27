@@ -47,7 +47,7 @@ namespace ISAAR.MSolve.Solvers
         /// <param name="elementMatrixProvider">
         /// Determines the matrix calculated for each element (e.g. stiffness, mass, etc.)
         /// </param>
-        IMatrix BuildGlobalMatrices(IElementMatrixProvider elementMatrixProvider);
+        IMatrix BuildGlobalMatrix(IElementMatrixProvider elementMatrixProvider);
 
         ///// <summary>
         ///// Assembles the matrices that correspond to the free and constrained freedom degrees of each whole subdomain 
@@ -102,7 +102,5 @@ namespace ISAAR.MSolve.Solvers
         /// Solves the linear systems.
         /// </summary>
         void Solve();
-
-        void ScatterSubdomainData();
     }
 }

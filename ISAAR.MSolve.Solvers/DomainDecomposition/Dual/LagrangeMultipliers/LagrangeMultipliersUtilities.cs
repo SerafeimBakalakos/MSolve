@@ -7,6 +7,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 
 //TODO: Rename the "remainder" in most method arguments. If anything it should be "internal". Also avoid passing the entry count.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
@@ -188,7 +189,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
             return (boundaryNodeData, numLagrangeMultipliers);
         }
 
-        public static List<LagrangeMultiplier> DefineLagrangeMultipliers(FetiDPDofSeparatorGlobalMpi dofSeparator,
+        public static List<LagrangeMultiplier> DefineLagrangeMultipliers(IFetiDPDofSeparator dofSeparator,
             ICrosspointStrategy crosspointStrategy)
         {
             var lagranges = new List<LagrangeMultiplier>();

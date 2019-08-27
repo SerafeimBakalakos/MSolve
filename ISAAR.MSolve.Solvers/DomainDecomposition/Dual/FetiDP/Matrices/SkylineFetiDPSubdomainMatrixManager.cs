@@ -10,6 +10,7 @@ using ISAAR.MSolve.LinearAlgebra.SchurComplements;
 using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.Assemblers;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
@@ -391,9 +392,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
                 int[] remainderDofs = dofSeparator.RemainderDofIndices[s];
                 var pattern = linearSystem.Matrix.GetSubmatrixSymmetricPattern(remainderDofs);
                 (int[] permutation, bool oldToNew) = reordering.FindPermutation(pattern);
-                int[] newRemainderDofs = ReorderingUtilities.ReorderKeysOfDofIndicesMap(remainderDofs, permutation, oldToNew);
+
 
                 // What if the dof separator gets added other state that needs to be updated?
+                int[] newRemainderDofs = ReorderingUtilities.ReorderKeysOfDofIndicesMap(remainderDofs, permutation, oldToNew);
                 dofSeparator.RemainderDofIndices[s] = newRemainderDofs;
                 dofSeparator.RemainderDofOrderings[s].Reorder(permutation, oldToNew);
             }

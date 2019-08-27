@@ -26,7 +26,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     public class FetiDPSolverMpi : ISolverMpi
     {
         internal const string name = "FETI-DP Solver"; // for error messages
-        private readonly ICornerNodeSelectionMpi cornerNodeSelection;
+        private readonly ICornerNodeSelection cornerNodeSelection;
         private readonly ICrosspointStrategy crosspointStrategy = new FullyRedundantConstraints();
         private readonly DofOrdererMpi dofOrderer;
         private readonly FetiDPDofSeparatorMpi dofSeparator;
@@ -42,7 +42,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         //private ISubdomain subdomain;
 
         public FetiDPSolverMpi(ProcessDistribution processDistribution, IModelMpi model, 
-            ICornerNodeSelectionMpi cornerNodeSelection, IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory, 
+            ICornerNodeSelection cornerNodeSelection, IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory, 
             bool problemIsHomogeneous)
         {
             this.procs = processDistribution;
@@ -131,38 +131,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             //// Identify corner nodes
             //CornerNodesSubdomain = cornerNodeSelection.GetCornerNodesOfSubdomain(Subdomain); // This may cause a change in connectivity TODO: Query ICornerNodeSelectionMpi and act accordingly
-            //if (procs.IsMasterProcess)
-            //{
-            //    cornerNodesGlobal_master = new HashSet<INode>();
-            //    foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-            //    {
-            //        cornerNodesGlobal_master.UnionWith(cornerNodeSelection.GetCornerNodesOfSubdomain(subdomain));
-            //    }
-            //}
 
-            //// Define boundary / internal dofs
-            //dofSeparator.DefineGlobalBoundaryDofs(cornerNodesGlobal_master);
-            //if (Subdomain.ConnectivityModified)
-            //{
-            //    //TODO: should I cache this somewhere?
-            //    //TODO: should I use subdomain.Nodes.Except(cornerNodes) instead?
-            //    IEnumerable<INode> remainderAndConstrainedNodes =
-            //        Subdomain.EnumerateNodes().Where(node => !CornerNodesSubdomain.Contains(node));
-
-            //    Debug.WriteLine(Header + $"Separating and ordering corner-remainder dofs of subdomain {procs.OwnSubdomainID}");
-            //    dofSeparator.SeparateCornerRemainderDofs(CornerNodesSubdomain);
-
-            //    Debug.WriteLine(Header + $"Reordering internal dofs of subdomain {procs.OwnSubdomainID}.");
-            //    matrixManager.ReorderRemainderDofs(dofSeparator, Subdomain); //TODO: DofSeparator and DofSeparatorMpi should have the same interface
-
-            //    Debug.WriteLine(Header + $"Separating and ordering boundary-internal dofs of subdomain {procs.OwnSubdomainID}");
-            //    dofSeparator.SeparateBoundaryInternalDofs(CornerNodesSubdomain);
-            //}
-
-            //// This must be called after determining the corner dofs of each subdomain
-            ////TODO: Perhaps the corner dofs of each subdomain should be handled in dofSeparator.DefineGlobalCornerDofs();
-            //coarseProblemSolver.ReorderCornerDofs(dofSeparator);
-            //dofSeparator.CalcCornerMappingMatrices();
+            //// Define the various dof groups
+            //dofSeparator.SeparateDofs(cornerNodeSelection, matrixManager);
 
             ////TODO: B matrices could also be reused in some cases
             //// Define lagrange multipliers and boolean matrices. 
@@ -176,7 +147,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             //    Logger.LogTaskDuration("Dof ordering", watch.ElapsedMilliseconds);
             //    Logger.LogNumDofs("Expanded domain dofs", -1); //TODO: There must be MPI communication to fill in this data, which is pretty useless. Remove it.
             //    Logger.LogNumDofs("Lagrange multipliers", lagrangeEnumerator.NumLagrangeMultipliers);
-            //    if (procs.IsMasterProcess) Logger.LogNumDofs("Corner dofs", dofSeparator.GlobalDofs.NumGlobalCornerDofs);
+            //    if (procs.IsMasterProcess) Logger.LogNumDofs("Corner dofs", dofSeparator.globalDofs.NumGlobalCornerDofs);
             //}
 
             //// Use the newly created stiffnesses to determine the stiffness distribution between subdomains.

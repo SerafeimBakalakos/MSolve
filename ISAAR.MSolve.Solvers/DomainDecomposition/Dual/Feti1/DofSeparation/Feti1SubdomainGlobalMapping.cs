@@ -14,7 +14,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 //TODO: These methods overlap with IGlobalDofOrdering. Perhaps they should be moved there, while the implementing classes remain 
 //      here as strategies.
 //TODO: Should the vectors be Vector instead of IVectorView?
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.DofSeparation
 {
     public class Feti1SubdomainGlobalMapping
     {

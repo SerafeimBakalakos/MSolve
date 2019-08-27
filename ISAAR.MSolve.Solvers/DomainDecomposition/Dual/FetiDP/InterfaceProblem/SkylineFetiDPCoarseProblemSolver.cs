@@ -10,6 +10,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
@@ -70,7 +71,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             for (int s = 0; s < model.NumSubdomains; ++s) 
             {
                 // Treat each subdomain as a superelement with only its corner nodes.
-                var localCornerDofOrdering = dofSeparator.SubdomainCornerDofOrderings[s];
+                DofTable localCornerDofOrdering = dofSeparator.SubdomainCornerDofOrderings[s];
                 int numLocalCornerDofs = localCornerDofOrdering.EntryCount;
                 var subdomainToGlobalDofs = new int[numLocalCornerDofs];
                 foreach ((INode node, IDofType dofType, int localIdx) in localCornerDofOrdering)

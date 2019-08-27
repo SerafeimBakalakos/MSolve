@@ -4,6 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 
 //TODO: During initialization, the solver and its verious strategies should inform IFetiDPSubdomainMatrixManager what matrices
 //      will be necessary. IFetiDPSubdomainMatrixManager should then determine the correct order they must be created in and

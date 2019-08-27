@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+//TODO: Replace this with DofPermutation.
 namespace ISAAR.MSolve.Solvers.Ordering.Reordering
 {
     public static class ReorderingUtilities

@@ -13,6 +13,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Assemblers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Solvers.Ordering;
@@ -80,8 +81,9 @@ namespace ISAAR.MSolve.SamplesConsole.Parallel
                 model.ConnectDataStructures();
 
                 // Setup solvers, analyzers
+                ICornerNodeSelection cornerNodes = null;
                 var matrixManagers = new SkylineFetiDPSubdomainMatrixManager.Factory();
-                var solver = new FetiDPSolverMpi(procs, model, matrixManagers, true);
+                var solver = new FetiDPSolverMpi(procs, model, cornerNodes, matrixManagers, true);
                 //var problem = new ProblemStructural(model, null);
                 var provider = new ElementStructuralStiffnessProvider();
                 var childAnalyzer = new LinearAnalyzerMpi(model, solver, null);

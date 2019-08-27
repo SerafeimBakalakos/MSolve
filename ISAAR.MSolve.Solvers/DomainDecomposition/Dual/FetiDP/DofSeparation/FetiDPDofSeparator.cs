@@ -13,7 +13,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
 //      of all free dofs of each subdomain
 //TODO: Decide which of these data structures will be stored and which will be used ONCE to create all required mapping matrices.
 //TODO: Perhaps the corner dof logic should be moved to another class.
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 {
     public class FetiDPDofSeparator : IDofSeparator
     {

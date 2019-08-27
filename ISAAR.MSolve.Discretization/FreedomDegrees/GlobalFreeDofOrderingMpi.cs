@@ -132,7 +132,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
                     else
                     {
                         subdomainDofOrderings[sub.ID] = new SubdomainFreeDofOrderingCaching(
-                            transfer.NumSubdomainDofs_master[sub.ID], transfer.SubdomainDofOrderings_master[sub.ID]);
+                            transfer.NumSubdomainDofs_master[sub], transfer.SubdomainDofOrderings_master[sub]);
                     }
                 }
             }

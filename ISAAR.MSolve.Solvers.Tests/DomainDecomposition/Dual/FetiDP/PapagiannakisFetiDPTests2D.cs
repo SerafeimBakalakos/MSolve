@@ -136,7 +136,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Corner nodes
             double meshTol = 1E-6;
-            var cornerNodesOfEachSubdomain = new Dictionary<int, HashSet<INode>>();
+            var cornerNodesOfEachSubdomain = new Dictionary<ISubdomain, HashSet<INode>>();
             foreach (Subdomain subdomain in multiSubdomainModel.SubdomainsDictionary.Values)
             {
                 subdomain.DefineNodesFromElements(); //TODO: This will also be called by the analyzer.
@@ -149,7 +149,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
                     if ((Math.Abs(node.X - domainLengthX) <= meshTol) && (Math.Abs(node.Y - domainLengthY) <= meshTol)) continue;
                     cornerNodes.Add(node);
                 }
-                cornerNodesOfEachSubdomain[subdomain.ID] = cornerNodes;
+                cornerNodesOfEachSubdomain[subdomain] = cornerNodes;
             }
 
             // Solver

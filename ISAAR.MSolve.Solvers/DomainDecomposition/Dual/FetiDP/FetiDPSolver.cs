@@ -10,6 +10,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.Commons;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessDistribution;
@@ -104,7 +105,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         }
 
         public Dictionary<int, HashSet<INode>> CornerNodesOfSubdomains { get; private set; }
-        public HashSet<INode> CornerNodesGlobal { get; private set; }
+        public HashSet<INode> CornerNodesGlobal => cornerNodeSelection.GlobalCornerNodes;
         public IReadOnlyDictionary<int, ILinearSystem> LinearSystems { get; }
         public SolverLogger Logger { get; } = new SolverLogger(name);
         public string Name => name;
@@ -204,27 +205,24 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             watch.Start();
 
             // Identify corner nodes
-            CornerNodesOfSubdomains = cornerNodeSelection.SelectCornerNodesOfSubdomains(); //TODO: Could this cause change in connectivity?
-            CornerNodesGlobal = new HashSet<INode>();
-            foreach (IEnumerable<INode> subdomainNodes in CornerNodesOfSubdomains.Values)
+            CornerNodesOfSubdomains = new Dictionary<int, HashSet<INode>>(); //TODO: Could this cause change in connectivity?
             {
-                CornerNodesGlobal.UnionWith(subdomainNodes);
+                foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+                {
+                    int s = subdomain.ID;
+                    CornerNodesOfSubdomains[s] = cornerNodeSelection.GetCornerNodesOfSubdomain(subdomain);
+                }
             }
 
             // Define boundary / internal dofs
-            dofSeparator.DefineGlobalBoundaryDofs(model, CornerNodesGlobal);
-            dofSeparator.DefineGlobalCornerDofs(model, CornerNodesGlobal);
+            dofSeparator.DefineGlobalBoundaryDofs(model, cornerNodeSelection.GlobalCornerNodes);
+            dofSeparator.DefineGlobalCornerDofs(model, cornerNodeSelection.GlobalCornerNodes);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int s = subdomain.ID;
                 HashSet<INode> cornerNodes = CornerNodesOfSubdomains[s];
                 if (subdomain.ConnectivityModified)
                 {
-                    //TODO: should I cache this somewhere?
-                    //TODO: should I use subdomain.Nodes.Except(cornerNodes) instead?
-                    IEnumerable<INode> remainderAndConstrainedNodes = 
-                        subdomain.EnumerateNodes().Where(node => !cornerNodes.Contains(node));
-
                     Debug.WriteLine($"{this.GetType().Name}: Separating and ordering corner-remainder dofs of subdomain {s}");
                     dofSeparator.SeparateCornerRemainderDofs(subdomain, cornerNodes);
 

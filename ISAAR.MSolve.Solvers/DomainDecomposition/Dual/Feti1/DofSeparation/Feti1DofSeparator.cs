@@ -9,7 +9,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
 //      depending on the DD method the dof categories may be different (e.g. FETI-1: internal/boundary, 
 //      FETI-DP: corner/boundary/remainder)
 //TODO: Not sure about having the indexing data of all subdomains in the same class.
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.DofSeparation
 {
     public class Feti1DofSeparator : IDofSeparator
     {

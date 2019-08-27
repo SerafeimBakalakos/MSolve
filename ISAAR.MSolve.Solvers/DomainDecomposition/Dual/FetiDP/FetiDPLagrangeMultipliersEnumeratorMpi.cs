@@ -7,6 +7,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using MPI;
     
@@ -20,14 +21,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     public class FetiDPLagrangeMultipliersEnumeratorMpi : ILagrangeMultipliersEnumeratorMpi
     {
         private readonly ICrosspointStrategy crosspointStrategy;
-        private readonly FetiDPDofSeparatorMpi dofSeparator;
+        private readonly IFetiDPDofSeparator dofSeparator;
         private readonly LagrangeMultiplierSerializer lagrangeSerializer;
         private readonly IModel model;
         private readonly ProcessDistribution procs;
         private LagrangeMultiplier[] lagrangeMultipliers_master;
 
         public FetiDPLagrangeMultipliersEnumeratorMpi(ProcessDistribution processDistribution, IModel model, 
-            ICrosspointStrategy crosspointStrategy, FetiDPDofSeparatorMpi dofSeparator)
+            ICrosspointStrategy crosspointStrategy, IFetiDPDofSeparator dofSeparator)
         {
             this.procs = processDistribution;
             this.model = model;
@@ -62,7 +63,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             if (procs.IsMasterProcess)
             {
                 lagrangeMultipliers_master = LagrangeMultipliersUtilities.DefineLagrangeMultipliers(
-                    dofSeparator.GlobalDofs, crosspointStrategy).ToArray();
+                    dofSeparator, crosspointStrategy).ToArray();
                 NumLagrangeMultipliers = lagrangeMultipliers_master.Length;
                 serializedLagranges = lagrangeSerializer.Serialize(lagrangeMultipliers_master);
             }
@@ -70,8 +71,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             // Deserialize the lagrange multipliers in other processes and calculate the boolean matrices
             ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            int numRemainderDofs = dofSeparator.SubdomainDofs.RemainderDofIndices.Length;
-            DofTable remainderDofOrdering = dofSeparator.SubdomainDofs.RemainderDofOrdering;
+            int numRemainderDofs = dofSeparator.GetRemainderDofIndices(subdomain).Length;
+            DofTable remainderDofOrdering = dofSeparator.GetRemainderDofOrdering(subdomain);
             if (procs.IsMasterProcess)
             {
                 BooleanMatrix = LagrangeMultipliersUtilities.CalcBooleanMatrix(subdomain,

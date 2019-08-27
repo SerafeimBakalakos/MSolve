@@ -23,8 +23,8 @@ namespace ISAAR.MSolve.Discretization.Transfer.Utilities
             this.procs = processDistribution;
         }
 
-        public Dictionary<int, int> NumSubdomainDofs_master { get; private set; }
-        public Dictionary<int, DofTable> SubdomainDofOrderings_master { get; private set; }
+        public Dictionary<ISubdomain, int> NumSubdomainDofs_master { get; private set; }
+        public Dictionary<ISubdomain, DofTable> SubdomainDofOrderings_master { get; private set; }
 
         public void DefineModelData_master(IEnumerable<ISubdomain> subdomainsToGatherFrom)
         {
@@ -57,14 +57,14 @@ namespace ISAAR.MSolve.Discretization.Transfer.Utilities
                 }
 
                 // After finishing with all comunications deserialize the received items. //TODO: This should be done concurrently with the transfers, by another thread.
-                NumSubdomainDofs_master = new Dictionary<int, int>();
-                SubdomainDofOrderings_master = new Dictionary<int, DofTable>();
+                NumSubdomainDofs_master = new Dictionary<ISubdomain, int>();
+                SubdomainDofOrderings_master = new Dictionary<ISubdomain, DofTable>();
                 foreach (ISubdomain subdomain in subdomainsToGatherFrom_master)
                 {
                     int[] serializedTable = serializedTables[subdomain];
                     //Console.WriteLine($"Process {procs.OwnRank} (master): Started deserializing corner dof ordering of subdomain {subdomain.ID}.");
-                    NumSubdomainDofs_master[subdomain.ID] = tableSerializer.CountEntriesOf(serializedTable);
-                    SubdomainDofOrderings_master[subdomain.ID] = tableSerializer.Deserialize(serializedTable, model.GetNode);
+                    NumSubdomainDofs_master[subdomain] = tableSerializer.CountEntriesOf(serializedTable);
+                    SubdomainDofOrderings_master[subdomain] = tableSerializer.Deserialize(serializedTable, model.GetNode);
                     //Console.WriteLine($"Process {procs.OwnRank} (master): Finished deserializing corner dof ordering of subdomain {subdomain.ID}.");
                     serializedTables.Remove(subdomain); // Free up some temporary memory.
                 }
