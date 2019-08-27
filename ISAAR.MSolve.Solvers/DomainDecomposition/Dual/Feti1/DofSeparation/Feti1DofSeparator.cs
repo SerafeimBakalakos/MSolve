@@ -41,5 +41,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.DofSeparation
             BoundaryDofIndices[s] = boundaryDofIndices;
             BoundaryDofs[s] = boundaryDofConnectivities;
         }
+
+        public int[] GetBoundaryDofIndices(ISubdomain subdomain) => BoundaryDofIndices[subdomain.ID];
+
+        public (INode node, IDofType dofType)[] GetBoundaryDofs(ISubdomain subdomain) => BoundaryDofs[subdomain.ID];
+
+        public int[] GetInternalDofIndices(ISubdomain subdomain) => InternalDofIndices[subdomain.ID];
     }
 }

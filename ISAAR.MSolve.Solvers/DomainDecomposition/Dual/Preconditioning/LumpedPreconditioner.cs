@@ -68,16 +68,17 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
                 IStiffnessDistribution stiffnessDistribution, IDofSeparator dofSeparator, 
                 ILagrangeMultipliersEnumerator lagrangeEnumerator, Dictionary<int, IFetiSubdomainMatrixManager> matrixManagers)
             {
-                int[] subdomainIDs = dofSeparator.BoundaryDofIndices.Keys.ToArray();
-                Dictionary<int, IMappingMatrix> boundaryBooleans = CalcBoundaryPreconditioningBooleanMatrices(
+                int[] subdomainIDs = matrixManagers.Keys.ToArray();
+                Dictionary<int, IMappingMatrix> boundaryBooleans = CalcBoundaryPreconditioningBooleanMatrices(model,
                     stiffnessDistribution, dofSeparator, lagrangeEnumerator);
 
                 foreach (int s in subdomainIDs)
                 {
-                    if (!model.GetSubdomain(s).StiffnessModified) continue;
+                    ISubdomain subdomain = model.GetSubdomain(s);
+                    if (!subdomain.StiffnessModified) continue;
                     Debug.WriteLine($"{typeof(DiagonalDirichletPreconditioner).Name}.{this.GetType().Name}:"
                         + $" Extracting boundary/internal submatrices of subdomain {s} for preconditioning");
-                    int[] boundaryDofs = dofSeparator.BoundaryDofIndices[s];
+                    int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);
                     matrixManagers[s].ExtractKbb(boundaryDofs);
                 }
 

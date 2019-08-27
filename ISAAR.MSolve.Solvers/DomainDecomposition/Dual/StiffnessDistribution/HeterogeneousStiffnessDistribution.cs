@@ -45,8 +45,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             //TODO: Could this be handled when extracting the lumped boundary stiffnesses? That way we can avoid searching
             //      the subdomain in BoundaryDofLumpedStiffness.SubdomainStiffnesses for each dof.
 
-            int[] boundaryDofIndices = dofSeparator.BoundaryDofIndices[subdomain.ID];
-            (INode, IDofType)[] boundaryDofs = dofSeparator.BoundaryDofs[subdomain.ID];
+            int[] boundaryDofIndices = dofSeparator.GetBoundaryDofIndices(subdomain);
+            (INode, IDofType)[] boundaryDofs = dofSeparator.GetBoundaryDofs(subdomain);
             int numBoundaryDofs = boundaryDofIndices.Length;
             var relativeStiffnesses = new double[numBoundaryDofs];
             for (int i = 0; i < boundaryDofIndices.Length; ++i)
@@ -135,7 +135,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             if (subdomain.StiffnessModified)
             {
                 Debug.WriteLine($"{this.GetType().Name}: Calculating inv(diag(Kbb)) of subomain {subdomain.ID}");
-                (INode node, IDofType dofType)[] boundaryDofs = dofSeparator.BoundaryDofs[subdomain.ID];
+                (INode node, IDofType dofType)[] boundaryDofs = dofSeparator.GetBoundaryDofs(subdomain);
                 var invDb = new double[boundaryDofs.Length];
                 for (int i = 0; i < boundaryDofs.Length; ++i)
                 {

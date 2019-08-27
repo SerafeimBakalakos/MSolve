@@ -201,5 +201,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             RemainderDofOrderings[s] = subdomain.FreeDofOrdering.FreeDofs.GetSubtableForNodes(remainderAndConstrainedNodes);
             SubdomainCornerDofOrderings[s] = subdomain.FreeDofOrdering.FreeDofs.GetSubtableForNodes(cornerNodes);
         }
+
+        public int[] GetBoundaryDofIndices(ISubdomain subdomain) => BoundaryDofIndices[subdomain.ID];
+
+        public (INode node, IDofType dofType)[] GetBoundaryDofs(ISubdomain subdomain) => BoundaryDofs[subdomain.ID];
+
+        public int[] GetInternalDofIndices(ISubdomain subdomain) => InternalDofIndices[subdomain.ID];
     }
 }

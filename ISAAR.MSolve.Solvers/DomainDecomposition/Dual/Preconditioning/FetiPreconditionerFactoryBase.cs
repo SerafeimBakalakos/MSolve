@@ -20,14 +20,16 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
             IStiffnessDistribution stiffnessDistribution, IDofSeparator dofSeparator, 
             ILagrangeMultipliersEnumerator lagrangeEnumerator, Dictionary<int, IFetiSubdomainMatrixManager> matrixManagers);
 
-        protected Dictionary<int, IMappingMatrix> CalcBoundaryPreconditioningBooleanMatrices(IStiffnessDistribution stiffnessDistribution,
-            IDofSeparator dofSeparator, ILagrangeMultipliersEnumerator lagrangeEnumerator)
+        protected Dictionary<int, IMappingMatrix> CalcBoundaryPreconditioningBooleanMatrices(IModel model, 
+            IStiffnessDistribution stiffnessDistribution, IDofSeparator dofSeparator, 
+            ILagrangeMultipliersEnumerator lagrangeEnumerator)
         {
             var matricesBb = new Dictionary<int, SignedBooleanMatrixColMajor>();
-            foreach (int s in dofSeparator.BoundaryDofIndices.Keys)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
+                int s = subdomain.ID;
                 SignedBooleanMatrixColMajor B = lagrangeEnumerator.BooleanMatrices[s];
-                SignedBooleanMatrixColMajor Bb = B.GetColumns(dofSeparator.BoundaryDofIndices[s], false);
+                SignedBooleanMatrixColMajor Bb = B.GetColumns(dofSeparator.GetBoundaryDofIndices(subdomain), false);
                 matricesBb[s] = Bb;
             }
             Dictionary<int, IMappingMatrix> matricesBpb = stiffnessDistribution.CalcBoundaryPreconditioningSignedBooleanMatrices(

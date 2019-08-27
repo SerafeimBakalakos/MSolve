@@ -49,14 +49,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 
         public void Update(Dictionary<int, IMatrixView> stiffnessesFreeFree)
         {
-            foreach (var idBoundaryDofs in dofSeparator.BoundaryDofs)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                int s = idBoundaryDofs.Key;
+                int s = subdomain.ID;
                 if (model.GetSubdomain(s).ConnectivityModified)
                 {
                     Debug.WriteLine(
                         $"{this.GetType().Name}: Calculating the inverse multiplicities of the boundary dofs of subdomain {s}");
-                    (INode node, IDofType dofType)[] boundaryDofs = idBoundaryDofs.Value;
+                    (INode node, IDofType dofType)[] boundaryDofs = dofSeparator.GetBoundaryDofs(subdomain);
                     var inverseMultiplicities = new double[boundaryDofs.Length];
                     for (int i = 0; i < boundaryDofs.Length; ++i)
                     {

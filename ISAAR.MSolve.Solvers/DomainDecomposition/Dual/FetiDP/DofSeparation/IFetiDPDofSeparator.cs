@@ -14,7 +14,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 //      have to pass null for global ones and this would be done by yet another if (IsMasterProcess) ...
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 {
-    public interface IFetiDPDofSeparator : IDofSeparator_v2
+    public interface IFetiDPDofSeparator : IDofSeparator
     {
         /// <summary>
         /// Dof ordering for corner dofs of the model: Each (INode, IDofType) pair is associated with the index of that dof into 

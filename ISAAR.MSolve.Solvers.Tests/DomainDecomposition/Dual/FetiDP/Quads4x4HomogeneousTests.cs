@@ -717,7 +717,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             MethodInfo method = preconditionerFactory.GetType().GetMethod("CalcBoundaryPreconditioningBooleanMatrices",
                 BindingFlags.NonPublic | BindingFlags.Instance);
             var Bpbr = (Dictionary<int, IMappingMatrix>)method.Invoke(preconditionerFactory,
-                new object[] { stiffnessDistribution, dofSeparator, lagrangeEnumerator });
+                new object[] { model, stiffnessDistribution, dofSeparator, lagrangeEnumerator });
 
             // Compare the mapping matrices against the expected ones
             double tol = 1E-13;
