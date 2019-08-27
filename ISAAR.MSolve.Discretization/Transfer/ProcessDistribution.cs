@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
+using ISAAR.MSolve.Discretization.Exceptions;
 using ISAAR.MSolve.Discretization.Interfaces;
 using MPI;
 
@@ -34,6 +36,28 @@ namespace ISAAR.MSolve.Discretization.Transfer
         public int MasterProcess { get; }
         public int OwnRank { get; }
         public int OwnSubdomainID { get; }
+
+        [Conditional("DEBUG")]
+        public void CheckProcessIsMaster()
+        {
+            if (!IsMasterProcess) throw new MpiException(
+                $"Process {OwnRank}: Only defined for master process (rank = {MasterProcess})");
+        }
+
+        [Conditional("DEBUG")]
+        public void CheckProcessMatchesSubdomain(int subdomainID)
+        {
+            if (subdomainID != OwnSubdomainID) throw new MpiException(
+                $"Process {OwnRank}: This process does not have access to subdomain {subdomainID}");
+        }
+
+        [Conditional("DEBUG")]
+        public void CheckProcessMatchesSubdomainUnlessMaster(int subdomainID)
+        {
+            if (IsMasterProcess) return;
+            if (subdomainID != OwnSubdomainID) throw new MpiException(
+                $"Process {OwnRank}: This process does not have access to subdomain {subdomainID}");
+        }
 
         public int GetProcessOfSubdomain(int subdomainID) => subdomainsToProcesses[subdomainID];
         public int GetSubdomainIdOfProcess(int processRank) => processesToSubdomains[processRank];

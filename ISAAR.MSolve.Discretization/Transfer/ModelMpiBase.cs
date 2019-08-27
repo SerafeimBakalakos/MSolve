@@ -32,7 +32,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
         {
             get
             {
-                MpiException.CheckProcessIsMaster(procs);
+                procs.CheckProcessIsMaster();
                 return model.Constraints;
             }
         }
@@ -49,7 +49,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
         {
             get
             {
-                MpiException.CheckProcessIsMaster(procs);
+                procs.CheckProcessIsMaster();
                 return model.MassAccelerationHistoryLoads;
             }
         }
@@ -58,7 +58,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
         {
             get
             {
-                MpiException.CheckProcessIsMaster(procs);
+                procs.CheckProcessIsMaster();
                 return model.NumElements;
             }
         }
@@ -67,7 +67,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
         {
             get
             {
-                MpiException.CheckProcessIsMaster(procs);
+                procs.CheckProcessIsMaster();
                 return model.NumNodes;
             }
         }
@@ -76,20 +76,20 @@ namespace ISAAR.MSolve.Discretization.Transfer
         {
             get
             {
-                MpiException.CheckProcessIsMaster(procs);
+                procs.CheckProcessIsMaster();
                 return model.NumSubdomains;
             }
         }
 
         public void ApplyLoads()
         {
-            MpiException.CheckProcessIsMaster(procs);
+            procs.CheckProcessIsMaster();
             model.ApplyLoads();
         }
 
         public void ApplyMassAccelerationHistoryLoads(int timeStep)
         {
-            MpiException.CheckProcessIsMaster(procs);
+            procs.CheckProcessIsMaster();
             model.ApplyMassAccelerationHistoryLoads(timeStep);
         }
 
@@ -101,31 +101,31 @@ namespace ISAAR.MSolve.Discretization.Transfer
 
         public IEnumerable<IElement> EnumerateElements()
         {
-            MpiException.CheckProcessIsMaster(procs);
+            procs.CheckProcessIsMaster();
             return model.EnumerateElements();
         }
 
         public IEnumerable<INode> EnumerateNodes()
         {
-            MpiException.CheckProcessIsMaster(procs);
+            procs.CheckProcessIsMaster();
             return model.EnumerateNodes();
         }
 
         public IEnumerable<ISubdomain> EnumerateSubdomains()
         {
-            MpiException.CheckProcessIsMaster(procs);
+            procs.CheckProcessIsMaster();
             return model.EnumerateSubdomains();
         }
 
         public IElement GetElement(int elementID)
         {
-            MpiException.CheckProcessIsMaster(procs);
+            procs.CheckProcessIsMaster();
             return model.GetElement(elementID);
         }
 
         public INode GetNode(int nodeID)
         {
-            MpiException.CheckProcessIsMaster(procs);
+            procs.CheckProcessIsMaster();
             return model.GetNode(nodeID);
         }
 

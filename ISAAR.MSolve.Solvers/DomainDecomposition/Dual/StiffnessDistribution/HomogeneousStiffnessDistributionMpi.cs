@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         public IMappingMatrix CalcBoundaryPreconditioningSignedBooleanMatrix(ILagrangeMultipliersEnumeratorMpi lagrangeEnumerator,
             ISubdomain subdomain, SignedBooleanMatrixColMajor boundarySignedBooleanMatrix)
         {
-            MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
+            procs.CheckProcessMatchesSubdomain(subdomain.ID);
             return new HomogeneousStiffnessDistributionUtilities.ScalingBooleanMatrixImplicit(
                 inverseBoundaryDofMultiplicities[procs.OwnSubdomainID], boundarySignedBooleanMatrix);
         }

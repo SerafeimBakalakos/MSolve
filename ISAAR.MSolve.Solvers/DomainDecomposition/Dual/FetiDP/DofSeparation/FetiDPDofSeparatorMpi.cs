@@ -48,7 +48,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         {
             get
             {
-                MpiException.CheckProcessIsMaster(procs);
+                procs.CheckProcessIsMaster();
                 return globalDofs.GlobalBoundaryDofs;
             }
         }
@@ -57,7 +57,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         {
             get
             {
-                MpiException.CheckProcessIsMaster(procs);
+                procs.CheckProcessIsMaster();
                 return globalDofs.GlobalCornerDofOrdering;
             }
         }
@@ -66,7 +66,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         {
             get
             {
-                MpiException.CheckProcessIsMaster(procs);
+                procs.CheckProcessIsMaster();
                 return globalDofs.GlobalCornerToFreeDofMap;
             }
         }
@@ -75,20 +75,20 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         {
             get
             {
-                MpiException.CheckProcessIsMaster(procs);
+                procs.CheckProcessIsMaster();
                 return globalDofs.NumGlobalCornerDofs; //TODO: Shouldn't this be available to all processes?
             }
         }
 
         public int[] GetBoundaryDofIndices(ISubdomain subdomain)
         {
-            MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
+            procs.CheckProcessMatchesSubdomain(subdomain.ID);
             return subdomainDofs.BoundaryDofIndices;
         }
 
         public (INode node, IDofType dofType)[] GetBoundaryDofs(ISubdomain subdomain)
         {
-            MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
+            procs.CheckProcessMatchesSubdomain(subdomain.ID);
             return subdomainDofs.BoundaryDofs;
         }
 
@@ -97,14 +97,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             if (procs.IsMasterProcess) return subdomainCornerBooleanMatrices_master[subdomain];
             else
             {
-                MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
+                procs.CheckProcessMatchesSubdomain(subdomain.ID);
                 return subdomainDofs.CornerBooleanMatrix;
             }
         }
 
         public int[] GetCornerDofIndices(ISubdomain subdomain)
         {
-            MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
+            procs.CheckProcessMatchesSubdomain(subdomain.ID);
             return subdomainDofs.CornerDofIndices;
         }
 
@@ -113,26 +113,26 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             if (procs.IsMasterProcess) return subdomainCornerDofOrderings_master[subdomain];
             else
             {
-                MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
+                procs.CheckProcessMatchesSubdomain(subdomain.ID);
                 return subdomainDofs.CornerDofOrdering;
             }
         }
 
         public DofTable GetRemainderDofOrdering(ISubdomain subdomain)
         {
-            MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
+            procs.CheckProcessMatchesSubdomain(subdomain.ID);
             return subdomainDofs.RemainderDofOrdering;
         }
 
         public int[] GetRemainderDofIndices(ISubdomain subdomain)
         {
-            MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
+            procs.CheckProcessMatchesSubdomain(subdomain.ID);
             return subdomainDofs.RemainderDofIndices;
         }
 
         public int[] GetInternalDofIndices(ISubdomain subdomain)
         {
-            MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
+            procs.CheckProcessMatchesSubdomain(subdomain.ID);
             return subdomainDofs.InternalDofIndices;
         }
 

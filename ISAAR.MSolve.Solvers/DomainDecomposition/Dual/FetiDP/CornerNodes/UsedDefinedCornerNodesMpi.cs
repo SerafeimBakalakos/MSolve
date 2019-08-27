@@ -40,14 +40,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes
         {
             get
             {
-                MpiException.CheckProcessIsMaster(procs);
+                procs.CheckProcessIsMaster();
                 return cornerNodesGlobal_master;
             }
         }
 
         public HashSet<INode> GetCornerNodesOfSubdomain(ISubdomain subdomain)
         {
-            MpiException.CheckProcessMatchesSubdomainUnlessMaster(procs, subdomain.ID);
+            procs.CheckProcessMatchesSubdomainUnlessMaster(subdomain.ID);
             return cornerNodesOfSubdomains[subdomain];
         }
 

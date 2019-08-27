@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         {
             get
             {
-                MpiException.CheckProcessIsMaster(procs);
+                procs.CheckProcessIsMaster();
                 return globalFreeDofs;
             }
         }
@@ -49,7 +49,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         {
             get
             {
-                MpiException.CheckProcessIsMaster(procs);
+                procs.CheckProcessIsMaster();
                 return numGlobalFreeDofs;
             }
         }
@@ -63,7 +63,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         /// <param name="globalVector">Only exists in master process.</param>
         public override void AddVectorSubdomainToGlobal(ISubdomain subdomain, IVectorView subdomainVector, IVector globalVector)
         {
-            MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
+            procs.CheckProcessMatchesSubdomain(subdomain.ID);
 
             // Gather the subdomain vectors to master
             //TODO: Perhaps client master can work with vectors that have the different portions of the gathered flattened array 
@@ -171,7 +171,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         /// <param name="subdomainVector">Each process has its own.</param>
         public override void ExtractVectorSubdomainFromGlobal(ISubdomain subdomain, IVectorView globalVector, IVector subdomainVector)
         {
-            MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
+            procs.CheckProcessMatchesSubdomain(subdomain.ID);
 
             // Broadcast globalVector
             //TODO: The next is stupid, since it copies the vector to an array, while I could access its backing storage in 
@@ -188,13 +188,13 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
 
         public ISubdomainFreeDofOrdering GetSubdomainDofOrdering(ISubdomain subdomain)
         {
-            MpiException.CheckProcessMatchesSubdomainUnlessMaster(procs, subdomain.ID);
+            procs.CheckProcessMatchesSubdomainUnlessMaster(subdomain.ID);
             return subdomainDofOrderings[subdomain.ID];
         }
 
         public int[] MapSubdomainToGlobalDofs(ISubdomain subdomain)
         {
-            MpiException.CheckProcessMatchesSubdomainUnlessMaster(procs, subdomain.ID);
+            procs.CheckProcessMatchesSubdomainUnlessMaster(subdomain.ID);
             return subdomainToGlobalDofMaps[subdomain.ID];
         }
     }

@@ -46,7 +46,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         {
             get
             {
-                MpiException.CheckProcessIsMaster(procs);
+                procs.CheckProcessIsMaster();
                 return lagrangeMultipliers_master;
             }
         }

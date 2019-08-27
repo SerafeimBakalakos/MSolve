@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessDistribu
 
         public override double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load)
         {
-            MpiException.CheckProcessMatchesSubdomain(procs, subdomain.ID);
+            procs.CheckProcessMatchesSubdomain(subdomain.ID);
             INode node = load.Node;
             IDofType dof = load.DOF;
 
