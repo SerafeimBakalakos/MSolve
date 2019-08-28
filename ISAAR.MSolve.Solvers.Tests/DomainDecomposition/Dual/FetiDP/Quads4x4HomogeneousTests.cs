@@ -476,7 +476,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Setup the model and solver
             Model model = Quads4x4MappingMatricesTests.CreateModel();
             Dictionary<ISubdomain, HashSet<INode>> cornerNodes = Quads4x4MappingMatricesTests.DefineCornerNodes(model);
-            var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
+            var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
             var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
@@ -484,7 +484,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             solver.Initialize();
 
             // Use the hardcoded intermediate matrices & vectors
-            Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers = MockStiffnesses();
+            Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers = MockStiffnesses();
             Dictionary<int, Vector> fbc = VectorsFbc;
             Dictionary<int, Vector> fr = VectorsFr;
 
@@ -514,7 +514,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             Model model = Quads4x4MappingMatricesTests.CreateModel();
             Dictionary<ISubdomain, HashSet<INode>> cornerNodes = Quads4x4MappingMatricesTests.DefineCornerNodes(model);
-            var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
+            var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
             FetiDPSolver solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
@@ -523,7 +523,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Mock the stiffness matrices and force vectors
             var fr = VectorsFr;
-            Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers = MockStiffnesses();
+            Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers = MockStiffnesses();
 
             // Use reflection to set the necessary matrices
             FieldInfo fi;
@@ -543,7 +543,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Setup the model and solver
             Model model = Quads4x4MappingMatricesTests.CreateModel();
             Dictionary<ISubdomain, HashSet<INode>> cornerNodes = Quads4x4MappingMatricesTests.DefineCornerNodes(model);
-            var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
+            var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
             var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
@@ -551,7 +551,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             solver.Initialize();
 
             // Mock the stiffness matrices
-            Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers = MockStiffnesses();
+            Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers = MockStiffnesses();
 
             // Access private fields of FetiDPSolver
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -578,7 +578,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Setup the model and solver
             Model model = Quads4x4MappingMatricesTests.CreateModel();
             Dictionary<ISubdomain, HashSet<INode>> cornerNodes = Quads4x4MappingMatricesTests.DefineCornerNodes(model);
-            var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
+            var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
             var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
@@ -586,7 +586,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             solver.Initialize();
 
             // Mock the stiffness matrices and force vectors
-            Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers = MockStiffnesses();
+            Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers = MockStiffnesses();
             Vector dr = VectorDr;
 
             // Access private fields of FetiDPSolver
@@ -629,7 +629,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Setup the model and solver
             Model model = Quads4x4MappingMatricesTests.CreateModel();
             Dictionary<ISubdomain, HashSet<INode>> cornerNodes = Quads4x4MappingMatricesTests.DefineCornerNodes(model);
-            var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
+            var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
             var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
@@ -637,7 +637,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             solver.Initialize();
 
             // Mock the stiffness matrices and force vectors
-            Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers = MockStiffnesses();
+            Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers = MockStiffnesses();
             Dictionary<int, IFetiSubdomainMatrixManager> matrixManagersPreconditioning = MockStiffnessesForPreconditioning();
             Dictionary<int, Matrix> Krr = MatricesKrr;
             Vector dr = VectorDr;
@@ -690,7 +690,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Setup solver
             var interfaceSolverBuilder = new FetiDPInterfaceProblemSolver.Builder();
             interfaceSolverBuilder.PcgConvergenceTolerance = 1E-7;
-            var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
+            var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
             var fetiSolverBuilder = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices);
             fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
@@ -781,7 +781,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Setup the model and solver
             Model model = Quads4x4MappingMatricesTests.CreateModel();
             Dictionary<ISubdomain, HashSet<INode>> cornerNodes = Quads4x4MappingMatricesTests.DefineCornerNodes(model);
-            var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
+            var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
             var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             var problem = new ProblemStructural(model, solver);
@@ -805,32 +805,32 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         /// <summary>
         /// Uses reflection to set the necessary matrices
         /// </summary>
-        private static Dictionary<int, IFetiDPSubdomainMatrixManager> MockStiffnesses()
+        private static Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> MockStiffnesses()
         {
-            var matrixManagers = new Dictionary<int, IFetiDPSubdomainMatrixManager>();
+            var matrixManagers = new Dictionary<int, IFetiDPSubdomainMatrixManagerOLD>();
             for (int s = 0; s < 4; ++s)
             {
-                var matrixManager = new DenseFetiDPSubdomainMatrixManager(null);
+                var matrixManager = new FetiDPSubdomainMatrixManagerDenseOLD(null);
                 matrixManagers[s] = matrixManager;
 
                 FieldInfo fi;
-                fi = typeof(DenseFetiDPSubdomainMatrixManager).GetField("Kcc", BindingFlags.NonPublic | BindingFlags.Instance);
+                fi = typeof(FetiDPSubdomainMatrixManagerDenseOLD).GetField("Kcc", BindingFlags.NonPublic | BindingFlags.Instance);
                 fi.SetValue(matrixManager, MatricesKcc[s]);
-                fi = typeof(DenseFetiDPSubdomainMatrixManager).GetField("Krc", BindingFlags.NonPublic | BindingFlags.Instance);
+                fi = typeof(FetiDPSubdomainMatrixManagerDenseOLD).GetField("Krc", BindingFlags.NonPublic | BindingFlags.Instance);
                 fi.SetValue(matrixManager, MatricesKrc[s]);
-                fi = typeof(DenseFetiDPSubdomainMatrixManager).GetField("Krr", BindingFlags.NonPublic | BindingFlags.Instance);
+                fi = typeof(FetiDPSubdomainMatrixManagerDenseOLD).GetField("Krr", BindingFlags.NonPublic | BindingFlags.Instance);
                 fi.SetValue(matrixManager, MatricesKrr[s]);
-                fi = typeof(DenseFetiDPSubdomainMatrixManager).GetField("inverseKrr", 
+                fi = typeof(FetiDPSubdomainMatrixManagerDenseOLD).GetField("inverseKrr", 
                     BindingFlags.NonPublic | BindingFlags.Instance);
                 fi.SetValue(matrixManager, MatricesKrr[s].FactorCholesky(false));
 
-                fi = typeof(DenseFetiDPSubdomainMatrixManager).GetField("Kbb", BindingFlags.NonPublic | BindingFlags.Instance);
+                fi = typeof(FetiDPSubdomainMatrixManagerDenseOLD).GetField("Kbb", BindingFlags.NonPublic | BindingFlags.Instance);
                 fi.SetValue(matrixManager, MatricesKbb[s]);
-                fi = typeof(DenseFetiDPSubdomainMatrixManager).GetField("Kbi", BindingFlags.NonPublic | BindingFlags.Instance);
+                fi = typeof(FetiDPSubdomainMatrixManagerDenseOLD).GetField("Kbi", BindingFlags.NonPublic | BindingFlags.Instance);
                 fi.SetValue(matrixManager, MatricesKbi[s]);
                 Matrix inverseKii = MatricesKii[s];
                 inverseKii.InvertInPlace();
-                fi = typeof(DenseFetiDPSubdomainMatrixManager).GetField("inverseKii",
+                fi = typeof(FetiDPSubdomainMatrixManagerDenseOLD).GetField("inverseKii",
                     BindingFlags.NonPublic | BindingFlags.Instance);
                 fi.SetValue(matrixManager, inverseKii);
             }
@@ -842,7 +842,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         /// </summary>
         private static Dictionary<int, IFetiSubdomainMatrixManager> MockStiffnessesForPreconditioning()
         {
-            Dictionary<int, IFetiDPSubdomainMatrixManager> managersConcrete = MockStiffnesses();
+            Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> managersConcrete = MockStiffnesses();
             var managersGeneral = new Dictionary<int, IFetiSubdomainMatrixManager>();
             foreach (int s in managersConcrete.Keys) managersGeneral[s] = managersConcrete[s];
             return managersGeneral;

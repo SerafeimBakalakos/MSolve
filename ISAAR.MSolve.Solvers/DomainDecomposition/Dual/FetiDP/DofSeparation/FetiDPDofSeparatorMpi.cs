@@ -24,8 +24,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         private const int cornerDofOrderingTag = 0;
         private const int cornerMappingMatrixTag = 1;
 
-        private readonly IModel model;
         private readonly FetiDPGlobalDofSeparator globalDofs;
+        private readonly IModel model;
+        private readonly string msgHeader;
         private readonly ProcessDistribution procs;
         private readonly ISubdomain processSubdomain;
         private readonly FetiDPSubdomainDofSeparator subdomainDofs;
@@ -42,6 +43,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 
             subdomainDofs = new FetiDPSubdomainDofSeparator(model.GetSubdomain(procs.OwnSubdomainID));
             if (procs.IsMasterProcess) globalDofs = new FetiDPGlobalDofSeparator(model);
+
+            this.msgHeader = $"Process {processDistribution.OwnRank}, {this.GetType().Name}: ";
         }
 
         public Dictionary<INode, IDofType[]> GlobalBoundaryDofs
@@ -136,6 +139,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             return subdomainDofs.InternalDofIndices;
         }
 
+        public void ReorderInternalDofs(IFetiDPSeparatedDofReordering reordering)
+        {
+            if (processSubdomain.ConnectivityModified)
+            {
+                Debug.WriteLine(msgHeader + $"Reordering internal dofs of subdomain {processSubdomain.ID}.");
+                subdomainDofs.ReorderInternalDofs(reordering.ReorderSubdomainInternalDofs(processSubdomain, this));
+            }
+        }
+
         public void SeparateDofs(ICornerNodeSelection cornerNodeSelection, IFetiDPSeparatedDofReordering reordering)
         {
             // Global dofs
@@ -150,13 +162,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             if (processSubdomain.ConnectivityModified)
             {
                 int s = processSubdomain.ID;
-                Debug.WriteLine($"{this.GetType().Name}: Separating and ordering corner-remainder dofs of subdomain {s}");
+                Debug.WriteLine(msgHeader + $"Separating and ordering corner-remainder dofs of subdomain {s}");
                 subdomainDofs.SeparateCornerRemainderDofs(cornerNodeSelection.GetCornerNodesOfSubdomain(processSubdomain));
 
-                Debug.WriteLine($"{this.GetType().Name}: Reordering internal dofs of subdomain {s}.");
+                Debug.WriteLine(msgHeader + $"Reordering internal dofs of subdomain {s}.");
                 subdomainDofs.ReorderRemainderDofs(reordering.ReorderSubdomainRemainderDofs(processSubdomain, this));
 
-                Debug.WriteLine($"{this.GetType().Name}: Separating and ordering boundary-internal dofs of subdomain {s}");
+                Debug.WriteLine(msgHeader + $"Separating and ordering boundary-internal dofs of subdomain {s}");
                 subdomainDofs.SeparateBoundaryInternalDofs(cornerNodeSelection.GetCornerNodesOfSubdomain(processSubdomain));
             }
 

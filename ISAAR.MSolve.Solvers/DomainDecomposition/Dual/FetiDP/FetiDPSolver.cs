@@ -35,7 +35,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly IDofOrderer dofOrderer;
         private readonly FetiDPDofSeparator dofSeparator;
         private readonly IFetiDPInterfaceProblemSolver interfaceProblemSolver;
-        private readonly Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers;
+        private readonly Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers;
         private readonly Dictionary<int, IFetiSubdomainMatrixManager> matrixManagersGeneral; //TODO: redesign. They are the same as above, but Dictionary is not covariant
         private readonly Dictionary<int, ISingleSubdomainLinearSystem> linearSystems;
         private readonly IModel model;
@@ -71,7 +71,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             foreach (ISubdomain subdomain in model.EnumerateSubdomains()) subdomains[subdomain.ID] = subdomain;
 
             // Matrix managers and linear systems
-            matrixManagers = new Dictionary<int, IFetiDPSubdomainMatrixManager>();
+            matrixManagers = new Dictionary<int, IFetiDPSubdomainMatrixManagerOLD>();
             matrixManagersGeneral = new Dictionary<int, IFetiSubdomainMatrixManager>();
             this.linearSystems = new Dictionary<int, ISingleSubdomainLinearSystem>();
             var externalLinearSystems = new Dictionary<int, ILinearSystem>();
@@ -326,7 +326,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 foreach (int s in subdomains.Keys)
                 {
                     if (!subdomains[s].StiffnessModified) continue;
-                    IFetiDPSubdomainMatrixManager matrices = matrixManagers[s];
+                    IFetiDPSubdomainMatrixManagerOLD matrices = matrixManagers[s];
                     int[] remainderDofs = dofSeparator.RemainderDofIndices[s];
                     int[] cornerDofs = dofSeparator.CornerDofIndices[s];
                     matrices.ExtractKrr(remainderDofs);
@@ -419,7 +419,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             var freeDisplacements = new Dictionary<int, Vector>();
             foreach (int s in subdomains.Keys)
             {
-                IFetiDPSubdomainMatrixManager matrices = matrixManagers[s];
+                IFetiDPSubdomainMatrixManagerOLD matrices = matrixManagers[s];
 
                 // ur[s] = inv(Krr[s]) * (fr[s] - Br[s]^T * lagranges - Krc[s] * Lc[s] * uc)
                 Vector BrLambda = lagrangeEnumerator.BooleanMatrices[s].Multiply(lagranges, true);

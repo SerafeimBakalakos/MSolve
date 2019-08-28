@@ -14,12 +14,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     public class FetiDPFlexibilityMatrix
     {
         private readonly Dictionary<int, SignedBooleanMatrixColMajor> Br;
-        private readonly Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers;
+        private readonly Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers;
         private readonly Dictionary<int, UnsignedBooleanMatrix> Lc;
         private readonly int numCornerDofs;
 
         public FetiDPFlexibilityMatrix(FetiDPDofSeparator dofSeparator, FetiDPLagrangeMultipliersEnumerator lagrangeEnumerator, 
-            Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers)
+            Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers)
         {
             this.Br = lagrangeEnumerator.BooleanMatrices;
             this.Lc = dofSeparator.CornerBooleanMatrices;
@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             rhs.Clear();
             foreach (int s in Br.Keys)
             {
-                IFetiDPSubdomainMatrixManager matrices = matrixManagers[s];
+                IFetiDPSubdomainMatrixManagerOLD matrices = matrixManagers[s];
                 Vector temp = Br[s].Multiply(lhs, true);
                 temp = matrices.MultiplyInverseKrrTimes(temp);
                 temp = Br[s].Multiply(temp);
@@ -56,7 +56,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             var result = Vector.CreateZero(Order);
             foreach (int s in Br.Keys)
             {
-                IFetiDPSubdomainMatrixManager matrices = matrixManagers[s];
+                IFetiDPSubdomainMatrixManagerOLD matrices = matrixManagers[s];
                 Vector temp = Lc[s].Multiply(vector);
                 temp = matrices.MultiplyKrcTimes(temp);
                 temp = matrices.MultiplyInverseKrrTimes(temp);
@@ -74,7 +74,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             var result = Vector.CreateZero(numCornerDofs);
             foreach (int s in Br.Keys)
             {
-                IFetiDPSubdomainMatrixManager matrices = matrixManagers[s];
+                IFetiDPSubdomainMatrixManagerOLD matrices = matrixManagers[s];
                 Vector temp = Br[s].Multiply(vector, true);
                 temp = matrices.MultiplyInverseKrrTimes(temp);
                 temp = matrices.MultiplyKcrTimes(temp);

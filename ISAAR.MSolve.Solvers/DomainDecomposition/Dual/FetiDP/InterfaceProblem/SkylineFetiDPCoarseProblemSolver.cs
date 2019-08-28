@@ -35,21 +35,21 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         }
 
         public void CreateAndInvertCoarseProblemMatrix(Dictionary<int, HashSet<INode>> cornerNodesOfSubdomains, 
-            FetiDPDofSeparator dofSeparator, Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers)
+            FetiDPDofSeparator dofSeparator, Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers)
         {
             SkylineMatrix globalKccStar = CreateGlobalKccStar(cornerNodesOfSubdomains, dofSeparator, matrixManagers);
             this.inverseGlobalKccStar = globalKccStar.FactorLdl(true);
         }
 
         public Vector CreateCoarseProblemRhs(FetiDPDofSeparator dofSeparator,
-            Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers,
+            Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers,
             Dictionary<int, Vector> fr, Dictionary<int, Vector> fbc)
         {
             // Static condensation for the force vectors
             var globalFcStar = Vector.CreateZero(dofSeparator.NumGlobalCornerDofs);
             for (int s = 0; s < model.NumSubdomains; ++s)
             {
-                IFetiDPSubdomainMatrixManager matrices = matrixManagers[s];
+                IFetiDPSubdomainMatrixManagerOLD matrices = matrixManagers[s];
 
                 // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s]
                 // globalFcStar = sum_over_s(Lc[s]^T * fcStar[s])
@@ -89,7 +89,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
         //TODO: Use Skyline assembler
         private SkylineMatrix CreateGlobalKccStar(Dictionary<int, HashSet<INode>> cornerNodesOfSubdomains, 
-            FetiDPDofSeparator dofSeparator, Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers)
+            FetiDPDofSeparator dofSeparator, Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers)
         {
             int[] skylineColHeights = FindSkylineColumnHeights(cornerNodesOfSubdomains, dofSeparator);
             var skylineBuilder = SkylineBuilder.Create(dofSeparator.NumGlobalCornerDofs, skylineColHeights);
@@ -97,7 +97,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int s = subdomain.ID;
-                IFetiDPSubdomainMatrixManager matrices = matrixManagers[s];
+                IFetiDPSubdomainMatrixManagerOLD matrices = matrixManagers[s];
 
                 // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s]
                 if (subdomain.StiffnessModified)

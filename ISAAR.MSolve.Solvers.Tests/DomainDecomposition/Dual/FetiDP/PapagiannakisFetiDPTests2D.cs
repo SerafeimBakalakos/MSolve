@@ -153,7 +153,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             }
 
             // Solver
-            var fetiMatrices = new SkylineFetiDPSubdomainMatrixManager.Factory(new OrderingAmdSuiteSparse());
+            var fetiMatrices = new FetiDPSubdomainMatrixManagerSkylineOLD.Factory(new OrderingAmdSuiteSparse());
             //var fetiMatrices = new SkylineFetiDPSubdomainMatrixManager.Factory();
             //var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
             var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodesOfEachSubdomain);

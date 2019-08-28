@@ -58,5 +58,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         int[] GetRemainderDofIndices(ISubdomain subdomain);
 
         void SeparateDofs(ICornerNodeSelection cornerNodeSelection, IFetiDPSeparatedDofReordering reordering);
+
+        void ReorderInternalDofs(IFetiDPSeparatedDofReordering reordering);
     }
 }

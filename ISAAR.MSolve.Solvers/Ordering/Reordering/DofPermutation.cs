@@ -6,7 +6,7 @@ namespace ISAAR.MSolve.Solvers.Ordering.Reordering
 {
     public class DofPermutation
     {
-        public DofPermutation(bool isBetter, int[] permutationArray, bool permutationIsOldToNew)
+        private DofPermutation(bool isBetter, int[] permutationArray, bool permutationIsOldToNew)
         {
             this.IsBetter = isBetter;
             this.PermutationArray = permutationArray;
@@ -16,6 +16,12 @@ namespace ISAAR.MSolve.Solvers.Ordering.Reordering
         public bool IsBetter { get; }
         public int[] PermutationArray { get; }
         public bool PermutationIsOldToNew { get; }
+
+        public static DofPermutation Create(int[] permutationArray, bool permutationIsOldToNew)
+            => new DofPermutation(true, permutationArray, permutationIsOldToNew);
+
+        public static DofPermutation CreateNoPermutation()
+            => new DofPermutation(false, null, false);
 
         public int[] ReorderKeysOfDofIndicesMap(int[] dofIndicesMap)
         {

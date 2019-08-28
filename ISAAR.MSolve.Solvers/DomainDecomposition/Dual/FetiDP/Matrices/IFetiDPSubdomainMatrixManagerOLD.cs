@@ -11,7 +11,6 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 //      will be necessary. IFetiDPSubdomainMatrixManager should then determine the correct order they must be created in and
 //      notify the solver and each strategy when they are ready for consumption. Also once a matrix has been fully used, 
 //      it should be cleared to conserve memory. This also applies for Kff.
-//TODO: Perhaps this class should only access FetiDPSubdomainDofSeparator instead of IFetiDPDofSeparator
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
 {
     /// <summary>
@@ -19,7 +18,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
     /// format. All the matrices represented by this interface belong to a single subdomain.
     /// Authors: Serafeim Bakalakos
     /// </summary>
-    public interface IFetiDPSubdomainMatrixManager : IFetiSubdomainMatrixManager
+    public interface IFetiDPSubdomainMatrixManagerOLD : IFetiSubdomainMatrixManager
     {
         Matrix SchurComplementOfRemainderDofs { get; } //TODO: Perhaps static condensations should be handled by a different interface
 
@@ -42,9 +41,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
         Vector MultiplyKcrTimes(Vector vector);
         Vector MultiplyKrcTimes(Vector vector);
 
+        //TODO: Perhaps these reorderings should be done by the dofSeparator since its state will be modified. What about the  
+        //      cases where no reordering is applied (e.g. lumped preconditioner)?
         //TODO: Bad design. All this time the matrix manager had access to only 1 subdomain and now I pass it an object that
         //      stores dof data for all subdomains.
-        DofPermutation ReorderInternalDofs(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator);
-        DofPermutation ReorderRemainderDofs(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator);
+        void ReorderInternalDofs(FetiDPDofSeparator dofSeparator, ISubdomain subdomain);
+
+        //TODO: This must be called before creating mapping matrices (Br, Bc) or even processing boundary/internal dofs
+        void ReorderRemainderDofs(FetiDPDofSeparator dofSeparator, ISubdomain subdomain);
     }
 }

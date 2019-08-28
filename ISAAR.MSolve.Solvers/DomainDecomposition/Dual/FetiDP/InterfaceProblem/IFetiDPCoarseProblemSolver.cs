@@ -13,12 +13,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         void ClearCoarseProblemMatrix();
 
         Vector CreateCoarseProblemRhs(FetiDPDofSeparator dofSeparator,
-            Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers,
+            Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers,
             Dictionary<int, Vector> fr, Dictionary<int, Vector> fbc);
 
         //TODO: Perhaps corner nodes of each subdomain should be stored in FetiDPDofSeparator.
         void CreateAndInvertCoarseProblemMatrix(Dictionary<int, HashSet<INode>> cornerNodesOfSubdomains, 
-            FetiDPDofSeparator dofSeparator, Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers);
+            FetiDPDofSeparator dofSeparator, Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers);
 
         Vector MultiplyInverseCoarseProblemMatrixTimes(Vector vector);
 

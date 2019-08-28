@@ -27,21 +27,21 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         }
 
         public void CreateAndInvertCoarseProblemMatrix(Dictionary<int, HashSet<INode>> cornerNodesOfSubdomains,
-            FetiDPDofSeparator dofSeparator, Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers)
+            FetiDPDofSeparator dofSeparator, Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers)
         {
             this.inverseGlobalKccStar = CreateGlobalKccStar(dofSeparator, matrixManagers);
             inverseGlobalKccStar.InvertInPlace();
         }
 
         public Vector CreateCoarseProblemRhs(FetiDPDofSeparator dofSeparator, 
-            Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers, 
+            Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers, 
             Dictionary<int, Vector> fr, Dictionary<int, Vector> fbc)
         {
             // Static condensation for the force vectors
             var globalFcStar = Vector.CreateZero(dofSeparator.NumGlobalCornerDofs);
             for (int s = 0; s < model.NumSubdomains; ++s)
             {
-                IFetiDPSubdomainMatrixManager matrices = matrixManagers[s];
+                IFetiDPSubdomainMatrixManagerOLD matrices = matrixManagers[s];
 
                 // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s]
                 // globalFcStar = sum_over_s(Lc[s]^T * fcStar[s])
@@ -62,14 +62,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         }
 
         private Matrix CreateGlobalKccStar(FetiDPDofSeparator dofSeparator,
-            Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagers)
+            Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers)
         {
             // Static condensation of remainder dofs (Schur complement).
             var globalKccStar = Matrix.CreateZero(dofSeparator.NumGlobalCornerDofs, dofSeparator.NumGlobalCornerDofs);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int s = subdomain.ID;
-                IFetiDPSubdomainMatrixManager matrices = matrixManagers[s];
+                IFetiDPSubdomainMatrixManagerOLD matrices = matrixManagers[s];
 
                 // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s]
                 if (subdomain.StiffnessModified)

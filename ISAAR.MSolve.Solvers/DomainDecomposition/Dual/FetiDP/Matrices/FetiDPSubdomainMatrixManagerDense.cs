@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
@@ -11,6 +12,7 @@ using ISAAR.MSolve.Solvers.Assemblers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
 using ISAAR.MSolve.Solvers.LinearSystems;
+using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
 {
@@ -19,7 +21,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
     /// Useful during prototyping and for debugging. For performance the other alternatives are probably better.
     /// Authors: Serafeim Bakalakos
     /// </summary>
-    public class DenseFetiDPSubdomainMatrixManager : IFetiDPSubdomainMatrixManager
+    public class FetiDPSubdomainMatrixManagerDense : IFetiDPSubdomainMatrixManager
     {
         private readonly SkylineAssembler assembler = new SkylineAssembler();
         private readonly SingleSubdomainSystem<SkylineMatrix> linearSystem;
@@ -34,7 +36,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
         private Matrix Krc;
         private Matrix Krr;
 
-        public DenseFetiDPSubdomainMatrixManager(ISubdomain subdomain)
+        public FetiDPSubdomainMatrixManagerDense(ISubdomain subdomain)
         {
             this.linearSystem = new SingleSubdomainSystem<SkylineMatrix>(subdomain);
         }
@@ -355,23 +357,16 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
             return Krc * vector;
         }
 
-        public void ReorderInternalDofs(FetiDPDofSeparator dofSeparator, ISubdomain subdomain)
+        public DofPermutation ReorderInternalDofs(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator)
         {
             // Do nothing, since the sparsity pattern is irrelevant for dense matrices.
+            return DofPermutation.CreateNoPermutation();
         }
 
-        public void ReorderRemainderDofs(FetiDPDofSeparator dofSeparator, ISubdomain subdomain)
+        public DofPermutation ReorderRemainderDofs(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator)
         {
             // Do nothing, since the sparsity pattern is irrelevant for dense matrices.
-        }
-
-        public class Factory : IFetiDPSubdomainMatrixManagerFactory
-        {
-            public IFetiDPCoarseProblemSolver CreateCoarseProblemSolver(IModel model)
-                => new DenseFetiDPCoarseProblemSolver(model);
-
-            public IFetiDPSubdomainMatrixManager CreateMatricesManager(ISubdomain subdomain)
-                => new DenseFetiDPSubdomainMatrixManager(subdomain);
+            return DofPermutation.CreateNoPermutation();
         }
     }
 }

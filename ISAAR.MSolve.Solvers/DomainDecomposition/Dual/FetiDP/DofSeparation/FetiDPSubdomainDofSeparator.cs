@@ -60,6 +60,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 
         internal ISubdomain Subdomain { get; }
 
+        internal void ReorderInternalDofs(DofPermutation permutation)
+        {
+            if (permutation.IsBetter)
+            {
+                InternalDofIndices = permutation.ReorderKeysOfDofIndicesMap(InternalDofIndices);
+            }
+        }
+
         internal void ReorderRemainderDofs(DofPermutation permutation)
         {
             if (permutation.IsBetter)
