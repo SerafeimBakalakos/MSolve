@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
     /// </summary>
     public interface IFetiDPSubdomainMatrixManager : IFetiSubdomainMatrixManager
     {
-        Matrix SchurComplementOfRemainderDofs { get; } //TODO: Perhaps static condensations should be handled by a different interface
+        IMatrixView SchurComplementOfRemainderDofs { get; } //TODO: Must be SymmetricMatrix to reduce MPI communication
 
         void CalcSchurComplementOfRemainderDofs();
 

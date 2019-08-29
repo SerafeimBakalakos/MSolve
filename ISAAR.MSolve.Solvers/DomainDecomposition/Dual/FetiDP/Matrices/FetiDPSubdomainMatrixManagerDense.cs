@@ -43,7 +43,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
 
         public ISingleSubdomainLinearSystem LinearSystem => linearSystem;
 
-        public Matrix SchurComplementOfRemainderDofs => KccStar;
+        public IMatrixView SchurComplementOfRemainderDofs => KccStar;
 
         public IMatrix BuildGlobalMatrix(ISubdomainFreeDofOrdering dofOrdering, IEnumerable<IElement> elements, 
             IElementMatrixProvider matrixProvider)

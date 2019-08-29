@@ -10,48 +10,48 @@ namespace ISAAR.MSolve.LinearAlgebra.SchurComplements
     public static class SchurComplementCsc
     {
         /// <summary>
-        /// Calculates the Schur complement of M/C = S = A - B^T * inv(C) * B, where M = [A B; B^T C].
-        /// This method constructs inv(C) * B one column at a time and uses that column to calculate the superdiagonal
-        /// entries of the corresponding column of B^T * inv(C) * B.
+        /// Calculates the Schur complement of A/A22 = S = A11 - A21^T * inv(A22) * A21, where M = [A11 A21; A21^T A22].
+        /// This method constructs inv(A22) * A21 one column at a time and uses that column to calculate the superdiagonal
+        /// entries of the corresponding column of A21^T * inv(A22) * A21.
         /// </summary>
-        public static SymmetricMatrix CalcSchurComplementSymmetric(SymmetricMatrix A, CscMatrix B, ITriangulation inverseC)
+        public static SymmetricMatrix CalcSchurComplementSymmetric(SymmetricMatrix A11, CscMatrix A21, ITriangulation inverseA22)
         { //TODO: Unfortunately this cannot take advantage of MKL for CSC^T * vector.
-            double[] valuesB = B.RawValues;
-            int[] rowIndicesB = B.RawRowIndices;
-            int[] colOffsetsB = B.RawColOffsets;
-            var S = SymmetricMatrix.CreateZero(A.Order);
+            double[] valuesA21 = A21.RawValues;
+            int[] rowIndicesA21 = A21.RawRowIndices;
+            int[] colOffsetsA21 = A21.RawColOffsets;
+            var S = SymmetricMatrix.CreateZero(A11.Order);
 
-            for (int j = 0; j < B.NumColumns; ++j)
+            for (int j = 0; j < A21.NumColumns; ++j)
             {
-                // column j of (inv(C) * B) = inv(C) * column j of B
-                Vector colB = B.GetColumn(j);
-                double[] colInvCB = inverseC.SolveLinearSystem(colB).RawData;
+                // column j of (inv(A22) * A21) = inv(A22) * column j of A21
+                Vector colA21 = A21.GetColumn(j);
+                double[] colInvCA21 = inverseA22.SolveLinearSystem(colA21).RawData;
 
-                // column j of (B^T * inv(C) * B) = B^T * column j of (inv(C) * B)
+                // column j of (A21^T * inv(A22) * A21) = A21^T * column j of (inv(A22) * A21)
                 // However we only need the superdiagonal part of this column. 
-                // Thus we only multiply the rows i of B^T (stored as columns i of B) with i <= j. 
+                // Thus we only multiply the rows i of A21^T (stored as columns i of A21) with i <= j. 
                 for (int i = 0; i <= j; ++i)
                 {
                     double dot = 0.0;
-                    int colStart = colOffsetsB[i]; //inclusive
-                    int colEnd = colOffsetsB[i + 1]; //exclusive
-                    for (int k = colStart; k < colEnd; ++k) dot += valuesB[k] * colInvCB[rowIndicesB[k]];
+                    int colStart = colOffsetsA21[i]; //inclusive
+                    int colEnd = colOffsetsA21[i + 1]; //exclusive
+                    for (int k = colStart; k < colEnd; ++k) dot += valuesA21[k] * colInvCA21[rowIndicesA21[k]];
 
-                    // Perform the subtraction S = A - (B^T * inv(C) * B) for the current (i, j)
+                    // Perform the subtraction S = A11 - (A21^T * inv(A22) * A21) for the current (i, j)
                     int indexS = S.Find1DIndex(i, j);
-                    S.RawData[indexS] = A.RawData[indexS] - dot;
+                    S.RawData[indexS] = A11.RawData[indexS] - dot;
                 }
             }
 
             return S;
         }
 
-        public static Matrix CalcSchurComplementFull(Matrix A, CscMatrix B, LdlSkyline inverseC)
+        public static Matrix CalcSchurComplementFull(Matrix A11, CscMatrix A21, LdlSkyline inverseA22)
         {
-            // S = A - B^T * inv(C) * B
-            Matrix invCB = Matrix.CreateZero(inverseC.Order, B.NumColumns);
-            inverseC.SolveLinearSystems(B, invCB);
-            return A - B.MultiplyRight(invCB, true);
+            // S = A11 - A21^T * inv(A22) * A21
+            Matrix invCA21 = Matrix.CreateZero(inverseA22.Order, A21.NumColumns);
+            inverseA22.SolveLinearSystems(A21, invCA21);
+            return A11 - A21.MultiplyRight(invCA21, true);
         }
     }
 }

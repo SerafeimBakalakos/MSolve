@@ -34,8 +34,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
         private LdlSkyline inverseKrr;
         private Matrix Kbb;
         private CscMatrix Kib;
-        private Matrix Kcc;
-        private Matrix KccStar;
+        private SymmetricMatrix Kcc;
+        private SymmetricMatrix KccStar;
         private CscMatrix Krc;
         private SkylineMatrix Krr;
 
@@ -47,7 +47,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
 
         public ISingleSubdomainLinearSystem LinearSystem => linearSystem;
 
-        public Matrix SchurComplementOfRemainderDofs => KccStar;
+        public IMatrixView SchurComplementOfRemainderDofs => KccStar;
 
         public IMatrix BuildGlobalMatrix(ISubdomainFreeDofOrdering dofOrdering, IEnumerable<IElement> elements,
             IElementMatrixProvider matrixProvider)
@@ -85,7 +85,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
         {
             // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s]
             if (KccStar != null) return;
-            KccStar = SchurComplementCsc.CalcSchurComplementFull(Kcc, Krc, inverseKrr);
+            KccStar = SchurComplementCsc.CalcSchurComplementSymmetric(Kcc, Krc, inverseKrr);
         }
 
         /// <summary>
@@ -180,7 +180,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
         public void ExtractKcc(int[] cornerDofs)
         {
             if (Kcc != null) return;
-            Kcc = linearSystem.Matrix.GetSubmatrixFull(cornerDofs, cornerDofs);
+            Kcc = linearSystem.Matrix.GetSubmatrixSymmetricPacked(cornerDofs);
         }
 
         /// <summary>

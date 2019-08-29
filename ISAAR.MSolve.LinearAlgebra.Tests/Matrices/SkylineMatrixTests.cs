@@ -105,11 +105,13 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Matrices
             var colIndices = new int[] { 90, 10, 20, 60, 40, 50, 0, 70, 80, 30 };
 
             Matrix subMatrixFull = matrixSky.GetSubmatrixSymmetricFull(indices);
+            SymmetricMatrix subMatrixSym = matrixSky.GetSubmatrixSymmetricPacked(indices);
             SkylineMatrix subMatrixSky = matrixSky.GetSubmatrixSymmetricSkyline(indices);
             //writer.WriteToFile(subMatrixSky, outputPath, true);
             CscMatrix subMatrixCsc = matrixSky.GetSubmatrixCsc(indices, indices);
 
             Matrix subMatrixPermFull = matrixSky.GetSubmatrixSymmetricFull(indicesPerm);
+            SymmetricMatrix subMatrixPermSym = matrixSky.GetSubmatrixSymmetricPacked(indicesPerm);
             SkylineMatrix subMatrixPermSky = matrixSky.GetSubmatrixSymmetricSkyline(indicesPerm);
             CscMatrix subMatrixPermCsc = matrixSky.GetSubmatrixCsc(indicesPerm, indicesPerm);
 
@@ -118,11 +120,13 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Matrices
             Matrix subMatrixExpected = matrix.GetSubmatrix(indices, indices);
             //writer.WriteToFile(subMatrixExpected, outputPath, true);
             Assert.True(subMatrixExpected.Equals(subMatrixFull));
+            Assert.True(subMatrixExpected.Equals(subMatrixSym));
             Assert.True(subMatrixExpected.Equals(subMatrixSky));
             Assert.True(subMatrixExpected.Equals(subMatrixCsc));
 
             Matrix subMatrixPermExpected = matrix.GetSubmatrix(indicesPerm, indicesPerm);
             Assert.True(subMatrixPermExpected.Equals(subMatrixPermFull));
+            Assert.True(subMatrixPermExpected.Equals(subMatrixPermSym));
             Assert.True(subMatrixPermExpected.Equals(subMatrixPermSky));
             Assert.True(subMatrixPermExpected.Equals(subMatrixPermCsc));
 
