@@ -11,7 +11,7 @@ using ISAAR.MSolve.Solvers.LinearSystems;
 //TODO: perhaps I should providing access to the assembler instead of wrapping its methods.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual
 {
-    public interface IFetiSubdomainMatrixManager
+    public interface IFetiSubdomainMatrixManagerOLD
     {
         ISingleSubdomainLinearSystem LinearSystem { get; }
 
@@ -22,17 +22,21 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual
             ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering,
             IEnumerable<IElement> elements, IElementMatrixProvider matrixProvider);
 
-        void CalcInverseKii(bool diagonalOnly);
-
         void ClearMatrices();
 
-        void ExtractKbb();
-        void ExtractKbiKib();
+        //TODO: Instead of ExtractAndInvertK name these InvertK or CalcInverseK
+        void ExtractAndInvertKii(int[] internalDofs);
+        void ExtractAndInvertKiiDiagonal(int[] internalDofs);
+
+        void ExtractKbb(int[] boundaryDofs);
+        void ExtractKbiKib(int[] boundaryDofs, int[] internalDofs);
 
         void HandleDofOrderingWillBeModified();
 
-        Vector MultiplyInverseKiiTimes(Vector vector, bool diagonalOnly);
-        Matrix MultiplyInverseKiiTimes(Matrix matrix, bool diagonalOnly);
+        Vector MultiplyInverseKiiTimes(Vector vector);
+        Matrix MultiplyInverseKiiTimes(Matrix matrix);
+        Vector MultiplyInverseKiiDiagonalTimes(Vector vector);
+        Matrix MultiplyInverseKiiDiagonalTimes(Matrix matrix);
         Vector MultiplyKbbTimes(Vector vector);
         Matrix MultiplyKbbTimes(Matrix matrix);
         Vector MultiplyKbiTimes(Vector vector);

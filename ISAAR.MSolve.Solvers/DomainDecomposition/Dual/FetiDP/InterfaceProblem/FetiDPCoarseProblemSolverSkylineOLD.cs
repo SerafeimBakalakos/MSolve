@@ -17,13 +17,13 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 //TODO: Use Skyline assembler instead of reimplementing it.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 {
-    public class SkylineFetiDPCoarseProblemSolver : IFetiDPCoarseProblemSolver
+    public class FetiDPCoarseProblemSolverSkylineOLD : IFetiDPCoarseProblemSolver
     {
         private readonly IModel model;
         private readonly IReorderingAlgorithm reordering;
         private LdlSkyline inverseGlobalKccStar;
 
-        public SkylineFetiDPCoarseProblemSolver(IModel model, IReorderingAlgorithm reordering)
+        public FetiDPCoarseProblemSolverSkylineOLD(IModel model, IReorderingAlgorithm reordering)
         {
             this.model = model;
             this.reordering = reordering;

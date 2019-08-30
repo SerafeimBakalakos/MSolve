@@ -36,7 +36,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
         private readonly IFeti1InterfaceProblemSolver interfaceProblemSolver;
         private readonly Dictionary<int, ISingleSubdomainLinearSystem> linearSystems;
         private readonly Dictionary<int, IFeti1SubdomainMatrixManager> matrixManagers;
-        private readonly Dictionary<int, IFetiSubdomainMatrixManager> matrixManagersGeneral; //TODO: redesign. They are the same as above, but Dictionary is not covariant
+        private readonly Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagersGeneral; //TODO: redesign. They are the same as above, but Dictionary is not covariant
         private readonly IModel model;
         //private readonly PdeOrder pde; // Instead the user explicitly sets Q.
         private readonly IFetiPreconditionerFactory preconditionerFactory;
@@ -73,7 +73,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
 
             // Matrix managers and linear systems
             matrixManagers = new Dictionary<int, IFeti1SubdomainMatrixManager>();
-            matrixManagersGeneral = new Dictionary<int, IFetiSubdomainMatrixManager>();
+            matrixManagersGeneral = new Dictionary<int, IFetiSubdomainMatrixManagerOLD>();
             this.linearSystems = new Dictionary<int, ISingleSubdomainLinearSystem>();
             var externalLinearSystems = new Dictionary<int, ILinearSystem>();
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
@@ -126,7 +126,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
                 if (subdomain.StiffnessModified)
                 {
                     Debug.WriteLine($"{this.GetType().Name}: Assembling the free-free stiffness matrix of subdomain {s}");
-                    Kff = matrixManagers[s].BuildGlobalMatrix(subdomain.FreeDofOrdering,
+                    Kff = matrixManagers[s].BuildFreeDofsMatrix(subdomain.FreeDofOrdering,
                         subdomain.EnumerateElements(), elementMatrixProvider);
                     linearSystems[s].Matrix = Kff; //TODO: This should be done by the solver not the analyzer. This method should return void.
                 }
@@ -166,7 +166,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
                         + $" subdomain {s}, they must have been ordered first.");
                 }
                 (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) =
-                    matrixManagers[s].BuildGlobalSubmatrices(subdomain.FreeDofOrdering,
+                    matrixManagers[s].BuildFreeConstrainedMatrices(subdomain.FreeDofOrdering,
                     subdomain.ConstrainedDofOrdering, subdomain.EnumerateElements(), elementMatrixProvider);
                 matrices[s] = (Kff, Kfc, Kcf, Kcc);
                 linearSystems[s].Matrix = Kff; //TODO: This should be done by the solver not the analyzer. This method should return void.
@@ -190,7 +190,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
                 if (subdomain.StiffnessModified)
                 {
                     Debug.WriteLine($"{this.GetType().Name}: Clearing saved matrices of subdomain {subdomain.ID}.");
-                    matrixManagers[subdomain.ID].Clear();
+                    matrixManagers[subdomain.ID].ClearMatrices();
                 }
             }
             flexibility = null;

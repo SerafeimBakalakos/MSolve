@@ -493,7 +493,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var dofSeparator = (FetiDPDofSeparator)fi.GetValue(solver);
 
             // Calculate the coarse problem matrix and rhs
-            var coarseSolver = new DenseFetiDPCoarseProblemSolver(model);
+            var coarseSolver = new FetiDPCoarseProblemSolverDenseOLD(model);
             Vector globalFcStar = coarseSolver.CreateCoarseProblemRhs(dofSeparator, matrixManagers, fr, fbc);
             MethodInfo method = coarseSolver.GetType().GetMethod("CreateGlobalKccStar",
                 BindingFlags.NonPublic | BindingFlags.Instance); // reflection for the private method
@@ -596,10 +596,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var dofSeparator = (FetiDPDofSeparator)fi.GetValue(solver);
 
             // Hardcoded coarse problem matrix and rhs
-            var coarseSolver = new DenseFetiDPCoarseProblemSolver(model);
+            var coarseSolver = new FetiDPCoarseProblemSolverDenseOLD(model);
             Vector globalFcStar = VectorFcStar;
             Matrix inverseKccStar = MatrixKccStar.Invert(); // It must be set as a private field using reflection.
-            fi = typeof(DenseFetiDPCoarseProblemSolver).GetField("inverseGlobalKccStar",
+            fi = typeof(FetiDPCoarseProblemSolverDenseOLD).GetField("inverseGlobalKccStar",
                 BindingFlags.NonPublic | BindingFlags.Instance);
             fi.SetValue(coarseSolver, inverseKccStar);
 
@@ -638,7 +638,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Mock the stiffness matrices and force vectors
             Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers = MockStiffnesses();
-            Dictionary<int, IFetiSubdomainMatrixManager> matrixManagersPreconditioning = MockStiffnessesForPreconditioning();
+            Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagersPreconditioning = MockStiffnessesForPreconditioning();
             Dictionary<int, Matrix> Krr = MatricesKrr;
             Vector dr = VectorDr;
 
@@ -649,10 +649,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var dofSeparator = (FetiDPDofSeparator)fi.GetValue(solver);
 
             // Hardcoded coarse problem matrix and rhs
-            var coarseSolver = new DenseFetiDPCoarseProblemSolver(model);
+            var coarseSolver = new FetiDPCoarseProblemSolverDenseOLD(model);
             Vector globalFcStar = VectorFcStar;
             Matrix inverseKccStar = MatrixKccStar.Invert(); // It must be set as a private field using reflection.
-            fi = typeof(DenseFetiDPCoarseProblemSolver).GetField("inverseGlobalKccStar",
+            fi = typeof(FetiDPCoarseProblemSolverDenseOLD).GetField("inverseGlobalKccStar",
                 BindingFlags.NonPublic | BindingFlags.Instance);
             fi.SetValue(coarseSolver, inverseKccStar);
 
@@ -840,10 +840,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         /// <summary>
         /// Repackages the result of <see cref="MockStiffnesses"/>
         /// </summary>
-        private static Dictionary<int, IFetiSubdomainMatrixManager> MockStiffnessesForPreconditioning()
+        private static Dictionary<int, IFetiSubdomainMatrixManagerOLD> MockStiffnessesForPreconditioning()
         {
             Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> managersConcrete = MockStiffnesses();
-            var managersGeneral = new Dictionary<int, IFetiSubdomainMatrixManager>();
+            var managersGeneral = new Dictionary<int, IFetiSubdomainMatrixManagerOLD>();
             foreach (int s in managersConcrete.Keys) managersGeneral[s] = managersConcrete[s];
             return managersGeneral;
         }

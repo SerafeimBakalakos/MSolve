@@ -11,12 +11,12 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 {
-    public class DenseFetiDPCoarseProblemSolver : IFetiDPCoarseProblemSolver
+    public class FetiDPCoarseProblemSolverDenseOLD : IFetiDPCoarseProblemSolver
     {
         private readonly IModel model;
         private Matrix inverseGlobalKccStar;
 
-        public DenseFetiDPCoarseProblemSolver(IModel model)
+        public FetiDPCoarseProblemSolverDenseOLD(IModel model)
         {
             this.model = model;
         }

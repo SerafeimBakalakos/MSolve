@@ -42,11 +42,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Matrices
 
         public List<Vector> RigidBodyModes { get; private set; } = null;
 
-        public IMatrix BuildGlobalMatrix(ISubdomainFreeDofOrdering dofOrdering, IEnumerable<IElement> elements,
+        public IMatrix BuildFreeDofsMatrix(ISubdomainFreeDofOrdering dofOrdering, IEnumerable<IElement> elements,
             IElementMatrixProvider matrixProvider)
             => assembler.BuildGlobalMatrix(dofOrdering, elements, matrixProvider);
 
-        public (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildGlobalSubmatrices(
+        public (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildFreeConstrainedMatrices(
             ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering,
             IEnumerable<IElement> elements, IElementMatrixProvider matrixProvider)
             => assembler.BuildGlobalSubmatrices(freeDofOrdering, constrainedDofOrdering, elements, matrixProvider);
@@ -55,7 +55,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Matrices
         /// If the matrices stored in this object have already been calculated, they will be reused even if the original  
         /// free-free stiffness matrix has changed. To avoid that, this method must be called. 
         /// </summary>
-        public void Clear()
+        public void ClearMatrices()
         {
             inverseKff = null;
             RigidBodyModes = null;
@@ -68,7 +68,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Matrices
 
         /// <summary>
         /// Will do nothing if it was already called. To perform this for a different stiffness matrix, first call 
-        /// <see cref="Clear"/>.
+        /// <see cref="ClearMatrices"/>.
         /// </summary>
         public void ExtractAndInvertKiiDiagonal(int[] internalDofs)
         {
@@ -95,7 +95,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Matrices
 
         /// <summary>
         /// Will do nothing if it was already called. To perform this for a different stiffness matrix, first call 
-        /// <see cref="Clear"/>.
+        /// <see cref="ClearMatrices"/>.
         /// </summary>
         public void ExtractAndInvertKii(int[] internalDofs)
         {
@@ -115,7 +115,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Matrices
 
         /// <summary>
         /// Will do nothing if it was already called. To perform this for a different stiffness matrix, first call 
-        /// <see cref="Clear"/>.
+        /// <see cref="ClearMatrices"/>.
         /// </summary>
         public void ExtractKbb(int[] boundaryDofs)
         {
@@ -134,7 +134,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Matrices
 
         /// <summary>
         /// Will do nothing if it was already called. To perform this for a different stiffness matrix, first call 
-        /// <see cref="Clear"/>.
+        /// <see cref="ClearMatrices"/>.
         /// </summary>
         public void ExtractKbiKib(int[] boundaryDofs, int[] internalDofs)
         {
@@ -155,7 +155,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Matrices
 
         /// <summary>
         /// Will do nothing if it was already called. To perform this for a different stiffness matrix, first call 
-        /// <see cref="Clear"/>.
+        /// <see cref="ClearMatrices"/>.
         /// </summary>
         public void InvertKff(double factorizationTolerance, bool inPlace)
         {

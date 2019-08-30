@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
     /// format. All the matrices represented by this interface belong to a single subdomain.
     /// Authors: Serafeim Bakalakos
     /// </summary>
-    public interface IFetiDPSubdomainMatrixManagerOLD : IFetiSubdomainMatrixManager
+    public interface IFetiDPSubdomainMatrixManagerOLD : IFetiSubdomainMatrixManagerOLD
     {
         Matrix SchurComplementOfRemainderDofs { get; } //TODO: Perhaps static condensations should be handled by a different interface
 

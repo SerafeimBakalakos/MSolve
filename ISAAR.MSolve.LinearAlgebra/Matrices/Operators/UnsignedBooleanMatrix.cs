@@ -139,7 +139,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
         /// Essentially this method performs global matrix assembly: globalK = L^T * localK * L.
         /// </summary>
         /// <param name="other"></param>
-        public Matrix ThisTransposeTimesOtherTimesThis(Matrix other) //TODO: this should be implemented for symmetric matrices
+        public Matrix ThisTransposeTimesOtherTimesThis(IMatrixView other) //TODO: this should be implemented for symmetric matrices
         {
             //TODO: Move this class to project Solvers where the following assumptions are always satisfied.
             //TODO: Otherwise, rename this method to specify for which instances it works correctly.

@@ -36,7 +36,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly FetiDPDofSeparator dofSeparator;
         private readonly IFetiDPInterfaceProblemSolver interfaceProblemSolver;
         private readonly Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers;
-        private readonly Dictionary<int, IFetiSubdomainMatrixManager> matrixManagersGeneral; //TODO: redesign. They are the same as above, but Dictionary is not covariant
+        private readonly Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagersGeneral; //TODO: redesign. They are the same as above, but Dictionary is not covariant
         private readonly Dictionary<int, ISingleSubdomainLinearSystem> linearSystems;
         private readonly IModel model;
         private readonly IFetiPreconditionerFactory preconditionerFactory;
@@ -56,7 +56,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private FetiDPSubdomainGlobalMapping subdomainGlobalMapping;
 
         private FetiDPSolver(IModel model, ICornerNodeSelection cornerNodeSelection,
-            IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory, IDofOrderer dofOrderer, 
+            IFetiDPSubdomainMatrixManagerFactoryOLD matrixManagerFactory, IDofOrderer dofOrderer, 
             IFetiPreconditionerFactory preconditionerFactory, bool problemIsHomogeneous, 
             IFetiDPInterfaceProblemSolver interfaceProblemSolver)
         {
@@ -72,7 +72,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             // Matrix managers and linear systems
             matrixManagers = new Dictionary<int, IFetiDPSubdomainMatrixManagerOLD>();
-            matrixManagersGeneral = new Dictionary<int, IFetiSubdomainMatrixManager>();
+            matrixManagersGeneral = new Dictionary<int, IFetiSubdomainMatrixManagerOLD>();
             this.linearSystems = new Dictionary<int, ISingleSubdomainLinearSystem>();
             var externalLinearSystems = new Dictionary<int, ILinearSystem>();
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
@@ -126,7 +126,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 if (subdomain.StiffnessModified)
                 {
                     Debug.WriteLine($"{this.GetType().Name}: Assembling the free-free stiffness matrix of subdomain {s}");
-                    Kff = matrixManagers[s].BuildGlobalMatrix(subdomain.FreeDofOrdering,
+                    Kff = matrixManagers[s].BuildFreeDofsMatrix(subdomain.FreeDofOrdering,
                         subdomain.EnumerateElements(), elementMatrixProvider);
                     linearSystems[s].Matrix = Kff; //TODO: This should be done by the solver not the analyzer. This method should return void.
                 }
@@ -165,7 +165,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                         + $" subdomain {s}, they must have been ordered first.");
                 }
                 (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) =
-                    matrixManagers[s].BuildGlobalSubmatrices(subdomain.FreeDofOrdering, subdomain.ConstrainedDofOrdering, 
+                    matrixManagers[s].BuildFreeConstrainedMatrices(subdomain.FreeDofOrdering, subdomain.ConstrainedDofOrdering, 
                     subdomain.EnumerateElements(), elementMatrixProvider);
                 matrices[s] = (Kff, Kfc, Kcf, Kcc);
                 linearSystems[s].Matrix = Kff; //TODO: This should be done by the solver not the analyzer. This method should return void.
@@ -189,7 +189,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 if (subdomain.StiffnessModified)
                 {
                     Debug.WriteLine($"{this.GetType().Name}: Clearing saved matrices of subdomain {subdomain.ID}.");
-                    matrixManagers[subdomain.ID].Clear();
+                    matrixManagers[subdomain.ID].ClearMatrices();
                 }
             }
             flexibility = null;
@@ -485,10 +485,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         public class Builder
         {
             private readonly ICornerNodeSelection cornerNodeSelection;
-            private readonly IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory; 
+            private readonly IFetiDPSubdomainMatrixManagerFactoryOLD matrixManagerFactory; 
 
             public Builder(ICornerNodeSelection cornerNodeSelection, 
-                IFetiDPSubdomainMatrixManagerFactory matrixManagerFactory)
+                IFetiDPSubdomainMatrixManagerFactoryOLD matrixManagerFactory)
             {
                 this.cornerNodeSelection = cornerNodeSelection;
                 this.matrixManagerFactory = matrixManagerFactory;

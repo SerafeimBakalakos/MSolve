@@ -17,7 +17,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         private const int multiplicityTag = 0;
 
         protected readonly ProcessDistribution procs;
-        private readonly FetiDPDofSeparatorMpi dofSeparator;
+        private readonly IFetiDPDofSeparator dofSeparator;
 
         /// <summary>
         /// Each process stores only the ones corresponding to its subdomain. Master stores all of them.
@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         private readonly IModel model;
 
         public HomogeneousStiffnessDistributionMpi(ProcessDistribution processDistribution, IModel model,
-            FetiDPDofSeparatorMpi dofSeparator)
+            IFetiDPDofSeparator dofSeparator)
         {
             this.procs = processDistribution;
             this.model = model;

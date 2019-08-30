@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
 
         public abstract IFetiPreconditioner CreatePreconditioner(IModel model, 
             IStiffnessDistribution stiffnessDistribution, IDofSeparator dofSeparator, 
-            ILagrangeMultipliersEnumerator lagrangeEnumerator, Dictionary<int, IFetiSubdomainMatrixManager> matrixManagers);
+            ILagrangeMultipliersEnumerator lagrangeEnumerator, Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagers);
 
         protected Dictionary<int, IMappingMatrix> CalcBoundaryPreconditioningBooleanMatrices(IModel model, 
             IStiffnessDistribution stiffnessDistribution, IDofSeparator dofSeparator, 

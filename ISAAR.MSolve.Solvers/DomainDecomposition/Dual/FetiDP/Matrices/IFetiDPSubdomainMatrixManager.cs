@@ -21,9 +21,31 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
     /// </summary>
     public interface IFetiDPSubdomainMatrixManager : IFetiSubdomainMatrixManager
     {
-        IMatrixView SchurComplementOfRemainderDofs { get; } //TODO: Must be SymmetricMatrix to reduce MPI communication
+        /// <summary>
+        /// The subvector of rhs that corresponds to corner dofs.
+        /// </summary>
+        Vector Fbc { get; }
 
-        void CalcSchurComplementOfRemainderDofs();
+        /// <summary>
+        /// The vector that results from static condensation of remainder dofs. Its entries correspond to corner dofs.
+        /// </summary>
+        Vector FcStar { get; }
+
+        /// <summary>
+        /// The subvector of rhs that corresponds to remainder dofs.
+        /// </summary>
+        Vector Fr { get; }
+
+        /// <summary>
+        /// The Schur complement of the submatrix corresponding to remainder dofs: K / Krr. Its rows and columns correspond to 
+        /// corner dofs.
+        /// </summary>
+        IMatrixView KccStar { get; }
+
+        void CondenseMatricesStatically();
+        void CondenseVectorsStatically();
+
+        void ClearVectors();
 
         //TODO: E.g. Once Kcc* is calculated Kcc and Krc can be cleared. There are 2 options:
         //      a) Each matrix must be able to be cleared independently, if the FETI-DP solver and its strategies decide when.
@@ -31,20 +53,17 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
         //void ClearKcc();
         //void ClearKcrKrc();
 
-        void ExtractKcc(int[] cornerDofs);  //TODO: perhaps SymmetricMatrix
-        void ExtractKcrKrc(int[] cornerDofs, int[] remainderDofs); //TODO: perhaps CSR or CSC
-        void ExtractKrr(int[] remainderDofs); //TODO: perhaps SkylineMatrix or SymmetricCSC
+        void ExtractCornerRemainderSubmatrices();
+        void ExtractCornerRemainderSubvectors();
 
         void InvertKrr(bool inPlace);
 
         Vector MultiplyInverseKrrTimes(Vector vector);
-        Vector MultiplyKccTimes(Vector vector);
+        Vector MultiplyKccTimes(Vector vector); //TODO: Not used anywhere. In fact Kcc can be overwritten with KccStar during CalcSchurComplementOfRemainderDofs() without any headaches.
         Vector MultiplyKcrTimes(Vector vector);
         Vector MultiplyKrcTimes(Vector vector);
 
-        //TODO: Bad design. All this time the matrix manager had access to only 1 subdomain and now I pass it an object that
-        //      stores dof data for all subdomains.
-        DofPermutation ReorderInternalDofs(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator);
-        DofPermutation ReorderRemainderDofs(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator);
+        DofPermutation ReorderInternalDofs();
+        DofPermutation ReorderRemainderDofs();
     }
 }

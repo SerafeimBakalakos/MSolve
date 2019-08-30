@@ -1,0 +1,46 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
+
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
+{
+    //TODO: Using these 2 and the methods that take them as arguments, I could write classes that have nothing to do with the DDM
+    //      itself. They only know how to assemble matrices and vectors in serial/MPI environment. I can take it even further
+    //      and have the SubdomainMatrixAssembler use the serial implementation.
+    public delegate (IMatrixView subdomainMatrix, UnsignedBooleanMatrix globalToSubdomainDofsMap) CalcSubdomainMatrix(
+        ISubdomain subdomain);
+    public delegate (Vector subdomainVector, UnsignedBooleanMatrix globalToSubdomainDofsMap) CalcSubdomainVector(
+        ISubdomain subdomain);
+
+    public interface IFetiDPMatrixManager : IFetiDPSeparatedDofReordering
+    {
+
+        //TODO: Not sure about these. I should probably wrap the methods in those interfaces, in order to avoid having them 
+        //      called in a loop. E.g MultiplyMatrixTimes... of preconditioner. In this case the in and out vectors should also 
+        //      be contained in classes with MPI/Serial implementation or at least in LinearSystem-like classes, so that each 
+        //      process read and writes to its corresponding one.
+        IFetiDPGlobalMatrixManager GlobalMatrixManager { get; }
+        IFetiDPSubdomainMatrixManager GetSubdomainMatrixManager(ISubdomain subdomain);
+
+        void AssembleCoarseProblemMatrix(CalcSubdomainMatrix calcSubdomainMatrix);
+        void AssembleCoarseProblemRhs(CalcSubdomainVector calcSubdomainRhs);
+
+        //can't CoarseProblemSolver just use this class? Then it will not have to do Serial/MPI implementation and the FETI/communication logic will be decoupled
+        //void CalcGlobalMatrix(ICornerNodeSelection cornerNodeSelection, IFetiDPDofSeparator dofSeparator, 
+        //    CalcSubdomainMatrix calcSubdomainMatrix);
+
+        //void CalcGlobalVector(IFetiDPDofSeparator dofSeparator, CalcSubdomainMatrix calcSubdomainMatrix);
+
+        //Dictionary<ISubdomain, IMatrixView> CalcSchurComplementsOfSubdomains(IFetiDPDofSeparator dofSeparator,
+        //    CalcSubdomainMatrix calcSubdomainMatrix);
+
+        //Dictionary<ISubdomain, Vector> CalcCondensedVectorsOfSubdomains(IFetiDPDofSeparator dofSeparator,
+        //    CalcSubdomainMatrix calcSubdomainMatrix);
+    }
+}

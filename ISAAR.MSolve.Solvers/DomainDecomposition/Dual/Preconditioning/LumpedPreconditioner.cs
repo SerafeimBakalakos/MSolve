@@ -14,11 +14,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
 {
     public class LumpedPreconditioner : IFetiPreconditioner
     {
-        private readonly Dictionary<int, IFetiSubdomainMatrixManager> matrixManagers;
+        private readonly Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagers;
         private readonly Dictionary<int, IMappingMatrix> preconditioningBoundarySignedBooleanMatrices;
         private readonly int[] subdomainIDs;
 
-        private LumpedPreconditioner(int[] subdomainIDs, Dictionary<int, IFetiSubdomainMatrixManager> matrixManagers,
+        private LumpedPreconditioner(int[] subdomainIDs, Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagers,
             Dictionary<int, IMappingMatrix> preconditioningBoundarySignedBooleanMatrices)
         {
             this.subdomainIDs = subdomainIDs;
@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
             lhs.Clear(); //TODO: this should be avoided
             foreach (int s in subdomainIDs)
             {
-                IFetiSubdomainMatrixManager matrixManager = matrixManagers[s];
+                IFetiSubdomainMatrixManagerOLD matrixManager = matrixManagers[s];
                 IMappingMatrix Bpb = preconditioningBoundarySignedBooleanMatrices[s];
 
                 // inv(F) * y = Bpb * Kbb * Bpb^T * y
@@ -49,7 +49,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
             lhs.Clear(); //TODO: this should be avoided
             foreach (int s in subdomainIDs)
             {
-                IFetiSubdomainMatrixManager matrixManager = matrixManagers[s];
+                IFetiSubdomainMatrixManagerOLD matrixManager = matrixManagers[s];
                 IMappingMatrix Bpb = preconditioningBoundarySignedBooleanMatrices[s];
 
                 // inv(F) * y: Bpb * Kbb * Bpb^T * Y
@@ -66,7 +66,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
 
             public override IFetiPreconditioner CreatePreconditioner(IModel model, 
                 IStiffnessDistribution stiffnessDistribution, IDofSeparator dofSeparator, 
-                ILagrangeMultipliersEnumerator lagrangeEnumerator, Dictionary<int, IFetiSubdomainMatrixManager> matrixManagers)
+                ILagrangeMultipliersEnumerator lagrangeEnumerator, Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagers)
             {
                 int[] subdomainIDs = matrixManagers.Keys.ToArray();
                 Dictionary<int, IMappingMatrix> boundaryBooleans = CalcBoundaryPreconditioningBooleanMatrices(model,

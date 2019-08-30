@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Matrices
     /// format. All the matrices represented by this interface belong to a single subdomain.
     /// Authors: Serafeim Bakalakos
     /// </summary>
-    public interface IFeti1SubdomainMatrixManager : IFetiSubdomainMatrixManager
+    public interface IFeti1SubdomainMatrixManager : IFetiSubdomainMatrixManagerOLD
     {
         // The FETI-1 solver should access them from here, so that they can be created/disposed together with inv(Kff).
         List<Vector> RigidBodyModes { get; } 
