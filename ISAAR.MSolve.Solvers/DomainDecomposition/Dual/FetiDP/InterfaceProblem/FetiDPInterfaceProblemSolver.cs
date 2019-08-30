@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         }
 
         public (Vector lagrangeMultipliers, Vector cornerDisplacements) SolveInterfaceProblem(FetiDPFlexibilityMatrix flexibility, 
-            IFetiPreconditioner preconditioner, IFetiDPCoarseProblemSolver coarseProblemSolver, 
+            IFetiPreconditioner preconditioner, IFetiDPCoarseProblemSolverOLD coarseProblemSolver, 
             Vector globalFcStar, Vector dr, double globalForcesNorm, SolverLogger logger)
         {
             int systemOrder = flexibility.Order;
@@ -75,7 +75,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         }
 
         private Vector CreateInterfaceProblemRhs(FetiDPFlexibilityMatrix flexibility, 
-            IFetiDPCoarseProblemSolver coarseProblemSolver, Vector globalFcStar, Vector dr)
+            IFetiDPCoarseProblemSolverOLD coarseProblemSolver, Vector globalFcStar, Vector dr)
         {
             // rhs = dr - FIrc * inv(KccStar) * fcStar
             Vector rhs = coarseProblemSolver.MultiplyInverseCoarseProblemMatrixTimes(globalFcStar);
@@ -97,10 +97,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
         internal class InterfaceProblemMatrix : ILinearTransformation
         {
-            private readonly IFetiDPCoarseProblemSolver coarseProblemSolver;
+            private readonly IFetiDPCoarseProblemSolverOLD coarseProblemSolver;
             private readonly FetiDPFlexibilityMatrix flexibility;
 
-            internal InterfaceProblemMatrix(FetiDPFlexibilityMatrix flexibility, IFetiDPCoarseProblemSolver coarseProblemSolver)
+            internal InterfaceProblemMatrix(FetiDPFlexibilityMatrix flexibility, IFetiDPCoarseProblemSolverOLD coarseProblemSolver)
             {
                 this.flexibility = flexibility;
                 this.coarseProblemSolver = coarseProblemSolver;

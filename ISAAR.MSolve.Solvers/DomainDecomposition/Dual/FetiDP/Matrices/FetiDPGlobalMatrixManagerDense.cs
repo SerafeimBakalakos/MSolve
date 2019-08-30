@@ -13,22 +13,35 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
 {
-    public class FetiDPGlobalMatrixManagerDense : IFetiDPGlobalMatrixManager
+    public class FetiDPGlobalMatrixManagerDense : FetiDPGlobalMatrixManagerBase
     {
-        private readonly IModel model;
         private Matrix inverseGlobalKccStar;
 
-        public FetiDPGlobalMatrixManagerDense(IModel model)
+        public FetiDPGlobalMatrixManagerDense(IModel model, IFetiDPDofSeparator dofSeparator) : base(model, dofSeparator)
         {
-            this.model = model;
         }
 
-        public Vector CoarseProblemRhs { get; private set; }
+        public override DofPermutation ReorderGlobalCornerDofs() => DofPermutation.CreateNoPermutation();
 
-        public void ClearCoarseProblemMatrix()
+        protected override void CalcInverseCoarseProblemMatrixImpl(ICornerNodeSelection cornerNodeSelection,
+            Dictionary<ISubdomain, IMatrixView> condensedMatrices)
         {
-            inverseGlobalKccStar = null;
+            // globalKccStar = sum_over_s(Lc[s]^T * KccStar[s] * Lc[s])
+            var globalKccStar = Matrix.CreateZero(dofSeparator.NumGlobalCornerDofs, dofSeparator.NumGlobalCornerDofs);
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                int s = subdomain.ID;
+                IMatrixView subdomainKccStar = condensedMatrices[subdomain];
+
+                UnsignedBooleanMatrix Lc = dofSeparator.GetCornerBooleanMatrix(subdomain);
+                globalKccStar.AddIntoThis(Lc.ThisTransposeTimesOtherTimesThis(subdomainKccStar));
+            }
+
+            inverseGlobalKccStar = globalKccStar;
+            inverseGlobalKccStar.InvertInPlace();
         }
+
+        protected override void ClearInverseCoarseProblemMatrixImpl() => inverseGlobalKccStar = null;
 
         public void AssembleAndInvertCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection, 
             IFetiDPDofSeparator dofSeparator, Dictionary<ISubdomain, IMatrixView> schurComplementsOfRemainderDofs)
@@ -48,11 +61,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
             inverseGlobalKccStar.InvertInPlace();
         }
 
-        public void AssembleCoarseProblemRhs(IFetiDPDofSeparator dofSeparator, Dictionary<ISubdomain, Vector> condensedRhsVectors)
-            => CoarseProblemRhs = FetiDPCoarseProblemUtilities.AssembleCoarseProblemRhs(dofSeparator, condensedRhsVectors);
-
-        public Vector MultiplyInverseCoarseProblemMatrixTimes(Vector vector) => inverseGlobalKccStar * vector;
-
-        public DofPermutation ReorderCornerDofs(IFetiDPDofSeparator dofSeparator) => DofPermutation.CreateNoPermutation();
+        protected override Vector MultiplyInverseCoarseProblemMatrixTimesImpl(Vector vector) => inverseGlobalKccStar * vector;
     }
 }

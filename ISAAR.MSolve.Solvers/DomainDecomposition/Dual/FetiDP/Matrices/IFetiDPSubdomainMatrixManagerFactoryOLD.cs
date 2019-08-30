@@ -9,7 +9,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
     public interface IFetiDPSubdomainMatrixManagerFactoryOLD
     {
         //TODO: This is in a different namespace
-        IFetiDPCoarseProblemSolver CreateCoarseProblemSolver(IModel model); 
+        IFetiDPCoarseProblemSolverOLD CreateCoarseProblemSolver(IModel model); 
 
         IFetiDPSubdomainMatrixManagerOLD CreateMatricesManager(ISubdomain subdomain);
     }

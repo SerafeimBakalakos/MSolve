@@ -17,7 +17,7 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 //TODO: Use Skyline assembler instead of reimplementing it.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 {
-    public class FetiDPCoarseProblemSolverSkylineOLD : IFetiDPCoarseProblemSolver
+    public class FetiDPCoarseProblemSolverSkylineOLD : IFetiDPCoarseProblemSolverOLD
     {
         private readonly IModel model;
         private readonly IReorderingAlgorithm reordering;

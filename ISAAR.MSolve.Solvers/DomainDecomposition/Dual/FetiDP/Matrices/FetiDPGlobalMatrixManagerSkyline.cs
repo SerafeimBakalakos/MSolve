@@ -12,55 +12,22 @@ using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
 {
-    public class FetiDPGlobalMatrixManagerSkyline : IFetiDPGlobalMatrixManager
+    public class FetiDPGlobalMatrixManagerSkyline : FetiDPGlobalMatrixManagerBase
     {
-        private readonly IModel model;
         private readonly IReorderingAlgorithm reordering;
         private LdlSkyline inverseGlobalKccStar;
 
-        public FetiDPGlobalMatrixManagerSkyline(IModel model, IReorderingAlgorithm reordering)
+        public FetiDPGlobalMatrixManagerSkyline(IModel model, IFetiDPDofSeparator dofSeparator, IReorderingAlgorithm reordering):
+            base(model, dofSeparator)
         {
-            this.model = model;
             this.reordering = reordering;
         }
 
-        public Vector CoarseProblemRhs { get; private set; }
-
-        public void ClearCoarseProblemMatrix()
-        {
-            inverseGlobalKccStar = null;
-        }
-
-        public void AssembleAndInvertCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection, 
-            IFetiDPDofSeparator dofSeparator, Dictionary<ISubdomain, IMatrixView> schurComplementsOfRemainderDofs)
-        {
-            // globalKccStar = sum_over_s(Lc[s]^T * KccStar[s] * Lc[s])
-            int[] skylineColHeights = FindSkylineColumnHeights(cornerNodeSelection, dofSeparator);
-            var skylineBuilder = SkylineBuilder.Create(dofSeparator.NumGlobalCornerDofs, skylineColHeights);
-
-            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-            {
-                int s = subdomain.ID;
-                IMatrixView subdomainKccStar = schurComplementsOfRemainderDofs[subdomain];
-                int[] subdomainToGlobalIndices = dofSeparator.GetCornerBooleanMatrix(subdomain).GetRowsToColumnsMap();
-                skylineBuilder.AddSubmatrixSymmetric(subdomainKccStar, subdomainToGlobalIndices);
-            }
-
-            SkylineMatrix globalKccStar = skylineBuilder.BuildSkylineMatrix();
-            this.inverseGlobalKccStar = globalKccStar.FactorLdl(true);
-        }
-
-        public void AssembleCoarseProblemRhs(IFetiDPDofSeparator dofSeparator, Dictionary<ISubdomain, Vector> condensedRhsVectors)
-            => CoarseProblemRhs = FetiDPCoarseProblemUtilities.AssembleCoarseProblemRhs(dofSeparator, condensedRhsVectors);
-
-        public Vector MultiplyInverseCoarseProblemMatrixTimes(Vector vector) => inverseGlobalKccStar.SolveLinearSystem(vector);
-
-        public DofPermutation ReorderCornerDofs(IFetiDPDofSeparator dofSeparator)
+        public override DofPermutation ReorderGlobalCornerDofs()
         {
             if (reordering == null) return DofPermutation.CreateNoPermutation();
             var pattern = SparsityPatternSymmetric.CreateEmpty(dofSeparator.NumGlobalCornerDofs);
@@ -81,7 +48,31 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
             return DofPermutation.Create(permutation, oldToNew);
         }
 
-        private int[] FindSkylineColumnHeights(ICornerNodeSelection cornerNodeSelection, IFetiDPDofSeparator dofSeparator)
+        protected override void CalcInverseCoarseProblemMatrixImpl(ICornerNodeSelection cornerNodeSelection,
+            Dictionary<ISubdomain, IMatrixView> condensedMatrices)
+        {
+            // globalKccStar = sum_over_s(Lc[s]^T * KccStar[s] * Lc[s])
+            int[] skylineColHeights = FindSkylineColumnHeights(cornerNodeSelection);
+            var skylineBuilder = SkylineBuilder.Create(dofSeparator.NumGlobalCornerDofs, skylineColHeights);
+
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                int s = subdomain.ID;
+                IMatrixView subdomainKccStar = condensedMatrices[subdomain];
+                int[] subdomainToGlobalIndices = dofSeparator.GetCornerBooleanMatrix(subdomain).GetRowsToColumnsMap();
+                skylineBuilder.AddSubmatrixSymmetric(subdomainKccStar, subdomainToGlobalIndices);
+            }
+
+            SkylineMatrix globalKccStar = skylineBuilder.BuildSkylineMatrix();
+            this.inverseGlobalKccStar = globalKccStar.FactorLdl(true);
+        }
+
+        protected override void ClearInverseCoarseProblemMatrixImpl() => inverseGlobalKccStar = null;
+
+        protected override Vector MultiplyInverseCoarseProblemMatrixTimesImpl(Vector vector)
+            => inverseGlobalKccStar.SolveLinearSystem(vector);
+
+        private int[] FindSkylineColumnHeights(ICornerNodeSelection cornerNodeSelection)
         {
             //only entries above the diagonal count towards the column height
             int[] colHeights = new int[dofSeparator.NumGlobalCornerDofs];

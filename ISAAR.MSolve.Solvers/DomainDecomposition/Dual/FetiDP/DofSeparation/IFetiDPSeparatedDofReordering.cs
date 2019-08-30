@@ -8,8 +8,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 {
     public interface IFetiDPSeparatedDofReordering
     {
-        DofPermutation ReorderGlobalCornerDofs(IFetiDPDofSeparator dofSeparator);
-        DofPermutation ReorderSubdomainInternalDofs(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator);
-        DofPermutation ReorderSubdomainRemainderDofs(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator);
+        DofPermutation ReorderGlobalCornerDofs();
+        DofPermutation ReorderSubdomainInternalDofs(ISubdomain subdomain);
+        DofPermutation ReorderSubdomainRemainderDofs(ISubdomain subdomain);
     }
 }

@@ -14,18 +14,17 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
 {
     public interface IFetiDPGlobalMatrixManager 
     {
-        //Vector CoarseProblemRhs { get; }
+        Vector CoarseProblemRhs { get; }
 
-        //void ClearCoarseProblemMatrix();
-        //void ClearCoarseProblemVector();
+        void CalcCoarseProblemRhs(Dictionary<ISubdomain, Vector> condensedRhsVectors);
+        void CalcInverseCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection,
+            Dictionary<ISubdomain, IMatrixView> condensedMatrices);
 
-        //void AssembleAndInvertCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection,
-        //    IFetiDPDofSeparator dofSeparator, Dictionary<ISubdomain, IMatrixView> schurComplementsOfRemainderDofs);
+        void ClearCoarseProblemRhs();
+        void ClearInverseCoarseProblemMatrix();
 
-        //void AssembleCoarseProblemRhs(IFetiDPDofSeparator dofSeparator, Dictionary<ISubdomain, Vector> condensedRhsVectors);
+        Vector MultiplyInverseCoarseProblemMatrixTimes(Vector vector);
 
-        //Vector MultiplyInverseCoarseProblemMatrixTimes(Vector vector);
-
-        //DofPermutation ReorderCornerDofs(IFetiDPDofSeparator dofSeparator);
+        DofPermutation ReorderGlobalCornerDofs();
     }
 }

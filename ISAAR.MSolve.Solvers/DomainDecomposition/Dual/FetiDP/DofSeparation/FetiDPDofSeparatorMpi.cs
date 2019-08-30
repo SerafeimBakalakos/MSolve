@@ -144,18 +144,19 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             if (processSubdomain.ConnectivityModified)
             {
                 Debug.WriteLine(msgHeader + $"Reordering internal dofs of subdomain {processSubdomain.ID}.");
-                subdomainDofs.ReorderInternalDofs(reordering.ReorderSubdomainInternalDofs(processSubdomain, this));
+                subdomainDofs.ReorderInternalDofs(reordering.ReorderSubdomainInternalDofs(processSubdomain));
             }
         }
 
-        public void SeparateDofs(ICornerNodeSelection cornerNodeSelection, IFetiDPSeparatedDofReordering reordering)
+        //TODO: This is too detailed for a coordinator class. All calls to global separator should be in 1 method. Ditto for subdomain separator. 
+        public void SeparateDofs(ICornerNodeSelection cornerNodeSelection, IFetiDPSeparatedDofReordering reordering) 
         {
             // Global dofs
             if (procs.IsMasterProcess)
             {
                 globalDofs.DefineGlobalBoundaryDofs(cornerNodeSelection.GlobalCornerNodes);
                 globalDofs.DefineGlobalCornerDofs(cornerNodeSelection.GlobalCornerNodes);
-                globalDofs.ReorderGlobalCornerDofs(reordering.ReorderGlobalCornerDofs(this));
+                globalDofs.ReorderGlobalCornerDofs(reordering.ReorderGlobalCornerDofs());
             }
 
             // Subdomain dofs
@@ -166,7 +167,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
                 subdomainDofs.SeparateCornerRemainderDofs(cornerNodeSelection.GetCornerNodesOfSubdomain(processSubdomain));
 
                 Debug.WriteLine(msgHeader + $"Reordering internal dofs of subdomain {s}.");
-                subdomainDofs.ReorderRemainderDofs(reordering.ReorderSubdomainRemainderDofs(processSubdomain, this));
+                subdomainDofs.ReorderRemainderDofs(reordering.ReorderSubdomainRemainderDofs(processSubdomain));
 
                 Debug.WriteLine(msgHeader + $"Separating and ordering boundary-internal dofs of subdomain {s}");
                 subdomainDofs.SeparateBoundaryInternalDofs(cornerNodeSelection.GetCornerNodesOfSubdomain(processSubdomain));

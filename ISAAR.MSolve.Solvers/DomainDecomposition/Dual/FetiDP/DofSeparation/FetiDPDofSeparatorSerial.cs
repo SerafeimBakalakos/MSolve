@@ -64,7 +64,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
                 if (subdomain.ConnectivityModified)
                 {
                     Debug.WriteLine(msgHeader + $"Reordering internal dofs of subdomain {subdomain.ID}.");
-                    subdomainDofs[subdomain].ReorderInternalDofs(reordering.ReorderSubdomainInternalDofs(subdomain, this));
+                    subdomainDofs[subdomain].ReorderInternalDofs(reordering.ReorderSubdomainInternalDofs(subdomain));
                 }
             }
         }
@@ -74,7 +74,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             // Global dofs
             globalDofs.DefineGlobalBoundaryDofs(cornerNodeSelection.GlobalCornerNodes);
             globalDofs.DefineGlobalCornerDofs(cornerNodeSelection.GlobalCornerNodes);
-            globalDofs.ReorderGlobalCornerDofs(reordering.ReorderGlobalCornerDofs(this));
+            globalDofs.ReorderGlobalCornerDofs(reordering.ReorderGlobalCornerDofs());
 
             // Subdomain dofs
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
@@ -87,7 +87,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
                     subdomainDofs[subdomain].SeparateCornerRemainderDofs(cornerNodes);
 
                     Debug.WriteLine(msgHeader + $"Reordering internal dofs of subdomain {s}.");
-                    subdomainDofs[subdomain].ReorderRemainderDofs(reordering.ReorderSubdomainRemainderDofs(subdomain, this));
+                    subdomainDofs[subdomain].ReorderRemainderDofs(reordering.ReorderSubdomainRemainderDofs(subdomain));
 
                     Debug.WriteLine(msgHeader + $"Separating and ordering boundary-internal dofs of subdomain {s}");
                     subdomainDofs[subdomain].SeparateBoundaryInternalDofs(cornerNodes);

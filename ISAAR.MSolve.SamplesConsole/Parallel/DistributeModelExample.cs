@@ -82,7 +82,7 @@ namespace ISAAR.MSolve.SamplesConsole.Parallel
 
                 // Setup solvers, analyzers
                 ICornerNodeSelection cornerNodes = null;
-                var matrixManagers = new FetiDPSubdomainMatrixManagerSkylineOLD.Factory();
+                var matrixManagers = new FetiDPMatrixManagerFactorySkyline(null);
                 var solver = new FetiDPSolverMpi(procs, model, cornerNodes, matrixManagers, true);
                 //var problem = new ProblemStructural(model, null);
                 var provider = new ElementStructuralStiffnessProvider();

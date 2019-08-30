@@ -12,6 +12,8 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 //      notify the solver and each strategy when they are ready for consumption. Also once a matrix has been fully used, 
 //      it should be cleared to conserve memory. This also applies for Kff.
 //TODO: Perhaps this class should only access FetiDPSubdomainDofSeparator instead of IFetiDPDofSeparator
+//TODO: Instead of all these multiply methods, I could just return IMultipliable (which exposes Multiply(Vector, transpose) 
+//      and Multiply(Matrix, , transpose)) for Kbb, Kbi, inverseKii, Kcr, Krr, inverseKrr
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
 {
     /// <summary>
@@ -43,9 +45,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
         IMatrixView KccStar { get; }
 
         void CondenseMatricesStatically();
-        void CondenseVectorsStatically();
+        void CondenseRhsVectorsStatically();
 
-        void ClearVectors();
+        void ClearRhsVectors();
 
         //TODO: E.g. Once Kcc* is calculated Kcc and Krc can be cleared. There are 2 options:
         //      a) Each matrix must be able to be cleared independently, if the FETI-DP solver and its strategies decide when.
@@ -54,7 +56,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
         //void ClearKcrKrc();
 
         void ExtractCornerRemainderSubmatrices();
-        void ExtractCornerRemainderSubvectors();
+        void ExtractCornerRemainderRhsSubvectors();
 
         void InvertKrr(bool inPlace);
 

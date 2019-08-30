@@ -29,7 +29,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     public class FetiDPSolver : ISolver
     {
         internal const string name = "FETI-DP Solver"; // for error messages
-        private readonly IFetiDPCoarseProblemSolver coarseProblemSolver;
+        private readonly IFetiDPCoarseProblemSolverOLD coarseProblemSolver;
         private readonly ICornerNodeSelection cornerNodeSelection;
         private readonly ICrosspointStrategy crosspointStrategy = new FullyRedundantConstraints();
         private readonly IDofOrderer dofOrderer;

@@ -456,10 +456,13 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
         internal class MockReordering : IFetiDPSeparatedDofReordering
         {
-            public DofPermutation ReorderGlobalCornerDofs(IFetiDPDofSeparator dofSeparator) 
+            public DofPermutation ReorderGlobalCornerDofs() 
                 => DofPermutation.CreateNoPermutation();
 
-            public DofPermutation ReorderSubdomainRemainderDofs(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator)
+            public DofPermutation ReorderSubdomainInternalDofs(ISubdomain subdomain)
+            => DofPermutation.CreateNoPermutation();
+
+            public DofPermutation ReorderSubdomainRemainderDofs(ISubdomain subdomain)
                 => DofPermutation.CreateNoPermutation();
         }
     }

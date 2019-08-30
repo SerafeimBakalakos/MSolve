@@ -131,7 +131,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
         }
         protected abstract void ClearMatricesImpl();
 
-        public void ClearVectors()
+        public void ClearRhsVectors()
         {
             fbc = null;
             fr = null;
@@ -147,7 +147,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
         }
         protected abstract void CondenseMatricesStaticallyImpl();
 
-        public void CondenseVectorsStatically()
+        public void CondenseRhsVectorsStatically()
         {
             // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s]
             Vector temp = MultiplyInverseKrrTimes(Fr);
@@ -162,7 +162,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
         }
         protected abstract void ExtractCornerRemainderSubmatricesImpl();
 
-        public void ExtractCornerRemainderSubvectors()
+        public void ExtractCornerRemainderRhsSubvectors()
         {
             Vector Ff = LinearSystem.RhsConcrete;
             int[] cornerDofs = dofSeparator.GetCornerDofIndices(subdomain);

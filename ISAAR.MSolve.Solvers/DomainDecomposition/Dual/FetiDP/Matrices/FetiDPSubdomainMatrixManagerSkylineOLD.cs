@@ -419,7 +419,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
                 this.reordering = reordering;
             }
 
-            public IFetiDPCoarseProblemSolver CreateCoarseProblemSolver(IModel model)
+            public IFetiDPCoarseProblemSolverOLD CreateCoarseProblemSolver(IModel model)
                 => new FetiDPCoarseProblemSolverSkylineOLD(model, reordering);
 
             public IFetiDPSubdomainMatrixManagerOLD CreateMatricesManager(ISubdomain subdomain)

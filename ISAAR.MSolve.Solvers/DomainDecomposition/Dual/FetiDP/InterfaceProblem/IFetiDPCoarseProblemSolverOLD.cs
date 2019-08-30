@@ -8,7 +8,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 {
-    public interface IFetiDPCoarseProblemSolver
+    public interface IFetiDPCoarseProblemSolverOLD
     {
         void ClearCoarseProblemMatrix();
 

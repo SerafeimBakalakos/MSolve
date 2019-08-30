@@ -11,7 +11,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 {
-    public class FetiDPCoarseProblemSolverDenseOLD : IFetiDPCoarseProblemSolver
+    public class FetiDPCoarseProblemSolverDenseOLD : IFetiDPCoarseProblemSolverOLD
     {
         private readonly IModel model;
         private Matrix inverseGlobalKccStar;
