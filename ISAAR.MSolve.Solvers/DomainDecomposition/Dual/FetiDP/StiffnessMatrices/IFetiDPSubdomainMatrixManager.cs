@@ -14,7 +14,7 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 //TODO: Perhaps this class should only access FetiDPSubdomainDofSeparator instead of IFetiDPDofSeparator
 //TODO: Instead of all these multiply methods, I could just return IMultipliable (which exposes Multiply(Vector, transpose) 
 //      and Multiply(Matrix, , transpose)) for Kbb, Kbi, inverseKii, Kcr, Krr, inverseKrr
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 {
     /// <summary>
     /// Implements the linear algebra operations needed by <see cref="FetiDPSolver"/> depending on the underlying matrix storage

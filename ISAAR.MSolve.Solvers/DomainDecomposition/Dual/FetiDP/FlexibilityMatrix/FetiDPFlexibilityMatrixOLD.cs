@@ -7,18 +7,18 @@ using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 {
-    public class FetiDPFlexibilityMatrix
+    public class FetiDPFlexibilityMatrixOLD
     {
         private readonly Dictionary<int, SignedBooleanMatrixColMajor> Br;
         private readonly Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers;
         private readonly Dictionary<int, UnsignedBooleanMatrix> Lc;
         private readonly int numCornerDofs;
 
-        public FetiDPFlexibilityMatrix(FetiDPDofSeparator dofSeparator, FetiDPLagrangeMultipliersEnumerator lagrangeEnumerator, 
+        public FetiDPFlexibilityMatrixOLD(FetiDPDofSeparator dofSeparator, FetiDPLagrangeMultipliersEnumerator lagrangeEnumerator, 
             Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers)
         {
             this.Br = lagrangeEnumerator.BooleanMatrices;

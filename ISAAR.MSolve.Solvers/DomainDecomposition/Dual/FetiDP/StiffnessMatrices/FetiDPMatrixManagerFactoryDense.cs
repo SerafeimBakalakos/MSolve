@@ -4,7 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 {
     public class FetiDPMatrixManagerFactoryDense : IFetiDPMatrixManagerFactory
     {

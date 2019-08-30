@@ -15,7 +15,7 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
 //TODO: Kff should probably be a DOK. It will only be used to extract Krr, Krc, Kcc. 
 //      What about dynamic problems, where Kff needs to do linear combinations and matrix-vector multiplications
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 {
     /// <summary>
     /// Dense format for Kbb, symmetric packed for Kcc, KccStar, skyline for Kff, Krr, Kii and CSC for Kib, Krc.

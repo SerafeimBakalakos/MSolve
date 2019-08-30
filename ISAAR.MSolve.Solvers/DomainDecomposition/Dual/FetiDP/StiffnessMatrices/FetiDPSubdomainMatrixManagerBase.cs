@@ -14,7 +14,7 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 //TODO: I could make this generic on the matrix type, so that I can have the assembler and all operations that use it here.
 //TODO: Checks could be debug only.
 //TODO: The multiply methods could be done by this class but seeing the matrices a IMatrixView.
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 {
     public abstract class FetiDPSubdomainMatrixManagerBase : IFetiDPSubdomainMatrixManager
     {

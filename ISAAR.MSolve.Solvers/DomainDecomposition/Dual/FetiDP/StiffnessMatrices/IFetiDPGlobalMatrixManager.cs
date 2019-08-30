@@ -10,7 +10,7 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
 //TODO: Not sure about the interface. These methods should be wrapped by IFetiDPMatrixManager
 //TODO: Calculating the coarse problem rhs is also subdject to mpi/serial implementations, but it does not depend on any matrix format.
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 {
     public interface IFetiDPGlobalMatrixManager 
     {

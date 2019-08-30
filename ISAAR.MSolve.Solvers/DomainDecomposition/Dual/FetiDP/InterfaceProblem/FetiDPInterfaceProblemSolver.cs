@@ -2,17 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Iterative;
 using ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Preconditioning;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
-using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.Commons;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 
 //TODO: Should the matrix managers be injected into the constructor?
@@ -36,7 +33,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             this.pcgConvergenceStrategyFactory = pcgConvergenceStrategyFactory;
         }
 
-        public (Vector lagrangeMultipliers, Vector cornerDisplacements) SolveInterfaceProblem(FetiDPFlexibilityMatrix flexibility, 
+        public (Vector lagrangeMultipliers, Vector cornerDisplacements) SolveInterfaceProblem(FetiDPFlexibilityMatrixOLD flexibility, 
             IFetiPreconditioner preconditioner, IFetiDPCoarseProblemSolverOLD coarseProblemSolver, 
             Vector globalFcStar, Vector dr, double globalForcesNorm, SolverLogger logger)
         {
@@ -74,7 +71,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             return (lagranges, uc);
         }
 
-        private Vector CreateInterfaceProblemRhs(FetiDPFlexibilityMatrix flexibility, 
+        private Vector CreateInterfaceProblemRhs(FetiDPFlexibilityMatrixOLD flexibility, 
             IFetiDPCoarseProblemSolverOLD coarseProblemSolver, Vector globalFcStar, Vector dr)
         {
             // rhs = dr - FIrc * inv(KccStar) * fcStar
@@ -98,9 +95,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         internal class InterfaceProblemMatrix : ILinearTransformation
         {
             private readonly IFetiDPCoarseProblemSolverOLD coarseProblemSolver;
-            private readonly FetiDPFlexibilityMatrix flexibility;
+            private readonly FetiDPFlexibilityMatrixOLD flexibility;
 
-            internal InterfaceProblemMatrix(FetiDPFlexibilityMatrix flexibility, IFetiDPCoarseProblemSolverOLD coarseProblemSolver)
+            internal InterfaceProblemMatrix(FetiDPFlexibilityMatrixOLD flexibility, IFetiDPCoarseProblemSolverOLD coarseProblemSolver)
             {
                 this.flexibility = flexibility;
                 this.coarseProblemSolver = coarseProblemSolver;

@@ -17,7 +17,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessDistribution;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
@@ -27,6 +27,7 @@ using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 using MPI;
 using Xunit;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 
 //TODO: Also test stiffness distribution and preconditioners in other classes.
 //TODO: Create the dofSeparator and lagrangeEnumerator manually, without using FetiDPSolver.
@@ -562,7 +563,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Create the flexibility matrices by multiplying with identity matrices
             int numLagranges = lagrangeEnumerator.NumLagrangeMultipliers;
             int numCornerDofs = dofSeparator.NumGlobalCornerDofs;
-            var flexibility = new FetiDPFlexibilityMatrix(dofSeparator, lagrangeEnumerator, matrixManagers);
+            var flexibility = new FetiDPFlexibilityMatrixOLD(dofSeparator, lagrangeEnumerator, matrixManagers);
             Matrix FIrr = MultiplyWithIdentity(numLagranges, numLagranges, flexibility.MultiplyFIrr);
             Matrix FIrc = MultiplyWithIdentity(numLagranges, numLagranges, (x, y) => y.CopyFrom(flexibility.MultiplyFIrc(x)));
 
@@ -605,7 +606,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Create the rhs vector of the interface problem 
             FetiDPInterfaceProblemSolver interfaceSolver = new FetiDPInterfaceProblemSolver.Builder().Build();
-            var flexibility = new FetiDPFlexibilityMatrix(dofSeparator, lagrangeEnumerator, matrixManagers);
+            var flexibility = new FetiDPFlexibilityMatrixOLD(dofSeparator, lagrangeEnumerator, matrixManagers);
             Vector fcStar = VectorFcStar;
             MethodInfo method = interfaceSolver.GetType().GetMethod("CreateInterfaceProblemRhs",
                 BindingFlags.NonPublic | BindingFlags.Instance); // reflection for the private method
@@ -667,7 +668,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Solve the interface problem
             FetiDPInterfaceProblemSolver interfaceSolver = new FetiDPInterfaceProblemSolver.Builder().Build();
-            var flexibility = new FetiDPFlexibilityMatrix(dofSeparator, lagrangeEnumerator, matrixManagers);
+            var flexibility = new FetiDPFlexibilityMatrixOLD(dofSeparator, lagrangeEnumerator, matrixManagers);
             var logger = new SolverLogger("mock FETI-DP");
             (Vector lagranges, Vector uc) = interfaceSolver.SolveInterfaceProblem(
                 flexibility, preconditioner, coarseSolver, globalFcStar, dr, GlobalForcesNorm, logger);
