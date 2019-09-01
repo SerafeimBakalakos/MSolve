@@ -12,7 +12,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
-    public abstract class HomogeneousStiffnessDistributionMpi : IStiffnessDistributionMpi
+    public abstract class HomogeneousStiffnessDistributionMpi : IStiffnessDistribution
     {
         private const int multiplicityTag = 0;
 

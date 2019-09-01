@@ -19,7 +19,7 @@ using ISAAR.MSolve.Solvers.LinearSystems;
 //      global loads are distributed, which is when the IStiffnessDistribution is first created.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
-    public abstract class HeterogeneousStiffnessDistribution : IStiffnessDistribution
+    public abstract class HeterogeneousStiffnessDistribution : IStiffnessDistributionOLD
     {
         //TODO: Is it more efficient to use (INode node, DOFType[] dofTypes)[]? It would reduce the cost of accessing node data?
         //TODO: perhaps it would be faster to have a field Dictionary<int, double[]> boundaryDofStiffnesses, instead of the next

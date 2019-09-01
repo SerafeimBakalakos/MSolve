@@ -11,7 +11,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 //TODO: Perhaps I should make this a static utility class
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
-    public abstract class HomogeneousStiffnessDistribution : IStiffnessDistribution
+    public abstract class HomogeneousStiffnessDistribution : IStiffnessDistributionOLD
     {
         private readonly IDofSeparator dofSeparator;
         private readonly Dictionary<int, double[]> inverseBoundaryDofMultiplicities;

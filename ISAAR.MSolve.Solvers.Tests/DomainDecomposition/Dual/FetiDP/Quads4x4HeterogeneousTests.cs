@@ -117,7 +117,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
             var dofSeparator = (FetiDPDofSeparator)fi.GetValue(fetiSolver);
             fi = typeof(FetiDPSolver).GetField("stiffnessDistribution", BindingFlags.NonPublic | BindingFlags.Instance);
-            var stiffnessDistribution = (IStiffnessDistribution)fi.GetValue(fetiSolver);
+            var stiffnessDistribution = (IStiffnessDistributionOLD)fi.GetValue(fetiSolver);
             MethodInfo method = preconditionerFactory.GetType().GetMethod("CalcBoundaryPreconditioningBooleanMatrices",
                 BindingFlags.NonPublic | BindingFlags.Instance);
             var Bpbr = (Dictionary<int, IMappingMatrix>)method.Invoke(preconditionerFactory, 

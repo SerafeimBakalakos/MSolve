@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly IModel model;
         private readonly IFetiPreconditionerFactory preconditionerFactory;
         private readonly bool problemIsHomogeneous;
-        private readonly IStiffnessDistribution stiffnessDistribution;
+        private readonly IStiffnessDistributionOLD stiffnessDistribution;
 
         //TODO: fix the mess of Dictionary<int, ISubdomain>, List<ISubdomain>, Dictionary<int, Subdomain>, List<Subdomain>
         //      The concrete are useful for the preprocessor mostly, while analyzers, solvers need the interface versions.

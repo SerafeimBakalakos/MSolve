@@ -11,12 +11,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 {
     public class FetiDPSubdomainGlobalMapping
     {
-        private readonly IStiffnessDistribution distribution;
+        private readonly IStiffnessDistributionOLD distribution;
         private readonly FetiDPDofSeparator dofSeparator;
         private readonly IModel model;
 
         public FetiDPSubdomainGlobalMapping(IModel model, FetiDPDofSeparator dofSeparator,
-            IStiffnessDistribution distribution)
+            IStiffnessDistributionOLD distribution)
         {
             this.model = model;
             this.dofSeparator = dofSeparator;

@@ -36,7 +36,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly IModelMpi model;
         private readonly bool problemIsHomogeneous;
         private readonly ProcessDistribution procs;
-        private readonly IStiffnessDistributionMpi stiffnessDistribution;
+        private readonly IStiffnessDistribution stiffnessDistribution;
 
         private HashSet<INode> cornerNodesGlobal_master;
         private bool factorizeInPlace = true;

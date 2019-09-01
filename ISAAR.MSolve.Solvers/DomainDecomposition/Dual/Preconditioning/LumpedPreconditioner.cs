@@ -65,7 +65,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
             public override bool ReorderInternalDofsForFactorization => false;
 
             public override IFetiPreconditioner CreatePreconditioner(IModel model, 
-                IStiffnessDistribution stiffnessDistribution, IDofSeparator dofSeparator, 
+                IStiffnessDistributionOLD stiffnessDistribution, IDofSeparator dofSeparator, 
                 ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator, Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagers)
             {
                 int[] subdomainIDs = matrixManagers.Keys.ToArray();
