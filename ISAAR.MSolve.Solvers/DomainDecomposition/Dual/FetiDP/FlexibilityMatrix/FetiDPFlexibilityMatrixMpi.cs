@@ -6,38 +6,33 @@ using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using MPI;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 {
     public class FetiDPFlexibilityMatrixMpi : FetiDPFlexibilityMatrixBase
     {
-        private readonly FetiDPLagrangeMultipliersEnumeratorMpi lagrangeEnumerator;
         private readonly ProcessDistribution procs;
         private readonly FetiDPSubdomainFlexibilityMatrix subdomainFlexibility;
 
         public FetiDPFlexibilityMatrixMpi(ProcessDistribution procs, IModel model, IFetiDPDofSeparator dofSeparator, 
-            FetiDPLagrangeMultipliersEnumeratorMpi lagrangeEnumerator, IFetiDPMatrixManager matrixManager) 
-            : base(dofSeparator)
+            ILagrangeMultipliersEnumerator lagrangeEnumerator, IFetiDPMatrixManager matrixManager) 
+            : base(dofSeparator, lagrangeEnumerator)
         {
             this.procs = procs;
-            this.lagrangeEnumerator = lagrangeEnumerator;
-
-            this.NumGlobalLagrangeMultipliers = lagrangeEnumerator.NumLagrangeMultipliers;
 
             ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetSubdomainMatrixManager(subdomain);
-            this.subdomainFlexibility = new FetiDPSubdomainFlexibilityMatrix(subdomain, dofSeparator, subdomainMatrices);
+            this.subdomainFlexibility = new FetiDPSubdomainFlexibilityMatrix(subdomain, dofSeparator, lagrangeEnumerator,
+                matrixManager.GetSubdomainMatrixManager(subdomain));
         }
-
-        public override int NumGlobalLagrangeMultipliers { get; }
 
         protected override void SumSubdomainContributions(Vector lhs, Vector rhs, CheckInput checkInput, 
             CalcSubdomainContribution calcSubdomainContribution)
         {
             if (procs.IsMasterProcess) checkInput(lhs, rhs);
             BroadcastLhs(ref lhs);
-            Vector subdomainRhs = calcSubdomainContribution(subdomainFlexibility, lhs, lagrangeEnumerator.BooleanMatrix);
+            Vector subdomainRhs = calcSubdomainContribution(subdomainFlexibility, lhs);
             ReduceRhs(subdomainRhs, rhs);
         }
 

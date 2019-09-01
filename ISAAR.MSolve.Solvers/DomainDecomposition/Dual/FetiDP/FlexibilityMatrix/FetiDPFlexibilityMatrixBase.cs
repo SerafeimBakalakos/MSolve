@@ -5,24 +5,24 @@ using ISAAR.MSolve.LinearAlgebra.Commons;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 {
     public abstract class FetiDPFlexibilityMatrixBase : IFetiDPFlexibilityMatrix
     {
-        protected FetiDPFlexibilityMatrixBase(IFetiDPDofSeparator dofSeparator)
+        protected FetiDPFlexibilityMatrixBase(IFetiDPDofSeparator dofSeparator, 
+            ILagrangeMultipliersEnumerator lagrangeEnumerator)
         {
-            NumGlobalCornerDofs = dofSeparator.NumGlobalCornerDofs;
+            this.NumGlobalCornerDofs = dofSeparator.NumGlobalCornerDofs;
+            this.NumGlobalLagrangeMultipliers = lagrangeEnumerator.NumLagrangeMultipliers;
         }
 
         protected delegate void CheckInput(Vector lhs, Vector rhs);
-        protected delegate Vector CalcSubdomainContribution(FetiDPSubdomainFlexibilityMatrix subdomainFlexibility, 
-            Vector lhs, SignedBooleanMatrixColMajor Br);
+        protected delegate Vector CalcSubdomainContribution(FetiDPSubdomainFlexibilityMatrix subdomainFlexibility, Vector lhs);
 
         public int NumGlobalCornerDofs { get; }
-
-        //TODO: Should be implemented here once there is a common ILagrangeEnumerator for serial/MPI
-        public abstract int NumGlobalLagrangeMultipliers { get; } 
+        public int NumGlobalLagrangeMultipliers { get; } 
 
         public void MultiplyGlobalFIrc(Vector lhs, Vector rhs)
         {
@@ -35,8 +35,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
                 Preconditions.CheckSystemSolutionDimensions(NumGlobalLagrangeMultipliers, vOut.Length);
             };
 
-            CalcSubdomainContribution calcSubdomainContribution = (subdomainFlexibility, vIn, Br)
-                => subdomainFlexibility.MultiplySubdomainFIrc(vIn, Br);
+            CalcSubdomainContribution calcSubdomainContribution = (subdomainFlexibility, vIn)
+                => subdomainFlexibility.MultiplySubdomainFIrc(vIn);
 
             SumSubdomainContributions(lhs, rhs, checkInput, calcSubdomainContribution);
         }
@@ -52,8 +52,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
                 Preconditions.CheckSystemSolutionDimensions(NumGlobalCornerDofs, vOut.Length);
             };
 
-            CalcSubdomainContribution calcSubdomainContribution = (subdomainFlexibility, vIn, Br)
-                => subdomainFlexibility.MultiplySubdomainFIrcTransposed(vIn, Br);
+            CalcSubdomainContribution calcSubdomainContribution = (subdomainFlexibility, vIn)
+                => subdomainFlexibility.MultiplySubdomainFIrcTransposed(vIn);
 
             SumSubdomainContributions(lhs, rhs, checkInput, calcSubdomainContribution);
         }
@@ -69,8 +69,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
                 Preconditions.CheckSystemSolutionDimensions(NumGlobalLagrangeMultipliers, vOut.Length);
             };
             
-            CalcSubdomainContribution calcSubdomainContribution = (subdomainFlexibility, vIn, Br) 
-                => subdomainFlexibility.MultiplySubdomainFIrr(vIn, Br);
+            CalcSubdomainContribution calcSubdomainContribution = (subdomainFlexibility, vIn) 
+                => subdomainFlexibility.MultiplySubdomainFIrr(vIn);
 
             SumSubdomainContributions(lhs, rhs, checkInput, calcSubdomainContribution);
         }

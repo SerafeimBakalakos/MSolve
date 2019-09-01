@@ -26,17 +26,17 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
             var subdomainLagranges = new List<SubdomainLagrangeMultiplier>();
             for (int i = 0; i < numGlobalLagranges; ++i)
             {
-                int subdomainPlusID = serializedLagranges[4 * i + 2];
-                int subdomainMinusID = serializedLagranges[4 * i + 3];
-                int sign = 0;
-                if (subdomainPlusID == subdomain.ID) sign = +1;
-                if (subdomainMinusID == subdomain.ID) sign = -1;
-
-                if (sign != 0)
+                if (serializedLagranges[4 * i + 2] == subdomain.ID)
                 {
                     INode node = subdomain.GetNode(serializedLagranges[4 * i]);
                     IDofType dofType = dofSerializer.Deserialize(serializedLagranges[4 * i + 1]);
-                    subdomainLagranges.Add(new SubdomainLagrangeMultiplier(i, node, dofType, sign > 0));
+                    subdomainLagranges.Add(new SubdomainLagrangeMultiplier(i, node, dofType, true));
+                }
+                else if (serializedLagranges[4 * i + 3] == subdomain.ID)
+                {
+                    INode node = subdomain.GetNode(serializedLagranges[4 * i]);
+                    IDofType dofType = dofSerializer.Deserialize(serializedLagranges[4 * i + 1]);
+                    subdomainLagranges.Add(new SubdomainLagrangeMultiplier(i, node, dofType, false));
                 }
             }
             return (numGlobalLagranges, subdomainLagranges);
@@ -74,10 +74,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
             return lagranges;
         }
 
-        public int[] Serialize(LagrangeMultiplier[] lagranges)
+        public int[] Serialize(IReadOnlyList<LagrangeMultiplier> lagranges)
         {
-            var serializedLagranges = new int[4 * lagranges.Length];
-            for (int i = 0; i < lagranges.Length; ++i)
+            var serializedLagranges = new int[4 * lagranges.Count];
+            for (int i = 0; i < lagranges.Count; ++i)
             {
                 LagrangeMultiplier lagr = lagranges[i];
                 serializedLagranges[4 * i] = lagr.Node.ID;

@@ -318,7 +318,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Enumerate lagranges
             var crosspointStrategy = new FullyRedundantConstraints();
-            var lagrangeEnumerator = new FetiDPLagrangeMultipliersEnumerator(crosspointStrategy, dofSeparator);
+            var lagrangeEnumerator = new FetiDPLagrangeMultipliersEnumeratorOLD(crosspointStrategy, dofSeparator);
             lagrangeEnumerator.DefineBooleanMatrices(model);
 
             // Check
@@ -444,11 +444,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
                 // Check lagrange boolean matrices
                 var crosspointStrategy = new FullyRedundantConstraints();
-                var lagrangeEnumerator = new FetiDPLagrangeMultipliersEnumeratorMpi(procs, model, crosspointStrategy, dofSeparator);
-                lagrangeEnumerator.CalcBooleanMatrices();
+                var lagrangeEnumerator = new LagrangeMultipliersEnumeratorMpi(procs, model, crosspointStrategy, dofSeparator);
+                lagrangeEnumerator.CalcBooleanMatrices(dofSeparator.GetRemainderDofOrdering);
 
                 Assert.Equal(8, lagrangeEnumerator.NumLagrangeMultipliers);
-                Matrix Br = lagrangeEnumerator.BooleanMatrix.CopyToFullMatrix(false);
+                Matrix Br = lagrangeEnumerator.GetBooleanMatrix(subdomain).CopyToFullMatrix(false);
                 Matrix expectedBr = GetExpectedLagrangeBooleanMatrix(subdomain.ID);
                 Assert.True(expectedBr.Equals(Br, tolerance));
             }

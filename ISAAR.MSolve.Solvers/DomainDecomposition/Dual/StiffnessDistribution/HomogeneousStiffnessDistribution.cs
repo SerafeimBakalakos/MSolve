@@ -35,7 +35,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         //}
 
         public Dictionary<int, IMappingMatrix> CalcBoundaryPreconditioningSignedBooleanMatrices(
-            ILagrangeMultipliersEnumerator lagrangeEnumerator,
+            ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator,
             Dictionary<int, SignedBooleanMatrixColMajor> boundarySignedBooleanMatrices)
         {
             var matricesBpb = new Dictionary<int, IMappingMatrix>();

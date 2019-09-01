@@ -13,7 +13,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
         bool ReorderInternalDofsForFactorization { get; }
 
         IFetiPreconditioner CreatePreconditioner(IModel model, IStiffnessDistribution stiffnessDistribution,
-            IDofSeparator dofSeparator, ILagrangeMultipliersEnumerator lagrangeEnumerator, 
+            IDofSeparator dofSeparator, ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator, 
             Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagers);
     }
 }

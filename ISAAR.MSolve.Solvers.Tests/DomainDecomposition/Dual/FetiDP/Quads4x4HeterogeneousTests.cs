@@ -113,7 +113,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Access private fields of FetiDPSolver and DirichletPreconditioner.Factory using reflection
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
-            var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumerator)fi.GetValue(fetiSolver);
+            var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumeratorOLD)fi.GetValue(fetiSolver);
             fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
             var dofSeparator = (FetiDPDofSeparator)fi.GetValue(fetiSolver);
             fi = typeof(FetiDPSolver).GetField("stiffnessDistribution", BindingFlags.NonPublic | BindingFlags.Instance);

@@ -15,12 +15,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
     /// boundary dofs.
     /// Authors: Serafeim Bakalakos
     /// </summary>
-    public class LagrangeMultipliersEnumeratorBase : ILagrangeMultipliersEnumerator
+    public class LagrangeMultipliersEnumeratorBaseOLD : ILagrangeMultipliersEnumeratorOLD
     {
         private readonly ICrosspointStrategy crosspointStrategy;
         private readonly IDofSeparator dofSeparator;
 
-        protected LagrangeMultipliersEnumeratorBase(ICrosspointStrategy crosspointStrategy, IDofSeparator dofSeparator)
+        protected LagrangeMultipliersEnumeratorBaseOLD(ICrosspointStrategy crosspointStrategy, IDofSeparator dofSeparator)
         {
             this.crosspointStrategy = crosspointStrategy;
             this.dofSeparator = dofSeparator;

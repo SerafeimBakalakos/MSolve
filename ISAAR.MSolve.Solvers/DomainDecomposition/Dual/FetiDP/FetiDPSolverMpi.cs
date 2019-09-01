@@ -41,7 +41,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private HashSet<INode> cornerNodesGlobal_master;
         private bool factorizeInPlace = true;
         private bool isStiffnessModified = true;
-        private FetiDPLagrangeMultipliersEnumeratorMpi lagrangeEnumerator;
+        private LagrangeMultipliersEnumeratorMpi lagrangeEnumerator;
         //private ISubdomain subdomain;
 
         public FetiDPSolverMpi(ProcessDistribution processDistribution, IModelMpi model,

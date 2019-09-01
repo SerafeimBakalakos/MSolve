@@ -11,11 +11,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
 {
     public class Feti1FlexibilityMatrix : IInterfaceFlexibilityMatrix
     {
-        private readonly Feti1LagrangeMultipliersEnumerator lagrangeEnumerator;
+        private readonly Feti1LagrangeMultipliersEnumeratorOLD lagrangeEnumerator;
         private readonly Dictionary<int, IFeti1SubdomainMatrixManager> matrixManagers;
 
         internal Feti1FlexibilityMatrix(Dictionary<int, IFeti1SubdomainMatrixManager> matrixManagers,
-            Feti1LagrangeMultipliersEnumerator lagrangeEnumerator)
+            Feti1LagrangeMultipliersEnumeratorOLD lagrangeEnumerator)
         {
             this.lagrangeEnumerator = lagrangeEnumerator;
             this.matrixManagers = matrixManagers;

@@ -1,34 +1,27 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using ISAAR.MSolve.Discretization.Exceptions;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
-using MPI;
-    
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
+
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
 {
-    /// <summary>
-    /// Calculates the signed boolean matrices of the equations that enforce continuity between the multiple instances of 
-    /// boundary dofs.
-    /// Authors: Serafeim Bakalakos
-    /// </summary>
-    public class FetiDPLagrangeMultipliersEnumeratorMpi : ILagrangeMultipliersEnumeratorMpi
+    public class LagrangeMultipliersEnumeratorMpi : ILagrangeMultipliersEnumerator
     {
         private readonly ICrosspointStrategy crosspointStrategy;
-        private readonly IFetiDPDofSeparator dofSeparator;
+        private readonly IDofSeparator dofSeparator;
         private readonly LagrangeMultiplierSerializer lagrangeSerializer;
         private readonly IModel model;
         private readonly ProcessDistribution procs;
-        private LagrangeMultiplier[] lagrangeMultipliers_master;
 
-        public FetiDPLagrangeMultipliersEnumeratorMpi(ProcessDistribution processDistribution, IModel model, 
-            ICrosspointStrategy crosspointStrategy, IFetiDPDofSeparator dofSeparator)
+        private List<LagrangeMultiplier> lagrangeMultipliers_master;
+        private SignedBooleanMatrixColMajor subdomainBooleanMatrix;
+
+        public LagrangeMultipliersEnumeratorMpi(ProcessDistribution processDistribution, IModel model,
+            ICrosspointStrategy crosspointStrategy, IDofSeparator dofSeparator)
         {
             this.procs = processDistribution;
             this.model = model;
@@ -37,12 +30,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             this.lagrangeSerializer = new LagrangeMultiplierSerializer(model.DofSerializer);
         }
 
-        /// <summary>
-        /// One of this is stored per process.
-        /// </summary>
-        public SignedBooleanMatrixColMajor BooleanMatrix { get; private set; }
-
-        public LagrangeMultiplier[] LagrangeMultipliers
+        public IReadOnlyList<LagrangeMultiplier> LagrangeMultipliers
         {
             get
             {
@@ -51,40 +39,42 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             }
         }
 
-        /// <summary>
-        /// One of this is stored per process.
-        /// </summary>
         public int NumLagrangeMultipliers { get; private set; }
 
-        public void CalcBooleanMatrices()
-        { 
+        public SignedBooleanMatrixColMajor GetBooleanMatrix(ISubdomain subdomain)
+        {
+            procs.CheckProcessMatchesSubdomain(subdomain.ID);
+            return subdomainBooleanMatrix;
+        }
+
+        public void CalcBooleanMatrices(Func<ISubdomain, DofTable> getSubdomainDofOrdering)
+        {
             // Define the lagrange multipliers and serialize and broadcast them to other processes
             int[] serializedLagranges = null;
             if (procs.IsMasterProcess)
             {
                 lagrangeMultipliers_master = LagrangeMultipliersUtilities.DefineLagrangeMultipliers(
-                    dofSeparator, crosspointStrategy).ToArray();
-                NumLagrangeMultipliers = lagrangeMultipliers_master.Length;
+                    dofSeparator.GlobalBoundaryDofs, crosspointStrategy);
+                NumLagrangeMultipliers = lagrangeMultipliers_master.Count;
                 serializedLagranges = lagrangeSerializer.Serialize(lagrangeMultipliers_master);
             }
             MpiUtilities.BroadcastArray(procs.Communicator, ref serializedLagranges, procs.MasterProcess);
 
             // Deserialize the lagrange multipliers in other processes and calculate the boolean matrices
             ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            int numRemainderDofs = dofSeparator.GetRemainderDofIndices(subdomain).Length;
-            DofTable remainderDofOrdering = dofSeparator.GetRemainderDofOrdering(subdomain);
+            DofTable subdomainDofOrdering = getSubdomainDofOrdering(subdomain);
             if (procs.IsMasterProcess)
             {
-                BooleanMatrix = LagrangeMultipliersUtilities.CalcBooleanMatrix(subdomain,
-                    lagrangeMultipliers_master, numRemainderDofs, remainderDofOrdering);
+                subdomainBooleanMatrix = LagrangeMultipliersUtilities.CalcSubdomainBooleanMatrix(subdomain,
+                    lagrangeMultipliers_master, subdomainDofOrdering);
             }
             else
             {
-                (int numGlobalLagranges, List<SubdomainLagrangeMultiplier> subdomainLagranges) = 
+                (int numGlobalLagranges, List<SubdomainLagrangeMultiplier> subdomainLagranges) =
                     lagrangeSerializer.Deserialize(serializedLagranges, subdomain);
                 NumLagrangeMultipliers = numGlobalLagranges;
-                BooleanMatrix = LagrangeMultipliersUtilities.CalcBooleanMatrix(
-                    subdomain, numGlobalLagranges, subdomainLagranges, numRemainderDofs, remainderDofOrdering);
+                subdomainBooleanMatrix = LagrangeMultipliersUtilities.CalcSubdomainBooleanMatrix(
+                    numGlobalLagranges, subdomainLagranges, subdomainDofOrdering);
 
                 // Alternatively I could call LagrangeMultiplierSerializer.DeserializeIncompletely(...) and its matching
                 // LagrangeMultipliersUtilities.CalcBooleanMatrixFromIncompleteData(...), but that is too fragile.

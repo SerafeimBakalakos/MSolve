@@ -18,11 +18,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
 
         public abstract IFetiPreconditioner CreatePreconditioner(IModel model, 
             IStiffnessDistribution stiffnessDistribution, IDofSeparator dofSeparator, 
-            ILagrangeMultipliersEnumerator lagrangeEnumerator, Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagers);
+            ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator, Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagers);
 
         protected Dictionary<int, IMappingMatrix> CalcBoundaryPreconditioningBooleanMatrices(IModel model, 
             IStiffnessDistribution stiffnessDistribution, IDofSeparator dofSeparator, 
-            ILagrangeMultipliersEnumerator lagrangeEnumerator)
+            ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator)
         {
             var matricesBb = new Dictionary<int, SignedBooleanMatrixColMajor>();
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())

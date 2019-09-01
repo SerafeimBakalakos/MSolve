@@ -6,6 +6,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 //TODO: Br should be accessed by IFetiDPLagrangeEnumerator.GetBr(ISubdomain)
 //TODO: It should be injected IFetiDPMatrixManager and IFetiDPLagrangeEnumerator in the constructor. Both of these should follow PCW.
@@ -14,23 +15,26 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
     public class FetiDPSubdomainFlexibilityMatrix
     {
         private readonly IFetiDPDofSeparator dofSeparator;
+        private readonly ILagrangeMultipliersEnumerator lagrangeEnumerator;
         private readonly IFetiDPSubdomainMatrixManager matrixManager;
         private readonly ISubdomain subdomain;
 
-        public FetiDPSubdomainFlexibilityMatrix(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator, 
-            IFetiDPSubdomainMatrixManager matrixManager)
+        public FetiDPSubdomainFlexibilityMatrix(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator,
+            ILagrangeMultipliersEnumerator lagrangeEnumerator, IFetiDPSubdomainMatrixManager matrixManager)
         {
             this.subdomain = subdomain;
-            this.matrixManager = matrixManager;
             this.dofSeparator = dofSeparator;
+            this.lagrangeEnumerator = lagrangeEnumerator;
+            this.matrixManager = matrixManager;
         }
 
-        public Vector MultiplySubdomainFIrc(Vector vector, SignedBooleanMatrixColMajor Br)
+        public Vector MultiplySubdomainFIrc(Vector vector)
         {
             // FIrc[s] * x = sum_over_s( Br[s] * (inv(Krr[s]) * (Krc[s] * (Lc[s] * x))) ) 
             // Summing is delegated to another class.
             // This class performs: fIrc[s] * x = Br[s] * (inv(Krr[s]) * (Krc[s] * (Lc[s] * x)))
 
+            SignedBooleanMatrixColMajor Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
             UnsignedBooleanMatrix Lc = dofSeparator.GetCornerBooleanMatrix(subdomain);
             Vector temp = Lc.Multiply(vector);
             temp = matrixManager.MultiplyKrcTimes(temp);
@@ -38,12 +42,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             return Br.Multiply(temp);
         }
 
-        public Vector MultiplySubdomainFIrcTransposed(Vector vector, SignedBooleanMatrixColMajor Br)
+        public Vector MultiplySubdomainFIrcTransposed(Vector vector)
         {
             // FIrc[s]^T * x = sum_over_s( Lc[s]^T * (Krc[s]^T * (inv(Krr[s]) * (Br[s]^T * x))) ) 
             // Summing is delegated to another class.
             // This class performs: fIrc[s]^T * x = Lc[s]^T * (Krc[s]^T * (inv(Krr[s]) * (Br[s]^T * x)))
 
+            SignedBooleanMatrixColMajor Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
             UnsignedBooleanMatrix Lc = dofSeparator.GetCornerBooleanMatrix(subdomain);
             Vector temp = Br.Multiply(vector, true);
             temp = matrixManager.MultiplyInverseKrrTimes(temp);
@@ -51,12 +56,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             return Lc.Multiply(temp, true);
         }
         
-        public Vector MultiplySubdomainFIrr(Vector vector, SignedBooleanMatrixColMajor Br)
+        public Vector MultiplySubdomainFIrr(Vector vector)
         {
             // FIrr[s] * x = sum_over_s( Br[s] * (inv(Krr[s]) * (Br[s]^T * x)) ) 
             // Summing is delegated to another class.
             // This class performs: fIrr[s] * x = Br[s] * (inv(Krr[s]) * (Br[s]^T * x))
 
+            SignedBooleanMatrixColMajor Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
             Vector temp = Br.Multiply(vector, true);
             temp = matrixManager.MultiplyInverseKrrTimes(temp);
             return Br.Multiply(temp);

@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
         private readonly Dictionary<int, UnsignedBooleanMatrix> Lc;
         private readonly int numCornerDofs;
 
-        public FetiDPFlexibilityMatrixOLD(FetiDPDofSeparator dofSeparator, FetiDPLagrangeMultipliersEnumerator lagrangeEnumerator, 
+        public FetiDPFlexibilityMatrixOLD(FetiDPDofSeparator dofSeparator, FetiDPLagrangeMultipliersEnumeratorOLD lagrangeEnumerator, 
             Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers)
         {
             this.Br = lagrangeEnumerator.BooleanMatrices;

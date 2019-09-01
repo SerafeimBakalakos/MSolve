@@ -15,11 +15,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     /// boundary dofs.
     /// Authors: Serafeim Bakalakos
     /// </summary>
-    public class FetiDPLagrangeMultipliersEnumerator : LagrangeMultipliersEnumeratorBase
+    public class FetiDPLagrangeMultipliersEnumeratorOLD : LagrangeMultipliersEnumeratorBaseOLD
     {
         private readonly FetiDPDofSeparator dofSeparator;
 
-        internal FetiDPLagrangeMultipliersEnumerator(ICrosspointStrategy crosspointStrategy, FetiDPDofSeparator dofSeparator) 
+        internal FetiDPLagrangeMultipliersEnumeratorOLD(ICrosspointStrategy crosspointStrategy, FetiDPDofSeparator dofSeparator) 
             : base(crosspointStrategy, dofSeparator)
         {
             this.dofSeparator = dofSeparator;

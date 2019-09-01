@@ -17,7 +17,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         double[] CalcBoundaryDofCoefficients(ISubdomain subdomain);
 
         Dictionary<int, IMappingMatrix> CalcBoundaryPreconditioningSignedBooleanMatrices(
-            ILagrangeMultipliersEnumerator lagrangeEnumerator, 
+            ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator, 
             Dictionary<int, SignedBooleanMatrixColMajor> boundarySignedBooleanMatrices);
 
         void Update(Dictionary<int, IMatrixView> stiffnessesFreeFree);

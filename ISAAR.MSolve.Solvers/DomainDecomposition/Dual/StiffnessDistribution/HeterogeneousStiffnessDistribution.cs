@@ -71,7 +71,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         //}
 
         public Dictionary<int, IMappingMatrix> CalcBoundaryPreconditioningSignedBooleanMatrices(
-            ILagrangeMultipliersEnumerator lagrangeEnumerator, 
+            ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator, 
             Dictionary<int, SignedBooleanMatrixColMajor> boundarySignedBooleanMatrices)
         {
             return ScalingBooleanMatrixImplicit.CreateBpbOfSubdomains(this, lagrangeEnumerator, boundarySignedBooleanMatrices);
@@ -111,7 +111,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             }
         }
 
-        private DiagonalMatrix BuildDlambda(ILagrangeMultipliersEnumerator lagrangeEnumerator)
+        private DiagonalMatrix BuildDlambda(ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator)
         {
             int numLagranges = lagrangeEnumerator.NumLagrangeMultipliers;
             var Dlambda = new double[numLagranges];
@@ -170,7 +170,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             public int NumRows => explicitBpb.NumRows;
 
             internal static Dictionary<int, IMappingMatrix> CreateBpbOfSubdomains(
-                HeterogeneousStiffnessDistribution stiffnessDistribution, ILagrangeMultipliersEnumerator lagrangeEnumerator, 
+                HeterogeneousStiffnessDistribution stiffnessDistribution, ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator, 
                 Dictionary<int, SignedBooleanMatrixColMajor> boundarySignedBooleanMatrices)
             {
                 // According to Fragakis PhD (e.q. 3.28): 
@@ -231,7 +231,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             public int NumRows => Dlambda.NumRows;
 
             internal static Dictionary<int, IMappingMatrix> CreateBpbOfSubdomains(
-                HeterogeneousStiffnessDistribution stiffnessDistribution, ILagrangeMultipliersEnumerator lagrangeEnumerator,
+                HeterogeneousStiffnessDistribution stiffnessDistribution, ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator,
                 Dictionary<int, SignedBooleanMatrixColMajor> boundarySignedBooleanMatrices)
             {
                 // According to Fragakis PhD (e.q. 3.28): 

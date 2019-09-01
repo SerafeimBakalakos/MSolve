@@ -50,7 +50,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private bool factorizeInPlace = true;
         private FetiDPFlexibilityMatrixOLD flexibility;
         private bool isStiffnessModified = true;
-        private FetiDPLagrangeMultipliersEnumerator lagrangeEnumerator;
+        private FetiDPLagrangeMultipliersEnumeratorOLD lagrangeEnumerator;
         private IFetiPreconditioner preconditioner;
         private FetiDPSubdomainGlobalMapping subdomainGlobalMapping;
 
@@ -240,7 +240,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             //TODO: B matrices could also be reused in some cases
             // Define lagrange multipliers and boolean matrices. 
-            this.lagrangeEnumerator = new FetiDPLagrangeMultipliersEnumerator(crosspointStrategy, dofSeparator);
+            this.lagrangeEnumerator = new FetiDPLagrangeMultipliersEnumeratorOLD(crosspointStrategy, dofSeparator);
             if (problemIsHomogeneous) lagrangeEnumerator.DefineBooleanMatrices(model); // optimization in this case
             else lagrangeEnumerator.DefineLagrangesAndBooleanMatrices(model);
 

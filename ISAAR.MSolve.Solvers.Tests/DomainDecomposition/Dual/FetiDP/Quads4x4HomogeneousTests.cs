@@ -556,7 +556,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Access private fields of FetiDPSolver
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
-            var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumerator)fi.GetValue(solver);
+            var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumeratorOLD)fi.GetValue(solver);
             fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
             var dofSeparator = (FetiDPDofSeparator)fi.GetValue(solver);
 
@@ -592,7 +592,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Access private fields of FetiDPSolver
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
-            var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumerator)fi.GetValue(solver);
+            var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumeratorOLD)fi.GetValue(solver);
             fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
             var dofSeparator = (FetiDPDofSeparator)fi.GetValue(solver);
 
@@ -645,7 +645,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Access private fields of FetiDPSolver
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
-            var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumerator)fi.GetValue(solver);
+            var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumeratorOLD)fi.GetValue(solver);
             fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
             var dofSeparator = (FetiDPDofSeparator)fi.GetValue(solver);
 
@@ -710,7 +710,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Access private fields of FetiDPSolver and DirichletPreconditioner.Factory using reflection
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
-            var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumerator)fi.GetValue(fetiSolver);
+            var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumeratorOLD)fi.GetValue(fetiSolver);
             fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
             var dofSeparator = (FetiDPDofSeparator)fi.GetValue(fetiSolver);
             fi = typeof(FetiDPSolver).GetField("stiffnessDistribution", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -758,14 +758,14 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
                 // Calculate lagrange multipliers and corresponding boolean matrices
                 var crosspointStrategy = new FullyRedundantConstraints();
-                var lagrangeEnumerator = new FetiDPLagrangeMultipliersEnumeratorMpi(procs, model, crosspointStrategy, dofSeparator);
-                lagrangeEnumerator.CalcBooleanMatrices();
+                var lagrangeEnumerator = new LagrangeMultipliersEnumeratorMpi(procs, model, crosspointStrategy, dofSeparator);
+                lagrangeEnumerator.CalcBooleanMatrices(dofSeparator.GetRemainderDofOrdering);
 
                 // Calculate Bpbr matrices
                 var stiffnessDistribution = new FetiDPHomogeneousStiffnessDistributionMpi(procs, model, dofSeparator);
                 stiffnessDistribution.Update();
-                SignedBooleanMatrixColMajor Bb = 
-                    lagrangeEnumerator.BooleanMatrix.GetColumns(dofSeparator.GetBoundaryDofIndices(subdomain), false);
+                SignedBooleanMatrixColMajor Bb = lagrangeEnumerator.GetBooleanMatrix(subdomain).GetColumns(
+                    dofSeparator.GetBoundaryDofIndices(subdomain), false);
                 IMappingMatrix Bpbr = 
                     stiffnessDistribution.CalcBoundaryPreconditioningSignedBooleanMatrix(lagrangeEnumerator, subdomain, Bb);
 

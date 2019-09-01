@@ -72,7 +72,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
 
             public override IFetiPreconditioner CreatePreconditioner(IModel model,
                 IStiffnessDistribution stiffnessDistribution, IDofSeparator dofSeparator,
-                ILagrangeMultipliersEnumerator lagrangeEnumerator, Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagers)
+                ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator, Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagers)
             {
                 int[] subdomainIDs = matrixManagers.Keys.ToArray();
                 Dictionary<int, IMappingMatrix> boundaryBooleans = CalcBoundaryPreconditioningBooleanMatrices(model, 

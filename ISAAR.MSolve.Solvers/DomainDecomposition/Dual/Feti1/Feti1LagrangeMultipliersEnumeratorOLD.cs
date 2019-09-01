@@ -11,9 +11,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
     /// boundary dofs.
     /// Authors: Serafeim Bakalakos
     /// </summary>
-    public class Feti1LagrangeMultipliersEnumerator : LagrangeMultipliersEnumeratorBase
+    public class Feti1LagrangeMultipliersEnumeratorOLD : LagrangeMultipliersEnumeratorBaseOLD
     {
-        internal Feti1LagrangeMultipliersEnumerator(ICrosspointStrategy crosspointStrategy, Feti1DofSeparator dofSeparator) 
+        internal Feti1LagrangeMultipliersEnumeratorOLD(ICrosspointStrategy crosspointStrategy, Feti1DofSeparator dofSeparator) 
             : base(crosspointStrategy, dofSeparator)
         {
         }

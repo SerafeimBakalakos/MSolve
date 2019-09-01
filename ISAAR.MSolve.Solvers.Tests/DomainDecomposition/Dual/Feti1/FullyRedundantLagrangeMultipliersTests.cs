@@ -222,7 +222,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.Feti1
             });
 
             Model model = CreateModel();
-            Feti1LagrangeMultipliersEnumerator lagrangeMultipliers = CreateBooleanMultipliers(model, false);
+            Feti1LagrangeMultipliersEnumeratorOLD lagrangeMultipliers = CreateBooleanMultipliers(model, false);
             foreach (var id in lagrangeMultipliers.BooleanMatrices.Keys)
             {
                 Matrix booleanComputed = lagrangeMultipliers.BooleanMatrices[id].CopyToFullMatrix(false);
@@ -230,7 +230,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.Feti1
             }
         }
 
-        private static Feti1LagrangeMultipliersEnumerator CreateBooleanMultipliers(Model model, bool createLagranges)
+        private static Feti1LagrangeMultipliersEnumeratorOLD CreateBooleanMultipliers(Model model, bool createLagranges)
         {
             // Initialize model
             model.ConnectDataStructures();
@@ -243,7 +243,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.Feti1
             var dofSeparator = new Feti1DofSeparator();
             dofSeparator.DefineGlobalBoundaryDofs(model);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains()) dofSeparator.SeparateBoundaryInternalDofs(subdomain);
-            var lagrangeEnumerator = new Feti1LagrangeMultipliersEnumerator(new FullyRedundantConstraints(), dofSeparator);
+            var lagrangeEnumerator = new Feti1LagrangeMultipliersEnumeratorOLD(new FullyRedundantConstraints(), dofSeparator);
             if (createLagranges) lagrangeEnumerator.DefineLagrangesAndBooleanMatrices(model);
             else lagrangeEnumerator.DefineBooleanMatrices(model);
             return lagrangeEnumerator;
