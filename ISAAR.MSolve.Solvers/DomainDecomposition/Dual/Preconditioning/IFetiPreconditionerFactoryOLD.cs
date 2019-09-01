@@ -8,7 +8,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 //TODO: Also add ReorderInternalDofsForMultiplication and ReorderBoundaryDofsForMultiplication
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
 {
-    public interface IFetiPreconditionerFactory
+    public interface IFetiPreconditionerFactoryOLD
     {
         bool ReorderInternalDofsForFactorization { get; }
 

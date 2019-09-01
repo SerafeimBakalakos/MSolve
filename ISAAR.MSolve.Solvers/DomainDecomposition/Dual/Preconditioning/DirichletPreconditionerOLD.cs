@@ -12,13 +12,13 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
 {
-    public class DirichletPreconditioner : IFetiPreconditioner
+    public class DirichletPreconditionerOLD : IFetiPreconditioner
     {
         private readonly Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagers;
         private readonly Dictionary<int, IMappingMatrix> preconditioningBoundarySignedBooleanMatrices;
         private readonly int[] subdomainIDs;
 
-        private DirichletPreconditioner(int[] subdomainIDs, Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagers, 
+        private DirichletPreconditionerOLD(int[] subdomainIDs, Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagers, 
             Dictionary<int, IMappingMatrix> preconditioningBoundarySignedBooleanMatrices)
         {
             this.subdomainIDs = subdomainIDs;
@@ -66,7 +66,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
             }
         }
 
-        public class Factory : FetiPreconditionerFactoryBase
+        public class Factory : FetiPreconditionerFactoryBaseOLD
         {
             public override bool ReorderInternalDofsForFactorization => true;
 
@@ -82,7 +82,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
                 {
                     ISubdomain subdomain = model.GetSubdomain(s);
                     if (!subdomain.StiffnessModified) continue;
-                    Debug.WriteLine($"{typeof(DirichletPreconditioner).Name}.{this.GetType().Name}:"
+                    Debug.WriteLine($"{typeof(DirichletPreconditionerOLD).Name}.{this.GetType().Name}:"
                         + $" Extracting boundary/internal submatrices of subdomain {s} for preconditioning");
                     IFetiSubdomainMatrixManagerOLD matrixManager = matrixManagers[s];
                     int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);
@@ -92,7 +92,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
                     matrixManager.ExtractAndInvertKii(internalDofs);
                 }
                 
-                return new DirichletPreconditioner(subdomainIDs, matrixManagers, boundaryBooleans);
+                return new DirichletPreconditionerOLD(subdomainIDs, matrixManagers, boundaryBooleans);
             }
         }
     }

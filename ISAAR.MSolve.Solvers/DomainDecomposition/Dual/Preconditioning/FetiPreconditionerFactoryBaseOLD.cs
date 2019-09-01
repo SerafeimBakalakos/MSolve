@@ -12,7 +12,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
 //TODO: Reanalysis: if the global lagranges have not changed, Bpb can be reused.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
 {
-    public abstract class FetiPreconditionerFactoryBase : IFetiPreconditionerFactory
+    public abstract class FetiPreconditionerFactoryBaseOLD : IFetiPreconditionerFactoryOLD
     {
         public abstract bool ReorderInternalDofsForFactorization { get; }
 

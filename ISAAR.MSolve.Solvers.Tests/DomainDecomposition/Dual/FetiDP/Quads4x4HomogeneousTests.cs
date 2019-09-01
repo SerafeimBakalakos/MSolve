@@ -658,7 +658,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             fi.SetValue(coarseSolver, inverseKccStar);
 
             // Dirichlet preconditioner
-            var precondFactory = new DirichletPreconditioner.Factory();
+            var precondFactory = new DirichletPreconditionerOLD.Factory();
             var repackagedKrr = new Dictionary<int, IMatrixView>();
             foreach (var idMatrixPair in Krr) repackagedKrr[idMatrixPair.Key] = idMatrixPair.Value;
             var stiffnessDistribution = new FetiDPHomogeneousStiffnessDistribution(model, dofSeparator);
@@ -696,7 +696,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var fetiSolverBuilder = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices);
             fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
             fetiSolverBuilder.ProblemIsHomogeneous = false;
-            var preconditionerFactory = new DirichletPreconditioner.Factory();
+            var preconditionerFactory = new DirichletPreconditionerOLD.Factory();
             fetiSolverBuilder.PreconditionerFactory = preconditionerFactory;
             FetiDPSolver fetiSolver = fetiSolverBuilder.BuildSolver(model);
 

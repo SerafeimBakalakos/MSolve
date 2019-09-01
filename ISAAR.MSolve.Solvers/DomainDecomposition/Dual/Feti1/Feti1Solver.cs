@@ -39,7 +39,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
         private readonly Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagersGeneral; //TODO: redesign. They are the same as above, but Dictionary is not covariant
         private readonly IModel model;
         //private readonly PdeOrder pde; // Instead the user explicitly sets Q.
-        private readonly IFetiPreconditionerFactory preconditionerFactory;
+        private readonly IFetiPreconditionerFactoryOLD preconditionerFactory;
         private readonly bool problemIsHomogeneous;
         private readonly bool projectionMatrixQIsIdentity;
         private readonly IStiffnessDistributionOLD stiffnessDistribution;
@@ -59,7 +59,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
 
         private Feti1Solver(IModel model, IFeti1SubdomainMatrixManagerFactory matrixManagerFactory, 
             IDofOrderer dofOrderer, Dictionary<int, double> factorPivotTolerances, 
-            IFetiPreconditionerFactory preconditionerFactory, IFeti1InterfaceProblemSolver interfaceProblemSolver, 
+            IFetiPreconditionerFactoryOLD preconditionerFactory, IFeti1InterfaceProblemSolver interfaceProblemSolver, 
             bool problemIsHomogeneous, bool projectionMatrixQIsIdentity)
         {
             // Model
@@ -484,7 +484,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
             public IFeti1InterfaceProblemSolver InterfaceProblemSolver { get; set; } = 
                 (new Feti1ProjectedInterfaceProblemSolver.Builder()).Build();
 
-            public IFetiPreconditionerFactory PreconditionerFactory { get; set; } = new LumpedPreconditioner.Factory();
+            public IFetiPreconditionerFactoryOLD PreconditionerFactory { get; set; } = new LumpedPreconditionerOLD.Factory();
             public bool ProblemIsHomogeneous { get; set; } = true;
             public bool ProjectionMatrixQIsIdentity { get; set; } = true;
             //public PdeOrder PdeOrder { get; set; } = PdeOrder.Second; // Instead the user explicitly sets Q.

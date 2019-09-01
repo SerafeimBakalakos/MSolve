@@ -99,7 +99,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var fetiSolverBuilder = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices);
             fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
             fetiSolverBuilder.ProblemIsHomogeneous = false;
-            var preconditionerFactory = new DirichletPreconditioner.Factory();
+            var preconditionerFactory = new DirichletPreconditionerOLD.Factory();
             fetiSolverBuilder.PreconditionerFactory = preconditionerFactory;
             FetiDPSolver fetiSolver = fetiSolverBuilder.BuildSolver(model);
 
@@ -149,7 +149,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var fetiSolverBuilder = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices);
             fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
             fetiSolverBuilder.ProblemIsHomogeneous = false;
-            fetiSolverBuilder.PreconditionerFactory = new DirichletPreconditioner.Factory();
+            fetiSolverBuilder.PreconditionerFactory = new DirichletPreconditionerOLD.Factory();
             FetiDPSolver fetiSolver = fetiSolverBuilder.BuildSolver(model);
 
             // Run the analysis

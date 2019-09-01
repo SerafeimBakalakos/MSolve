@@ -162,12 +162,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             //solverBuilder.ProblemIsHomogeneous = false;
 
             // Preconditioner
-            if (precond == Precond.Lumped) solverBuilder.PreconditionerFactory = new LumpedPreconditioner.Factory();
+            if (precond == Precond.Lumped) solverBuilder.PreconditionerFactory = new LumpedPreconditionerOLD.Factory();
             else if (precond == Precond.DirichletDiagonal)
             {
-                solverBuilder.PreconditionerFactory = new DiagonalDirichletPreconditioner.Factory();
+                solverBuilder.PreconditionerFactory = new DiagonalDirichletPreconditionerOLD.Factory();
             }
-            else solverBuilder.PreconditionerFactory = new DirichletPreconditioner.Factory();
+            else solverBuilder.PreconditionerFactory = new DirichletPreconditionerOLD.Factory();
 
             //TODO: This needs to be implemented for FETI-DP
             //// PCG may need to use the exact residual for the comparison with the expected values

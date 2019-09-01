@@ -91,7 +91,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.Feti1
             var fetiMatrices = new SkylineFeti1SubdomainMatrixManager.Factory(new OrderingAmdSuiteSparse());
             var solverBuilder = new Feti1Solver.Builder(fetiMatrices, factorizationTolerances);
             //solverBuilder.PreconditionerFactory = new LumpedPreconditioner.Factory();
-            solverBuilder.PreconditionerFactory = new DirichletPreconditioner.Factory();
+            solverBuilder.PreconditionerFactory = new DirichletPreconditionerOLD.Factory();
             solverBuilder.ProblemIsHomogeneous = true;
             Feti1Solver fetiSolver = solverBuilder.BuildSolver(multiSubdomainModel);
 
