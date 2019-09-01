@@ -19,7 +19,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
         }
 
         protected delegate void CheckInput(Vector lhs, Vector rhs);
-        protected delegate Vector CalcSubdomainContribution(FetiDPSubdomainFlexibilityMatrix subdomainFlexibility, Vector lhs);
+        protected delegate Vector CalcSubdomainContribution(FetiDPSubdomainFlexibilityMatrix subdomainFlexibility, Vector lhs);  
 
         public int NumGlobalCornerDofs { get; }
         public int NumGlobalLagrangeMultipliers { get; } 

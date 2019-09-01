@@ -365,6 +365,19 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
         }
 
         /// <summary>
+        /// Copies all entries from <paramref name="sourceMatrix"/> to this <see cref="Matrix"/>.
+        /// </summary>
+        /// <param name="sourceMatrix">The matrix containing the entries to be copied.</param>
+        /// <exception cref="Exceptions.NonMatchingDimensionsException">
+        /// Thrown if <paramref name="sourceMatrix"/> has different dimensions than this.
+        /// </exception>
+        public void CopyFrom(Matrix sourceMatrix)
+        {
+            Preconditions.CheckSameMatrixDimensions(this, sourceMatrix);
+            Array.Copy(sourceMatrix.data, this.data, this.NumRows * this.NumColumns);
+        }
+
+        /// <summary>
         /// Copies the entries of the matrix into a 2-dimensional array. The returned array has length(0) = <see cref="NumRows"/> 
         /// and length(1) = <see cref="NumColumns"/>. 
         /// </summary>

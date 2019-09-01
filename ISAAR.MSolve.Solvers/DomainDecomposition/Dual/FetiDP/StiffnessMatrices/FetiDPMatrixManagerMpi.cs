@@ -12,7 +12,7 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 {
-    public class FetiDPMatrixManagerMpi : IFetiDPMatrixManager
+    public class FetiDPMatrixManagerMpi : IFetiMatrixManager, IFetiDPMatrixManager
     {
         private readonly IFetiDPGlobalMatrixManager matrixManagerGlobal_master;
         private readonly IFetiDPSubdomainMatrixManager matrixManagerSubdomain;
@@ -109,6 +109,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             procs.CheckProcessIsMaster();
             matrixManagerGlobal_master.ClearInverseCoarseProblemMatrix();
         }
+
+        IFetiSubdomainMatrixManager IFetiMatrixManager.GetSubdomainMatrixManager(ISubdomain subdomain) 
+            => GetSubdomainMatrixManager(subdomain);
 
         public IFetiDPSubdomainMatrixManager GetSubdomainMatrixManager(ISubdomain subdomain)
         {

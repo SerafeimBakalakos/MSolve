@@ -8,8 +8,8 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
-//TODO: Br should be accessed by IFetiDPLagrangeEnumerator.GetBr(ISubdomain)
-//TODO: It should be injected IFetiDPMatrixManager and IFetiDPLagrangeEnumerator in the constructor. Both of these should follow PCW.
+//TODO: This should not exist. Its code should be defined in FetiDPFlexibilityMatrixBase. It is not like other CPW Part classes
+//      which actually stored state.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 {
     public class FetiDPSubdomainFlexibilityMatrix
