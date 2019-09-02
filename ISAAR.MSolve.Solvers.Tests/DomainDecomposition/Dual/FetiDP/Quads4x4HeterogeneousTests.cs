@@ -28,58 +28,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 {
     public static class Quads4x4HeterogeneousTests
     {
-        private static Dictionary<int, Matrix> MatricesBpbr
-        {
-            get
-            {
-                var Bpbr = new Dictionary<int, Matrix>();
-                Bpbr[0] = Matrix.CreateFromArray(new double[,]
-                {
-                    { 0.5, 0, 0, 0 },
-                    { 0, 0.5, 0, 0 },
-                    { 0, 0, 0.5, 0 },
-                    { 0, 0, 0, 0.5 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 }
-                });
-                Bpbr[1] = Matrix.CreateFromArray(new double[,]
-                {
-                    { -0.5, 0, 0, 0 },
-                    { 0, -0.5, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0.00990099009900990, 0 },
-                    { 0, 0, 0, 0.00990099009900990 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 }
-                });
-                Bpbr[2] = Matrix.CreateFromArray(new double[,]
-                {
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { -0.5, 0, 0, 0 },
-                    { 0, -0.5, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0.00990099009900990, 0 },
-                    { 0, 0, 0, 0.00990099009900990 }
-                });
-                Bpbr[3] = Matrix.CreateFromArray(new double[,]
-                {
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { -0.990099009900990, 0, 0, 0 },
-                    { 0, -0.990099009900990, 0, 0 },
-                    { 0, 0, -0.990099009900990, 0 },
-                    { 0, 0, 0, -0.990099009900990 }
-                });
-                return Bpbr;
-            }
-        }
+        
 
         [Fact]
         public static void TestScalingMatrices() //TODO: Most of the code is the same as the homogeneous case. Remove duplication.
@@ -88,14 +37,13 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Run the analysis so that all objects are created
             // Setup the model
             double stiffnessRatio = 1E-2; // Do not change this! The expected solution is taken for this value
-            Model model = CreateModel(stiffnessRatio);
-            Dictionary<ISubdomain, HashSet<INode>> cornerNodes = Quads4x4MappingMatricesTests.DefineCornerNodes(model);
+            Model model = Example4x4Quads.CreateHeterogeneousModel(stiffnessRatio);
 
             // Setup solver
             var interfaceSolverBuilder = new FetiDPInterfaceProblemSolver.Builder();
             interfaceSolverBuilder.PcgConvergenceTolerance = 1E-7;
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
-            var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
+            var cornerNodeSelection = Example4x4Quads.DefineCornerNodeSelectionSerial(model);
             var fetiSolverBuilder = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices);
             fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
             fetiSolverBuilder.ProblemIsHomogeneous = false;
@@ -128,7 +76,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             for (int s = 0; s < 4; ++s)
             {
                 Matrix explicitBpr = Bpbr[s].MultiplyRight(Matrix.CreateIdentity(Bpbr[s].NumColumns));
-                Assert.True(MatricesBpbr[s].Equals(explicitBpr, tol));
+                Assert.True(Example4x4Quads.GetMatrixBpbrHeterogeneous(s).Equals(explicitBpr, tol));
             }
         }
 
@@ -137,15 +85,14 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         {
             // Setup the model
             double stiffnessRatio = 1E-2; // Do not change this! The expected solution is taken for this value
-            Model model = CreateModel(stiffnessRatio);
-            Dictionary<ISubdomain, HashSet<INode>> cornerNodes = Quads4x4MappingMatricesTests.DefineCornerNodes(model);
+            Model model = Example4x4Quads.CreateHeterogeneousModel(stiffnessRatio);
 
             // Setup solver
             var interfaceSolverBuilder = new FetiDPInterfaceProblemSolver.Builder();
             interfaceSolverBuilder.PcgConvergenceTolerance = 1E-7;
             //var fetiMatrices = new SkylineFetiDPSubdomainMatrixManager.Factory();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
-            var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
+            var cornerNodeSelection = Example4x4Quads.DefineCornerNodeSelectionSerial(model);
             var fetiSolverBuilder = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices);
             fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
             fetiSolverBuilder.ProblemIsHomogeneous = false;
@@ -166,58 +113,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Check against expected solution
             double tol = 1E-7;
-            var globalUExpected = Vector.CreateFromArray(new double[]
-            {
-                17.623494584618864, 12.564560593215612, 31.832863897135404, 34.496634608059082, 40.255481382985629,
-                66.49190654178912, 42.572002358887204, 99.798764204232072, 4.267568672307144, 9.00506902466324,
-                9.100928263505315, 31.107370029452451, 12.1615036308774, 66.065492717632239, 11.510673148931499,
-                102.06649895017948, -3.0529124682202156, 9.24107474483673, -7.8531777412741217, 26.728892403726846,
-                -16.890006178831449, 70.602493468916791, -21.80233265288679, 109.39882637058051, -4.7311061272016808,
-                10.030926199331375, -5.6722429958962142, 18.837815470700932, 146.94209278892487, 392.04674590737193,
-                -35.619167413693908, 1407.200332011206, -9.9609496807814057, 10.46574373452243, -17.603838651152756,
-                20.760800663270086, -843.13592713307355, 371.10700308359418, -1666.2547486301742, 3714.1637893447919
-            });
-            Assert.True(globalUExpected.Equals(globalU, tol));
-        }
-
-        private static Model CreateModel(double stiffnessRatio)
-        {
-            //                                    Λ P
-            //                                    | 
-            //                                     
-            // |> 20 ---- 21 ---- 22 ---- 23 ---- 24
-            //    |  (12) |  (13) |  (14) |  (15) |
-            //    |  E0   |  E0   |  E1   |  E1   |
-            // |> 15 ---- 16 ---- 17 ---- 18 ---- 19
-            //    |  (8)  |  (9)  |  (10) |  (11) |
-            //    |  E0   |  E0   |  E1   |  E1   |
-            // |> 10 ---- 11 ---- 12 ---- 13 ---- 14
-            //    |  (4)  |  (5)  |  (6)  |  (7)  |
-            //    |  E0   |  E0   |  E0   |  E0   |
-            // |> 5 ----- 6 ----- 7 ----- 8 ----- 9
-            //    |  (0)  |  (1)  |  (2)  |  (3)  |
-            //    |  E0   |  E0   |  E0   |  E0   |
-            // |> 0 ----- 1 ----- 2 ----- 3 ----- 4
-
-
-            var builder = new Uniform2DModelBuilder();
-            builder.DomainLengthX = 4.0;
-            builder.DomainLengthY = 4.0;
-            builder.NumSubdomainsX = 2;
-            builder.NumSubdomainsY = 2;
-            builder.NumTotalElementsX = 4;
-            builder.NumTotalElementsY = 4;
-            //builder.YoungModulus = 1.0;
-            double E0 = 1.0;
-            builder.YoungModuliOfSubdomains = new double[,]
-            {
-                { E0, E0 }, { E0, stiffnessRatio * E0}
-            };
-            builder.PrescribeDisplacement(Uniform2DModelBuilder.BoundaryRegion.LeftSide, StructuralDof.TranslationX, 0.0);
-            builder.PrescribeDisplacement(Uniform2DModelBuilder.BoundaryRegion.LeftSide, StructuralDof.TranslationY, 0.0);
-            builder.DistributeLoadAtNodes(Uniform2DModelBuilder.BoundaryRegion.UpperRightCorner, StructuralDof.TranslationY, 10.0);
-
-            return builder.BuildModel();
+            Assert.True(Example4x4Quads.DisplacementsGlobalHeterogeneousSolution.Equals(globalU, tol));
         }
     }
 }
