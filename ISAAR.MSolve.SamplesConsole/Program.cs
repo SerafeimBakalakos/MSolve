@@ -7,6 +7,7 @@ using ISAAR.MSolve.Logging;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.Direct;
+using ISAAR.MSolve.Solvers.Tests.Utilities;
 using MGroup.Stochastic;
 using MGroup.Stochastic.Structural;
 using MGroup.Stochastic.Structural.Example;
@@ -22,9 +23,7 @@ namespace ISAAR.MSolve.SamplesConsole
             //Console.WriteLine("Hello World");
             //Parallel.DistributeModelExample.RunParallelHardcoded(args);
             //Parallel.DistributeModelExample.RunParallelWithSolver(args);
-            //MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.FetiDPDofSeparatorMpiTests.TestDofSeparation(args);
-            //MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.FetiDPDofSeparatorMpiTests.TestCornerBooleanMatrices(args);
-            //MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.LagrangeMultiplierEnumeratorMpiTests.TestBooleanMappingMatrices(args);
+            MpiTestSuite.StartTesting(args);
             //MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Quads4x4HomogeneousTests.TestScalingMatricesMpi(args);
 
             //SolveBuildingInNoSoilSmall();
