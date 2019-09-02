@@ -18,7 +18,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
-using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Transfer;
+using ISAAR.MSolve.Solvers.Tests.Transfer;
 using MPI;
 
 namespace ISAAR.MSolve.SamplesConsole.Parallel

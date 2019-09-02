@@ -11,9 +11,10 @@ using ISAAR.MSolve.Solvers.Assemblers;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition;
 using Xunit;
 
-namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Transfer
+namespace ISAAR.MSolve.Solvers.Tests.Transfer
 {
     public static class Quad4PlateTest
     {

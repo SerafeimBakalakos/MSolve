@@ -35,13 +35,13 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Run the analysis so that all objects are created
             // Setup the model
             double stiffnessRatio = 1E-2; // Do not change this! The expected solution is taken for this value
-            Model model = Example4x4Quads.CreateHeterogeneousModel(stiffnessRatio);
+            Model model = Example4x4QuadsHeterogeneous.CreateModel(stiffnessRatio);
 
             // Setup solver
             var interfaceSolverBuilder = new FetiDPInterfaceProblemSolver.Builder();
             interfaceSolverBuilder.PcgConvergenceTolerance = 1E-7;
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
-            var cornerNodeSelection = Example4x4Quads.DefineCornerNodeSelectionSerial(model);
+            var cornerNodeSelection = Example4x4QuadsHeterogeneous.DefineCornerNodeSelectionSerial(model);
             var fetiSolverBuilder = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices);
             fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
             fetiSolverBuilder.ProblemIsHomogeneous = false;
@@ -74,7 +74,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             for (int s = 0; s < 4; ++s)
             {
                 Matrix explicitBpr = Bpbr[s].MultiplyRight(Matrix.CreateIdentity(Bpbr[s].NumColumns));
-                Assert.True(Example4x4Quads.GetMatrixBpbrHeterogeneous(s).Equals(explicitBpr, tol));
+                Assert.True(Example4x4QuadsHeterogeneous.GetMatrixBpbr(s).Equals(explicitBpr, tol));
             }
         }
 
@@ -83,14 +83,14 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         {
             // Setup the model
             double stiffnessRatio = 1E-2; // Do not change this! The expected solution is taken for this value
-            Model model = Example4x4Quads.CreateHeterogeneousModel(stiffnessRatio);
+            Model model = Example4x4QuadsHeterogeneous.CreateModel(stiffnessRatio);
 
             // Setup solver
             var interfaceSolverBuilder = new FetiDPInterfaceProblemSolver.Builder();
             interfaceSolverBuilder.PcgConvergenceTolerance = 1E-7;
             //var fetiMatrices = new SkylineFetiDPSubdomainMatrixManager.Factory();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
-            var cornerNodeSelection = Example4x4Quads.DefineCornerNodeSelectionSerial(model);
+            var cornerNodeSelection = Example4x4QuadsHeterogeneous.DefineCornerNodeSelectionSerial(model);
             var fetiSolverBuilder = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices);
             fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
             fetiSolverBuilder.ProblemIsHomogeneous = false;
@@ -111,7 +111,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Check against expected solution
             double tol = 1E-7;
-            Assert.True(Example4x4Quads.DisplacementsGlobalHeterogeneousSolution.Equals(globalU, tol));
+            Assert.True(Example4x4QuadsHeterogeneous.SolutionGlobalDisplacements.Equals(globalU, tol));
         }
     }
 }

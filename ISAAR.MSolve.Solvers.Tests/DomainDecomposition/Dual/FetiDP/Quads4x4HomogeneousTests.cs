@@ -43,9 +43,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         public static void TestCoarseProblem()
         {
             // Setup the model and solver
-            Model model = Example4x4Quads.CreateHomogeneousModel();
+            Model model = Example4x4QuadsHomogeneous.CreateModel();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
-            var cornerNodeSelection = Example4x4Quads.DefineCornerNodeSelectionSerial(model);
+            var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
             var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
             solver.OrderDofs(false);
@@ -57,8 +57,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var fr = new Dictionary<int, Vector>();
             for (int s = 0; s < 4; ++s)
             {
-                fbc[s] = Example4x4Quads.GetVectorFbcHomogeneous(s);
-                fr[s] = Example4x4Quads.GetVectorFrHomogeneous(s);
+                fbc[s] = Example4x4QuadsHomogeneous.GetVectorFbc(s);
+                fr[s] = Example4x4QuadsHomogeneous.GetVectorFr(s);
             }
 
             // Access private fields of FetiDPSolver
@@ -73,8 +73,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Matrix globalKccStar = (Matrix)method.Invoke(coarseSolver, new object[] { dofSeparator, matrixManagers });
 
             // Check against expected matrices
-            var expectedKccStar = Example4x4Quads.MatrixGlobalKccStar;
-            var expectedFcStar = Example4x4Quads.VectorGlobalFcStarHomogeneous;
+            var expectedKccStar = Example4x4QuadsHomogeneous.MatrixGlobalKccStar;
+            var expectedFcStar = Example4x4QuadsHomogeneous.VectorGlobalFcStar;
             double tol = 1E-13;
             Assert.True(expectedKccStar.Equals(globalKccStar, tol));
             Assert.True(expectedFcStar.Equals(globalFcStar, tol));
@@ -85,9 +85,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         {
             //TODO: Perhaps use the Br, Bc from the class that tests them instead of the solver.
 
-            Model model = Example4x4Quads.CreateHomogeneousModel();
+            Model model = Example4x4QuadsHomogeneous.CreateModel();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
-            var cornerNodeSelection = Example4x4Quads.DefineCornerNodeSelectionSerial(model);
+            var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
             FetiDPSolver solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
             solver.OrderDofs(false);
@@ -97,7 +97,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var fr = new Dictionary<int, Vector>();
             for (int s = 0; s < 4; ++s)
             {
-                fr[s] = Example4x4Quads.GetVectorFrHomogeneous(s);
+                fr[s] = Example4x4QuadsHomogeneous.GetVectorFr(s);
             }
             Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers = MockStiffnesses();
 
@@ -107,7 +107,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             fi.SetValue(solver, matrixManagers);
 
             Vector dr = solver.CalcDisconnectedDisplacements(fr);
-            var expectedDr = Example4x4Quads.VectorDrHomogeneous;
+            var expectedDr = Example4x4QuadsHomogeneous.Vector;
 
             double tol = 1E-13;
             Assert.True(expectedDr.Equals(dr, tol));
@@ -117,9 +117,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         public static void TestFlexibilityMatrices()
         {
             // Setup the model and solver
-            Model model = Example4x4Quads.CreateHomogeneousModel();
+            Model model = Example4x4QuadsHomogeneous.CreateModel();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
-            var cornerNodeSelection = Example4x4Quads.DefineCornerNodeSelectionSerial(model);
+            var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
             var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
             solver.OrderDofs(false);
@@ -143,17 +143,17 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Check against expected matrices
             double tol = 1E-11;
-            Assert.True(Example4x4Quads.MatrixFIrr.Equals(FIrr, tol));
-            Assert.True(Example4x4Quads.MatrixFIrc.Equals(FIrc, tol));
+            Assert.True(Example4x4QuadsHomogeneous.MatrixFIrr.Equals(FIrr, tol));
+            Assert.True(Example4x4QuadsHomogeneous.MatrixFIrc.Equals(FIrc, tol));
         }
 
         [Fact]
         public static void TestInterfaceProblemCreation()
         {
             // Setup the model and solver
-            Model model = Example4x4Quads.CreateHomogeneousModel();
+            Model model = Example4x4QuadsHomogeneous.CreateModel();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
-            var cornerNodeSelection = Example4x4Quads.DefineCornerNodeSelectionSerial(model);
+            var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
             var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
             solver.OrderDofs(false);
@@ -161,7 +161,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Mock the stiffness matrices and force vectors
             Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers = MockStiffnesses();
-            Vector dr = Example4x4Quads.VectorDrHomogeneous;
+            Vector dr = Example4x4QuadsHomogeneous.Vector;
 
             // Access private fields of FetiDPSolver
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -171,8 +171,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Hardcoded coarse problem matrix and rhs
             var coarseSolver = new FetiDPCoarseProblemSolverDenseOLD(model);
-            Vector globalFcStar = Example4x4Quads.VectorGlobalFcStarHomogeneous;
-            Matrix inverseKccStar = Example4x4Quads.MatrixGlobalKccStar.Invert(); // It must be set as a private field using reflection.
+            Vector globalFcStar = Example4x4QuadsHomogeneous.VectorGlobalFcStar;
+            Matrix inverseKccStar = Example4x4QuadsHomogeneous.MatrixGlobalKccStar.Invert(); // It must be set as a private field using reflection.
             fi = typeof(FetiDPCoarseProblemSolverDenseOLD).GetField("inverseGlobalKccStar",
                 BindingFlags.NonPublic | BindingFlags.Instance);
             fi.SetValue(coarseSolver, inverseKccStar);
@@ -180,7 +180,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Create the rhs vector of the interface problem 
             FetiDPInterfaceProblemSolver interfaceSolver = new FetiDPInterfaceProblemSolver.Builder().Build();
             var flexibility = new FetiDPFlexibilityMatrixOLD(dofSeparator, lagrangeEnumerator, matrixManagers);
-            Vector fcStar = Example4x4Quads.VectorGlobalFcStarHomogeneous;
+            Vector fcStar = Example4x4QuadsHomogeneous.VectorGlobalFcStar;
             MethodInfo method = interfaceSolver.GetType().GetMethod("CreateInterfaceProblemRhs",
                 BindingFlags.NonPublic | BindingFlags.Instance); // reflection for the private method
             Vector interfaceRhs = (Vector)method.Invoke(interfaceSolver, new object[] { flexibility, coarseSolver, fcStar, dr });
@@ -193,17 +193,17 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Check against expected linear system
             double tol = 1E-13;
-            Assert.True(Example4x4Quads.InterfaceProblemRhsHomogeneous.Equals(interfaceRhs, tol));
-            Assert.True(Example4x4Quads.InterfaceProblemMatrix.Equals(interfaceMatrix, tol));
+            Assert.True(Example4x4QuadsHomogeneous.InterfaceProblemRhs.Equals(interfaceRhs, tol));
+            Assert.True(Example4x4QuadsHomogeneous.InterfaceProblemMatrix.Equals(interfaceMatrix, tol));
         }
 
         [Fact]
         public static void TestInterfaceProblemSolution()
         {
             // Setup the model and solver
-            Model model = Example4x4Quads.CreateHomogeneousModel();
+            Model model = Example4x4QuadsHomogeneous.CreateModel();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
-            var cornerNodeSelection = Example4x4Quads.DefineCornerNodeSelectionSerial(model);
+            var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
             var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
             solver.OrderDofs(false);
@@ -213,7 +213,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers = MockStiffnesses();
             Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagersPreconditioning = MockStiffnessesForPreconditioning();
             //Dictionary<int, Matrix> Krr = MatricesKrr;
-            Vector dr = Example4x4Quads.VectorDrHomogeneous;
+            Vector dr = Example4x4QuadsHomogeneous.Vector;
 
             // Access private fields of FetiDPSolver
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -223,8 +223,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Hardcoded coarse problem matrix and rhs
             var coarseSolver = new FetiDPCoarseProblemSolverDenseOLD(model);
-            Vector globalFcStar = Example4x4Quads.VectorGlobalFcStarHomogeneous;
-            Matrix inverseKccStar = Example4x4Quads.MatrixGlobalKccStar.Invert(); // It must be set as a private field using reflection.
+            Vector globalFcStar = Example4x4QuadsHomogeneous.VectorGlobalFcStar;
+            Matrix inverseKccStar = Example4x4QuadsHomogeneous.MatrixGlobalKccStar.Invert(); // It must be set as a private field using reflection.
             fi = typeof(FetiDPCoarseProblemSolverDenseOLD).GetField("inverseGlobalKccStar",
                 BindingFlags.NonPublic | BindingFlags.Instance);
             fi.SetValue(coarseSolver, inverseKccStar);
@@ -243,12 +243,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var flexibility = new FetiDPFlexibilityMatrixOLD(dofSeparator, lagrangeEnumerator, matrixManagers);
             var logger = new SolverLogger("mock FETI-DP");
             (Vector lagranges, Vector uc) = interfaceSolver.SolveInterfaceProblem(
-                flexibility, preconditioner, coarseSolver, globalFcStar, dr, Example4x4Quads.GlobalForcesNorm, logger);
+                flexibility, preconditioner, coarseSolver, globalFcStar, dr, Example4x4QuadsHomogeneous.GlobalForcesNorm, logger);
 
             // Check against expected solution
             double tol = 1E-7;
-            Assert.True(Example4x4Quads.LagrangeMultipliersHomogeneousSolution.Equals(lagranges, tol));
-            Assert.True(Example4x4Quads.DisplacementsCornerHomogeneousSolution.Equals(uc, tol));
+            Assert.True(Example4x4QuadsHomogeneous.SolutionLagrangeMultipliers.Equals(lagranges, tol));
+            Assert.True(Example4x4QuadsHomogeneous.SolutionCornerDisplacements.Equals(uc, tol));
         }
 
         [Fact]
@@ -257,13 +257,13 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             #region Replace the next with hardcoded matrices and mocking objects
             // Run the analysis so that all objects are created
             // Setup the model
-            Model model = Example4x4Quads.CreateHomogeneousModel();
+            Model model = Example4x4QuadsHomogeneous.CreateModel();
 
             // Setup solver
             var interfaceSolverBuilder = new FetiDPInterfaceProblemSolver.Builder();
             interfaceSolverBuilder.PcgConvergenceTolerance = 1E-7;
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
-            var cornerNodeSelection = Example4x4Quads.DefineCornerNodeSelectionSerial(model);
+            var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
             var fetiSolverBuilder = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices);
             fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
             fetiSolverBuilder.ProblemIsHomogeneous = false;
@@ -296,7 +296,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             for (int s = 0; s < 4; ++s)
             {
                 Matrix explicitBpr = Bpbr[s].MultiplyRight(Matrix.CreateIdentity(Bpbr[s].NumColumns));
-                Assert.True(Example4x4Quads.GetMatrixBpbrHomogeneous(s).Equals(explicitBpr, tol));
+                Assert.True(Example4x4QuadsHomogeneous.GetMatrixBpbr(s).Equals(explicitBpr, tol));
             }
         }
 
@@ -309,7 +309,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
                 //Console.WriteLine($"(process {procs.OwnRank}) Hello World!"); // Run this to check if MPI works correctly.
 
                 // Create the model in master process
-                var model = new ModelMpi(procs, Example4x4Quads.CreateHomogeneousModel);
+                var model = new ModelMpi(procs, Example4x4QuadsHomogeneous.CreateModel);
                 model.ConnectDataStructures();
 
                 // Scatter subdomain data to each process
@@ -324,7 +324,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
                 // Separate dofs and corner boolean matrices
                 var dofSeparator = new FetiDPDofSeparatorMpi(procs, model);
                 var reordering = new MockingClasses.MockSeparatedDofReordering();
-                ICornerNodeSelection cornerNodes = Example4x4Quads.DefineCornerNodeSelectionMpi(procs, model);
+                ICornerNodeSelection cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionMpi(procs, model);
                 dofSeparator.SeparateDofs(cornerNodes, reordering);
 
                 // Calculate lagrange multipliers and corresponding boolean matrices
@@ -343,7 +343,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
                 // Check Bpbr matrices
                 double tol = 1E-13;
                 Matrix explicitBpr = Bpbr.MultiplyRight(Matrix.CreateIdentity(Bpbr.NumColumns));
-                Assert.True(Example4x4Quads.GetMatrixBpbrHomogeneous(subdomain.ID).Equals(explicitBpr, tol));
+                Assert.True(Example4x4QuadsHomogeneous.GetMatrixBpbr(subdomain.ID).Equals(explicitBpr, tol));
             }
         }
 
@@ -351,9 +351,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         public static void TestSolver()
         {
             // Setup the model and solver
-            Model model = Example4x4Quads.CreateHomogeneousModel();
+            Model model = Example4x4QuadsHomogeneous.CreateModel();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
-            var cornerNodeSelection = Example4x4Quads.DefineCornerNodeSelectionSerial(model);
+            var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
             var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             var problem = new ProblemStructural(model, solver);
             var linearAnalyzer = new LinearAnalyzer(model, solver, problem);
@@ -370,7 +370,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Check against expected solution
             double tol = 1E-7;
-            Assert.True(Example4x4Quads.DisplacementsGlobalHomogeneousSolution.Equals(globalU, tol));
+            Assert.True(Example4x4QuadsHomogeneous.SolutionGlobalDisplacements.Equals(globalU, tol));
         }
 
         /// <summary>
@@ -386,20 +386,20 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
                 FieldInfo fi;
                 fi = typeof(FetiDPSubdomainMatrixManagerDenseOLD).GetField("Kcc", BindingFlags.NonPublic | BindingFlags.Instance);
-                fi.SetValue(matrixManager, Example4x4Quads.GetMatrixKcc(s));
+                fi.SetValue(matrixManager, Example4x4QuadsHomogeneous.GetMatrixKcc(s));
                 fi = typeof(FetiDPSubdomainMatrixManagerDenseOLD).GetField("Krc", BindingFlags.NonPublic | BindingFlags.Instance);
-                fi.SetValue(matrixManager, Example4x4Quads.GetMatrixKrc(s));
+                fi.SetValue(matrixManager, Example4x4QuadsHomogeneous.GetMatrixKrc(s));
                 fi = typeof(FetiDPSubdomainMatrixManagerDenseOLD).GetField("Krr", BindingFlags.NonPublic | BindingFlags.Instance);
-                fi.SetValue(matrixManager, Example4x4Quads.GetMatrixKrr(s));
+                fi.SetValue(matrixManager, Example4x4QuadsHomogeneous.GetMatrixKrr(s));
                 fi = typeof(FetiDPSubdomainMatrixManagerDenseOLD).GetField("inverseKrr", 
                     BindingFlags.NonPublic | BindingFlags.Instance);
-                fi.SetValue(matrixManager, Example4x4Quads.GetMatrixKrr(s).FactorCholesky(false));
+                fi.SetValue(matrixManager, Example4x4QuadsHomogeneous.GetMatrixKrr(s).FactorCholesky(false));
 
                 fi = typeof(FetiDPSubdomainMatrixManagerDenseOLD).GetField("Kbb", BindingFlags.NonPublic | BindingFlags.Instance);
-                fi.SetValue(matrixManager, Example4x4Quads.GetMatrixKbb(s));
+                fi.SetValue(matrixManager, Example4x4QuadsHomogeneous.GetMatrixKbb(s));
                 fi = typeof(FetiDPSubdomainMatrixManagerDenseOLD).GetField("Kbi", BindingFlags.NonPublic | BindingFlags.Instance);
-                fi.SetValue(matrixManager, Example4x4Quads.GetMatrixKbi(s));
-                Matrix inverseKii = Example4x4Quads.GetMatrixKii(s);
+                fi.SetValue(matrixManager, Example4x4QuadsHomogeneous.GetMatrixKbi(s));
+                Matrix inverseKii = Example4x4QuadsHomogeneous.GetMatrixKii(s);
                 inverseKii.InvertInPlace();
                 fi = typeof(FetiDPSubdomainMatrixManagerDenseOLD).GetField("inverseKii",
                     BindingFlags.NonPublic | BindingFlags.Instance);

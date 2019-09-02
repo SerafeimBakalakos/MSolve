@@ -28,7 +28,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 Matrix Br = lagrangeEnumerator.GetBooleanMatrix(subdomain).CopyToFullMatrix(false);
-                Matrix expectedBr = Example4x4Quads.GetMatrixBr(subdomain.ID);
+                Matrix expectedBr = Example4x4QuadsHomogeneous.GetMatrixBr(subdomain.ID);
                 Assert.True(expectedBr.Equals(Br, tolerance));
             }
         }

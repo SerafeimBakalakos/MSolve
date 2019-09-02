@@ -30,7 +30,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
                 double tolerance = 1E-13;
                 Assert.Equal(8, lagrangeEnumerator.NumLagrangeMultipliers);
                 Matrix Br = lagrangeEnumerator.GetBooleanMatrix(subdomain).CopyToFullMatrix(false);
-                Matrix expectedBr = Example4x4Quads.GetMatrixBr(subdomain.ID);
+                Matrix expectedBr = Example4x4QuadsHomogeneous.GetMatrixBr(subdomain.ID);
                 Assert.True(expectedBr.Equals(Br, tolerance));
             }
         }

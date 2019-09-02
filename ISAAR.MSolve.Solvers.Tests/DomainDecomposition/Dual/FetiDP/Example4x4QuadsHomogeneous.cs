@@ -11,40 +11,10 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 {
-    public static class Example4x4Quads
+    public static class Example4x4QuadsHomogeneous
     {
         public const double GlobalForcesNorm = 10.0; // sqrt(0^2 + 0^2 + ... + 0^2 + 10^2)
-
-        public static Vector DisplacementsCornerHomogeneousSolution => Vector.CreateFromArray(new double[]
-        {
-            21.1181096194325, 27.2052778266603, 1.63160365361360, 25.0125476374046, 1.69318450304898,
-            61.8894615542161, -24.7267309921556, 26.3640977652349
-        });
-
-        public static Vector DisplacementsGlobalHeterogeneousSolution => Vector.CreateFromArray(new double[]
-        {
-            17.623494584618864, 12.564560593215612, 31.832863897135404, 34.496634608059082, 40.255481382985629,
-            66.49190654178912, 42.572002358887204, 99.798764204232072, 4.267568672307144, 9.00506902466324,
-            9.100928263505315, 31.107370029452451, 12.1615036308774, 66.065492717632239, 11.510673148931499,
-            102.06649895017948, -3.0529124682202156, 9.24107474483673, -7.8531777412741217, 26.728892403726846,
-            -16.890006178831449, 70.602493468916791, -21.80233265288679, 109.39882637058051, -4.7311061272016808,
-            10.030926199331375, -5.6722429958962142, 18.837815470700932, 146.94209278892487, 392.04674590737193,
-            -35.619167413693908, 1407.200332011206, -9.9609496807814057, 10.46574373452243, -17.603838651152756,
-            20.760800663270086, -843.13592713307355, 371.10700308359418, -1666.2547486301742, 3714.1637893447919
-        });
-
-        public static Vector DisplacementsGlobalHomogeneousSolution => Vector.CreateFromArray(new double[]
-        {
-            13.3258563908201, 12.3999624809163, 21.1181095863809, 27.2052777811441, 24.3525812415758,
-            43.2777053704649, 24.8992347210378, 57.3521080292628, 4.74521148903743, 9.87352108397423,
-            9.37569840211612, 25.9120840082139, 11.8910608093164, 43.4314599456699, 12.2652060584230,
-            57.9466725072280, 0.450346260334126, 9.02020634682474, 1.63160365355026, 25.0125475922504,
-            2.58948267402381, 45.0651412625480, 1.69318450300533, 61.8894614604312, -4.68849826343688,
-            8.90417219731433, -8.76400355420594, 24.5661224138922, -9.40948533633272, 47.1084814579881,
-            -11.2141368968962, 73.2559168929990, -14.0271645568764, 11.3572597884005, -24.7267309592324,
-            26.3640977197317, -34.3702668180117, 46.6307017985724, -42.8927307907656, 96.0971764416081
-        });
-
+        
         public static Matrix InterfaceProblemMatrix => Matrix.CreateFromArray(new double[,]
         {
             { 4.97303228211014, 0.0303495596681853, 0.478870888249040, -0.510074267142073, -0.554638064586832, -0.639203724429228, 0.342142442028879, -0.0259960944946401        },
@@ -57,16 +27,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             { -0.0259960944946401, 0.0326814286491487, -0.132450092323064, -0.393630305623386, -0.137248503790822, 0.602781684493727, -0.0303495596681853, 2.75206109564910      }
         });
 
-        public static Vector InterfaceProblemRhsHomogeneous => Vector.CreateFromArray(new double[]
+        public static Vector InterfaceProblemRhs => Vector.CreateFromArray(new double[]
         {
             -14.9810838729735, -5.69975426333296, -10.5434726428584, 0.244121938779135, -5.89291361392317,
             -13.1189445403298, 16.4060122931895, -5.93260749341458
-        });
-
-        public static Vector LagrangeMultipliersHomogeneousSolution => Vector.CreateFromArray(new double[]
-        {
-            -3.67505611805653, -3.06916047739931, -3.12635180105707, 0.427127980701075, -3.73923329344533,
-            -2.87580179407164, 3.34727977833535, -1.76301688321532
         });
 
         public static Matrix MatrixFIrr => Matrix.CreateFromArray(new double[,]
@@ -105,57 +69,41 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             {0, 0, -0.00636415859565789, -0.310650945646995, 0.110850590090827, -0.115596477967984, 0.0224949475741954, 0.571373230561769                                    }
         });
 
-        public static Vector VectorDrHomogeneous => Vector.CreateFromArray(new double[]
+        public static Vector SolutionCornerDisplacements => Vector.CreateFromArray(new double[]
+        {
+            21.1181096194325, 27.2052778266603, 1.63160365361360, 25.0125476374046, 1.69318450304898,
+            61.8894615542161, -24.7267309921556, 26.3640977652349
+        });
+
+        public static Vector SolutionGlobalDisplacements => Vector.CreateFromArray(new double[]
+        {
+            13.3258563908201, 12.3999624809163, 21.1181095863809, 27.2052777811441, 24.3525812415758,
+            43.2777053704649, 24.8992347210378, 57.3521080292628, 4.74521148903743, 9.87352108397423,
+            9.37569840211612, 25.9120840082139, 11.8910608093164, 43.4314599456699, 12.2652060584230,
+            57.9466725072280, 0.450346260334126, 9.02020634682474, 1.63160365355026, 25.0125475922504,
+            2.58948267402381, 45.0651412625480, 1.69318450300533, 61.8894614604312, -4.68849826343688,
+            8.90417219731433, -8.76400355420594, 24.5661224138922, -9.40948533633272, 47.1084814579881,
+            -11.2141368968962, 73.2559168929990, -14.0271645568764, 11.3572597884005, -24.7267309592324,
+            26.3640977197317, -34.3702668180117, 46.6307017985724, -42.8927307907656, 96.0971764416081
+        });
+
+        public static Vector SolutionLagrangeMultipliers => Vector.CreateFromArray(new double[]
+        {
+            -3.67505611805653, -3.06916047739931, -3.12635180105707, 0.427127980701075, -3.73923329344533,
+            -2.87580179407164, 3.34727977833535, -1.76301688321532
+        });
+
+        public static Vector Vector => Vector.CreateFromArray(new double[]
         {
             0, 0, 0, 0, -3.375195492420367, -10.215251712309035, 0.418600986802971, -1.151753569240856
         });
 
-        public static Vector VectorGlobalFcStarHomogeneous => Vector.CreateFromArray(new double[]
+        public static Vector VectorGlobalFcStar => Vector.CreateFromArray(new double[]
         {
             0, 0, 3.19374601989718, 2.11725876973317, 0.254044579955345, 6.55220940504195, -3.44779060118368, 1.33053183634499
         });
 
-        public static Model CreateHeterogeneousModel(double stiffnessRatio)
-        {
-            //                                    Λ P
-            //                                    | 
-            //                                     
-            // |> 20 ---- 21 ---- 22 ---- 23 ---- 24
-            //    |  (12) |  (13) |  (14) |  (15) |
-            //    |  E0   |  E0   |  E1   |  E1   |
-            // |> 15 ---- 16 ---- 17 ---- 18 ---- 19
-            //    |  (8)  |  (9)  |  (10) |  (11) |
-            //    |  E0   |  E0   |  E1   |  E1   |
-            // |> 10 ---- 11 ---- 12 ---- 13 ---- 14
-            //    |  (4)  |  (5)  |  (6)  |  (7)  |
-            //    |  E0   |  E0   |  E0   |  E0   |
-            // |> 5 ----- 6 ----- 7 ----- 8 ----- 9
-            //    |  (0)  |  (1)  |  (2)  |  (3)  |
-            //    |  E0   |  E0   |  E0   |  E0   |
-            // |> 0 ----- 1 ----- 2 ----- 3 ----- 4
-
-
-            var builder = new Uniform2DModelBuilder();
-            builder.DomainLengthX = 4.0;
-            builder.DomainLengthY = 4.0;
-            builder.NumSubdomainsX = 2;
-            builder.NumSubdomainsY = 2;
-            builder.NumTotalElementsX = 4;
-            builder.NumTotalElementsY = 4;
-            //builder.YoungModulus = 1.0;
-            double E0 = 1.0;
-            builder.YoungModuliOfSubdomains = new double[,]
-            {
-                { E0, E0 }, { E0, stiffnessRatio * E0}
-            };
-            builder.PrescribeDisplacement(Uniform2DModelBuilder.BoundaryRegion.LeftSide, StructuralDof.TranslationX, 0.0);
-            builder.PrescribeDisplacement(Uniform2DModelBuilder.BoundaryRegion.LeftSide, StructuralDof.TranslationY, 0.0);
-            builder.DistributeLoadAtNodes(Uniform2DModelBuilder.BoundaryRegion.UpperRightCorner, StructuralDof.TranslationY, 10.0);
-
-            return builder.BuildModel();
-        }
-
-        public static Model CreateHomogeneousModel()
+        public static Model CreateModel()
         {
             //                                    Λ P
             //                                    | 
@@ -417,68 +365,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             else throw new ArgumentException("Subdomain ID must be 0, 1, 2 or 3");
         }
 
-        public static Matrix GetMatrixBpbrHeterogeneous(int subdomainID)
-        {
-            if (subdomainID == 0)
-            {
-                return Matrix.CreateFromArray(new double[,]
-                {
-                    { 0.5, 0, 0, 0 },
-                    { 0, 0.5, 0, 0 },
-                    { 0, 0, 0.5, 0 },
-                    { 0, 0, 0, 0.5 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 }
-                });
-            }
-            else if (subdomainID == 1)
-            {
-                return Matrix.CreateFromArray(new double[,]
-                {
-                    { -0.5, 0, 0, 0 },
-                    { 0, -0.5, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0.00990099009900990, 0 },
-                    { 0, 0, 0, 0.00990099009900990 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 }
-                });
-            }
-            else if (subdomainID == 2)
-            {
-                return Matrix.CreateFromArray(new double[,]
-                {
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { -0.5, 0, 0, 0 },
-                    { 0, -0.5, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0.00990099009900990, 0 },
-                    { 0, 0, 0, 0.00990099009900990 }
-                });
-            }
-            else if (subdomainID == 3)
-            {
-                return Matrix.CreateFromArray(new double[,]
-                {
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { 0, 0, 0, 0 },
-                    { -0.990099009900990, 0, 0, 0 },
-                    { 0, -0.990099009900990, 0, 0 },
-                    { 0, 0, -0.990099009900990, 0 },
-                    { 0, 0, 0, -0.990099009900990 }
-                });
-            }
-            else throw new ArgumentException("Subdomain ID must be 0, 1, 2 or 3");
-        }
-
-        public static Matrix GetMatrixBpbrHomogeneous(int subdomainID)
+        public static Matrix GetMatrixBpbr(int subdomainID)
         {
             if (subdomainID == 0)
             {
@@ -542,14 +429,14 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         public static Matrix GetMatrixKbb(int subdomainID) //TODO: This should be hardcoded instead
         {
             (int[] cornerDofs, int[] remainderDofs, int[] boundaryRemainderDofs, int[] internalRemainderDofs) =
-                        Example4x4Quads.GetDofSeparation(subdomainID);
+                        Example4x4QuadsHomogeneous.GetDofSeparation(subdomainID);
             return GetMatrixKrr(subdomainID).GetSubmatrix(boundaryRemainderDofs, boundaryRemainderDofs);
         }
 
         public static Matrix GetMatrixKbi(int subdomainID) //TODO: This should be hardcoded instead
         {
             (int[] cornerDofs, int[] remainderDofs, int[] boundaryRemainderDofs, int[] internalRemainderDofs) =
-                        Example4x4Quads.GetDofSeparation(subdomainID);
+                        Example4x4QuadsHomogeneous.GetDofSeparation(subdomainID);
             return GetMatrixKrr(subdomainID).GetSubmatrix(boundaryRemainderDofs, internalRemainderDofs);
         }
 
@@ -605,7 +492,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         public static Matrix GetMatrixKii(int subdomainID) //TODO: This should be hardcoded instead
         {
             (int[] cornerDofs, int[] remainderDofs, int[] boundaryRemainderDofs, int[] internalRemainderDofs) =
-                        Example4x4Quads.GetDofSeparation(subdomainID);
+                        Example4x4QuadsHomogeneous.GetDofSeparation(subdomainID);
             return GetMatrixKrr(subdomainID).GetSubmatrix(internalRemainderDofs, internalRemainderDofs);
         }
 
@@ -747,7 +634,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             else throw new ArgumentException("Subdomain ID must be 0, 1, 2 or 3");
         }
 
-        public static Vector GetVectorFbcHomogeneous(int subdomainID)
+        public static Vector GetVectorFbc(int subdomainID)
         {
             if (subdomainID == 0) return Vector.CreateZero(4);
             else if (subdomainID == 1) return Vector.CreateZero(6);
@@ -756,7 +643,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             else throw new ArgumentException("Subdomain ID must be 0, 1, 2 or 3");
         }
 
-        public static Vector GetVectorFrHomogeneous(int subdomainID)
+        public static Vector GetVectorFr(int subdomainID)
         {
             if (subdomainID == 0) return Vector.CreateZero(8);
             else if (subdomainID == 1) return Vector.CreateZero(12);

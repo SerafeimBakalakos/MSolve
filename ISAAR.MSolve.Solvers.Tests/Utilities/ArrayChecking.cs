@@ -4,9 +4,9 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Transfer;
 using Xunit;
 
-namespace ISAAR.MSolve.Solvers.Tests
+namespace ISAAR.MSolve.Solvers.Tests.Utilities
 {
-    internal static class Utilities
+    internal static class ArrayChecking
     {
         internal static void CheckEqual(int[] expected, int[] computed)
         {

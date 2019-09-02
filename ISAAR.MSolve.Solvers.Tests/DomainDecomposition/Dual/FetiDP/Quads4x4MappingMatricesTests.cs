@@ -19,6 +19,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests;
+using ISAAR.MSolve.Solvers.Tests.Utilities;
 using Xunit;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
@@ -29,7 +30,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         public static void TestDofSeparation()
         {
             // Create model
-            Model model = Example4x4Quads.CreateHomogeneousModel();
+            Model model = Example4x4QuadsHomogeneous.CreateModel();
             model.ConnectDataStructures();
 
             // Order free dofs.
@@ -40,7 +41,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var dofSeparator = new FetiDPDofSeparatorOLD();
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                HashSet<INode> cornerNodes = Example4x4Quads.DefineCornerNodesSubdomain(subdomain);
+                HashSet<INode> cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodesSubdomain(subdomain);
                 dofSeparator.SeparateCornerRemainderDofs(subdomain, cornerNodes);
                 dofSeparator.SeparateBoundaryInternalDofs(subdomain, cornerNodes);
             }
@@ -49,11 +50,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             for (int s = 0; s < 4; ++s)
             {
                 (int[] cornerDofs, int[] remainderDofs, int[] boundaryRemainderDofs, int[] internalRemainderDofs) =
-                    Example4x4Quads.GetDofSeparation(s);
-                Utilities.CheckEqual(cornerDofs, dofSeparator.CornerDofIndices[s]);
-                Utilities.CheckEqual(remainderDofs, dofSeparator.RemainderDofIndices[s]);
-                Utilities.CheckEqual(boundaryRemainderDofs, dofSeparator.BoundaryDofIndices[s]);
-                Utilities.CheckEqual(internalRemainderDofs, dofSeparator.InternalDofIndices[s]);
+                    Example4x4QuadsHomogeneous.GetDofSeparation(s);
+                ArrayChecking.CheckEqual(cornerDofs, dofSeparator.CornerDofIndices[s]);
+                ArrayChecking.CheckEqual(remainderDofs, dofSeparator.RemainderDofIndices[s]);
+                ArrayChecking.CheckEqual(boundaryRemainderDofs, dofSeparator.BoundaryDofIndices[s]);
+                ArrayChecking.CheckEqual(internalRemainderDofs, dofSeparator.InternalDofIndices[s]);
             }
         }
 
@@ -61,7 +62,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         public static void TestSignedBooleanMatrices()
         {
             // Create model
-            Model model = Example4x4Quads.CreateHomogeneousModel();
+            Model model = Example4x4QuadsHomogeneous.CreateModel();
             model.ConnectDataStructures();
 
             // Order free dofs.
@@ -70,10 +71,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Separate dofs
             var dofSeparator = new FetiDPDofSeparatorOLD();
-            dofSeparator.DefineGlobalBoundaryDofs(model, Example4x4Quads.DefineCornerNodesGlobal(model));
+            dofSeparator.DefineGlobalBoundaryDofs(model, Example4x4QuadsHomogeneous.DefineCornerNodesGlobal(model));
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                HashSet<INode> cornerNodes = Example4x4Quads.DefineCornerNodesSubdomain(subdomain);
+                HashSet<INode> cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodesSubdomain(subdomain);
                 dofSeparator.SeparateCornerRemainderDofs(subdomain, cornerNodes);
                 dofSeparator.SeparateBoundaryInternalDofs(subdomain, cornerNodes);
             }
@@ -90,7 +91,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             for (int s = 0; s < 4; ++s)
             {
                 Matrix Br = lagrangeEnumerator.BooleanMatrices[s].CopyToFullMatrix(false);
-                Matrix expectedBr = Example4x4Quads.GetMatrixBr(s);
+                Matrix expectedBr = Example4x4QuadsHomogeneous.GetMatrixBr(s);
                 Assert.True(expectedBr.Equals(Br, tolerance));
             }
         }
@@ -99,7 +100,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         public static void TestUnsignedBooleanMatrices()
         {
             // Create model
-            Model model = Example4x4Quads.CreateHomogeneousModel();
+            Model model = Example4x4QuadsHomogeneous.CreateModel();
             model.ConnectDataStructures();
 
             // Order free dofs.
@@ -108,10 +109,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Separate dofs
             var dofSeparator = new FetiDPDofSeparatorOLD();
-            dofSeparator.DefineGlobalCornerDofs(model, Example4x4Quads.DefineCornerNodesGlobal(model));
+            dofSeparator.DefineGlobalCornerDofs(model, Example4x4QuadsHomogeneous.DefineCornerNodesGlobal(model));
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                HashSet<INode> cornerNodes = Example4x4Quads.DefineCornerNodesSubdomain(subdomain);
+                HashSet<INode> cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodesSubdomain(subdomain);
                 //IEnumerable<INode> remainderAndConstrainedNodes = subdomain.Nodes.Where(node => !cornerNodes[s].Contains(node));
                 dofSeparator.SeparateCornerRemainderDofs(subdomain, cornerNodes);
                 dofSeparator.SeparateBoundaryInternalDofs(subdomain, cornerNodes);
@@ -125,7 +126,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             for (int s = 0; s < 4; ++s)
             {
                 UnsignedBooleanMatrix Bc = dofSeparator.CornerBooleanMatrices[s];
-                Matrix expectedBc = Example4x4Quads.GetMatrixBc(s);
+                Matrix expectedBc = Example4x4QuadsHomogeneous.GetMatrixBc(s);
                 Assert.True(expectedBc.Equals(Bc, tolerance));
             }
         }

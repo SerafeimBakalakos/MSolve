@@ -10,6 +10,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
+using ISAAR.MSolve.Solvers.Tests.Utilities;
 using MPI;
 using Xunit;
 
@@ -29,11 +30,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
                 // Check dof separation 
                 (int[] cornerDofs, int[] remainderDofs, int[] boundaryRemainderDofs, int[] internalRemainderDofs) =
-                    Example4x4Quads.GetDofSeparation(subdomain.ID);
-                Utilities.CheckEqualMpi(procs, cornerDofs, dofSeparator.GetCornerDofIndices(subdomain));
-                Utilities.CheckEqualMpi(procs, remainderDofs, dofSeparator.GetRemainderDofIndices(subdomain));
-                Utilities.CheckEqualMpi(procs, boundaryRemainderDofs, dofSeparator.GetBoundaryDofIndices(subdomain));
-                Utilities.CheckEqualMpi(procs, internalRemainderDofs, dofSeparator.GetInternalDofIndices(subdomain));
+                    Example4x4QuadsHomogeneous.GetDofSeparation(subdomain.ID);
+                ArrayChecking.CheckEqualMpi(procs, cornerDofs, dofSeparator.GetCornerDofIndices(subdomain));
+                ArrayChecking.CheckEqualMpi(procs, remainderDofs, dofSeparator.GetRemainderDofIndices(subdomain));
+                ArrayChecking.CheckEqualMpi(procs, boundaryRemainderDofs, dofSeparator.GetBoundaryDofIndices(subdomain));
+                ArrayChecking.CheckEqualMpi(procs, internalRemainderDofs, dofSeparator.GetInternalDofIndices(subdomain));
             }
         }
 
@@ -46,7 +47,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
                 // Check corner boolean matrices
                 UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
-                Matrix expectedBc = Example4x4Quads.GetMatrixBc(subdomain.ID);
+                Matrix expectedBc = Example4x4QuadsHomogeneous.GetMatrixBc(subdomain.ID);
                 double tolerance = 1E-13;
                 //writer.WriteToFile(Bc, outputFile, true);
                 Assert.True(expectedBc.Equals(Bc, tolerance));
@@ -57,7 +58,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
                     {
                         // All Bc matrices are also stored in master process
                         UnsignedBooleanMatrix globalLc = dofSeparator.GetCornerBooleanMatrix(sub);
-                        Matrix expectedGlobalLc = Example4x4Quads.GetMatrixBc(sub.ID);
+                        Matrix expectedGlobalLc = Example4x4QuadsHomogeneous.GetMatrixBc(sub.ID);
                         Assert.True(expectedGlobalLc.Equals(globalLc, tolerance));
                     }
                 }
@@ -77,7 +78,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             //var writer = new FullMatrixWriter();
 
             // Create the model in master process
-            var model = new ModelMpi(procs, Example4x4Quads.CreateHomogeneousModel);
+            var model = new ModelMpi(procs, Example4x4QuadsHomogeneous.CreateModel);
             model.ConnectDataStructures();
 
             // Scatter subdomain data to each process
@@ -92,7 +93,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             // Separate dofs and corner boolean matrices
             var dofSeparator = new FetiDPDofSeparatorMpi(procs, model);
             var reordering = new MockingClasses.MockSeparatedDofReordering();
-            ICornerNodeSelection cornerNodes = Example4x4Quads.DefineCornerNodeSelectionMpi(procs, model);
+            ICornerNodeSelection cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionMpi(procs, model);
             dofSeparator.SeparateDofs(cornerNodes, reordering);
 
             return (procs, model, dofSeparator);

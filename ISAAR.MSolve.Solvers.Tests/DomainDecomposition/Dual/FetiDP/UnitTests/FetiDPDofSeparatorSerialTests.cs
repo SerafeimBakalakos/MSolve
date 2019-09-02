@@ -9,6 +9,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
+using ISAAR.MSolve.Solvers.Tests.Utilities;
 using Xunit;
 
 //TODO: Mock all other classes.
@@ -28,11 +29,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             {
                 
                 (int[] cornerDofs, int[] remainderDofs, int[] boundaryRemainderDofs, int[] internalRemainderDofs) =
-                    Example4x4Quads.GetDofSeparation(sub.ID);
-                Utilities.CheckEqual(cornerDofs, dofSeparator.GetCornerDofIndices(sub));
-                Utilities.CheckEqual(remainderDofs, dofSeparator.GetRemainderDofIndices(sub));
-                Utilities.CheckEqual(boundaryRemainderDofs, dofSeparator.GetBoundaryDofIndices(sub));
-                Utilities.CheckEqual(internalRemainderDofs, dofSeparator.GetInternalDofIndices(sub));
+                    Example4x4QuadsHomogeneous.GetDofSeparation(sub.ID);
+                ArrayChecking.CheckEqual(cornerDofs, dofSeparator.GetCornerDofIndices(sub));
+                ArrayChecking.CheckEqual(remainderDofs, dofSeparator.GetRemainderDofIndices(sub));
+                ArrayChecking.CheckEqual(boundaryRemainderDofs, dofSeparator.GetBoundaryDofIndices(sub));
+                ArrayChecking.CheckEqual(internalRemainderDofs, dofSeparator.GetInternalDofIndices(sub));
             }
         }
 
@@ -48,7 +49,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
                 UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(sub);
-                Matrix expectedBc = Example4x4Quads.GetMatrixBc(sub.ID);
+                Matrix expectedBc = Example4x4QuadsHomogeneous.GetMatrixBc(sub.ID);
                 Assert.True(expectedBc.Equals(Bc, tolerance));
             }
         }
@@ -56,7 +57,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         internal static (IModel, FetiDPDofSeparatorSerial) CreateModelAndDofSeparator()
         {
             // Create model
-            Model model = Example4x4Quads.CreateHomogeneousModel();
+            Model model = Example4x4QuadsHomogeneous.CreateModel();
             model.ConnectDataStructures();
 
             // Order free dofs.
@@ -65,7 +66,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
             // Separate dofs and calculate the boolean matrices
             var dofSeparator = new FetiDPDofSeparatorSerial(model);
-            ICornerNodeSelection cornerNodes = Example4x4Quads.DefineCornerNodeSelectionSerial(model);
+            ICornerNodeSelection cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
             dofSeparator.SeparateDofs(cornerNodes, new MockingClasses.MockSeparatedDofReordering());
 
             return (model, dofSeparator);
