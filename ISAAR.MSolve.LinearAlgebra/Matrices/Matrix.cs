@@ -22,6 +22,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
     /// General purpose matrix class. All entries are stored in an 1D column major array. Uses LAPACK for most operations. 
     /// Authors: Serafeim Bakalakos
     /// </summary>
+    [Serializable]
     public class Matrix : IMatrix, ISliceable2D, IEntrywiseOperableView2D<Matrix, Matrix>, IEntrywiseOperable2D<Matrix>
     {
         private double[] data;

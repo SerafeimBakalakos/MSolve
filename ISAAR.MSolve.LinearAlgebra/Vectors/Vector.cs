@@ -16,6 +16,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Vectors
     /// General purpose vector class with more functionality than other vectors. No sparsity is assumed.
     /// Authors: Serafeim Bakalakos
     /// </summary>
+    [Serializable]
     public class Vector : IVector, ISliceable1D, IEntrywiseOperableView1D<Vector, Vector>, IEntrywiseOperable1D<Vector>
     {
         private readonly double[] data;

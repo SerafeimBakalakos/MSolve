@@ -73,7 +73,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             {
                 if (fcStar == null) throw new InvalidOperationException(
                     "The remainder and corner subvectors (Fr and Fbc) must be condensed into FcStar first.");
-                return FcStar;
+                return fcStar;
             }
         }
 
@@ -159,6 +159,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         {
             ClearMatrices();
             ExtractCornerRemainderSubmatricesImpl();
+            areKccKcrKrcKrrExtracted = true;
         }
         protected abstract void ExtractCornerRemainderSubmatricesImpl();
 

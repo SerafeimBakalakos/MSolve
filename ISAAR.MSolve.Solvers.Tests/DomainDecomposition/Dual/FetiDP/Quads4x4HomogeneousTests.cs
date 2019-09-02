@@ -29,6 +29,7 @@ using MPI;
 using Xunit;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests;
+using ISAAR.MSolve.Solvers.Tests.Utilities;
 
 //TODO: Also test stiffness distribution and preconditioners in other classes.
 //TODO: Create the dofSeparator and lagrangeEnumerator manually, without using FetiDPSolver.
@@ -107,7 +108,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             fi.SetValue(solver, matrixManagers);
 
             Vector dr = solver.CalcDisconnectedDisplacements(fr);
-            var expectedDr = Example4x4QuadsHomogeneous.Vector;
+            var expectedDr = Example4x4QuadsHomogeneous.VectorDr;
 
             double tol = 1E-13;
             Assert.True(expectedDr.Equals(dr, tol));
@@ -138,8 +139,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             int numLagranges = lagrangeEnumerator.NumLagrangeMultipliers;
             int numCornerDofs = dofSeparator.NumGlobalCornerDofs;
             var flexibility = new FetiDPFlexibilityMatrixOLD(dofSeparator, lagrangeEnumerator, matrixManagers);
-            Matrix FIrr = MultiplyWithIdentity(numLagranges, numLagranges, flexibility.MultiplyFIrr);
-            Matrix FIrc = MultiplyWithIdentity(numLagranges, numLagranges, (x, y) => y.CopyFrom(flexibility.MultiplyFIrc(x)));
+            Matrix FIrr = ImplicitMatrixUtilities.MultiplyWithIdentity(numLagranges, numLagranges, flexibility.MultiplyFIrr);
+            Matrix FIrc = ImplicitMatrixUtilities.MultiplyWithIdentity(numLagranges, numLagranges, 
+                (x, y) => y.CopyFrom(flexibility.MultiplyFIrc(x)));
 
             // Check against expected matrices
             double tol = 1E-11;
@@ -161,7 +163,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Mock the stiffness matrices and force vectors
             Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers = MockStiffnesses();
-            Vector dr = Example4x4QuadsHomogeneous.Vector;
+            Vector dr = Example4x4QuadsHomogeneous.VectorDr;
 
             // Access private fields of FetiDPSolver
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -189,7 +191,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             int numLagranges = lagrangeEnumerator.NumLagrangeMultipliers;
             var interfaceMatrixImplicit = 
                 new FetiDPInterfaceProblemSolver.InterfaceProblemMatrix(flexibility, coarseSolver);
-            Matrix interfaceMatrix = MultiplyWithIdentity(numLagranges, numLagranges, interfaceMatrixImplicit.Multiply); // Action<T> is contravariant!!!
+            Matrix interfaceMatrix = ImplicitMatrixUtilities.MultiplyWithIdentity(numLagranges, numLagranges, 
+                interfaceMatrixImplicit.Multiply); // Action<T> is contravariant!!!
 
             // Check against expected linear system
             double tol = 1E-13;
@@ -213,7 +216,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers = MockStiffnesses();
             Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagersPreconditioning = MockStiffnessesForPreconditioning();
             //Dictionary<int, Matrix> Krr = MatricesKrr;
-            Vector dr = Example4x4QuadsHomogeneous.Vector;
+            Vector dr = Example4x4QuadsHomogeneous.VectorDr;
 
             // Access private fields of FetiDPSolver
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -417,20 +420,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var managersGeneral = new Dictionary<int, IFetiSubdomainMatrixManagerOLD>();
             foreach (int s in managersConcrete.Keys) managersGeneral[s] = managersConcrete[s];
             return managersGeneral;
-        }
-
-        private static Matrix MultiplyWithIdentity(int numRows, int numCols, Action<Vector, Vector> matrixVectorMultiplication)
-        {
-            var result = Matrix.CreateZero(numRows, numCols);
-            for (int j = 0; j < numCols; ++j)
-            {
-                var lhs = Vector.CreateZero(numCols);
-                lhs[j] = 1.0;
-                var rhs = Vector.CreateZero(numRows);
-                matrixVectorMultiplication(lhs, rhs);
-                result.SetSubcolumn(j, rhs);
-            }
-            return result;
         }
     }
 }
