@@ -32,7 +32,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly ICornerNodeSelection cornerNodeSelection;
         private readonly ICrosspointStrategy crosspointStrategy = new FullyRedundantConstraints();
         private readonly IDofOrderer dofOrderer;
-        private readonly FetiDPDofSeparator dofSeparator;
+        private readonly FetiDPDofSeparatorOLD dofSeparator;
         private readonly IFetiDPInterfaceProblemSolver interfaceProblemSolver;
         private readonly Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers;
         private readonly Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagersGeneral; //TODO: redesign. They are the same as above, but Dictionary is not covariant
@@ -90,7 +90,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             LinearSystems = externalLinearSystems;
 
             this.dofOrderer = dofOrderer;
-            this.dofSeparator = new FetiDPDofSeparator();
+            this.dofSeparator = new FetiDPDofSeparatorOLD();
             this.preconditionerFactory = preconditionerFactory;
 
             // Interface problem

@@ -28,6 +28,7 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 using MPI;
 using Xunit;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests;
 
 //TODO: Also test stiffness distribution and preconditioners in other classes.
 //TODO: Create the dofSeparator and lagrangeEnumerator manually, without using FetiDPSolver.
@@ -62,7 +63,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Access private fields of FetiDPSolver
             FieldInfo fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
-            var dofSeparator = (FetiDPDofSeparator)fi.GetValue(solver);
+            var dofSeparator = (FetiDPDofSeparatorOLD)fi.GetValue(solver);
 
             // Calculate the coarse problem matrix and rhs
             var coarseSolver = new FetiDPCoarseProblemSolverDenseOLD(model);
@@ -131,7 +132,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
             var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumeratorOLD)fi.GetValue(solver);
             fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
-            var dofSeparator = (FetiDPDofSeparator)fi.GetValue(solver);
+            var dofSeparator = (FetiDPDofSeparatorOLD)fi.GetValue(solver);
 
             // Create the flexibility matrices by multiplying with identity matrices
             int numLagranges = lagrangeEnumerator.NumLagrangeMultipliers;
@@ -166,7 +167,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
             var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumeratorOLD)fi.GetValue(solver);
             fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
-            var dofSeparator = (FetiDPDofSeparator)fi.GetValue(solver);
+            var dofSeparator = (FetiDPDofSeparatorOLD)fi.GetValue(solver);
 
             // Hardcoded coarse problem matrix and rhs
             var coarseSolver = new FetiDPCoarseProblemSolverDenseOLD(model);
@@ -218,7 +219,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
             var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumeratorOLD)fi.GetValue(solver);
             fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
-            var dofSeparator = (FetiDPDofSeparator)fi.GetValue(solver);
+            var dofSeparator = (FetiDPDofSeparatorOLD)fi.GetValue(solver);
 
             // Hardcoded coarse problem matrix and rhs
             var coarseSolver = new FetiDPCoarseProblemSolverDenseOLD(model);
@@ -282,7 +283,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
             var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumeratorOLD)fi.GetValue(fetiSolver);
             fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
-            var dofSeparator = (FetiDPDofSeparator)fi.GetValue(fetiSolver);
+            var dofSeparator = (FetiDPDofSeparatorOLD)fi.GetValue(fetiSolver);
             fi = typeof(FetiDPSolver).GetField("stiffnessDistribution", BindingFlags.NonPublic | BindingFlags.Instance);
             var stiffnessDistribution = (IStiffnessDistributionOLD)fi.GetValue(fetiSolver);
             MethodInfo method = preconditionerFactory.GetType().GetMethod("CalcBoundaryPreconditioningBooleanMatrices",
@@ -322,7 +323,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
                 // Separate dofs and corner boolean matrices
                 var dofSeparator = new FetiDPDofSeparatorMpi(procs, model);
-                var reordering = new Quads4x4MappingMatricesTests.MockReordering();
+                var reordering = new MockingClasses.MockSeparatedDofReordering();
                 ICornerNodeSelection cornerNodes = Example4x4Quads.DefineCornerNodeSelectionMpi(procs, model);
                 dofSeparator.SeparateDofs(cornerNodes, reordering);
 

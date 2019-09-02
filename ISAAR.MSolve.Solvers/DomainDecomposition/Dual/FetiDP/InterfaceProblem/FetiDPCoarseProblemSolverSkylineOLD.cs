@@ -35,13 +35,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         }
 
         public void CreateAndInvertCoarseProblemMatrix(Dictionary<int, HashSet<INode>> cornerNodesOfSubdomains, 
-            FetiDPDofSeparator dofSeparator, Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers)
+            FetiDPDofSeparatorOLD dofSeparator, Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers)
         {
             SkylineMatrix globalKccStar = CreateGlobalKccStar(cornerNodesOfSubdomains, dofSeparator, matrixManagers);
             this.inverseGlobalKccStar = globalKccStar.FactorLdl(true);
         }
 
-        public Vector CreateCoarseProblemRhs(FetiDPDofSeparator dofSeparator,
+        public Vector CreateCoarseProblemRhs(FetiDPDofSeparatorOLD dofSeparator,
             Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers,
             Dictionary<int, Vector> fr, Dictionary<int, Vector> fbc)
         {
@@ -64,7 +64,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
         public Vector MultiplyInverseCoarseProblemMatrixTimes(Vector vector) => inverseGlobalKccStar.SolveLinearSystem(vector);
 
-        public void ReorderCornerDofs(FetiDPDofSeparator dofSeparator)
+        public void ReorderCornerDofs(FetiDPDofSeparatorOLD dofSeparator)
         {
             if (reordering == null) return; // Use the natural ordering and do not modify any stored dof data
             var pattern = SparsityPatternSymmetric.CreateEmpty(dofSeparator.NumGlobalCornerDofs);
@@ -89,7 +89,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
         //TODO: Use Skyline assembler
         private SkylineMatrix CreateGlobalKccStar(Dictionary<int, HashSet<INode>> cornerNodesOfSubdomains, 
-            FetiDPDofSeparator dofSeparator, Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers)
+            FetiDPDofSeparatorOLD dofSeparator, Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers)
         {
             int[] skylineColHeights = FindSkylineColumnHeights(cornerNodesOfSubdomains, dofSeparator);
             var skylineBuilder = SkylineBuilder.Create(dofSeparator.NumGlobalCornerDofs, skylineColHeights);
@@ -116,7 +116,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         }
 
         private int[] FindSkylineColumnHeights(Dictionary<int, HashSet<INode>> cornerNodesOfSubdomains, 
-            FetiDPDofSeparator dofSeparator)
+            FetiDPDofSeparatorOLD dofSeparator)
         {
             //only entries above the diagonal count towards the column height
             int[] colHeights = new int[dofSeparator.NumGlobalCornerDofs]; 

@@ -28,8 +28,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 {
     public static class Quads4x4HeterogeneousTests
     {
-        
-
         [Fact]
         public static void TestScalingMatrices() //TODO: Most of the code is the same as the homogeneous case. Remove duplication.
         {
@@ -63,7 +61,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
             var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumeratorOLD)fi.GetValue(fetiSolver);
             fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
-            var dofSeparator = (FetiDPDofSeparator)fi.GetValue(fetiSolver);
+            var dofSeparator = (FetiDPDofSeparatorOLD)fi.GetValue(fetiSolver);
             fi = typeof(FetiDPSolver).GetField("stiffnessDistribution", BindingFlags.NonPublic | BindingFlags.Instance);
             var stiffnessDistribution = (IStiffnessDistributionOLD)fi.GetValue(fetiSolver);
             MethodInfo method = preconditionerFactory.GetType().GetMethod("CalcBoundaryPreconditioningBooleanMatrices",

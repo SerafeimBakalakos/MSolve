@@ -45,9 +45,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         //      cases where no reordering is applied (e.g. lumped preconditioner)?
         //TODO: Bad design. All this time the matrix manager had access to only 1 subdomain and now I pass it an object that
         //      stores dof data for all subdomains.
-        void ReorderInternalDofs(FetiDPDofSeparator dofSeparator, ISubdomain subdomain);
+        void ReorderInternalDofs(FetiDPDofSeparatorOLD dofSeparator, ISubdomain subdomain);
 
         //TODO: This must be called before creating mapping matrices (Br, Bc) or even processing boundary/internal dofs
-        void ReorderRemainderDofs(FetiDPDofSeparator dofSeparator, ISubdomain subdomain);
+        void ReorderRemainderDofs(FetiDPDofSeparatorOLD dofSeparator, ISubdomain subdomain);
     }
 }

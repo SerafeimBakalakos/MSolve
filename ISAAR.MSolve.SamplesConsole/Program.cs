@@ -22,8 +22,10 @@ namespace ISAAR.MSolve.SamplesConsole
             //Console.WriteLine("Hello World");
             //Parallel.DistributeModelExample.RunParallelHardcoded(args);
             //Parallel.DistributeModelExample.RunParallelWithSolver(args);
-            //ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Quads4x4MappingMatricesTests.TestMPI(args);
-            ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Quads4x4HomogeneousTests.TestScalingMatricesMpi(args);
+            //MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.FetiDPDofSeparatorMpiTests.TestDofSeparation(args);
+            //MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.FetiDPDofSeparatorMpiTests.TestCornerBooleanMatrices(args);
+            //MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.LagrangeMultiplierEnumeratorMpiTests.TestBooleanMappingMatrices(args);
+            //MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Quads4x4HomogeneousTests.TestScalingMatricesMpi(args);
 
             //SolveBuildingInNoSoilSmall();
             //TrussExample.Run();

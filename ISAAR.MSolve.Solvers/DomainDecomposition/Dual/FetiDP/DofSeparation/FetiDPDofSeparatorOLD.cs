@@ -15,7 +15,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
 //TODO: Perhaps the corner dof logic should be moved to another class.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 {
-    public class FetiDPDofSeparator : IDofSeparator
+    public class FetiDPDofSeparatorOLD : IDofSeparator
     {
         /// <summary>
         /// Indices of boundary remainder dofs into the sequence of all remainder dofs of each subdomain.
@@ -82,7 +82,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         /// </summary>
         public Dictionary<int, DofTable> SubdomainCornerDofOrderings { get; private set; }
 
-        public FetiDPDofSeparator()
+        public FetiDPDofSeparatorOLD()
         {
             CornerDofIndices = new Dictionary<int, int[]>();
             RemainderDofIndices = new Dictionary<int, int[]>();

@@ -11,9 +11,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessDistribu
 {
     public class FetiDPHomogeneousStiffnessDistribution : HomogeneousStiffnessDistribution
     {
-        private readonly FetiDPDofSeparator dofSeparator;
+        private readonly FetiDPDofSeparatorOLD dofSeparator;
 
-        public FetiDPHomogeneousStiffnessDistribution(IModel model, FetiDPDofSeparator dofSeparator) : base(model, dofSeparator)
+        public FetiDPHomogeneousStiffnessDistribution(IModel model, FetiDPDofSeparatorOLD dofSeparator) : base(model, dofSeparator)
         {
             this.dofSeparator = dofSeparator;
         }

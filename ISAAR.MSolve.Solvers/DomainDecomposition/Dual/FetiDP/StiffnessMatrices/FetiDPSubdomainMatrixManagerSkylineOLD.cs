@@ -361,7 +361,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             return Krc.Multiply(vector);
         }
 
-        public void ReorderInternalDofs(FetiDPDofSeparator dofSeparator, ISubdomain subdomain)
+        public void ReorderInternalDofs(FetiDPDofSeparatorOLD dofSeparator, ISubdomain subdomain)
         {
             if (reordering == null) return; // Use the natural ordering and do not modify any stored dof data
             try
@@ -383,7 +383,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             }
         }
 
-        public void ReorderRemainderDofs(FetiDPDofSeparator dofSeparator, ISubdomain subdomain)
+        public void ReorderRemainderDofs(FetiDPDofSeparatorOLD dofSeparator, ISubdomain subdomain)
         {
             if (reordering == null) return; // Use the natural ordering and do not modify any stored dof data
             try

@@ -40,14 +40,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         public int[] GlobalCornerToFreeDofMap => globalDofs.GlobalCornerToFreeDofMap;
         public int NumGlobalCornerDofs => globalDofs.NumGlobalCornerDofs;
 
-        
-
-        public void DefineGlobalBoundaryDofs(ICornerNodeSelection cornerNodeSelection)
-        {
-            globalDofs.DefineGlobalBoundaryDofs(cornerNodeSelection.GlobalCornerNodes);
-            globalDofs.DefineGlobalCornerDofs(cornerNodeSelection.GlobalCornerNodes);
-        }
-
         public int[] GetBoundaryDofIndices(ISubdomain subdomain) => subdomainDofs[subdomain].BoundaryDofIndices;
         public (INode node, IDofType dofType)[] GetBoundaryDofs(ISubdomain subdomain) => subdomainDofs[subdomain].BoundaryDofs;
         public UnsignedBooleanMatrix GetCornerBooleanMatrix(ISubdomain subdomain) => subdomainDofs[subdomain].CornerBooleanMatrix;

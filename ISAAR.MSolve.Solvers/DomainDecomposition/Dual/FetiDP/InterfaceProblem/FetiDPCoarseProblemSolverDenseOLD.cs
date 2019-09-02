@@ -27,13 +27,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         }
 
         public void CreateAndInvertCoarseProblemMatrix(Dictionary<int, HashSet<INode>> cornerNodesOfSubdomains,
-            FetiDPDofSeparator dofSeparator, Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers)
+            FetiDPDofSeparatorOLD dofSeparator, Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers)
         {
             this.inverseGlobalKccStar = CreateGlobalKccStar(dofSeparator, matrixManagers);
             inverseGlobalKccStar.InvertInPlace();
         }
 
-        public Vector CreateCoarseProblemRhs(FetiDPDofSeparator dofSeparator, 
+        public Vector CreateCoarseProblemRhs(FetiDPDofSeparatorOLD dofSeparator, 
             Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers, 
             Dictionary<int, Vector> fr, Dictionary<int, Vector> fbc)
         {
@@ -56,12 +56,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
         public Vector MultiplyInverseCoarseProblemMatrixTimes(Vector vector) => inverseGlobalKccStar * vector;
 
-        public void ReorderCornerDofs(FetiDPDofSeparator dofSeparator)
+        public void ReorderCornerDofs(FetiDPDofSeparatorOLD dofSeparator)
         {
             // Do nothing, since the sparsity pattern is irrelevant for dense matrices.
         }
 
-        private Matrix CreateGlobalKccStar(FetiDPDofSeparator dofSeparator,
+        private Matrix CreateGlobalKccStar(FetiDPDofSeparatorOLD dofSeparator,
             Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers)
         {
             // Static condensation of remainder dofs (Schur complement).

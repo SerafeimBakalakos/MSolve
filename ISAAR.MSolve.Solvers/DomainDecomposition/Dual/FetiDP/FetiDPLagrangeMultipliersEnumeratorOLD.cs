@@ -17,9 +17,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     /// </summary>
     public class FetiDPLagrangeMultipliersEnumeratorOLD : LagrangeMultipliersEnumeratorBaseOLD
     {
-        private readonly FetiDPDofSeparator dofSeparator;
+        private readonly FetiDPDofSeparatorOLD dofSeparator;
 
-        internal FetiDPLagrangeMultipliersEnumeratorOLD(ICrosspointStrategy crosspointStrategy, FetiDPDofSeparator dofSeparator) 
+        internal FetiDPLagrangeMultipliersEnumeratorOLD(ICrosspointStrategy crosspointStrategy, FetiDPDofSeparatorOLD dofSeparator) 
             : base(crosspointStrategy, dofSeparator)
         {
             this.dofSeparator = dofSeparator;

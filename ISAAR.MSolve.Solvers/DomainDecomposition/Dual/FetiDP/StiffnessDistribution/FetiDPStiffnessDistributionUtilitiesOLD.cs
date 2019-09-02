@@ -13,7 +13,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessDistribu
     internal static class FetiDPStiffnessDistributionUtilitiesOLD
     {
         //TODO: This was part of a now obsolete design. However it was more efficient than the current one for serial code.
-        public static Dictionary<int, SparseVector> DistributeNodalLoadsOLD(FetiDPDofSeparator dofSeparator, 
+        public static Dictionary<int, SparseVector> DistributeNodalLoadsOLD(FetiDPDofSeparatorOLD dofSeparator, 
             Dictionary<int, ISubdomain> subdomains, Table<INode, IDofType, double> globalNodalLoads,
            Func<INode, IDofType, Dictionary<int, double>> calcBoundaryDofCoefficients)
         {

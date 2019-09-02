@@ -355,12 +355,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             return Krc * vector;
         }
 
-        public void ReorderInternalDofs(FetiDPDofSeparator dofSeparator, ISubdomain subdomain)
+        public void ReorderInternalDofs(FetiDPDofSeparatorOLD dofSeparator, ISubdomain subdomain)
         {
             // Do nothing, since the sparsity pattern is irrelevant for dense matrices.
         }
 
-        public void ReorderRemainderDofs(FetiDPDofSeparator dofSeparator, ISubdomain subdomain)
+        public void ReorderRemainderDofs(FetiDPDofSeparatorOLD dofSeparator, ISubdomain subdomain)
         {
             // Do nothing, since the sparsity pattern is irrelevant for dense matrices.
         }
