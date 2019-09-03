@@ -78,8 +78,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         {
             get
             {
-                procs.CheckProcessIsMaster();
-                return globalDofs.NumGlobalCornerDofs; //TODO: Shouldn't this be available to all processes?
+                //procs.CheckProcessIsMaster(); //TODO: Shouldn't this be available to all processes?
+                if (procs.IsMasterProcess) return globalDofs.NumGlobalCornerDofs;
+                else return subdomainDofs.CornerBooleanMatrix.NumColumns;
             }
         }
 

@@ -25,18 +25,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) = 
                 FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
 
-            var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
-            ISubdomain sub = model.GetSubdomain(procs.OwnSubdomainID);
-            
-            // Input 
-            IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetSubdomainMatrixManager(sub);
-            SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID));
-            subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
-
-            // Prepare the subdomain data
-            subdomainMatrices.ExtractCornerRemainderSubmatrices();
-            subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
-            subdomainMatrices.InvertKrr(true);
+            FetiDPMatrixManagerMpi matrixManager = 
+                PrepareCoarseProblemSubdomainMatrices(procs, model, dofSeparator, matricesFactory);
 
             // Calculate the global data to test
             matrixManager.CalcInverseCoarseProblemMatrix(Example4x4QuadsHomogeneous.DefineCornerNodeSelectionMpi(procs, model));
@@ -171,6 +161,25 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             double tol = 1E-13;
             Assert.True(Example4x4QuadsHomogeneous.GetVectorFbc(sub.ID).Equals(subdomainMatrices.Fbc, tol));
             Assert.True(Example4x4QuadsHomogeneous.GetVectorFr(sub.ID).Equals(subdomainMatrices.Fr, tol));
+        }
+
+        internal static FetiDPMatrixManagerMpi PrepareCoarseProblemSubdomainMatrices(ProcessDistribution procs, IModel model,
+            IFetiDPDofSeparator dofSeparator, IFetiDPMatrixManagerFactory matricesFactory)
+        {
+            ISubdomain sub = model.GetSubdomain(procs.OwnSubdomainID);
+            var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
+
+            // Input 
+            IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetSubdomainMatrixManager(sub);
+            SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID));
+            subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
+
+            // Prepare the subdomain data
+            subdomainMatrices.ExtractCornerRemainderSubmatrices();
+            subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
+            subdomainMatrices.InvertKrr(true);
+
+            return matrixManager;
         }
     }
 }

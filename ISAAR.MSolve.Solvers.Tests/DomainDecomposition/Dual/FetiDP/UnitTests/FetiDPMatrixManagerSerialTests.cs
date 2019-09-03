@@ -30,19 +30,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             IFetiDPMatrixManagerFactory matricesFactory = DefineMatrixManagerFactory(format);
             (IModel model, FetiDPDofSeparatorSerial dofSeparator) = FetiDPDofSeparatorSerialTests.CreateModelAndDofSeparator();
 
-            var matrixManager = new FetiDPMatrixManagerSerial(model, dofSeparator, matricesFactory);
-            foreach (ISubdomain sub in model.EnumerateSubdomains())
-            {
-                // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetSubdomainMatrixManager(sub);
-                SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID));
-                subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
-
-                // Prepare the subdomain data
-                subdomainMatrices.ExtractCornerRemainderSubmatrices();
-                subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
-                subdomainMatrices.InvertKrr(true);
-            }
+            FetiDPMatrixManagerSerial matrixManager = PrepareCoarseProblemSubdomainMatrices(model, dofSeparator, matricesFactory);
 
             // Calculate the global data to test
             matrixManager.CalcInverseCoarseProblemMatrix(Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model));
@@ -192,6 +180,26 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             if (format == MatrixFormat.Dense) return new FetiDPMatrixManagerFactoryDense();
             else if (format == MatrixFormat.Skyline) return new FetiDPMatrixManagerFactorySkyline(null);
             else throw new NotImplementedException();
+        }
+
+        internal static FetiDPMatrixManagerSerial PrepareCoarseProblemSubdomainMatrices(IModel model,
+            IFetiDPDofSeparator dofSeparator, IFetiDPMatrixManagerFactory matricesFactory)
+        {
+            var matrixManager = new FetiDPMatrixManagerSerial(model, dofSeparator, matricesFactory);
+            foreach (ISubdomain sub in model.EnumerateSubdomains())
+            {
+                // Input data
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetSubdomainMatrixManager(sub);
+                SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID));
+                subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
+
+                // Prepare the subdomain data
+                subdomainMatrices.ExtractCornerRemainderSubmatrices();
+                subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
+                subdomainMatrices.InvertKrr(true);
+            }
+
+            return matrixManager;
         }
 
         //TODO: Jesus Christ! It is way too difficult to mess with linear system classes, even using reflection.

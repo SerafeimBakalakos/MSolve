@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             {
                 FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrc(vIn, dofSeparator, lagrangesEnumerator);
             }
-            BroadcastVector(ref vIn);
+            BroadcastVector(ref vIn, lagrangesEnumerator.NumLagrangeMultipliers);
             Vector subdomainRhs = subdomainFlexibility.MultiplySubdomainFIrc(vIn);
             return SumVector(subdomainRhs);
         }
@@ -48,7 +48,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             {
                 FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrcTransposed(vIn, dofSeparator, lagrangesEnumerator);
             }
-            BroadcastVector(ref vIn);
+            BroadcastVector(ref vIn, lagrangesEnumerator.NumLagrangeMultipliers);
             Vector subdomainRhs = subdomainFlexibility.MultiplySubdomainFIrcTransposed(vIn);
             return SumVector(subdomainRhs);
         }
@@ -59,17 +59,18 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             {
                 FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrr(vIn, vOut, lagrangesEnumerator);
             }
-            BroadcastVector(ref vIn);
+            BroadcastVector(ref vIn, lagrangesEnumerator.NumLagrangeMultipliers);
             Vector subdomainRhs = subdomainFlexibility.MultiplySubdomainFIrr(vIn);
             SumVector(subdomainRhs, vOut);
         }
 
-        private void BroadcastVector(ref Vector vector)
+        private void BroadcastVector(ref Vector vector, int length)
         {
             //TODO: Use a dedicated class for MPI communication of Vector. This class belongs to a project LinearAlgebra.MPI.
             //      Avoid copying the array.
             double[] asArray = null;
             if (procs.IsMasterProcess) asArray = vector.CopyToArray();
+            else asArray = new double[length];
             procs.Communicator.Broadcast<double>(ref asArray, procs.MasterProcess);
             vector = Vector.CreateFromArray(asArray);
         }
