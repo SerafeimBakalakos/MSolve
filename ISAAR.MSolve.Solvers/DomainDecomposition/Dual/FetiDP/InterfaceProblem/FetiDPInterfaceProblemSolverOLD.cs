@@ -19,13 +19,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
     /// The interface problem is solved using PCG. The matrix of the coarse problem KccStar, namely the static condensation of 
     /// the remainder dofs onto the corner dofs is performed explicitly.
     /// </summary>
-    public class FetiDPInterfaceProblemSolver : IFetiDPInterfaceProblemSolver
+    public class FetiDPInterfaceProblemSolverOLD : IFetiDPInterfaceProblemSolverOLD
     {
         private readonly IMaxIterationsProvider maxIterationsProvider;
         private readonly double pcgConvergenceTolerance;
         private readonly IFetiPcgConvergenceFactory pcgConvergenceStrategyFactory;
 
-        public FetiDPInterfaceProblemSolver(IMaxIterationsProvider maxIterationsProvider,
+        public FetiDPInterfaceProblemSolverOLD(IMaxIterationsProvider maxIterationsProvider,
             double pcgConvergenceTolerance, IFetiPcgConvergenceFactory pcgConvergenceStrategyFactory)
         {
             this.maxIterationsProvider = maxIterationsProvider;
@@ -88,7 +88,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
                 new ApproximateResidualConvergence.Factory();
             public double PcgConvergenceTolerance { get; set; } = 1E-7;
 
-            public FetiDPInterfaceProblemSolver Build() => new FetiDPInterfaceProblemSolver(MaxIterationsProvider, 
+            public FetiDPInterfaceProblemSolverOLD Build() => new FetiDPInterfaceProblemSolverOLD(MaxIterationsProvider, 
                 PcgConvergenceTolerance, PcgConvergenceStrategyFactory);
         }
 

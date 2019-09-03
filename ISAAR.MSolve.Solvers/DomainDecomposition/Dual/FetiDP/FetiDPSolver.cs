@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly ICrosspointStrategy crosspointStrategy = new FullyRedundantConstraints();
         private readonly IDofOrderer dofOrderer;
         private readonly FetiDPDofSeparatorOLD dofSeparator;
-        private readonly IFetiDPInterfaceProblemSolver interfaceProblemSolver;
+        private readonly IFetiDPInterfaceProblemSolverOLD interfaceProblemSolver;
         private readonly Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers;
         private readonly Dictionary<int, IFetiSubdomainMatrixManagerOLD> matrixManagersGeneral; //TODO: redesign. They are the same as above, but Dictionary is not covariant
         private readonly Dictionary<int, ISingleSubdomainLinearSystem> linearSystems;
@@ -57,7 +57,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private FetiDPSolver(IModel model, ICornerNodeSelection cornerNodeSelection,
             IFetiDPSubdomainMatrixManagerFactoryOLD matrixManagerFactory, IDofOrderer dofOrderer, 
             IFetiPreconditionerFactoryOLD preconditionerFactory, bool problemIsHomogeneous, 
-            IFetiDPInterfaceProblemSolver interfaceProblemSolver)
+            IFetiDPInterfaceProblemSolverOLD interfaceProblemSolver)
         {
             // Model
             if (model.NumSubdomains == 1) throw new InvalidSolverException(
@@ -497,8 +497,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             public IDofOrderer DofOrderer { get; set; } =
                 new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
 
-            public IFetiDPInterfaceProblemSolver InterfaceProblemSolver { get; set; } 
-                = new FetiDPInterfaceProblemSolver.Builder().Build();
+            public IFetiDPInterfaceProblemSolverOLD InterfaceProblemSolver { get; set; } 
+                = new FetiDPInterfaceProblemSolverOLD.Builder().Build();
             public IFetiPreconditionerFactoryOLD PreconditionerFactory { get; set; } = new LumpedPreconditionerOLD.Factory();
             public bool ProblemIsHomogeneous { get; set; } = true;
 

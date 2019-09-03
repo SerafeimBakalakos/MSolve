@@ -38,7 +38,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Model model = Example4x4QuadsHeterogeneous.CreateModel(stiffnessRatio);
 
             // Setup solver
-            var interfaceSolverBuilder = new FetiDPInterfaceProblemSolver.Builder();
+            var interfaceSolverBuilder = new FetiDPInterfaceProblemSolverOLD.Builder();
             interfaceSolverBuilder.PcgConvergenceTolerance = 1E-7;
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = Example4x4QuadsHeterogeneous.DefineCornerNodeSelectionSerial(model);
@@ -86,7 +86,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Model model = Example4x4QuadsHeterogeneous.CreateModel(stiffnessRatio);
 
             // Setup solver
-            var interfaceSolverBuilder = new FetiDPInterfaceProblemSolver.Builder();
+            var interfaceSolverBuilder = new FetiDPInterfaceProblemSolverOLD.Builder();
             interfaceSolverBuilder.PcgConvergenceTolerance = 1E-7;
             //var fetiMatrices = new SkylineFetiDPSubdomainMatrixManager.Factory();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();

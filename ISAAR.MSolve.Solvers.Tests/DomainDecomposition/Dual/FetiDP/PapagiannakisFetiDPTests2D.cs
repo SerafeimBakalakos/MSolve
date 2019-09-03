@@ -182,7 +182,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             //if (residualIsExact) exactResidualConvergence.InterfaceProblemSolver = interfaceProblemSolver;
 
             // Specify solver for the interface problem
-            var interfaceSolverBuilder = new FetiDPInterfaceProblemSolver.Builder();
+            var interfaceSolverBuilder = new FetiDPInterfaceProblemSolverOLD.Builder();
             interfaceSolverBuilder.PcgConvergenceStrategyFactory = new ApproximateResidualConvergence.Factory();
             interfaceSolverBuilder.PcgConvergenceTolerance = pcgConvergenceTolerance;
             solverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();

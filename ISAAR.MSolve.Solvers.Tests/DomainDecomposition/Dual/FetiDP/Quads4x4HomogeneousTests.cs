@@ -180,7 +180,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             fi.SetValue(coarseSolver, inverseKccStar);
 
             // Create the rhs vector of the interface problem 
-            FetiDPInterfaceProblemSolver interfaceSolver = new FetiDPInterfaceProblemSolver.Builder().Build();
+            FetiDPInterfaceProblemSolverOLD interfaceSolver = new FetiDPInterfaceProblemSolverOLD.Builder().Build();
             var flexibility = new FetiDPFlexibilityMatrixOLD(dofSeparator, lagrangeEnumerator, matrixManagers);
             Vector fcStar = Example4x4QuadsHomogeneous.VectorGlobalFcStar;
             MethodInfo method = interfaceSolver.GetType().GetMethod("CreateInterfaceProblemRhs",
@@ -190,7 +190,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Create the matrix of the interface problem by multiplying with identity matrix
             int numLagranges = lagrangeEnumerator.NumLagrangeMultipliers;
             var interfaceMatrixImplicit = 
-                new FetiDPInterfaceProblemSolver.InterfaceProblemMatrix(flexibility, coarseSolver);
+                new FetiDPInterfaceProblemSolverOLD.InterfaceProblemMatrix(flexibility, coarseSolver);
             Matrix interfaceMatrix = ImplicitMatrixUtilities.MultiplyWithIdentity(numLagranges, numLagranges, 
                 interfaceMatrixImplicit.Multiply); // Action<T> is contravariant!!!
 
@@ -242,7 +242,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
                 stiffnessDistribution, dofSeparator, lagrangeEnumerator, matrixManagersPreconditioning);
 
             // Solve the interface problem
-            FetiDPInterfaceProblemSolver interfaceSolver = new FetiDPInterfaceProblemSolver.Builder().Build();
+            FetiDPInterfaceProblemSolverOLD interfaceSolver = new FetiDPInterfaceProblemSolverOLD.Builder().Build();
             var flexibility = new FetiDPFlexibilityMatrixOLD(dofSeparator, lagrangeEnumerator, matrixManagers);
             var logger = new SolverLogger("mock FETI-DP");
             (Vector lagranges, Vector uc) = interfaceSolver.SolveInterfaceProblem(
@@ -263,7 +263,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Model model = Example4x4QuadsHomogeneous.CreateModel();
 
             // Setup solver
-            var interfaceSolverBuilder = new FetiDPInterfaceProblemSolver.Builder();
+            var interfaceSolverBuilder = new FetiDPInterfaceProblemSolverOLD.Builder();
             interfaceSolverBuilder.PcgConvergenceTolerance = 1E-7;
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
