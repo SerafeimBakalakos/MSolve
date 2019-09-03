@@ -12,19 +12,17 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessDistribution
 {
-    public class FetiDPHomogeneousStiffnessDistributionMpi : HomogeneousStiffnessDistributionMpi
+    public class FetiDPHomogeneousDistributionLoadScaling : IHomogeneousDistributionLoadScaling
     {
         private readonly IFetiDPDofSeparator dofSeparator;
 
-        public FetiDPHomogeneousStiffnessDistributionMpi(ProcessDistribution processDistribution, IModel model, 
-            IFetiDPDofSeparator dofSeparator) : base(processDistribution, model, dofSeparator)
+        public FetiDPHomogeneousDistributionLoadScaling(IFetiDPDofSeparator dofSeparator)
         {
             this.dofSeparator = dofSeparator;
         }
 
-        public override double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load)
+        public double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load)
         {
-            procs.CheckProcessMatchesSubdomain(subdomain.ID);
             INode node = load.Node;
             IDofType dof = load.DOF;
 

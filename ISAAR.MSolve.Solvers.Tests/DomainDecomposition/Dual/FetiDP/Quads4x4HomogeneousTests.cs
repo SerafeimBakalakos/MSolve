@@ -236,7 +236,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             var precondFactory = new DirichletPreconditionerOLD.Factory();
             //var repackagedKrr = new Dictionary<int, IMatrixView>();
             //foreach (var idMatrixPair in Krr) repackagedKrr[idMatrixPair.Key] = idMatrixPair.Value;
-            var stiffnessDistribution = new FetiDPHomogeneousStiffnessDistribution(model, dofSeparator);
+            var stiffnessDistribution = new FetiDPHomogeneousStiffnessDistributionOLD(model, dofSeparator);
             stiffnessDistribution.Update(null);
             IFetiPreconditioner preconditioner = precondFactory.CreatePreconditioner(model,
                 stiffnessDistribution, dofSeparator, lagrangeEnumerator, matrixManagersPreconditioning);
@@ -336,11 +336,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
                 lagrangeEnumerator.CalcBooleanMatrices(dofSeparator.GetRemainderDofOrdering);
 
                 // Calculate Bpbr matrices
-                var stiffnessDistribution = new FetiDPHomogeneousStiffnessDistributionMpi(procs, model, dofSeparator);
+                var stiffnessDistribution = new HomogeneousStiffnessDistributionMpi(procs, model, dofSeparator, 
+                    new FetiDPHomogeneousDistributionLoadScaling(dofSeparator));
                 stiffnessDistribution.Update();
                 SignedBooleanMatrixColMajor Bb = lagrangeEnumerator.GetBooleanMatrix(subdomain).GetColumns(
                     dofSeparator.GetBoundaryDofIndices(subdomain), false);
-                IMappingMatrix Bpbr = 
+                IMappingMatrix Bpbr =
                     stiffnessDistribution.CalcBoundaryPreconditioningSignedBooleanMatrix(lagrangeEnumerator, subdomain, Bb);
 
                 // Check Bpbr matrices

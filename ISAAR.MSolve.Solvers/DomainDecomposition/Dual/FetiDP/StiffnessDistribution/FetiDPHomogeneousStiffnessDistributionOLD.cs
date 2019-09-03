@@ -9,11 +9,11 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessDistribution
 {
-    public class FetiDPHomogeneousStiffnessDistribution : HomogeneousStiffnessDistribution
+    public class FetiDPHomogeneousStiffnessDistributionOLD : HomogeneousStiffnessDistributionOLD
     {
         private readonly FetiDPDofSeparatorOLD dofSeparator;
 
-        public FetiDPHomogeneousStiffnessDistribution(IModel model, FetiDPDofSeparatorOLD dofSeparator) : base(model, dofSeparator)
+        public FetiDPHomogeneousStiffnessDistributionOLD(IModel model, FetiDPDofSeparatorOLD dofSeparator) : base(model, dofSeparator)
         {
             this.dofSeparator = dofSeparator;
         }

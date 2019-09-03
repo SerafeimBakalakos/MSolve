@@ -12,22 +12,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
     internal static class HomogeneousStiffnessDistributionUtilities
     {
-        internal static (int[] multiplicities, double[] inverseMultiplicities) CalcBoundaryDofMultiplicities(
-            ISubdomain subdomain, (INode node, IDofType dofType)[] boundaryDofs)
-        {
-            int s = subdomain.ID;
-            Debug.WriteLine($"{new StackTrace().GetFrame(1).GetMethod().ReflectedType.Name}:"
-                + $" Calculating the inverse multiplicities of the boundary dofs of subdomain {s}");
-            var inverseMultiplicities = new double[boundaryDofs.Length];
-            var multiplicities = new int[boundaryDofs.Length];
-            for (int i = 0; i < boundaryDofs.Length; ++i)
-            {
-                multiplicities[i] = boundaryDofs[i].node.Multiplicity;
-                inverseMultiplicities[i] = 1.0 / multiplicities[i];
-            }
-            return (multiplicities, inverseMultiplicities);
-        }
-
         internal static double[] CalcBoundaryDofInverseMultiplicities(ISubdomain subdomain, 
             (INode node, IDofType dofType)[] boundaryDofs)
         {
@@ -41,6 +25,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             }
             return inverseMultiplicities;
         }
+
 
         //TODO: This should be modified to CSR or CSC format and then benchmarked against the implicit alternative.
         /// <summary>
