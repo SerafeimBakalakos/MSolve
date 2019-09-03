@@ -303,54 +303,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             }
         }
 
-        public static void TestScalingMatricesMpi(string[] args)
-        {
-            using (new MPI.Environment(ref args))
-            {
-                int master = 0;
-                var procs = new ProcessDistribution(Communicator.world, master, new int[] { 0, 1, 2, 3 });
-                //Console.WriteLine($"(process {procs.OwnRank}) Hello World!"); // Run this to check if MPI works correctly.
-
-                // Create the model in master process
-                var model = new ModelMpi(procs, Example4x4QuadsHomogeneous.CreateModel);
-                model.ConnectDataStructures();
-
-                // Scatter subdomain data to each process
-                model.ScatterSubdomains();
-                ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-                //Console.WriteLine($"(process {procs.OwnRank}) Subdomain {model.GetSubdomain(procs.OwnSubdomainID).ID}");
-
-                // Order dofs
-                var dofOrderer = new DofOrdererMpi(procs, new NodeMajorDofOrderingStrategy(), new NullReordering());
-                dofOrderer.OrderFreeDofs(model);
-
-                // Separate dofs and corner boolean matrices
-                var dofSeparator = new FetiDPDofSeparatorMpi(procs, model);
-                var reordering = new MockingClasses.MockSeparatedDofReordering();
-                ICornerNodeSelection cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionMpi(procs, model);
-                dofSeparator.SeparateDofs(cornerNodes, reordering);
-
-                // Calculate lagrange multipliers and corresponding boolean matrices
-                var crosspointStrategy = new FullyRedundantConstraints();
-                var lagrangeEnumerator = new LagrangeMultipliersEnumeratorMpi(procs, model, crosspointStrategy, dofSeparator);
-                lagrangeEnumerator.CalcBooleanMatrices(dofSeparator.GetRemainderDofOrdering);
-
-                // Calculate Bpbr matrices
-                var stiffnessDistribution = new HomogeneousStiffnessDistributionMpi(procs, model, dofSeparator, 
-                    new FetiDPHomogeneousDistributionLoadScaling(dofSeparator));
-                stiffnessDistribution.Update();
-                SignedBooleanMatrixColMajor Bb = lagrangeEnumerator.GetBooleanMatrix(subdomain).GetColumns(
-                    dofSeparator.GetBoundaryDofIndices(subdomain), false);
-                IMappingMatrix Bpbr =
-                    stiffnessDistribution.CalcBoundaryPreconditioningSignedBooleanMatrix(lagrangeEnumerator, subdomain, Bb);
-
-                // Check Bpbr matrices
-                double tol = 1E-13;
-                Matrix explicitBpr = Bpbr.MultiplyRight(Matrix.CreateIdentity(Bpbr.NumColumns));
-                Assert.True(Example4x4QuadsHomogeneous.GetMatrixBpbr(subdomain.ID).Equals(explicitBpr, tol));
-            }
-        }
-
         [Fact]
         public static void TestSolver()
         {
