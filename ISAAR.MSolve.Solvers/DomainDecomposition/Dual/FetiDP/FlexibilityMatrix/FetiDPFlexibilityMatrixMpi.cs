@@ -11,46 +11,82 @@ using MPI;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 {
-    public class FetiDPFlexibilityMatrixMpi : FetiDPFlexibilityMatrixBase
+    public class FetiDPFlexibilityMatrixMpi : IFetiDPFlexibilityMatrix
     {
+        private readonly IFetiDPDofSeparator dofSeparator;
+        private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
         private readonly ProcessDistribution procs;
         private readonly FetiDPSubdomainFlexibilityMatrix subdomainFlexibility;
 
         public FetiDPFlexibilityMatrixMpi(ProcessDistribution procs, IModel model, IFetiDPDofSeparator dofSeparator, 
-            ILagrangeMultipliersEnumerator lagrangeEnumerator, IFetiDPMatrixManager matrixManager) 
-            : base(dofSeparator, lagrangeEnumerator)
+            ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPMatrixManager matrixManager) 
         {
             this.procs = procs;
-
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            this.subdomainFlexibility = new FetiDPSubdomainFlexibilityMatrix(subdomain, dofSeparator, lagrangeEnumerator,
-                matrixManager.GetSubdomainMatrixManager(subdomain));
+            this.dofSeparator = dofSeparator;
+            this.lagrangesEnumerator = lagrangesEnumerator;
+            this.subdomainFlexibility = new FetiDPSubdomainFlexibilityMatrix(model.GetSubdomain(procs.OwnSubdomainID), 
+                dofSeparator, lagrangesEnumerator, matrixManager);
+            this.NumGlobalLagrangeMultipliers = lagrangesEnumerator.NumLagrangeMultipliers;
         }
 
-        protected override void SumSubdomainContributions(Vector lhs, Vector rhs, CheckInput checkInput, 
-            CalcSubdomainContribution calcSubdomainContribution)
+        public int NumGlobalLagrangeMultipliers { get; }
+
+        public Vector MultiplyGlobalFIrc(Vector vIn)
         {
-            if (procs.IsMasterProcess) checkInput(lhs, rhs);
-            BroadcastLhs(ref lhs);
-            Vector subdomainRhs = calcSubdomainContribution(subdomainFlexibility, lhs);
-            ReduceRhs(subdomainRhs, rhs);
+            if (procs.IsMasterProcess)
+            {
+                FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrc(vIn, dofSeparator, lagrangesEnumerator);
+            }
+            BroadcastVector(ref vIn);
+            Vector subdomainRhs = subdomainFlexibility.MultiplySubdomainFIrc(vIn);
+            return SumVector(subdomainRhs);
         }
 
-        private void BroadcastLhs(ref Vector lhs)
+        public Vector MultiplyGlobalFIrcTransposed(Vector vIn)
+        {
+            if (procs.IsMasterProcess)
+            {
+                FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrcTransposed(vIn, dofSeparator, lagrangesEnumerator);
+            }
+            BroadcastVector(ref vIn);
+            Vector subdomainRhs = subdomainFlexibility.MultiplySubdomainFIrcTransposed(vIn);
+            return SumVector(subdomainRhs);
+        }
+
+        public void MultiplyGlobalFIrr(Vector vIn, Vector vOut)
+        {
+            if (procs.IsMasterProcess)
+            {
+                FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrr(vIn, vOut, lagrangesEnumerator);
+            }
+            BroadcastVector(ref vIn);
+            Vector subdomainRhs = subdomainFlexibility.MultiplySubdomainFIrr(vIn);
+            SumVector(subdomainRhs, vOut);
+        }
+
+        private void BroadcastVector(ref Vector vector)
         {
             //TODO: Use a dedicated class for MPI communication of Vector. This class belongs to a project LinearAlgebra.MPI.
             //      Avoid copying the array.
-            double[] lhsArray = null;
-            if (procs.IsMasterProcess) lhsArray = lhs.CopyToArray();
-            procs.Communicator.Broadcast<double>(ref lhsArray, procs.MasterProcess);
-            lhs = Vector.CreateFromArray(lhsArray);
+            double[] asArray = null;
+            if (procs.IsMasterProcess) asArray = vector.CopyToArray();
+            procs.Communicator.Broadcast<double>(ref asArray, procs.MasterProcess);
+            vector = Vector.CreateFromArray(asArray);
         }
 
-        private void ReduceRhs(Vector subdomainRhs, Vector globalRhs)
+        private Vector SumVector(Vector vector)
         {
-            double[] rhsArray = subdomainRhs.CopyToArray();
-            double[] sum = procs.Communicator.Reduce<double>(rhsArray, Operation<double>.Add, procs.MasterProcess);
-            if (procs.IsMasterProcess) globalRhs.CopyFrom(Vector.CreateFromArray(sum));
+            double[] asArray = vector.CopyToArray();
+            double[] sum = procs.Communicator.Reduce<double>(asArray, Operation<double>.Add, procs.MasterProcess);
+            if (procs.IsMasterProcess) return Vector.CreateFromArray(sum);
+            else return null;
+        }
+
+        private void SumVector(Vector subdomainVector, Vector globalVector)
+        {
+            double[] asArray = subdomainVector.CopyToArray();
+            double[] sum = procs.Communicator.Reduce<double>(asArray, Operation<double>.Add, procs.MasterProcess);
+            if (procs.IsMasterProcess) globalVector.CopyFrom(Vector.CreateFromArray(sum));
         }
     }
 }

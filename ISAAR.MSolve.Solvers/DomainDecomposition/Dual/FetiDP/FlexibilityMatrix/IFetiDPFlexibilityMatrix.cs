@@ -8,11 +8,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 {
     public interface IFetiDPFlexibilityMatrix
     {
-        int NumGlobalCornerDofs { get; } //TODO: Perhaps this should be removed as it will fail for processes other than master and it is not needed anyway.
         int NumGlobalLagrangeMultipliers { get; }
 
-        void MultiplyGlobalFIrc(Vector lhs, Vector rhs);
-        void MultiplyGlobalFIrcTransposed(Vector lhs, Vector rhs);
-        void MultiplyGlobalFIrr(Vector lhs, Vector rhs);
+        Vector MultiplyGlobalFIrc(Vector vIn);
+        Vector MultiplyGlobalFIrcTransposed(Vector vIn);
+        void MultiplyGlobalFIrr(Vector vIn, Vector vOut);
     }
 }

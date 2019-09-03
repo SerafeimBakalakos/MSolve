@@ -9,31 +9,61 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 {
-    public class FetiDPFlexibilityMatrixSerial : FetiDPFlexibilityMatrixBase
+    public class FetiDPFlexibilityMatrixSerial : IFetiDPFlexibilityMatrix
     {
+        private readonly IFetiDPDofSeparator dofSeparator;
+        private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
         private readonly Dictionary<ISubdomain, FetiDPSubdomainFlexibilityMatrix> subdomainFlexibilities;
 
         public FetiDPFlexibilityMatrixSerial(IModel model, IFetiDPDofSeparator dofSeparator, 
-            ILagrangeMultipliersEnumerator lagrangeEnumerator, IFetiDPMatrixManager matrixManager) 
-            : base(dofSeparator, lagrangeEnumerator)
+            ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPMatrixManager matrixManager) 
         {
-            subdomainFlexibilities = new Dictionary<ISubdomain, FetiDPSubdomainFlexibilityMatrix>();
+            this.dofSeparator = dofSeparator;
+            this.lagrangesEnumerator = lagrangesEnumerator;
+            this.NumGlobalLagrangeMultipliers = lagrangesEnumerator.NumLagrangeMultipliers;
+
+            this.subdomainFlexibilities = new Dictionary<ISubdomain, FetiDPSubdomainFlexibilityMatrix>();
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                subdomainFlexibilities[sub] = new FetiDPSubdomainFlexibilityMatrix(sub, dofSeparator, lagrangeEnumerator, 
-                    matrixManager.GetSubdomainMatrixManager(sub));
+                this.subdomainFlexibilities[sub] = new FetiDPSubdomainFlexibilityMatrix(sub, dofSeparator, lagrangesEnumerator, 
+                    matrixManager);
             }
         }
 
-        protected override void SumSubdomainContributions(Vector lhs, Vector rhs, CheckInput checkInput,
-            CalcSubdomainContribution calcSubdomainContribution)
+        public int NumGlobalLagrangeMultipliers { get; }
+
+        public Vector MultiplyGlobalFIrc(Vector vIn)
         {
-            checkInput(lhs, rhs);
-            rhs.Clear();
+            FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrc(vIn, dofSeparator, lagrangesEnumerator);
+            var vOut = Vector.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers);
             foreach (ISubdomain sub in subdomainFlexibilities.Keys)
             {
-                Vector subdomainRhs = calcSubdomainContribution(subdomainFlexibilities[sub], lhs);
-                rhs.AddIntoThis(subdomainRhs);
+                Vector subdomainRhs = subdomainFlexibilities[sub].MultiplySubdomainFIrc(vIn);
+                vOut.AddIntoThis(subdomainRhs);
+            }
+            return vOut;
+        }
+
+        public Vector MultiplyGlobalFIrcTransposed(Vector vIn)
+        {
+            FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrcTransposed(vIn, dofSeparator, lagrangesEnumerator);
+            var vOut = Vector.CreateZero(dofSeparator.NumGlobalCornerDofs);
+            foreach (ISubdomain sub in subdomainFlexibilities.Keys)
+            {
+                Vector subdomainRhs = subdomainFlexibilities[sub].MultiplySubdomainFIrcTransposed(vIn);
+                vOut.AddIntoThis(subdomainRhs);
+            }
+            return vOut;
+        }
+
+        public void MultiplyGlobalFIrr(Vector vIn, Vector vOut)
+        {
+            FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrr(vIn, vOut, lagrangesEnumerator);
+            vOut.Clear();
+            foreach (ISubdomain sub in subdomainFlexibilities.Keys)
+            {
+                Vector subdomainRhs = subdomainFlexibilities[sub].MultiplySubdomainFIrr(vIn);
+                vOut.AddIntoThis(subdomainRhs);
             }
         }
     }
