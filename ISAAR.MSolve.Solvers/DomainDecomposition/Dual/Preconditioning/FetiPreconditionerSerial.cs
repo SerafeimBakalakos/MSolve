@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
             this.model = model;
             this.matrixManager = matrixManager;
 
-            var matricesBpb = new Dictionary<ISubdomain, IMappingMatrix>();
+            this.matricesBpb = new Dictionary<ISubdomain, IMappingMatrix>();
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 matricesBpb[subdomain] = PreconditioningUtilities.CalcBoundaryPreconditioningBooleanMatrix(

@@ -60,7 +60,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
                 // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetSubdomainMatrixManager(sub);
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
                 SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID));
                 
                 // Calculate the matrices to test
@@ -99,7 +99,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
                 // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetSubdomainMatrixManager(sub);
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
                 SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID));
 
                 // Calculate the matrices to test
@@ -136,7 +136,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
                 // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetSubdomainMatrixManager(sub);
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
                 SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID));
                 subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
 
@@ -164,7 +164,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
                 // Calculate the necessary vectors
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetSubdomainMatrixManager(sub);
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
                 subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
                 subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
 
@@ -189,7 +189,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
                 // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetSubdomainMatrixManager(sub);
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
                 SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID));
                 subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
 

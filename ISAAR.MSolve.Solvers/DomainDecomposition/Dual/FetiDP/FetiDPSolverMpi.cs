@@ -90,7 +90,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         //TODO: I do not like these dependencies. The analyzer should not have to know that it must call ScatterSubdomainData() 
         //      before accessing the linear system or the subdomain.
-        public ILinearSystem LinearSystem => matrixManager.GetSubdomainMatrixManager(Subdomain).LinearSystem;
+        public ILinearSystem LinearSystem => matrixManager.GetFetiDPSubdomainMatrixManager(Subdomain).LinearSystem;
 
         public SolverLogger Logger { get; } = new SolverLogger(name);
         public string Name => name;
@@ -111,7 +111,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             {
                 Debug.WriteLine($"Process {procs.OwnRank}, {this.GetType().Name}:"
                     + $" Assembling the free-free stiffness matrix of subdomain {procs.OwnSubdomainID}");
-                Kff = matrixManager.GetSubdomainMatrixManager(Subdomain).BuildFreeDofsMatrix(Subdomain.FreeDofOrdering, 
+                Kff = matrixManager.GetFetiDPSubdomainMatrixManager(Subdomain).BuildFreeDofsMatrix(Subdomain.FreeDofOrdering, 
                     Subdomain.EnumerateElements(), elementMatrixProvider);
                 LinearSystem.Matrix = Kff; //TODO: This should be done by the solver not the analyzer. This method should return void.
             }
@@ -173,7 +173,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             // Order dofs
             if (Subdomain.ConnectivityModified)
             {
-                matrixManager.GetSubdomainMatrixManager(Subdomain).HandleDofOrderingWillBeModified(); //TODO: Not sure about this
+                matrixManager.GetFetiDPSubdomainMatrixManager(Subdomain).HandleDofOrderingWillBeModified(); //TODO: Not sure about this
             }
 
             // This should not create subdomain-global mappings which require MPI communication
@@ -193,7 +193,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         public void Solve()
         {
             //TODO: This is how you do the static condensation of vectors
-            matrixManager.GetSubdomainMatrixManager(Subdomain).ExtractCornerRemainderRhsSubvectors();
+            matrixManager.GetFetiDPSubdomainMatrixManager(Subdomain).ExtractCornerRemainderRhsSubvectors();
 
             if (isStiffnessModified)
             {
@@ -201,7 +201,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
                 if (subdomain.StiffnessModified)
                 {
-                    matrixManager.GetSubdomainMatrixManager(Subdomain).ExtractCornerRemainderSubmatrices();
+                    matrixManager.GetFetiDPSubdomainMatrixManager(Subdomain).ExtractCornerRemainderSubmatrices();
                 }
 
                 // Reorder internal dofs if needed by the preconditioner. TODO: Should I have done this previously in Initialize()?

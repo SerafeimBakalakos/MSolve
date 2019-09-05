@@ -44,7 +44,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             // The summation is delegated to another class.
 
             SignedBooleanMatrixColMajor Br = lagrangesEnumerator.GetBooleanMatrix(subdomain);
-            IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetSubdomainMatrixManager(subdomain);
+            IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(subdomain);
             Vector temp = subdomainMatrices.MultiplyInverseKrrTimes(subdomainMatrices.Fr);
             return Br.Multiply(temp);
         }

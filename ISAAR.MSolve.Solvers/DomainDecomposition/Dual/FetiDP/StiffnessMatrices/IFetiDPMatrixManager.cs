@@ -19,14 +19,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
     //public delegate (Vector subdomainVector, UnsignedBooleanMatrix globalToSubdomainDofsMap) CalcSubdomainVector(
     //    ISubdomain subdomain);
 
-    public interface IFetiDPMatrixManager : IFetiDPSeparatedDofReordering
+    public interface IFetiDPMatrixManager : IFetiMatrixManager, IFetiDPSeparatedDofReordering
     {
 
         //TODO: Not sure about this. I should probably wrap the methods in this interfaces, in order to avoid having them 
         //      called in a loop. E.g MultiplyMatrixTimes... of preconditioner. In this case the in and out vectors should also 
         //      be contained in classes with MPI/Serial implementation or at least in LinearSystem-like classes, so that each 
         //      process read and writes to its corresponding one.
-        IFetiDPSubdomainMatrixManager GetSubdomainMatrixManager(ISubdomain subdomain);
+        IFetiDPSubdomainMatrixManager GetFetiDPSubdomainMatrixManager(ISubdomain subdomain);
 
         Vector CoarseProblemRhs { get; }
 

@@ -29,7 +29,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             this.subdomain = subdomain;
             this.dofSeparator = dofSeparator;
             this.lagrangeEnumerator = lagrangeEnumerator;
-            this.matrixManager = matrixManager.GetSubdomainMatrixManager(subdomain);
+            this.matrixManager = matrixManager.GetFetiDPSubdomainMatrixManager(subdomain);
             //this.Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
             //this.Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
         }

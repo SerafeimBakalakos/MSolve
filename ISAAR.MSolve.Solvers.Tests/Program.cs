@@ -30,6 +30,9 @@ namespace ISAAR.MSolve.Solvers.Tests
             suite.AddTheory(FetiDPMatrixManagerMpiTests.TestCoarseProblemMatrixAndRhs, typeof(FetiDPMatrixManagerMpiTests).Name, "TestCoarseProblemMatrixAndRhs", MatrixFormat.Skyline);
 
             suite.AddFact(FetiDPFlexibilityMatrixMpiTests.TestFlexibilityMatrices, typeof(FetiDPFlexibilityMatrixMpiTests).Name, "TestFlexibilityMatrices");
+            suite.AddFact(FetiDPPreconditionerMpiTests.TestLumpedPreconditioner, typeof(FetiDPPreconditionerMpiTests).Name, "TestLumpedPreconditioner");
+            suite.AddFact(FetiDPPreconditionerMpiTests.TestDirichletPreconditioner, typeof(FetiDPPreconditionerMpiTests).Name, "TestDirichletPreconditioner");
+            suite.AddFact(FetiDPPreconditionerMpiTests.TestDiagonalDirichletPreconditioner, typeof(FetiDPPreconditionerMpiTests).Name, "TestDiagonalDirichletPreconditioner");
 
             suite.RunTests(args);
         }

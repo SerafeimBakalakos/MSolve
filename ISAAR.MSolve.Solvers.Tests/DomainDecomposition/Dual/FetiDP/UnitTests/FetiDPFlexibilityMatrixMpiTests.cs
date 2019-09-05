@@ -8,6 +8,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.Mocks;
 using ISAAR.MSolve.Solvers.Tests.Utilities;
 using Xunit;
 
@@ -22,10 +23,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
                 LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
 
             // Setup matrix manager
-            IFetiDPMatrixManagerFactory matricesFactory = new FetiDPMatrixManagerFactoryDense();
-            FetiDPMatrixManagerMpi matrixManager = FetiDPMatrixManagerMpiTests.PrepareCoarseProblemSubdomainMatrices(
-                procs, model, dofSeparator, matricesFactory);
-            matrixManager.CalcInverseCoarseProblemMatrix(Example4x4QuadsHomogeneous.DefineCornerNodeSelectionMpi(procs, model));
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager();
 
             // Create explicit matrices that can be checked
             var flexibility = new FetiDPFlexibilityMatrixMpi(procs, model, dofSeparator, lagrangesEnumerator, matrixManager);

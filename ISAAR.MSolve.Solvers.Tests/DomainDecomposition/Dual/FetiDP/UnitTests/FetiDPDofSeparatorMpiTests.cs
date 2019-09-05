@@ -10,6 +10,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.Mocks;
 using ISAAR.MSolve.Solvers.Tests.Utilities;
 using MPI;
 using Xunit;
@@ -86,7 +87,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
             // Separate dofs and corner boolean matrices
             var dofSeparator = new FetiDPDofSeparatorMpi(procs, model);
-            var reordering = new MockingClasses.MockSeparatedDofReordering();
+            var reordering = new MockSeparatedDofReordering();
             ICornerNodeSelection cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionMpi(procs, model);
             dofSeparator.SeparateDofs(cornerNodes, reordering);
 
