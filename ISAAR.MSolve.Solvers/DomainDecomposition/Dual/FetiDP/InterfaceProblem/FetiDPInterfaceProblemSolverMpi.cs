@@ -78,15 +78,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         {
             ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
             Vector subdomainDr = FetiDPInterfaceProblemUtilities.CalcSubdomainDr(subdomain, matrixManager, lagrangesEnumerator);
-            return SumVector(subdomainDr);
-        }
-
-        private Vector SumVector(Vector vector)
-        {
-            double[] asArray = vector.CopyToArray();
-            double[] sum = procs.Communicator.Reduce<double>(asArray, Operation<double>.Add, procs.MasterProcess);
-            if (procs.IsMasterProcess) return Vector.CreateFromArray(sum);
-            else return null;
+            return procs.Communicator.SumVector(subdomainDr, procs.MasterProcess);
         }
     }
 }

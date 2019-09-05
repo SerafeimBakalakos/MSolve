@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.SamplesConsole
             //Console.WriteLine("Hello World");
             //Parallel.DistributeModelExample.RunParallelHardcoded(args);
             //Parallel.DistributeModelExample.RunParallelWithSolver(args);
-            MpiTestSuite.StartTesting(args);
+            //MpiTestSuite.StartTesting(args);
             //MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Quads4x4HomogeneousTests.TestScalingMatricesMpi(args);
 
             //SolveBuildingInNoSoilSmall();

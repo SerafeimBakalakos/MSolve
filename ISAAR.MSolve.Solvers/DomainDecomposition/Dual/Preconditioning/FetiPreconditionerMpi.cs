@@ -10,80 +10,45 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
-using MPI;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
 {
     public class FetiPreconditionerMpi : IFetiPreconditioner
     {
-        private readonly IFetiSubdomainMatrixManager matrixManager;
         private readonly IMappingMatrix Bpb;
+        private readonly IFetiSubdomainMatrixManager matrixManager;
+        private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
         private readonly IFetiPreconditioningOperations preconditioning;
         private readonly ProcessDistribution procs;
 
         private FetiPreconditionerMpi(ProcessDistribution processDistribution, IFetiPreconditioningOperations preconditioning,
-            IModel model, IDofSeparator dofSeparator, ILagrangeMultipliersEnumerator lagrangeEnumerator,
+            IModel model, IDofSeparator dofSeparator, ILagrangeMultipliersEnumerator lagrangesEnumerator,
             IFetiMatrixManager matrixManager, IStiffnessDistribution stiffnessDistribution)
         {
 
             ISubdomain subdomain = model.GetSubdomain(processDistribution.OwnSubdomainID);
             this.procs = processDistribution;
             this.preconditioning = preconditioning;
+            this.lagrangesEnumerator = lagrangesEnumerator;
             this.matrixManager = matrixManager.GetSubdomainMatrixManager(subdomain);
 
             this.Bpb = PreconditioningUtilities.CalcBoundaryPreconditioningBooleanMatrix(
-                subdomain, dofSeparator, lagrangeEnumerator, stiffnessDistribution); //TODO: When can these ones be reused?
+                subdomain, dofSeparator, lagrangesEnumerator, stiffnessDistribution); //TODO: When can these ones be reused?
             preconditioning.PrepareSubdomainSubmatrices(matrixManager.GetSubdomainMatrixManager(subdomain));
         }
 
         public void SolveLinearSystem(Vector rhs, Vector lhs)
         {
-            BroadcastVector(ref rhs);
+            procs.Communicator.BroadcastVector(ref rhs, lagrangesEnumerator.NumLagrangeMultipliers, procs.MasterProcess);
             Vector subdomainContribution = preconditioning.PreconditionSubdomainVector(rhs, matrixManager, Bpb);
-            ReduceVector(subdomainContribution, lhs);
+            procs.Communicator.SumVector(subdomainContribution, lhs, procs.MasterProcess);
         }
 
         public void SolveLinearSystems(Matrix rhs, Matrix lhs)
         {
-            BroadcastMatrix(ref rhs);
+            procs.Communicator.BroadcastMatrix(ref rhs, procs.MasterProcess);
             Matrix subdomainContribution = preconditioning.PreconditionSubdomainMatrix(rhs, matrixManager, Bpb);
-            ReduceMatrix(subdomainContribution, lhs);
-        }
-
-        private void BroadcastMatrix(ref Matrix matrix)
-        {
-            //TODO: Use a dedicated class for MPI communication of Matrix. This class belongs to a project LinearAlgebra.MPI.
-            //      Avoid the automatic serialization of MPI.NET.
-            procs.Communicator.Broadcast<Matrix>(ref matrix, procs.MasterProcess);
-        }
-
-        private void BroadcastVector(ref Vector vector)
-        {
-            //TODO: Use a dedicated class for MPI communication of Vector. This class belongs to a project LinearAlgebra.MPI.
-            //      Avoid copying the array.
-            double[] asArray = null;
-            if (procs.IsMasterProcess) asArray = vector.CopyToArray();
-            procs.Communicator.Broadcast<double>(ref asArray, procs.MasterProcess);
-            vector = Vector.CreateFromArray(asArray);
-        }
-
-        private void ReduceMatrix(Matrix subdomainMatrix, Matrix globalMatrix)
-        {
-            //TODO: Use a dedicated class for MPI communication of Matrix.This class belongs to a project LinearAlgebra.MPI.
-            //      Avoid the automatic serialization of MPI.NET and use built-in reductions which are much faster.
-
-            ReductionOperation<Matrix> matrixAddition = (A, B) => A + B;
-            Matrix sum = procs.Communicator.Reduce<Matrix>(subdomainMatrix, matrixAddition, procs.MasterProcess);
-            globalMatrix.CopyFrom(sum);
-        }
-
-        private void ReduceVector(Vector subdomainVector, Vector globalVector)
-        {
-            //TODO: Use a dedicated class for MPI communication of Vector. This class belongs to a project LinearAlgebra.MPI.
-            //      Avoid copying the array.
-            double[] asArray = subdomainVector.CopyToArray();
-            double[] sum = procs.Communicator.Reduce<double>(asArray, Operation<double>.Add, procs.MasterProcess);
-            if (procs.IsMasterProcess) globalVector.CopyFrom(Vector.CreateFromArray(sum));
+            procs.Communicator.SumMatrix(subdomainContribution, lhs, procs.MasterProcess);
         }
 
         public class Factory : IFetiPreconditionerFactory

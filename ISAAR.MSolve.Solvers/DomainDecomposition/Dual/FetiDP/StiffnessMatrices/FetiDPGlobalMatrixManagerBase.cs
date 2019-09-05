@@ -42,7 +42,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             }
         }
 
-        public void CalcCoarseProblemRhs(Dictionary<ISubdomain, Vector> condensedRhsVectors)
+        public void CalcCoarseProblemRhs(Dictionary<ISubdomain, Vector> condensedRhsVectors) 
         {
             // globalFcStar = sum_over_s(Lc[s]^T * fcStar[s])
             globalFcStar = Vector.CreateZero(dofSeparator.NumGlobalCornerDofs);
@@ -50,7 +50,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             {
                 UnsignedBooleanMatrix Lc = dofSeparator.GetCornerBooleanMatrix(subdomain);
                 Vector fcStar = condensedRhsVectors[subdomain];
-                globalFcStar.AddIntoThis(Lc.Multiply(fcStar, true));
+                globalFcStar.AddIntoThisNonContiguouslyFrom(Lc.GetRowsToColumnsMap(), fcStar);
             }
         }
 

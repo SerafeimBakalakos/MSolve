@@ -7,7 +7,6 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
-using MPI;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 {
@@ -37,9 +36,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             {
                 FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrc(vIn, dofSeparator, lagrangesEnumerator);
             }
-            BroadcastVector(ref vIn, lagrangesEnumerator.NumLagrangeMultipliers);
+            procs.Communicator.BroadcastVector(ref vIn, lagrangesEnumerator.NumLagrangeMultipliers, procs.MasterProcess);
             Vector subdomainRhs = subdomainFlexibility.MultiplySubdomainFIrc(vIn);
-            return SumVector(subdomainRhs);
+            return procs.Communicator.SumVector(subdomainRhs, procs.MasterProcess);
         }
 
         public Vector MultiplyGlobalFIrcTransposed(Vector vIn)
@@ -48,9 +47,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             {
                 FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrcTransposed(vIn, dofSeparator, lagrangesEnumerator);
             }
-            BroadcastVector(ref vIn, lagrangesEnumerator.NumLagrangeMultipliers);
+            procs.Communicator.BroadcastVector(ref vIn, lagrangesEnumerator.NumLagrangeMultipliers, procs.MasterProcess);
             Vector subdomainRhs = subdomainFlexibility.MultiplySubdomainFIrcTransposed(vIn);
-            return SumVector(subdomainRhs);
+            return procs.Communicator.SumVector(subdomainRhs, procs.MasterProcess);
         }
 
         public void MultiplyGlobalFIrr(Vector vIn, Vector vOut)
@@ -59,35 +58,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             {
                 FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrr(vIn, vOut, lagrangesEnumerator);
             }
-            BroadcastVector(ref vIn, lagrangesEnumerator.NumLagrangeMultipliers);
+            procs.Communicator.BroadcastVector(ref vIn, lagrangesEnumerator.NumLagrangeMultipliers, procs.MasterProcess);
             Vector subdomainRhs = subdomainFlexibility.MultiplySubdomainFIrr(vIn);
-            SumVector(subdomainRhs, vOut);
-        }
-
-        private void BroadcastVector(ref Vector vector, int length)
-        {
-            //TODO: Use a dedicated class for MPI communication of Vector. This class belongs to a project LinearAlgebra.MPI.
-            //      Avoid copying the array.
-            double[] asArray = null;
-            if (procs.IsMasterProcess) asArray = vector.CopyToArray();
-            else asArray = new double[length];
-            procs.Communicator.Broadcast<double>(ref asArray, procs.MasterProcess);
-            vector = Vector.CreateFromArray(asArray);
-        }
-
-        private Vector SumVector(Vector vector)
-        {
-            double[] asArray = vector.CopyToArray();
-            double[] sum = procs.Communicator.Reduce<double>(asArray, Operation<double>.Add, procs.MasterProcess);
-            if (procs.IsMasterProcess) return Vector.CreateFromArray(sum);
-            else return null;
-        }
-
-        private void SumVector(Vector subdomainVector, Vector globalVector)
-        {
-            double[] asArray = subdomainVector.CopyToArray();
-            double[] sum = procs.Communicator.Reduce<double>(asArray, Operation<double>.Add, procs.MasterProcess);
-            if (procs.IsMasterProcess) globalVector.CopyFrom(Vector.CreateFromArray(sum));
+            procs.Communicator.SumVector(subdomainRhs, vOut, procs.MasterProcess);
         }
     }
 }

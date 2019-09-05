@@ -6,6 +6,8 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Exceptions;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MPI;
 
 //TODO: Ideally these would be strategy objects
@@ -36,6 +38,24 @@ namespace ISAAR.MSolve.Discretization.Transfer
 
             //The broadcast the whole array
             comm.Broadcast<T>(ref values, root);
+        }
+
+        public static void BroadcastMatrix(this Intracommunicator comm, ref Matrix matrix, int root)
+        {
+            //TODO: Use a dedicated class for MPI communication of Matrix. This class belongs to a project LinearAlgebra.MPI.
+            //      Avoid the automatic serialization of MPI.NET.
+            comm.Broadcast<Matrix>(ref matrix, root);
+        }
+
+        public static void BroadcastVector(this Intracommunicator comm, ref Vector vector, int length, int root)
+        {
+            //TODO: Use a dedicated class for MPI communication of Vector. This class belongs to a project LinearAlgebra.MPI.
+            //      Avoid copying the array.
+            double[] asArray = null;
+            if (comm.Rank == root) asArray = vector.CopyToArray();
+            else asArray = new double[length];
+            comm.Broadcast<double>(ref asArray, root);
+            vector = Vector.CreateFromArray(asArray);
         }
 
         //TODO: Perhaps client code (in root) can work with vectors that have the gathered flattened array as their backing end. 
@@ -203,6 +223,34 @@ namespace ISAAR.MSolve.Discretization.Transfer
             // arrays. Not sure if this is good or bad.
             comm.Send<int>(vals.Length, dest, tag);
             comm.Send<T>(vals, dest, tag);
+        }
+
+        public static void SumMatrix(this Intracommunicator comm, Matrix subdomainMatrix, Matrix globalMatrix, int root)
+        {
+            //TODO: Use a dedicated class for MPI communication of Matrix.This class belongs to a project LinearAlgebra.MPI.
+            //      Avoid the automatic serialization of MPI.NET and use built-in reductions which are much faster.
+
+            ReductionOperation<Matrix> matrixAddition = (A, B) => A + B;
+            Matrix sum = comm.Reduce<Matrix>(subdomainMatrix, matrixAddition, root);
+            if (comm.Rank == root) globalMatrix.CopyFrom(sum);
+        }
+
+        public static Vector SumVector(this Intracommunicator comm, Vector vector, int root)
+        {
+            //TODO: Use a dedicated class for MPI communication of Vector. This class belongs to a project LinearAlgebra.MPI.
+            //      Avoid copying the array.
+
+            double[] asArray = vector.CopyToArray();
+            double[] sum = comm.Reduce<double>(asArray, Operation<double>.Add, root);
+            if (comm.Rank == root) return Vector.CreateFromArray(sum);
+            else return null;
+        }
+
+        public static void SumVector(this Intracommunicator comm, Vector subdomainVector, Vector globalVector, int root)
+        {
+            double[] asArray = subdomainVector.CopyToArray();
+            double[] sum = comm.Reduce<double>(asArray, Operation<double>.Add, root);
+            if (comm.Rank == root) globalVector.CopyFrom(Vector.CreateFromArray(sum));
         }
     }
 }
