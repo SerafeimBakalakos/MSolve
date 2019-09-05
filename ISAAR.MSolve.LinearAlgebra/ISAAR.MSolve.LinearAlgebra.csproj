@@ -68,5 +68,6 @@
     <PackageReference Include="Compute.Bindings.IntelMKL" Version="0.1.5" />
     <PackageReference Include="CSparse" Version="3.3.0" />
     <PackageReference Include="DotNumerics" Version="1.1.0" />
+    <PackageReference Include="MPI.NET" Version="1.4.0" />
   </ItemGroup>
 </Project>

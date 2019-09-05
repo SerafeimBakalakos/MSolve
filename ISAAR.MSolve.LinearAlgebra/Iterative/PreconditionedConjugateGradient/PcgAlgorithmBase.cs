@@ -52,7 +52,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
         /// <summary>
         /// The matrix A of the linear system or another object that implements matrix-vector multiplications.
         /// </summary>
-        public ILinearTransformation Matrix { get; private set; }
+        public ILinearTransformation Matrix { get; protected set; }
 
         /// <summary>
         /// The vector that results from <see cref="Matrix"/> * <see cref="Direction"/>.
@@ -67,7 +67,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
         /// <summary>
         /// The preconditioner M, such that inv(M) ~= inv(A).
         /// </summary>
-        public IPreconditioner Preconditioner { get; private set; }
+        public IPreconditioner Preconditioner { get; protected set; }
 
         /// <summary>
         /// The vector s = inv(M) * r
@@ -92,7 +92,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
         /// <summary>
         /// The right hand side of the linear system b = A * x.
         /// </summary>
-        public IVectorView Rhs { get; private set; }
+        public IVectorView Rhs { get; protected set; }
 
         /// <summary>
         /// The current approximation to the solution of the linear system A * x = b
@@ -187,7 +187,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
         /// <exception cref="NonMatchingDimensionsException">
         /// Thrown if <paramref name="rhs"/> or <paramref name="solution"/> violate the described constraints.
         /// </exception>
-        public IterativeStatistics Solve(ILinearTransformation matrix, IPreconditioner preconditioner, IVectorView rhs,
+        public virtual IterativeStatistics Solve(ILinearTransformation matrix, IPreconditioner preconditioner, IVectorView rhs,
             IVector solution, bool initialGuessIsZero, Func<IVector> zeroVectorInitializer)
         {
             //TODO: find a better way to handle optimizations for the case x0=0, than using an initialGuessIsZero flag
