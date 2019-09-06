@@ -31,8 +31,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
         public IFetiSubdomainMatrixManager GetSubdomainMatrixManager(ISubdomain subdomain)
             => new MockSubdomainMatrixManager(subdomain);
 
-        public Vector MultiplyInverseCoarseProblemMatrixTimes(Vector vector) 
-            => Example4x4QuadsHomogeneous.MatrixGlobalKccStar * vector;
+        public Vector MultiplyInverseCoarseProblemMatrix(Vector vector)
+        {
+            if (vector != null) return Example4x4QuadsHomogeneous.MatrixGlobalKccStar.Invert() * vector;
+            else return null;
+        }
 
         public DofPermutation ReorderGlobalCornerDofs() => DofPermutation.CreateNoPermutation();
 

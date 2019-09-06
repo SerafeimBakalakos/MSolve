@@ -34,6 +34,11 @@ namespace ISAAR.MSolve.Solvers.Tests
             suite.AddFact(FetiDPPreconditionerMpiTests.TestDirichletPreconditioner, typeof(FetiDPPreconditionerMpiTests).Name, "TestDirichletPreconditioner");
             suite.AddFact(FetiDPPreconditionerMpiTests.TestDiagonalDirichletPreconditioner, typeof(FetiDPPreconditionerMpiTests).Name, "TestDiagonalDirichletPreconditioner");
 
+            suite.AddFact(FetiDPInterfaceProblemMpiTests.TestVectorDr, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestVectorDr");
+            suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemMatrix, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestInterfaceProblemMatrix");
+            suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemSolution, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestInterfaceProblemSolution");
+
+
             suite.RunTests(args);
         }
     }

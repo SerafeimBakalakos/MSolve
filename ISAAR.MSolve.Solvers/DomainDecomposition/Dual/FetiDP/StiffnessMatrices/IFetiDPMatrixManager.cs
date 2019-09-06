@@ -36,18 +36,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         void ClearCoarseProblemRhs();
         void ClearInverseCoarseProblemMatrix();
 
-        Vector MultiplyInverseCoarseProblemMatrixTimes(Vector vector);
-
-        //can't CoarseProblemSolver just use this class? Then it will not have to do Serial/MPI implementation and the FETI/communication logic will be decoupled
-        //void CalcGlobalMatrix(ICornerNodeSelection cornerNodeSelection, IFetiDPDofSeparator dofSeparator, 
-        //    CalcSubdomainMatrix calcSubdomainMatrix);
-
-        //void CalcGlobalVector(IFetiDPDofSeparator dofSeparator, CalcSubdomainMatrix calcSubdomainMatrix);
-
-        //Dictionary<ISubdomain, IMatrixView> CalcSchurComplementsOfSubdomains(IFetiDPDofSeparator dofSeparator,
-        //    CalcSubdomainMatrix calcSubdomainMatrix);
-
-        //Dictionary<ISubdomain, Vector> CalcCondensedVectorsOfSubdomains(IFetiDPDofSeparator dofSeparator,
-        //    CalcSubdomainMatrix calcSubdomainMatrix);
+        Vector MultiplyInverseCoarseProblemMatrix(Vector vector);
     }
 }

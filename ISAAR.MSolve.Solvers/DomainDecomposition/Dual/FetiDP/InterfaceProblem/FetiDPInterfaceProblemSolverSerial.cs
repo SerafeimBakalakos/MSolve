@@ -16,12 +16,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
     /// The interface problem is solved using PCG. The matrix of the coarse problem KccStar, namely the static condensation of 
     /// the remainder dofs onto the corner dofs is performed explicitly.
     /// </summary>
-    public class FetDPInterfaceProblemSolverSerial : IFetiDPInterfaceProblemSolver
+    public class FetiDPInterfaceProblemSolverSerial : IFetiDPInterfaceProblemSolver
     {
         private readonly IModel model;
         private readonly PcgSettings pcgSettings;
 
-        public FetDPInterfaceProblemSolverSerial(IModel model, PcgSettings pcgSettings)
+        public FetiDPInterfaceProblemSolverSerial(IModel model, PcgSettings pcgSettings)
         {
             this.model = model;
             this.pcgSettings = pcgSettings;
@@ -34,7 +34,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             int systemOrder = flexibility.NumGlobalLagrangeMultipliers;
 
             // Prepare PCG matrix, preconditioner, rhs and solution
-            var pcgMatrix = new FetiDPInterfaceProblemMatrix(matrixManager, flexibility);
+            var pcgMatrix = new FetiDPInterfaceProblemMatrixSerial(matrixManager, flexibility);
             var pcgPreconditioner = new FetiDPInterfaceProblemPreconditioner(preconditioner);
             Vector globalDr = CalcGlobalDr(matrixManager, lagrangesEnumerator);
             Vector pcgRhs = FetiDPInterfaceProblemUtilities.CalcInterfaceProblemRhs(matrixManager, flexibility, globalDr);

@@ -119,7 +119,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             return matrixManagerSubdomain;
         }
 
-        public Vector MultiplyInverseCoarseProblemMatrixTimes(Vector vector)
+        public Vector MultiplyInverseCoarseProblemMatrix(Vector vector)
         {
             procs.CheckProcessIsMaster();
             return matrixManagerGlobal_master.MultiplyInverseCoarseProblemMatrixTimes(vector);

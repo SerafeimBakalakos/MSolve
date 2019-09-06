@@ -24,14 +24,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             // uc = inv(KccStar) * (fcStar + FIrc^T * lagranges)
             Vector temp = flexibility.MultiplyGlobalFIrcTransposed(lagranges);
             temp.AddIntoThis(matrixManager.CoarseProblemRhs);
-            return matrixManager.MultiplyInverseCoarseProblemMatrixTimes(temp);
+            return matrixManager.MultiplyInverseCoarseProblemMatrix(temp);
         }
 
         public static Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility,
             Vector globalDr)
         {
             // rhs = dr - FIrc * inv(KccStar) * fcStar
-            Vector temp = matrixManager.MultiplyInverseCoarseProblemMatrixTimes(matrixManager.CoarseProblemRhs);
+            Vector temp = matrixManager.MultiplyInverseCoarseProblemMatrix(matrixManager.CoarseProblemRhs);
             temp = flexibility.MultiplyGlobalFIrc(temp);
             return globalDr - temp;
         }

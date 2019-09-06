@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
                 // Create explicit matrices from the matrix manager
                 int numGlobalCornerDofs = dofSeparator.NumGlobalCornerDofs;
                 Matrix globalInverseKccStar = ImplicitMatrixUtilities.MultiplyWithIdentity(numGlobalCornerDofs, numGlobalCornerDofs,
-                    matrixManager.MultiplyInverseCoarseProblemMatrixTimes);
+                    matrixManager.MultiplyInverseCoarseProblemMatrix);
 
                 // Check
                 double tol = 1E-13;

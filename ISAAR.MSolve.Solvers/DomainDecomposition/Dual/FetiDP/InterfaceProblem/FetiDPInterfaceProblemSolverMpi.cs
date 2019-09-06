@@ -19,13 +19,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
     /// The interface problem is solved using PCG. The matrix of the coarse problem KccStar, namely the static condensation of 
     /// the remainder dofs onto the corner dofs is performed explicitly.
     /// </summary>
-    public class FetDPInterfaceProblemSolverMpi : IFetiDPInterfaceProblemSolver
+    public class FetiDPInterfaceProblemSolverMpi : IFetiDPInterfaceProblemSolver
     {
         private readonly IModel model;
         private readonly PcgSettings pcgSettings;
         private readonly ProcessDistribution procs;
 
-        public FetDPInterfaceProblemSolverMpi(ProcessDistribution processDistribution, IModel model, PcgSettings pcgSettings)
+        public FetiDPInterfaceProblemSolverMpi(ProcessDistribution processDistribution, IModel model, PcgSettings pcgSettings)
         {
             this.procs = processDistribution;
             this.model = model;
@@ -39,13 +39,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             int systemOrder = flexibility.NumGlobalLagrangeMultipliers;
 
             // Prepare PCG matrix, preconditioner, rhs and solution
-            var pcgMatrix = new FetiDPInterfaceProblemMatrix(matrixManager, flexibility);
+            var pcgMatrix = new FetiDPInterfaceProblemMatrixMpi(procs, matrixManager, flexibility);
             var pcgPreconditioner = new FetiDPInterfaceProblemPreconditioner(preconditioner);
             Vector pcgRhs = null;
             Vector lagranges = null;
+            Vector globalDr = CalcGlobalDr(matrixManager, lagrangesEnumerator);
             if (procs.IsMasterProcess)
             {
-                Vector globalDr = CalcGlobalDr(matrixManager, lagrangesEnumerator);
                 pcgRhs = FetiDPInterfaceProblemUtilities.CalcInterfaceProblemRhs(matrixManager, flexibility, globalDr);
                 lagranges = Vector.CreateZero(systemOrder);
             }
@@ -61,7 +61,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
             // Log statistics about PCG execution
             FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
-            if (procs.IsMasterProcess) logger.LogIterativeAlgorithm(stats.NumIterationsRequired, 
+            if (procs.IsMasterProcess) logger.LogIterativeAlgorithm(stats.NumIterationsRequired,
                 stats.ResidualNormRatioEstimation);
 
             // Calculate corner displacements

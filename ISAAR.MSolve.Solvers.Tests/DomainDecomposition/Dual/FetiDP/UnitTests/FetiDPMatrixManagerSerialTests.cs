@@ -32,6 +32,19 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
             FetiDPMatrixManagerSerial matrixManager = PrepareCoarseProblemSubdomainMatrices(model, dofSeparator, matricesFactory);
 
+            foreach (ISubdomain sub in model.EnumerateSubdomains())
+            {
+                // Input data
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
+                SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID));
+                subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
+
+                // Prepare the subdomain data
+                subdomainMatrices.ExtractCornerRemainderSubmatrices();
+                subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
+                subdomainMatrices.InvertKrr(true);
+            }
+
             // Calculate the global data to test
             matrixManager.CalcInverseCoarseProblemMatrix(Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model));
             matrixManager.CalcCoarseProblemRhs();
@@ -39,7 +52,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             // Create explicit matrices from the matrix manager
             int numGlobalCornerDofs = dofSeparator.NumGlobalCornerDofs;
             Matrix globalInverseKccStar = ImplicitMatrixUtilities.MultiplyWithIdentity(numGlobalCornerDofs, numGlobalCornerDofs,
-                matrixManager.MultiplyInverseCoarseProblemMatrixTimes);
+                matrixManager.MultiplyInverseCoarseProblemMatrix);
 
             // Check
             double tol = 1E-13;

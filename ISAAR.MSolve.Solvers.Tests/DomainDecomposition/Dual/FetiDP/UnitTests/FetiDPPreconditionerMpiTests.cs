@@ -19,7 +19,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 {
     public static class FetiDPPreconditionerMpiTests
     {
-        [Fact]
         public static void TestDiagonalDirichletPreconditioner()
         {
             (ProcessDistribution procs, Matrix preconditioner) = CalcPreconditioner(new DiagonalDirichletPreconditioning());
@@ -30,7 +29,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
-        [Fact]
         public static void TestDirichletPreconditioner()
         {
             (ProcessDistribution procs, Matrix preconditioner) = CalcPreconditioner(new DirichletPreconditioning());
@@ -41,7 +39,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
-        [Fact]
         public static void TestLumpedPreconditioner()
         {
             (ProcessDistribution procs, Matrix preconditioner) = CalcPreconditioner(new LumpedPreconditioning());

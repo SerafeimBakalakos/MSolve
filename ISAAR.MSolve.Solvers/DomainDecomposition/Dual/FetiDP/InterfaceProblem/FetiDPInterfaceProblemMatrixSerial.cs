@@ -12,12 +12,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
     /// This class concerns global operations and uses global data. In an MPI environment, instances of it should not be used in 
     /// processes other than master. 
     /// </summary>
-    public class FetiDPInterfaceProblemMatrix : ILinearTransformation
+    public class FetiDPInterfaceProblemMatrixSerial : ILinearTransformation
     {
         private readonly IFetiDPFlexibilityMatrix flexibility;
         private readonly IFetiDPMatrixManager matrixManager;
 
-        public FetiDPInterfaceProblemMatrix(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility)
+        public FetiDPInterfaceProblemMatrixSerial(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility)
         {
             this.matrixManager = matrixManager;
             this.flexibility = flexibility;
@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             flexibility.MultiplyGlobalFIrr(lhs, rhs);
 
             Vector temp = flexibility.MultiplyGlobalFIrcTransposed(lhs);
-            temp = matrixManager.MultiplyInverseCoarseProblemMatrixTimes(temp);
+            temp = matrixManager.MultiplyInverseCoarseProblemMatrix(temp);
             temp = flexibility.MultiplyGlobalFIrc(temp);
             rhs.AddIntoThis(temp);
         }
