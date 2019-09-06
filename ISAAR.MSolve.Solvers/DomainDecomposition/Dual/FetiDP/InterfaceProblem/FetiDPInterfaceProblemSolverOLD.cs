@@ -57,7 +57,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             // Log statistics about PCG execution
             if (!stats.HasConverged)
             {
-                throw new IterativeSolverNotConvergedException(FetiDPSolver.name + " did not converge to a solution. PCG"
+                throw new IterativeSolverNotConvergedException(FetiDPSolverOLD.name + " did not converge to a solution. PCG"
                     + $" algorithm run for {stats.NumIterationsRequired} iterations and the residual norm ratio was"
                     + $" {stats.ResidualNormRatioEstimation}");
             }

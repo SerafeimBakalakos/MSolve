@@ -47,7 +47,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Model model = Example4x4QuadsHomogeneous.CreateModel();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
-            var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
+            var solver = new FetiDPSolverOLD.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
             solver.OrderDofs(false);
             solver.Initialize();
@@ -63,7 +63,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             }
 
             // Access private fields of FetiDPSolver
-            FieldInfo fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo fi = typeof(FetiDPSolverOLD).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
             var dofSeparator = (FetiDPDofSeparatorOLD)fi.GetValue(solver);
 
             // Calculate the coarse problem matrix and rhs
@@ -89,7 +89,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Model model = Example4x4QuadsHomogeneous.CreateModel();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
-            FetiDPSolver solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
+            FetiDPSolverOLD solver = new FetiDPSolverOLD.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
             solver.OrderDofs(false);
             solver.Initialize();
@@ -104,7 +104,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
 
             // Use reflection to set the necessary matrices
             FieldInfo fi;
-            fi = typeof(FetiDPSolver).GetField("matrixManagers", BindingFlags.NonPublic | BindingFlags.Instance);
+            fi = typeof(FetiDPSolverOLD).GetField("matrixManagers", BindingFlags.NonPublic | BindingFlags.Instance);
             fi.SetValue(solver, matrixManagers);
 
             Vector dr = solver.CalcDisconnectedDisplacements(fr);
@@ -121,7 +121,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Model model = Example4x4QuadsHomogeneous.CreateModel();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
-            var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
+            var solver = new FetiDPSolverOLD.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
             solver.OrderDofs(false);
             solver.Initialize();
@@ -130,9 +130,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Dictionary<int, IFetiDPSubdomainMatrixManagerOLD> matrixManagers = MockStiffnesses();
 
             // Access private fields of FetiDPSolver
-            FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo fi = typeof(FetiDPSolverOLD).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
             var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumeratorOLD)fi.GetValue(solver);
-            fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
+            fi = typeof(FetiDPSolverOLD).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
             var dofSeparator = (FetiDPDofSeparatorOLD)fi.GetValue(solver);
 
             // Create the flexibility matrices by multiplying with identity matrices
@@ -156,7 +156,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Model model = Example4x4QuadsHomogeneous.CreateModel();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
-            var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
+            var solver = new FetiDPSolverOLD.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
             solver.OrderDofs(false);
             solver.Initialize();
@@ -166,9 +166,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Vector dr = Example4x4QuadsHomogeneous.VectorDr;
 
             // Access private fields of FetiDPSolver
-            FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo fi = typeof(FetiDPSolverOLD).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
             var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumeratorOLD)fi.GetValue(solver);
-            fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
+            fi = typeof(FetiDPSolverOLD).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
             var dofSeparator = (FetiDPDofSeparatorOLD)fi.GetValue(solver);
 
             // Hardcoded coarse problem matrix and rhs
@@ -207,7 +207,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Model model = Example4x4QuadsHomogeneous.CreateModel();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
-            var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
+            var solver = new FetiDPSolverOLD.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             model.ConnectDataStructures();
             solver.OrderDofs(false);
             solver.Initialize();
@@ -219,9 +219,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Vector dr = Example4x4QuadsHomogeneous.VectorDr;
 
             // Access private fields of FetiDPSolver
-            FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo fi = typeof(FetiDPSolverOLD).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
             var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumeratorOLD)fi.GetValue(solver);
-            fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
+            fi = typeof(FetiDPSolverOLD).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
             var dofSeparator = (FetiDPDofSeparatorOLD)fi.GetValue(solver);
 
             // Hardcoded coarse problem matrix and rhs
@@ -267,12 +267,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             interfaceSolverBuilder.PcgConvergenceTolerance = 1E-7;
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
-            var fetiSolverBuilder = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices);
+            var fetiSolverBuilder = new FetiDPSolverOLD.Builder(cornerNodeSelection, fetiMatrices);
             fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
             fetiSolverBuilder.ProblemIsHomogeneous = false;
             var preconditionerFactory = new DirichletPreconditionerOLD.Factory();
             fetiSolverBuilder.PreconditionerFactory = preconditionerFactory;
-            FetiDPSolver fetiSolver = fetiSolverBuilder.BuildSolver(model);
+            FetiDPSolverOLD fetiSolver = fetiSolverBuilder.BuildSolver(model);
 
             // Run the analysis
             var problem = new ProblemStructural(model, fetiSolver);
@@ -283,11 +283,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             #endregion
 
             // Access private fields of FetiDPSolver and DirichletPreconditioner.Factory using reflection
-            FieldInfo fi = typeof(FetiDPSolver).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo fi = typeof(FetiDPSolverOLD).GetField("lagrangeEnumerator", BindingFlags.NonPublic | BindingFlags.Instance);
             var lagrangeEnumerator = (FetiDPLagrangeMultipliersEnumeratorOLD)fi.GetValue(fetiSolver);
-            fi = typeof(FetiDPSolver).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
+            fi = typeof(FetiDPSolverOLD).GetField("dofSeparator", BindingFlags.NonPublic | BindingFlags.Instance);
             var dofSeparator = (FetiDPDofSeparatorOLD)fi.GetValue(fetiSolver);
-            fi = typeof(FetiDPSolver).GetField("stiffnessDistribution", BindingFlags.NonPublic | BindingFlags.Instance);
+            fi = typeof(FetiDPSolverOLD).GetField("stiffnessDistribution", BindingFlags.NonPublic | BindingFlags.Instance);
             var stiffnessDistribution = (IStiffnessDistributionOLD)fi.GetValue(fetiSolver);
             MethodInfo method = preconditionerFactory.GetType().GetMethod("CalcBoundaryPreconditioningBooleanMatrices",
                 BindingFlags.NonPublic | BindingFlags.Instance);
@@ -310,7 +310,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             Model model = Example4x4QuadsHomogeneous.CreateModel();
             var fetiMatrices = new FetiDPSubdomainMatrixManagerDenseOLD.Factory();
             var cornerNodeSelection = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
-            var solver = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
+            var solver = new FetiDPSolverOLD.Builder(cornerNodeSelection, fetiMatrices).BuildSolver(model);
             var problem = new ProblemStructural(model, solver);
             var linearAnalyzer = new LinearAnalyzer(model, solver, problem);
             var staticAnalyzer = new StaticAnalyzer(model, solver, problem, linearAnalyzer);

@@ -25,7 +25,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 //TODO: Optimizations for the case that stiffness changes, but connectivity remains the same!
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 {
-    public class FetiDPSolver : ISolver
+    public class FetiDPSolverOLD : ISolver
     {
         internal const string name = "FETI-DP Solver"; // for error messages
         private readonly IFetiDPCoarseProblemSolverOLD coarseProblemSolver;
@@ -54,7 +54,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private IFetiPreconditioner preconditioner;
         private FetiDPSubdomainGlobalMapping subdomainGlobalMapping;
 
-        private FetiDPSolver(IModel model, ICornerNodeSelection cornerNodeSelection,
+        private FetiDPSolverOLD(IModel model, ICornerNodeSelection cornerNodeSelection,
             IFetiDPSubdomainMatrixManagerFactoryOLD matrixManagerFactory, IDofOrderer dofOrderer, 
             IFetiPreconditionerFactoryOLD preconditionerFactory, bool problemIsHomogeneous, 
             IFetiDPInterfaceProblemSolverOLD interfaceProblemSolver)
@@ -502,8 +502,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             public IFetiPreconditionerFactoryOLD PreconditionerFactory { get; set; } = new LumpedPreconditionerOLD.Factory();
             public bool ProblemIsHomogeneous { get; set; } = true;
 
-            public FetiDPSolver BuildSolver(IModel model)
-                => new FetiDPSolver(model, cornerNodeSelection, matrixManagerFactory, DofOrderer, PreconditionerFactory,
+            public FetiDPSolverOLD BuildSolver(IModel model)
+                => new FetiDPSolverOLD(model, cornerNodeSelection, matrixManagerFactory, DofOrderer, PreconditionerFactory,
                         ProblemIsHomogeneous, InterfaceProblemSolver);            
         }
     }

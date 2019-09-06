@@ -157,7 +157,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             //var fetiMatrices = new SkylineFetiDPSubdomainMatrixManager.Factory();
             //var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
             var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodesOfEachSubdomain);
-            var solverBuilder = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices);
+            var solverBuilder = new FetiDPSolverOLD.Builder(cornerNodeSelection, fetiMatrices);
             solverBuilder.ProblemIsHomogeneous = stiffnessRatio == 1.0;
             //solverBuilder.ProblemIsHomogeneous = false;
 
@@ -187,7 +187,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             interfaceSolverBuilder.PcgConvergenceTolerance = pcgConvergenceTolerance;
             solverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
 
-            FetiDPSolver fetiSolver = solverBuilder.BuildSolver(multiSubdomainModel);
+            FetiDPSolverOLD fetiSolver = solverBuilder.BuildSolver(multiSubdomainModel);
             //if (residualIsExact) exactResidualConvergence.FetiSolver = fetiSolver;
 
             // Structural problem provider

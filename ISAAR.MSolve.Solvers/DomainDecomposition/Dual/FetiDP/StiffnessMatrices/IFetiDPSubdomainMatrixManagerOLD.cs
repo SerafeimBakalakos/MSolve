@@ -14,7 +14,7 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 {
     /// <summary>
-    /// Implements the linear algebra operations needed by <see cref="FetiDPSolver"/> depending on the underlying matrix storage
+    /// Implements the linear algebra operations needed by <see cref="FetiDPSolverOLD"/> depending on the underlying matrix storage
     /// format. All the matrices represented by this interface belong to a single subdomain.
     /// Authors: Serafeim Bakalakos
     /// </summary>

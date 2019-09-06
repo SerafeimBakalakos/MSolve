@@ -135,7 +135,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             // Subdomain plots
             if (subdomainPlotDirectory != null)
             {
-                if (solver is FetiDPSolver fetiDP)
+                if (solver is FetiDPSolverOLD fetiDP)
                 {
                     analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(fetiDP, subdomainPlotDirectory, true);
                 }

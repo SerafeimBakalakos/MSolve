@@ -9,12 +9,12 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
     public class DomainDecompositionLoggerFetiDP : IDomainDecompositionLogger
     {
         private readonly string plotDirectoryPath;
-        private readonly FetiDPSolver solver;
+        private readonly FetiDPSolverOLD solver;
         private readonly bool shuffleSubdomainColors;
         private int analysisStep;
 
         //TODO: make sure the path does not end in "\"
-        public DomainDecompositionLoggerFetiDP(FetiDPSolver solver, string plotDirectoryPath, 
+        public DomainDecompositionLoggerFetiDP(FetiDPSolverOLD solver, string plotDirectoryPath, 
             bool shuffleSubdomainColors = false) 
         {
             this.plotDirectoryPath = plotDirectoryPath;
