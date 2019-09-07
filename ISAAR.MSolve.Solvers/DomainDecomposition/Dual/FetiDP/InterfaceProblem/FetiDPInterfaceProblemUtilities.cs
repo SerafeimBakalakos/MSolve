@@ -15,18 +15,8 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 //TODO: Should the matrix manager and lgarange enumerator be injected into the constructor?
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 {
-    
     public class FetiDPInterfaceProblemUtilities
     {
-        public static Vector CalcCornerDisplacements(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility,
-            Vector lagranges)
-        {
-            // uc = inv(KccStar) * (fcStar + FIrc^T * lagranges)
-            Vector temp = flexibility.MultiplyGlobalFIrcTransposed(lagranges);
-            temp.AddIntoThis(matrixManager.CoarseProblemRhs);
-            return matrixManager.MultiplyInverseCoarseProblemMatrix(temp);
-        }
-
         public static Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility,
             Vector globalDr)
         {

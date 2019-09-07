@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             this.pcgSettings = pcgSettings;
         }
 
-        public (Vector lagrangeMultipliers, Vector cornerDisplacements) SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
+        public Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility, 
             IFetiPreconditioner preconditioner, double globalForcesNorm, ISolverLogger logger)
         {
@@ -62,17 +62,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
             // Log statistics about PCG execution
             FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
-            if (procs.IsMasterProcess) logger.LogIterativeAlgorithm(stats.NumIterationsRequired,
-                stats.ResidualNormRatioEstimation);
+            logger.LogIterativeAlgorithm(stats.NumIterationsRequired, stats.ResidualNormRatioEstimation);
 
-            // Calculate corner displacements
-            Vector uc = null;
-            if (procs.IsMasterProcess)
-            {
-                uc = FetiDPInterfaceProblemUtilities.CalcCornerDisplacements(matrixManager, flexibility, lagranges);
-            }
-
-            return (lagranges, uc);
+            return lagranges;
         }
 
         private Vector CalcGlobalDr(IFetiDPMatrixManager matrixManager, ILagrangeMultipliersEnumerator lagrangesEnumerator)

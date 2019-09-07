@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
                 LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
 
             // Setup matrix manager
-            IFetiDPMatrixManager matrixManager = new MockMatrixManager();
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
 
             // Create explicit matrices that can be checked
             var flexibility = new FetiDPFlexibilityMatrixMpi(procs, model, dofSeparator, lagrangesEnumerator, matrixManager);

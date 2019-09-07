@@ -15,7 +15,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 {
     public interface IFetiDPInterfaceProblemSolver
     {
-        (Vector lagrangeMultipliers, Vector cornerDisplacements) SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
+        Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility, 
             IFetiPreconditioner preconditioner, double globalForcesNorm, ISolverLogger logger);
     }

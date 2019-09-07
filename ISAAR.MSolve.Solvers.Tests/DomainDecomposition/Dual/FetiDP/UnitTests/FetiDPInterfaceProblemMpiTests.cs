@@ -28,7 +28,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
                 LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
 
-            IFetiDPMatrixManager matrixManager = new MockMatrixManager();
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
 
             var interfaceMatrix = new FetiDPInterfaceProblemMatrixMpi(procs, matrixManager, flexibility);
@@ -50,7 +50,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator,
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
                 LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
-            IFetiDPMatrixManager matrixManager = new MockMatrixManager();
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             var stiffnessDistribution = new MockHomogeneousStiffnessDistribution();
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
             var precondFactory = new FetiPreconditionerMpi.Factory(procs);
@@ -59,7 +59,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
             var pcgSettings = new PcgSettings { ConvergenceTolerance = 1E-15 };
             var interfaceSolver = new FetiDPInterfaceProblemSolverMpi(procs, model, pcgSettings);
-            (Vector lagranges, Vector cornerDisplacements) = interfaceSolver.SolveInterfaceProblem(matrixManager,
+            Vector lagranges = interfaceSolver.SolveInterfaceProblem(matrixManager,
                 lagrangesEnumerator, flexibility, preconditioner, Example4x4QuadsHomogeneous.GlobalForcesNorm,
                 new SolverLoggerMpi(procs, "Test method"));
 
@@ -67,7 +67,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             {
                 double tol = 1E-11;
                 Assert.True(Example4x4QuadsHomogeneous.SolutionLagrangeMultipliers.Equals(lagranges, tol));
-                Assert.True(Example4x4QuadsHomogeneous.SolutionCornerDisplacements.Equals(cornerDisplacements, tol));
             }
         }
 
@@ -76,7 +75,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator, 
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
                 LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
-            IFetiDPMatrixManager matrixManager = new MockMatrixManager();
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
 
             var interfaceSolver = new FetiDPInterfaceProblemSolverMpi(procs, model, new PcgSettings());
             MethodInfo method = interfaceSolver.GetType().GetMethod("CalcGlobalDr",

@@ -113,7 +113,6 @@ namespace ISAAR.MSolve.Discretization.Transfer
 
         public IEnumerable<ISubdomain> EnumerateSubdomains()
         {
-            procs.CheckProcessIsMaster();
             return model.EnumerateSubdomains();
         }
 

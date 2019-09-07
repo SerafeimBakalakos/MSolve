@@ -55,7 +55,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
                 LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
 
-            IFetiDPMatrixManager matrixManager = new MockMatrixManager();
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             IStiffnessDistribution stiffnessDistribution = new MockHomogeneousStiffnessDistribution();
             var preconditionerFactory = new FetiPreconditionerMpi.Factory(procs);
             IFetiPreconditioner preconditioner = preconditionerFactory.CreatePreconditioner(preconditioning,

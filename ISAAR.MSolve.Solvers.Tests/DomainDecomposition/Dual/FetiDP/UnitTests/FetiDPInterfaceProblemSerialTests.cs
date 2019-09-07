@@ -24,22 +24,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
     public static class FetiDPInterfaceProblemSerialTests
     {
         [Fact]
-        public static void TestCornerDofDisplacements()
-        {
-            IFetiDPMatrixManager matrixManager = new MockMatrixManager();
-            IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
-            Vector lagranges = Example4x4QuadsHomogeneous.SolutionLagrangeMultipliers;
-            Vector cornerDisplacements = 
-                FetiDPInterfaceProblemUtilities.CalcCornerDisplacements(matrixManager, flexibility, lagranges);
-
-            double tol = 1E-12;
-            Assert.True(Example4x4QuadsHomogeneous.SolutionCornerDisplacements.Equals(cornerDisplacements, tol));
-        }
-
-        [Fact]
         public static void TestInterfaceProblemMatrix()
         {
-            IFetiDPMatrixManager matrixManager = new MockMatrixManager();
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager(Example4x4QuadsHomogeneous.CreateModel());
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
 
             var interfaceMatrix = new FetiDPInterfaceProblemMatrixSerial(matrixManager, flexibility);
@@ -56,7 +43,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         [Fact]
         public static void TestInterfaceProblemRhs()
         {
-            IFetiDPMatrixManager matrixManager = new MockMatrixManager();
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager(Example4x4QuadsHomogeneous.CreateModel());
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
             Vector globalDr = Example4x4QuadsHomogeneous.VectorDr;
             Vector pcgRhs = FetiDPInterfaceProblemUtilities.CalcInterfaceProblemRhs(matrixManager, flexibility, globalDr);
@@ -70,7 +57,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         {
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
                 LagrangeMultiplierEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
-            IFetiDPMatrixManager matrixManager = new MockMatrixManager();
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             var stiffnessDistribution = new MockHomogeneousStiffnessDistribution();
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
             var precondFactory = new FetiPreconditionerSerial.Factory();
@@ -79,13 +66,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
             var pcgSettings = new PcgSettings { ConvergenceTolerance = 1E-15 };
             var interfaceSolver = new FetiDPInterfaceProblemSolverSerial(model, pcgSettings);
-            (Vector lagranges, Vector cornerDisplacements) = interfaceSolver.SolveInterfaceProblem(matrixManager,
+            Vector lagranges = interfaceSolver.SolveInterfaceProblem(matrixManager,
                 lagrangesEnumerator, flexibility, preconditioner, Example4x4QuadsHomogeneous.GlobalForcesNorm, 
                 new SolverLoggerSerial("Test method"));
 
             double tol = 1E-11;
             Assert.True(Example4x4QuadsHomogeneous.SolutionLagrangeMultipliers.Equals(lagranges, tol));
-            Assert.True(Example4x4QuadsHomogeneous.SolutionCornerDisplacements.Equals(cornerDisplacements, tol));
         }
 
         [Fact]
@@ -93,7 +79,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         {
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
                 LagrangeMultiplierEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
-            IFetiDPMatrixManager matrixManager = new MockMatrixManager();
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
 
             var interfaceSolver = new FetiDPInterfaceProblemSolverSerial(model, new PcgSettings());
             MethodInfo method = interfaceSolver.GetType().GetMethod("CalcGlobalDr",

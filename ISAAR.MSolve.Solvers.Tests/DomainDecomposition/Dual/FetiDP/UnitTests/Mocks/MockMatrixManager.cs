@@ -15,6 +15,17 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
 {
     public class MockMatrixManager : IFetiDPMatrixManager
     {
+        private readonly Dictionary<ISubdomain, IFetiDPSubdomainMatrixManager> subdomainMatrices;
+
+        public MockMatrixManager(IModel model)
+        {
+            subdomainMatrices = new Dictionary<ISubdomain, IFetiDPSubdomainMatrixManager>();
+            foreach (ISubdomain sub in model.EnumerateSubdomains())
+            {
+                subdomainMatrices[sub] = new MockSubdomainMatrixManager(sub);
+            }
+        }
+
         public Vector CoarseProblemRhs => Example4x4QuadsHomogeneous.VectorGlobalFcStar;
 
         public void CalcCoarseProblemRhs() { }
@@ -26,10 +37,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
         public void ClearInverseCoarseProblemMatrix() { }
 
         public IFetiDPSubdomainMatrixManager GetFetiDPSubdomainMatrixManager(ISubdomain subdomain)
-            => new MockSubdomainMatrixManager(subdomain);
+            => subdomainMatrices[subdomain];
 
         public IFetiSubdomainMatrixManager GetSubdomainMatrixManager(ISubdomain subdomain)
-            => new MockSubdomainMatrixManager(subdomain);
+            => subdomainMatrices[subdomain];
 
         public Vector MultiplyInverseCoarseProblemMatrix(Vector vector)
         {

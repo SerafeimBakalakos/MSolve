@@ -24,6 +24,7 @@
 //using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
 //using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 //using ISAAR.MSolve.Solvers.Logging;
+//using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements;
 
 ////TODO: Add time logging
 ////TODO: Use a base class for the code that is identical between FETI-1 and FETI-DP.
@@ -33,6 +34,7 @@
 //    {
 //        internal const string name = "FETI-DP Solver"; // for error messages and logging
 //        private readonly ICrosspointStrategy crosspointStrategy = new FullyRedundantConstraints();
+//        private readonly IDisplacementsCalculator displacementsCalculator;
 //        private readonly DofOrdererMpi dofOrderer;
 //        private readonly FetiDPDofSeparatorMpi dofSeparator;
 //        private readonly FetiDPInterfaceProblemSolverMpi interfaceProblemSolver;
@@ -53,7 +55,7 @@
 //        private IFetiPreconditioner preconditioner;
 
 //        public FetiDPSolverMpi(ProcessDistribution processDistribution, IModelMpi model, ICornerNodeSelection cornerNodeSelection,
-//            IFetiDPMatrixManagerFactory matrixManagerFactory, IFetiPreconditioningOperations preconditioning,  
+//            IFetiDPMatrixManagerFactory matrixManagerFactory, IFetiPreconditioningOperations preconditioning,
 //            PcgSettings pcgSettings, bool problemIsHomogeneous)
 //        {
 //            this.procs = processDistribution;
@@ -83,12 +85,14 @@
 
 //            // Interface problem
 //            this.interfaceProblemSolver = new FetiDPInterfaceProblemSolverMpi(procs, model, pcgSettings);
+//            this.displacementsCalculator = new DisplacementsCalculatorMpi(procs, model, dofSeparator, matrixManager, 
+//                lagrangesEnumerator);
 
 //            // Homogeneous/heterogeneous problems
 //            this.problemIsHomogeneous = problemIsHomogeneous;
 //            if (problemIsHomogeneous)
 //            {
-//                this.stiffnessDistribution = new HomogeneousStiffnessDistributionMpi(procs, model, dofSeparator,  
+//                this.stiffnessDistribution = new HomogeneousStiffnessDistributionMpi(procs, model, dofSeparator,
 //                    new FetiDPHomogeneousDistributionLoadScaling(dofSeparator));
 //            }
 //            else throw new NotImplementedException();
@@ -127,7 +131,7 @@
 //        {
 //            procs.CheckProcessMatchesSubdomain(subdomain.ID);
 //            return matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).LinearSystem;
-//        } 
+//        }
 
 //        public void HandleMatrixWillBeSet()
 //        {
@@ -208,7 +212,7 @@
 //                if (Subdomain.StiffnessModified)
 //                {
 //                    //TODO: If I can reuse Krr, I can also reuse its factorization. Therefore this must be inPlace. In contrast, FETI-1 needs Kff intact for Stiffness distribution, in the current design).
-//                    Debug.WriteLine(msgHeader 
+//                    Debug.WriteLine(msgHeader
 //                        + $"Inverting the remainder-remainder stiffness matrix of subdomain {Subdomain.ID} in place.");
 //                    matrixManager.GetFetiDPSubdomainMatrixManager(Subdomain).InvertKrr(true);
 //                }
@@ -229,7 +233,7 @@
 
 //            Logger.StartMeasuringTime();
 //            // Calculate the norm of the forces vector |f| = |K*u|. It is needed to check the convergence of PCG.
-//            double globalForcesNorm = double.NaN; 
+//            double globalForcesNorm = double.NaN;
 //            if (procs.IsMasterProcess)
 //            {
 //                globalForcesNorm = subdomainGlobalMapping.CalcGlobalForcesNorm(
@@ -237,14 +241,13 @@
 //            }
 
 //            // Solve interface problem
-//            (Vector lagranges, Vector uc) = interfaceProblemSolver.SolveInterfaceProblem(matrixManager, lagrangesEnumerator,
+//            Vector lagranges = interfaceProblemSolver.SolveInterfaceProblem(matrixManager, lagrangesEnumerator,
 //                flexibility, preconditioner, globalForcesNorm, Logger);
 //            Logger.LogCurrentTaskDuration("Solving interface problem");
 
 //            // Calculate the displacements of each subdomain
 //            Logger.StartMeasuringTime();
-//            //Dictionary<int, Vector> actualDisplacements = CalcActualDisplacements(lagranges, uc, fr);
-//            //foreach (var idSystem in linearSystems) idSystem.Value.SolutionConcrete = actualDisplacements[idSystem.Key];
+//            displacementsCalculator.CalculateSubdomainDisplacements(lagranges, flexibility);
 //            Logger.LogCurrentTaskDuration("Calculate displacements from lagrange multipliers");
 
 //            Logger.IncrementAnalysisStep();

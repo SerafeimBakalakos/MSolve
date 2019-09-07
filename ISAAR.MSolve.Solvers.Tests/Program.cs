@@ -38,6 +38,8 @@ namespace ISAAR.MSolve.Solvers.Tests
             suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemMatrix, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestInterfaceProblemMatrix");
             suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemSolution, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestInterfaceProblemSolution");
 
+            suite.AddFact(FetiDPDisplacementsCalculatorMpi.TestFreeDisplacements, typeof(FetiDPDisplacementsCalculatorMpi).Name, "TestFreeDisplacements");
+
 
             suite.RunTests(args);
         }
