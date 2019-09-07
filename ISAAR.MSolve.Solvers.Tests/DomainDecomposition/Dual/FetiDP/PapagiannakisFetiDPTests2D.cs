@@ -15,6 +15,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
+using ISAAR.MSolve.Solvers.Logging;
 using Xunit;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
@@ -68,7 +69,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         {
             double pcgConvergenceTol = 1E-5;
             IVectorView directDisplacements = SolveModelWithoutSubdomains(stiffnessRatio);
-            (IVectorView ddDisplacements, SolverLogger logger) =
+            (IVectorView ddDisplacements, SolverLoggerOLD logger) =
                 SolveModelWithSubdomains(stiffnessRatio, precond, convergence, pcgConvergenceTol);
             double normalizedError = directDisplacements.Subtract(ddDisplacements).Norm2() / directDisplacements.Norm2();
 
@@ -128,7 +129,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             return model;
         }
 
-        private static (IVectorView globalDisplacements, SolverLogger logger) SolveModelWithSubdomains(double stiffnessRatio,
+        private static (IVectorView globalDisplacements, SolverLoggerOLD logger) SolveModelWithSubdomains(double stiffnessRatio,
             Precond precond, Residual residualConvergence, double pcgConvergenceTolerance)
         {
             // Model

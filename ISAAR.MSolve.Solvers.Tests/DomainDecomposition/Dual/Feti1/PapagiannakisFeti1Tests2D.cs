@@ -13,6 +13,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.InterfaceProblem;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Matrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
+using ISAAR.MSolve.Solvers.Logging;
 using Xunit;
 using static ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.InterfaceProblem.Feti1ProjectedInterfaceProblemSolver;
 
@@ -153,7 +154,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.Feti1
             //InterfaceSolver interfaceSolver = 0;
             double factorizationTol = 1E-3, pcpgConvergenceTol = 1E-5;
             IVectorView directDisplacements = SolveModelWithoutSubdomains(stiffnessRatio);
-            (IVectorView ddDisplacements, SolverLogger logger, int numUniqueGlobalDofs, int numExtenedDomainDofs) =
+            (IVectorView ddDisplacements, SolverLoggerOLD logger, int numUniqueGlobalDofs, int numExtenedDomainDofs) =
                 SolveModelWithSubdomains(stiffnessRatio, interfaceSolver, precond, q, convergence, 
                     factorizationTol, pcpgConvergenceTol);
             double normalizedError = directDisplacements.Subtract(ddDisplacements).Norm2() / directDisplacements.Norm2();
@@ -214,7 +215,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.Feti1
             return model;
         }
 
-        private static (IVectorView globalDisplacements, SolverLogger logger, int numUniqueGlobalDofs, int numExtenedDomainDofs)
+        private static (IVectorView globalDisplacements, SolverLoggerOLD logger, int numUniqueGlobalDofs, int numExtenedDomainDofs)
             SolveModelWithSubdomains(double stiffnessRatio, InterfaceSolver interfaceSolver, Precond precond, MatrixQ q,
                 Residual residualConvergence, double factorizationTolerance, double pcgConvergenceTolerance)
         {

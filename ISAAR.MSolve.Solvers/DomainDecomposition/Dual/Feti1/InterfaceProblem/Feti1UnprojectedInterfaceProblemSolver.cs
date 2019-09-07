@@ -6,6 +6,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.Commons;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Projection;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
+using ISAAR.MSolve.Solvers.Logging;
 
 //TODO: probably needs a builder
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.InterfaceProblem
@@ -33,7 +34,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.InterfaceProblem
 
         public Vector CalcLagrangeMultipliers(Feti1FlexibilityMatrix flexibility, IFetiPreconditioner preconditioner, 
             Feti1Projection projection, Vector disconnectedDisplacements, Vector rigidBodyModesWork, double globalForcesNorm,
-            SolverLogger logger)
+            SolverLoggerOLD logger)
         {
             // PCPG starts from the particular lagrange multipliers: λ0 = Q * G * inv(G^T * Q * G) * e
             Vector lagranges = projection.CalcParticularLagrangeMultipliers(rigidBodyModesWork);

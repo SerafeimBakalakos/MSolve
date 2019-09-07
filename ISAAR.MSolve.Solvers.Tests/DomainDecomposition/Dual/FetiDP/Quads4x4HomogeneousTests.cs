@@ -30,6 +30,7 @@ using Xunit;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests;
 using ISAAR.MSolve.Solvers.Tests.Utilities;
+using ISAAR.MSolve.Solvers.Logging;
 
 //TODO: Also test stiffness distribution and preconditioners in other classes.
 //TODO: Create the dofSeparator and lagrangeEnumerator manually, without using FetiDPSolver.
@@ -244,7 +245,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
             // Solve the interface problem
             FetiDPInterfaceProblemSolverOLD interfaceSolver = new FetiDPInterfaceProblemSolverOLD.Builder().Build();
             var flexibility = new FetiDPFlexibilityMatrixOLD(dofSeparator, lagrangeEnumerator, matrixManagers);
-            var logger = new SolverLogger("mock FETI-DP");
+            var logger = new SolverLoggerOLD("mock FETI-DP");
             (Vector lagranges, Vector uc) = interfaceSolver.SolveInterfaceProblem(
                 flexibility, preconditioner, coarseSolver, globalFcStar, dr, Example4x4QuadsHomogeneous.GlobalForcesNorm, logger);
 

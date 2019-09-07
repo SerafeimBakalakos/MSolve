@@ -5,6 +5,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Solvers.LinearSystems;
+using ISAAR.MSolve.Solvers.Logging;
 
 //TODO: perhaps the solver should expose the assembler, instead of wrapping it. The assembler's interface would have to be 
 //      simplified a bit though. That would violate LoD, but so does MSolve in general.
@@ -23,7 +24,7 @@ namespace ISAAR.MSolve.Solvers
         /// <summary>
         /// Logs information, such as linear system size, the time required for various solver tasks, etc.
         /// </summary>
-        SolverLogger Logger { get; }
+        SolverLoggerOLD Logger { get; }
 
         /// <summary>
         /// The name of the solver for logging purposes.

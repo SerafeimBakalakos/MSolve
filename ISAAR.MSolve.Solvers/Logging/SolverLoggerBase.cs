@@ -1,28 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using ISAAR.MSolve.Discretization.Transfer;
 
 //TODO: Use enums instead of strings for the solver task and dof category. Or use interfaces & enum classes, to adhere to 
 //      open-closed principle.
-namespace ISAAR.MSolve.Solvers
+namespace ISAAR.MSolve.Solvers.Logging
 {
-    public class SolverLogger
+    public abstract class SolverLoggerBase : ISolverLogger
     {
+        protected readonly List<SortedDictionary<string, long>> taskDurations = new List<SortedDictionary<string, long>>();
+        protected readonly Stopwatch watch;
+
         private readonly string solverName;
         private readonly List<(int iterations, double residualNormRatio)> iterativeAlgorithmData = new List<(int, double)>();
-        private readonly List<SortedDictionary<string, long>> taskDurations = new List<SortedDictionary<string, long>>();
         private readonly List<SortedDictionary<string, int>> numDofsPerCategory = new List<SortedDictionary<string, int>>();
         private int currentStep;
 
-        public SolverLogger(string solverName)
+        protected SolverLoggerBase(string solverName)
         {
             this.solverName = solverName;
-            currentStep = 0;
+            this.watch = new Stopwatch();
             taskDurations.Add(new SortedDictionary<string, long>());
             numDofsPerCategory.Add(new SortedDictionary<string, int>());
+            currentStep = 0;
         }
+
+        protected int CurrentStep => currentStep;
 
         public int GetNumDofs(int analysisStep, string category) => numDofsPerCategory[analysisStep][category];
 
@@ -30,16 +37,6 @@ namespace ISAAR.MSolve.Solvers
         public double GetResidualNormRatioOfIterativeAlgorithm(int analysisStep) 
             => iterativeAlgorithmData[analysisStep].residualNormRatio;
 
-        /// <summary>
-        /// Adds the duration of the selected task to the duration of the same task during the current analysis step.
-        /// </summary>
-        /// <param name="task"></param>
-        /// <param name="duration"></param>
-        public void LogTaskDuration(string task, long duration)
-        {
-            bool exists = taskDurations[currentStep].TryGetValue(task, out long durationSofar);
-            taskDurations[currentStep][task] = durationSofar + duration;
-        }
 
         public void LogNumDofs(string category, int numDofs)
             => numDofsPerCategory[currentStep][category] = numDofs;
@@ -197,5 +194,14 @@ namespace ISAAR.MSolve.Solvers
             writer.WriteLine("Solver: " + solverName);
             writer.WriteLine("*********************************************************************");
         }
+
+        /// <summary>
+        /// Adds the duration of the selected task to the duration of the same task during the current analysis step.
+        /// </summary>
+        /// <param name="task"></param>
+        /// <param name="duration"></param>
+        public abstract void LogCurrentTaskDuration(string task);
+
+        public abstract void StartMeasuringTime();
     }
 }

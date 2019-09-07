@@ -10,6 +10,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.Commons;
 using ISAAR.MSolve.Solvers.LinearSystems;
+using ISAAR.MSolve.Solvers.Logging;
 using ISAAR.MSolve.Solvers.Ordering;
 
 namespace ISAAR.MSolve.Solvers.Assemblers.Collocation
@@ -39,11 +40,11 @@ namespace ISAAR.MSolve.Solvers.Assemblers.Collocation
 			this.dofRowOrderer = dofRowOrderer;
 			this.dofColOrderer = dofColOrderer;
 			this.assembler = assembler;
-            this.Logger = new SolverLogger(name);
+            this.Logger = new SolverLoggerOLD(name);
 		}
         
 		public IReadOnlyDictionary<int, ILinearSystem> LinearSystems { get; }
-        public SolverLogger Logger { get; }
+        public SolverLoggerOLD Logger { get; }
         public string Name { get; }
 
         //TODO: This should be defined only for DDM solvers

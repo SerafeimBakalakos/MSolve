@@ -11,6 +11,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.Commons;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
+using ISAAR.MSolve.Solvers.Logging;
 
 //TODO: Should the matrix managers be injected into the constructor?
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
@@ -35,7 +36,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
         public (Vector lagrangeMultipliers, Vector cornerDisplacements) SolveInterfaceProblem(FetiDPFlexibilityMatrixOLD flexibility, 
             IFetiPreconditioner preconditioner, IFetiDPCoarseProblemSolverOLD coarseProblemSolver, 
-            Vector globalFcStar, Vector dr, double globalForcesNorm, SolverLogger logger)
+            Vector globalFcStar, Vector dr, double globalForcesNorm, SolverLoggerOLD logger)
         {
             int systemOrder = flexibility.Order;
 

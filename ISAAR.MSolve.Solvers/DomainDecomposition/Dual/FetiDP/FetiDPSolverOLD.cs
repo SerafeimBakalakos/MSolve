@@ -20,6 +20,7 @@ using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
+using ISAAR.MSolve.Solvers.Logging;
 
 //TODO: Rigid body modes do not have to be computed each time the stiffness matrix changes. 
 //TODO: Optimizations for the case that stiffness changes, but connectivity remains the same!
@@ -106,7 +107,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         public Dictionary<int, HashSet<INode>> CornerNodesOfSubdomains { get; private set; }
         public HashSet<INode> CornerNodesGlobal => cornerNodeSelection.GlobalCornerNodes;
         public IReadOnlyDictionary<int, ILinearSystem> LinearSystems { get; }
-        public SolverLogger Logger { get; } = new SolverLogger(name);
+        public SolverLoggerOLD Logger { get; } = new SolverLoggerOLD(name);
         public string Name => name;
 
         public INodalLoadDistributor NodalLoadDistributor => stiffnessDistribution;

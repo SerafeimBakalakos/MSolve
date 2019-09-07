@@ -19,6 +19,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 using ISAAR.MSolve.Solvers.LinearSystems;
+using ISAAR.MSolve.Solvers.Logging;
 using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
@@ -107,7 +108,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1
         }
 
         public IReadOnlyDictionary<int, ILinearSystem> LinearSystems { get; }
-        public SolverLogger Logger { get; } = new SolverLogger(name);
+        public SolverLoggerOLD Logger { get; } = new SolverLoggerOLD(name);
         public string Name => name;
 
         public INodalLoadDistributor NodalLoadDistributor => stiffnessDistribution;

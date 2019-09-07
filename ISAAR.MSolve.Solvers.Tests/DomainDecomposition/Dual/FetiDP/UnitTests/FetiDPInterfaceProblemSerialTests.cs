@@ -14,6 +14,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
+using ISAAR.MSolve.Solvers.Logging;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.Mocks;
 using ISAAR.MSolve.Solvers.Tests.Utilities;
 using Xunit;
@@ -80,7 +81,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             var interfaceSolver = new FetiDPInterfaceProblemSolverSerial(model, pcgSettings);
             (Vector lagranges, Vector cornerDisplacements) = interfaceSolver.SolveInterfaceProblem(matrixManager,
                 lagrangesEnumerator, flexibility, preconditioner, Example4x4QuadsHomogeneous.GlobalForcesNorm, 
-                new SolverLogger("Test method"));
+                new SolverLoggerSerial("Test method"));
 
             double tol = 1E-11;
             Assert.True(Example4x4QuadsHomogeneous.SolutionLagrangeMultipliers.Equals(lagranges, tol));

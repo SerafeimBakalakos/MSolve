@@ -9,6 +9,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.Commons;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Projection;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
+using ISAAR.MSolve.Solvers.Logging;
 
 //TODO: probably needs a builder
 //TODO: all those enums are not objected oriented. Create strategies.
@@ -62,7 +63,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.InterfaceProblem
 
         public Vector CalcLagrangeMultipliers(Feti1FlexibilityMatrix flexibility, IFetiPreconditioner preconditioner, 
             Feti1Projection projection, Vector disconnectedDisplacements, Vector rigidBodyModesWork, double globalForcesNorm,
-            SolverLogger logger)
+            SolverLoggerOLD logger)
         {
             int systemOrder = flexibility.Order;
             PcgMatrix pcgMatrix = DefinePcgMatrix(flexibility, projection);
