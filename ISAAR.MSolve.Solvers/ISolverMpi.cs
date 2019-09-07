@@ -8,6 +8,7 @@ using ISAAR.MSolve.Solvers.LinearSystems;
 
 //TODO: perhaps the solver should expose the assembler, instead of wrapping it. The assembler's interface would have to be 
 //      simplified a bit though. That would violate LoD, but so does MSolve in general.
+//TODO: Subdomain should be accessed by LinearSystem. LinearSystem should be accessed 
 namespace ISAAR.MSolve.Solvers
 {
     /// <summary>
@@ -15,16 +16,6 @@ namespace ISAAR.MSolve.Solvers
     /// </summary>
     public interface ISolverMpi : ISystemMatrixObserver
     {
-        /// <summary>
-        /// The linear system stored in the memory space of an MPI process.
-        /// </summary>
-        ILinearSystem LinearSystem { get; }
-
-        /// <summary>
-        /// The subdomain stored in the memory space of an MPI process.
-        /// </summary>
-        ISubdomain Subdomain { get; }
-
         /// <summary>
         /// Logs information, such as linear system size, the time required for various solver tasks, etc.
         /// </summary>
@@ -47,7 +38,7 @@ namespace ISAAR.MSolve.Solvers
         /// <param name="elementMatrixProvider">
         /// Determines the matrix calculated for each element (e.g. stiffness, mass, etc.)
         /// </param>
-        IMatrix BuildGlobalMatrix(IElementMatrixProvider elementMatrixProvider);
+        void BuildGlobalMatrix(IElementMatrixProvider elementMatrixProvider);
 
         ///// <summary>
         ///// Assembles the matrices that correspond to the free and constrained freedom degrees of each whole subdomain 
@@ -61,6 +52,8 @@ namespace ISAAR.MSolve.Solvers
         ///// </param>
         //Dictionary<int, (IMatrix matrixFreeFree, IMatrixView matrixFreeConstr, IMatrixView matrixConstrFree,
         //    IMatrixView matrixConstrConstr)> BuildGlobalSubmatrices(IElementMatrixProvider elementMatrixProvider);
+
+        ILinearSystem GetLinearSystem(ISubdomain subdomain);
 
         /// <summary>
         /// Initializes the state of this <see cref="ISolver"/> instance. This needs to be called only once, since it  

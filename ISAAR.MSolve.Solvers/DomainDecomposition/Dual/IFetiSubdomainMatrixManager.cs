@@ -15,8 +15,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual
     {
         ISingleSubdomainLinearSystem LinearSystem { get; }
 
-        IMatrix BuildFreeDofsMatrix(ISubdomainFreeDofOrdering dofOrdering, IEnumerable<IElement> elements,
-            IElementMatrixProvider matrixProvider);
+        void BuildFreeDofsMatrix(ISubdomainFreeDofOrdering dofOrdering, IElementMatrixProvider matrixProvider);
 
         (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildFreeConstrainedMatrices(
             ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering,

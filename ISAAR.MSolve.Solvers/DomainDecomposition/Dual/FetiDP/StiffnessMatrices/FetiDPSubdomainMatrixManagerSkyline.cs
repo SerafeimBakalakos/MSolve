@@ -46,10 +46,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         protected override IMatrixView KccStarImpl => this._KccStar;
 
-        protected override IMatrix BuildFreeDofsMatrixImpl(ISubdomainFreeDofOrdering dofOrdering, IEnumerable<IElement> elements,
+        protected override void BuildFreeDofsMatrixImpl(ISubdomainFreeDofOrdering dofOrdering,
             IElementMatrixProvider matrixProvider)
-            => assembler.BuildGlobalMatrix(dofOrdering, elements, matrixProvider);
-
+        {
+            linearSystem.Matrix = assembler.BuildGlobalMatrix(dofOrdering, 
+                linearSystem.Subdomain.EnumerateElements(), matrixProvider);
+        }
 
         protected override (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildFreeConstrainedMatricesImpl(
             ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering,

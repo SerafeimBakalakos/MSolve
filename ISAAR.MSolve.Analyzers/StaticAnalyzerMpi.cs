@@ -17,13 +17,15 @@ namespace ISAAR.MSolve.Analyzers
         private readonly Intracommunicator comm;
         private readonly int master;
         private readonly IModelMpi model;
+        private readonly ProcessDistribution procs;
         //private readonly IStaticProvider provider; //TODO: Use this instead
         private readonly IElementMatrixProvider provider;
         private readonly ISolverMpi solver;
 
-        public StaticAnalyzerMpi(IModelMpi model, ISolverMpi solver, IElementMatrixProvider provider,
-            IChildAnalyzer childAnalyzer, int masterProcess) 
+        public StaticAnalyzerMpi(ProcessDistribution processDistribution, IModelMpi model, ISolverMpi solver,
+            IElementMatrixProvider provider, IChildAnalyzer childAnalyzer, int masterProcess) 
         {
+            this.procs = processDistribution;
             this.model = model;
             this.solver = solver;
             this.provider = provider;
@@ -38,10 +40,7 @@ namespace ISAAR.MSolve.Analyzers
 
         public IChildAnalyzer ChildAnalyzer { get; }
 
-        public void BuildMatrices()
-        {
-            solver.LinearSystem.Matrix = solver.BuildGlobalMatrix(provider);
-        }
+        public void BuildMatrices() => solver.BuildGlobalMatrix(provider);
 
         public IVector GetOtherRhsComponents(ILinearSystem linearSystem, IVector currentSolution)
         {
@@ -52,7 +51,7 @@ namespace ISAAR.MSolve.Analyzers
 
         public void Initialize(bool isFirstAnalysis = true)
         {
-            int rank = comm.Rank;
+            ILinearSystem linearSystem = solver.GetLinearSystem(model.GetSubdomain(procs.OwnSubdomainID));
             if (isFirstAnalysis)
             {
                 model.ConnectDataStructures();
@@ -62,15 +61,15 @@ namespace ISAAR.MSolve.Analyzers
                 solver.OrderDofs(false);
 
                 // Initialize linear system
-                solver.LinearSystem.Reset(); // Necessary to define the linear system's size 
-                solver.LinearSystem.Subdomain.Forces = Vector.CreateZero(solver.LinearSystem.Size);
+                linearSystem.Reset(); // Necessary to define the linear system's size 
+                linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
             }
             else
             {
                 //TODO: Perhaps these shouldn't be done if an analysis has already been executed. The model will not be 
                 //      modified. Why should the linear system be?
-                solver.LinearSystem.Reset();
-                solver.LinearSystem.Subdomain.Forces = Vector.CreateZero(solver.LinearSystem.Size);
+                linearSystem.Reset();
+                linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
             }
 
             //TODO: Perhaps this should be called by the child analyzer

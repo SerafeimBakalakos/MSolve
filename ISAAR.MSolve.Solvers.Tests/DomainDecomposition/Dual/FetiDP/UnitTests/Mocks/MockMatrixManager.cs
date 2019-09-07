@@ -85,8 +85,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
                 throw new NotImplementedException();
             }
 
-            public IMatrix BuildFreeDofsMatrix(ISubdomainFreeDofOrdering dofOrdering,
-                IEnumerable<IElement> elements, IElementMatrixProvider matrixProvider) => Kff;
+            public void BuildFreeDofsMatrix(ISubdomainFreeDofOrdering dofOrdering, IElementMatrixProvider matrixProvider) { }
 
             public void CalcInverseKii(bool diagonalOnly) { }
             public void ClearMatrices() { }

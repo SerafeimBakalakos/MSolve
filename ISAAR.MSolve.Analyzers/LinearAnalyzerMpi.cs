@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ISAAR.MSolve.Analyzers.Interfaces;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Logging.Interfaces;
 using ISAAR.MSolve.Solvers;
@@ -13,11 +14,14 @@ namespace ISAAR.MSolve.Analyzers
     public class LinearAnalyzerMpi : IChildAnalyzer
     {
         private readonly IModel model;
+        private readonly ProcessDistribution procs;
         private readonly IAnalyzerProvider provider;
         private readonly ISolverMpi solver;
 
-        public LinearAnalyzerMpi(IModel model, ISolverMpi solver, IAnalyzerProvider provider)
+        public LinearAnalyzerMpi(ProcessDistribution processDistribution, IModel model, ISolverMpi solver, 
+            IAnalyzerProvider provider)
         {
+            this.procs = processDistribution;
             this.model = model;
             this.solver = solver;
             this.provider = provider;
@@ -62,8 +66,8 @@ namespace ISAAR.MSolve.Analyzers
 
         private void AddEquivalentNodalLoadsToRHS() //TODO: This must be distributed
         {
-            provider.DirichletLoadsAssembler.ApplyEquivalentNodalLoads(
-                solver.LinearSystem.Subdomain, solver.LinearSystem.RhsVector);
+            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
+            provider.DirichletLoadsAssembler.ApplyEquivalentNodalLoads(subdomain, solver.GetLinearSystem(subdomain).RhsVector);
         }
 
         private void InitializeLogs()
@@ -73,7 +77,8 @@ namespace ISAAR.MSolve.Analyzers
 
         private void StoreLogResults(DateTime start, DateTime end)
         {
-            foreach (IAnalyzerLog log in Logs) log.StoreResults(start, end, solver.LinearSystem.Solution);
+            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
+            foreach (IAnalyzerLog log in Logs) log.StoreResults(start, end, solver.GetLinearSystem(subdomain).Solution);
         }
     }
 }

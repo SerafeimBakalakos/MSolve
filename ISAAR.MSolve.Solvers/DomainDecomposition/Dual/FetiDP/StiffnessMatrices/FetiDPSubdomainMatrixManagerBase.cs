@@ -90,13 +90,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         public abstract ISingleSubdomainLinearSystem LinearSystem { get; }
 
-        public IMatrix BuildFreeDofsMatrix(ISubdomainFreeDofOrdering dofOrdering, IEnumerable<IElement> elements, 
-            IElementMatrixProvider matrixProvider)
+        public void BuildFreeDofsMatrix(ISubdomainFreeDofOrdering dofOrdering, IElementMatrixProvider matrixProvider)
         {
             ClearMatrices();
-            return BuildFreeDofsMatrixImpl(dofOrdering, elements, matrixProvider);
+            BuildFreeDofsMatrixImpl(dofOrdering, matrixProvider);
         }
-        protected abstract IMatrix BuildFreeDofsMatrixImpl(ISubdomainFreeDofOrdering dofOrdering, IEnumerable<IElement> elements,
+        protected abstract void BuildFreeDofsMatrixImpl(ISubdomainFreeDofOrdering dofOrdering, 
             IElementMatrixProvider matrixProvider);
 
         public (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildFreeConstrainedMatrices(

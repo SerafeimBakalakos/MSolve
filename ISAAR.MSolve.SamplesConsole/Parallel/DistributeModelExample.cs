@@ -67,35 +67,35 @@ namespace ISAAR.MSolve.SamplesConsole.Parallel
             }
         }
 
-        public static void RunParallelWithSolver(string[] args)
-        {
-            using (new MPI.Environment(ref args))
-            {
-                //Console.WriteLine($"(process {Communicator.Rank}) Hello World!"); // Run this to check if MPI works correctly.
+        //public static void RunParallelWithSolver(string[] args)
+        //{
+        //    using (new MPI.Environment(ref args))
+        //    {
+        //        //Console.WriteLine($"(process {Communicator.Rank}) Hello World!"); // Run this to check if MPI works correctly.
 
-                int master = 0;
-                var procs = new ProcessDistribution(Communicator.world, master, new int[] { 0, 1, 2, 3 });
+        //        int master = 0;
+        //        var procs = new ProcessDistribution(Communicator.world, master, new int[] { 0, 1, 2, 3 });
 
-                // Create the model in master process
-                var model = new ModelMpi(procs, Quad4PlateTest.CreateModel);
-                model.ConnectDataStructures();
+        //        // Create the model in master process
+        //        var model = new ModelMpi(procs, Quad4PlateTest.CreateModel);
+        //        model.ConnectDataStructures();
 
-                // Setup solvers, analyzers
-                ICornerNodeSelection cornerNodes = null;
-                var matrixManagers = new FetiDPMatrixManagerFactorySkyline(null);
-                var solver = new FetiDPSolverMpi(procs, model, cornerNodes, matrixManagers, true);
-                //var problem = new ProblemStructural(model, null);
-                var provider = new ElementStructuralStiffnessProvider();
-                var childAnalyzer = new LinearAnalyzerMpi(model, solver, null);
-                var parentAnalyzer = new StaticAnalyzerMpi(model, solver, provider, childAnalyzer, master);
+        //        // Setup solvers, analyzers
+        //        ICornerNodeSelection cornerNodes = null;
+        //        var matrixManagers = new FetiDPMatrixManagerFactorySkyline(null);
+        //        var solver = new FetiDPSolverMpi(procs, model, cornerNodes, matrixManagers, true);
+        //        //var problem = new ProblemStructural(model, null);
+        //        var provider = new ElementStructuralStiffnessProvider();
+        //        var childAnalyzer = new LinearAnalyzerMpi(model, solver, null);
+        //        var parentAnalyzer = new StaticAnalyzerMpi(model, solver, provider, childAnalyzer, master);
 
-                // Start the analysis
-                parentAnalyzer.Initialize();
+        //        // Start the analysis
+        //        parentAnalyzer.Initialize();
 
-                // Print the trace of each stiffness matrix
-                double trace = solver.LinearSystem.Matrix.Trace();
-                Console.WriteLine($"(process {procs.OwnRank}) Subdomain {solver.Subdomain.ID}: trace(stiffnessMatrix) = {trace}");
-            }
-        }
+        //        // Print the trace of each stiffness matrix
+        //        double trace = solver.LinearSystem.Matrix.Trace();
+        //        Console.WriteLine($"(process {procs.OwnRank}) Subdomain {solver.Subdomain.ID}: trace(stiffnessMatrix) = {trace}");
+        //    }
+        //}
     }
 }
