@@ -40,13 +40,6 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             globalVector.AddSubvectorIntoThis(0, subdomainVector, 0, subdomainVector.Length);
         }
 
-        public void CreateSubdomainGlobalMaps(IModel model)
-        {
-            // A for-loop is faster than LINQ
-            this.subdomainToGlobalDofMap = new int[NumGlobalFreeDofs];
-            for (int i = 0; i < NumGlobalFreeDofs; ++i) this.subdomainToGlobalDofMap[i] = i;
-        }
-
         public void ExtractVectorSubdomainFromGlobal(ISubdomain subdomain, IVectorView globalVector, IVector subdomainVector)
         {
             Debug.Assert(subdomain == this.subdomain);
@@ -63,7 +56,18 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         public int[] MapSubdomainToGlobalDofs(ISubdomain subdomain)
         {
             Debug.Assert(subdomain == this.subdomain);
+            CreateSubdomainGlobalMaps();
             return subdomainToGlobalDofMap;
+        }
+
+        private void CreateSubdomainGlobalMaps()
+        {
+            if (this.subdomainToGlobalDofMap == null)
+            {
+                // A for-loop is faster than LINQ
+                this.subdomainToGlobalDofMap = new int[NumGlobalFreeDofs];
+                for (int i = 0; i < NumGlobalFreeDofs; ++i) this.subdomainToGlobalDofMap[i] = i;
+            }
         }
     }
 }

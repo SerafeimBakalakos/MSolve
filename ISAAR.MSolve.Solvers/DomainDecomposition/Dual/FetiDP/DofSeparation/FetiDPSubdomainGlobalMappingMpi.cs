@@ -29,45 +29,65 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 
         public double CalcGlobalForcesNorm(Func<ISubdomain, Vector> getSubdomainForces)
         {
-            return 10;
-            ////TODO: This can be optimized: calculate the dot product f*f for the internal dofs of each subdomain separately,
-            ////      only assemble global vector for the boundary dofs, find its dot product with itself, add the contributions
-            ////      for the internal dofs and finally apply SQRT(). This would greatly reduce the communication requirements.
-            ////TODO: this should be used for non linear analyzers as well (instead of building the global RHS)
-            ////TODO: Is this correct? For the residual, it would be wrong to find f-K*u for each subdomain and then call this.
+            //TODO: This can be optimized: calculate the dot product f*f for the internal dofs of each subdomain separately,
+            //      only assemble global vector for the boundary dofs, find its dot product with itself, add the contributions
+            //      for the internal dofs and finally apply SQRT(). This would greatly reduce the communication requirements.
+            //TODO: this should be used for non linear analyzers as well (instead of building the global RHS)
+            //TODO: Is this correct? For the residual, it would be wrong to find f-K*u for each subdomain and then call this.
 
-            //Vector globalForces = GatherGlobalForces(getSubdomainForces);
-            //double norm = double.NaN;
-            //if (procs.IsMasterProcess) norm = globalForces.Norm2();
-            //procs.Communicator.Broadcast(ref norm, procs.MasterProcess); //TODO: Not sure if this is needed.
-            //return norm;
+            Vector globalForces = AssembleSubdomainVectors(getSubdomainForces);
+            double norm = double.NaN;
+            if (procs.IsMasterProcess) norm = globalForces.Norm2();
+            procs.Communicator.Broadcast(ref norm, procs.MasterProcess); //TODO: Not sure if this is needed.
+            return norm;
+        }
+
+        public Vector GatherGlobalDisplacements(Func<ISubdomain, Vector> getSubdomainFreeDisplacements)
+        {
+            return AssembleSubdomainVectors(sub =>
+            {
+                Vector u = getSubdomainFreeDisplacements(sub);
+                ScaleSubdomainFreeDisplacements(sub, u);
+                return u;
+            });
         }
 
         public Vector GatherGlobalForces(Func<ISubdomain, Vector> getSubdomainForces)
         {
-            model.GlobalDofOrdering.CreateSubdomainGlobalMaps(model);
-            Vector subdomainForces = getSubdomainForces(model.GetSubdomain(procs.OwnSubdomainID));
-            Vector[] allSubdomainForces = procs.Communicator.Gather(subdomainForces, procs.MasterProcess);
-            if (procs.IsMasterProcess)
-            {
-                var globalForces = Vector.CreateZero(model.GlobalDofOrdering.NumGlobalFreeDofs);
-                for (int p = 0; p < procs.Communicator.Size; ++p)
-                {
-                    ISubdomain subdomain = model.GetSubdomain(procs.GetSubdomainIdOfProcess(p));
-                    int[] subdomainFreeToGlobalDofs = model.GlobalDofOrdering.MapSubdomainToGlobalDofs(subdomain);
+            return AssembleSubdomainVectors(getSubdomainForces);
+        }
 
-                    // Internal forces will be copied (which is identical to adding 0 + single value).
-                    // Boundary remainder forces will be summed. Previously we had distributed them depending on 
-                    // homogeneity / heterogeneity (e.g. Ftot = 0.4 * Ftot + 0.6 * Ftot) and now we sum them. 
-                    // Boundary corner forces are also summed. Previously we had also distributed them equally irregardless of 
-                    // homogeneity / heterogeneity (e.g. Ftot = 0.5 * Ftot + 0.5 * Ftot) and now we sum them.
-                    globalForces.AddIntoThisNonContiguouslyFrom(subdomainFreeToGlobalDofs, allSubdomainForces[p]);
-                    //for (int i = 0; i < subdomainForces.Length; ++i) globalForces[subdomainFreeToGlobalDofs[i]] += subdomainForces[i];
-                }
-                return globalForces;
+        private void ScaleSubdomainFreeDisplacements(ISubdomain subdomain, Vector freeDisplacements)
+        {
+            throw new NotImplementedException();
+            //// Boundary remainder dofs: Scale them so that they can be just added at global level
+            //int[] remainderToSubdomainDofs = dofSeparator.GetRemainderDofIndices(subdomain);
+            //double[] boundaryDofCoeffs = distribution.CalcBoundaryDofCoefficients(subdomain);
+            //int[] boundaryDofIndices = dofSeparator.GetBoundaryDofIndices(subdomain);
+            //for (int i = 0; i < boundaryDofIndices.Length; ++i)
+            //{
+            //    int idx = remainderToSubdomainDofs[boundaryDofIndices[i]];
+            //    freeDisplacements[idx] *= boundaryDofCoeffs[i];
+            //}
 
-            }
-            else return null;
+            //// Boundary corner dofs: Scale them so that they can be just added at global level
+            //int[] cornerToSubdomainDofs = dofSeparator.GetCornerDofIndices(subdomain);
+            //double[] cornerDofCoeffs = distribution.CalcCornerDofCoefficients(subdomain);
+            //for (int i = 0; i < cornerToSubdomainDofs.Length; ++i)
+            //{
+            //    int idx = cornerToSubdomainDofs[i];
+            //    freeDisplacements[idx] *= cornerDofCoeffs[i];
+            //}
+        }
+
+        private Vector AssembleSubdomainVectors(Func<ISubdomain, Vector> getSubdomainVector)
+        {
+            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
+            Vector subdomainVector = getSubdomainVector(subdomain);
+            Vector globalVector = null;
+            if (procs.IsMasterProcess) globalVector = Vector.CreateZero(model.GlobalDofOrdering.NumGlobalFreeDofs);
+            model.GlobalDofOrdering.AddVectorSubdomainToGlobal(subdomain, subdomainVector, globalVector);
+            return globalVector;
         }
     }
 }

@@ -278,6 +278,24 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP
         public static UsedDefinedCornerNodes DefineCornerNodeSelectionSerial(IModel model)
             => new UsedDefinedCornerNodes(DefineCornerNodesSubdomainsAll(model));
 
+        public static double[] GetBoundaryDofCoefficients(int subdomainID)
+        {
+            if (subdomainID == 0) return new double[] { 0.5, 0.5, 0.5, 0.5 };
+            else if (subdomainID == 1) return new double[] { 0.5, 0.5, 0.5, 0.5 };
+            else if (subdomainID == 2) return new double[] { 0.5, 0.5, 0.5, 0.5 };
+            else if (subdomainID == 3) return new double[] { 0.5, 0.5, 0.5, 0.5 };
+            else throw new ArgumentException("Subdomain ID must be 0, 1, 2 or 3");
+        }
+
+        public static double[] GetCornerDofCoefficients(int subdomainID)
+        {
+            if (subdomainID == 0) throw new NotImplementedException();
+            else if (subdomainID == 1) throw new NotImplementedException();
+            else if (subdomainID == 2) throw new NotImplementedException();
+            else if (subdomainID == 3) throw new NotImplementedException();
+            else throw new ArgumentException("Subdomain ID must be 0, 1, 2 or 3");
+        }
+
         public static (int[] cornerDofs, int[] remainderDofs, int[] boundaryRemainderDofs, int[] internalRemainderDofs)
             GetDofSeparation(int subdomainID)
         {

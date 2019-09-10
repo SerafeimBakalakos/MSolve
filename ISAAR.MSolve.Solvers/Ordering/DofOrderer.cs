@@ -37,7 +37,6 @@ namespace ISAAR.MSolve.Solvers.Ordering
 
                 // Order global dofs and assosiate them with subdomain dofs
                 var globalOrdering = new GlobalFreeDofOrderingSingleSubdomain(subdomain, subdomainOrdering);
-                globalOrdering.CreateSubdomainGlobalMaps(model);
                 model.GlobalDofOrdering = globalOrdering;
             }
             else
@@ -53,8 +52,7 @@ namespace ISAAR.MSolve.Solvers.Ordering
 
                 // Order global dofs
                 (int numGlobalFreeDofs, DofTable globalFreeDofs) = freeOrderingStrategy.OrderGlobalDofs(model);
-                var globalOrdering = new GlobalFreeDofOrderingGeneral(numGlobalFreeDofs, globalFreeDofs);
-                globalOrdering.CreateSubdomainGlobalMaps(model);
+                var globalOrdering = new GlobalFreeDofOrderingGeneral(model, numGlobalFreeDofs, globalFreeDofs);
                 model.GlobalDofOrdering = globalOrdering;
             }
         }

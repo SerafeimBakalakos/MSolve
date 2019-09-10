@@ -7,9 +7,7 @@ using ISAAR.MSolve.Discretization.Providers;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using Xunit;
 
@@ -20,7 +18,32 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
     public static class FetiDPSolverSerialTests
     {
         [Fact]
-        public static void TestWholeSolution()
+        public static void TestSolutionGlobalDisplacements()
+        {
+            (IModel model, FetiDPSolverSerial solver) = RunAnalysis();
+            Vector globalU = solver.GatherGlobalDisplacements();
+
+            // Check solution
+            double tol = 1E-8;
+            Assert.True(Example4x4QuadsHomogeneous.SolutionGlobalDisplacements.Equals(globalU, tol));
+        }
+
+        [Fact]
+        public static void TestSolutionSubdomainDisplacements()
+        {
+            (IModel model, FetiDPSolverSerial solver) = RunAnalysis();
+
+            // Check solution
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                double tol = 1E-6;
+                IVectorView ufComputed = solver.GetLinearSystem(subdomain).Solution;
+                Vector ufExpected = Example4x4QuadsHomogeneous.GetSolutionFreeDisplacements(subdomain.ID);
+                Assert.True(ufExpected.Equals(ufComputed, tol));
+            }
+        }
+
+        private static (IModel, FetiDPSolverSerial) RunAnalysis()
         {
             // Prepare solver
             IModel model = Example4x4QuadsHomogeneous.CreateModel();
@@ -44,14 +67,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             LoadingUtilities.ApplyNodalLoads(model, solver);
             solver.Solve();
 
-            // Check solution
-            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-            {
-                double tol = 1E-6;
-                IVectorView ufComputed = solver.GetLinearSystem(subdomain).Solution;
-                Vector ufExpected = Example4x4QuadsHomogeneous.GetSolutionFreeDisplacements(subdomain.ID);
-                Assert.True(ufExpected.Equals(ufComputed, tol));
-            }
+            return (model, solver);
         }
     }
 }

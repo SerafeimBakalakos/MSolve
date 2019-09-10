@@ -39,7 +39,7 @@ namespace ISAAR.MSolve.Solvers.Ordering
             int numGlobalFreeDofs = -1;
             DofTable globalFreeDofs = null;
             if (procs.IsMasterProcess) (numGlobalFreeDofs, globalFreeDofs) = freeOrderingStrategy.OrderGlobalDofs(model);
-            var globalOrdering = new GlobalFreeDofOrderingMpi(procs, numGlobalFreeDofs, globalFreeDofs, model);
+            var globalOrdering = new GlobalFreeDofOrderingMpi(procs, model, numGlobalFreeDofs, globalFreeDofs);
             model.GlobalDofOrdering = globalOrdering;
 
             //globalOrdering.CreateSubdomainGlobalMaps(model); // This should only be called if necessary by the analyzer or solver

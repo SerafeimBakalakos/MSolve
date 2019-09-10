@@ -125,6 +125,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             this.Initialize(); //TODO: Should this be called by the analyzer? Probably not, since it must be called before DistributeBoundaryLoads().
         }
 
+        public Vector GatherGlobalDisplacements()
+        {
+            return subdomainGlobalMapping.GatherGlobalDisplacements(
+                sub => matrixManager.GetFetiDPSubdomainMatrixManager(sub).LinearSystem.SolutionConcrete);
+        }
+
         public ILinearSystem GetLinearSystem(ISubdomain subdomain)
             => matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).LinearSystem;
         

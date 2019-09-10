@@ -123,6 +123,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             this.Initialize(); //TODO: Should this be called by the analyzer? Probably not, since it must be called before DistributeBoundaryLoads().
         }
 
+        public Vector GatherGlobalDisplacements()
+        {
+            return subdomainGlobalMapping.GatherGlobalDisplacements(
+                sub => matrixManager.GetFetiDPSubdomainMatrixManager(sub).LinearSystem.SolutionConcrete);
+        }
+
         //TODO: I do not like these dependencies. The analyzer should not have to know that it must call ScatterSubdomainData() 
         //      before accessing the linear system or the subdomain.
         public ILinearSystem GetLinearSystem(ISubdomain subdomain)

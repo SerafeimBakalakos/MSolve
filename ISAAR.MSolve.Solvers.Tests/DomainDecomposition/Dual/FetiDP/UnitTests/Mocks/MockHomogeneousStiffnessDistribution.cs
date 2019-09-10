@@ -13,9 +13,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
     public class MockHomogeneousStiffnessDistribution : IStiffnessDistribution
     {
         public double[] CalcBoundaryDofCoefficients(ISubdomain subdomain)
-        {
-            throw new NotImplementedException();
-        }
+            => Example4x4QuadsHomogeneous.GetBoundaryDofCoefficients(subdomain.ID);
 
         public IMappingMatrix CalcBoundaryPreconditioningSignedBooleanMatrix(ILagrangeMultipliersEnumerator lagrangeEnumerator,
             ISubdomain subdomain, SignedBooleanMatrixColMajor boundarySignedBooleanMatrices)

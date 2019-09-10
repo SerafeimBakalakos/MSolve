@@ -79,6 +79,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
             if (comm.Rank == root) Debug.Assert(arrayLengths_root.Length == comm.Size,
                 $"There are {arrayLengths_root.Length} arrays, but {comm.Size} processes."); //TODO: this will cause a deadlock in other processes
 
+
             // Gather all values to root
             T[] allValues = comm.GatherFlattened<T>(arrayToGather, arrayLengths_root, root);
 

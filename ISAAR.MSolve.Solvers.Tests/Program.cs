@@ -43,7 +43,11 @@ namespace ISAAR.MSolve.Solvers.Tests
             suite.AddFact(FetiDPDisplacementsCalculatorMpiTests.TestCornerDisplacements, typeof(FetiDPDisplacementsCalculatorMpiTests).Name, "TestCornerDisplacements");
             suite.AddFact(FetiDPDisplacementsCalculatorMpiTests.TestFreeDisplacements, typeof(FetiDPDisplacementsCalculatorMpiTests).Name, "TestFreeDisplacements");
 
-            suite.AddFact(FetiDPSolverMpiTests.TestWholeSolution, typeof(FetiDPSolverMpiTests).Name, "TestWholeSolution");
+            //suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalDiplacements, typeof(FetiDPSubdomainGlobalMappingMpiTests).Name, "TestGlobalDiplacements");
+            suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalForcesNorm, typeof(FetiDPSubdomainGlobalMappingMpiTests).Name, "TestGlobalForcesNorm");
+
+            suite.AddFact(FetiDPSolverMpiTests.TestSolutionSubdomainDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionSubdomainDisplacements");
+            //suite.AddFact(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionGlobalDisplacements");
 
 
             suite.RunTests(args);

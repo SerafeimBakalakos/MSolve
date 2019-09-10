@@ -22,7 +22,31 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 {
     public static class FetiDPSolverMpiTests
     {
-        public static void TestWholeSolution()
+        public static void TestSolutionGlobalDisplacements()
+        {
+            (ProcessDistribution procs, ISubdomain subdomain, FetiDPSolverMpi solver) = RunAnalysis();
+            Vector globalU = solver.GatherGlobalDisplacements();
+
+            // Check solution
+            if (procs.IsMasterProcess)
+            {
+                double tol = 1E-8;
+                Assert.True(Example4x4QuadsHomogeneous.SolutionGlobalDisplacements.Equals(globalU, tol));
+            }
+        }
+
+        public static void TestSolutionSubdomainDisplacements()
+        {
+            (ProcessDistribution procs, ISubdomain subdomain, FetiDPSolverMpi solver) = RunAnalysis();
+
+            // Check solution
+            double tol = 1E-6;
+            IVectorView ufComputed = solver.GetLinearSystem(subdomain).Solution;
+            Vector ufExpected = Example4x4QuadsHomogeneous.GetSolutionFreeDisplacements(subdomain.ID);
+            Assert.True(ufExpected.Equals(ufComputed, tol));
+        }
+
+        private static (ProcessDistribution, ISubdomain, FetiDPSolverMpi) RunAnalysis()
         {
             int master = 0;
             var procs = new ProcessDistribution(Communicator.world, master, new int[] { 0, 1, 2, 3 });
@@ -49,11 +73,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             LoadingUtilities.ApplyNodalLoadsMpi(procs, model, solver);
             solver.Solve();
 
-            // Check solution
-            double tol = 1E-6;
-            IVectorView ufComputed = solver.GetLinearSystem(subdomain).Solution;
-            Vector ufExpected = Example4x4QuadsHomogeneous.GetSolutionFreeDisplacements(subdomain.ID);
-            Assert.True(ufExpected.Equals(ufComputed, tol));
+            return (procs, subdomain, solver);
         }
     }
 }

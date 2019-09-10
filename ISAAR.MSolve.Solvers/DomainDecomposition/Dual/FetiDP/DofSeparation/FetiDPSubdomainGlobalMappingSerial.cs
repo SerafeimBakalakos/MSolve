@@ -27,15 +27,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 
         public double CalcGlobalForcesNorm(Func<ISubdomain, Vector> getSubdomainForces)
         {
-            return 10;
+            //TODO: This can be optimized: calculate the dot product f*f for the internal dofs of each subdomain separately,
+            //      only assemble global vector for the boundary dofs, find its dot product with itself, add the contributions
+            //      for the internal dofs and finally apply SQRT(). This would greatly reduce the communication requirements.
+            //TODO: this should be used for non linear analyzers as well (instead of building the global RHS)
+            //TODO: Is this correct? For the residual, it would be wrong to find f-K*u for each subdomain and then call this.
 
-            ////TODO: This can be optimized: calculate the dot product f*f for the internal dofs of each subdomain separately,
-            ////      only assemble global vector for the boundary dofs, find its dot product with itself, add the contributions
-            ////      for the internal dofs and finally apply SQRT(). This would greatly reduce the communication requirements.
-            ////TODO: this should be used for non linear analyzers as well (instead of building the global RHS)
-            ////TODO: Is this correct? For the residual, it would be wrong to find f-K*u for each subdomain and then call this.
-
-            //return GatherGlobalForces(getSubdomainForces).Norm2();
+            return AssembleSubdomainVectors(getSubdomainForces).Norm2();
         }
 
         public Vector GatherGlobalDisplacements(Func<ISubdomain, Vector> getSubdomainRemainderDisplacements,
@@ -121,23 +119,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             return globalDisplacements;
         }
 
-        public Vector GatherGlobalForces(Func<ISubdomain, Vector> getSubdomainForces)
+        private Vector AssembleSubdomainVectors(Func<ISubdomain, Vector> getSubdomainForces)
         {
-            var globalForces = Vector.CreateZero(model.GlobalDofOrdering.NumGlobalFreeDofs);
+            var globalVector = Vector.CreateZero(model.GlobalDofOrdering.NumGlobalFreeDofs);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                int[] subdomainFreeToGlobalDofs = model.GlobalDofOrdering.MapSubdomainToGlobalDofs(subdomain);
-                Vector subdomainForces = getSubdomainForces(subdomain);
-
-                // Internal forces will be copied (which is identical to adding 0 + single value).
-                // Boundary remainder forces will be summed. Previously we had distributed them depending on 
-                // homogeneity / heterogeneity (e.g. Ftot = 0.4 * Ftot + 0.6 * Ftot) and now we sum them. 
-                // Boundary corner forces are also summed. Previously we had also distributed them equally irregardless of 
-                // homogeneity / heterogeneity (e.g. Ftot = 0.5 * Ftot + 0.5 * Ftot) and now we sum them.
-                globalForces.AddIntoThisNonContiguouslyFrom(subdomainFreeToGlobalDofs, subdomainForces);
-                //for (int i = 0; i < subdomainForces.Length; ++i) globalForces[subdomainFreeToGlobalDofs[i]] += subdomainForces[i];
+                model.GlobalDofOrdering.AddVectorSubdomainToGlobal(subdomain, getSubdomainForces(subdomain), globalVector);
             }
-            return globalForces;
+            return globalVector;
         }
     }
 }

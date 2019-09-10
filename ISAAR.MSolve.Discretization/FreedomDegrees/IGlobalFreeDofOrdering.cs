@@ -23,8 +23,6 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
 
         void AddVectorSubdomainToGlobalMeanValue(ISubdomain subdomain, IVectorView subdomainVector, IVector globalVector);
 
-        void CreateSubdomainGlobalMaps(IModel model);
-
         void ExtractVectorSubdomainFromGlobal(ISubdomain subdomain, IVectorView globalVector, IVector subdomainVector);
 
         //TODO: the returned array should be readonly
