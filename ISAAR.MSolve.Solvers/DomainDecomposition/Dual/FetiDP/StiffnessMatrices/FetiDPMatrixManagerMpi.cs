@@ -100,14 +100,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         public void ClearCoarseProblemRhs()
         {
-            procs.CheckProcessIsMaster();
-            matrixManagerGlobal_master.ClearCoarseProblemRhs();
+            if (procs.IsMasterProcess) matrixManagerGlobal_master.ClearCoarseProblemRhs();
         }
 
         public void ClearInverseCoarseProblemMatrix()
         {
-            procs.CheckProcessIsMaster();
-            matrixManagerGlobal_master.ClearInverseCoarseProblemMatrix();
+            if (procs.IsMasterProcess) matrixManagerGlobal_master.ClearInverseCoarseProblemMatrix();
         }
 
         IFetiSubdomainMatrixManager IFetiMatrixManager.GetSubdomainMatrixManager(ISubdomain subdomain) 

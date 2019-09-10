@@ -28,11 +28,20 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements
 
         public void CalculateSubdomainDisplacements(Vector lagranges, IFetiDPFlexibilityMatrix flexibility)
         {
+            Vector uc = CalcCornerDisplacements(flexibility, lagranges);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 FreeDofDisplacementsCalculatorUtilities.CalcAndStoreFreeDisplacements(subdomain, dofSeparator, matrixManager,
-                    lagrangesEnumerator, flexibility, lagranges);
+                    lagrangesEnumerator, lagranges, uc);
             }
+        }
+
+        private Vector CalcCornerDisplacements(IFetiDPFlexibilityMatrix flexibility, Vector lagranges)
+        {
+            // uc = inv(KccStar) * (fcStar + FIrc^T * lagranges)
+            Vector temp = flexibility.MultiplyGlobalFIrcTransposed(lagranges);
+            temp.AddIntoThis(matrixManager.CoarseProblemRhs);
+            return matrixManager.MultiplyInverseCoarseProblemMatrix(temp);
         }
     }
 }

@@ -17,15 +17,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 {
     public class FetiDPInterfaceProblemUtilities
     {
-        public static Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility,
-            Vector globalDr)
-        {
-            // rhs = dr - FIrc * inv(KccStar) * fcStar
-            Vector temp = matrixManager.MultiplyInverseCoarseProblemMatrix(matrixManager.CoarseProblemRhs);
-            temp = flexibility.MultiplyGlobalFIrc(temp);
-            return globalDr - temp;
-        }
-
         public static Vector CalcSubdomainDr(ISubdomain subdomain, IFetiDPMatrixManager matrixManager,
             ILagrangeMultipliersEnumerator lagrangesEnumerator)
         {

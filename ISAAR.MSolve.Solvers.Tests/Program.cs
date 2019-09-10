@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Tests.Utilities;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.IntegrationTests;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests;
 using ISAAR.MSolve.Solvers.Tests.Utilities;
 using static ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.FetiDPMatrixManagerSerialTests;
@@ -36,9 +37,13 @@ namespace ISAAR.MSolve.Solvers.Tests
 
             suite.AddFact(FetiDPInterfaceProblemMpiTests.TestVectorDr, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestVectorDr");
             suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemMatrix, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestInterfaceProblemMatrix");
+            suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemRhs, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestInterfaceProblemRhs");
             suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemSolution, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestInterfaceProblemSolution");
 
-            suite.AddFact(FetiDPDisplacementsCalculatorMpi.TestFreeDisplacements, typeof(FetiDPDisplacementsCalculatorMpi).Name, "TestFreeDisplacements");
+            suite.AddFact(FetiDPDisplacementsCalculatorMpiTests.TestCornerDisplacements, typeof(FetiDPDisplacementsCalculatorMpiTests).Name, "TestCornerDisplacements");
+            suite.AddFact(FetiDPDisplacementsCalculatorMpiTests.TestFreeDisplacements, typeof(FetiDPDisplacementsCalculatorMpiTests).Name, "TestFreeDisplacements");
+
+            suite.AddFact(FetiDPSolverMpiTests.TestWholeSolution, typeof(FetiDPSolverMpiTests).Name, "TestWholeSolution");
 
 
             suite.RunTests(args);

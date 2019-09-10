@@ -53,7 +53,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private bool isStiffnessModified = true;
         private FetiDPLagrangeMultipliersEnumeratorOLD lagrangeEnumerator;
         private IFetiPreconditioner preconditioner;
-        private FetiDPSubdomainGlobalMapping subdomainGlobalMapping;
+        private FetiDPSubdomainGlobalMappingOLD subdomainGlobalMapping;
 
         private FetiDPSolverOLD(IModel model, ICornerNodeSelection cornerNodeSelection,
             IFetiDPSubdomainMatrixManagerFactoryOLD matrixManagerFactory, IDofOrderer dofOrderer, 
@@ -262,7 +262,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             var Kff = new Dictionary<int, IMatrixView>();
             foreach (int s in linearSystems.Keys) Kff[s] = linearSystems[s].Matrix;
             stiffnessDistribution.Update(Kff);
-            subdomainGlobalMapping = new FetiDPSubdomainGlobalMapping(model, dofSeparator, stiffnessDistribution);
+            subdomainGlobalMapping = new FetiDPSubdomainGlobalMappingOLD(model, dofSeparator, stiffnessDistribution);
         }
 
         public Dictionary<int, Matrix> InverseSystemMatrixTimesOtherMatrix(Dictionary<int, IMatrixView> otherMatrix)

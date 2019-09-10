@@ -13,7 +13,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.Logging;
 using MPI;
 
-//TODO: Reduce the duplication between MPI and serial implementations
+//TODO: Reduce the duplication between MPI and serial implementations. Most is FETI-DP specific code.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 {
     /// <summary>
@@ -45,11 +45,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             Vector pcgRhs = null;
             Vector lagranges = null;
             Vector globalDr = CalcGlobalDr(matrixManager, lagrangesEnumerator);
-            if (procs.IsMasterProcess)
-            {
-                pcgRhs = FetiDPInterfaceProblemUtilities.CalcInterfaceProblemRhs(matrixManager, flexibility, globalDr);
-                lagranges = Vector.CreateZero(systemOrder);
-            }
+            pcgRhs = CalcInterfaceProblemRhs(matrixManager, flexibility, globalDr);
+            if (procs.IsMasterProcess) lagranges = Vector.CreateZero(systemOrder);
 
             // Solve the interface problem using PCG algorithm
             var pcgBuilder = new PcgAlgorithmMpi.Builder();
@@ -57,6 +54,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             pcgBuilder.ResidualTolerance = pcgSettings.ConvergenceTolerance;
             pcgBuilder.Convergence = pcgSettings.ConvergenceStrategyFactory.CreateConvergenceStrategy(globalForcesNorm);
             PcgAlgorithmMpi pcg = pcgBuilder.Build(procs.Communicator, procs.MasterProcess); //TODO: perhaps use the pcg from the previous analysis if it has reorthogonalization.
+
             IterativeStatistics stats = pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, true,
                 () => Vector.CreateZero(systemOrder));
 
@@ -72,6 +70,17 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
             Vector subdomainDr = FetiDPInterfaceProblemUtilities.CalcSubdomainDr(subdomain, matrixManager, lagrangesEnumerator);
             return procs.Communicator.SumVector(subdomainDr, procs.MasterProcess);
+        }
+
+        private Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility,
+            Vector globalDr)
+        {
+            // rhs = dr - FIrc * inv(KccStar) * fcStar
+            Vector temp = null;
+            if (procs.IsMasterProcess) temp = matrixManager.MultiplyInverseCoarseProblemMatrix(matrixManager.CoarseProblemRhs);
+            temp = flexibility.MultiplyGlobalFIrc(temp);
+            if (procs.IsMasterProcess) return globalDr - temp;
+            else return null;
         }
     }
 }

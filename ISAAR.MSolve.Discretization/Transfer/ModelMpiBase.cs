@@ -83,8 +83,8 @@ namespace ISAAR.MSolve.Discretization.Transfer
 
         public void ApplyLoads()
         {
-            procs.CheckProcessIsMaster();
-            model.ApplyLoads();
+            //model.ApplyLoads(); //TODO: This does not work in MPI environment.
+            model.GetSubdomain(procs.OwnSubdomainID).Forces.Clear(); // Thus I will have to do the operations here.
         }
 
         public void ApplyMassAccelerationHistoryLoads(int timeStep)

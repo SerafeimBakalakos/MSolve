@@ -43,10 +43,17 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         [Fact]
         public static void TestInterfaceProblemRhs()
         {
+            (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
+                LagrangeMultiplierEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
+
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(Example4x4QuadsHomogeneous.CreateModel());
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
             Vector globalDr = Example4x4QuadsHomogeneous.VectorDr;
-            Vector pcgRhs = FetiDPInterfaceProblemUtilities.CalcInterfaceProblemRhs(matrixManager, flexibility, globalDr);
+
+            var interfaceSolver = new FetiDPInterfaceProblemSolverSerial(model, new PcgSettings());
+            MethodInfo method = interfaceSolver.GetType().GetMethod("CalcInterfaceProblemRhs",
+                BindingFlags.NonPublic | BindingFlags.Instance); // reflection for the private method
+            Vector pcgRhs = (Vector)method.Invoke(interfaceSolver, new object[] { matrixManager, flexibility, globalDr });
 
             double tol = 1E-11;
             Assert.True(Example4x4QuadsHomogeneous.InterfaceProblemRhs.Equals(pcgRhs, tol));

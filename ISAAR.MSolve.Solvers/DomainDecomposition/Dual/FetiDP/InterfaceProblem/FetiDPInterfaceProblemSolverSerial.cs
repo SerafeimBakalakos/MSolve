@@ -38,7 +38,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             var pcgMatrix = new FetiDPInterfaceProblemMatrixSerial(matrixManager, flexibility);
             var pcgPreconditioner = new FetiDPInterfaceProblemPreconditioner(preconditioner);
             Vector globalDr = CalcGlobalDr(matrixManager, lagrangesEnumerator);
-            Vector pcgRhs = FetiDPInterfaceProblemUtilities.CalcInterfaceProblemRhs(matrixManager, flexibility, globalDr);
+            Vector pcgRhs = CalcInterfaceProblemRhs(matrixManager, flexibility, globalDr);
             var lagranges = Vector.CreateZero(systemOrder);
 
             // Solve the interface problem using PCG algorithm
@@ -55,6 +55,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             logger.LogIterativeAlgorithm(stats.NumIterationsRequired, stats.ResidualNormRatioEstimation);
 
             return lagranges;
+        }
+
+        private Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility,
+            Vector globalDr)
+        {
+            // rhs = dr - FIrc * inv(KccStar) * fcStar
+            Vector temp = matrixManager.MultiplyInverseCoarseProblemMatrix(matrixManager.CoarseProblemRhs);
+            temp = flexibility.MultiplyGlobalFIrc(temp);
+            return globalDr - temp;
         }
 
         private Vector CalcGlobalDr(IFetiDPMatrixManager matrixManager, ILagrangeMultipliersEnumerator lagrangesEnumerator)

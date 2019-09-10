@@ -45,6 +45,29 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
+        public static void TestInterfaceProblemRhs()
+        {
+            (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator,
+                LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
+                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
+
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager(Example4x4QuadsHomogeneous.CreateModel());
+            IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
+            Vector globalDr = Example4x4QuadsHomogeneous.VectorDr;
+
+            var interfaceSolver = new FetiDPInterfaceProblemSolverMpi(procs, model, new PcgSettings());
+            MethodInfo method = interfaceSolver.GetType().GetMethod("CalcInterfaceProblemRhs",
+                BindingFlags.NonPublic | BindingFlags.Instance); // reflection for the private method
+            var pcgRhs = (Vector)method.Invoke(interfaceSolver, new object[] { matrixManager, flexibility, globalDr });
+
+            if (procs.IsMasterProcess)
+            {
+                // Check
+                double tol = 1E-11;
+                Assert.True(Example4x4QuadsHomogeneous.InterfaceProblemRhs.Equals(pcgRhs, tol));
+            }
+        }
+
         public static void TestInterfaceProblemSolution()
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator,

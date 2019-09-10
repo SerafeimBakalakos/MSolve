@@ -9,6 +9,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
+//TODO: Remove FETI-DP code from her and serial implementations
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements
 {
     public class FreeDofDisplacementsCalculatorMpi : IFreeDofDisplacementsCalculator
@@ -34,8 +35,22 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements
         {
             ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
             procs.Communicator.BroadcastVector(ref lagranges, lagrangesEnumerator.NumLagrangeMultipliers, procs.MasterProcess); //TODO: Ideally calculate Br^T*lambda and scatter that
+            Vector uc = CalcCornerDisplacements(flexibility, lagranges);
+            procs.Communicator.BroadcastVector(ref uc, dofSeparator.NumGlobalCornerDofs, procs.MasterProcess);
             FreeDofDisplacementsCalculatorUtilities.CalcAndStoreFreeDisplacements(subdomain, dofSeparator, matrixManager,
-                lagrangesEnumerator, flexibility, lagranges);
+                lagrangesEnumerator, lagranges, uc);
+        }
+
+        private Vector CalcCornerDisplacements(IFetiDPFlexibilityMatrix flexibility, Vector lagranges)
+        {
+            // uc = inv(KccStar) * (fcStar + FIrc^T * lagranges)
+            Vector temp = flexibility.MultiplyGlobalFIrcTransposed(lagranges);
+            if (procs.IsMasterProcess)
+            {
+                temp.AddIntoThis(matrixManager.CoarseProblemRhs);
+                return matrixManager.MultiplyInverseCoarseProblemMatrix(temp);
+            }
+            else return null;
         }
     }
 }

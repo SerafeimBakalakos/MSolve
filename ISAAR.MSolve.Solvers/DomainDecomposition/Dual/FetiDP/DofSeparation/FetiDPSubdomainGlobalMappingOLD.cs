@@ -9,13 +9,13 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 {
-    public class FetiDPSubdomainGlobalMapping
+    public class FetiDPSubdomainGlobalMappingOLD
     {
         private readonly IStiffnessDistributionOLD distribution;
         private readonly FetiDPDofSeparatorOLD dofSeparator;
         private readonly IModel model;
 
-        public FetiDPSubdomainGlobalMapping(IModel model, FetiDPDofSeparatorOLD dofSeparator,
+        public FetiDPSubdomainGlobalMappingOLD(IModel model, FetiDPDofSeparatorOLD dofSeparator,
             IStiffnessDistributionOLD distribution)
         {
             this.model = model;

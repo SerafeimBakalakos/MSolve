@@ -14,14 +14,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements
     internal static class FreeDofDisplacementsCalculatorUtilities
     {
         internal static void CalcAndStoreFreeDisplacements(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator, 
-            IFetiDPMatrixManager matrixManager, ILagrangeMultipliersEnumerator lagrangesEnumerator, 
-            IFetiDPFlexibilityMatrix flexibility, Vector lagranges)
+            IFetiDPMatrixManager matrixManager, ILagrangeMultipliersEnumerator lagrangesEnumerator, Vector lagranges, Vector uc)
         {
             IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(subdomain);
             UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
             SignedBooleanMatrixColMajor Br = lagrangesEnumerator.GetBooleanMatrix(subdomain);
-
-            Vector uc = CalcCornerDisplacements(matrixManager, flexibility, lagranges);
 
             // ur[s] = inv(Krr[s]) * (fr[s] - Br[s]^T * lagranges - Krc[s] * Bc[s] * uc)
             Vector BrLambda = Br.Multiply(lagranges, true);
@@ -45,15 +42,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements
 
             // Store uf[s]
             subdomainMatrices.LinearSystem.SolutionConcrete = uf;
-        }
-
-        internal static Vector CalcCornerDisplacements(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility,
-            Vector lagranges)
-        {
-            // uc = inv(KccStar) * (fcStar + FIrc^T * lagranges)
-            Vector temp = flexibility.MultiplyGlobalFIrcTransposed(lagranges);
-            temp.AddIntoThis(matrixManager.CoarseProblemRhs);
-            return matrixManager.MultiplyInverseCoarseProblemMatrix(temp);
         }
     }
 }

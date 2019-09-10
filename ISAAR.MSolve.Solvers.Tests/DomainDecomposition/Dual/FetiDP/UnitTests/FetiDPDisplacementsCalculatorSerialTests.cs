@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
@@ -13,19 +14,25 @@ using Xunit;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 {
-    public static class FetiDPDisplacementsCalculatorSerial
+    public static class FetiDPDisplacementsCalculatorSerialTests
     {
         [Fact]
         public static void TestCornerDisplacements()
         {
+            (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
+                LagrangeMultiplierEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(Example4x4QuadsHomogeneous.CreateModel());
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
             Vector lagranges = Example4x4QuadsHomogeneous.SolutionLagrangeMultipliers;
-            Vector cornerDisplacements =
-                FreeDofDisplacementsCalculatorUtilities.CalcCornerDisplacements(matrixManager, flexibility, lagranges);
+            var displacementsCalculator = new FreeDofDisplacementsCalculatorSerial(model, dofSeparator, matrixManager,
+                lagrangesEnumerator);
+
+            MethodInfo method = displacementsCalculator.GetType().GetMethod("CalcCornerDisplacements",
+                BindingFlags.NonPublic | BindingFlags.Instance); // reflection for the private method
+            Vector uc = (Vector)method.Invoke(displacementsCalculator, new object[] { flexibility, lagranges });
 
             double tol = 1E-12;
-            Assert.True(Example4x4QuadsHomogeneous.SolutionCornerDisplacements.Equals(cornerDisplacements, tol));
+            Assert.True(Example4x4QuadsHomogeneous.SolutionCornerDisplacements.Equals(uc, tol));
         }
 
         [Fact]

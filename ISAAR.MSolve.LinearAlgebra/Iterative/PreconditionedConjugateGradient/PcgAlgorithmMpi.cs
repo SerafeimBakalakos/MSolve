@@ -93,7 +93,6 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
 
         protected override IterativeStatistics SolveInternal(int maxIterations, Func<IVector> zeroVectorInitializer)
         {
-
             if (comm.Rank == master)
             {
                 // In contrast to the source algorithm, we initialize s here. At each iteration it will be overwritten, 
