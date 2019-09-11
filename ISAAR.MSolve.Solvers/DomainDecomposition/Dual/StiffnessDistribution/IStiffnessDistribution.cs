@@ -10,10 +10,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
     public interface IStiffnessDistribution : INodalLoadDistributor
     {
-        double[] CalcBoundaryDofCoefficients(ISubdomain subdomain);
-
         IMappingMatrix CalcBoundaryPreconditioningSignedBooleanMatrix(ILagrangeMultipliersEnumerator lagrangeEnumerator, 
-            ISubdomain subdomain, SignedBooleanMatrixColMajor boundarySignedBooleanMatrices); //TODO: LagrangeEnumerator is only useful for heterogeneous. It should be injected in that contructor.
+            ISubdomain subdomain, SignedBooleanMatrixColMajor boundarySignedBooleanMatrix); //TODO: LagrangeEnumerator is only useful for heterogeneous. It should be injected in that contructor.
+
+        double[] GetBoundaryDofCoefficients(ISubdomain subdomain);
 
         void Update();
     }

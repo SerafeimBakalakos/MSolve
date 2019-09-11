@@ -17,14 +17,17 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 {
     public class FetiDPDofSeparatorSerial : IFetiDPDofSeparator
     {
+        private readonly ICornerNodeSelection cornerNodeSelection;
         private readonly FetiDPGlobalDofSeparator globalDofs;
         private readonly IModel model;
         private readonly string msgHeader;
         private readonly Dictionary<ISubdomain, FetiDPSubdomainDofSeparator> subdomainDofs;
 
-        public FetiDPDofSeparatorSerial(IModel model)
+        public FetiDPDofSeparatorSerial(IModel model, ICornerNodeSelection cornerNodeSelection)
         {
             this.model = model;
+            this.cornerNodeSelection = cornerNodeSelection;
+
             this.globalDofs = new FetiDPGlobalDofSeparator(model);
             this.subdomainDofs = new Dictionary<ISubdomain, FetiDPSubdomainDofSeparator>();
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
@@ -45,6 +48,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         public UnsignedBooleanMatrix GetCornerBooleanMatrix(ISubdomain subdomain) => subdomainDofs[subdomain].CornerBooleanMatrix;
         public int[] GetCornerDofIndices(ISubdomain subdomain) => subdomainDofs[subdomain].CornerDofIndices;
         public DofTable GetCornerDofOrdering(ISubdomain subdomain) => subdomainDofs[subdomain].CornerDofOrdering;
+
+        public IReadOnlyList<(INode node, IDofType dofType)> GetCornerDofs(ISubdomain subdomain)
+            => subdomainDofs[subdomain].GetCornerDofs(cornerNodeSelection.GetCornerNodesOfSubdomain(subdomain));
+
         public int[] GetInternalDofIndices(ISubdomain subdomain) => subdomainDofs[subdomain].InternalDofIndices;
         public DofTable GetRemainderDofOrdering(ISubdomain subdomain) => subdomainDofs[subdomain].RemainderDofOrdering;
         public int[] GetRemainderDofIndices(ISubdomain subdomain) => subdomainDofs[subdomain].RemainderDofIndices;
@@ -61,7 +68,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             }
         }
 
-        public void SeparateDofs(ICornerNodeSelection cornerNodeSelection, IFetiDPSeparatedDofReordering reordering)
+        public void SeparateDofs(IFetiDPSeparatedDofReordering reordering)
         {
             // Global dofs
             globalDofs.DefineGlobalBoundaryDofs(cornerNodeSelection.GlobalCornerNodes);

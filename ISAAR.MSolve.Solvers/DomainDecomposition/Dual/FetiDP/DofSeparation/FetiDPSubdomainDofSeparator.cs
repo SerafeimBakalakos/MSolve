@@ -60,6 +60,21 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 
         internal ISubdomain Subdomain { get; }
 
+        internal IReadOnlyList<(INode node, IDofType dofType)> GetCornerDofs(HashSet<INode> cornerNodes)
+        {
+            // Optimization if the required capacity is known beforehand
+            List<(INode node, IDofType dofType)> cornerDofs = null;
+            if (CornerDofIndices != null) cornerDofs = new List<(INode node, IDofType dofType)>(CornerDofIndices.Length);
+            else cornerDofs = new List<(INode node, IDofType dofType)>();
+
+            foreach (INode node in cornerNodes)
+            {
+                foreach (IDofType dof in Subdomain.FreeDofOrdering.FreeDofs.GetColumnsOfRow(node)) cornerDofs.Add((node, dof));
+            }
+
+            return cornerDofs;
+        }
+
         internal void ReorderInternalDofs(DofPermutation permutation)
         {
             if (permutation.IsBetter)

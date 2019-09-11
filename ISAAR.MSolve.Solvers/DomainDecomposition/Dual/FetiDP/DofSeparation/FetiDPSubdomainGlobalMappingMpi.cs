@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ISAAR.MSolve.Discretization.Commons;
-using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
@@ -47,37 +44,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             return AssembleSubdomainVectors(sub =>
             {
                 Vector u = getSubdomainFreeDisplacements(sub);
-                ScaleSubdomainFreeDisplacements(sub, u);
+                FetiDPSubdomainGlobalMappingUtilities.ScaleSubdomainFreeDisplacements(dofSeparator, distribution, sub, u);
                 return u;
             });
-        }
-
-        public Vector GatherGlobalForces(Func<ISubdomain, Vector> getSubdomainForces)
-        {
-            return AssembleSubdomainVectors(getSubdomainForces);
-        }
-
-        private void ScaleSubdomainFreeDisplacements(ISubdomain subdomain, Vector freeDisplacements)
-        {
-            throw new NotImplementedException();
-            //// Boundary remainder dofs: Scale them so that they can be just added at global level
-            //int[] remainderToSubdomainDofs = dofSeparator.GetRemainderDofIndices(subdomain);
-            //double[] boundaryDofCoeffs = distribution.CalcBoundaryDofCoefficients(subdomain);
-            //int[] boundaryDofIndices = dofSeparator.GetBoundaryDofIndices(subdomain);
-            //for (int i = 0; i < boundaryDofIndices.Length; ++i)
-            //{
-            //    int idx = remainderToSubdomainDofs[boundaryDofIndices[i]];
-            //    freeDisplacements[idx] *= boundaryDofCoeffs[i];
-            //}
-
-            //// Boundary corner dofs: Scale them so that they can be just added at global level
-            //int[] cornerToSubdomainDofs = dofSeparator.GetCornerDofIndices(subdomain);
-            //double[] cornerDofCoeffs = distribution.CalcCornerDofCoefficients(subdomain);
-            //for (int i = 0; i < cornerToSubdomainDofs.Length; ++i)
-            //{
-            //    int idx = cornerToSubdomainDofs[i];
-            //    freeDisplacements[idx] *= cornerDofCoeffs[i];
-            //}
         }
 
         private Vector AssembleSubdomainVectors(Func<ISubdomain, Vector> getSubdomainVector)

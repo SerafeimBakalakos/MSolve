@@ -86,10 +86,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             dofOrderer.OrderFreeDofs(model);
 
             // Separate dofs and corner boolean matrices
-            var dofSeparator = new FetiDPDofSeparatorMpi(procs, model);
             var reordering = new MockSeparatedDofReordering();
             ICornerNodeSelection cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionMpi(procs, model);
-            dofSeparator.SeparateDofs(cornerNodes, reordering);
+            var dofSeparator = new FetiDPDofSeparatorMpi(procs, model, cornerNodes);
+            dofSeparator.SeparateDofs(reordering);
 
             return (procs, model, dofSeparator);
         }

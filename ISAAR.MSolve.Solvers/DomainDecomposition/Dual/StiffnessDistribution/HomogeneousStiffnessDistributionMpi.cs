@@ -36,7 +36,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             this.inverseBoundaryDofMultiplicities = new Dictionary<ISubdomain, double[]>();
         }
 
-        public double[] CalcBoundaryDofCoefficients(ISubdomain subdomain)
+        public double[] GetBoundaryDofCoefficients(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
             return inverseBoundaryDofMultiplicities[subdomain];

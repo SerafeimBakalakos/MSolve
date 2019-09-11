@@ -12,11 +12,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
 {
     public class MockHomogeneousStiffnessDistribution : IStiffnessDistribution
     {
-        public double[] CalcBoundaryDofCoefficients(ISubdomain subdomain)
+        public double[] GetBoundaryDofCoefficients(ISubdomain subdomain)
             => Example4x4QuadsHomogeneous.GetBoundaryDofCoefficients(subdomain.ID);
 
         public IMappingMatrix CalcBoundaryPreconditioningSignedBooleanMatrix(ILagrangeMultipliersEnumerator lagrangeEnumerator,
-            ISubdomain subdomain, SignedBooleanMatrixColMajor boundarySignedBooleanMatrices)
+            ISubdomain subdomain, SignedBooleanMatrixColMajor boundarySignedBooleanMatrix)
             => new MatrixBpbr(subdomain.ID);
 
         public double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load) => load.Amount / load.Node.Multiplicity;

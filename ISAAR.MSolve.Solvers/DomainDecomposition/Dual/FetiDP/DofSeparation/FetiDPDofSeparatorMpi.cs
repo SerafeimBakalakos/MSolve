@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.Discretization.Exceptions;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.Discretization.Transfer.Utilities;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
-using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using MPI;
 
@@ -24,6 +22,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         private const int cornerDofOrderingTag = 0;
         private const int cornerMappingMatrixTag = 1;
 
+        private readonly ICornerNodeSelection cornerNodeSelection;
         private readonly FetiDPGlobalDofSeparator globalDofs;
         private readonly IModel model;
         private readonly string msgHeader;
@@ -35,11 +34,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         private Dictionary<ISubdomain, UnsignedBooleanMatrix> subdomainCornerBooleanMatrices_master;
         private Dictionary<ISubdomain, DofTable> subdomainCornerDofOrderings_master = new Dictionary<ISubdomain, DofTable>();
 
-        public FetiDPDofSeparatorMpi(ProcessDistribution processDistribution, IModel model)
+        public FetiDPDofSeparatorMpi(ProcessDistribution processDistribution, IModel model, 
+            ICornerNodeSelection cornerNodeSelection)
         {
             this.procs = processDistribution;
             this.model = model;
             this.processSubdomain = model.GetSubdomain(processDistribution.OwnSubdomainID);
+            this.cornerNodeSelection = cornerNodeSelection;
 
             subdomainDofs = new FetiDPSubdomainDofSeparator(model.GetSubdomain(procs.OwnSubdomainID));
             if (procs.IsMasterProcess) globalDofs = new FetiDPGlobalDofSeparator(model);
@@ -122,6 +123,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             }
         }
 
+        public IReadOnlyList<(INode node, IDofType dofType)> GetCornerDofs(ISubdomain subdomain)
+        {
+            procs.CheckProcessMatchesSubdomain(subdomain.ID);
+            return subdomainDofs.GetCornerDofs(cornerNodeSelection.GetCornerNodesOfSubdomain(subdomain));
+        }
+
         public DofTable GetRemainderDofOrdering(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
@@ -150,7 +157,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         }
 
         //TODO: This is too detailed for a coordinator class. All calls to global separator should be in 1 method. Ditto for subdomain separator. 
-        public void SeparateDofs(ICornerNodeSelection cornerNodeSelection, IFetiDPSeparatedDofReordering reordering) 
+        public void SeparateDofs(IFetiDPSeparatedDofReordering reordering) 
         {
             // Global dofs
             if (procs.IsMasterProcess)
@@ -254,7 +261,5 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             UnsignedBooleanMatrix Bc = procs.Communicator.Scatter(matricesBc, procs.MasterProcess);
             subdomainDofs.SetCornerBooleanMatrix(Bc, this);
         }
-
-
     }
 }

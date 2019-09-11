@@ -68,7 +68,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             // Connectivity
             this.CornerNodes = cornerNodeSelection;
             this.dofOrderer = new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
-            this.dofSeparator = new FetiDPDofSeparatorSerial(model);
+            this.dofSeparator = new FetiDPDofSeparatorSerial(model, cornerNodeSelection);
             this.lagrangesEnumerator = new LagrangeMultipliersEnumeratorSerial(model, crosspointStrategy, dofSeparator);
 
             // Matrix managers and linear systems
@@ -156,7 +156,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             Logger.StartMeasuringTime();
 
             // Define the various dof groups
-            dofSeparator.SeparateDofs(CornerNodes, matrixManager);
+            dofSeparator.SeparateDofs(matrixManager);
 
             //TODO: B matrices could also be reused in some cases
             // Define lagrange multipliers and boolean matrices. 

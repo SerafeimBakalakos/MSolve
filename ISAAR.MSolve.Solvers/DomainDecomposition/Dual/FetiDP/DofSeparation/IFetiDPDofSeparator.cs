@@ -33,6 +33,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         /// </summary>
         int NumGlobalCornerDofs { get; }
 
+        /// <summary>
+        /// Corner dofs of each subdomain. They have the same order as <see cref="GetCornerDofIndices(ISubdomain)"/>.
+        /// </summary>
+        IReadOnlyList<(INode node, IDofType dofType)> GetCornerDofs(ISubdomain subdomain);
+
         UnsignedBooleanMatrix GetCornerBooleanMatrix(ISubdomain subdomain);
 
         /// <summary>
@@ -57,7 +62,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         /// </summary>
         int[] GetRemainderDofIndices(ISubdomain subdomain);
 
-        void SeparateDofs(ICornerNodeSelection cornerNodeSelection, IFetiDPSeparatedDofReordering reordering);
+        void SeparateDofs(IFetiDPSeparatedDofReordering reordering);
 
         void ReorderInternalDofs(IFetiDPSeparatedDofReordering reordering);
     }
