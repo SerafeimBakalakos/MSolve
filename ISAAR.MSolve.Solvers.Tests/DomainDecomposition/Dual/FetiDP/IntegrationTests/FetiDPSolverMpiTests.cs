@@ -24,7 +24,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
     {
         public static void TestSolutionGlobalDisplacements()
         {
-            (ProcessDistribution procs, ISubdomain subdomain, FetiDPSolverMpi solver) = RunAnalysis();
+            (ProcessDistribution procs, IModel model, FetiDPSolverMpi solver) = CreateModelAndSolver();
+            RunAnalysis(procs, model, solver);
             Vector globalU = solver.GatherGlobalDisplacements();
 
             // Check solution
@@ -37,16 +38,34 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 
         public static void TestSolutionSubdomainDisplacements()
         {
-            (ProcessDistribution procs, ISubdomain subdomain, FetiDPSolverMpi solver) = RunAnalysis();
+            (ProcessDistribution procs, IModel model, FetiDPSolverMpi solver) = CreateModelAndSolver();
+            RunAnalysis(procs, model, solver);
 
             // Check solution
             double tol = 1E-6;
+            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
             IVectorView ufComputed = solver.GetLinearSystem(subdomain).Solution;
             Vector ufExpected = Example4x4QuadsHomogeneous.GetSolutionFreeDisplacements(subdomain.ID);
             Assert.True(ufExpected.Equals(ufComputed, tol));
         }
 
-        private static (ProcessDistribution, ISubdomain, FetiDPSolverMpi) RunAnalysis()
+        internal static void RunAnalysis(ProcessDistribution procs, IModel model, ISolverMpi solver)
+        {
+            // Run the analysis
+            solver.OrderDofs(false);
+            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
+            ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+            linearSystem.Reset(); // Necessary to define the linear system's size 
+            linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
+            linearSystem.RhsVector = linearSystem.Subdomain.Forces;
+
+            solver.BuildGlobalMatrix(new ElementStructuralStiffnessProvider());
+            model.ApplyLoads();
+            LoadingUtilities.ApplyNodalLoadsMpi(procs, model, solver);
+            solver.Solve();
+        }
+
+        private static (ProcessDistribution, IModel, FetiDPSolverMpi) CreateModelAndSolver()
         {
             int master = 0;
             var procs = new ProcessDistribution(Communicator.world, master, new int[] { 0, 1, 2, 3 });
@@ -60,20 +79,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             var solverBuilder = new FetiDPSolverMpi.Builder(procs, matrixManagerFactory);
             FetiDPSolverMpi solver = solverBuilder.Build(model, cornerNodes);
 
-            // Run the analysis
-            solver.OrderDofs(false);
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
-            linearSystem.Reset(); // Necessary to define the linear system's size 
-            linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
-            linearSystem.RhsVector = linearSystem.Subdomain.Forces;
-
-            solver.BuildGlobalMatrix(new ElementStructuralStiffnessProvider());
-            model.ApplyLoads();
-            LoadingUtilities.ApplyNodalLoadsMpi(procs, model, solver);
-            solver.Solve();
-
-            return (procs, subdomain, solver);
+            return (procs, model, solver);
         }
     }
 }

@@ -20,7 +20,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         [Fact]
         public static void TestSolutionGlobalDisplacements()
         {
-            (IModel model, FetiDPSolverSerial solver) = RunAnalysis();
+            (IModel model, FetiDPSolverSerial solver) = CreateModelAndSolver();
+            RunAnalysis(model, solver);
             Vector globalU = solver.GatherGlobalDisplacements();
 
             // Check solution
@@ -31,7 +32,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         [Fact]
         public static void TestSolutionSubdomainDisplacements()
         {
-            (IModel model, FetiDPSolverSerial solver) = RunAnalysis();
+            (IModel model, FetiDPSolverSerial solver) = CreateModelAndSolver();
+            RunAnalysis(model, solver);
 
             // Check solution
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
@@ -43,16 +45,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             }
         }
 
-        private static (IModel, FetiDPSolverSerial) RunAnalysis()
+        internal static void RunAnalysis(IModel model, ISolverMpi solver)
         {
-            // Prepare solver
-            IModel model = Example4x4QuadsHomogeneous.CreateModel();
-            model.ConnectDataStructures();
-            ICornerNodeSelection cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
-            var matrixManagerFactory = new FetiDPMatrixManagerFactorySkyline(null);
-            var solverBuilder = new FetiDPSolverSerial.Builder(matrixManagerFactory);
-            FetiDPSolverSerial solver = solverBuilder.Build(model, cornerNodes);
-
             // Run the analysis
             solver.OrderDofs(false);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
@@ -66,6 +60,17 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             model.ApplyLoads();
             LoadingUtilities.ApplyNodalLoads(model, solver);
             solver.Solve();
+        }
+
+        private static (IModel, FetiDPSolverSerial) CreateModelAndSolver()
+        {
+            // Prepare solver
+            IModel model = Example4x4QuadsHomogeneous.CreateModel();
+            model.ConnectDataStructures();
+            ICornerNodeSelection cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
+            var matrixManagerFactory = new FetiDPMatrixManagerFactorySkyline(null);
+            var solverBuilder = new FetiDPSolverSerial.Builder(matrixManagerFactory);
+            FetiDPSolverSerial solver = solverBuilder.Build(model, cornerNodes);
 
             return (model, solver);
         }

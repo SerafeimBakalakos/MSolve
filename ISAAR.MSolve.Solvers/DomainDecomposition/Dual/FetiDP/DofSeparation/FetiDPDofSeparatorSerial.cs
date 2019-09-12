@@ -23,6 +23,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         private readonly string msgHeader;
         private readonly Dictionary<ISubdomain, FetiDPSubdomainDofSeparator> subdomainDofs;
 
+        private Dictionary<ISubdomain, DofTable> subdomainCornerDofOrderings;
+
         public FetiDPDofSeparatorSerial(IModel model, ICornerNodeSelection cornerNodeSelection)
         {
             this.model = model;
@@ -73,7 +75,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             // Global dofs
             globalDofs.DefineGlobalBoundaryDofs(cornerNodeSelection.GlobalCornerNodes);
             globalDofs.DefineGlobalCornerDofs(cornerNodeSelection.GlobalCornerNodes);
-            globalDofs.ReorderGlobalCornerDofs(reordering.ReorderGlobalCornerDofs());
 
             // Subdomain dofs
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
@@ -93,6 +94,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
                 }
             }
 
+            // Reorder global corner dofs
+            GatherSubdomainCornerDofOrderings();
+            globalDofs.ReorderGlobalCornerDofs(reordering.ReorderGlobalCornerDofs());
+
             // Subdomain - global mappings
             CalcCornerMappingMatrices();
         }
@@ -104,13 +109,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         /// </summary>
         private void CalcCornerMappingMatrices()
         {
-            // Gather the subdomain corner orderings
-            var subdomainCornerDofOrderings = new Dictionary<ISubdomain, DofTable>();
-            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-            {
-                subdomainCornerDofOrderings[subdomain] = subdomainDofs[subdomain].CornerDofOrdering;
-            }
-
             // Create the corner mapping matrices
             Dictionary<ISubdomain, UnsignedBooleanMatrix> subdomainCornerBooleanMatrices
                 = globalDofs.CalcCornerMappingMatrices(subdomainCornerDofOrderings);
@@ -119,6 +117,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 subdomainDofs[subdomain].SetCornerBooleanMatrix(subdomainCornerBooleanMatrices[subdomain], this);
+            }
+        }
+
+        private void GatherSubdomainCornerDofOrderings()
+        {
+            subdomainCornerDofOrderings = new Dictionary<ISubdomain, DofTable>();
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                subdomainCornerDofOrderings[subdomain] = subdomainDofs[subdomain].CornerDofOrdering;
             }
         }
     }

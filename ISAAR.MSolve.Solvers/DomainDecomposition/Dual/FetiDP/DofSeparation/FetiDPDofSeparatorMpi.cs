@@ -164,7 +164,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             {
                 globalDofs.DefineGlobalBoundaryDofs(cornerNodeSelection.GlobalCornerNodes);
                 globalDofs.DefineGlobalCornerDofs(cornerNodeSelection.GlobalCornerNodes);
-                globalDofs.ReorderGlobalCornerDofs(reordering.ReorderGlobalCornerDofs());
             }
 
             // Subdomain dofs
@@ -181,6 +180,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
                 subdomainDofs.SeparateBoundaryInternalDofs(cornerNodeSelection.GetCornerNodesOfSubdomain(processSubdomain));
             }
 
+            // Reorder global corner dofs
+            GatherCornerDofOrderingsFromSubdomains();
+            if (procs.IsMasterProcess) globalDofs.ReorderGlobalCornerDofs(reordering.ReorderGlobalCornerDofs());
+
             // Subdomain - global mappings
             CalcCornerMappingMatrices();
         }
@@ -192,7 +195,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         /// </summary>
         private void CalcCornerMappingMatrices()
         {
-            GatherCornerDofOrderingsFromSubdomains();
             if (procs.IsMasterProcess)
             {
                 subdomainCornerBooleanMatrices_master = globalDofs.CalcCornerMappingMatrices(subdomainCornerDofOrderings_master);

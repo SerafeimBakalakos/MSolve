@@ -15,7 +15,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         {
             // Boundary remainder dofs: Scale them so that they can be just added at global level
             int[] remainderToSubdomainDofs = dofSeparator.GetRemainderDofIndices(subdomain);
-            double[] boundaryDofCoeffs = distribution.GetBoundaryDofCoefficients(subdomain);
+            double[] boundaryDofCoeffs = distribution.CalcBoundaryDofCoefficients(subdomain);
             int[] boundaryDofIndices = dofSeparator.GetBoundaryDofIndices(subdomain);
             for (int i = 0; i < boundaryDofIndices.Length; ++i)
             {

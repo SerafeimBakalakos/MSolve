@@ -14,6 +14,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
     {
         private readonly IFetiDPDofSeparator dofSeparator;
         private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
+        private readonly IModel model;
         private readonly ProcessDistribution procs;
         private readonly FetiDPSubdomainFlexibilityMatrix subdomainFlexibility;
 
@@ -21,6 +22,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPMatrixManager matrixManager) 
         {
             this.procs = procs;
+            this.model = model;
             this.dofSeparator = dofSeparator;
             this.lagrangesEnumerator = lagrangesEnumerator;
             this.subdomainFlexibility = new FetiDPSubdomainFlexibilityMatrix(model.GetSubdomain(procs.OwnSubdomainID), 
@@ -36,7 +38,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             {
                 FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrc(vIn, dofSeparator, lagrangesEnumerator);
             }
-            procs.Communicator.BroadcastVector(ref vIn, lagrangesEnumerator.NumLagrangeMultipliers, procs.MasterProcess);
+            procs.Communicator.BroadcastVector(ref vIn, dofSeparator.NumGlobalCornerDofs, procs.MasterProcess);
             Vector subdomainRhs = subdomainFlexibility.MultiplySubdomainFIrc(vIn);
             return procs.Communicator.SumVector(subdomainRhs, procs.MasterProcess);
         }

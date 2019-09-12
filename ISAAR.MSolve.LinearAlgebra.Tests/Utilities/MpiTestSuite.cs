@@ -19,6 +19,26 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Utilities
         public void AddTheory<TInput>(Action<TInput> test, string className, string methodName, TInput input)
             => tests.Add(( () => test(input), className, $"{methodName}(args = {input})" ));
 
+        public void AddTheory<TInput0, TInput1>(Action<TInput0, TInput1> test,
+            string className, string methodName, TInput0 input0, TInput1 input1)
+        {
+            tests.Add((() => test(input0, input1), className, $"{methodName}(args = {input0}, {input1})"));
+        }
+
+        public void AddTheory<TInput0, TInput1, TInput2>(Action<TInput0, TInput1, TInput2> test,
+            string className, string methodName, TInput0 input0, TInput1 input1, TInput2 input2)
+        {
+            tests.Add((() => test(input0, input1, input2), className,
+                $"{methodName}(args = {input0}, {input1}, {input2})"));
+        }
+
+        public void AddTheory<TInput0, TInput1, TInput2, TInput3>(Action<TInput0, TInput1, TInput2, TInput3> test, 
+            string className, string methodName, TInput0 input0, TInput1 input1, TInput2 input2, TInput3 input3)
+        {
+            tests.Add((() => test(input0, input1, input2, input3), className, 
+                $"{methodName}(args = {input0}, {input1}, {input2}, {input3})"));
+        }
+
         public void RunTests(string[] args)
         {
             using (new MPI.Environment(ref args))
@@ -43,6 +63,33 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Utilities
                 }
                 comm.Barrier();
                 Console.WriteLine(header + "All tests were completed.");
+            }
+        }
+
+        private void PrintInTurn(Intracommunicator comm, string msg)
+        {
+            int token = 0;
+            if (comm.Rank == 0)
+            {
+                // Print error message
+                Console.WriteLine(msg);
+
+                // Send token to our right neighbor
+                comm.Send(token, (comm.Rank + 1) % comm.Size, 0);
+
+                // Receive token from our left neighbor
+                comm.Receive((comm.Rank + comm.Size - 1) % comm.Size, 0, out token);
+            }
+            else
+            {
+                // Receive token from our left neighbor
+                comm.Receive((comm.Rank + comm.Size - 1) % comm.Size, 0, out token);
+
+                // Print error message
+                Console.WriteLine(msg);
+
+                // Pass on the token to our right neighbor
+                comm.Send(token, (comm.Rank + 1) % comm.Size, 0);
             }
         }
     }
