@@ -58,6 +58,7 @@ namespace ISAAR.MSolve.XFEM.Entities
             {
                 SubdomainsDictionary[element.Subdomain.ID] = element.Subdomain;
             }
+            Multiplicity = SubdomainsDictionary.Count;
         }
         #endregion
     }

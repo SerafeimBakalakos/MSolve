@@ -14,6 +14,7 @@ using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.XFEM.CrackGeometry;
 using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM.Solvers;
 
 // TODO: fix a bug that happens when the crack has almost reached the boundary, is inside but no tip can be found
 namespace ISAAR.MSolve.XFEM.Analyzers
@@ -29,6 +30,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
         private readonly IReadOnlyDictionary<int, ILinearSystem> linearSystems;
         private readonly int maxIterations;
         private readonly XModel model;
+        private readonly TipAdaptivePartitioner partitioner; //TODO: Refactor its injection and usage
         private readonly bool reanalysis = true;
 
         //private readonly IStaticProvider problem; //TODO: refactor and use this instead
@@ -39,7 +41,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
         private HashSet<ISubdomain> newTipEnrichedSubdomains;
 
         public QuasiStaticCrackPropagationAnalyzer(XModel model, ISolver solver, /*IStaticProvider problem,*/
-            ICrackDescription crack, double fractureToughness, int maxIterations)
+            ICrackDescription crack, double fractureToughness, int maxIterations, TipAdaptivePartitioner partitioner = null)
         {
             this.model = model;
             this.solver = solver;
@@ -48,6 +50,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             this.crack = crack;
             this.fractureToughness = fractureToughness;
             this.maxIterations = maxIterations;
+            this.partitioner = partitioner;
 
             //TODO: Refactor problem structural and remove the next
             problem = new ElementStructuralStiffnessProvider();
@@ -208,6 +211,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             if (newTipEnrichedSubdomains == null) 
             {
                 // First analysis step: All subdomains must be fully processed.
+                if (partitioner != null) partitioner.UpdateSubdomains();
                 foreach (XSubdomain subdomain in model.Subdomains.Values)
                 {
                     subdomain.ConnectivityModified = true;
@@ -221,7 +225,8 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             {
                 // Update the mesh partitioning, if necessary
                 HashSet<ISubdomain> modifiedSubdomains;
-                modifiedSubdomains = new HashSet<ISubdomain>();
+                if (partitioner != null) modifiedSubdomains = partitioner.UpdateSubdomains();
+                else modifiedSubdomains = new HashSet<ISubdomain>();
 
                 if (reanalysis)
                 {

@@ -205,6 +205,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             watch.Start();
 
             // Identify corner nodes
+            cornerNodeSelection.Update();
             CornerNodesOfSubdomains = new Dictionary<int, HashSet<INode>>(); //TODO: Could this cause change in connectivity?
             {
                 foreach (ISubdomain subdomain in model.EnumerateSubdomains())

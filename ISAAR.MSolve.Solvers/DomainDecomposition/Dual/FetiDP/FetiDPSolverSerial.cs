@@ -155,6 +155,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         {
             Logger.StartMeasuringTime();
 
+            CornerNodes.Update();
+
             // Define the various dof groups
             dofSeparator.SeparateDofs(matrixManager);
 

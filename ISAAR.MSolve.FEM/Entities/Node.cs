@@ -63,7 +63,7 @@ namespace ISAAR.MSolve.FEM.Entities
         public Dictionary<int, Subdomain> NonMatchingSubdomainsDictionary => nonMatchingSubdomainsDictionary;
         public Dictionary<int, ISubdomain> SubdomainsDictionary => subdomainsDictionary;
 
-        public int Multiplicity { get; private set; }
+        public int Multiplicity { get; protected set; }
 
         public void BuildSubdomainDictionary()
         {
