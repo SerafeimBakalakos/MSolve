@@ -148,7 +148,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         public void Analyze(ISolver solver)
         {
             var problem = new ProblemStructural(Model, solver);
-            var analyzer = new QuasiStaticCrackPropagationAnalyzer(Model, solver, /*problem,*/ crack, fractureToughness, 
+            var analyzer = new QuasiStaticCrackPropagationAnalyzerOLD(Model, solver, /*problem,*/ crack, fractureToughness, 
                 maxIterations);
 
             // Subdomain plots
@@ -156,7 +156,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             {
                 if (solver is FetiDPSolverOLD fetiDP)
                 {
-                    analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(fetiDP, subdomainPlotDirectory);
+                    analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(fetiDP.CornerNodeSelection, subdomainPlotDirectory);
                 }
                 else analyzer.DDLogger = new DomainDecompositionLogger(subdomainPlotDirectory);
             }

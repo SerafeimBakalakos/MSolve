@@ -23,11 +23,10 @@ namespace ISAAR.MSolve.XFEM.Analyzers
     /// Implements crack propagation under static loading with linear material behavior. Based on Linear Elastic Fracture 
     /// Mechanics. Appropriate for brittle materials or fatigue crack propagation analysis. For now, it only works with XFEM.
     /// </summary>
-    public class QuasiStaticCrackPropagationAnalyzer //: IAnalyzer
+    public class QuasiStaticCrackPropagationAnalyzerSerial //: IAnalyzer
     {
         private readonly ICrackDescription crack;
         private readonly double fractureToughness;
-        private readonly IReadOnlyDictionary<int, ILinearSystem> linearSystems;
         private readonly int maxIterations;
         private readonly XModel model;
         private readonly TipAdaptivePartitioner partitioner; //TODO: Refactor its injection and usage
@@ -37,15 +36,14 @@ namespace ISAAR.MSolve.XFEM.Analyzers
         private readonly ElementStructuralStiffnessProvider problem = new ElementStructuralStiffnessProvider();
         private readonly DirichletEquivalentLoadsAssembler loadsAssembler; 
 
-        private readonly ISolver solver;
+        private readonly ISolverMpi solver;
         private HashSet<ISubdomain> newTipEnrichedSubdomains;
 
-        public QuasiStaticCrackPropagationAnalyzer(XModel model, ISolver solver, /*IStaticProvider problem,*/
+        public QuasiStaticCrackPropagationAnalyzerSerial(XModel model, ISolverMpi solver, /*IStaticProvider problem,*/
             ICrackDescription crack, double fractureToughness, int maxIterations, TipAdaptivePartitioner partitioner = null)
         {
             this.model = model;
             this.solver = solver;
-            this.linearSystems = solver.LinearSystems;
             //this.problem = problem;
             this.crack = crack;
             this.fractureToughness = fractureToughness;
@@ -88,8 +86,9 @@ namespace ISAAR.MSolve.XFEM.Analyzers
 
                 // Order and count dofs
                 solver.OrderDofs(false);
-                foreach (ILinearSystem linearSystem in linearSystems.Values)
+                foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
+                    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
                     if (linearSystem.Subdomain.ConnectivityModified)
                     {
                         linearSystem.Reset(); // Necessary to define the linear system's size 
@@ -102,8 +101,9 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 BuildMatrices();
                 model.ApplyLoads();
                 LoadingUtilities.ApplyNodalLoads(model, solver);
-                foreach (ILinearSystem linearSystem in linearSystems.Values)
+                foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
+                    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
                     linearSystem.RhsVector = linearSystem.Subdomain.Forces;
                 }
                 AddEquivalentNodalLoadsToRhs();
@@ -123,7 +123,12 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 // Let the crack propagate
                 //Vector constrainedDisplacements = model.CalculateConstrainedDisplacements(solver.DofOrderer);
                 var freeDisplacements = new Dictionary<int, Vector>();
-                foreach (int s in linearSystems.Keys) freeDisplacements[s] = (Vector)(linearSystems[s].Solution); //TODO: avoid this cast.
+                foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+                {
+                    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                    freeDisplacements[subdomain.ID] = (Vector)(linearSystem.Solution); //TODO: avoid this cast.
+                }
+                    
                 crack.Propagate(freeDisplacements);
 
                 // Check convergence 
@@ -151,25 +156,16 @@ namespace ISAAR.MSolve.XFEM.Analyzers
 
         private void AddEquivalentNodalLoadsToRhs()
         {
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                loadsAssembler.ApplyEquivalentNodalLoads(linearSystem.Subdomain, linearSystem.RhsVector);
+                ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                loadsAssembler.ApplyEquivalentNodalLoads(subdomain, linearSystem.RhsVector);
             }
         }
 
         private void BuildMatrices()
         {
-            //Dictionary<int, IMatrixView> stiffnesses = problem.CalculateMatrix();
-            //foreach (ILinearSystem linearSystem in linearSystems.Values)
-            //{
-            //    linearSystem.Matrix = stiffnesses[linearSystem.Subdomain.ID];
-            //}
-
-            Dictionary<int, IMatrix> stiffnesses = solver.BuildGlobalMatrices(problem);
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
-            {
-                linearSystem.Matrix = stiffnesses[linearSystem.Subdomain.ID];
-            }
+            solver.BuildGlobalMatrix(problem);
         }
 
         // TODO: Abstract this and add Tanaka_1974 approach

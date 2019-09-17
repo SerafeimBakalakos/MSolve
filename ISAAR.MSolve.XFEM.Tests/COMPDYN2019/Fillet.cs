@@ -22,7 +22,7 @@ using ISAAR.MSolve.XFEM.Solvers;
 using ISAAR.MSolve.XFEM.Tests;
 using static ISAAR.MSolve.XFEM.Tests.COMPDYN2019.Utilities;
 
-namespace ISAAR.MSolve.SamplesConsole.XFEM.Tests.PaperExamples
+namespace ISAAR.MSolve.XFEM.Tests.COMPDYN2019
 {
     public class Fillet
     {

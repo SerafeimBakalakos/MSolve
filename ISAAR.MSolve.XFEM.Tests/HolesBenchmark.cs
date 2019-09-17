@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization;
@@ -111,12 +112,6 @@ namespace ISAAR.MSolve.XFEM.Tests
         private readonly string leftPropagationPath;
         private readonly string rightPropagationPath;
         private readonly bool writePropagation;
-
-        /// <summary>
-        /// The maximum number of crack propagation steps. The analysis may stop earlier if the crack has reached the domain 
-        /// boundary or if the fracture toughness is exceeded.
-        /// </summary>
-        private readonly int maxIterations;
         private readonly double tipEnrichmentRadius;
 
         /// <summary>
@@ -139,7 +134,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             this.leftPropagationPath = leftPropagationPath;
             this.rightPropagationPath = rightPropagationPath;
             this.writePropagation = writePropagation;
-            this.maxIterations = maxIterations;
+            this.MaxIterations = maxIterations;
             this.heavisideTol = heavisideTol;
         }
 
@@ -147,6 +142,14 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// The crack geometry description
         /// </summary>
         public ICrackDescription Crack { get; private set; }
+
+        public double FractureToughness => fractureToughness;
+
+        /// <summary>
+        /// The maximum number of crack propagation steps. The analysis may stop earlier if the crack has reached the domain 
+        /// boundary or if the fracture toughness is exceeded.
+        /// </summary>
+        public int MaxIterations { get; }
 
         public BidirectionalMesh2D<XNode, XContinuumElement2D> Mesh { get; set; }
 
@@ -164,81 +167,62 @@ namespace ISAAR.MSolve.XFEM.Tests
 
         public TipAdaptivePartitioner Partitioner { get; set; } // Refactor its injection
 
-        public void Analyze(ISolver solver)
-        {
-            var problem = new ProblemStructural(Model, solver);
-            var analyzer = new QuasiStaticCrackPropagationAnalyzer(Model, solver, /*problem,*/ Crack, fractureToughness,
-                maxIterations, Partitioner);
-
-            // Subdomain plots
-            if (subdomainPlotDirectory != null)
-            {
-                if (solver is FetiDPSolverOLD fetiDP)
-                {
-                    analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(fetiDP, subdomainPlotDirectory);
-                }
-                else analyzer.DDLogger = new DomainDecompositionLogger(subdomainPlotDirectory);
-            }
-
-            analyzer.Initialize();
-            analyzer.Analyze();
-
-            #region crack propagation output
-            //// Write crack path
-            //Console.WriteLine("Left crack path:");
-            //foreach (var point in leftCrack.CrackPath)
-            //{
-            //    Console.WriteLine("{0} {1}", point.X, point.Y);
-            //}
-            //Console.WriteLine();
-            //Console.WriteLine("Right crack path:");
-            //foreach (var point in rightCrack.CrackPath)
-            //{
-            //    Console.WriteLine("{0} {1}", point.X, point.Y);
-            //}
-            //Console.WriteLine();
-
-            //// Write growth angles, lengths and SIFs if necessary
-            //if (writePropagation)
-            //{
-            //    using (var writer = new StreamWriter(leftPropagationPath))
-            //    {
-            //        PropagationLogger logger = leftCrack.CrackTipPropagators[leftCrack.CrackTips[0]].Logger;
-            //        int numIterations = logger.GrowthAngles.Count;
-            //        writer.WriteLine(numIterations);
-            //        for (int i = 0; i < numIterations; ++i)
-            //        {
-            //            writer.Write(logger.GrowthAngles[i]);
-            //            writer.Write(" " + logger.GrowthLengths[i]);
-            //            writer.Write(" " + logger.SIFsMode1[i]);
-            //            writer.Write(" " + logger.SIFsMode2[i]);
-            //            writer.WriteLine();
-            //        }
-            //    }
-            //    using (var writer = new StreamWriter(rightPropagationPath))
-            //    {
-            //        PropagationLogger logger = rightCrack.CrackTipPropagators[rightCrack.CrackTips[0]].Logger;
-            //        int numIterations = logger.GrowthAngles.Count;
-            //        writer.WriteLine(numIterations);
-            //        for (int i = 0; i < numIterations; ++i)
-            //        {
-            //            writer.Write(logger.GrowthAngles[i]);
-            //            writer.Write(" " + logger.GrowthLengths[i]);
-            //            writer.Write(" " + logger.SIFsMode1[i]);
-            //            writer.Write(" " + logger.SIFsMode2[i]);
-            //            writer.WriteLine();
-            //        }
-            //    }
-            //}
-            #endregion
-        }
-
         public void InitializeModel()
         {
             Model = new XModel();
             CreateMesh();
             ApplyBoundaryConditions();
             InitializeCrack();
+        }
+
+        public void WritePropagation()
+        {
+            // Write crack path
+            Console.WriteLine("Left crack path:");
+            foreach (var point in LeftCrack.CrackPath)
+            {
+                Console.WriteLine("{0} {1}", point.X, point.Y);
+            }
+            Console.WriteLine();
+            Console.WriteLine("Right crack path:");
+            foreach (var point in RightCrack.CrackPath)
+            {
+                Console.WriteLine("{0} {1}", point.X, point.Y);
+            }
+            Console.WriteLine();
+
+            // Write growth angles, lengths and SIFs if necessary
+            if (writePropagation)
+            {
+                using (var writer = new StreamWriter(leftPropagationPath))
+                {
+                    PropagationLogger logger = LeftCrack.CrackTipPropagators[LeftCrack.CrackTips[0]].Logger;
+                    int numIterations = logger.GrowthAngles.Count;
+                    writer.WriteLine(numIterations);
+                    for (int i = 0; i < numIterations; ++i)
+                    {
+                        writer.Write(logger.GrowthAngles[i]);
+                        writer.Write(" " + logger.GrowthLengths[i]);
+                        writer.Write(" " + logger.SIFsMode1[i]);
+                        writer.Write(" " + logger.SIFsMode2[i]);
+                        writer.WriteLine();
+                    }
+                }
+                using (var writer = new StreamWriter(rightPropagationPath))
+                {
+                    PropagationLogger logger = RightCrack.CrackTipPropagators[RightCrack.CrackTips[0]].Logger;
+                    int numIterations = logger.GrowthAngles.Count;
+                    writer.WriteLine(numIterations);
+                    for (int i = 0; i < numIterations; ++i)
+                    {
+                        writer.Write(logger.GrowthAngles[i]);
+                        writer.Write(" " + logger.GrowthLengths[i]);
+                        writer.Write(" " + logger.SIFsMode1[i]);
+                        writer.Write(" " + logger.SIFsMode2[i]);
+                        writer.WriteLine();
+                    }
+                }
+            }
         }
 
         private void ApplyBoundaryConditions()

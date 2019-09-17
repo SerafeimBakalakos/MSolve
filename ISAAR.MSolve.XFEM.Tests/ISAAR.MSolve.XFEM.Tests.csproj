@@ -30,8 +30,4 @@
     <ProjectReference Include="..\ISAAR.MSolve.XFEM\ISAAR.MSolve.XFEM.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Paper1\" />
-  </ItemGroup>
-
 </Project>

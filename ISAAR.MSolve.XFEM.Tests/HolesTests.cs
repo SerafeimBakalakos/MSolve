@@ -6,6 +6,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Solvers.Direct;
 using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
+using ISAAR.MSolve.XFEM.Analyzers;
 using Xunit;
 
 namespace ISAAR.MSolve.XFEM.Tests
@@ -47,7 +48,11 @@ namespace ISAAR.MSolve.XFEM.Tests
             var solverBuilder = new SkylineSolver.Builder();
             solverBuilder.DofOrderer = new DofOrderer(new NodeMajorDofOrderingStrategy(), AmdReordering.CreateWithCSparseAmd());
             SkylineSolver solver = solverBuilder.BuildSolver(benchmark.Model);
-            benchmark.Analyze(solver);
+
+            var analyzer = new QuasiStaticCrackPropagationAnalyzerOLD(benchmark.Model, solver, benchmark.Crack,
+                benchmark.FractureToughness, benchmark.MaxIterations, benchmark.Partitioner);
+            analyzer.Initialize();
+            analyzer.Analyze();
 
             CheckCrackPropagationPath(benchmark);
         }

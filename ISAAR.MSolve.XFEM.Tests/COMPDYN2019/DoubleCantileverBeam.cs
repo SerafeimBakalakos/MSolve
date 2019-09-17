@@ -13,6 +13,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
+using ISAAR.MSolve.XFEM.Analyzers;
 using ISAAR.MSolve.XFEM.Entities;
 using ISAAR.MSolve.XFEM.Solvers;
 using ISAAR.MSolve.XFEM.Tests;
@@ -143,7 +144,22 @@ namespace ISAAR.MSolve.XFEM.Tests.COMPDYN2019
 
         private static void RunCrackPropagationAnalysis(DcbBenchmarkBelytschko benchmark, ISolver solver)
         {
-            benchmark.Analyze(solver);
+            var analyzer = new QuasiStaticCrackPropagationAnalyzerOLD(benchmark.Model, solver, benchmark.Crack,
+                benchmark.FractureToughness, benchmark.MaxIterations, benchmark.Partitioner);
+
+            // Subdomain plots
+            if (subdomainPlotDirectory != null)
+            {
+                if (solver is FetiDPSolverOLD fetiDP)
+                {
+                    analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(fetiDP.CornerNodeSelection, 
+                        subdomainPlotDirectory, true);
+                }
+                else analyzer.DDLogger = new DomainDecompositionLogger(subdomainPlotDirectory);
+            }
+
+            analyzer.Initialize();
+            analyzer.Analyze();
 
             // Write crack path
             Console.WriteLine("Crack path:");

@@ -18,6 +18,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Matrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
 using ISAAR.MSolve.Solvers.DomainDecomposition.MeshPartitioning;
 using ISAAR.MSolve.Solvers.Ordering;
@@ -29,7 +30,7 @@ using ISAAR.MSolve.XFEM.Solvers;
 using ISAAR.MSolve.XFEM.Tests;
 using static ISAAR.MSolve.XFEM.Tests.COMPDYN2019.Utilities;
 
-namespace ISAAR.MSolve.XFEM.Tests.COMPDYN2019
+namespace ISAAR.MSolve.XFEM.Tests.Paper1
 {
     public class Holes
     {
@@ -54,30 +55,9 @@ namespace ISAAR.MSolve.XFEM.Tests.COMPDYN2019
             HolesBenchmark benchmarkSub10;
             HolesBenchmark benchmarkSub15;
 
-            // Skyline
-            //benchmarkSub1 = CreateSingleSubdomainBenchmark();
-            //ISolver skylineSolver = DefineSolver(benchmarkSub1, SolverType.Skyline);
-            //RunCrackPropagationAnalysis(benchmarkSub1, skylineSolver);
-            //Console.WriteLine("Uncracked analysis, 1 subdomain, Skyline   : norm2(globalU) = " +
-            //    RunUncrackedAnalysis(benchmarkSub1.Model, skylineSolver));
-            //Console.WriteLine("Cracked analysis only 1 step, 1 subdomain, Skyline   : norm2(globalU) = " +
-            //    RunSingleCrackedStep(benchmarkSub1.Model, benchmarkSub1.Crack, skylineSolver));
-            //Console.WriteLine("Skyline solver, 1 subdomain: ");
-
-            // FETI-1 10 subdomains
-            //benchmarkSub10 = CreateMultiSubdomainBenchmark(10);
-            //ISolver solverFeti1 = DefineSolver(benchmarkSub10, SolverType.Feti1);
-            //PlotSubdomains(subdomainPlotPath, benchmarkSub10.Model);
-            //Console.WriteLine("Uncracked analysis, 10 subdomains, FETI-1  : norm2(globalU) = " +
-            //    RunUncrackedAnalysis(benchmarkSub10.Model, solverFeti1));
-            //Console.WriteLine("Cracked analysis only 1 step, 10 subdomains, FETI-1  : norm2(globalU) = " +
-            //    RunSingleCrackedStep(benchmarkSub10.Model, benchmarkSub10.Crack, solverFeti1));
-            //Console.WriteLine("FETI-1, 10 subdomains: ");
-            //RunCrackPropagationAnalysis(benchmarkSub10, solverFeti1);
-
             // FETI-DP 10 subdomains
             benchmarkSub10 = CreateMultiSubdomainBenchmark(10);
-            ISolver solverFetiDP = DefineSolver(benchmarkSub10, SolverType.FetiDP);
+            ISolverMpi solverFetiDP = DefineSolver(benchmarkSub10, SolverType.FetiDP);
             RunCrackPropagationAnalysis(benchmarkSub10, solverFetiDP);
             //PlotSubdomains(benchmarkSub10, solverFetiDP);
             //Console.WriteLine("Uncracked analysis, 10 subdomains, FETI-DP : norm2(globalU) = " +
@@ -92,6 +72,34 @@ namespace ISAAR.MSolve.XFEM.Tests.COMPDYN2019
             //RunCrackPropagationAnalysis(benchmarkSub15, solverFetiDP);
 
             Console.Write("\nEnd");
+        }
+        private static HolesBenchmark CreateSingleSubdomainBenchmark()
+        {
+            double growthLength = 1.0; // mm. Must be sufficiently larger than the element size.
+
+            var builder = new HolesBenchmark.Builder(meshPath, growthLength);
+            builder.LeftLsmPlotDirectory = leftCrackPlotDirectory;
+            builder.RightLsmPlotDirectory = rightCrackPlotDirectory;
+            builder.SubdomainPlotDirectory = subdomainPlotDirectory;
+
+            builder.HeavisideEnrichmentTolerance = 0.12;
+
+            // Usually should be in [1.5, 2.5). The J-integral radius must be large enough to at least include elements around
+            // the element that contains the crack tip. However it must not be so large that an element intersected by the 
+            // J-integral contour is containes the previous crack tip. Thus the J-integral radius must be sufficiently smaller
+            // than the crack growth length.
+            builder.JintegralRadiusOverElementSize = 2.0;
+
+            // If you modify the following two parameters significantly, then you will need to redefine which nodes are expected 
+            // to be enriched.
+            builder.TipEnrichmentRadius = 0.5;
+            builder.BC = HolesBenchmark.BoundaryConditions.BottomConstrainXDisplacementY_TopConstrainXDisplacementY;
+
+            builder.MaxIterations = 12;
+
+            HolesBenchmark benchmark = builder.BuildBenchmark();
+            benchmark.InitializeModel();
+            return benchmark;
         }
 
         private static HolesBenchmark CreateMultiSubdomainBenchmark(int numSubdomains)
@@ -353,73 +361,9 @@ namespace ISAAR.MSolve.XFEM.Tests.COMPDYN2019
             return benchmark;
         }
 
-        private static HolesBenchmark CreateSingleSubdomainBenchmark()
+        private static ISolverMpi DefineSolver(HolesBenchmark benchmark, SolverType solverType)
         {
-            double growthLength = 1.0; // mm. Must be sufficiently larger than the element size.
-
-            var builder = new HolesBenchmark.Builder(meshPath, growthLength);
-            builder.LeftLsmPlotDirectory = leftCrackPlotDirectory;
-            builder.RightLsmPlotDirectory = rightCrackPlotDirectory;
-            builder.SubdomainPlotDirectory = subdomainPlotDirectory;
-
-            builder.HeavisideEnrichmentTolerance = 0.12;
-
-            // Usually should be in [1.5, 2.5). The J-integral radius must be large enough to at least include elements around
-            // the element that contains the crack tip. However it must not be so large that an element intersected by the 
-            // J-integral contour is containes the previous crack tip. Thus the J-integral radius must be sufficiently smaller
-            // than the crack growth length.
-            builder.JintegralRadiusOverElementSize = 2.0;
-
-            // If you modify the following two parameters significantly, then you will need to redefine which nodes are expected 
-            // to be enriched.
-            builder.TipEnrichmentRadius = 0.5;
-            builder.BC = HolesBenchmark.BoundaryConditions.BottomConstrainXDisplacementY_TopConstrainXDisplacementY;
-
-            builder.MaxIterations = 12;
-
-            HolesBenchmark benchmark = builder.BuildBenchmark();
-            benchmark.InitializeModel();
-            return benchmark;
-        }
-
-        private static ISolver DefineSolver(HolesBenchmark benchmark, SolverType solverType)
-        {
-            if (solverType == SolverType.Skyline)
-            {
-                var builder = new SkylineSolver.Builder();
-                builder.DofOrderer = new DofOrderer(new NodeMajorDofOrderingStrategy(), AmdReordering.CreateWithSuiteSparseAmd());
-                return builder.BuildSolver(benchmark.Model);
-            }
-            else if (solverType == SolverType.Feti1)
-            {
-                benchmark.Partitioner = new TipAdaptivePartitioner(benchmark.Crack);
-                var factorizationTolerances = new Dictionary<int, double>();
-                if (benchmark.Model.Subdomains.Count == 10)
-                {
-                    factorizationTolerances[0] = 1E-2;
-                    factorizationTolerances[1] = 1E-2;
-                    factorizationTolerances[2] = 1E-2;
-                    factorizationTolerances[3] = 1E-2;
-                    factorizationTolerances[4] = 1E-2;
-                    factorizationTolerances[5] = 1E-2;
-                    factorizationTolerances[6] = 1E-2;
-                    factorizationTolerances[7] = 1E-2;
-                    factorizationTolerances[8] = 1E-2;
-                    factorizationTolerances[9] = 1E-2;
-                }
-                else
-                {
-                    throw new NotImplementedException();
-                }
-                //var fetiMatrices = new DenseFeti1SubdomainMatrixManager.Factory();
-                var fetiMatrices = new SkylineFeti1SubdomainMatrixManager.Factory(new OrderingAmdSuiteSparse());
-                var builder = new Feti1Solver.Builder(fetiMatrices, factorizationTolerances);
-                //builder.PreconditionerFactory = new LumpedPreconditionerOLD.Factory();
-                builder.PreconditionerFactory = new DirichletPreconditionerOLD.Factory();
-                builder.ProblemIsHomogeneous = true;
-                return builder.BuildSolver(benchmark.Model);
-            }
-            else if (solverType == SolverType.FetiDP)
+            if (solverType == SolverType.FetiDP)
             {
                 //benchmark.Partitioner = new TipAdaptivePartitioner(benchmark.Crack);
                 Dictionary<ISubdomain, HashSet<INode>> cornerNodes = null;
@@ -434,62 +378,31 @@ namespace ISAAR.MSolve.XFEM.Tests.COMPDYN2019
                 }
 
                 // Must also specify corner nodes
-                //var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
                 var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Crack, cornerNodes);
-                //var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
-                //var fetiMatrices = new SkylineFetiDPSubdomainMatrixManager.Factory();
-                var fetiMatrices = new FetiDPSubdomainMatrixManagerSkylineOLD.Factory(new OrderingAmdSuiteSparse());
-                var builder = new FetiDPSolverOLD.Builder(cornerNodeSelection, fetiMatrices);
-                //builder.PreconditionerFactory = new LumpedPreconditionerOLD.Factory();
-                //builder.PreconditionerFactory = new DiagonalDirichletPreconditionerOLD.Factory();
-                builder.PreconditionerFactory = new DirichletPreconditionerOLD.Factory();
+                var reordering = new OrderingAmdCSparseNet();
+                var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(reordering);
+                var builder = new FetiDPSolverSerial.Builder(fetiMatrices);
+                //builder.Preconditioning = new LumpedPreconditioning();
+                //builder.Preconditioning = new DiagonalDirichletPreconditioning();
+                builder.Preconditioning = new DirichletPreconditioning();
                 builder.ProblemIsHomogeneous = true;
-                return builder.BuildSolver(benchmark.Model);
+                builder.PcgSettings = new PcgSettings() { ConvergenceTolerance = 1E-7 };
+                return builder.Build(benchmark.Model, cornerNodeSelection);
             }
             else throw new ArgumentException("Invalid solver choice.");
         }
 
-        private static void PlotSubdomains(HolesBenchmark benchmark, ISolver solver)
+        private static void RunCrackPropagationAnalysis(HolesBenchmark benchmark, ISolverMpi solver)
         {
-            string subdomainPlotPath = subdomainPlotDirectory + "\\subdomains.vtk";
-            string boundaryNodesPlotPath = subdomainPlotDirectory + "\\boundary_nodes.vtk";
-            string cornerNodesPlotPath = subdomainPlotDirectory + "\\corner_nodes.vtk";
-
-            if (solver is Feti1Solver feti1)
-            {
-                benchmark.Model.ConnectDataStructures();
-                var writer = new MeshPartitionWriter();
-                writer.WriteSubdomainElements(subdomainPlotPath, benchmark.Model);
-                writer.WriteBoundaryNodes(boundaryNodesPlotPath, benchmark.Model);
-            }
-            else if (solver is FetiDPSolverOLD fetiDP)
-            {
-                benchmark.Model.ConnectDataStructures();
-                var writer = new MeshPartitionWriter();
-                writer.WriteSubdomainElements(subdomainPlotPath, benchmark.Model);
-                writer.WriteBoundaryNodes(boundaryNodesPlotPath, benchmark.Model);
-
-                var allCornerNodes = new HashSet<INode>();
-                foreach (IEnumerable<INode> cornerNodes in fetiDP.CornerNodesOfSubdomains.Values)
-                {
-                    allCornerNodes.UnionWith(cornerNodes);
-                }
-                writer.WriteSpecialNodes(cornerNodesPlotPath, "corner_nodes", allCornerNodes);
-            }
-            else throw new ArgumentException("Invalid solver");
-        }
-
-        private static void RunCrackPropagationAnalysis(HolesBenchmark benchmark, ISolver solver)
-        {
-            var analyzer = new QuasiStaticCrackPropagationAnalyzerOLD(benchmark.Model, solver, benchmark.Crack,
+            var analyzer = new QuasiStaticCrackPropagationAnalyzerSerial(benchmark.Model, solver, benchmark.Crack,
                 benchmark.FractureToughness, benchmark.MaxIterations, benchmark.Partitioner);
 
             // Subdomain plots
             if (subdomainPlotDirectory != null)
             {
-                if (solver is FetiDPSolverOLD fetiDP)
+                if (solver is FetiDPSolverSerial fetiDP)
                 {
-                    analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(fetiDP.CornerNodeSelection, subdomainPlotDirectory);
+                    analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(fetiDP.CornerNodes, subdomainPlotDirectory);
                 }
                 else analyzer.DDLogger = new DomainDecompositionLogger(subdomainPlotDirectory);
             }

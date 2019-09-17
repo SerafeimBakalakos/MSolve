@@ -3,22 +3,23 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 
 namespace ISAAR.MSolve.Logging.DomainDecomposition
 {
     public class DomainDecompositionLoggerFetiDP : IDomainDecompositionLogger
     {
         private readonly string plotDirectoryPath;
-        private readonly FetiDPSolverOLD solver;
+        private readonly ICornerNodeSelection cornerNodeSelection;
         private readonly bool shuffleSubdomainColors;
         private int analysisStep;
 
         //TODO: make sure the path does not end in "\"
-        public DomainDecompositionLoggerFetiDP(FetiDPSolverOLD solver, string plotDirectoryPath, 
+        public DomainDecompositionLoggerFetiDP(ICornerNodeSelection cornerNodeSelection, string plotDirectoryPath, 
             bool shuffleSubdomainColors = false) 
         {
             this.plotDirectoryPath = plotDirectoryPath;
-            this.solver = solver;
+            this.cornerNodeSelection = cornerNodeSelection;
             this.shuffleSubdomainColors = shuffleSubdomainColors;
             analysisStep = 0;
         }
@@ -28,13 +29,8 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
             var writer = new MeshPartitionWriter(shuffleSubdomainColors);
             writer.WriteSubdomainElements($"{plotDirectoryPath}\\subdomains_{analysisStep}.vtk", model);
             writer.WriteBoundaryNodes($"{plotDirectoryPath}\\boundary_nodes_{analysisStep}.vtk", model);
-
-            var allCornerNodes = new HashSet<INode>();
-            foreach (IEnumerable<INode> cornerNodes in solver.CornerNodesOfSubdomains.Values)
-            {
-                allCornerNodes.UnionWith(cornerNodes);
-            }
-            writer.WriteSpecialNodes($"{plotDirectoryPath}\\corner_nodes_{analysisStep}.vtk", "corner_nodes", allCornerNodes);
+            writer.WriteSpecialNodes($"{plotDirectoryPath}\\corner_nodes_{analysisStep}.vtk", "corner_nodes", 
+                cornerNodeSelection.GlobalCornerNodes);
 
             ++analysisStep;
         }

@@ -75,12 +75,6 @@ namespace ISAAR.MSolve.XFEM.Tests
         private readonly string lsmPlotDirectory;
         private readonly string subdomainPlotDirectory;
 
-        /// <summary>
-        /// The maximum number of crack propagation steps. The analysis may stop earlier if the crack has reached the domain 
-        /// boundary or if the fracture toughness is exceeded.
-        /// </summary>
-        private readonly int maxIterations;
-
         private readonly double tipEnrichmentRadius = 0.0;
 
         private TrackingExteriorCrackLSM crack;
@@ -91,7 +85,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// </summary>
         /// <param name="growthLength">The length by which the crack grows in each iteration.</param>
         public DcbBenchmarkBelytschko(int numElementsY, int numSubdomainsX, int numSubdomainsY, double growthLength, 
-            double tipEnrichmentRadius, double jIntegralRadiusOverElementSize,  int maxIterations, double heavisideTol,
+            double tipEnrichmentRadius, double jIntegralRadiusOverElementSize, int maxIterations, double heavisideTol,
             string lsmPlotDirectory, string subdomainPlotDirectory)
         {
             this.numElementsY = numElementsY;
@@ -102,7 +96,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             this.jIntegralRadiusOverElementSize = jIntegralRadiusOverElementSize;
             this.lsmPlotDirectory = lsmPlotDirectory;
             this.subdomainPlotDirectory = subdomainPlotDirectory;
-            this.maxIterations = maxIterations;
+            this.MaxIterations = maxIterations;
             this.heavisideTol = heavisideTol;
         }
 
@@ -112,9 +106,14 @@ namespace ISAAR.MSolve.XFEM.Tests
         public TrackingExteriorCrackLSM Crack { get { return crack; } }
 
         public CartesianPoint CrackMouth { get; private set; }
+        public double FractureToughness => fractureToughness;
 
         //public IReadOnlyList<double> GrowthAngles { get; private set; }
-
+        /// <summary>
+        /// The maximum number of crack propagation steps. The analysis may stop earlier if the crack has reached the domain 
+        /// boundary or if the fracture toughness is exceeded.
+        /// </summary>
+        public int MaxIterations { get; }
         public IMesh2D<XNode, XContinuumElement2D> Mesh => mesh;
 
         /// <summary>
@@ -128,26 +127,6 @@ namespace ISAAR.MSolve.XFEM.Tests
 
         public TipAdaptivePartitioner Partitioner { get; set; } // Refactor its injection
 
-        public void Analyze(ISolver solver)
-        {
-            var problem = new ProblemStructural(Model, solver);
-            var analyzer = new QuasiStaticCrackPropagationAnalyzer(Model, solver, /*problem,*/ crack, fractureToughness,
-                maxIterations, Partitioner);
-
-            // Subdomain plots
-            if (subdomainPlotDirectory != null)
-            {
-                if (solver is FetiDPSolverOLD fetiDP)
-                {
-                    analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(fetiDP, subdomainPlotDirectory, true);
-                }
-                else analyzer.DDLogger = new DomainDecompositionLogger(subdomainPlotDirectory);
-            }
-
-            analyzer.Initialize();
-            analyzer.Analyze();
-        }
-
         public void InitializeModel()
         {
             Model = new XModel();
@@ -155,7 +134,6 @@ namespace ISAAR.MSolve.XFEM.Tests
             InitializeCrack();
         }
 
-        
         private void CreateModel()
         {
             var builder = new Uniform2DXModelBuilder();

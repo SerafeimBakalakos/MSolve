@@ -106,6 +106,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         public Dictionary<int, HashSet<INode>> CornerNodesOfSubdomains { get; private set; }
         public HashSet<INode> CornerNodesGlobal => cornerNodeSelection.GlobalCornerNodes;
+        public ICornerNodeSelection CornerNodeSelection => cornerNodeSelection;
         public IReadOnlyDictionary<int, ILinearSystem> LinearSystems { get; }
         public SolverLoggerOLD Logger { get; } = new SolverLoggerOLD(name);
         public string Name => name;
