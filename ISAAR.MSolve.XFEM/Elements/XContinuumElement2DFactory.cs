@@ -32,7 +32,7 @@ namespace ISAAR.MSolve.XFEM.Elements
         //private static readonly IReadOnlyDictionary<CellType, IQuadrature2D> integrationsForMass;
         private static readonly IReadOnlyDictionary<CellType, IIsoparametricInterpolation2D> interpolations;
 
-        private readonly IMaterialField2D commonMaterial;
+        private readonly IXMaterialField2D commonMaterial;
         private readonly IIntegrationStrategy2D<XContinuumElement2D> jIntegralStrategy;
         private readonly IIntegrationStrategy2D<XContinuumElement2D> xIntegrationStrategy;
 
@@ -86,7 +86,7 @@ namespace ISAAR.MSolve.XFEM.Elements
         }
 
         public XContinuumElement2DFactory(IIntegrationStrategy2D<XContinuumElement2D> xIntegrationStrategy,
-            IIntegrationStrategy2D<XContinuumElement2D> jIntegralStrategy, IMaterialField2D commonMaterial)
+            IIntegrationStrategy2D<XContinuumElement2D> jIntegralStrategy, IXMaterialField2D commonMaterial)
         {
             this.commonMaterial = commonMaterial;
             this.xIntegrationStrategy = xIntegrationStrategy;

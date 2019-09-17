@@ -12,11 +12,11 @@ namespace ISAAR.MSolve.XFEM.Entities
         public XNode Node { get; }
 
         IDofType INodalLoad.DOF => DofType;
-        public StructuralDof DofType { get; }
+        public IDofType DofType { get; }
 
         public double Amount { get; }
 
-        public NodalLoad(XNode node, StructuralDof dofType, double value)
+        public NodalLoad(XNode node, IDofType dofType, double value)
         {
             this.Node = node;
             this.DofType = dofType;

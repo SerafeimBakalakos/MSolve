@@ -4,17 +4,13 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 
 namespace ISAAR.MSolve.XFEM.Materials
 {
-    public class HomogeneousElasticMaterial2D: IMaterialField2D
+    public class HomogeneousElasticMaterial2D: IXMaterialField2D
     {
-        public double HomogeneousYoungModulus { get; }
-        public double HomogeneousEquivalentYoungModulus { get; }
-        public double HomogeneousPoissonRatio { get; }
-        public double HomogeneousEquivalentPoissonRatio { get; }
-        public double HomogeneousThickness { get; }
-
-        private HomogeneousElasticMaterial2D(double youngModulus, double equivalentYoungModulus, double poissonRatio,
+        private HomogeneousElasticMaterial2D(int id, double youngModulus, double equivalentYoungModulus, double poissonRatio,
             double equivalentPoissonRatio, double thickness)
         {
+            this.ID = id;
+
             MaterialUtilities.CheckYoungModulus(youngModulus);
             MaterialUtilities.CheckPoissonRatio(poissonRatio);
             MaterialUtilities.CheckThickness(thickness);
@@ -26,24 +22,31 @@ namespace ISAAR.MSolve.XFEM.Materials
             HomogeneousThickness = thickness;
         }
 
-        public static HomogeneousElasticMaterial2D CreateMaterialForPlaneStrain(double youngModulus,
+        public int ID { get; }
+        public double HomogeneousYoungModulus { get; }
+        public double HomogeneousEquivalentYoungModulus { get; }
+        public double HomogeneousPoissonRatio { get; }
+        public double HomogeneousEquivalentPoissonRatio { get; }
+        public double HomogeneousThickness { get; }
+
+        public static HomogeneousElasticMaterial2D CreateMaterialForPlaneStrain(int id, double youngModulus,
             double poissonRatio)
         {
             double equivalentE = youngModulus / (1.0 - poissonRatio * poissonRatio);
             double equivalentV = poissonRatio / (1.0 - poissonRatio);
             double thickness = 1.0;
-            return new HomogeneousElasticMaterial2D(youngModulus, equivalentE, poissonRatio, equivalentV, thickness);
+            return new HomogeneousElasticMaterial2D(id, youngModulus, equivalentE, poissonRatio, equivalentV, thickness);
         }
 
-        public static HomogeneousElasticMaterial2D CreateMaterialForPlaneStress(double youngModulus,
+        public static HomogeneousElasticMaterial2D CreateMaterialForPlaneStress(int id, double youngModulus,
             double poissonRatio, double thickness)
         {
-            return new HomogeneousElasticMaterial2D(youngModulus, youngModulus, poissonRatio, poissonRatio, thickness);
+            return new HomogeneousElasticMaterial2D(id, youngModulus, youngModulus, poissonRatio, poissonRatio, thickness);
         }
 
-        public IMaterialField2D Clone()
+        public IXMaterialField2D Clone()
         {
-            return new HomogeneousElasticMaterial2D(this.HomogeneousYoungModulus, this.HomogeneousEquivalentYoungModulus,
+            return new HomogeneousElasticMaterial2D(this.ID, this.HomogeneousYoungModulus, this.HomogeneousEquivalentYoungModulus,
                 this.HomogeneousPoissonRatio, this.HomogeneousEquivalentPoissonRatio, this.HomogeneousThickness);
         }
 

@@ -15,12 +15,12 @@ namespace ISAAR.MSolve.XFEM.Entities
 {
     public class XNode : Node
     {
-        public XNode(int id, double x, double y) : base(id, x, y)
+        public XNode(int id, double x, double y, int multiplicity = 1) : base(id, x, y, multiplicity)
         {
             this.EnrichmentItems = new Dictionary<IEnrichmentItem2D, double[]>();
         }
 
-        public XNode(int id, double x, double y, double z) : base(id, x, y, z)
+        public XNode(int id, double x, double y, double z, int multiplicity = 1) : base(id, x, y, z, multiplicity)
         {
             this.EnrichmentItems = new Dictionary<IEnrichmentItem2D, double[]>();
         }

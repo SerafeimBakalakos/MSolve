@@ -179,7 +179,7 @@ namespace ISAAR.MSolve.SamplesConsole.Solvers
                 new RectangularSubgridIntegration2D<XContinuumElement2D>(8, GaussLegendre2D.GetQuadratureWithOrder(4, 4));
 
             // Elements
-            var material = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(2.1E7, 0.3);
+            var material = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, 2.1E7, 0.3);
             var factory = new XContinuumElement2DFactory(integration, jIntegration, material);
             var cells = new XContinuumElement2D[elementConnectivities.Count];
             for (int e = 0; e < cells.Length; ++e)

@@ -6,28 +6,16 @@ using ISAAR.MSolve.XFEM.Enrichments.Items;
 
 namespace ISAAR.MSolve.XFEM.Materials
 {
-    class BiElasticMaterial2D: IMaterialField2D
+    class BiElasticMaterial2D: IXMaterialField2D
     {
         private readonly MaterialInterface2D bimaterialInterface;
-
-        // TODO: Perhaps these can be stored as a MaterialPoint2D and then return it (instead of copying to new)
-        public double YoungModulus1 { get; }
-        public double EquivalentYoungModulus1 { get; }
-        public double PoissonRatio1 { get; }
-        public double EquivalentPoissonRatio1 { get; }
-        public double Thickness1 { get; }
-
-        public double YoungModulus2 { get; }
-        public double EquivalentYoungModulus2 { get; }
-        public double PoissonRatio2 { get; }
-        public double EquivalentPoissonRatio2 { get; }
-        public double Thickness2 { get; }
-
-        private BiElasticMaterial2D(double youngModulus1, double equivalentYoungModulus1, double poissonRatio1,
+        private BiElasticMaterial2D(int id, double youngModulus1, double equivalentYoungModulus1, double poissonRatio1,
             double equivalentPoissonRatio1, double thickness1, double youngModulus2, double equivalentYoungModulus2,
             double poissonRatio2, double equivalentPoissonRatio2, double thickness2,
             MaterialInterface2D bimaterialInterface)
         {
+            this.ID = id;
+
             MaterialUtilities.CheckYoungModulus(youngModulus1);
             MaterialUtilities.CheckPoissonRatio(poissonRatio1);
             MaterialUtilities.CheckThickness(thickness1);
@@ -50,6 +38,23 @@ namespace ISAAR.MSolve.XFEM.Materials
             this.bimaterialInterface = bimaterialInterface;
         }
 
+        public int ID { get; }
+
+        // TODO: Perhaps these can be stored as a MaterialPoint2D and then return it (instead of copying to new)
+        public double YoungModulus1 { get; }
+        public double EquivalentYoungModulus1 { get; }
+        public double PoissonRatio1 { get; }
+        public double EquivalentPoissonRatio1 { get; }
+        public double Thickness1 { get; }
+
+        public double YoungModulus2 { get; }
+        public double EquivalentYoungModulus2 { get; }
+        public double PoissonRatio2 { get; }
+        public double EquivalentPoissonRatio2 { get; }
+        public double Thickness2 { get; }
+
+        
+
         /// <summary>
         /// Material properties for the "positive" subdomain designed by the interface are denoted as 1.
         /// Material properties for the "negative" subdomain designed by the interface are denoted as 2. 
@@ -60,7 +65,7 @@ namespace ISAAR.MSolve.XFEM.Materials
         /// <param name="poissonRatio2"></param>
         /// <param name="bimaterialInterface"></param>
         /// <returns></returns>
-        public static BiElasticMaterial2D CreateMaterialForPlainStrain(double youngModulus1, double poissonRatio1,
+        public static BiElasticMaterial2D CreateMaterialForPlainStrain(int id, double youngModulus1, double poissonRatio1,
              double youngModulus2, double poissonRatio2, MaterialInterface2D bimaterialInterface)
         {
             double equivalentE1 = youngModulus1 / (1.0 - poissonRatio1 * poissonRatio1);
@@ -69,7 +74,7 @@ namespace ISAAR.MSolve.XFEM.Materials
             double equivalentE2 = youngModulus2 / (1.0 - poissonRatio2 * poissonRatio2);
             double equivalentV2 = poissonRatio2 / (1.0 - poissonRatio2);
             double thickness2 = 1.0;
-            return new BiElasticMaterial2D(youngModulus1, equivalentE1, poissonRatio1, equivalentV1, thickness1,
+            return new BiElasticMaterial2D(id, youngModulus1, equivalentE1, poissonRatio1, equivalentV1, thickness1,
                 youngModulus2, equivalentE2, poissonRatio2, equivalentV2, thickness2, bimaterialInterface);
         }
 
@@ -82,17 +87,17 @@ namespace ISAAR.MSolve.XFEM.Materials
         /// <param name="youngModulus2"></param>
         /// <param name="poissonRatio2"></param>
         /// <param name="bimaterialInterface"></param>
-        public static BiElasticMaterial2D CreateMaterialForPlainStress(double youngModulus1, double poissonRatio1,
+        public static BiElasticMaterial2D CreateMaterialForPlainStress(int id, double youngModulus1, double poissonRatio1,
             double thickness1, double youngModulus2, double poissonRatio2, double thickness2,
             MaterialInterface2D bimaterialInterface)
         {
-            return new BiElasticMaterial2D(youngModulus1, youngModulus1, poissonRatio1, poissonRatio1, thickness1,
+            return new BiElasticMaterial2D(id, youngModulus1, youngModulus1, poissonRatio1, poissonRatio1, thickness1,
                 youngModulus2, youngModulus2, poissonRatio2, poissonRatio2, thickness2, bimaterialInterface);
         }
 
-        public IMaterialField2D Clone()
+        public IXMaterialField2D Clone()
         {
-            return new BiElasticMaterial2D(this.YoungModulus1, this.EquivalentYoungModulus1, this.PoissonRatio1, 
+            return new BiElasticMaterial2D(this.ID, this.YoungModulus1, this.EquivalentYoungModulus1, this.PoissonRatio1, 
                 this.EquivalentPoissonRatio1, this.Thickness1, this.YoungModulus2, this.EquivalentYoungModulus2, 
                 this.PoissonRatio2, this.EquivalentPoissonRatio2, this.Thickness2, this.bimaterialInterface);
         }

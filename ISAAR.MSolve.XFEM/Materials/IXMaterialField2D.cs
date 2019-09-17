@@ -6,9 +6,11 @@ namespace ISAAR.MSolve.XFEM.Materials
 {
     // TODO: Perhaps I should return a MaterialPoint DTO instead of each property separately. The trick would be to 
     // avoid redundant object creation and copying doubles in the concrete classes.
-    public interface IMaterialField2D
+    public interface IXMaterialField2D
     {
-        IMaterialField2D Clone();
+        int ID { get; }
+
+        IXMaterialField2D Clone();
 
         double GetYoungModulusAt(NaturalPoint point, EvalInterpolation2D interpolation);
         double GetEquivalentYoungModulusAt(NaturalPoint point, EvalInterpolation2D interpolation);

@@ -36,7 +36,7 @@ namespace ISAAR.MSolve.XFEM.Elements
         public XContinuumElement2D(int id, IReadOnlyList<XNode> nodes, IIsoparametricInterpolation2D interpolation,
             IGaussPointExtrapolation2D gaussPointExtrapolation, IQuadrature2D standardQuadrature, 
             IIntegrationStrategy2D<XContinuumElement2D> integrationStrategy, 
-            IIntegrationStrategy2D<XContinuumElement2D> jIntegralStrategy, IMaterialField2D material)
+            IIntegrationStrategy2D<XContinuumElement2D> jIntegralStrategy, IXMaterialField2D material)
         {
             this.id = id;
             this.Nodes = nodes;
@@ -106,7 +106,7 @@ namespace ISAAR.MSolve.XFEM.Elements
         public IIsoparametricInterpolation2D Interpolation { get; }
 
         internal IIntegrationStrategy2D<XContinuumElement2D> JintegralStrategy { get; }
-        internal IMaterialField2D Material { get; }
+        public IXMaterialField2D Material { get; }
 
         IReadOnlyList<INode> IElement.Nodes => Nodes;
         /// <summary>

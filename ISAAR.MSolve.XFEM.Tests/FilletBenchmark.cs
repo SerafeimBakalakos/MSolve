@@ -54,7 +54,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// The material used for the J-integral computation. It msut be stored separately from individual element materials.
         /// </summary>
         private static readonly HomogeneousElasticMaterial2D globalHomogeneousMaterial =
-            HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(E, v);
+            HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, E, v);
 
         /// <summary>
         /// The maximum value that the effective SIF can reach before collapse occurs.
@@ -254,7 +254,7 @@ namespace ISAAR.MSolve.XFEM.Tests
                 new RectangularSubgridIntegration2D<XContinuumElement2D>(8, GaussLegendre2D.GetQuadratureWithOrder(4, 4));
 
             // Elements
-            var material = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(E, v);
+            var material = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, E, v);
             var factory = new XContinuumElement2DFactory(integration, jIntegration, material);
             var cells = new XContinuumElement2D[elementConnectivities.Count];
             for (int e = 0; e < cells.Length; ++e)

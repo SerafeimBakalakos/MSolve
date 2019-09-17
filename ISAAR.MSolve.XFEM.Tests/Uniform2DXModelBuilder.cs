@@ -108,8 +108,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
                 }
             }
             double thickness = 1.0;
-            IMaterialField2D[] materials = youngModuli.Select(
-                E => HomogeneousElasticMaterial2D.CreateMaterialForPlaneStress(E, 0.3, thickness)).ToArray();
+            IXMaterialField2D[] materials = youngModuli.Select(
+                E => HomogeneousElasticMaterial2D.CreateMaterialForPlaneStress(0, E, 0.3, thickness)).ToArray();
 
             // Define model, subdomains, nodes
             var model = new XModel();
