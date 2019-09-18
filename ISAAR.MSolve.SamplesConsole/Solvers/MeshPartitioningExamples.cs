@@ -173,10 +173,10 @@ namespace ISAAR.MSolve.SamplesConsole.Solvers
 
             // Integration rules
             var integration = new IntegrationForCrackPropagation2D(
-                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)),
-                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)));
+                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, 2),
+                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, 2));
             var jIntegration =
-                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, GaussLegendre2D.GetQuadratureWithOrder(4, 4));
+                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, 4);
 
             // Elements
             var material = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, 2.1E7, 0.3);

@@ -247,11 +247,11 @@ namespace ISAAR.MSolve.XFEM.Tests
             foreach (XNode node in nodes) Model.Nodes.Add(node.ID, node);
 
             // Integration rules
-            var integration = new IntegrationForCrackPropagation2D(
-                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)),
-                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)));
+            var integration = new IntegrationForCrackPropagation2D( 
+                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, 2),
+                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, 2));
             var jIntegration = 
-                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, GaussLegendre2D.GetQuadratureWithOrder(4, 4));
+                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, 4);
 
             // Elements
             var material = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, E, v);

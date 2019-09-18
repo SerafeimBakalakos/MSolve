@@ -227,8 +227,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             double v = 0.3;
             var material = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, E, v);
 
-            var integrationStrategy = new IntegrationForCrackPropagation2D(
-                new RectangularSubgridIntegration2D<XContinuumElement2D>(2, GaussLegendre2D.GetQuadratureWithOrder(2, 2)),
+            var integrationStrategy = new IntegrationForCrackPropagation2D( 
+                new RectangularSubgridIntegration2D<XContinuumElement2D>(2, 2),
                 new SimpleIntegration2D());
             //var integrationStrategy = new IntegrationForCrackPropagation2D(GaussLegendre2D.GetQuadratureWithOrder(2, 2),
             //  new RectangularSubgridIntegration2D<XContinuumElement2D>(2, GaussLegendre2D.GetQuadratureWithOrder(2, 2)));
@@ -273,8 +273,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             double v = 0.3;
             var material = BiElasticMaterial2D.CreateMaterialForPlainStrain(0, E1, v, E2, v, enrichmentItem);
 
-            var integrationStrategy = new RectangularSubgridIntegration2D<XContinuumElement2D>(
-                2, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
+            var integrationStrategy = new RectangularSubgridIntegration2D<XContinuumElement2D>(2, 2);
 
             //var integrationStrategy = new IntegrationForCrackPropagation2D(GaussLegendre2D.Order2x2,
             //    new RectangularSubgridIntegration2D<XContinuumElement2D>(2, GaussLegendre2D.Order2x2));

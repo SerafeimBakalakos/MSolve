@@ -41,12 +41,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
         public int NumTotalElementsY { get; set; } = 1;
 
         public IIntegrationStrategy2D<XContinuumElement2D> QuadratureForStiffness { get; } =
-            new IntegrationForCrackPropagation2D(
-                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)),
-                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)));
+            new IntegrationForCrackPropagation2D( 
+                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, 2),
+                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, 2));
 
         public IIntegrationStrategy2D<XContinuumElement2D> QuadratureForJintegral { get; } =
-            new RectangularSubgridIntegration2D<XContinuumElement2D>(8, GaussLegendre2D.GetQuadratureWithOrder(4, 4));
+            new RectangularSubgridIntegration2D<XContinuumElement2D>(8, 4);
 
         public double YoungModulus { get; set; } = 1.0;
 

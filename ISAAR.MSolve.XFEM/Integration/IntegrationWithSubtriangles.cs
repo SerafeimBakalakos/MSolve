@@ -9,6 +9,7 @@ using ISAAR.MSolve.Geometry.Triangulation;
 using ISAAR.MSolve.XFEM.CrackGeometry;
 using ISAAR.MSolve.XFEM.Elements;
 
+//TODO: Using LSM, this could probably be done in the natural system to avoid inverse mappings.
 namespace ISAAR.MSolve.XFEM.Integration
 {
     // TODO: Needs option to refine the mesh for the J-integral and tip blending elements.
@@ -19,8 +20,9 @@ namespace ISAAR.MSolve.XFEM.Integration
         private readonly ISingleCrack crack;
         private readonly double triangleOverElementArea;
 
-        public IntegrationWithSubtriangles(TriangleQuadratureSymmetricGaussian triangleIntegrationRule, ISingleCrack crack, 
-            ITriangulator2D<NaturalPoint> triangulator, double triangleOverElementArea = double.PositiveInfinity)
+        public IntegrationWithSubtriangles(TriangleQuadratureSymmetricGaussian triangleIntegrationRule, 
+            ISingleCrack crack, ITriangulator2D<NaturalPoint> triangulator, 
+            double triangleOverElementArea = double.PositiveInfinity)
         {
             this.triangleIntegrationRule = triangleIntegrationRule;
             this.crack = crack;

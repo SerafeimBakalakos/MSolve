@@ -1,15 +1,13 @@
-﻿using ISAAR.MSolve.Discretization;
-using ISAAR.MSolve.Discretization.Interfaces;
+﻿using System;
+using System.Collections.Generic;
+using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.XFEM.Elements;
 using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.Materials;
-using ISAAR.MSolve.XFEM.Transfer.Elements;
-using ISAAR.MSolve.XFEM.Transfer.Materials;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
+//TODO: By having each process store the element factory and pass it to this object, we avoid the headache of transfering 
+//      materials and especially integration rules (which use decorators to make matters worse). However, currntly only one
+//      factory per subdomain is available, which means only 1 material and 1 type of integration
 namespace ISAAR.MSolve.XFEM.Transfer
 {
     [Serializable]
@@ -17,8 +15,7 @@ namespace ISAAR.MSolve.XFEM.Transfer
     {
         public int id;
         public XNodeDto[] nodes;
-        public IXElementDto[] elements;
-        public IXMaterialFieldDto[] materials;
+        public XElementDto[] elements;
         public XNodalDisplacementDto[] nodalDisplacements;
         public XNodalLoadDto[] nodalLoads;
 
@@ -42,28 +39,10 @@ namespace ISAAR.MSolve.XFEM.Transfer
             int n = 0;
             foreach (XNode node in subdomain.Nodes.Values) dto.nodes[n++] = new XNodeDto(node);
 
-            // Materials
-            // More than 1 elements may have the same material properties. First gather the unique ones.
-            var uniqueMaterials = new Dictionary<int, IXMaterialField2D>();
-            foreach (IXFiniteElement element in subdomain.Elements.Values)
-            {
-                // Each element is assumed to have the same material at all GPs.
-                IXMaterialField2D elementMaterial = element.Material;
-                uniqueMaterials[elementMaterial.ID] = elementMaterial;
-            }
-            dto.materials = new IXMaterialFieldDto[uniqueMaterials.Count];
-            var materialSerializer = new XMaterialSerializer();
-            int counter = 0;
-            foreach (IXMaterialField2D material in uniqueMaterials.Values)
-            {
-                dto.materials[counter++] = materialSerializer.Serialize(material);
-            }
-
             // Elements
-            dto.elements = new IXElementDto[subdomain.NumElements];
-            var elementSerializer = new XElementSerializer();
+            dto.elements = new XElementDto[subdomain.NumElements];
             int e = 0;
-            foreach (IXFiniteElement element in subdomain.Elements.Values) dto.elements[e++] = elementSerializer.Serialize(element);
+            foreach (IXFiniteElement element in subdomain.Elements.Values) dto.elements[e++] = new XElementDto(element);
 
             // Displacements
             var displacements = new List<XNodalDisplacementDto>();
@@ -86,7 +65,7 @@ namespace ISAAR.MSolve.XFEM.Transfer
             return dto;
         }
 
-        public XSubdomain Deserialize(IDofSerializer dofSerializer)
+        public XSubdomain Deserialize(IDofSerializer dofSerializer, IXFiniteElementFactory elementFactory)
         {
             throw new NotImplementedException("What about integration strategies, dofs and enrichments?");
 
@@ -106,14 +85,11 @@ namespace ISAAR.MSolve.XFEM.Transfer
                 subdomain.Nodes[node.ID] = node;
             }
 
-            // Materials
-            var allMaterials = new Dictionary<int, IXMaterialField2D>();
-            foreach (IXMaterialFieldDto m in this.materials) allMaterials[m.ID] = m.Deserialize();
 
             // Elements
-            foreach (IXElementDto e in this.elements)
+            foreach (XElementDto e in this.elements)
             {
-                IXFiniteElement element = e.Deserialize(subdomain.Nodes, allMaterials);
+                IXFiniteElement element = e.Deserialize(elementFactory, id => subdomain.Nodes[id]);
                 subdomain.Elements.Add(element.ID, element);
             }
 

@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.XFEM.Elements
     /// convenient when the thickness and material properties are the same throughout the whole domain or a region.
     /// Authors: Serafeim Bakalakos
     /// </summary>
-    public class XContinuumElement2DFactory
+    public class XContinuumElement2DFactory : IXFiniteElementFactory
     {
         private static readonly IReadOnlyDictionary<CellType, IGaussPointExtrapolation2D> extrapolations;
         private static readonly IReadOnlyDictionary<CellType, IQuadrature2D> standardIntegrationsForStiffness;
@@ -93,6 +93,9 @@ namespace ISAAR.MSolve.XFEM.Elements
             this.jIntegralStrategy = jIntegralStrategy;
         }
 
+        IXFiniteElement IXFiniteElementFactory.CreateElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
+            => CreateElement(id, cellType, nodes);
+
         public XContinuumElement2D CreateElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
         {
 #if DEBUG
@@ -101,5 +104,7 @@ namespace ISAAR.MSolve.XFEM.Elements
             return new XContinuumElement2D(id, nodes, interpolations[cellType], extrapolations[cellType],
                 standardIntegrationsForStiffness[cellType], xIntegrationStrategy, jIntegralStrategy, commonMaterial.Clone());
         }
+
+        
     }
 }

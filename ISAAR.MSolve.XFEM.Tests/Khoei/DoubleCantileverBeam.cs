@@ -43,11 +43,11 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
         public DoubleCantileverBeam()
         {
             this.material = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, E, v);
-            this.integration = new IntegrationForCrackPropagation2D(
-                    new RectangularSubgridIntegration2D<XContinuumElement2D>(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)),
-                    new RectangularSubgridIntegration2D<XContinuumElement2D>(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)));
+            this.integration = new IntegrationForCrackPropagation2D( 
+                    new RectangularSubgridIntegration2D<XContinuumElement2D>(8, 2),
+                    new RectangularSubgridIntegration2D<XContinuumElement2D>(8, 2));
             this.jIntegration =
-                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, GaussLegendre2D.GetQuadratureWithOrder(4, 4));
+                new RectangularSubgridIntegration2D<XContinuumElement2D>(8, 4);
             this.beamBoundary = new Rectangular2DBoundary(0, beamLength, 0, beamHeight);
         }
 
