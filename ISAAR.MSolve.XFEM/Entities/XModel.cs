@@ -10,6 +10,7 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interfaces;
+using ISAAR.MSolve.FEM.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.XFEM.Elements;
 
@@ -23,7 +24,7 @@ namespace ISAAR.MSolve.XFEM.Entities
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();
 
-        public IDofSerializer DofSerializer => throw new NotImplementedException();
+        public IDofSerializer DofSerializer { get; } = new StandardDofSerializer();
 
         public Dictionary<int, IXFiniteElement> Elements { get; } = new Dictionary<int, IXFiniteElement>();
 

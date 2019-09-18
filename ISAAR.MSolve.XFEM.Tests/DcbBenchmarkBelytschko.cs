@@ -100,12 +100,25 @@ namespace ISAAR.MSolve.XFEM.Tests
             this.heavisideTol = heavisideTol;
         }
 
+        public static IXFiniteElementFactory ElementFactory
+        {
+            get
+            {
+                var modelBuilder = new Uniform2DXModelBuilder();
+                var material = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, E, v);
+                var elementFactory = new XContinuumElement2DFactory(modelBuilder.QuadratureForStiffness,
+                    modelBuilder.QuadratureForJintegral, material);
+                return elementFactory;
+            }
+        }
+
         /// <summary>
         /// The crack geometry description. Before accessing it, make sure <see cref="InitializeModel"/> has been called.
         /// </summary>
         public TrackingExteriorCrackLSM Crack { get { return crack; } }
 
         public CartesianPoint CrackMouth { get; private set; }
+
         public double FractureToughness => fractureToughness;
 
         //public IReadOnlyList<double> GrowthAngles { get; private set; }

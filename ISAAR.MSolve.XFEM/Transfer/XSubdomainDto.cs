@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.XFEM.Elements;
+using ISAAR.MSolve.XFEM.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Entities;
 
 //TODO: By having each process store the element factory and pass it to this object, we avoid the headache of transfering 
@@ -11,7 +12,7 @@ using ISAAR.MSolve.XFEM.Entities;
 namespace ISAAR.MSolve.XFEM.Transfer
 {
     [Serializable]
-    public class XSubdomainDto //TODO: dofs, enrichments
+    public class XSubdomainDto //TODO: dofs, enrichments, level sets
     {
         public int id;
         public XNodeDto[] nodes;
@@ -21,23 +22,16 @@ namespace ISAAR.MSolve.XFEM.Transfer
 
         public static XSubdomainDto CreateEmpty() => new XSubdomainDto();
 
-        public static XSubdomainDto Serialize(XSubdomain subdomain, IDofSerializer dofSerializer)
+        public static XSubdomainDto Serialize(XSubdomain subdomain, IDofSerializer dofSerializer,
+            EnrichmentSerializer enrichmentSerializer)
         {
-            throw new NotImplementedException("What about integration strategies, dofs and enrichments?");
-
             var dto = new XSubdomainDto();
             dto.id = subdomain.ID;
-
-            // Dofs
-
-
-            // Enrichments
-
 
             // Nodes
             dto.nodes = new XNodeDto[subdomain.NumNodes];
             int n = 0;
-            foreach (XNode node in subdomain.Nodes.Values) dto.nodes[n++] = new XNodeDto(node);
+            foreach (XNode node in subdomain.Nodes.Values) dto.nodes[n++] = new XNodeDto(node, enrichmentSerializer);
 
             // Elements
             dto.elements = new XElementDto[subdomain.NumElements];
@@ -65,23 +59,15 @@ namespace ISAAR.MSolve.XFEM.Transfer
             return dto;
         }
 
-        public XSubdomain Deserialize(IDofSerializer dofSerializer, IXFiniteElementFactory elementFactory)
+        public XSubdomain Deserialize(IDofSerializer dofSerializer, IXFiniteElementFactory elementFactory,
+            EnrichmentSerializer enrichmentSerializer)
         {
-            throw new NotImplementedException("What about integration strategies, dofs and enrichments?");
-
-
             var subdomain = new XSubdomain(this.id);
 
-            // Dofs
-            
-
-            // Enrichments
-            
-            
             // Nodes
             foreach (XNodeDto n in this.nodes)
             {
-                XNode node = n.Deserialize();
+                XNode node = n.Deserialize(enrichmentSerializer);
                 subdomain.Nodes[node.ID] = node;
             }
 

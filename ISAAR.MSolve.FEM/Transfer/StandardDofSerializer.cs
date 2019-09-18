@@ -5,6 +5,8 @@ using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Transfer;
 
+//TODO: Transfering enriched dofs in XFEM is handled through the enrichments. Therefore this class should be refactored or at
+//      least renamed.
 namespace ISAAR.MSolve.FEM.Transfer
 {
     /// <summary>

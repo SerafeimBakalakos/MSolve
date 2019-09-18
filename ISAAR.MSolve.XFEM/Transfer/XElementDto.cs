@@ -6,6 +6,7 @@ using ISAAR.MSolve.XFEM.Entities;
 
 namespace ISAAR.MSolve.XFEM.Transfer
 {
+    [Serializable]
     public class XElementDto
     {
         public CellType cellType;
