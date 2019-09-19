@@ -11,12 +11,12 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.Logging
 {
     public class EnrichmentLogger
     {
-        private readonly TrackingExteriorCrackLSM lsm;
+        private readonly TrackingExteriorCrackLsm lsm;
         private readonly XModel model;
         private readonly string outputDirectory;
         private int iteration;
 
-        public EnrichmentLogger(XModel model, TrackingExteriorCrackLSM lsm, string outputDirectory)
+        public EnrichmentLogger(XModel model, TrackingExteriorCrackLsm lsm, string outputDirectory)
         {
             this.model = model;
             this.lsm = lsm;

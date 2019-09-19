@@ -30,6 +30,12 @@ namespace ISAAR.MSolve.XFEM.Entities
 
         public IDomain2DBoundary Boundary => this.model.Boundary;
 
+        public XSubdomain GetXSubdomain(int subdomainID)
+        {
+            procs.CheckProcessMatchesSubdomainUnlessMaster(subdomainID);
+            return model.Subdomains[subdomainID];
+        }
+
         public override void ScatterSubdomains()
         {
             // Serialize the data of each subdomain

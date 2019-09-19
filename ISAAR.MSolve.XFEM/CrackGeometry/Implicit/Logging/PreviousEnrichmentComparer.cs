@@ -9,13 +9,13 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.Logging
 {
     public class PreviousLevelSetComparer
     {
-        private readonly TrackingExteriorCrackLSM lsm;
+        private readonly TrackingExteriorCrackLsm lsm;
         private readonly string outputDirectory;
         private int iteration;
         private Dictionary<XNode, double> previousBodyLevelSets;
         private Dictionary<XNode, double> previousTipLevelSets;
 
-        public PreviousLevelSetComparer(TrackingExteriorCrackLSM lsm, string outputDirectory)
+        public PreviousLevelSetComparer(TrackingExteriorCrackLsm lsm, string outputDirectory)
         {
             this.lsm = lsm;
             this.outputDirectory = outputDirectory;

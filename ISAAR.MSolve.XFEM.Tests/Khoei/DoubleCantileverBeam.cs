@@ -51,7 +51,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             this.beamBoundary = new Rectangular2DBoundary(0, beamLength, 0, beamHeight);
         }
 
-        public TrackingExteriorCrackLSM Crack { get; private set; }
+        public TrackingExteriorCrackLsm Crack { get; private set; }
         public XModel Model { get; private set; }
         public Propagator Propagator { get; private set; }
 
@@ -189,7 +189,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             var propagator = new Propagator(mesh, jIntegralRadiusRatio, new HomogeneousMaterialAuxiliaryStates(material),
                 new HomogeneousSIFCalculator(material), new MaximumCircumferentialTensileStressCriterion(),
                 new ConstantIncrement2D(1.5 * jIntegralRadiusRatio * elementSize));
-            var crack = new TrackingExteriorCrackLSM(propagator);
+            var crack = new TrackingExteriorCrackLsm(propagator);
             crack.Mesh = mesh;
 
             // Create enrichments          

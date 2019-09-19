@@ -19,16 +19,14 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction
     /// </summary>
     class SerafeimMeshInteraction : IMeshInteraction
     {
-        private readonly TrackingExteriorCrackLSM lsm;
 
-        public SerafeimMeshInteraction(TrackingExteriorCrackLSM lsm)
+        public SerafeimMeshInteraction()
         {
-            this.lsm = lsm;
         }
 
-        public CrackElementPosition FindRelativePositionOf(XContinuumElement2D element)
+        public CrackElementPosition FindRelativePositionOf(XContinuumElement2D element, CartesianPoint crackTip, 
+            Dictionary<XNode, double> levelSetsBody, Dictionary<XNode, double> levelSetsTip)
         {
-            CartesianPoint crackTip = lsm.GetCrackTip(CrackTipPosition.Single);
             double minBodyLevelSet = double.MaxValue;
             double maxBodyLevelSet = double.MinValue;
             double minTipLevelSet = double.MaxValue;
@@ -36,8 +34,8 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction
 
             foreach (XNode node in element.Nodes)
             {
-                double bodyLevelSet = lsm.LevelSetsBody[node];
-                double tipLevelSet = lsm.LevelSetsTip[node];
+                double bodyLevelSet = levelSetsBody[node];
+                double tipLevelSet = levelSetsTip[node];
                 if (bodyLevelSet < minBodyLevelSet) minBodyLevelSet = bodyLevelSet;
                 if (bodyLevelSet > maxBodyLevelSet) maxBodyLevelSet = bodyLevelSet;
                 if (tipLevelSet < minTipLevelSet) minTipLevelSet = tipLevelSet;
@@ -51,7 +49,8 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction
                 else if (maxTipLevelSet < 0) return CrackElementPosition.Intersected;
                 else // Stolarska's criterion marks all the next as tip elements
                 {
-                    Dictionary<CartesianPoint, double> intersections = FindIntersectionsAndTipLevelSets(element);
+                    Dictionary<CartesianPoint, double> intersections = FindIntersectionsAndTipLevelSets(element,
+                        levelSetsBody, levelSetsTip);
                     Debug.Assert((intersections.Count == 2) || (intersections.Count == 1)); // 1 is veeeeery improbable
                     double tipLevelSetInter1 = intersections.First().Value;
                     double tipLevelSetInter2 = intersections.Last().Value;
@@ -62,7 +61,8 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction
             }
         }
 
-        private Dictionary<CartesianPoint, double> FindIntersectionsAndTipLevelSets(XContinuumElement2D element)
+        private Dictionary<CartesianPoint, double> FindIntersectionsAndTipLevelSets(XContinuumElement2D element,
+            Dictionary<XNode, double> levelSetsBody, Dictionary<XNode, double> levelSetsTip)
         {
             // Find intersections of element with the zero body level set. 
             //TODO: abstract this procedure and reuse it here and in LSM
@@ -72,8 +72,8 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction
             {
                 XNode node1 = nodes[i];
                 XNode node2 = nodes[(i + 1) % nodes.Count];
-                double bodyLevelSet1 = lsm.LevelSetsBody[node1];
-                double bodyLevelSet2 = lsm.LevelSetsBody[node2];
+                double bodyLevelSet1 = levelSetsBody[node1];
+                double bodyLevelSet2 = levelSetsBody[node2];
 
                 if (bodyLevelSet1 * bodyLevelSet2 < 0.0)
                 {
@@ -83,14 +83,14 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction
                     double x = node1.X + k * (node2.X - node1.X);
                     double y = node1.Y + k * (node2.Y - node1.Y);
 
-                    double tipLevelSet1 = lsm.LevelSetsTip[node1];
-                    double tipLevelSet2 = lsm.LevelSetsTip[node2];
+                    double tipLevelSet1 = levelSetsTip[node1];
+                    double tipLevelSet2 = levelSetsTip[node2];
                     double tipLevelSet = tipLevelSet1 + k * (tipLevelSet2 - tipLevelSet1);
 
                     intersections.Add(new CartesianPoint(x, y), tipLevelSet);
                 }
-                else if (bodyLevelSet1 == 0.0) intersections[node1] = lsm.LevelSetsTip[node1]; // TODO: perhaps some tolerance is needed.
-                else if (bodyLevelSet2 == 0.0) intersections[node2] = lsm.LevelSetsTip[node2];
+                else if (bodyLevelSet1 == 0.0) intersections[node1] = levelSetsTip[node1]; // TODO: perhaps some tolerance is needed.
+                else if (bodyLevelSet2 == 0.0) intersections[node2] = levelSetsTip[node2];
             }
 
             return intersections;

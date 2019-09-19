@@ -12,17 +12,14 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction
 {
     class HybridMeshInteractionOLD: IMeshInteraction
     {
-        private readonly TrackingExteriorCrackLSM lsm;
-
-        public HybridMeshInteractionOLD(TrackingExteriorCrackLSM lsm)
+        public HybridMeshInteractionOLD()
         {
-            this.lsm = lsm;
         }
 
         //TODO: replace this with the Faster~() version
-        public CrackElementPosition FindRelativePositionOf(XContinuumElement2D element)
+        public CrackElementPosition FindRelativePositionOf(XContinuumElement2D element, CartesianPoint crackTip,
+            Dictionary<XNode, double> levelSetsBody, Dictionary<XNode, double> levelSetsTip)
         {
-            CartesianPoint crackTip = lsm.GetCrackTip(CrackTipPosition.Single);
             double minBodyLevelSet = double.MaxValue;
             double maxBodyLevelSet = double.MinValue;
             double minTipLevelSet = double.MaxValue;
@@ -30,8 +27,8 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction
 
             foreach (XNode node in element.Nodes)
             {
-                double bodyLevelSet = lsm.LevelSetsBody[node];
-                double tipLevelSet = lsm.LevelSetsTip[node];
+                double bodyLevelSet = levelSetsBody[node];
+                double tipLevelSet = levelSetsTip[node];
                 if (bodyLevelSet < minBodyLevelSet) minBodyLevelSet = bodyLevelSet;
                 if (bodyLevelSet > maxBodyLevelSet) maxBodyLevelSet = bodyLevelSet;
                 if (tipLevelSet < minTipLevelSet) minTipLevelSet = tipLevelSet;

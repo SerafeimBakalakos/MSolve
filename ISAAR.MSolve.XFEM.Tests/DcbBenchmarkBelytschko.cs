@@ -77,7 +77,7 @@ namespace ISAAR.MSolve.XFEM.Tests
 
         private readonly double tipEnrichmentRadius = 0.0;
 
-        private TrackingExteriorCrackLSM crack;
+        private TrackingExteriorCrackLsm crack;
         private BidirectionalMesh2D<XNode, XContinuumElement2D> mesh;
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// <summary>
         /// The crack geometry description. Before accessing it, make sure <see cref="InitializeModel"/> has been called.
         /// </summary>
-        public TrackingExteriorCrackLSM Crack { get { return crack; } }
+        public TrackingExteriorCrackLsm Crack { get { return crack; } }
 
         public CartesianPoint CrackMouth { get; private set; }
 
@@ -179,7 +179,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             initialCrack.UpdateGeometry(-dTheta, da);
             //var crackTip = new CartesianPoint(a + da * Math.Cos(dTheta), h/2 - da * Math.Sin(dTheta));
 
-            var lsmCrack = new TrackingExteriorCrackLSM(propagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol));
+            var lsmCrack = new TrackingExteriorCrackLsm(propagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol));
             lsmCrack.Mesh = mesh;
 
             // Create enrichments          

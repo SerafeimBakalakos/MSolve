@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.XFEM.Elements;
 using ISAAR.MSolve.XFEM.Entities;
 
@@ -8,14 +9,12 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction
 {
     class StolarskaMeshInteraction: IMeshInteraction
     {
-        private readonly TrackingExteriorCrackLSM lsm;
-
-        public StolarskaMeshInteraction(TrackingExteriorCrackLSM lsm)
+        public StolarskaMeshInteraction()
         {
-            this.lsm = lsm;
         }
 
-        public CrackElementPosition FindRelativePositionOf(XContinuumElement2D element)
+        public CrackElementPosition FindRelativePositionOf(XContinuumElement2D element, CartesianPoint crackTip,
+            Dictionary<XNode, double> levelSetsBody, Dictionary<XNode, double> levelSetsTip)
         {
             double minBodyLevelSet = double.MaxValue;
             double maxBodyLevelSet = double.MinValue;
@@ -24,8 +23,8 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction
 
             foreach (XNode node in element.Nodes)
             {
-                double bodyLevelSet = lsm.LevelSetsBody[node];
-                double tipLevelSet = lsm.LevelSetsTip[node];
+                double bodyLevelSet = levelSetsBody[node];
+                double tipLevelSet = levelSetsTip[node];
                 if (bodyLevelSet < minBodyLevelSet) minBodyLevelSet = bodyLevelSet;
                 if (bodyLevelSet > maxBodyLevelSet) maxBodyLevelSet = bodyLevelSet;
                 if (tipLevelSet < minTipLevelSet) minTipLevelSet = tipLevelSet;

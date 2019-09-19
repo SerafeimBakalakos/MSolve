@@ -104,7 +104,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// </summary>
         private readonly int maxIterations;
 
-        private TrackingExteriorCrackLSM crack;
+        private TrackingExteriorCrackLsm crack;
         private BidirectionalMesh2D<XNode, XContinuumElement2D> mesh;
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// <summary>
         /// The crack geometry description. Before accessing it, make sure <see cref="InitializeModel"/> has been called.
         /// </summary>
-        public TrackingExteriorCrackLSM Crack { get { return crack; } }
+        public TrackingExteriorCrackLsm Crack { get { return crack; } }
 
         //public IReadOnlyList<double> GrowthAngles { get; private set; }
 
@@ -286,7 +286,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             var crackMouth = new CartesianPoint(webLeft, crackHeight);
             var crackTip = new CartesianPoint(webLeft + crackLength, crackHeight);
             var initialCrack = new PolyLine2D(crackMouth, crackTip);
-            var lsmCrack = new TrackingExteriorCrackLSM(propagator, 0.0, new RelativeAreaResolver(heavisideTol));
+            var lsmCrack = new TrackingExteriorCrackLsm(propagator, 0.0, new RelativeAreaResolver(heavisideTol));
             lsmCrack.Mesh = mesh;
 
             // Create enrichments          

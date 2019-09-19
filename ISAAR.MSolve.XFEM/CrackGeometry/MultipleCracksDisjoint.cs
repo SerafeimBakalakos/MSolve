@@ -14,9 +14,9 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry
 {
     class MultipleCracksDisjoint : ICrackDescription
     {
-        private readonly IReadOnlyList<TrackingExteriorCrackLSM> cracks;
+        private readonly IReadOnlyList<TrackingExteriorCrackLsm> cracks;
 
-        public MultipleCracksDisjoint(IReadOnlyList<TrackingExteriorCrackLSM> cracks)
+        public MultipleCracksDisjoint(IReadOnlyList<TrackingExteriorCrackLsm> cracks)
         {
             this.cracks = cracks;
         }

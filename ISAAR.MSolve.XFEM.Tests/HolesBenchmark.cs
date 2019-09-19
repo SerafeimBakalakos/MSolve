@@ -162,8 +162,8 @@ namespace ISAAR.MSolve.XFEM.Tests
 
         public string PlotDirectory { get { return leftLsmPlotDirectory; } }
 
-        public TrackingExteriorCrackLSM LeftCrack { get; set; }
-        public TrackingExteriorCrackLSM RightCrack { get; set; }
+        public TrackingExteriorCrackLsm LeftCrack { get; set; }
+        public TrackingExteriorCrackLsm RightCrack { get; set; }
 
         public TipAdaptivePartitioner Partitioner { get; set; } // Refactor its injection
 
@@ -355,7 +355,7 @@ namespace ISAAR.MSolve.XFEM.Tests
 
             var initialLeftCrack = new PolyLine2D(new CartesianPoint(leftCrackMouthX, leftCrackMouthY),
                 new CartesianPoint(leftCrackTipX, leftCrackTipY));
-            LeftCrack = new TrackingExteriorCrackLSM(leftPropagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol));
+            LeftCrack = new TrackingExteriorCrackLsm(leftPropagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol));
             LeftCrack.Mesh = Mesh;
 
             // Create enrichments          
@@ -385,7 +385,7 @@ namespace ISAAR.MSolve.XFEM.Tests
 
             var initialRightCrack = new PolyLine2D(new CartesianPoint(rightCrackMouthX, rightCrackMouthY),
                 new CartesianPoint(rightCrackTipX, rightCrackTipY));
-            RightCrack = new TrackingExteriorCrackLSM(rightPropagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol));
+            RightCrack = new TrackingExteriorCrackLsm(rightPropagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol));
             RightCrack.Mesh = Mesh;
 
             // Create enrichments          
@@ -402,7 +402,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             RightCrack.InitializeGeometry(initialRightCrack);
 
             // Container for both cracks
-            Crack = new MultipleCracksDisjoint(new TrackingExteriorCrackLSM[] { LeftCrack, RightCrack });
+            Crack = new MultipleCracksDisjoint(new TrackingExteriorCrackLsm[] { LeftCrack, RightCrack });
             //Crack = new MultipleCracksDisjoint(new TrackingExteriorCrackLSM[] { leftCrack });
         }
 

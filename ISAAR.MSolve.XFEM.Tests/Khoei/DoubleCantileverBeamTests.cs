@@ -54,7 +54,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             var dcb = new DoubleCantileverBeam();
             dcb.Create3x1Model();
             XModel model = dcb.Model;
-            TrackingExteriorCrackLSM crack = dcb.Crack;
+            TrackingExteriorCrackLsm crack = dcb.Crack;
             (IVectorView globalU, IMatrixView globalK) = dcb.SolveModel();
 
             // Extract displacements of standard dofs
@@ -94,7 +94,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             var dcb = new DoubleCantileverBeam();
             dcb.CreateModel(135, 45, 2.0);
             XModel model = dcb.Model;
-            TrackingExteriorCrackLSM crack = dcb.Crack;
+            TrackingExteriorCrackLsm crack = dcb.Crack;
             (IVectorView globalU, IMatrixView globalK) = dcb.SolveModel();
 
             // Locate nodes
@@ -153,7 +153,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             var dcb = new DoubleCantileverBeam();
             dcb.CreateModel(numElemX, numElemY, jIntegralRadiusRatio);
             XModel model = dcb.Model;
-            TrackingExteriorCrackLSM crack = dcb.Crack;
+            TrackingExteriorCrackLsm crack = dcb.Crack;
             (IVectorView globalU, IMatrixView globalK) = dcb.SolveModel();
             var freeDisplacementsPerSubdomain = new Dictionary<int, Vector>();
             freeDisplacementsPerSubdomain[model.EnumerateSubdomains().First().ID] = (Vector)globalU;
@@ -226,7 +226,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             var dcb = new DoubleCantileverBeam();
             dcb.Create3x1Model();
             XModel model = dcb.Model;
-            TrackingExteriorCrackLSM crack = dcb.Crack;
+            TrackingExteriorCrackLsm crack = dcb.Crack;
             (IVectorView globalU, IMatrixView globalK) = dcb.SolveModel();
 
             // Print matrix
