@@ -16,52 +16,20 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
         private readonly Dictionary<XNode, double> levelSetsBody;
         private readonly Dictionary<XNode, double> levelSetsTip;
         private readonly IMeshInteraction meshInteraction;
+        
 
-        public SingleCrackLsm(Dictionary<XNode, double> levelSetsBody, Dictionary<XNode, double> levelSetsTip, 
+        public SingleCrackLsm(Dictionary<XNode, double> levelSetsBody, Dictionary<XNode, double> levelSetsTip,
             CartesianPoint crackTip)
         {
+            this.CrackTip = crackTip;
             this.levelSetsBody = levelSetsBody;
             this.levelSetsTip = levelSetsTip;
-            this.CrackTip = crackTip;
-
             this.meshInteraction = new SerafeimMeshInteraction();
         }
         public CartesianPoint CrackTip { get; }
 
         public Dictionary<XNode, double> LevelSetsBody => levelSetsBody;
         public Dictionary<XNode, double> LevelSetsTip => levelSetsTip;
-
-        // TODO: with narrow band this should throw an exception if the node is not tracked.
-        public double SignedDistanceOf(XNode node) => levelSetsBody[node];
-
-        // TODO: with narrow band this should throw an exception if the element is not tracked.
-        public double SignedDistanceOf(NaturalPoint point, XContinuumElement2D element,
-             EvalInterpolation2D interpolation)
-        {
-            double signedDistance = 0.0;
-            for (int nodeIdx = 0; nodeIdx < element.Nodes.Count; ++nodeIdx)
-            {
-                signedDistance += interpolation.ShapeFunctions[nodeIdx] * levelSetsBody[element.Nodes[nodeIdx]];
-            }
-            return signedDistance;
-        }
-
-        public Tuple<double, double> SignedDistanceGradientThrough(NaturalPoint point,
-            IReadOnlyList<XNode> elementNodes, EvalInterpolation2D interpolation)
-        {
-            double gradientX = 0.0;
-            double gradientY = 0.0;
-            for (int nodeIdx = 0; nodeIdx < elementNodes.Count; ++nodeIdx)
-            {
-                double dNdx = interpolation.ShapeGradientsCartesian[nodeIdx, 0];
-                double dNdy = interpolation.ShapeGradientsCartesian[nodeIdx, 1];
-
-                double levelSet = levelSetsBody[elementNodes[nodeIdx]];
-                gradientX += dNdx * levelSet;
-                gradientY += dNdy * levelSet;
-            }
-            return new Tuple<double, double>(gradientX, gradientY);
-        }
 
         public SortedSet<CartesianPoint> FindTriangleVertices(XContinuumElement2D element)
         {
@@ -100,5 +68,36 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             return triangleVertices;
         }
 
+        // TODO: with narrow band this should throw an exception if the node is not tracked.
+        public double SignedDistanceOf(XNode node) => levelSetsBody[node];
+
+        // TODO: with narrow band this should throw an exception if the element is not tracked.
+        public double SignedDistanceOf(NaturalPoint point, XContinuumElement2D element,
+             EvalInterpolation2D interpolation)
+        {
+            double signedDistance = 0.0;
+            for (int nodeIdx = 0; nodeIdx < element.Nodes.Count; ++nodeIdx)
+            {
+                signedDistance += interpolation.ShapeFunctions[nodeIdx] * levelSetsBody[element.Nodes[nodeIdx]];
+            }
+            return signedDistance;
+        }
+
+        public Tuple<double, double> SignedDistanceGradientThrough(NaturalPoint point,
+            IReadOnlyList<XNode> elementNodes, EvalInterpolation2D interpolation)
+        {
+            double gradientX = 0.0;
+            double gradientY = 0.0;
+            for (int nodeIdx = 0; nodeIdx < elementNodes.Count; ++nodeIdx)
+            {
+                double dNdx = interpolation.ShapeGradientsCartesian[nodeIdx, 0];
+                double dNdy = interpolation.ShapeGradientsCartesian[nodeIdx, 1];
+
+                double levelSet = levelSetsBody[elementNodes[nodeIdx]];
+                gradientX += dNdx * levelSet;
+                gradientY += dNdy * levelSet;
+            }
+            return new Tuple<double, double>(gradientX, gradientY);
+        }
     }
 }

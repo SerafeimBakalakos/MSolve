@@ -22,8 +22,7 @@ namespace ISAAR.MSolve.XFEM.Transfer
 
         public static XSubdomainDto CreateEmpty() => new XSubdomainDto();
 
-        public static XSubdomainDto Serialize(XSubdomain subdomain, IDofSerializer dofSerializer,
-            EnrichmentSerializer enrichmentSerializer)
+        public static XSubdomainDto Serialize(XSubdomain subdomain, IDofSerializer dofSerializer)
         {
             var dto = new XSubdomainDto();
             dto.id = subdomain.ID;
@@ -31,7 +30,7 @@ namespace ISAAR.MSolve.XFEM.Transfer
             // Nodes
             dto.nodes = new XNodeDto[subdomain.NumNodes];
             int n = 0;
-            foreach (XNode node in subdomain.Nodes.Values) dto.nodes[n++] = new XNodeDto(node, enrichmentSerializer);
+            foreach (XNode node in subdomain.Nodes.Values) dto.nodes[n++] = new XNodeDto(node);
 
             // Elements
             dto.elements = new XElementDto[subdomain.NumElements];
@@ -59,18 +58,16 @@ namespace ISAAR.MSolve.XFEM.Transfer
             return dto;
         }
 
-        public XSubdomain Deserialize(IDofSerializer dofSerializer, IXFiniteElementFactory elementFactory,
-            EnrichmentSerializer enrichmentSerializer)
+        public XSubdomain Deserialize(IDofSerializer dofSerializer, IXFiniteElementFactory elementFactory)
         {
             var subdomain = new XSubdomain(this.id);
 
             // Nodes
             foreach (XNodeDto n in this.nodes)
             {
-                XNode node = n.Deserialize(enrichmentSerializer);
+                XNode node = n.Deserialize();
                 subdomain.Nodes[node.ID] = node;
             }
-
 
             // Elements
             foreach (XElementDto e in this.elements)

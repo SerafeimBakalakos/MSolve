@@ -17,13 +17,11 @@ namespace ISAAR.MSolve.XFEM.Entities
         //TODO: This does not guarantee that the model also uses the same elementFactory for the elements of this process's 
         //      subdomain.
         private readonly IXFiniteElementFactory elementFactory;
-        private readonly EnrichmentSerializer enrichmentSerializer;
 
         public XModelMpi(ProcessDistribution processDistribution, Func<XModel> createModel, 
-            IXFiniteElementFactory elementFactory, EnrichmentSerializer enrichmentSerializer) : base(processDistribution)
+            IXFiniteElementFactory elementFactory) : base(processDistribution)
         {
             this.elementFactory = elementFactory;
-            this.enrichmentSerializer = enrichmentSerializer;
             if (processDistribution.IsMasterProcess) this.model = createModel();
             else this.model = new XModel();
         }
@@ -51,7 +49,7 @@ namespace ISAAR.MSolve.XFEM.Entities
                     {
                         XSubdomain subdomain = model.Subdomains[procs.GetSubdomainIdOfProcess(p)];
                         Console.WriteLine($"Process {procs.OwnRank}: Started serializing subdomain {subdomain.ID}.");
-                        serializedSubdomains[p] = XSubdomainDto.Serialize(subdomain, DofSerializer, enrichmentSerializer);
+                        serializedSubdomains[p] = XSubdomainDto.Serialize(subdomain, DofSerializer);
                         Console.WriteLine($"Process {procs.OwnRank}: Serialized subdomain {subdomain.ID}.");
                     }
                 }
@@ -64,7 +62,7 @@ namespace ISAAR.MSolve.XFEM.Entities
             // Deserialize and store the subdomain data in each process
             if (!procs.IsMasterProcess)
             {
-                XSubdomain subdomain = serializedSubdomain.Deserialize(DofSerializer, elementFactory, enrichmentSerializer);
+                XSubdomain subdomain = serializedSubdomain.Deserialize(DofSerializer, elementFactory);
                 model.Subdomains[subdomain.ID] = subdomain;
                 subdomain.ConnectDataStructures();
                 Console.WriteLine($"Process {procs.OwnRank}: Deserialized subdomain {subdomain.ID}.");
