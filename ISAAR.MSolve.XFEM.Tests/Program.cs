@@ -10,7 +10,8 @@ namespace ISAAR.MSolve.XFEM.Tests
     {
         public static void Main(string[] args)
         {
-            XModelMpiTests.TestModelTransfer(args);
+            //XModelMpiTests.TestDcbModelTransfer(args);
+            XModelMpiTests.TestHolesModelTransfer(args);
 
             //RunMpiTests(args);
 

@@ -48,16 +48,13 @@ namespace ISAAR.MSolve.XFEM.Entities
                     else
                     {
                         XSubdomain subdomain = model.Subdomains[procs.GetSubdomainIdOfProcess(p)];
-                        Console.WriteLine($"Process {procs.OwnRank}: Started serializing subdomain {subdomain.ID}.");
                         serializedSubdomains[p] = XSubdomainDto.Serialize(subdomain, DofSerializer);
-                        Console.WriteLine($"Process {procs.OwnRank}: Serialized subdomain {subdomain.ID}.");
                     }
                 }
             }
 
             // Scatter the serialized subdomain data from master process
             XSubdomainDto serializedSubdomain = procs.Communicator.Scatter(serializedSubdomains, procs.MasterProcess);
-            Console.WriteLine($"Process {procs.OwnRank}: Scattered subdomains.");
 
             // Deserialize and store the subdomain data in each process
             if (!procs.IsMasterProcess)
@@ -65,7 +62,6 @@ namespace ISAAR.MSolve.XFEM.Entities
                 XSubdomain subdomain = serializedSubdomain.Deserialize(DofSerializer, elementFactory);
                 model.Subdomains[subdomain.ID] = subdomain;
                 subdomain.ConnectDataStructures();
-                Console.WriteLine($"Process {procs.OwnRank}: Deserialized subdomain {subdomain.ID}.");
             }
         }
     }
