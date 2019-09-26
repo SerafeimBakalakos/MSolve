@@ -59,6 +59,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
         private readonly List<CartesianPoint> crackPath;
         private CartesianPoint crackMouth;
         private CartesianPoint crackTip;
+        private CrackTipEnrichments2D crackTipEnrichments;
         private TipCoordinateSystem tipSystem;
         private ISet<XNode> crackBodyNodesAll; // TODO: a TreeSet might be better if set intersections are applied
         private ISet<XNode> crackBodyNodesModified;
@@ -94,6 +95,9 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             //this.meshInteraction = new HybridMeshInteraction(this);
             this.meshInteraction = new SerafeimMeshInteraction();
             this.SingularityResolver = singularityResolver;
+
+            this.CrackBodyEnrichment = new CrackBodyEnrichment2D(this);
+            this.CrackTipEnrichments = new CrackTipEnrichments2D(this, CrackTipPosition.Single);
         }
 
         public TrackingExteriorCrackLsm(IPropagator propagator, double tipEnrichmentAreaRadius = 0.0) :
@@ -104,8 +108,9 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
 
         // TODO: Not too fond of the setters, but at least the enrichments are immutable. Perhaps I can pass their
         // parameters to a CrackDescription builder and construct them there, without involving the user.
-        public CrackBodyEnrichment2D CrackBodyEnrichment { get; set; }
-        public CrackTipEnrichments2D CrackTipEnrichments { get; set; }
+        public CrackBodyEnrichment2D CrackBodyEnrichment { get; }
+        public CrackTipEnrichments2D CrackTipEnrichments { get; }
+
         public IReadOnlyList<CartesianPoint> CrackPath { get { return crackPath; } }
 
         public IReadOnlyDictionary<CrackBodyEnrichment2D, ISet<XNode>> CrackBodyNodesAll

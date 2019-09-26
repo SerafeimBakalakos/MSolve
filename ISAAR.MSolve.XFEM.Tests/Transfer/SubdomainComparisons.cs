@@ -1,8 +1,11 @@
 ﻿using ISAAR.MSolve.Discretization;
+using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.XFEM.Elements;
 using ISAAR.MSolve.XFEM.Entities;
+using MPI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Xunit;
 

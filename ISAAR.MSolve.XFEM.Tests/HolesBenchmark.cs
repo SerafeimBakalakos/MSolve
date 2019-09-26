@@ -622,9 +622,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             LeftCrack = new TrackingExteriorCrackLsm(leftPropagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol));
             LeftCrack.Mesh = Mesh;
 
-            // Create enrichments          
-            LeftCrack.CrackBodyEnrichment = new CrackBodyEnrichment2D(LeftCrack);
-            LeftCrack.CrackTipEnrichments = new CrackTipEnrichments2D(LeftCrack, CrackTipPosition.Single);
+            // Logging          
             if (leftLsmPlotDirectory != null)
             {
                 LeftCrack.EnrichmentLogger = new EnrichmentLogger(Model, LeftCrack, leftLsmPlotDirectory);
@@ -652,9 +650,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             RightCrack = new TrackingExteriorCrackLsm(rightPropagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol));
             RightCrack.Mesh = Mesh;
 
-            // Create enrichments          
-            RightCrack.CrackBodyEnrichment = new CrackBodyEnrichment2D(RightCrack);
-            RightCrack.CrackTipEnrichments = new CrackTipEnrichments2D(RightCrack, CrackTipPosition.Single);
+            // Logging         
             if (rightLsmPlotDirectory != null)
             {
                 RightCrack.EnrichmentLogger = new EnrichmentLogger(Model, RightCrack, rightLsmPlotDirectory);

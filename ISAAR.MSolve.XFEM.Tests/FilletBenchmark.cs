@@ -289,9 +289,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             var lsmCrack = new TrackingExteriorCrackLsm(propagator, 0.0, new RelativeAreaResolver(heavisideTol));
             lsmCrack.Mesh = mesh;
 
-            // Create enrichments          
-            lsmCrack.CrackBodyEnrichment = new CrackBodyEnrichment2D(lsmCrack);
-            lsmCrack.CrackTipEnrichments = new CrackTipEnrichments2D(lsmCrack, CrackTipPosition.Single);
+            // Logging         
             if (lsmPlotDirectory != null)
             {
                 lsmCrack.EnrichmentLogger = new EnrichmentLogger(Model, lsmCrack, lsmPlotDirectory);

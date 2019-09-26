@@ -30,11 +30,24 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
         private const int levelSetDataTag = 0;
         private const int enrichmentDataTag = 1;
 
+        private readonly TrackingExteriorCrackLsm embeddedCrack_master;
         private readonly ProcessDistribution procs;
-        private readonly Dictionary<XNode, double> levelSetsBody;
-        private readonly Dictionary<XNode, double> levelSetsTip;
-        private TrackingExteriorCrackLsm embeddedCrack_master;
-        private SingleCrackLsm levelSets;
+
+        public TrackingExteriorCrackLsmMpi(ProcessDistribution procs, TrackingExteriorCrackLsm embeddedCrack_master)
+        {
+            this.procs = procs;
+            this.embeddedCrack_master = embeddedCrack_master;
+            if (procs.IsMasterProcess)
+            {
+                this.CrackBodyEnrichment = embeddedCrack_master.CrackBodyEnrichment;
+                this.CrackTipEnrichments = embeddedCrack_master.CrackTipEnrichments;
+            }
+            else
+            {
+                this.CrackBodyEnrichment = new CrackBodyEnrichment2D(this);
+                this.CrackTipEnrichments = new CrackTipEnrichments2D(this, CrackTipPosition.Single);
+            }
+        }
 
         public IReadOnlyList<CartesianPoint> CrackPath
         {
@@ -45,23 +58,8 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             }
         }
 
-        public CrackBodyEnrichment2D CrackBodyEnrichment
-        {
-            get
-            {
-                procs.CheckProcessIsMaster();
-                return embeddedCrack_master.CrackBodyEnrichment;
-            }
-        }
-
-        public CrackTipEnrichments2D CrackTipEnrichments
-        {
-            get
-            {
-                procs.CheckProcessIsMaster();
-                return embeddedCrack_master.CrackTipEnrichments;
-            }
-        }
+        public CrackBodyEnrichment2D CrackBodyEnrichment { get; }
+        public CrackTipEnrichments2D CrackTipEnrichments { get; }
 
         public IHeavisideSingularityResolver SingularityResolver
         {
@@ -180,6 +178,8 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             }
         }
 
+        public SingleCrackLsm LevelSets { get; private set; }
+
         public BidirectionalMesh2D<XNode, XContinuumElement2D> Mesh
         {
             get
@@ -218,10 +218,12 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
         {
             if (procs.IsMasterProcess)
             {
+                this.LevelSets = embeddedCrack_master.LevelSets;
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
                     if (p == procs.MasterProcess) continue;
-                    double[] levelSetData = SerializeLevelSetData_master(levelSets, procs.GetSubdomainIdOfProcess(p), model);
+                    double[] levelSetData = SerializeLevelSetData_master(LevelSets, CrackTipEnrichments.TipSystem, 
+                        procs.GetSubdomainIdOfProcess(p), model);
                     MpiUtilities.SendArray<double>(procs.Communicator, levelSetData, p, levelSetDataTag);
                 }
             }
@@ -229,7 +231,10 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             {
                 double[] levelSetData = 
                     MpiUtilities.ReceiveArray<double>(procs.Communicator, procs.MasterProcess, levelSetDataTag);
-                this.levelSets = DeserializeLevelSetData(levelSetData, procs.OwnSubdomainID, model);
+                (SingleCrackLsm lsm, TipCoordinateSystem tipSystem) = 
+                    DeserializeLevelSetData(levelSetData, procs.OwnSubdomainID, model);
+                LevelSets = lsm;
+                CrackTipEnrichments.TipSystem = tipSystem;
             }
         }
 
@@ -263,10 +268,10 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             }
         }
 
-        public double SignedDistanceOf(XNode node) => levelSets.SignedDistanceOf(node);
+        public double SignedDistanceOf(XNode node) => LevelSets.SignedDistanceOf(node);
 
         public double SignedDistanceOf(NaturalPoint point, XContinuumElement2D element, EvalInterpolation2D interpolation)
-            => levelSets.SignedDistanceOf(point, element, interpolation);
+            => LevelSets.SignedDistanceOf(point, element, interpolation);
 
         public void UpdateEnrichments() //TODO: This should be repeated in each process
         {
@@ -280,24 +285,27 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             embeddedCrack_master.UpdateGeometry(localGrowthAngle, growthLength);
         }
 
-        private static SingleCrackLsm DeserializeLevelSetData(double[] levelSetData, int subdomainID, XModelMpi model)
+        private static (SingleCrackLsm, TipCoordinateSystem) DeserializeLevelSetData(double[] levelSetData, int subdomainID, 
+            XModelMpi model)
         {
             // Crack tip
             CartesianPoint crackTip = new CartesianPoint(levelSetData[0], levelSetData[1], levelSetData[2]);
+            var tipSystem = new TipCoordinateSystem(crackTip, levelSetData[3]);
 
             // Nodal level set data
             XSubdomain subdomain = model.GetXSubdomain(subdomainID);
             var levelSetsBody = new Dictionary<XNode, double>();
             var levelSetsTip = new Dictionary<XNode, double>();
-            int flatIdx = 3;
+            int flatIdx = 4;
             foreach (XNode node in subdomain.Nodes.Values)
             {
                 levelSetsBody[node] = levelSetData[flatIdx];
                 levelSetsTip[node] = levelSetData[flatIdx + 1];
                 flatIdx += 2;
             }
+            var lsm = new SingleCrackLsm(levelSetsBody, levelSetsTip, crackTip);
 
-            return new SingleCrackLsm(levelSetsBody, levelSetsTip, crackTip);
+            return (lsm, tipSystem);
         }
 
         private static void EnrichNodesAndElements(int[] bodyNodes, int[] tipNodes, int[] bodyElements, int[] tipElements,
@@ -351,19 +359,21 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             return (bodyNodes.ToArray(), tipNodes.ToArray(), bodyElements.ToArray(), tipElements.ToArray());
         }
 
-        private static double[] SerializeLevelSetData_master(SingleCrackLsm levelSets, int subdomainID, XModelMpi model)
+        private static double[] SerializeLevelSetData_master(SingleCrackLsm levelSets, TipCoordinateSystem tipSystem, 
+            int subdomainID, XModelMpi model)
         {
             // Serialize level set data
             XSubdomain subdomain = model.GetXSubdomain(subdomainID);
-            var levelSetData = new double[2 * subdomain.NumNodes + 3];
+            var levelSetData = new double[2 * subdomain.NumNodes + 4];
 
             // Crack tip
             levelSetData[0] = levelSets.CrackTip.X;
             levelSetData[1] = levelSets.CrackTip.Y;
             levelSetData[2] = levelSets.CrackTip.Z;
+            levelSetData[3] = tipSystem.RotationAngle;
 
             // Nodal level sets. Assume the order of enumerating them is always the same.
-            int flatIdx = 3;
+            int flatIdx = 4;
             foreach (XNode node in subdomain.Nodes.Values)
             {
                 levelSetData[flatIdx] = levelSets.LevelSetsBody[node];
