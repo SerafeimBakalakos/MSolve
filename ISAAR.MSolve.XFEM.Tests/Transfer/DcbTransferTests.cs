@@ -43,6 +43,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
                 XSubdomain actualSubdomain = actualModel.GetXSubdomain(procs.OwnSubdomainID);
                 SingleCrackLsm actualLsm = actualCrack.LevelSets;
                 EnrichmentComparions.CheckSameLevelSets(expectedLsm, expectedSubdomain, actualLsm, actualSubdomain);
+                EnrichmentComparions.CheckSameEnrichments(expectedSubdomain, actualSubdomain);
             }
         }
 

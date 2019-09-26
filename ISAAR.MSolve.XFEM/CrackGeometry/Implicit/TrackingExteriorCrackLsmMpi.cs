@@ -170,13 +170,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
         }
 
         public IReadOnlyList<IEnrichmentItem2D> Enrichments
-        {
-            get
-            {
-                procs.CheckProcessIsMaster();
-                return embeddedCrack_master.Enrichments;
-            }
-        }
+            => new IEnrichmentItem2D[] { CrackBodyEnrichment, CrackTipEnrichments };
 
         public SingleCrackLsm LevelSets { get; private set; }
 
@@ -214,31 +208,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             embeddedCrack_master.Propagate(totalFreeDisplacements);
         }
 
-        public void ScatterLevelSetData(XModelMpi model)
-        {
-            if (procs.IsMasterProcess)
-            {
-                this.LevelSets = embeddedCrack_master.LevelSets;
-                for (int p = 0; p < procs.Communicator.Size; ++p)
-                {
-                    if (p == procs.MasterProcess) continue;
-                    double[] levelSetData = SerializeLevelSetData_master(LevelSets, CrackTipEnrichments.TipSystem, 
-                        procs.GetSubdomainIdOfProcess(p), model);
-                    MpiUtilities.SendArray<double>(procs.Communicator, levelSetData, p, levelSetDataTag);
-                }
-            }
-            else
-            {
-                double[] levelSetData = 
-                    MpiUtilities.ReceiveArray<double>(procs.Communicator, procs.MasterProcess, levelSetDataTag);
-                (SingleCrackLsm lsm, TipCoordinateSystem tipSystem) = 
-                    DeserializeLevelSetData(levelSetData, procs.OwnSubdomainID, model);
-                LevelSets = lsm;
-                CrackTipEnrichments.TipSystem = tipSystem;
-            }
-        }
-
-        public void ScatterEnrichmentData(XModelMpi model) // First clear existing enrichments
+        public void ScatterEnrichmentData(XModelMpi model)
         {
             if (procs.IsMasterProcess)
             {
@@ -263,8 +233,32 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
                 int[] bodyElements = MpiUtilities.ReceiveArray<int>(procs.Communicator, procs.MasterProcess, enrichmentDataTag);
                 int[] tipElements = MpiUtilities.ReceiveArray<int>(procs.Communicator, procs.MasterProcess, enrichmentDataTag);
 
-                EnrichNodesAndElements(bodyNodes, tipNodes, bodyElements, tipElements, procs.OwnSubdomainID, model, 
+                EnrichNodesAndElements(bodyNodes, tipNodes, bodyElements, tipElements, procs.OwnSubdomainID, model,
                     CrackBodyEnrichment, CrackTipEnrichments);
+            }
+        }
+
+        public void ScatterLevelSetData(XModelMpi model)
+        {
+            if (procs.IsMasterProcess)
+            {
+                this.LevelSets = embeddedCrack_master.LevelSets;
+                for (int p = 0; p < procs.Communicator.Size; ++p)
+                {
+                    if (p == procs.MasterProcess) continue;
+                    double[] levelSetData = SerializeLevelSetData_master(LevelSets, CrackTipEnrichments.TipSystem, 
+                        procs.GetSubdomainIdOfProcess(p), model);
+                    MpiUtilities.SendArray<double>(procs.Communicator, levelSetData, p, levelSetDataTag);
+                }
+            }
+            else
+            {
+                double[] levelSetData = 
+                    MpiUtilities.ReceiveArray<double>(procs.Communicator, procs.MasterProcess, levelSetDataTag);
+                (SingleCrackLsm lsm, TipCoordinateSystem tipSystem) = 
+                    DeserializeLevelSetData(levelSetData, procs.OwnSubdomainID, model);
+                LevelSets = lsm;
+                CrackTipEnrichments.TipSystem = tipSystem;
             }
         }
 
@@ -273,7 +267,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
         public double SignedDistanceOf(NaturalPoint point, XContinuumElement2D element, EvalInterpolation2D interpolation)
             => LevelSets.SignedDistanceOf(point, element, interpolation);
 
-        public void UpdateEnrichments() //TODO: This should be repeated in each process
+        public void UpdateEnrichments()
         {
             procs.CheckProcessIsMaster();
             embeddedCrack_master.UpdateEnrichments();

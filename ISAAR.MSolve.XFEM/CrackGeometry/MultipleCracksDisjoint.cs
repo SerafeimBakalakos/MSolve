@@ -12,7 +12,7 @@ using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
 //TODO: replace the boilerplate code with one or more (or generic) Union() private methods
 namespace ISAAR.MSolve.XFEM.CrackGeometry
 {
-    class MultipleCracksDisjoint : ICrackDescription
+    public class MultipleCracksDisjoint : ICrackDescription
     {
         private readonly IReadOnlyList<TrackingExteriorCrackLsm> cracks;
 

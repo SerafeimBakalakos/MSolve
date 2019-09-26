@@ -162,7 +162,6 @@ namespace ISAAR.MSolve.XFEM.Tests
                 builder.DistributeLoadAtNodes(Uniform2DXModelBuilder.BoundaryRegion.UpperLeftCorner, StructuralDof.TranslationY, load);
                 builder.DistributeLoadAtNodes(Uniform2DXModelBuilder.BoundaryRegion.LowerLeftCorner, StructuralDof.TranslationY, -load);
 
-                
                 (model_master, mesh_master) = builder.BuildModel();
             }
 
