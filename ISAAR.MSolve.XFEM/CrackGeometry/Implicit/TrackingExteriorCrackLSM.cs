@@ -14,6 +14,7 @@ using ISAAR.MSolve.XFEM.CrackGeometry.Implicit.Logging;
 using ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction;
 using ISAAR.MSolve.XFEM.CrackPropagation;
 using ISAAR.MSolve.XFEM.Elements;
+using ISAAR.MSolve.XFEM.Enrichments.Functions;
 using ISAAR.MSolve.XFEM.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Entities;
 using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
@@ -59,7 +60,6 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
         private readonly List<CartesianPoint> crackPath;
         private CartesianPoint crackMouth;
         private CartesianPoint crackTip;
-        private CrackTipEnrichments2D crackTipEnrichments;
         private TipCoordinateSystem tipSystem;
         private ISet<XNode> crackBodyNodesAll; // TODO: a TreeSet might be better if set intersections are applied
         private ISet<XNode> crackBodyNodesModified;
@@ -70,7 +70,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
         private ISet<XNode> crackTipNodesOld;
 
         public TrackingExteriorCrackLsm(IPropagator propagator, double tipEnrichmentAreaRadius,
-            IHeavisideSingularityResolver singularityResolver)
+            IHeavisideSingularityResolver singularityResolver, IHeavisideFunction2D heavisideFunc)
         {
             this.propagator = propagator;
             this.tipEnrichmentAreaRadius = tipEnrichmentAreaRadius;
@@ -96,14 +96,13 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             this.meshInteraction = new SerafeimMeshInteraction();
             this.SingularityResolver = singularityResolver;
 
-            this.CrackBodyEnrichment = new CrackBodyEnrichment2D(this);
+            this.CrackBodyEnrichment = new CrackBodyEnrichment2D(this, heavisideFunc);
             this.CrackTipEnrichments = new CrackTipEnrichments2D(this, CrackTipPosition.Single);
         }
 
         public TrackingExteriorCrackLsm(IPropagator propagator, double tipEnrichmentAreaRadius = 0.0) :
-            this(propagator, tipEnrichmentAreaRadius, null)
+            this(propagator, tipEnrichmentAreaRadius, new RelativeAreaResolver(1E-4), new SignFunction2D())
         {
-            this.SingularityResolver = new RelativeAreaResolver(1E-4);
         }
 
         // TODO: Not too fond of the setters, but at least the enrichments are immutable. Perhaps I can pass their

@@ -26,6 +26,7 @@ using ISAAR.MSolve.XFEM.CrackPropagation.Direction;
 using ISAAR.MSolve.XFEM.CrackPropagation.Jintegral;
 using ISAAR.MSolve.XFEM.CrackPropagation.Length;
 using ISAAR.MSolve.XFEM.Elements;
+using ISAAR.MSolve.XFEM.Enrichments.Functions;
 using ISAAR.MSolve.XFEM.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Entities;
 using ISAAR.MSolve.XFEM.Integration;
@@ -167,7 +168,8 @@ namespace ISAAR.MSolve.XFEM.Tests
             initialCrack.UpdateGeometry(-dTheta, da);
             //var crackTip = new CartesianPoint(a + da * Math.Cos(dTheta), h/2 - da * Math.Sin(dTheta));
 
-            var lsmCrack = new TrackingExteriorCrackLsm(propagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol));
+            var lsmCrack = new TrackingExteriorCrackLsm(propagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol), 
+                new SignFunction2D());
             lsmCrack.Mesh = mesh;
 
             // Logging         

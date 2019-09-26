@@ -15,6 +15,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
 using ISAAR.MSolve.XFEM.CrackGeometry.CrackTip;
+using ISAAR.MSolve.XFEM.CrackGeometry.HeavisideSingularityResolving;
 using ISAAR.MSolve.XFEM.CrackGeometry.Implicit;
 using ISAAR.MSolve.XFEM.CrackPropagation;
 using ISAAR.MSolve.XFEM.CrackPropagation.Direction;
@@ -189,7 +190,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             var propagator = new Propagator(mesh, jIntegralRadiusRatio, new HomogeneousMaterialAuxiliaryStates(material),
                 new HomogeneousSIFCalculator(material), new MaximumCircumferentialTensileStressCriterion(),
                 new ConstantIncrement2D(1.5 * jIntegralRadiusRatio * elementSize));
-            var crack = new TrackingExteriorCrackLsm(propagator);
+            var crack = new TrackingExteriorCrackLsm(propagator, 0.0, new RelativeAreaResolver(1E-4), 
+                new SignFunctionOpposite2D());
             crack.Mesh = mesh;
 
             // Mesh geometry interaction

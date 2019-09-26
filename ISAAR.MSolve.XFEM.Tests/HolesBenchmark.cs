@@ -27,6 +27,7 @@ using ISAAR.MSolve.XFEM.CrackPropagation.Direction;
 using ISAAR.MSolve.XFEM.CrackPropagation.Jintegral;
 using ISAAR.MSolve.XFEM.CrackPropagation.Length;
 using ISAAR.MSolve.XFEM.Elements;
+using ISAAR.MSolve.XFEM.Enrichments.Functions;
 using ISAAR.MSolve.XFEM.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Entities;
 using ISAAR.MSolve.XFEM.Integration;
@@ -619,7 +620,8 @@ namespace ISAAR.MSolve.XFEM.Tests
 
             var initialLeftCrack = new PolyLine2D(new CartesianPoint(leftCrackMouthX, leftCrackMouthY),
                 new CartesianPoint(leftCrackTipX, leftCrackTipY));
-            LeftCrack = new TrackingExteriorCrackLsm(leftPropagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol));
+            LeftCrack = new TrackingExteriorCrackLsm(leftPropagator, tipEnrichmentRadius, 
+                new RelativeAreaResolver(heavisideTol), new SignFunction2D());
             LeftCrack.Mesh = Mesh;
 
             // Logging          
@@ -647,7 +649,8 @@ namespace ISAAR.MSolve.XFEM.Tests
 
             var initialRightCrack = new PolyLine2D(new CartesianPoint(rightCrackMouthX, rightCrackMouthY),
                 new CartesianPoint(rightCrackTipX, rightCrackTipY));
-            RightCrack = new TrackingExteriorCrackLsm(rightPropagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol));
+            RightCrack = new TrackingExteriorCrackLsm(rightPropagator, tipEnrichmentRadius, 
+                new RelativeAreaResolver(heavisideTol), new SignFunction2D());
             RightCrack.Mesh = Mesh;
 
             // Logging         
