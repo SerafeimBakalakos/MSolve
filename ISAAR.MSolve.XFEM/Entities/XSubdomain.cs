@@ -46,6 +46,17 @@ namespace ISAAR.MSolve.XFEM.Entities
             return elementNodalDisplacements;
         }
 
+        public void ClearEntities()
+        {
+            Nodes.Clear();
+            Elements.Clear();
+            NodalLoads.Clear();
+            Constraints.Clear();
+            FreeDofOrdering = null;
+            ConstrainedDofOrdering = null;
+            Forces = null;
+        }
+
         public void ClearMaterialStresses() => throw new NotImplementedException();
 
         public void ConnectDataStructures()
