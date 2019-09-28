@@ -16,33 +16,42 @@ namespace ISAAR.MSolve.XFEM.Solvers
     {
         private readonly ICrackDescription crack;
         //private readonly Dictionary<int, HashSet<INode>> currentCornerNodes;
+
+        private Dictionary<ISubdomain, bool> areCornerNodesModified;
+        private bool areGlobalCornerNodesModified = true;
         private HashSet<INode> cornerNodesGlobal;
         private Dictionary<ISubdomain, HashSet<INode>> cornerNodesOfSubdomains;
+        private bool isFirstAnalysis; //TODO: This should be passed to Update(). Update should not be called by the solver.
 
-        public CrackedFetiDPCornerNodesSerial(ICrackDescription crack,
-           Dictionary<ISubdomain, HashSet<INode>> initialCornerNodes)
+        public CrackedFetiDPCornerNodesSerial(ICrackDescription crack, Dictionary<ISubdomain, HashSet<INode>> initialCornerNodes)
         {
             this.crack = crack;
             this.cornerNodesOfSubdomains = initialCornerNodes;
-
-            // Gather global corner nodes
-            cornerNodesGlobal = new HashSet<INode>();
-            foreach (IEnumerable<INode> subdomainNodes in cornerNodesOfSubdomains.Values)
-            {
-                cornerNodesGlobal.UnionWith(subdomainNodes);
-            }
+            this.isFirstAnalysis = true;
         }
+
+        public bool AreGlobalCornerNodesModified => areGlobalCornerNodesModified;
 
         public HashSet<INode> GlobalCornerNodes => cornerNodesGlobal;
 
+        public bool AreCornerNodesOfSubdomainModified(ISubdomain subdomain) => areCornerNodesModified[subdomain];
+
         public HashSet<INode> GetCornerNodesOfSubdomain(ISubdomain subdomain) => cornerNodesOfSubdomains[subdomain];
 
-        public Dictionary<ISubdomain, HashSet<INode>> SelectCornerNodesOfSubdomains()
+        public void Update()
         {
-            // Remove the previous corner nodes that are no longer boundary.
-            foreach (HashSet<INode> subdomainCorners in cornerNodesOfSubdomains.Values)
+            // Keep track of subdomains with modified corner nodes.
+            areCornerNodesModified = new Dictionary<ISubdomain, bool>();
+            foreach (ISubdomain subdomain in cornerNodesOfSubdomains.Keys)
             {
-                subdomainCorners.RemoveWhere(node => node.Multiplicity < 2);
+                areCornerNodesModified[subdomain] = isFirstAnalysis;
+            }
+
+            // Remove the previous corner nodes that are no longer boundary.
+            foreach (ISubdomain subdomain in cornerNodesOfSubdomains.Keys)
+            {
+                int numEntriesRemoved = cornerNodesOfSubdomains[subdomain].RemoveWhere(node => node.Multiplicity < 2);
+                if (numEntriesRemoved > 0) areCornerNodesModified[subdomain] = true;
             }
 
             // Add boundary Heaviside nodes and nodes of the tip element(s).
@@ -52,35 +61,12 @@ namespace ISAAR.MSolve.XFEM.Solvers
                 foreach (ISubdomain subdomain in node.SubdomainsDictionary.Values)
                 {
                     cornerNodesOfSubdomains[subdomain].Add(node);
-                }
-            }
-            return cornerNodesOfSubdomains;
-        }
-
-        public void Update() //TODO: This does not need to be called the first time.
-        {
-            // Remove the previous corner nodes that are no longer boundary.
-            foreach (HashSet<INode> subdomainCorners in cornerNodesOfSubdomains.Values)
-            {
-                subdomainCorners.RemoveWhere(node => node.Multiplicity < 2);
-            }
-
-            // Add boundary Heaviside nodes and nodes of the tip element(s).
-            HashSet<XNode> enrichedBoundaryNodes = FindNewEnrichedBoundaryNodes();
-            foreach (XNode node in enrichedBoundaryNodes)
-            {
-                foreach (ISubdomain subdomain in node.SubdomainsDictionary.Values)
-                {
-                    cornerNodesOfSubdomains[subdomain].Add(node);
+                    areCornerNodesModified[subdomain] = true;
                 }
             }
 
-            // Gather global corner nodes
-            cornerNodesGlobal = new HashSet<INode>();
-            foreach (IEnumerable<INode> subdomainNodes in cornerNodesOfSubdomains.Values)
-            {
-                cornerNodesGlobal.UnionWith(subdomainNodes);
-            }
+            GatherGlobalCornerNodes();
+            isFirstAnalysis = false;
         }
 
         private HashSet<XNode> FindNewEnrichedBoundaryNodes()
@@ -104,6 +90,27 @@ namespace ISAAR.MSolve.XFEM.Solvers
                 }
             }
             return enrichedBoundaryNodes;
+        }
+
+        private void GatherGlobalCornerNodes()
+        {
+            // Define them
+            cornerNodesGlobal = new HashSet<INode>();
+            foreach (IEnumerable<INode> subdomainNodes in cornerNodesOfSubdomains.Values)
+            {
+                cornerNodesGlobal.UnionWith(subdomainNodes);
+            }
+
+            // Determine if they are modified
+            areGlobalCornerNodesModified = false;
+            foreach (bool modifiedSubdomain in areCornerNodesModified.Values)
+            {
+                if (modifiedSubdomain)
+                {
+                    areGlobalCornerNodesModified = true;
+                    break;
+                }
+            }
         }
     }
 }
