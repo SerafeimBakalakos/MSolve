@@ -38,8 +38,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
                 actualModel.ConnectDataStructures();
                 actualModel.ScatterSubdomains();
                 //Console.WriteLine($"Process {procs.OwnRank}: Scattering lsm data");
-                actualBenchmark.Crack.ScatterLevelSetData(actualModel);
-                actualBenchmark.Crack.ScatterEnrichmentData(actualModel);
+                actualBenchmark.Crack.ScatterCrackData(actualModel);
 
                 // Check that everything is in its correct subdomain and has the correct state.
                 //Console.WriteLine($"Process {procs.OwnRank}: Checking lsm data for subdomain {procs.OwnSubdomainID}");

@@ -33,8 +33,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
                 actualModel.ScatterSubdomains();
                 TrackingExteriorCrackLsmMpi actualCrack = actualBenchmark.Crack;
                 //Console.WriteLine($"Process {procs.OwnRank}: Scattering lsm data");
-                actualCrack.ScatterLevelSetData(actualModel);
-                actualCrack.ScatterEnrichmentData(actualModel);
+                actualCrack.ScatterCrackData(actualModel);
 
                 // Check that everything is in its correct subdomain and has the correct state.
                 //Console.WriteLine($"Process {procs.OwnRank}: Checking lsm data for subdomain {procs.OwnSubdomainID}");

@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
     /// <summary>
     /// Warning: may misclassify elements as tip elements, causing gross errors.
     /// </summary>
-    public class TrackingExteriorCrackLsmMpi : IExteriorCrack
+    public class TrackingExteriorCrackLsmMpi : IExteriorCrack, ICrackDescriptionMpi
     {
         private const int levelSetDataTag = 0;
         private const int enrichmentDataTag = 1;
@@ -208,58 +208,10 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             embeddedCrack_master.Propagate(totalFreeDisplacements);
         }
 
-        public void ScatterEnrichmentData(XModelMpi model)
+        public void ScatterCrackData(XModelMpi model)
         {
-            if (procs.IsMasterProcess)
-            {
-                for (int p = 0; p < procs.Communicator.Size; ++p)
-                {
-                    if (p == procs.MasterProcess) continue;
-                    (int[] bodyNodes, int[] tipNodes, int[] bodyElements, int[] tipElements) = SerializeEnrichmentData_master(
-                        procs.GetSubdomainIdOfProcess(p), model, CrackBodyEnrichment, CrackTipEnrichments);
-
-                    // Send the enriched node and element indices to the corresponding process
-                    MpiUtilities.SendArray<int>(procs.Communicator, bodyNodes, p, enrichmentDataTag);
-                    MpiUtilities.SendArray<int>(procs.Communicator, tipNodes, p, enrichmentDataTag);
-                    MpiUtilities.SendArray<int>(procs.Communicator, bodyElements, p, enrichmentDataTag);
-                    MpiUtilities.SendArray<int>(procs.Communicator, tipElements, p, enrichmentDataTag);
-                }
-            }
-            else
-            {
-                // Receive which nodes and elements are enriched
-                int[] bodyNodes = MpiUtilities.ReceiveArray<int>(procs.Communicator, procs.MasterProcess, enrichmentDataTag);
-                int[] tipNodes = MpiUtilities.ReceiveArray<int>(procs.Communicator, procs.MasterProcess, enrichmentDataTag);
-                int[] bodyElements = MpiUtilities.ReceiveArray<int>(procs.Communicator, procs.MasterProcess, enrichmentDataTag);
-                int[] tipElements = MpiUtilities.ReceiveArray<int>(procs.Communicator, procs.MasterProcess, enrichmentDataTag);
-
-                EnrichNodesAndElements(bodyNodes, tipNodes, bodyElements, tipElements, procs.OwnSubdomainID, model,
-                    CrackBodyEnrichment, CrackTipEnrichments);
-            }
-        }
-
-        public void ScatterLevelSetData(XModelMpi model)
-        {
-            if (procs.IsMasterProcess)
-            {
-                this.LevelSets = embeddedCrack_master.LevelSets;
-                for (int p = 0; p < procs.Communicator.Size; ++p)
-                {
-                    if (p == procs.MasterProcess) continue;
-                    double[] levelSetData = SerializeLevelSetData_master(LevelSets, CrackTipEnrichments.TipSystem, 
-                        procs.GetSubdomainIdOfProcess(p), model);
-                    MpiUtilities.SendArray<double>(procs.Communicator, levelSetData, p, levelSetDataTag);
-                }
-            }
-            else
-            {
-                double[] levelSetData = 
-                    MpiUtilities.ReceiveArray<double>(procs.Communicator, procs.MasterProcess, levelSetDataTag);
-                (SingleCrackLsm lsm, TipCoordinateSystem tipSystem) = 
-                    DeserializeLevelSetData(levelSetData, procs.OwnSubdomainID, model);
-                LevelSets = lsm;
-                CrackTipEnrichments.TipSystem = tipSystem;
-            }
+            ScatterLevelSetData(model);
+            ScatterEnrichmentData(model);
         }
 
         public double SignedDistanceOf(XNode node) => LevelSets.SignedDistanceOf(node);
@@ -376,6 +328,60 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             }
 
             return levelSetData;
+        }
+
+        private void ScatterEnrichmentData(XModelMpi model)
+        {
+            if (procs.IsMasterProcess)
+            {
+                for (int p = 0; p < procs.Communicator.Size; ++p)
+                {
+                    if (p == procs.MasterProcess) continue;
+                    (int[] bodyNodes, int[] tipNodes, int[] bodyElements, int[] tipElements) = SerializeEnrichmentData_master(
+                        procs.GetSubdomainIdOfProcess(p), model, CrackBodyEnrichment, CrackTipEnrichments);
+
+                    // Send the enriched node and element indices to the corresponding process
+                    MpiUtilities.SendArray<int>(procs.Communicator, bodyNodes, p, enrichmentDataTag);
+                    MpiUtilities.SendArray<int>(procs.Communicator, tipNodes, p, enrichmentDataTag);
+                    MpiUtilities.SendArray<int>(procs.Communicator, bodyElements, p, enrichmentDataTag);
+                    MpiUtilities.SendArray<int>(procs.Communicator, tipElements, p, enrichmentDataTag);
+                }
+            }
+            else
+            {
+                // Receive which nodes and elements are enriched
+                int[] bodyNodes = MpiUtilities.ReceiveArray<int>(procs.Communicator, procs.MasterProcess, enrichmentDataTag);
+                int[] tipNodes = MpiUtilities.ReceiveArray<int>(procs.Communicator, procs.MasterProcess, enrichmentDataTag);
+                int[] bodyElements = MpiUtilities.ReceiveArray<int>(procs.Communicator, procs.MasterProcess, enrichmentDataTag);
+                int[] tipElements = MpiUtilities.ReceiveArray<int>(procs.Communicator, procs.MasterProcess, enrichmentDataTag);
+
+                EnrichNodesAndElements(bodyNodes, tipNodes, bodyElements, tipElements, procs.OwnSubdomainID, model,
+                    CrackBodyEnrichment, CrackTipEnrichments);
+            }
+        }
+
+        private void ScatterLevelSetData(XModelMpi model)
+        {
+            if (procs.IsMasterProcess)
+            {
+                this.LevelSets = embeddedCrack_master.LevelSets;
+                for (int p = 0; p < procs.Communicator.Size; ++p)
+                {
+                    if (p == procs.MasterProcess) continue;
+                    double[] levelSetData = SerializeLevelSetData_master(LevelSets, CrackTipEnrichments.TipSystem,
+                        procs.GetSubdomainIdOfProcess(p), model);
+                    MpiUtilities.SendArray<double>(procs.Communicator, levelSetData, p, levelSetDataTag);
+                }
+            }
+            else
+            {
+                double[] levelSetData =
+                    MpiUtilities.ReceiveArray<double>(procs.Communicator, procs.MasterProcess, levelSetDataTag);
+                (SingleCrackLsm lsm, TipCoordinateSystem tipSystem) =
+                    DeserializeLevelSetData(levelSetData, procs.OwnSubdomainID, model);
+                LevelSets = lsm;
+                CrackTipEnrichments.TipSystem = tipSystem;
+            }
         }
     }
 }
