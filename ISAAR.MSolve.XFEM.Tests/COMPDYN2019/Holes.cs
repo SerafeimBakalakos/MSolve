@@ -435,7 +435,8 @@ namespace ISAAR.MSolve.XFEM.Tests.COMPDYN2019
 
                 // Must also specify corner nodes
                 //var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
-                var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Crack, cornerNodes);
+                var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Model, benchmark.Crack, 
+                    sub => cornerNodes[sub]);
                 //var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
                 //var fetiMatrices = new SkylineFetiDPSubdomainMatrixManager.Factory();
                 var fetiMatrices = new FetiDPSubdomainMatrixManagerSkylineOLD.Factory(new OrderingAmdSuiteSparse());

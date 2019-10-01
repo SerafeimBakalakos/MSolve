@@ -366,11 +366,13 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             if (solverType == SolverType.FetiDP)
             {
                 //benchmark.Partitioner = new TipAdaptivePartitioner(benchmark.Crack);
-                Dictionary<ISubdomain, HashSet<INode>> cornerNodes = null;
+                //Dictionary<ISubdomain, HashSet<INode>> cornerNodes = null;
+                Func<ISubdomain, HashSet<INode>> getCornerNodes = null;
 
                 if (benchmark.Model.Subdomains.Count == 10 || benchmark.Model.Subdomains.Count == 15)
                 {
-                    cornerNodes = FindCornerNodesFromCrosspoints2D(benchmark.Model);
+                    //cornerNodes = FindCornerNodesFromCrosspoints2D(benchmark.Model);
+                    getCornerNodes = (sub) => new HashSet<INode>(sub.EnumerateNodes().Where(node => node.Multiplicity > 2));
                 }
                 else
                 {
@@ -378,7 +380,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
                 }
 
                 // Must also specify corner nodes
-                var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Crack, cornerNodes);
+                var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Model, benchmark.Crack, getCornerNodes);
                 var reordering = new OrderingAmdCSparseNet();
                 var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(reordering);
                 var builder = new FetiDPSolverSerial.Builder(fetiMatrices);

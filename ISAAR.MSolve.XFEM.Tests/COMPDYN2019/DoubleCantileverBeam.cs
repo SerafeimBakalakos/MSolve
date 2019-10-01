@@ -10,6 +10,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.InterfaceProblem;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Matrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
@@ -97,7 +98,8 @@ namespace ISAAR.MSolve.XFEM.Tests.COMPDYN2019
                 benchmark.Model.ConnectDataStructures();
 
                 Dictionary<ISubdomain, HashSet<INode>> initialCorners = FindCornerNodesFromRectangleCorners(benchmark.Model);
-                var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Crack, initialCorners);
+                var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Model, benchmark.Crack, 
+                    sub => initialCorners[sub]);
                 var fetiMatrices = new FetiDPSubdomainMatrixManagerSkylineOLD.Factory();
                 var builder = new FetiDPSolverOLD.Builder(cornerNodeSelection, fetiMatrices);
                 //builder.PreconditionerFactory = new LumpedPreconditionerOLD.Factory();

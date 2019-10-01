@@ -20,22 +20,23 @@ namespace ISAAR.MSolve.XFEM.Solvers
         private const int cornerNodesTag = 0;
 
         private readonly ICrackDescription crack;
+        private readonly Func<ISubdomain, HashSet<INode>> getInitialCornerNodes;
         private readonly IModel model;
         private readonly ProcessDistribution procs;
 
         private Dictionary<ISubdomain, bool> areCornerNodesModified;
         private bool areGlobalCornerNodesModified_master = true;
         private HashSet<INode> cornerNodesGlobal_master;
-        private Dictionary<ISubdomain, HashSet<INode>> cornerNodesOfSubdomains;
+        private Dictionary<ISubdomain, HashSet<INode>> cornerNodesOfSubdomains = new Dictionary<ISubdomain, HashSet<INode>>();
         private bool isFirstAnalysis; //TODO: This should be passed to Update(). Update should not be called by the solver.
 
         public CrackedFetiDPCornerNodesMpi(ProcessDistribution processDistribution, IModel model, ICrackDescription crack,
-           Dictionary<ISubdomain, HashSet<INode>> initialCornerNodes)
+           Func<ISubdomain, HashSet<INode>> getInitialCornerNodes)
         {
             this.procs = processDistribution;
             this.model = model;
             this.crack = crack;
-            this.cornerNodesOfSubdomains = initialCornerNodes;
+            this.getInitialCornerNodes = getInitialCornerNodes;
             this.isFirstAnalysis = true;
         }
 
@@ -73,6 +74,15 @@ namespace ISAAR.MSolve.XFEM.Solvers
         {
             if (procs.IsMasterProcess)
             {
+                if (isFirstAnalysis)
+                {
+                    
+                    foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+                    {
+                        cornerNodesOfSubdomains[subdomain] = getInitialCornerNodes(subdomain);
+                    }
+                }
+
                 // Keep track of subdomains with modified corner nodes.
                 areCornerNodesModified = new Dictionary<ISubdomain, bool>();
                 foreach (ISubdomain subdomain in cornerNodesOfSubdomains.Keys)

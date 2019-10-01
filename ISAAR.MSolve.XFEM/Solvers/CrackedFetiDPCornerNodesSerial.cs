@@ -16,17 +16,21 @@ namespace ISAAR.MSolve.XFEM.Solvers
     {
         private readonly ICrackDescription crack;
         //private readonly Dictionary<int, HashSet<INode>> currentCornerNodes;
+        private readonly Func<ISubdomain, HashSet<INode>> getInitialCornerNodes;
+        private readonly IModel model;
 
         private Dictionary<ISubdomain, bool> areCornerNodesModified;
         private bool areGlobalCornerNodesModified = true;
         private HashSet<INode> cornerNodesGlobal;
-        private Dictionary<ISubdomain, HashSet<INode>> cornerNodesOfSubdomains;
+        private Dictionary<ISubdomain, HashSet<INode>> cornerNodesOfSubdomains = new Dictionary<ISubdomain, HashSet<INode>>();
         private bool isFirstAnalysis; //TODO: This should be passed to Update(). Update should not be called by the solver.
 
-        public CrackedFetiDPCornerNodesSerial(ICrackDescription crack, Dictionary<ISubdomain, HashSet<INode>> initialCornerNodes)
+        public CrackedFetiDPCornerNodesSerial(IModel model, ICrackDescription crack, 
+            Func<ISubdomain, HashSet<INode>> getInitialCornerNodes)
         {
+            this.model = model;
             this.crack = crack;
-            this.cornerNodesOfSubdomains = initialCornerNodes;
+            this.getInitialCornerNodes = getInitialCornerNodes;
             this.isFirstAnalysis = true;
         }
 
@@ -40,6 +44,14 @@ namespace ISAAR.MSolve.XFEM.Solvers
 
         public void Update()
         {
+            if (isFirstAnalysis)
+            {
+                foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+                {
+                    cornerNodesOfSubdomains[subdomain] = getInitialCornerNodes(subdomain);
+                }
+            }
+
             // Keep track of subdomains with modified corner nodes.
             areCornerNodesModified = new Dictionary<ISubdomain, bool>();
             foreach (ISubdomain subdomain in cornerNodesOfSubdomains.Keys)

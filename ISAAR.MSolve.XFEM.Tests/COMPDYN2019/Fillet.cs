@@ -293,7 +293,8 @@ namespace ISAAR.MSolve.XFEM.Tests.COMPDYN2019
                 }
 
                 //var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
-                var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Crack, cornerNodes);
+                var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Model, benchmark.Crack, 
+                    (sub) => cornerNodes[sub]);
                 //var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
                 var fetiMatrices = new FetiDPSubdomainMatrixManagerSkylineOLD.Factory();
                 var builder = new FetiDPSolverOLD.Builder(cornerNodeSelection, fetiMatrices);

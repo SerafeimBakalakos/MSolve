@@ -10,6 +10,8 @@ namespace ISAAR.MSolve.XFEM.Tests
     {
         public static void Main(string[] args)
         {
+            Paper1.DoubleCantileverBeamMpi.Run(args);
+
             //DcbTransferTests.TestModelTransfer(args);
             //DcbTransferTests.TestEnrichmentTransfer(args);
 
@@ -21,8 +23,8 @@ namespace ISAAR.MSolve.XFEM.Tests
             //Paper1.DoubleCantileverBeam.Run();
             //Paper1.Holes.Run();
 
-            COMPDYN2019.DoubleCantileverBeam.Run();
-            COMPDYN2019.Holes.Run();
+            //COMPDYN2019.DoubleCantileverBeam.Run();
+            //COMPDYN2019.Holes.Run();
             //COMPDYN2019.Fillet.Run();
         }
 

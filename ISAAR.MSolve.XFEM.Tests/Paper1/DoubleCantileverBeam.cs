@@ -11,6 +11,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.InterfaceProblem;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.Matrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
@@ -72,8 +73,10 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
                 //benchmark.Partitioner = new TipAdaptivePartitioner(benchmark.Crack);
                 benchmark.Model.ConnectDataStructures();
 
-                Dictionary<ISubdomain, HashSet<INode>> initialCorners = FindCornerNodesFromRectangleCorners(benchmark.Model);
-                var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Crack, initialCorners);
+                //Dictionary<ISubdomain, HashSet<INode>> initialCorners = FindCornerNodesFromRectangleCorners(benchmark.Model);
+                Func<ISubdomain, HashSet<INode>> getInitialCorners = sub => new HashSet<INode>(
+                    CornerNodeUtilities.FindCornersOfRectangle2D(sub).Where(node => node.Constraints.Count == 0));
+                var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Model, benchmark.Crack, getInitialCorners);
                 //var reordering = new OrderingAmdCSparseNet();  // This is slower than natural ordering
                 IReorderingAlgorithm reordering = null;
                 var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(reordering);
