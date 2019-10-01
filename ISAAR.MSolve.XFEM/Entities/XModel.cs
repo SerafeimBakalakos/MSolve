@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.XFEM.Entities
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();
 
-        public IDofSerializer DofSerializer { get; } = new StandardDofSerializer();
+        public IDofSerializer DofSerializer { get; set; } 
 
         public Dictionary<int, IXFiniteElement> Elements { get; } = new Dictionary<int, IXFiniteElement>();
 

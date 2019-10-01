@@ -340,6 +340,7 @@ namespace ISAAR.MSolve.XFEM.Tests
 
             // Container for both cracks
             Crack = new MultipleCracksDisjointMpi(procs, new TrackingExteriorCrackLsm[] { leftCrack, rightCrack });
+            Model.DofSerializer = new EnrichedDofSerializer(this.Crack);
         }
 
         private static void PartitionMesh(int numSubdomains, XModel model, IMesh2D<XNode, XContinuumElement2D> mesh)

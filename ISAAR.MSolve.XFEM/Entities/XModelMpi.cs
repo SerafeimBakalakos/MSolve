@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.XFEM.Entities
         //      subdomain.
         private readonly IXFiniteElementFactory elementFactory;
 
-        public XModelMpi(ProcessDistribution processDistribution, Func<XModel> createModel, 
+        public XModelMpi(ProcessDistribution processDistribution, Func<XModel> createModel,
             IXFiniteElementFactory elementFactory) : base(processDistribution)
         {
             this.elementFactory = elementFactory;
@@ -34,6 +34,11 @@ namespace ISAAR.MSolve.XFEM.Entities
         }
 
         public IDomain2DBoundary Boundary => this.model.Boundary;
+
+        public new IDofSerializer DofSerializer
+        {
+            set => model.DofSerializer = value;
+        }
 
         public XSubdomain GetXSubdomain(int subdomainID)
         {
@@ -55,7 +60,7 @@ namespace ISAAR.MSolve.XFEM.Entities
                         XSubdomain subdomain = model.Subdomains[procs.GetSubdomainIdOfProcess(p)];
                         if (subdomain.ConnectivityModified)
                         {
-                            XSubdomainDto subdomainDto = XSubdomainDto.Serialize(subdomain, DofSerializer);
+                            XSubdomainDto subdomainDto = XSubdomainDto.Serialize(subdomain, model.DofSerializer);
                             procs.Communicator.Send<XSubdomainDto>(subdomainDto, p, subdomainDataTag);
                         }
                     }
@@ -70,7 +75,7 @@ namespace ISAAR.MSolve.XFEM.Entities
                     subdomain.ClearEntities();
                     XSubdomainDto serializedSubdomain = 
                         procs.Communicator.Receive<XSubdomainDto>(procs.MasterProcess, subdomainDataTag);
-                    serializedSubdomain.Deserialize(subdomain, DofSerializer, elementFactory);
+                    serializedSubdomain.Deserialize(subdomain, model.DofSerializer, elementFactory);
                     subdomain.ConnectDataStructures();
                 }
             }

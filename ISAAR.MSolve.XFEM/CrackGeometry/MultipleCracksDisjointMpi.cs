@@ -132,8 +132,9 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry
         {
             get
             {
-                procs.CheckProcessIsMaster();
-                return multiCrack_master.Enrichments;
+                var enrichments = new List<IEnrichmentItem2D>();
+                foreach (var crack in singleCracks) enrichments.AddRange(crack.Enrichments);
+                return enrichments;
             }
         }
 
