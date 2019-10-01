@@ -161,20 +161,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             subdomainVector.CopyNonContiguouslyFrom(globalVector, subdomainToGlobalDofs);
         }
 
-        public ISubdomainFreeDofOrdering GetSubdomainDofOrdering(ISubdomain subdomain)
-        {
-            procs.CheckProcessMatchesSubdomain(subdomain.ID);
-            return subdomainDofOrderings[subdomain.ID];
-        }
-
-        public int[] MapSubdomainToGlobalDofs(ISubdomain subdomain)
-        {
-            procs.CheckProcessMatchesSubdomainUnlessMaster(subdomain.ID);
-            ScatterSubdomainGlobalMaps();
-            return subdomainToGlobalDofMaps[subdomain.ID];
-        }
-
-        private void GatherSubdomainDofOrderings()
+        public void GatherSubdomainDofOrderings()
         {
             if (hasGatheredSubdomainOrderings) return;
 
@@ -202,6 +189,19 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             }
 
             hasGatheredSubdomainOrderings = true;
+        }
+
+        public ISubdomainFreeDofOrdering GetSubdomainDofOrdering(ISubdomain subdomain)
+        {
+            procs.CheckProcessMatchesSubdomainUnlessMaster(subdomain.ID);
+            return subdomainDofOrderings[subdomain.ID];
+        }
+
+        public int[] MapSubdomainToGlobalDofs(ISubdomain subdomain)
+        {
+            procs.CheckProcessMatchesSubdomainUnlessMaster(subdomain.ID);
+            ScatterSubdomainGlobalMaps();
+            return subdomainToGlobalDofMaps[subdomain.ID];
         }
 
         private void CreateSubdomainGlobalMaps() //TODO: Split this into more methods that are lazily called.

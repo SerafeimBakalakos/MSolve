@@ -84,8 +84,10 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             {
                 if (procs.IsMasterProcess)
                 {
-                    Debug.WriteLine($"Process {procs.MasterProcess}: Crack propagation step {analysisStep}");
-                    Console.WriteLine($"Process {procs.MasterProcess}: Crack propagation step {analysisStep}");
+                    Debug.WriteLine($"Process {procs.OwnRank}: Crack propagation step {analysisStep}");
+                    Console.WriteLine($"Process {procs.OwnRank}: Crack propagation step {analysisStep}");
+                    Console.WriteLine($"Process {procs.OwnRank}: Crack tip ({crack.CrackTips[0].X}, {crack.CrackTips[0].Y})");
+
 
                     // Apply the updated enrichements.
                     crack.UpdateEnrichments();
@@ -95,10 +97,12 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 }
 
                 // Scatter and crack data
+                Console.WriteLine($"Process {procs.OwnRank}: Scattering subdomain and crack data");
                 model.ScatterSubdomains();
                 crack.ScatterCrackData(model);
 
                 // Order and count dofs
+                Console.WriteLine($"Process {procs.OwnRank}: Ordering dofs and crack data");
                 solver.OrderDofs(false);
                 ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
                 ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
@@ -106,6 +110,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
 
                 // Create the stiffness matrix and then the forces vector
+                Console.WriteLine($"Process {procs.OwnRank}: Calculating matrix and rhs");
                 //problem.ClearMatrices();
                 BuildMatrices();
                 model.ApplyLoads();
@@ -120,6 +125,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 }
 
                 // Solve the linear system
+                Console.WriteLine($"Process {procs.OwnRank}: Solving linear system(s)");
                 solver.Solve();
 
                 //// Output field data
@@ -129,28 +135,17 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 //}
 
                 // Let the crack propagate
-                Dictionary<int, Vector> freeDisplacements = null;
-                if (procs.IsMasterProcess)
-                {
-                    freeDisplacements = new Dictionary<int, Vector>();
-                    for (int p = 0; p < procs.Communicator.Size; ++p)
-                    {
-                        double[] u = MpiUtilities.ReceiveArray<double>(procs.Communicator, p, displacementsTag);
-                        freeDisplacements[procs.GetSubdomainIdOfProcess(p)] = Vector.CreateFromArray(u);
-                    }
-                    crack.Propagate(freeDisplacements);
-                }
-                else
-                {
-                    MpiUtilities.SendArray<double>(procs.Communicator, linearSystem.Solution.CopyToArray(),
-                        procs.MasterProcess, displacementsTag);
-                }
+                Console.WriteLine($"Process {procs.OwnRank}: Propagating the crack.");
+                Dictionary<int, Vector> freeDisplacements = GatherDisplacementsToMaster(linearSystem);
+                GatherSubdomainFreeDofOrderingsToMaster();
+                if (procs.IsMasterProcess) crack.Propagate(freeDisplacements);
 
                 // Check convergence 
+                Console.WriteLine($"Process {procs.OwnRank}: Checking convergence.");
                 bool mustTerminate = false;
                 if (procs.IsMasterProcess) mustTerminate = MustTerminate_master(analysisStep);
                 procs.Communicator.Broadcast(ref mustTerminate, procs.MasterProcess);
-                procs.Communicator.Broadcast(ref termination, procs.MasterProcess);
+                //procs.Communicator.Broadcast(ref termination, procs.MasterProcess); //TODO: This needs serialization of the enum and might not be necessary
             }
             termination = CrackPropagationTermination.RequiredIterationsWereCompleted;
         }
@@ -190,6 +185,43 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 }
             }
             return newTipEnrichedSubdomains;
+        }
+
+        private Dictionary<int, Vector> GatherDisplacementsToMaster(ILinearSystem linearSystem)
+        {
+            Dictionary<int, Vector> freeDisplacements = null;
+            if (procs.IsMasterProcess)
+            {
+                freeDisplacements = new Dictionary<int, Vector>();
+                for (int p = 0; p < procs.Communicator.Size; ++p)
+                {
+                    if (p == procs.MasterProcess) freeDisplacements[linearSystem.Subdomain.ID] = (Vector)(linearSystem.Solution);
+                    else
+                    {
+                        double[] u = MpiUtilities.ReceiveArray<double>(procs.Communicator, p, displacementsTag);
+                        freeDisplacements[procs.GetSubdomainIdOfProcess(p)] = Vector.CreateFromArray(u);
+                    }
+                }
+            }
+            else
+            {
+                MpiUtilities.SendArray<double>(procs.Communicator, linearSystem.Solution.CopyToArray(),
+                    procs.MasterProcess, displacementsTag);
+            }
+            return freeDisplacements;
+        }
+
+        private void GatherSubdomainFreeDofOrderingsToMaster()
+        {
+            var globalDofOrdering = (GlobalFreeDofOrderingMpi)model.GlobalDofOrdering;
+            globalDofOrdering.GatherSubdomainDofOrderings();
+            if (procs.IsMasterProcess)
+            {
+                foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+                {
+                    subdomain.FreeDofOrdering = model.GlobalDofOrdering.GetSubdomainDofOrdering(subdomain);
+                }
+            }
         }
 
         private bool MustTerminate_master(int analysisStep)

@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 {
     public class DoubleCantileverBeam
     {
-        private const int numElementsY = 100;
+        private const int numElementsY = 15;
         private const double tipEnrichementRadius = 0.0;
         private const string crackPlotDirectory = @"C:\Users\Serafeim\Desktop\COMPDYN2019\DCB\Plots\LSM";
         private const string subdomainPlotDirectory = @"C:\Users\Serafeim\Desktop\COMPDYN2019\DCB\Plots\Subdomains";
@@ -35,7 +35,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 
         public static void Run()
         {
-            int numSubdomainsY = 5;
+            int numSubdomainsY = 3;
             int numSubdomainsX = 3 * numSubdomainsY;
             var solverType = SolverType.FetiDP;
 

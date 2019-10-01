@@ -196,6 +196,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             }
 
             this.Crack = new TrackingExteriorCrackLsmMpi(procs, lsmCrack);
+            Model.DofSerializer = new EnrichedDofSerializer(this.Crack);
         }
 
         public class Builder //: IBenchmarkBuilder
