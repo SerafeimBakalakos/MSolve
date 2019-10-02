@@ -36,7 +36,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
         public static void Run()
         {
             int numSubdomainsY = 3;
-            int numSubdomainsX = 3 * numSubdomainsY;
+            int numSubdomainsX = numSubdomainsY;
             var solverType = SolverType.FetiDP;
 
             DcbBenchmarkBelytschko benchmark = CreateBenchmark(numElementsY, numSubdomainsX, numSubdomainsY, tipEnrichementRadius);

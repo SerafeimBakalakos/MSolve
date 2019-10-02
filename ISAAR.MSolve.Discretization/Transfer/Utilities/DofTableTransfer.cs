@@ -39,8 +39,9 @@ namespace ISAAR.MSolve.Discretization.Transfer.Utilities
             this.dofsToSend_slave = dofsToGather;
         }
 
-        public void Transfer(int mpiTag)
-        {
+        public void Transfer(int mpiTag) //TODO: If tags are properly setup, I do not need barriers. They do hinder performance.
+        { 
+            procs.Communicator.Barrier();
             var tableSerializer = new DofTableSerializer(model.DofSerializer);
 
             // Gather the dof ordering of each subdomain from the corresponding process
@@ -51,7 +52,6 @@ namespace ISAAR.MSolve.Discretization.Transfer.Utilities
                 foreach (ISubdomain subdomain in subdomainsToGatherFrom_master)
                 {
                     int source = procs.GetProcessOfSubdomain(subdomain.ID);
-                    //Console.WriteLine($"Process {procs.OwnRank} (master): Started receiving dof ordering from process {source}.");
                     serializedTables[subdomain] = MpiUtilities.ReceiveArray<int>(procs.Communicator, source, mpiTag);
                     //Console.WriteLine($"Process {procs.OwnRank} (master): Finished receiving dof ordering from process {source}.");
                 }
@@ -80,6 +80,7 @@ namespace ISAAR.MSolve.Discretization.Transfer.Utilities
                     //Console.WriteLine($"Process {procs.OwnRank}: Finished sending corner dof ordering to master.");
                 }
             }
+            procs.Communicator.Barrier();
         }
     }
 }

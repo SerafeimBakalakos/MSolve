@@ -16,6 +16,7 @@ using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.XFEM.CrackGeometry;
 using ISAAR.MSolve.XFEM.Entities;
 using ISAAR.MSolve.XFEM.Solvers;
+using MPI;
 
 // TODO: fix a bug that happens when the crack has almost reached the boundary, is inside but no tip can be found
 namespace ISAAR.MSolve.XFEM.Analyzers
@@ -69,6 +70,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
         {
             // The order in which the next initializations happen is very important.
             if (isFirstAnalysis) model.ConnectDataStructures();
+            model.ScatterSubdomains();
 
             //solver.Initialize(); //TODO: not sure about this one.
         }
@@ -86,8 +88,6 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 {
                     Debug.WriteLine($"Process {procs.OwnRank}: Crack propagation step {analysisStep}");
                     Console.WriteLine($"Process {procs.OwnRank}: Crack propagation step {analysisStep}");
-                    Console.WriteLine($"Process {procs.OwnRank}: Crack tip ({crack.CrackTips[0].X}, {crack.CrackTips[0].Y})");
-
 
                     // Apply the updated enrichements.
                     crack.UpdateEnrichments();
@@ -96,13 +96,16 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                     UpdateSubdomains_master();
                 }
 
-                // Scatter and crack data
-                Console.WriteLine($"Process {procs.OwnRank}: Scattering subdomain and crack data");
-                model.ScatterSubdomains();
+                // Notify subdomains that have changed
+                model.ScatterSubdomainsState();
+
+                // Scatter crack data
+                //Console.WriteLine($"Process {procs.OwnRank}: Scattering xrack data");
                 crack.ScatterCrackData(model);
 
+
                 // Order and count dofs
-                Console.WriteLine($"Process {procs.OwnRank}: Ordering dofs and crack data");
+                //Console.WriteLine($"Process {procs.OwnRank}: Ordering dofs and crack data");
                 solver.OrderDofs(false);
                 ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
                 ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
@@ -110,9 +113,10 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
 
                 // Create the stiffness matrix and then the forces vector
-                Console.WriteLine($"Process {procs.OwnRank}: Calculating matrix and rhs");
+                //Console.WriteLine($"Process {procs.OwnRank}: Calculating matrix and rhs");
                 //problem.ClearMatrices();
-                BuildMatrices();
+                solver.BuildGlobalMatrix(problem);
+                //PrintKff(procs, linearSystem);
                 model.ApplyLoads();
                 LoadingUtilities.ApplyNodalLoadsMpi(procs, model, solver);
                 linearSystem.RhsVector = linearSystem.Subdomain.Forces;
@@ -125,7 +129,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 }
 
                 // Solve the linear system
-                Console.WriteLine($"Process {procs.OwnRank}: Solving linear system(s)");
+                //Console.WriteLine($"Process {procs.OwnRank}: Solving linear system(s)");
                 solver.Solve();
 
                 //// Output field data
@@ -135,13 +139,13 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 //}
 
                 // Let the crack propagate
-                Console.WriteLine($"Process {procs.OwnRank}: Propagating the crack.");
+                //Console.WriteLine($"Process {procs.OwnRank}: Propagating the crack.");
                 Dictionary<int, Vector> freeDisplacements = GatherDisplacementsToMaster(linearSystem);
                 GatherSubdomainFreeDofOrderingsToMaster();
                 if (procs.IsMasterProcess) crack.Propagate(freeDisplacements);
 
                 // Check convergence 
-                Console.WriteLine($"Process {procs.OwnRank}: Checking convergence.");
+                //Console.WriteLine($"Process {procs.OwnRank}: Checking convergence.");
                 bool mustTerminate = false;
                 if (procs.IsMasterProcess) mustTerminate = MustTerminate_master(analysisStep);
                 procs.Communicator.Broadcast(ref mustTerminate, procs.MasterProcess);
@@ -149,10 +153,24 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             }
             termination = CrackPropagationTermination.RequiredIterationsWereCompleted;
         }
-        
-        private void BuildMatrices()
+
+        private static void PrintKff(ProcessDistribution procs, ILinearSystem linearSystem)
         {
-            solver.BuildGlobalMatrix(problem);
+            procs.Communicator.Barrier();
+            string msg;
+            try
+            {
+                int m = linearSystem.Matrix.NumRows;
+                int n = linearSystem.Matrix.NumColumns;
+                double norm = LinearAlgebra.Reduction.Reductions.Norm2(linearSystem.Matrix);
+                msg = $"Subdomain {linearSystem.Subdomain.ID}: Kff ({m} x {n}), norm(Kff) = {norm}";
+            }
+            catch (Exception)
+            {
+                msg = $"Subdomain {linearSystem.Subdomain.ID}: Kff is the same as previous propagation step, but has been overwritten";
+            }
+            
+            MpiUtilities.DoInTurn(procs.Communicator, () => Console.WriteLine(msg));
         }
 
         // TODO: Abstract this and add Tanaka_1974 approach
@@ -211,7 +229,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             return freeDisplacements;
         }
 
-        private void GatherSubdomainFreeDofOrderingsToMaster()
+        private void GatherSubdomainFreeDofOrderingsToMaster() //TODO: This should not be necessary
         {
             var globalDofOrdering = (GlobalFreeDofOrderingMpi)model.GlobalDofOrdering;
             globalDofOrdering.GatherSubdomainDofOrderings();
@@ -247,7 +265,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             return false;
         }
 
-        private void UpdateSubdomains_master()
+        private void UpdateSubdomains_master() //TODO: If elements are moved to other subdomains, those subdomains need to be scattered again.
         {
             if (model.NumSubdomains == 1) return;
 

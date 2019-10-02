@@ -45,10 +45,17 @@ namespace ISAAR.MSolve.XFEM.Entities
             procs.CheckProcessMatchesSubdomainUnlessMaster(subdomainID);
             return model.Subdomains[subdomainID];
         }
+
         public override void ScatterSubdomains()
         {
-            BroadcastSubdomainsState();
+            int[] subdomainIDs = null;
+            if (procs.IsMasterProcess) subdomainIDs = model.EnumerateSubdomains().Select(sub => sub.ID).ToArray();
+            MpiUtilities.BroadcastArray(procs.Communicator, ref subdomainIDs, procs.MasterProcess);
+            ScatterSubdomains(new HashSet<int>(subdomainIDs));
+        }
 
+        public void ScatterSubdomains(HashSet<int> modifiedSubdomains)
+        {
             if (procs.IsMasterProcess)
             {
                 for (int p = 0; p < procs.Communicator.Size; ++p)
@@ -58,7 +65,7 @@ namespace ISAAR.MSolve.XFEM.Entities
                     else
                     {
                         XSubdomain subdomain = model.Subdomains[procs.GetSubdomainIdOfProcess(p)];
-                        if (subdomain.ConnectivityModified)
+                        if (modifiedSubdomains.Contains(subdomain.ID))
                         {
                             XSubdomainDto subdomainDto = XSubdomainDto.Serialize(subdomain, model.DofSerializer);
                             procs.Communicator.Send<XSubdomainDto>(subdomainDto, p, subdomainDataTag);
@@ -70,7 +77,7 @@ namespace ISAAR.MSolve.XFEM.Entities
             {
                 // Receive and deserialize and store the subdomain data in processes, where it is modified.
                 XSubdomain subdomain = model.Subdomains[procs.OwnSubdomainID];
-                if (subdomain.ConnectivityModified)
+                if (modifiedSubdomains.Contains(subdomain.ID))
                 {
                     subdomain.ClearEntities();
                     XSubdomainDto serializedSubdomain = 
@@ -114,7 +121,7 @@ namespace ISAAR.MSolve.XFEM.Entities
         //    }
         //}
 
-        private void BroadcastSubdomainsState()
+        public void ScatterSubdomainsState()
         {
             ISubdomain ownSubdomain = GetSubdomain(procs.OwnSubdomainID);
 

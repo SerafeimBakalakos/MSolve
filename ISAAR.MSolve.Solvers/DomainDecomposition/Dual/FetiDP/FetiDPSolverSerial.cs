@@ -159,6 +159,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             // Define the various dof groups
             dofSeparator.SeparateDofs(matrixManager);
+            //FetiDPDofSeparationLogging.PrintDofSeparationSerial(model, dofSeparator);
 
             //TODO: B matrices could also be reused in some cases
             // Define lagrange multipliers and boolean matrices. 

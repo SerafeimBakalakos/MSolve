@@ -76,7 +76,6 @@ namespace ISAAR.MSolve.XFEM.Solvers
             {
                 if (isFirstAnalysis)
                 {
-                    
                     foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                     {
                         cornerNodesOfSubdomains[subdomain] = getInitialCornerNodes(subdomain);
@@ -112,6 +111,7 @@ namespace ISAAR.MSolve.XFEM.Solvers
             }
             ScatterSubdomainCornerNodes();
             isFirstAnalysis = false;
+            //WriteCornerNodes();
         }
 
         private HashSet<XNode> FindNewEnrichedBoundaryNodes()
@@ -199,12 +199,24 @@ namespace ISAAR.MSolve.XFEM.Solvers
                 // Receive the corner nodes from master, if they are modified.
                 if (isSubdomainModified)
                 {
+                    //Console.WriteLine($"Updating corner nodes of subdomain {subdomain.ID}");
                     int[] cornerIDs = MpiUtilities.ReceiveArray<int>(procs.Communicator, procs.MasterProcess, cornerNodesTag);
                     var cornerNodes = new HashSet<INode>();
                     foreach (int n in cornerIDs) cornerNodes.Add(subdomain.GetNode(n));
                     cornerNodesOfSubdomains[subdomain] = cornerNodes;
                 }
             }
+        }
+
+        private void WriteCornerNodes()
+        {
+            MpiUtilities.DoInTurn(procs.Communicator, () =>
+            {
+                int s = procs.OwnSubdomainID;
+                Console.Write($"Process {procs.OwnRank}: Corner nodes of subdomain {s}: ");
+                foreach (INode node in cornerNodesOfSubdomains[model.GetSubdomain(s)]) Console.Write(node.ID + " ");
+                Console.WriteLine();
+            });
         }
     }
 }

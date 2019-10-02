@@ -65,32 +65,5 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Utilities
                 Console.WriteLine(header + "All tests were completed.");
             }
         }
-
-        private void PrintInTurn(Intracommunicator comm, string msg)
-        {
-            int token = 0;
-            if (comm.Rank == 0)
-            {
-                // Print error message
-                Console.WriteLine(msg);
-
-                // Send token to our right neighbor
-                comm.Send(token, (comm.Rank + 1) % comm.Size, 0);
-
-                // Receive token from our left neighbor
-                comm.Receive((comm.Rank + comm.Size - 1) % comm.Size, 0, out token);
-            }
-            else
-            {
-                // Receive token from our left neighbor
-                comm.Receive((comm.Rank + comm.Size - 1) % comm.Size, 0, out token);
-
-                // Print error message
-                Console.WriteLine(msg);
-
-                // Pass on the token to our right neighbor
-                comm.Send(token, (comm.Rank + 1) % comm.Size, 0);
-            }
-        }
     }
 }

@@ -58,6 +58,35 @@ namespace ISAAR.MSolve.Discretization.Transfer
             vector = Vector.CreateFromArray(asArray);
         }
 
+        public static void DoInTurn(Intracommunicator comm, Action action)
+        {
+            comm.Barrier();
+            int token = 0;
+            if (comm.Rank == 0)
+            {
+                // Print error message
+                action();
+
+                // Send token to our right neighbor
+                comm.Send(token, (comm.Rank + 1) % comm.Size, 0);
+
+                // Receive token from our left neighbor
+                comm.Receive((comm.Rank + comm.Size - 1) % comm.Size, 0, out token);
+            }
+            else
+            {
+                // Receive token from our left neighbor
+                comm.Receive((comm.Rank + comm.Size - 1) % comm.Size, 0, out token);
+
+                // Print error message
+                action();
+
+                // Pass on the token to our right neighbor
+                comm.Send(token, (comm.Rank + 1) % comm.Size, 0);
+            }
+            comm.Barrier();
+        }
+
         //TODO: Perhaps client code (in root) can work with vectors that have the gathered flattened array as their backing end. 
         //      I need dedicated classes for these (e.g. OffsetVector)
         /// <summary>
@@ -75,10 +104,17 @@ namespace ISAAR.MSolve.Discretization.Transfer
         public static T[][] GatherArrays<T>(Intracommunicator comm, T[] arrayToGather, 
             int[] arrayLengths_root, int root)
         {
+            //if (comm.Rank == root)
+            //{
+            //    Console.Write($"Process {comm.Rank}: Counts: ");
+            //    for (int p = 0; p < comm.Size; ++p) Console.Write(arrayLengths_root[p] + " ");
+            //    Console.WriteLine();
+            //}
+            //DoInTurn(comm, () => Console.WriteLine($"Process {comm.Rank}: array.Length = {arrayToGather.Length}"));
+
             //TODO: perhaps do optimizations for the array of the root process
             if (comm.Rank == root) Debug.Assert(arrayLengths_root.Length == comm.Size,
                 $"There are {arrayLengths_root.Length} arrays, but {comm.Size} processes."); //TODO: this will cause a deadlock in other processes
-
 
             // Gather all values to root
             T[] allValues = comm.GatherFlattened<T>(arrayToGather, arrayLengths_root, root);

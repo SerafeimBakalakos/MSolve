@@ -113,8 +113,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(subdomain);
             if (subdomain.StiffnessModified)
             {
-                Debug.WriteLine(msgHeader
-                    + $" Assembling the free-free stiffness matrix of subdomain {procs.OwnSubdomainID}");
+                Debug.WriteLine(msgHeader + $" Assembling the free-free stiffness matrix of subdomain {procs.OwnSubdomainID}");
                 subdomainMatrices.BuildFreeDofsMatrix(subdomain.FreeDofOrdering, elementMatrixProvider);
             }
 
@@ -160,6 +159,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             // Define the various dof groups
             dofSeparator.SeparateDofs(matrixManager);
+            //FetiDPDofSeparationLogging.PrintDofSeparationMpi(procs, model, dofSeparator);
 
             //TODO: B matrices could also be reused in some cases
             // Define lagrange multipliers and boolean matrices. 

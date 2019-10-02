@@ -98,7 +98,8 @@ namespace ISAAR.MSolve.XFEM.Analyzers
 
                 // Create the stiffness matrix and then the forces vector
                 //problem.ClearMatrices();
-                BuildMatrices();
+                solver.BuildGlobalMatrix(problem);
+                //PrintKff(model, solver);
                 model.ApplyLoads();
                 LoadingUtilities.ApplyNodalLoads(model, solver);
                 foreach (ISubdomain subdomain in model.EnumerateSubdomains())
@@ -154,6 +155,27 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             Termination = CrackPropagationTermination.RequiredIterationsWereCompleted;
         }
 
+        private static void PrintKff(IModel model, ISolverMpi solver)
+        {
+            //string path = @"C:\Users\Serafeim\Desktop\MPI\Tests\Kff_all.txt";
+            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+            //foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            //{
+            //    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+            //    Console.WriteLine($"Subdomain {subdomain.ID}: norm(Kff) = {LinearAlgebra.Reduction.Reductions.Norm2(linearSystem.Matrix)}");
+            //    writer.WriteToFile(linearSystem.Matrix, path, true);
+            //}
+
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                int m = linearSystem.Matrix.NumRows;
+                int n = linearSystem.Matrix.NumColumns;
+                double norm = LinearAlgebra.Reduction.Reductions.Norm2(linearSystem.Matrix);
+                Console.WriteLine($"Subdomain {subdomain.ID}: Kff ({m} x {n}), norm(Kff) = {norm}");
+            }
+        }
+
         private void AddEquivalentNodalLoadsToRhs()
         {
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
@@ -161,11 +183,6 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
                 loadsAssembler.ApplyEquivalentNodalLoads(subdomain, linearSystem.RhsVector);
             }
-        }
-
-        private void BuildMatrices()
-        {
-            solver.BuildGlobalMatrix(problem);
         }
 
         // TODO: Abstract this and add Tanaka_1974 approach

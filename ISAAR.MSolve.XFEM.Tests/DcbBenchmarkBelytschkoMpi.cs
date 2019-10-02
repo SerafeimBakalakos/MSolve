@@ -156,7 +156,9 @@ namespace ISAAR.MSolve.XFEM.Tests
                 builder.NumSubdomainsY = numSubdomainsY;
                 builder.NumTotalElementsX = 3 * numElementsY;
                 builder.NumTotalElementsY = numElementsY;
+                builder.PlaneStress = false;
                 builder.YoungModulus = E;
+                builder.PoissonRatio = v;
                 builder.PrescribeDisplacement(Uniform2DXModelBuilder.BoundaryRegion.RightSide, StructuralDof.TranslationX, 0.0);
                 builder.PrescribeDisplacement(Uniform2DXModelBuilder.BoundaryRegion.RightSide, StructuralDof.TranslationY, 0.0);
                 builder.DistributeLoadAtNodes(Uniform2DXModelBuilder.BoundaryRegion.UpperLeftCorner, StructuralDof.TranslationY, load);

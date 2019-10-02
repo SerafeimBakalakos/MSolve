@@ -86,7 +86,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
         public void AddVectorSubdomainToGlobal(ISubdomain subdomain, IVectorView subdomainVector, IVector globalVector)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
-            ScatterSubdomainGlobalMaps();
+            CreateSubdomainGlobalMaps();
 
             // Gather the subdomain vectors to master
             //TODO: Perhaps client master can work with vectors that have the different portions of the gathered flattened array 
@@ -189,6 +189,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             }
 
             hasGatheredSubdomainOrderings = true;
+            procs.Communicator.Barrier();
         }
 
         public ISubdomainFreeDofOrdering GetSubdomainDofOrdering(ISubdomain subdomain)
@@ -204,7 +205,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             return subdomainToGlobalDofMaps[subdomain.ID];
         }
 
-        private void CreateSubdomainGlobalMaps() //TODO: Split this into more methods that are lazily called.
+        private void CreateSubdomainGlobalMaps()
         {
             if (hasCreatedSubdomainGlobalMaps) return;
 

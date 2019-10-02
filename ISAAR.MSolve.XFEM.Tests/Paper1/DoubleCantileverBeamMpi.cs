@@ -42,14 +42,12 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
                 var procs = new ProcessDistribution(Communicator.world, master, Enumerable.Range(0, 27).ToArray());
 
                 int numSubdomainsY = 3;
-                int numSubdomainsX = 3 * numSubdomainsY;
+                int numSubdomainsX = numSubdomainsY;
 
                 DcbBenchmarkBelytschkoMpi benchmark = CreateBenchmark(procs, numElementsY, numSubdomainsX, numSubdomainsY,
                     tipEnrichementRadius);
                 ISolverMpi solver = DefineSolver(procs, benchmark);
                 RunCrackPropagationAnalysis(procs, benchmark, solver);
-
-                Console.Write("\nEnd");
             }
         }
 
