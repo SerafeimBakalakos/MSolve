@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.XFEM.Enrichments.Items
         }
 
         public abstract double[] EvaluateFunctionsAt(XNode node);
-        public abstract EvaluatedFunction2D[] EvaluateAllAt(NaturalPoint point, XContinuumElement2D element,
+        public abstract EvaluatedFunction2D[] EvaluateAllAt(NaturalPoint point, IXFiniteElement element,
              EvalInterpolation2D interpolation);
 
         public abstract IReadOnlyList<CartesianPoint> IntersectionPointsForIntegration(XContinuumElement2D element);

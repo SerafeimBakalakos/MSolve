@@ -66,7 +66,7 @@ namespace ISAAR.MSolve.XFEM.Enrichments.Items
             return enrichments;
         }
 
-        public EvaluatedFunction2D[] EvaluateAllAt(NaturalPoint point, XContinuumElement2D element,
+        public EvaluatedFunction2D[] EvaluateAllAt(NaturalPoint point, IXFiniteElement element,
              EvalInterpolation2D interpolation)
         {
             PolarPoint2D polarPoint = TipSystem.TransformPointGlobalCartesianToLocalPolar(

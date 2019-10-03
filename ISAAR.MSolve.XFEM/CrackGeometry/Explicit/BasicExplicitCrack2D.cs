@@ -135,7 +135,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Explicit
 
         public double SignedDistanceOf(XNode node) => SignedDistanceOfPoint(node);
 
-        public double SignedDistanceOf(NaturalPoint point, XContinuumElement2D element,
+        public double SignedDistanceOf(NaturalPoint point, IXFiniteElement element,
              EvalInterpolation2D interpolation)
             => SignedDistanceOfPoint(interpolation.TransformPointNaturalToGlobalCartesian());
 

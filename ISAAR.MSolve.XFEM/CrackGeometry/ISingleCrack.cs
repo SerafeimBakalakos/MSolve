@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry
         IHeavisideSingularityResolver SingularityResolver { get; }
 
         double SignedDistanceOf(XNode node);
-        double SignedDistanceOf(NaturalPoint point, XContinuumElement2D element,
+        double SignedDistanceOf(NaturalPoint point, IXFiniteElement element,
             EvalInterpolation2D interpolation);
 
         //CartesianPoint GetCrackTip(CrackTipPosition tipPosition);

@@ -39,10 +39,10 @@ namespace ISAAR.MSolve.XFEM.Enrichments.Items
             return new double[] { enrichmentFunction.EvaluateAt(signedDistance) };
         }
 
-        public EvaluatedFunction2D[] EvaluateAllAt(NaturalPoint point, XContinuumElement2D element,
+        public EvaluatedFunction2D[] EvaluateAllAt(NaturalPoint point, IXFiniteElement element,
              EvalInterpolation2D interpolation)
         {
-            CartesianPoint cartesianPoint = interpolation.TransformPointNaturalToGlobalCartesian();
+            //CartesianPoint cartesianPoint = interpolation.TransformPointNaturalToGlobalCartesian();
             double signedDistance = crackDescription.SignedDistanceOf(point, element, interpolation);
             return new EvaluatedFunction2D[] { enrichmentFunction.EvaluateAllAt(signedDistance) };
         }

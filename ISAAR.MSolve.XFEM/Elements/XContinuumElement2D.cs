@@ -61,6 +61,44 @@ namespace ISAAR.MSolve.XFEM.Elements
         public CellType CellType => Interpolation.CellType;
         public IElementDofEnumerator DofEnumerator { get; set; } = new GenericDofEnumerator();
 
+        public IReadOnlyList<(XNode node1, XNode node2)> EdgeNodes
+        {
+            get
+            {
+                if (Nodes.Count > 4) throw new NotImplementedException();
+                else
+                {
+                    var edges = new (XNode node1, XNode node2)[Nodes.Count];
+                    for (int i = 0; i < Nodes.Count; ++i)
+                    {
+                        XNode node1 = Nodes[i];
+                        XNode node2 = Nodes[(i + 1) % Nodes.Count];
+                        edges[i] = (node1, node2);
+                    }
+                    return edges;
+                }
+            }
+        }
+
+        public IReadOnlyList<(NaturalPoint node1, NaturalPoint node2)> EdgesNodesNatural
+        {
+            get
+            {
+                if (Nodes.Count > 4) throw new NotImplementedException();
+                else
+                {
+                    var edges = new (NaturalPoint node1, NaturalPoint node2)[Nodes.Count];
+                    for (int i = 0; i < Nodes.Count; ++i)
+                    {
+                        NaturalPoint node1 = Interpolation.NodalNaturalCoordinates[i];
+                        NaturalPoint node2 = Interpolation.NodalNaturalCoordinates[(i + 1) % Nodes.Count];
+                        edges[i] = (node1, node2);
+                    }
+                    return edges;
+                }
+            }
+        }
+
         public IElementType ElementType => this;
 
         //TODO: This must be refactored together with EnrichmentItems properties

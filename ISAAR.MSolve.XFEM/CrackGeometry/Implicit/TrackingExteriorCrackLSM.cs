@@ -296,7 +296,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
         /// <param name="elementNodes"></param>
         /// <param name="interpolation"></param>
         /// <returns></returns>
-        public double SignedDistanceOf(NaturalPoint point, XContinuumElement2D element,
+        public double SignedDistanceOf(NaturalPoint point, IXFiniteElement element,
              EvalInterpolation2D interpolation)
         {
             double signedDistance = 0.0;

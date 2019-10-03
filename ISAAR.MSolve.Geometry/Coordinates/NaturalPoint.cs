@@ -66,6 +66,14 @@ namespace ISAAR.MSolve.Geometry.Coordinates
 		/// </summary>
 		public double Zeta => zeta;
 
+        public double CalcDistanceFrom(NaturalPoint other)
+        {
+            double dxi = other.xi - this.xi;
+            double deta = other.eta - this.eta;
+            double dzeta = other.zeta - this.zeta;
+            return Math.Sqrt(dxi * dxi + deta * deta + dzeta * dzeta);
+        }
+
         public override string ToString() => $"(xi, eta, zeta)=({xi}, {eta}, {zeta})";
     }
 }
