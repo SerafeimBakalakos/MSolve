@@ -28,9 +28,10 @@ namespace ISAAR.MSolve.XFEM.Elements
         private readonly int id;
         private readonly IDofType[][] standardDofTypes;
 
-        public XThermalElement2D(int id, double thickness, IReadOnlyList<XNode> nodes, IIsoparametricInterpolation2D interpolation,
-            IGaussPointExtrapolation2D gaussPointExtrapolation, IQuadrature2D standardQuadrature, 
-            IIntegrationStrategy2D<XThermalElement2D> integrationStrategy, ThermalMaterial material)
+        public XThermalElement2D(int id, IReadOnlyList<XNode> nodes, ThermalMaterial material, double thickness, 
+            IIsoparametricInterpolation2D interpolation, IGaussPointExtrapolation2D gaussPointExtrapolation, 
+            IQuadrature2D standardQuadrature, IIntegrationStrategy2D<XThermalElement2D> integrationStrategy, 
+            int numGaussPointsInterface)
         {
             this.id = id;
             this.Thickness = thickness;
@@ -39,6 +40,7 @@ namespace ISAAR.MSolve.XFEM.Elements
             this.GaussPointExtrapolation = gaussPointExtrapolation;
             this.StandardQuadrature = standardQuadrature;
             this.IntegrationStrategy = integrationStrategy;
+            this.NumGaussPointsInterface = numGaussPointsInterface;
             this.Material = material;
 
             this.NumStandardDofs = nodes.Count;
@@ -122,6 +124,8 @@ namespace ISAAR.MSolve.XFEM.Elements
         /// All nodes are enriched for now.
         /// </summary>
         public IReadOnlyList<XNode> Nodes { get; }
+
+        public int NumGaussPointsInterface { get; }
 
         public int NumStandardDofs { get; }
         internal IQuadrature2D StandardQuadrature { get; } //TODO: This should not always be used for Kss. E.g. it doesn't work for bimaterial interface.
@@ -348,7 +352,7 @@ namespace ISAAR.MSolve.XFEM.Elements
         {
             int numEnrichedDofs = CountEnrichedDofs();
             var Kii = Matrix.CreateZero(numEnrichedDofs, numEnrichedDofs);
-            GaussPoint[] gaussPoints = enrichment.Discontinuity.IntegrationPointsAlongInterface(this, 2);
+            GaussPoint[] gaussPoints = enrichment.Discontinuity.IntegrationPointsAlongInterface(this, NumGaussPointsInterface);
 
             if (gaussPoints.Length == 0) return Kii; // The element is not intersected by the discontinuity
 
