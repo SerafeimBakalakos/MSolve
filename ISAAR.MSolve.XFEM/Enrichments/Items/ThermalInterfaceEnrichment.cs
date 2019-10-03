@@ -23,9 +23,10 @@ namespace ISAAR.MSolve.XFEM.Enrichments.Items
         private readonly HalfSignFunction enrichmentFunction;
         private HashSet<XThermalElement2D> affectedElements;
 
-        public ThermalInterfaceEnrichment(IMaterialInterface discontinuity)
+        public ThermalInterfaceEnrichment(IMaterialInterface discontinuity, double interfaceResistance)
         {
             this.Discontinuity = discontinuity;
+            this.InterfaceResistance = interfaceResistance;
             this.enrichmentFunction = new HalfSignFunction();
             this.Dofs = new EnrichedDof[] { new EnrichedDof(enrichmentFunction, ThermalDof.Temperature) };
             this.affectedElements = new HashSet<XThermalElement2D>();
@@ -35,6 +36,7 @@ namespace ISAAR.MSolve.XFEM.Enrichments.Items
 
         public IReadOnlyList<EnrichedDof> Dofs { get; protected set; }
 
+        public double InterfaceResistance { get; } //TODO: This should be accessed from some material class.
 
         public void EnrichElement(XThermalElement2D element)
         {
