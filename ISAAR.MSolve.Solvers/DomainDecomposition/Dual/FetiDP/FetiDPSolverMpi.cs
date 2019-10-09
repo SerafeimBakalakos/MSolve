@@ -32,7 +32,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 {
     public class FetiDPSolverMpi : ISolverMpi
     {
-        internal const string name = "FETI-DP Solver"; // for error messages and logging
+        internal const string name = "FETI-DP Solver (MPI)"; // for error messages and logging
         private readonly ICrosspointStrategy crosspointStrategy = new FullyRedundantConstraints();
         private readonly IFreeDofDisplacementsCalculator displacementsCalculator;
         private readonly DofOrdererMpi dofOrderer;

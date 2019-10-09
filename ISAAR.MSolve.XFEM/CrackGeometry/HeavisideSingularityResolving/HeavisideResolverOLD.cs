@@ -78,13 +78,6 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.HeavisideSingularityResolving
         private (double positiveArea, double negativeArea) FindSignedAreasOfElement(ISingleCrack crack, 
             XContinuumElement2D element)
         {
-            #region Debug
-            //if (element.Nodes[0].ID==154)
-            //{
-            //    Console.WriteLine();
-            //}
-            #endregion
-
             SortedSet<CartesianPoint> triangleVertices = crack.FindTriangleVertices(element);
             IReadOnlyList<Triangle2D<CartesianPoint>> triangles = triangulator.CreateMesh(triangleVertices);
 

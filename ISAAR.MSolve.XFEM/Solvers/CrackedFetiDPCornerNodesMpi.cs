@@ -96,6 +96,25 @@ namespace ISAAR.MSolve.XFEM.Solvers
                     if (numEntriesRemoved > 0) areCornerNodesModified[subdomain] = true;
                 }
 
+                // Remove the previous corner nodes that do not belong to each subdomain
+                foreach (ISubdomain subdomain in cornerNodesOfSubdomains.Keys)
+                {
+                    var removedNodes = new HashSet<INode>();
+                    foreach (INode node in cornerNodesOfSubdomains[subdomain])
+                    {
+                        try
+                        {
+                            subdomain.GetNode(node.ID);
+                        }
+                        catch (KeyNotFoundException)
+                        {
+                            removedNodes.Add(node);
+                        }
+                    }
+                    foreach (INode node in removedNodes) cornerNodesOfSubdomains[subdomain].Remove(node);
+                    if (removedNodes.Count > 0) areCornerNodesModified[subdomain] = true;
+                }
+
                 // Add boundary Heaviside nodes and nodes of the tip element(s).
                 HashSet<XNode> enrichedBoundaryNodes = FindNewEnrichedBoundaryNodes();
                 foreach (XNode node in enrichedBoundaryNodes)
@@ -160,35 +179,18 @@ namespace ISAAR.MSolve.XFEM.Solvers
 
         private void ScatterSubdomainCornerNodes()
         {
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
 
-            // Notify processes about potential changes in corner nodes
-            bool[] modified = null; 
-            if (procs.IsMasterProcess)
-            {
-                modified = new bool[procs.Communicator.Size];
-                for (int p = 0; p < procs.Communicator.Size; ++p)
-                {
-                    ISubdomain sub = model.GetSubdomain(procs.GetSubdomainIdOfProcess(p));
-                    modified[p] = areCornerNodesModified[sub];
-                }
-            }
-            bool isSubdomainModified = procs.Communicator.Scatter<bool>(modified, procs.MasterProcess);
-            if (!procs.IsMasterProcess)
-            {
-                areCornerNodesModified = new Dictionary<ISubdomain, bool>();
-                areCornerNodesModified[subdomain] = isSubdomainModified;
-            }
 
             if (procs.IsMasterProcess)
             {
                 // Send to each process the corner nodes of its subdomain, if they are modified.
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    if ((p != procs.MasterProcess) && modified[p])
+                    if (p == procs.MasterProcess) continue;
+                    ISubdomain subdomain = model.GetSubdomain(procs.GetSubdomainIdOfProcess(p));
+                    if (subdomain.ConnectivityModified)
                     {
-                        ISubdomain sub = model.GetSubdomain(procs.GetSubdomainIdOfProcess(p));
-                        HashSet<INode> cornerNodes = cornerNodesOfSubdomains[sub];
+                        HashSet<INode> cornerNodes = cornerNodesOfSubdomains[subdomain];
                         int[] cornerIDs = cornerNodes.Select(n => n.ID).ToArray();
                         MpiUtilities.SendArray<int>(procs.Communicator, cornerIDs, p, cornerNodesTag);
                     }
@@ -196,10 +198,10 @@ namespace ISAAR.MSolve.XFEM.Solvers
             }
             else
             {
+                ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
                 // Receive the corner nodes from master, if they are modified.
-                if (isSubdomainModified)
+                if (subdomain.ConnectivityModified)
                 {
-                    //Console.WriteLine($"Updating corner nodes of subdomain {subdomain.ID}");
                     int[] cornerIDs = MpiUtilities.ReceiveArray<int>(procs.Communicator, procs.MasterProcess, cornerNodesTag);
                     var cornerNodes = new HashSet<INode>();
                     foreach (int n in cornerIDs) cornerNodes.Add(subdomain.GetNode(n));

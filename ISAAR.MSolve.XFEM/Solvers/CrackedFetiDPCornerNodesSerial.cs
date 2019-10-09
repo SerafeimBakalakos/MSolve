@@ -66,6 +66,25 @@ namespace ISAAR.MSolve.XFEM.Solvers
                 if (numEntriesRemoved > 0) areCornerNodesModified[subdomain] = true;
             }
 
+            // Remove the previous corner nodes that do not belong to each subdomain
+            foreach (ISubdomain subdomain in cornerNodesOfSubdomains.Keys)
+            {
+                var removedNodes = new HashSet<INode>();
+                foreach (INode node in cornerNodesOfSubdomains[subdomain])
+                {
+                    try
+                    {
+                        subdomain.GetNode(node.ID);
+                    }
+                    catch (KeyNotFoundException)
+                    {
+                        removedNodes.Add(node);
+                    }
+                }
+                foreach (INode node in removedNodes) cornerNodesOfSubdomains[subdomain].Remove(node);
+                if (removedNodes.Count > 0) areCornerNodesModified[subdomain] = true;
+            }
+
             // Add boundary Heaviside nodes and nodes of the tip element(s).
             HashSet<XNode> enrichedBoundaryNodes = FindNewEnrichedBoundaryNodes();
             foreach (XNode node in enrichedBoundaryNodes)

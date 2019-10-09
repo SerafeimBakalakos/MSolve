@@ -48,14 +48,20 @@ namespace ISAAR.MSolve.XFEM.Entities
 
         public override void ScatterSubdomains()
         {
-            int[] subdomainIDs = null;
-            if (procs.IsMasterProcess) subdomainIDs = model.EnumerateSubdomains().Select(sub => sub.ID).ToArray();
-            MpiUtilities.BroadcastArray(procs.Communicator, ref subdomainIDs, procs.MasterProcess);
-            ScatterSubdomains(new HashSet<int>(subdomainIDs));
+            HashSet<int> allSubdomainIDs = null;
+            if (procs.IsMasterProcess) allSubdomainIDs = new HashSet<int>(model.EnumerateSubdomains().Select(sub => sub.ID));
+            ScatterSubdomains(allSubdomainIDs);
         }
-
+        
         public void ScatterSubdomains(HashSet<int> modifiedSubdomains)
         {
+            // Broadcast which subdomains are modified
+            int[] subdomainIDs = null;
+            if (procs.IsMasterProcess) subdomainIDs = modifiedSubdomains.ToArray();
+            MpiUtilities.BroadcastArray(procs.Communicator, ref subdomainIDs, procs.MasterProcess);
+            if (!procs.IsMasterProcess) modifiedSubdomains = new HashSet<int>(subdomainIDs);
+
+            // Scatter the modified subdomain data
             if (procs.IsMasterProcess)
             {
                 for (int p = 0; p < procs.Communicator.Size; ++p)

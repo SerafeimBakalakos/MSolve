@@ -75,11 +75,6 @@ namespace ISAAR.MSolve.XFEM.Entities.Decomposition
 
             foreach (var node in mesh.Nodes)
             {
-                #region debug
-                //if (node.ID == 1250)
-                //    Console.WriteLine();
-                #endregion
-
                 int multiplicity = 0;
                 for (int i = 0; i < numRegions; ++i)
                 {

@@ -38,11 +38,12 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
         {
             using (new MPI.Environment(ref args))
             {
-                int master = 0;
-                var procs = new ProcessDistribution(Communicator.world, master, Enumerable.Range(0, 27).ToArray());
-
                 int numSubdomainsY = 3;
-                int numSubdomainsX = numSubdomainsY;
+                int numSubdomainsX = 3 * numSubdomainsY;
+
+                int master = 0;
+                var procs = new ProcessDistribution(Communicator.world, master, 
+                    Enumerable.Range(0, numSubdomainsY * numSubdomainsX).ToArray());
 
                 DcbBenchmarkBelytschkoMpi benchmark = CreateBenchmark(procs, numElementsY, numSubdomainsX, numSubdomainsY,
                     tipEnrichementRadius);
@@ -69,7 +70,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 
         private static ISolverMpi DefineSolver(ProcessDistribution procs, DcbBenchmarkBelytschkoMpi benchmark)
         {
-            //benchmark.Partitioner = new TipAdaptivePartitioner(benchmark.Crack);
+            benchmark.Partitioner = new TipAdaptivePartitioner(benchmark.Crack);
             Func<ISubdomain, HashSet<INode>> getInitialCorners = sub => new HashSet<INode>(
                     CornerNodeUtilities.FindCornersOfRectangle2D(sub).Where(node => node.Constraints.Count == 0));
             var cornerNodeSelection = new CrackedFetiDPCornerNodesMpi(procs, benchmark.Model, benchmark.Crack, getInitialCorners);
@@ -88,8 +89,10 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
         private static void RunCrackPropagationAnalysis(ProcessDistribution procs, DcbBenchmarkBelytschkoMpi benchmark,
             ISolverMpi solver)
         {
+            TipAdaptivePartitioner partitioner = null;
+            partitioner = new TipAdaptivePartitioner(benchmark.Crack);
             var analyzer = new QuasiStaticCrackPropagationAnalyzerMpi(procs, benchmark.Model, solver, benchmark.Crack,
-                benchmark.FractureToughness, benchmark.MaxIterations, benchmark.Partitioner);
+                benchmark.FractureToughness, benchmark.MaxIterations, partitioner);
 
             analyzer.Initialize();
             analyzer.Analyze();

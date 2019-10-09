@@ -36,7 +36,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
         public static void Run()
         {
             int numSubdomainsY = 3;
-            int numSubdomainsX = numSubdomainsY;
+            int numSubdomainsX = 3 * numSubdomainsY;
             var solverType = SolverType.FetiDP;
 
             DcbBenchmarkBelytschko benchmark = CreateBenchmark(numElementsY, numSubdomainsX, numSubdomainsY, tipEnrichementRadius);
@@ -52,6 +52,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             builder.LsmPlotDirectory = crackPlotDirectory;
             builder.SubdomainPlotDirectory = subdomainPlotDirectory;
             builder.HeavisideEnrichmentTolerance = 0.001;
+            builder.MaxIterations = 8;
             builder.MaxIterations = 8;
             builder.TipEnrichmentRadius = tipEnrichmentRadius;
 
@@ -93,8 +94,10 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 
         private static void RunCrackPropagationAnalysis(DcbBenchmarkBelytschko benchmark, ISolverMpi solver)
         {
+            TipAdaptivePartitioner partitioner = null;
+            partitioner = new TipAdaptivePartitioner(benchmark.Crack);
             var analyzer = new QuasiStaticCrackPropagationAnalyzerSerial(benchmark.Model, solver, benchmark.Crack, 
-                benchmark.FractureToughness, benchmark.MaxIterations, benchmark.Partitioner);
+                benchmark.FractureToughness, benchmark.MaxIterations, partitioner);
 
             // Subdomain plots
             if (subdomainPlotDirectory != null)

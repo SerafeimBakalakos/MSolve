@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using ISAAR.MSolve.Analyzers.Loading;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
@@ -87,22 +88,18 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 if (procs.IsMasterProcess)
                 {
                     Debug.WriteLine($"Process {procs.OwnRank}: Crack propagation step {analysisStep}");
-                    Console.WriteLine($"Process {procs.OwnRank}: Crack propagation step {analysisStep}");
+                    Console.WriteLine($"Process {procs.OwnRank}: Crack propagation step {analysisStep}. Tip ({crack.CrackTips[0].X}, {crack.CrackTips[0].Y})");
 
-                    // Apply the updated enrichements.
+                    // Apply the enrichments due to the update crack
                     crack.UpdateEnrichments();
-
-                    // Update the mesh partitioning and identify unmodified subdomains to avoid fully processing them again.
-                    UpdateSubdomains_master();
                 }
 
-                // Notify subdomains that have changed
-                model.ScatterSubdomainsState();
+                // Update the subdomains due to the new enrichments and possible repartition the mesh
+                UpdateSubdomains();
 
-                // Scatter crack data
-                //Console.WriteLine($"Process {procs.OwnRank}: Scattering xrack data");
+                // Scatter the crack and enrichment data to other processes
+                //Console.WriteLine($"Process {procs.OwnRank}: Scattering crack data");
                 crack.ScatterCrackData(model);
-
 
                 // Order and count dofs
                 //Console.WriteLine($"Process {procs.OwnRank}: Ordering dofs and crack data");
@@ -265,14 +262,37 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             return false;
         }
 
-        private void UpdateSubdomains_master() //TODO: If elements are moved to other subdomains, those subdomains need to be scattered again.
+        private void UpdateSubdomains()
         {
-            if (model.NumSubdomains == 1) return;
+            // Update the mesh partitioning and identify unmodified subdomains to avoid fully processing them again.
+            HashSet<ISubdomain> repartitionedSubdomains_master = null;
+            if (procs.IsMasterProcess) UpdateSubdomains_master(out repartitionedSubdomains_master);
+
+            // Possibly update subdomains in other processes
+            bool repartitioning = false;
+            if (procs.IsMasterProcess) repartitioning = repartitionedSubdomains_master != null;
+            procs.Communicator.Broadcast(ref repartitioning, procs.MasterProcess);
+            if (repartitioning)
+            {
+                HashSet<int> repartitionedIDs = null;
+                if (procs.IsMasterProcess) repartitionedIDs = new HashSet<int>(repartitionedSubdomains_master.Select(sub => sub.ID));
+                model.ScatterSubdomains(repartitionedIDs);
+            }
+
+            // Notify processes with subdomains that have modified connectivity or stiffness
+            model.ScatterSubdomainsState();
+        }
+
+        private void UpdateSubdomains_master(out HashSet<ISubdomain> repartitionedSubdomains) //TODO: If elements are moved to other subdomains, those subdomains need to be scattered again.
+        {
+            repartitionedSubdomains = null;
+
+            if (model.NumSubdomains == 1) throw new InvalidOperationException("There must be >1 subdomains in a MPI environment");
 
             if (newTipEnrichedSubdomains_master == null) 
             {
                 // First analysis step: All subdomains must be fully processed.
-                if (partitioner != null) partitioner.UpdateSubdomains();
+                if (partitioner != null) repartitionedSubdomains = partitioner.UpdateSubdomains();
                 foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
                     subdomain.ConnectivityModified = true;
@@ -285,9 +305,12 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             else
             {
                 // Update the mesh partitioning, if necessary
-                HashSet<ISubdomain> modifiedSubdomains;
-                if (partitioner != null) modifiedSubdomains = partitioner.UpdateSubdomains();
-                else modifiedSubdomains = new HashSet<ISubdomain>();
+                HashSet<ISubdomain> modifiedSubdomains = new HashSet<ISubdomain>();
+                if (partitioner != null)
+                {
+                    repartitionedSubdomains = partitioner.UpdateSubdomains();
+                    modifiedSubdomains.UnionWith(repartitionedSubdomains);
+                }
 
                 if (reanalysis)
                 {
