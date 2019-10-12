@@ -292,12 +292,12 @@ namespace ISAAR.MSolve.XFEM.Elements
         }
 
         //TODO: In some cases this could use a the Gauss points of standard quadrature to save time.
-        internal Matrix BuildStandardConductivityMatrix()
+        internal Matrix BuildStandardConductivityMatrix(IReadOnlyList<GaussPoint> gaussPoints)
         {
             var Kss = Matrix.CreateZero(NumStandardDofs, NumStandardDofs);
 
             //TODO: Use the standard quadrature for Kss.
-            foreach (GaussPoint gaussPoint in StandardQuadrature.IntegrationPoints)
+            foreach (GaussPoint gaussPoint in gaussPoints)
             {
                 EvalInterpolation2D evaluatedInterpolation = Interpolation.EvaluateAllAt(Nodes, gaussPoint);
                 double dV = evaluatedInterpolation.Jacobian.DirectDeterminant * Thickness;
@@ -411,10 +411,11 @@ namespace ISAAR.MSolve.XFEM.Elements
             return elementDofs;
         }
 
-        private IMatrix JoinStiffnessesNodeMajor(Func<Matrix> buildKff, Func<(Matrix Kee, Matrix Kes)> buildKeeKes)
+        private IMatrix JoinStiffnessesNodeMajor(Func<IReadOnlyList<GaussPoint>, Matrix> buildKff, 
+            Func<(Matrix Kee, Matrix Kes)> buildKeeKes)
         {
             //TODO: Perhaps it is more efficient to do this by just appending Kse and Kee to Kss.
-            if (IsStandardElement) return buildKff();
+            if (IsStandardElement) return buildKff(StandardQuadrature.IntegrationPoints);
             else
             {
                 // The dof order in increasing frequency of change is: node, enrichment item, enrichment function, axis.
@@ -440,7 +441,7 @@ namespace ISAAR.MSolve.XFEM.Elements
                 }
 
                 // Copy the entries of Kss, Kse, Kee to the upper triangle of a total matrix for the element.
-                Matrix Kss = buildKff();
+                Matrix Kss = buildKff(IntegrationStrategy.GenerateIntegrationPoints(this));
                 (Matrix Kee, Matrix Kse) = BuildEnrichedConductivityMatricesUpper();
                 var Ktotal = SymmetricMatrix.CreateZero(NumStandardDofs + numEnrichedDofs);
 
