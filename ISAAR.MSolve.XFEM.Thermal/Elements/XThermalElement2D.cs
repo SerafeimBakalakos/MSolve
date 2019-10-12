@@ -14,14 +14,13 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.FreedomDegrees;
-using ISAAR.MSolve.XFEM.Integration;
-using ISAAR.MSolve.XFEM.Materials;
-using ISAAR.MSolve.XFEM.Utilities;
+using ISAAR.MSolve.XFEM.Thermal.Enrichments;
+using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
+using ISAAR.MSolve.XFEM.Thermal.Entities;
+using ISAAR.MSolve.XFEM.Thermal.Integration;
+using ISAAR.MSolve.XFEM.Thermal.Materials;
 
-namespace ISAAR.MSolve.XFEM.Elements
+namespace ISAAR.MSolve.XFEM.Thermal.Elements
 {
     public class XThermalElement2D : IXFiniteElement 
     {
@@ -166,7 +165,7 @@ namespace ISAAR.MSolve.XFEM.Elements
             // Enriched contributions
             //TODO: this should be taken as input, so that it is only computed once if it is needed for displacements, strains, 
             //      stresses, just like the evaluated interpolation.
-            IReadOnlyDictionary<IEnrichmentItem2D, EvaluatedFunction2D[]> evalEnrichments =
+            IReadOnlyDictionary<IEnrichmentItem, EvaluatedFunction[]> evalEnrichments =
                 EvaluateEnrichments(gaussPoint, evaluatedInterpolation);
             int dof = 0;
             for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
@@ -174,7 +173,7 @@ namespace ISAAR.MSolve.XFEM.Elements
                 double shapeFunction = evaluatedInterpolation.ShapeFunctions[nodeIdx];
                 foreach (var nodalEnrichment in Nodes[nodeIdx].EnrichmentItems)
                 {
-                    EvaluatedFunction2D[] currentEvalEnrichments = evalEnrichments[nodalEnrichment.Key];
+                    EvaluatedFunction[] currentEvalEnrichments = evalEnrichments[nodalEnrichment.Key];
                     for (int e = 0; e < currentEvalEnrichments.Length; ++e)
                     {
                         double basisFunction = shapeFunction * (currentEvalEnrichments[e].Value - nodalEnrichment.Value[e]);
@@ -218,7 +217,7 @@ namespace ISAAR.MSolve.XFEM.Elements
             }
 
             // Enriched contributions. TODO: Extract the common steps with building B into a separate method 
-            IReadOnlyDictionary<IEnrichmentItem2D, EvaluatedFunction2D[]> evalEnrichments =
+            IReadOnlyDictionary<IEnrichmentItem, EvaluatedFunction[]> evalEnrichments =
                 EvaluateEnrichments(gaussPoint, evaluatedInterpolation);
             int dof = 0;
             for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
@@ -229,11 +228,11 @@ namespace ISAAR.MSolve.XFEM.Elements
 
                 foreach (var nodalEnrichment in Nodes[nodeIdx].EnrichmentItems)
                 {
-                    EvaluatedFunction2D[] currentEvalEnrichments = evalEnrichments[nodalEnrichment.Key];
+                    EvaluatedFunction[] currentEvalEnrichments = evalEnrichments[nodalEnrichment.Key];
                     for (int e = 0; e < currentEvalEnrichments.Length; ++e)
                     {
                         double psi = currentEvalEnrichments[e].Value;
-                        Vector2 gradPsi = currentEvalEnrichments[e].CartesianDerivatives;
+                        double[] gradPsi = currentEvalEnrichments[e].CartesianDerivatives;
                         double deltaPsi = psi - nodalEnrichment.Value[e];
 
                         double Bx = dNdx * deltaPsi + N * gradPsi[0];
@@ -377,9 +376,9 @@ namespace ISAAR.MSolve.XFEM.Elements
         }
 
         //TODO: This should be delegated to element specific std and enr DofOrderers
-        internal FreedomDegrees.Ordering.DofTable<EnrichedDof> GetEnrichedDofs()
+        internal DofTable GetEnrichedDofs()
         {
-            var elementDofs = new FreedomDegrees.Ordering.DofTable<EnrichedDof>();
+            var elementDofs = new DofTable();
             int dofCounter = 0;
             foreach (XNode node in Nodes)
             {
@@ -399,9 +398,9 @@ namespace ISAAR.MSolve.XFEM.Elements
         // DofOrderer even if I do not save it. Transfering most of the code to the Enumerator class, also reduces  
         // code duplication with the standard ContinuumElement2D
         //TODO: This should be delegated to element specific std and enr DofOrderers
-        internal FreedomDegrees.Ordering.DofTable<StructuralDof> GetStandardDofs()
+        internal DofTable GetStandardDofs()
         {
-            var elementDofs = new FreedomDegrees.Ordering.DofTable<StructuralDof>();
+            var elementDofs = new DofTable();
             int dofCounter = 0;
             foreach (XNode node in Nodes)
             {
@@ -490,7 +489,7 @@ namespace ISAAR.MSolve.XFEM.Elements
                 {
                     dofTypes[i] = new List<IDofType>(4); // At least 2 * num std dofs
                     dofTypes[i].AddRange(standardDofTypes[i]);
-                    foreach (IEnrichmentItem2D enrichment in Nodes[i].EnrichmentItems.Keys)
+                    foreach (IEnrichmentItem enrichment in Nodes[i].EnrichmentItems.Keys)
                     {
                         dofTypes[i].AddRange(enrichment.Dofs);
                     }
@@ -523,7 +522,7 @@ namespace ISAAR.MSolve.XFEM.Elements
                 // Then enriched dofs
                 for (int i = 0; i < Nodes.Count; ++i)
                 {
-                    foreach (IEnrichmentItem2D enrichment in Nodes[i].EnrichmentItems.Keys)
+                    foreach (IEnrichmentItem enrichment in Nodes[i].EnrichmentItems.Keys)
                     {
                         dofTypes[i].AddRange(enrichment.Dofs);
                     }
@@ -558,7 +557,7 @@ namespace ISAAR.MSolve.XFEM.Elements
             NaturalPoint gaussPoint, EvalInterpolation2D evaluatedInterpolation)
         {
             //CartesianPoint cartesianPoint = evaluatedInterpolation.TransformPointNaturalToGlobalCartesian(gaussPoint);
-            var uniqueEnrichments = new Dictionary<IEnrichmentItem2D, EvaluatedFunction2D[]>();
+            var uniqueEnrichments = new Dictionary<IEnrichmentItem, EvaluatedFunction[]>();
 
             var deformationMatrix = Matrix.CreateZero(2, artificialDofsCount);
             int currentColumn = 0;
@@ -570,11 +569,11 @@ namespace ISAAR.MSolve.XFEM.Elements
 
                 foreach (var enrichment in Nodes[nodeIdx].EnrichmentItems)
                 {
-                    IEnrichmentItem2D enrichmentItem = enrichment.Key;
+                    IEnrichmentItem enrichmentItem = enrichment.Key;
                     double[] nodalEnrichmentValues = enrichment.Value;
 
                     // The enrichment function probably has been evaluated when processing a previous node. Avoid reevaluation.
-                    EvaluatedFunction2D[] evaluatedEnrichments;
+                    EvaluatedFunction[] evaluatedEnrichments;
                     if (!(uniqueEnrichments.TryGetValue(enrichmentItem, out evaluatedEnrichments)))
                     {
                         evaluatedEnrichments = enrichmentItem.EvaluateAllAt(gaussPoint, this, evaluatedInterpolation);
@@ -616,19 +615,19 @@ namespace ISAAR.MSolve.XFEM.Elements
         private Matrix CalculateStandardDeformationMatrix(Matrix shapeGradientsCartesian)
             => shapeGradientsCartesian.Transpose();
 
-        private IReadOnlyDictionary<IEnrichmentItem2D, EvaluatedFunction2D[]> EvaluateEnrichments(
+        private IReadOnlyDictionary<IEnrichmentItem, EvaluatedFunction[]> EvaluateEnrichments(
             NaturalPoint gaussPoint, EvalInterpolation2D evaluatedInterpolation)
         {
-            var cachedEvalEnrichments = new Dictionary<IEnrichmentItem2D, EvaluatedFunction2D[]>();
+            var cachedEvalEnrichments = new Dictionary<IEnrichmentItem, EvaluatedFunction[]>();
             foreach (XNode node in Nodes)
             {
                 foreach (var enrichment in node.EnrichmentItems)
                 {
-                    IEnrichmentItem2D enrichmentItem = enrichment.Key;
+                    IEnrichmentItem enrichmentItem = enrichment.Key;
                     double[] nodalEnrichmentValues = enrichment.Value;
 
                     // The enrichment function probably has been evaluated when processing a previous node. Avoid reevaluation.
-                    if (!(cachedEvalEnrichments.TryGetValue(enrichmentItem, out EvaluatedFunction2D[] evaluatedEnrichments)))
+                    if (!(cachedEvalEnrichments.TryGetValue(enrichmentItem, out EvaluatedFunction[] evaluatedEnrichments)))
                     {
                         evaluatedEnrichments = enrichmentItem.EvaluateAllAt(gaussPoint, this, evaluatedInterpolation);
                         cachedEvalEnrichments[enrichmentItem] = evaluatedEnrichments;

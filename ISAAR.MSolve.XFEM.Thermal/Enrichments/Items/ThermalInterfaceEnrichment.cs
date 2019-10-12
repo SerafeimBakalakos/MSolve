@@ -7,14 +7,12 @@ using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Functions;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.FreedomDegrees;
-using ISAAR.MSolve.XFEM.MaterialInterface;
-using ISAAR.MSolve.XFEM.Utilities;
+using ISAAR.MSolve.XFEM.Thermal.Elements;
+using ISAAR.MSolve.XFEM.Thermal.Enrichments.Functions;
+using ISAAR.MSolve.XFEM.Thermal.Entities;
+using ISAAR.MSolve.XFEM.Thermal.MaterialInterface.Geometry;
 
-namespace ISAAR.MSolve.XFEM.Enrichments.Items
+namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
 {
     public class ThermalInterfaceEnrichment
     {
@@ -53,30 +51,14 @@ namespace ISAAR.MSolve.XFEM.Enrichments.Items
             return new double[] { enrichmentFunction.EvaluateAt(signedDistance) };
         }
 
-        public EvaluatedFunction2D[] EvaluateAllAt(IXFiniteElement element,
+        public EvaluatedFunction[] EvaluateAllAt(IXFiniteElement element,
              double[] shapeFunctionsAtNaturalPoint)
         {
             double signedDistance = Discontinuity.SignedDistanceOf(element, shapeFunctionsAtNaturalPoint);
-            return new EvaluatedFunction2D[] { enrichmentFunction.EvaluateAllAt(signedDistance) };
+            return new EvaluatedFunction[] { enrichmentFunction.EvaluateAllAt(signedDistance) };
         }
 
-        //// TODO: add some tolerance when checking around 0. Perhaps all this is not needed though and I could even 
-        //// ignore points on the interface. It certainly needs a better name
-        ///// <summary>
-        ///// Finds the subdomain where the requested cartesian point lies.
-        ///// </summary>
-        ///// <param name="point"></param>
-        ///// <param name="subdomain">The posi</param>
-        ///// <returns></returns>
-        //public Subdomain LocatePoint(CartesianPoint point)
-        //{
-        //    int sign = Math.Sign(Discontinuity.SignedDistanceOf(point));
-        //    if (sign < 0) return Subdomain.Negative;
-        //    else if (sign > 0) return Subdomain.Positive;
-        //    else return Subdomain.Boundary;
-        //}
-
-        public IReadOnlyList<CartesianPoint> IntersectionPointsForIntegration(XContinuumElement2D element)
+        public IReadOnlyList<CartesianPoint> IntersectionPointsForIntegration(IXFiniteElement element)
             => throw new NotImplementedException();
 
     }

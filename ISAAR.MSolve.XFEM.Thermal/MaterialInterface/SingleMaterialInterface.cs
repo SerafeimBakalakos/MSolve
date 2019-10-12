@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM.Thermal.Elements;
+using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
+using ISAAR.MSolve.XFEM.Thermal.Entities;
+using ISAAR.MSolve.XFEM.Thermal.MaterialInterface.Geometry;
 
-namespace ISAAR.MSolve.XFEM.MaterialInterface
+namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
 {
     public class SingleMaterialInterface
     {

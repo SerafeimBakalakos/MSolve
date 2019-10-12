@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.Utilities;
 
-namespace ISAAR.MSolve.XFEM.Enrichments.Functions
+namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Functions
 {
-    public class HalfSignFunction : IHeavisideFunction2D
+    public class HalfSignFunction : IEnrichmentFunction
     {
         public HalfSignFunction()
         {
@@ -21,12 +20,12 @@ namespace ISAAR.MSolve.XFEM.Enrichments.Functions
             else return 0.0;
         }
 
-        public EvaluatedFunction2D EvaluateAllAt(double signedDistance)
+        public EvaluatedFunction EvaluateAllAt(double signedDistance)
         {
-            var derivatives = Vector2.Create(0.0, 0.0 );
-            if (signedDistance > 0) return new EvaluatedFunction2D(0.5, derivatives);
-            else if (signedDistance < 0) return new EvaluatedFunction2D(-0.5, derivatives);
-            else return new EvaluatedFunction2D(0.0, derivatives);
+            double[] derivatives = { 0.0, 0.0 };
+            if (signedDistance > 0) return new EvaluatedFunction(0.5, derivatives);
+            else if (signedDistance < 0) return new EvaluatedFunction(-0.5, derivatives);
+            else return new EvaluatedFunction(0.0, derivatives);
         }
 
         public override string ToString()

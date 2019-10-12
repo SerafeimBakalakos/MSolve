@@ -7,11 +7,10 @@ using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM.Thermal.Elements;
+using ISAAR.MSolve.XFEM.Thermal.Entities;
 
-namespace ISAAR.MSolve.XFEM.MaterialInterface
+namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface.Geometry
 {
     public class MaterialInterfaceLsm : IMaterialInterfaceGeometry
     {
