@@ -8,11 +8,12 @@ using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.XFEM.Elements;
+using ISAAR.MSolve.XFEM.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Entities;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry.MaterialInterfaces
+namespace ISAAR.MSolve.XFEM.MaterialInterface
 {
-    public class MaterialInterfaceLsm : IMaterialInterface
+    public class MaterialInterfaceLsm : IMaterialInterfaceGeometry
     {
         private readonly Dictionary<XNode, double> levelSets;
 
@@ -24,7 +25,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.MaterialInterfaces
 
         public double Thickness { get; }
 
-        public void Initialize(IEnumerable<XNode> nodes, ICurve2D discontinuity)
+        public void InitializeGeometry(IEnumerable<XNode> nodes, ICurve2D discontinuity)
         {
             foreach (XNode node in nodes) levelSets[node] = discontinuity.SignedDistanceOf(node);
         }
@@ -59,6 +60,23 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.MaterialInterfaces
 
         }
 
+        public bool IsElementIntersected(IXFiniteElement element)
+        {
+            double minLevelSet = double.MaxValue;
+            double maxLevelSet = double.MinValue;
+
+            foreach (XNode node in element.Nodes)
+            {
+                double levelSet = levelSets[node];
+                if (levelSet < minLevelSet) minLevelSet = levelSet;
+                if (levelSet > maxLevelSet) maxLevelSet = levelSet;
+            }
+
+            if (minLevelSet * maxLevelSet >= 0.0) return true;
+            else return false;
+        }
+
+
         public double SignedDistanceOf(XNode node) => levelSets[node];
 
         public double SignedDistanceOf(IXFiniteElement element, double[] shapeFunctionsAtNaturalPoint)
@@ -69,7 +87,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.MaterialInterfaces
                 signedDistance += shapeFunctionsAtNaturalPoint[n] * levelSets[element.Nodes[n]];
             }
             return signedDistance;
-        }
+        }       
 
         private NaturalPoint[] IntersectElement(IXFiniteElement element)
         {
