@@ -14,7 +14,7 @@ using ISAAR.MSolve.XFEM.Thermal.MaterialInterface.Geometry;
 
 namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
 {
-    public class ThermalInterfaceEnrichment
+    public class ThermalInterfaceEnrichment : IEnrichmentItem
     {
         //public enum Subdomain { Positive, Negative, Boundary }
 
@@ -51,8 +51,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
             return new double[] { enrichmentFunction.EvaluateAt(signedDistance) };
         }
 
-        public EvaluatedFunction[] EvaluateAllAt(IXFiniteElement element,
-             double[] shapeFunctionsAtNaturalPoint)
+        public EvaluatedFunction[] EvaluateAllAt(IXFiniteElement element, double[] shapeFunctionsAtNaturalPoint)
         {
             double signedDistance = Discontinuity.SignedDistanceOf(element, shapeFunctionsAtNaturalPoint);
             return new EvaluatedFunction[] { enrichmentFunction.EvaluateAllAt(signedDistance) };
@@ -60,6 +59,5 @@ namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
 
         public IReadOnlyList<CartesianPoint> IntersectionPointsForIntegration(IXFiniteElement element)
             => throw new NotImplementedException();
-
     }
 }

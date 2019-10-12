@@ -29,6 +29,6 @@ namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
 
         double[] EvaluateFunctionsAt(XNode node);
 
-        EvaluatedFunction[] EvaluateAllAt(NaturalPoint point, IXFiniteElement element, EvalInterpolation2D interpolation);
+        EvaluatedFunction[] EvaluateAllAt(IXFiniteElement element, double[] shapeFunctionsAtNaturalPoint);
     }
 }

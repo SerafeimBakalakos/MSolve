@@ -128,7 +128,7 @@ namespace ISAAR.MSolve.Tests.FEM
         private static IVectorView SolveModel(Model model)
         {
             SkylineSolver solver = (new SkylineSolver.Builder()).BuildSolver(model);
-            var provider = new ProblemThermal(model, solver);
+            var provider = new ProblemThermalSteadyState(model, solver);
 
             var childAnalyzer = new LinearAnalyzer(model, solver, provider);
             var parentAnalyzer = new StaticAnalyzer(model, solver, provider, childAnalyzer);

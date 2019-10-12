@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.Tests.FEM
             ThermalExampleWithEmbedded(model);
 
             SkylineSolver solver = (new SkylineSolver.Builder()).BuildSolver(model);
-            var provider = new ProblemThermal(model, solver);
+            var provider = new ProblemThermalSteadyState(model, solver);
             var rve = new ThermalSquareRve(model, Vector2.Create(minX, minY), Vector2.Create(maxX, maxY), thickness, 
                 temperatureGradient);
             var homogenization = new HomogenizationAnalyzer(model, solver, provider, rve);

@@ -71,7 +71,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface.Geometry
                 if (levelSet > maxLevelSet) maxLevelSet = levelSet;
             }
 
-            if (minLevelSet * maxLevelSet >= 0.0) return true;
+            if (minLevelSet * maxLevelSet <= 0.0) return true;
             else return false;
         }
 

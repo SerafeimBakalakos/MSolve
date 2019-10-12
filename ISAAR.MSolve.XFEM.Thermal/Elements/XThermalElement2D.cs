@@ -283,8 +283,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
             return JoinStiffnessesNodeMajor(BuildStandardConductivityMatrix, () =>
             {
                 (Matrix Kee, Matrix Kse) = BuildEnrichedConductivityMatricesUpper();
-                Debug.Assert(EnrichmentItems.Count <= 1);
-                Matrix Kii = BuildStiffnessForInterfacialResistance(EnrichmentItems[0]);
+                Matrix Kii = BuildStiffnessForInterfacialResistance();
                 Kee.AddIntoThis(Kii);
                 return (Kee, Kse);
             });
@@ -347,21 +346,25 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
             return (Kee, Kse);
         }
 
-        internal Matrix BuildStiffnessForInterfacialResistance(ThermalInterfaceEnrichment enrichment)
+        internal Matrix BuildStiffnessForInterfacialResistance()
         {
             int numEnrichedDofs = CountEnrichedDofs();
             var Kii = Matrix.CreateZero(numEnrichedDofs, numEnrichedDofs);
-            GaussPoint[] gaussPoints = enrichment.Discontinuity.IntegrationPointsAlongInterface(this, NumGaussPointsInterface);
 
-            if (gaussPoints.Length == 0) return Kii; // The element is not intersected by the discontinuity
-
-            foreach (GaussPoint gaussPoint in gaussPoints)
+            // For blending elements EnrichmentItems is empty. Luckily this is the case that we do not need to calculate Kii.
+            foreach (ThermalInterfaceEnrichment enrichment in EnrichmentItems)
             {
-                // Kee = sum(1/a * N^T * N)
-                Vector N = Vector.CreateFromArray(Interpolation.EvaluateFunctionsAt(gaussPoint));
-                Matrix integratedFunction = N.TensorProduct(N.Scale(1.0 / enrichment.InterfaceResistance));
-                Kii.AxpyIntoThis(integratedFunction, enrichment.Discontinuity.Thickness * gaussPoint.Weight);
+                GaussPoint[] gaussPoints = enrichment.Discontinuity.IntegrationPointsAlongInterface(this, NumGaussPointsInterface);
+                if (gaussPoints.Length == 0) return Kii; // The element is not intersected by the discontinuity
+                foreach (GaussPoint gaussPoint in gaussPoints)
+                {
+                    // Kee = sum(1/a * N^T * N)
+                    Vector N = Vector.CreateFromArray(Interpolation.EvaluateFunctionsAt(gaussPoint));
+                    Matrix integratedFunction = N.TensorProduct(N.Scale(1.0 / enrichment.InterfaceResistance));
+                    Kii.AxpyIntoThis(integratedFunction, enrichment.Discontinuity.Thickness * gaussPoint.Weight);
+                }
             }
+            
             return Kii;
         }
 
@@ -410,11 +413,11 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
             return elementDofs;
         }
 
-        private IMatrix JoinStiffnessesNodeMajor(Func<IReadOnlyList<GaussPoint>, Matrix> buildKff, 
-            Func<(Matrix Kee, Matrix Kes)> buildKeeKes)
+        private IMatrix JoinStiffnessesNodeMajor(Func<IReadOnlyList<GaussPoint>, Matrix> buildKss, 
+            Func<(Matrix Kee, Matrix Kse)> buildKeeKse)
         {
             //TODO: Perhaps it is more efficient to do this by just appending Kse and Kee to Kss.
-            if (IsStandardElement) return buildKff(StandardQuadrature.IntegrationPoints);
+            if (IsStandardElement) return buildKss(StandardQuadrature.IntegrationPoints);
             else
             {
                 // The dof order in increasing frequency of change is: node, enrichment item, enrichment function, axis.
@@ -428,9 +431,8 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
                 for (int n = 0; n < Nodes.Count; ++n)
                 {
                     // Std dofs
-                    stdDofIndices[2 * n] = totDofCounter;           // std X
-                    stdDofIndices[2 * n + 1] = totDofCounter + 1;   // std Y
-                    totDofCounter += 2;
+                    stdDofIndices[n] = totDofCounter;           // std X
+                    totDofCounter += 1;
 
                     // Enr dofs
                     for (int e = 0; e < Nodes[n].EnrichedDofsCount; ++e)
@@ -440,8 +442,8 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
                 }
 
                 // Copy the entries of Kss, Kse, Kee to the upper triangle of a total matrix for the element.
-                Matrix Kss = buildKff(IntegrationStrategy.GenerateIntegrationPoints(this));
-                (Matrix Kee, Matrix Kse) = BuildEnrichedConductivityMatricesUpper();
+                Matrix Kss = buildKss(IntegrationStrategy.GenerateIntegrationPoints(this));
+                (Matrix Kee, Matrix Kse) = buildKeeKse();
                 var Ktotal = SymmetricMatrix.CreateZero(NumStandardDofs + numEnrichedDofs);
 
                 // Upper triangle of Kss
@@ -576,7 +578,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
                     EvaluatedFunction[] evaluatedEnrichments;
                     if (!(uniqueEnrichments.TryGetValue(enrichmentItem, out evaluatedEnrichments)))
                     {
-                        evaluatedEnrichments = enrichmentItem.EvaluateAllAt(gaussPoint, this, evaluatedInterpolation);
+                        evaluatedEnrichments = enrichmentItem.EvaluateAllAt(this, evaluatedInterpolation.ShapeFunctions);
                         uniqueEnrichments[enrichmentItem] = evaluatedEnrichments;
                     }
 
@@ -621,6 +623,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
             var cachedEvalEnrichments = new Dictionary<IEnrichmentItem, EvaluatedFunction[]>();
             foreach (XNode node in Nodes)
             {
+
                 foreach (var enrichment in node.EnrichmentItems)
                 {
                     IEnrichmentItem enrichmentItem = enrichment.Key;
@@ -629,7 +632,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
                     // The enrichment function probably has been evaluated when processing a previous node. Avoid reevaluation.
                     if (!(cachedEvalEnrichments.TryGetValue(enrichmentItem, out EvaluatedFunction[] evaluatedEnrichments)))
                     {
-                        evaluatedEnrichments = enrichmentItem.EvaluateAllAt(gaussPoint, this, evaluatedInterpolation);
+                        evaluatedEnrichments = enrichmentItem.EvaluateAllAt(this, evaluatedInterpolation.ShapeFunctions);
                         cachedEvalEnrichments[enrichmentItem] = evaluatedEnrichments;
                     }
                 }

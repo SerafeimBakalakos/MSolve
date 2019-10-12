@@ -20,35 +20,28 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
             this.geometry = geometry;
             this.modelElements = modelElements;
             this.enrichment = new ThermalInterfaceEnrichment(geometry, interfaceResistance);
-
         }
 
         public void ApplyEnrichments()
-        {
-            FindEnrichedNodesElements();
-            ApplyEnrichmentFunctions();
-        }
-
-        private void ApplyEnrichmentFunctions()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void FindEnrichedNodesElements()
         {
             // Find elements that are intersected by the discontinuity
             var intersectedElements = new List<IXFiniteElement>();
             foreach (XThermalElement2D element in modelElements)
             {
                 bool isIntersected = geometry.IsElementIntersected(element);
-                if (isIntersected) intersectedElements.Add(element);
+                if (isIntersected)
+                {
+                    intersectedElements.Add(element);
+                    element.EnrichmentItems.Add(enrichment);
+                }
             }
 
-            // Enrich intersected elements and their nodes
-            foreach (XThermalElement2D element in intersectedElements)
+            // Calculate and store nodal enrichments
+            var enrichedNodes = new HashSet<XNode>();
+            foreach (XThermalElement2D element in intersectedElements) enrichedNodes.UnionWith(element.Nodes);
+            foreach (XNode node in enrichedNodes)
             {
-                element.EnrichmentItems.Add(enrichment);
-                foreach (XNode node in element.Nodes) /*node.EnrichmentItems[enrichment] = */; 
+                node.EnrichmentItems[enrichment] = enrichment.EvaluateFunctionsAt(node);
             }
         }
     }

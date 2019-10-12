@@ -17,7 +17,7 @@ using ISAAR.MSolve.Solvers.LinearSystems;
 //TODO: I am not too fond of the provider storing global sized matrices.
 namespace ISAAR.MSolve.Problems
 {
-    public class ProblemThermal : IImplicitIntegrationProvider, IStaticProvider, INonLinearProvider
+    public class ProblemThermalTransient : IImplicitIntegrationProvider, IStaticProvider, INonLinearProvider
     {
         private Dictionary<int, IMatrix> capacity, conductivityFreeFree;
         private Dictionary<int, IMatrixView> conductivityFreeConstr, conductivityConstrFree, conductivityConstrConstr;
@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.Problems
         private ElementStructuralStiffnessProvider conductivityProvider = new ElementStructuralStiffnessProvider();
         private ElementStructuralMassProvider capacityProvider = new ElementStructuralMassProvider();
 
-        public ProblemThermal(Model model, ISolver solver)
+        public ProblemThermalTransient(Model model, ISolver solver)
         {
             this.model = model;
             this.linearSystems = solver.LinearSystems;
