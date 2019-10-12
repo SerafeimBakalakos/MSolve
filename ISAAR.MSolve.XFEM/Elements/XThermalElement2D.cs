@@ -28,7 +28,7 @@ namespace ISAAR.MSolve.XFEM.Elements
         private readonly int id;
         private readonly IDofType[][] standardDofTypes;
 
-        public XThermalElement2D(int id, IReadOnlyList<XNode> nodes, ThermalMaterial material, double thickness, 
+        public XThermalElement2D(int id, IReadOnlyList<XNode> nodes, IThermalMaterialField2D materialField, double thickness, 
             IIsoparametricInterpolation2D interpolation, IGaussPointExtrapolation2D gaussPointExtrapolation, 
             IQuadrature2D standardQuadrature, IIntegrationStrategy2D<XThermalElement2D> integrationStrategy, 
             int numGaussPointsInterface)
@@ -41,7 +41,7 @@ namespace ISAAR.MSolve.XFEM.Elements
             this.StandardQuadrature = standardQuadrature;
             this.IntegrationStrategy = integrationStrategy;
             this.NumGaussPointsInterface = numGaussPointsInterface;
-            this.Material = material;
+            this.MaterialField = materialField;
 
             this.NumStandardDofs = nodes.Count;
             standardDofTypes = new IDofType[nodes.Count][];
@@ -117,7 +117,7 @@ namespace ISAAR.MSolve.XFEM.Elements
             }
         }
 
-        internal ThermalMaterial Material { get; }
+        internal IThermalMaterialField2D MaterialField { get; }
 
         IReadOnlyList<INode> IElement.Nodes => Nodes;
         /// <summary>
@@ -304,7 +304,7 @@ namespace ISAAR.MSolve.XFEM.Elements
                 //TODO: The thickness is constant per element in FEM, but what about XFEM? Different materials within the same element are possible.
                 
                 // Material properties
-                double conductivity = Material.ThermalConductivity;
+                double conductivity = MaterialField.GetMaterialAt(this, evaluatedInterpolation.ShapeFunctions).ThermalConductivity;
 
                 // Bs = grad(Ns)
                 Matrix deformation = CalculateStandardDeformationMatrix(evaluatedInterpolation.ShapeGradientsCartesian);
@@ -330,7 +330,7 @@ namespace ISAAR.MSolve.XFEM.Elements
                 //TODO: The thickness is constant per element in FEM, but what about XFEM? Different materials within the same element are possible.
 
                 // Material properties
-                double conductivity = Material.ThermalConductivity;
+                double conductivity = MaterialField.GetMaterialAt(this, evaluatedInterpolation.ShapeFunctions).ThermalConductivity;
 
                 // Bs = grad(Ns), Be = grad(Ne)
                 Matrix Bstd = CalculateStandardDeformationMatrix(evaluatedInterpolation.ShapeGradientsCartesian);

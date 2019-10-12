@@ -19,7 +19,7 @@ namespace ISAAR.MSolve.XFEM.Elements
         private static readonly IReadOnlyDictionary<CellType, IIsoparametricInterpolation2D> interpolations;
 
         private readonly IIntegrationStrategy2D<XThermalElement2D> conductivityIntegration;
-        private readonly ThermalMaterial material;
+        private readonly IThermalMaterialField2D material;
         private readonly int numGaussPointsInterface;
         private readonly double thickness;
 
@@ -72,7 +72,7 @@ namespace ISAAR.MSolve.XFEM.Elements
             //XContinuumElement2DFactory.integrationsForMass = integrationsForMass;
         }
 
-        public XThermalElement2DFactory(ThermalMaterial commonMaterial, double thickness, 
+        public XThermalElement2DFactory(IThermalMaterialField2D commonMaterial, double thickness, 
             IIntegrationStrategy2D<XThermalElement2D> conductivityIntegration, int numGaussPointsInterface)
         {
             this.material = commonMaterial;
@@ -86,7 +86,7 @@ namespace ISAAR.MSolve.XFEM.Elements
 #if DEBUG
             interpolations[cellType].CheckElementNodes(nodes);
 #endif
-            return new XThermalElement2D(id, nodes, material.Clone(), thickness, interpolations[cellType], 
+            return new XThermalElement2D(id, nodes, material, thickness, interpolations[cellType], 
                 extrapolations[cellType], standardIntegrationsForConductivity[cellType], conductivityIntegration, 
                 numGaussPointsInterface);
         }
