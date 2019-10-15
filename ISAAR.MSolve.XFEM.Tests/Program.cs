@@ -10,9 +10,10 @@ namespace ISAAR.MSolve.XFEM.Tests
     {
         public static void Main(string[] args)
         {
-            //Paper1.DoubleCantileverBeam.Run();
-            Paper1.DoubleCantileverBeamMpi.Run(args);
+            Paper1.FourPointBendingBeamRunner.Run();
 
+            //Paper1.DoubleCantileverBeam.Run();
+            //Paper1.DoubleCantileverBeamMpi.Run(args);
             //Paper1.Holes.Run();
 
 

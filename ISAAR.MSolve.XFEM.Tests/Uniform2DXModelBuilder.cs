@@ -44,6 +44,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
 
         public double PoissonRatio { get; set; } = 0.3;
 
+        public double Thickness { get; set; } = 1.0;
+
         public IIntegrationStrategy2D<XContinuumElement2D> QuadratureForStiffness { get; } =
             new IntegrationForCrackPropagation2D( 
                 new RectangularSubgridIntegration2D<XContinuumElement2D>(8, 2),
@@ -111,10 +113,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
                     }
                 }
             }
-            double thickness = 1.0;
             IXMaterialField2D[] materials = youngModuli.Select(E =>
             {
-                if (PlaneStress) return HomogeneousElasticMaterial2D.CreateMaterialForPlaneStress(0, E, PoissonRatio, thickness);
+                if (PlaneStress) return HomogeneousElasticMaterial2D.CreateMaterialForPlaneStress(0, E, PoissonRatio, Thickness);
                 else return HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, E, PoissonRatio);
             }).ToArray();
 

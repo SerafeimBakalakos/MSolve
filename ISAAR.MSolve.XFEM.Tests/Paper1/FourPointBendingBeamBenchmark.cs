@@ -1,23 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Text;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Discretization.Mesh.Generation;
-using ISAAR.MSolve.Discretization.Mesh.Generation.GMSH;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
-using ISAAR.MSolve.Logging.DomainDecomposition;
-using ISAAR.MSolve.Problems;
-using ISAAR.MSolve.Solvers;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition;
-using ISAAR.MSolve.XFEM.Analyzers;
-using ISAAR.MSolve.XFEM.CrackGeometry.CrackTip;
 using ISAAR.MSolve.XFEM.CrackGeometry.HeavisideSingularityResolving;
 using ISAAR.MSolve.XFEM.CrackGeometry.Implicit;
 using ISAAR.MSolve.XFEM.CrackGeometry.Implicit.Logging;
@@ -27,32 +17,29 @@ using ISAAR.MSolve.XFEM.CrackPropagation.Jintegral;
 using ISAAR.MSolve.XFEM.CrackPropagation.Length;
 using ISAAR.MSolve.XFEM.Elements;
 using ISAAR.MSolve.XFEM.Enrichments.Functions;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.Integration;
 using ISAAR.MSolve.XFEM.Materials;
-using ISAAR.MSolve.XFEM.Solvers;
 
-namespace ISAAR.MSolve.XFEM.Tests
+namespace ISAAR.MSolve.XFEM.Tests.Paper1
 {
-    public class DcbBenchmarkBelytschko //: IBenchmark
+    public class FourPointBendingBeamBenchmark
     {
         #region constants
-        ///// <summary>
-        ///// The material used for the J-integral computation. It msut be stored separately from individual element materials.
-        ///// </summary>
-        //private static readonly HomogeneousElasticMaterial2D globalHomogeneousMaterial =
-        //    HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(E, v);
-
-        /// <summary>
-        /// The maximum value that the effective SIF can reach before collapse occurs.
-        /// </summary>
+        // Material and dimensions
         private const double fractureToughness = double.MaxValue;
+        private const double h = 0.100, L = 0.440, thickness = 0.1;// m
+        private const double v = 0.2, E = 3.5E7; // Pa
 
-        public static readonly double h = 3.94, L = 3 * h;// in
-        private static readonly double v = 0.3, E = 3e7; // psi=lbs/in^2
-        private static readonly double load = 197; // lbs
-        private static readonly double a = 3.95, da = 0.5; // in 
+        // Boundary conditions
+        private const double applicationArea = 0.020; // m
+        private const double load = 20E3; // N
+        private const double leftP = load / 11.0, offsetLeftP = 0.020;
+        private const double rightP = load* 10.0 / 11.0, offsetRightP = 0.240;
+        private const double offsetRoller = 0.200, offsetHinge = 0.420;
+
+        // Crack
+        private static readonly CartesianPoint crackMouth = new CartesianPoint(0.220, 0.100);
+        private static readonly CartesianPoint crackTip = new CartesianPoint(0.220, 0.080);
         private static readonly double dTheta = 5.71 * Math.PI / 180; // initial crack angle
         #endregion
 
@@ -69,34 +56,28 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// </summary>
         private readonly double jIntegralRadiusOverElementSize;
 
-        private readonly int numElementsY;
-        private readonly int numSubdomainsX;
-        private readonly int numSubdomainsY;
+        private readonly int numElementsX, numElementsY;
+        private readonly int numSubdomainsX, numSubdomainsY;
 
-        private readonly string lsmPlotDirectory;
-        private readonly string subdomainPlotDirectory;
+        private readonly string plotDirectoryLsm, plotDirectorySubdomains;
 
         private readonly double tipEnrichmentRadius = 0.0;
 
-        private TrackingExteriorCrackLsm crack;
         private BidirectionalMesh2D<XNode, XContinuumElement2D> mesh;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="growthLength">The length by which the crack grows in each iteration.</param>
-        public DcbBenchmarkBelytschko(int numElementsY, int numSubdomainsX, int numSubdomainsY, double growthLength, 
-            double tipEnrichmentRadius, double jIntegralRadiusOverElementSize, int maxIterations, double heavisideTol,
-            string lsmPlotDirectory, string subdomainPlotDirectory)
+        public FourPointBendingBeamBenchmark(int numElementsX, int numElementsY, int numSubdomainsX, int numSubdomainsY, 
+            double growthLength, double tipEnrichmentRadius, double jIntegralRadiusOverElementSize, 
+            int maxIterations, double heavisideTol, string plotDirectoryLsm, string plotDirectorySubdomains)
         {
+            this.numElementsX = numElementsX;
             this.numElementsY = numElementsY;
             this.numSubdomainsX = numSubdomainsX;
             this.numSubdomainsY = numSubdomainsY;
             this.growthLength = growthLength;
             this.tipEnrichmentRadius = tipEnrichmentRadius;
             this.jIntegralRadiusOverElementSize = jIntegralRadiusOverElementSize;
-            this.lsmPlotDirectory = lsmPlotDirectory;
-            this.subdomainPlotDirectory = subdomainPlotDirectory;
+            this.plotDirectoryLsm = plotDirectoryLsm;
+            this.plotDirectorySubdomains = plotDirectorySubdomains;
             this.MaxIterations = maxIterations;
             this.heavisideTol = heavisideTol;
         }
@@ -104,17 +85,10 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// <summary>
         /// The crack geometry description. Before accessing it, make sure <see cref="InitializeModel"/> has been called.
         /// </summary>
-        public TrackingExteriorCrackLsm Crack { get { return crack; } }
+        public TrackingExteriorCrackLsm Crack { get; private set; }
 
-        public CartesianPoint CrackMouth { get; private set; }
+        public double FractureToughness => double.MaxValue;
 
-        public double FractureToughness => fractureToughness;
-
-        //public IReadOnlyList<double> GrowthAngles { get; private set; }
-        /// <summary>
-        /// The maximum number of crack propagation steps. The analysis may stop earlier if the crack has reached the domain 
-        /// boundary or if the fracture toughness is exceeded.
-        /// </summary>
         public int MaxIterations { get; }
         public IMesh2D<XNode, XContinuumElement2D> Mesh => mesh;
 
@@ -123,11 +97,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// </summary>
         public XModel Model { get; private set; }
 
-        public string Name { get { return "Dcb benchmark"; } }
-
-        //public string PlotDirectory { get { return lsmPlotDirectory; } }
-
-        public TipAdaptivePartitioner Partitioner { get; set; } // Refactor its injection
+        public string Name => "4-point bending beam benchmark";
 
         public void InitializeModel()
         {
@@ -143,17 +113,52 @@ namespace ISAAR.MSolve.XFEM.Tests
             builder.DomainLengthY = h;
             builder.NumSubdomainsX = numSubdomainsX;
             builder.NumSubdomainsY = numSubdomainsY;
-            builder.NumTotalElementsX = 3 * numElementsY;
+            builder.NumTotalElementsX = numElementsX;
             builder.NumTotalElementsY = numElementsY;
-            builder.PlaneStress = false;
+            builder.PlaneStress = true;
             builder.YoungModulus = E;
             builder.PoissonRatio = v;
-            builder.PrescribeDisplacement(Uniform2DXModelBuilder.BoundaryRegion.RightSide, StructuralDof.TranslationX, 0.0);
-            builder.PrescribeDisplacement(Uniform2DXModelBuilder.BoundaryRegion.RightSide, StructuralDof.TranslationY, 0.0);
-            builder.DistributeLoadAtNodes(Uniform2DXModelBuilder.BoundaryRegion.UpperLeftCorner, StructuralDof.TranslationY, load);
-            builder.DistributeLoadAtNodes(Uniform2DXModelBuilder.BoundaryRegion.LowerLeftCorner, StructuralDof.TranslationY, -load);
+            builder.Thickness = thickness;
 
             (Model, mesh) = builder.BuildModel();
+
+            // Boundary conditions
+            double meshTol = 1E-8;
+            double start, end;
+            double load;
+            IEnumerable<XNode> nodes;
+            IEnumerable<XNode> bottomNodes = Model.Nodes.Values.Where(n => Math.Abs(n.Y) <= meshTol);
+            IEnumerable<XNode> topNodes = Model.Nodes.Values.Where(n => Math.Abs(n.Y - h) <= meshTol);
+
+            // Left load
+            start = offsetLeftP - applicationArea / 2.0 - meshTol;
+            end = offsetLeftP + applicationArea / 2.0 + meshTol;
+            nodes = bottomNodes.Where(n => (n.X >= start) && (n.X <= end));
+            load = leftP / nodes.Count();
+            foreach (XNode node in nodes) Model.NodalLoads.Add(new NodalLoad(node, StructuralDof.TranslationY, load));
+
+            // Right load
+            start = offsetRightP - applicationArea / 2.0 - meshTol;
+            end = offsetRightP + applicationArea / 2.0 + meshTol;
+            nodes = bottomNodes.Where(n => (n.X >= start) && (n.X <= end));
+            load = rightP / nodes.Count();
+            foreach (XNode node in nodes) Model.NodalLoads.Add(new NodalLoad(node, StructuralDof.TranslationY, load));
+
+            // Roller BC
+            start = offsetRoller - applicationArea / 2.0 - meshTol;
+            end = offsetRoller + applicationArea / 2.0 + meshTol;
+            nodes = topNodes.Where(n => (n.X >= start) && (n.X <= end));
+            foreach (XNode node in nodes) node.Constraints.Add(new Constraint { DOF = StructuralDof.TranslationY, Amount = 0.0 });
+
+            // Hinge BC
+            start = offsetHinge - applicationArea / 2.0 - meshTol;
+            end = offsetHinge + applicationArea / 2.0 + meshTol;
+            nodes = topNodes.Where(n => (n.X >= start) && (n.X <= end));
+            foreach (XNode node in nodes)
+            {
+                node.Constraints.Add(new Constraint { DOF = StructuralDof.TranslationX, Amount = 0.0 });
+                node.Constraints.Add(new Constraint { DOF = StructuralDof.TranslationY, Amount = 0.0 });
+            }
         }
 
         public void InitializeCrack()
@@ -164,38 +169,32 @@ namespace ISAAR.MSolve.XFEM.Tests
                 new HomogeneousSIFCalculator(globalHomogeneousMaterial),
                 new MaximumCircumferentialTensileStressCriterion(), new ConstantIncrement2D(growthLength));
 
-            CrackMouth = new CartesianPoint(0.0, h/2);
-            var crackKink = new CartesianPoint(a, h / 2);
-            var initialCrack = new PolyLine2D(CrackMouth, crackKink);
-            initialCrack.UpdateGeometry(-dTheta, da);
-            //var crackTip = new CartesianPoint(a + da * Math.Cos(dTheta), h/2 - da * Math.Sin(dTheta));
+            var initialCrack = new PolyLine2D(crackMouth, crackTip);
 
-            var lsmCrack = new TrackingExteriorCrackLsm(propagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol), 
+            var lsmCrack = new TrackingExteriorCrackLsm(propagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol),
                 new SignFunction2D());
             lsmCrack.Mesh = mesh;
 
             // Logging         
-            if (lsmPlotDirectory != null)
+            if (plotDirectoryLsm != null)
             {
-                lsmCrack.EnrichmentLogger = new EnrichmentLogger(Model, lsmCrack, lsmPlotDirectory);
-                lsmCrack.LevelSetLogger = new LevelSetLogger(Model, lsmCrack, lsmPlotDirectory);
-                lsmCrack.LevelSetComparer = new PreviousLevelSetComparer(lsmCrack, lsmPlotDirectory);
+                lsmCrack.EnrichmentLogger = new EnrichmentLogger(Model, lsmCrack, plotDirectoryLsm);
+                lsmCrack.LevelSetLogger = new LevelSetLogger(Model, lsmCrack, plotDirectoryLsm);
+                lsmCrack.LevelSetComparer = new PreviousLevelSetComparer(lsmCrack, plotDirectoryLsm);
             }
 
             // Mesh geometry interaction
             lsmCrack.InitializeGeometry(initialCrack);
-            //lsmCrack.UpdateGeometry(-dTheta, da);
-            this.crack = lsmCrack;
+            this.Crack = lsmCrack;
         }
 
         public class Builder //: IBenchmarkBuilder
         {
-            private readonly int numElementsY;
-            private readonly int numSubdomainsX;
-            private readonly int numSubdomainsY;
+            private readonly int numElementsX, numElementsY, numSubdomainsX, numSubdomainsY;
 
-            public Builder(int numElementsY, int numSubdomainsX, int numSubdomainsY)
+            public Builder(int numElementsX, int numElementsY, int numSubdomainsX, int numSubdomainsY)
             {
+                this.numElementsX = numElementsX;
                 this.numElementsY = numElementsY;
                 this.numSubdomainsX = numSubdomainsX;
                 this.numSubdomainsY = numSubdomainsY;
@@ -213,7 +212,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             /// <summary>
             /// Must be sufficiently larger than the element size.
             /// </summary>
-            public double GrowthLength { get; set; } = 0.3; //in
+            public double GrowthLength { get; set; } = 0.01; //m
 
             /// <summary>
             /// Controls how large will the radius of the J-integral contour be. WARNING: errors are introduced if the J-integral 
@@ -233,14 +232,14 @@ namespace ISAAR.MSolve.XFEM.Tests
             /// The maximum number of crack propagation steps. The analysis may stop earlier if the crack has reached the domain 
             /// boundary or if the fracture toughness is exceeded.
             /// </summary>
-            public int MaxIterations { get; set; } = 8; //TODO: After that I noticed very weird behaviour
+            public int MaxIterations { get; set; } = 8;
 
             public double TipEnrichmentRadius { get; set; } = 0.0;
 
-            public DcbBenchmarkBelytschko BuildBenchmark()
+            public FourPointBendingBeamBenchmark BuildBenchmark()
             {
-                return new DcbBenchmarkBelytschko(numElementsY, numSubdomainsX, numSubdomainsY, GrowthLength, TipEnrichmentRadius, 
-                    JintegralRadiusOverElementSize, MaxIterations, HeavisideEnrichmentTolerance,
+                return new FourPointBendingBeamBenchmark(numElementsX,numElementsY, numSubdomainsX, numSubdomainsY, GrowthLength,
+                    TipEnrichmentRadius, JintegralRadiusOverElementSize, MaxIterations, HeavisideEnrichmentTolerance,
                     LsmPlotDirectory, SubdomainPlotDirectory);
             }
         }
