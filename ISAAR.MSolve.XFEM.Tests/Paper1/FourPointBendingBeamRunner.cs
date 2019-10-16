@@ -100,7 +100,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
                 subdomainPlotDirectory, true);
 
             var analyzer = new QuasiStaticCrackPropagationAnalyzerSerial(benchmark.Model, solver, benchmark.Crack,
-                benchmark.FractureToughness, benchmark.MaxIterations, partitioner);
+                benchmark.FractureToughness, benchmark.MaxIterations, true, partitioner);
             analyzer.DDLogger = ddLogger;
             analyzer.Initialize();
             analyzer.Analyze();

@@ -69,12 +69,11 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// </summary>
         private readonly double jIntegralRadiusOverElementSize;
 
+        private readonly string lsmPlotDirectory;
+
         private readonly int numElementsY;
         private readonly int numSubdomainsX;
         private readonly int numSubdomainsY;
-
-        private readonly string lsmPlotDirectory;
-        private readonly string subdomainPlotDirectory;
 
         private readonly double tipEnrichmentRadius = 0.0;
 
@@ -87,7 +86,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// <param name="growthLength">The length by which the crack grows in each iteration.</param>
         public DcbBenchmarkBelytschko(int numElementsY, int numSubdomainsX, int numSubdomainsY, double growthLength, 
             double tipEnrichmentRadius, double jIntegralRadiusOverElementSize, int maxIterations, double heavisideTol,
-            string lsmPlotDirectory, string subdomainPlotDirectory)
+            string lsmPlotDirectory)
         {
             this.numElementsY = numElementsY;
             this.numSubdomainsX = numSubdomainsX;
@@ -96,7 +95,6 @@ namespace ISAAR.MSolve.XFEM.Tests
             this.tipEnrichmentRadius = tipEnrichmentRadius;
             this.jIntegralRadiusOverElementSize = jIntegralRadiusOverElementSize;
             this.lsmPlotDirectory = lsmPlotDirectory;
-            this.subdomainPlotDirectory = subdomainPlotDirectory;
             this.MaxIterations = maxIterations;
             this.heavisideTol = heavisideTol;
         }
@@ -227,7 +225,6 @@ namespace ISAAR.MSolve.XFEM.Tests
             /// </summary>
             public string LsmPlotDirectory { get; set; } = null;
 
-            public string SubdomainPlotDirectory { get; set; } = null;
 
             /// <summary>
             /// The maximum number of crack propagation steps. The analysis may stop earlier if the crack has reached the domain 
@@ -240,8 +237,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             public DcbBenchmarkBelytschko BuildBenchmark()
             {
                 return new DcbBenchmarkBelytschko(numElementsY, numSubdomainsX, numSubdomainsY, GrowthLength, TipEnrichmentRadius, 
-                    JintegralRadiusOverElementSize, MaxIterations, HeavisideEnrichmentTolerance,
-                    LsmPlotDirectory, SubdomainPlotDirectory);
+                    JintegralRadiusOverElementSize, MaxIterations, HeavisideEnrichmentTolerance, LsmPlotDirectory);
             }
         }
     }

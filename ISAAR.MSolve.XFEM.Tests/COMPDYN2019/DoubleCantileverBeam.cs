@@ -51,7 +51,6 @@ namespace ISAAR.MSolve.XFEM.Tests.COMPDYN2019
         {
             var builder = new DcbBenchmarkBelytschko.Builder(numElementsY, numSubdomainsX, numSubdomainsY);
             builder.LsmPlotDirectory = crackPlotDirectory;
-            builder.SubdomainPlotDirectory = subdomainPlotDirectory;
             builder.HeavisideEnrichmentTolerance = 0.001;
             builder.MaxIterations = 8;
             builder.TipEnrichmentRadius = tipEnrichmentRadius;

@@ -40,7 +40,8 @@ namespace ISAAR.MSolve.XFEM.Analyzers
         private HashSet<ISubdomain> newTipEnrichedSubdomains;
 
         public QuasiStaticCrackPropagationAnalyzerSerial(XModel model, ISolverMpi solver, /*IStaticProvider problem,*/
-            ICrackDescription crack, double fractureToughness, int maxIterations, TipAdaptivePartitioner partitioner = null)
+            ICrackDescription crack, double fractureToughness, int maxIterations, bool reanalysis = true, 
+            TipAdaptivePartitioner partitioner = null)
         {
             this.model = model;
             this.solver = solver;
@@ -48,6 +49,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             this.crack = crack;
             this.fractureToughness = fractureToughness;
             this.maxIterations = maxIterations;
+            this.reanalysis = reanalysis;
             this.partitioner = partitioner;
 
             //TODO: Refactor problem structural and remove the next

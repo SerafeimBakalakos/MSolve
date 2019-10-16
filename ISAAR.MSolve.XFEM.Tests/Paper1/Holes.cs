@@ -397,7 +397,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
         private static void RunCrackPropagationAnalysis(HolesBenchmark benchmark, ISolverMpi solver)
         {
             var analyzer = new QuasiStaticCrackPropagationAnalyzerSerial(benchmark.Model, solver, benchmark.Crack,
-                benchmark.FractureToughness, benchmark.MaxIterations, benchmark.Partitioner);
+                benchmark.FractureToughness, benchmark.MaxIterations, true, benchmark.Partitioner);
 
             // Subdomain plots
             if (subdomainPlotDirectory != null)
