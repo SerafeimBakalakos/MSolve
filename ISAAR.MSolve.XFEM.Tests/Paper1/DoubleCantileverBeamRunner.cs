@@ -34,33 +34,34 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             // (numElementsY, dofs): (40, 10025), (75, 34664), (100, 61009), (125, 95258), (130, 102711), (200, 241900), 
             // (250, 377498), (300, 542590), (400, 963700) 
             //  (410, 1012128), (500, 1.5E6), (585, 2059800), (600, 2.165E6), (1000, 6.5E6)
-            int[] numElementsY = { /*75,*/ /*125,*/ 250, 400, 600 };
+            int[] numElementsY = { 75, 125, 250, 400, 600 };
 
             // Direct
             bool suiteSparse = true;
-            bool plotLSM = false;
+            bool plotLSM = true;
             //foreach (int nely in numElementsY)
             //{
             //    SolveDirect(CreateBenchmark(nely, 1, 1, tipEnrichementRadius, plotLSM), suiteSparse);
             //}
 
             // Feti-DP serial
-            int numSubdomainsY = 9;
+            int numSubdomainsY = 25;
             int numSubdomainsX = 3 * numSubdomainsY;
             bool reanalysis = false;
+            bool plotSubdomains = true;
             foreach (int nely in numElementsY)
             {
-                SolverFetiDPSerial(CreateBenchmark(nely, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM), 
-                    false, reanalysis);
+                SolverFetiDPSerial(CreateBenchmark(nely, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM),
+                    plotSubdomains, reanalysis);
             }
 
             // Feti-DP serial reanalysis
-            reanalysis = true;
-            foreach (int nely in numElementsY)
-            {
-                SolverFetiDPSerial(CreateBenchmark(nely, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM), 
-                    false, reanalysis);
-            }
+            //reanalysis = true;
+            //foreach (int nely in numElementsY)
+            //{
+            //    SolverFetiDPSerial(CreateBenchmark(nely, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM), 
+            //        false, reanalysis);
+            //}
 
             Console.Write("\nEnd");
 
@@ -189,14 +190,16 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 
             // Logging
             IDomainDecompositionLogger ddLogger = null;
+            bool shuffleSubdomainColors = false;
             if (plotSubdomains) ddLogger = new DomainDecompositionLoggerFetiDP(cornerNodeSelection,
-                subdomainPlotDirectory, true);
+                subdomainPlotDirectory, shuffleSubdomainColors);
 
             // Run analysis
             TipAdaptivePartitioner partitioner = null;
             partitioner = new TipAdaptivePartitioner(benchmark.Crack);
             var analyzer = new QuasiStaticCrackPropagationAnalyzerSerial(benchmark.Model, solver, benchmark.Crack,
                 benchmark.FractureToughness, benchmark.MaxIterations, reanalysis, partitioner);
+            analyzer.DDLogger = ddLogger;
             analyzer.Initialize();
             analyzer.Analyze();
 
