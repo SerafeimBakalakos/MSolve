@@ -114,21 +114,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
                 LagrangeMultiplier lagrange = globalLagranges[i];
 
                 int dofIdxPlus = subdomainDofOrderings[lagrange.SubdomainPlus][lagrange.Node, lagrange.DofType];
-                #region debug
-                if (lagrange.SubdomainPlus.ID == 852 && dofIdxPlus == 16)
-                {
-                    Console.WriteLine();
-                }
-                #endregion
                 booleanMatrices[lagrange.SubdomainPlus].AddEntry(i, dofIdxPlus, true);
 
                 int dofIdxMinus = subdomainDofOrderings[lagrange.SubdomainMinus][lagrange.Node, lagrange.DofType];
-                #region debug
-                if (lagrange.SubdomainMinus.ID == 852 && dofIdxMinus == 16)
-                {
-                    Console.WriteLine();
-                }
-                #endregion
                 booleanMatrices[lagrange.SubdomainMinus].AddEntry(i, dofIdxMinus, false);
             }
 
