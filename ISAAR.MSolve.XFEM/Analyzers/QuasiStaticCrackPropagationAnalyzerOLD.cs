@@ -96,7 +96,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                         linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
                     }
                 }
-                Console.WriteLine("Free dofs = " + model.GetSubdomain(0).FreeDofOrdering.NumFreeDofs);
+                //Console.WriteLine("Free dofs = " + model.GetSubdomain(0).FreeDofOrdering.NumFreeDofs);
 
                 // Create the stiffness matrix and then the forces vector
                 //problem.ClearMatrices();

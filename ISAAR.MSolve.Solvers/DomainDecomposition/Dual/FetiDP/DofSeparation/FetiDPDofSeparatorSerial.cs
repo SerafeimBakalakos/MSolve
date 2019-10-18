@@ -90,39 +90,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
                     subdomainDofs[subdomain].ReorderRemainderDofs(reordering.ReorderSubdomainRemainderDofs(subdomain));
 
                     Debug.WriteLine(msgHeader + $"Separating and ordering boundary-internal dofs of subdomain {s}");
-                    #region debug
-                    if (subdomain.ID == 852)
-                    {
-                        Console.WriteLine();
-
-                        IEnumerable<INode> nodes =
-                            subdomain.EnumerateNodes().Where(node => !cornerNodes.Contains(node));
-                        var boundaryDofs = new SortedDictionary<int, (INode node, IDofType dofType)>(); // key = dofIdx, value = (node, dofType)
-                        DofTable freeDofs = subdomainDofs[subdomain].RemainderDofOrdering;
-                        foreach (INode node in nodes)
-                        {
-                            int nodeMultiplicity = node.Multiplicity;
-                            if (nodeMultiplicity > 1) // boundary node
-                            {
-                                bool isNodeFree = freeDofs.TryGetDataOfRow(node,
-                                    out IReadOnlyDictionary<IDofType, int> dofTypesIndices); // This avoids embedded and constrained dofs
-                                if (isNodeFree)
-                                {
-                                    foreach (var dofTypeIdxPair in dofTypesIndices)
-                                    {
-                                        if (dofTypeIdxPair.Value == 16)
-                                        {
-                                            Console.WriteLine();
-
-                                        }
-
-                                        boundaryDofs.Add(dofTypeIdxPair.Value, (node, dofTypeIdxPair.Key));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    #endregion
                     subdomainDofs[subdomain].SeparateBoundaryInternalDofs(cornerNodes);
                 }
             }

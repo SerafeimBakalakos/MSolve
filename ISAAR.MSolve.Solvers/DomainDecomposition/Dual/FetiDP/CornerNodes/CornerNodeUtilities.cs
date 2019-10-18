@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
@@ -8,6 +9,21 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes
 {
     public static class CornerNodeUtilities
     {
+        [Conditional("DEBUG")]
+        public static void CheckGlobalCornersAreSubdomainCorners(HashSet<INode> globalCorners, 
+            Func<ISubdomain, HashSet<INode>> getSubdomainCorners)
+        {
+            foreach (INode node in globalCorners)
+            {
+                foreach (ISubdomain subdomain in node.SubdomainsDictionary.Values)
+                {
+                    bool isSubdomainCorner = getSubdomainCorners(subdomain).Contains(node);
+                    Debug.Assert(isSubdomainCorner, 
+                        $"Node {node.ID} is a corner node for some of its subdomains, but not for {subdomain.ID}");
+                }
+            }
+        }
+
         public static INode[] FindCornersOfBrick3D(ISubdomain subdomain)
         {
             INode nodeXminYminZmin = null;
@@ -79,6 +95,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes
             {
                 nodeXminYmin, nodeXmaxYmin, nodeXminYmax, nodeXmaxYmax
             };
+        }
+
+        public static INode[] FindCrosspoints(ISubdomain subdomain)
+        {
+            return subdomain.EnumerateNodes().Where(n => n.Multiplicity > 2).ToArray();
         }
     }
 }

@@ -142,6 +142,8 @@ namespace ISAAR.MSolve.XFEM.Solvers
                     break;
                 }
             }
+
+            CornerNodeUtilities.CheckGlobalCornersAreSubdomainCorners(cornerNodesGlobal, s => cornerNodesOfSubdomains[s]);
         }
     }
 }

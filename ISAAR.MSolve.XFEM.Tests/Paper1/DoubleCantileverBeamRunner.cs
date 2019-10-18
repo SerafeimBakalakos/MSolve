@@ -34,7 +34,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             // (numElementsY, dofs): (40, 10025), (75, 34664), (100, 61009), (125, 95258), (130, 102711), (200, 241900), 
             // (250, 377498), (300, 542590), (400, 963700) 
             //  (410, 1012128), (500, 1.5E6), (585, 2059800), (600, 2.165E6), (1000, 6.5E6)
-            int[] numElementsY = { 75, 125, 250, 400, 600 };
+            int[] numElementsY = { 75/*, 125, 250, 400, 600*/ };
 
             // Direct
             bool suiteSparse = true;
@@ -169,14 +169,22 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 
         private static void SolverFetiDPSerial(DcbBenchmarkBelytschko benchmark, bool plotSubdomains, bool reanalysis)
         {
+            // Choose corner nodes
+            //Dictionary<ISubdomain, HashSet<INode>> initialCorners = FindCornerNodesFromRectangleCorners(benchmark.Model);
+            //Func<ISubdomain, HashSet<INode>> getInitialCorners = sub => new HashSet<INode>(
+            //    CornerNodeUtilities.FindCornersOfRectangle2D(sub).Where(node => node.Constraints.Count == 0));
+
+            // All nodes on the whole domain's boundary + crosspoints
+            Func<ISubdomain, HashSet<INode>> getInitialCorners = sub => new HashSet<INode>(
+                sub.EnumerateNodes().Where(n => (n.Multiplicity > 2) || benchmark.NodeIsOnBoundary(n)).
+                Where(node => node.Constraints.Count == 0));
+            var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Model, benchmark.Crack, getInitialCorners);
+
+
             // Define solver
-            //benchmark.Partitioner = new TipAdaptivePartitioner(benchmark.Crack);
             benchmark.Model.ConnectDataStructures();
 
-            //Dictionary<ISubdomain, HashSet<INode>> initialCorners = FindCornerNodesFromRectangleCorners(benchmark.Model);
-            Func<ISubdomain, HashSet<INode>> getInitialCorners = sub => new HashSet<INode>(
-                CornerNodeUtilities.FindCornersOfRectangle2D(sub).Where(node => node.Constraints.Count == 0));
-            var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Model, benchmark.Crack, getInitialCorners);
+            
             //var reordering = new OrderingAmdCSparseNet();  // This is slower than natural ordering
             IReorderingAlgorithm reordering = null;
             var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(reordering);
@@ -190,7 +198,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 
             // Logging
             IDomainDecompositionLogger ddLogger = null;
-            bool shuffleSubdomainColors = false;
+            bool shuffleSubdomainColors = true;
             if (plotSubdomains) ddLogger = new DomainDecompositionLoggerFetiDP(cornerNodeSelection,
                 subdomainPlotDirectory, shuffleSubdomainColors);
 

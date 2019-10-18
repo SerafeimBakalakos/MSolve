@@ -175,6 +175,8 @@ namespace ISAAR.MSolve.XFEM.Solvers
                     break;
                 }
             }
+
+            CornerNodeUtilities.CheckGlobalCornersAreSubdomainCorners(cornerNodesGlobal_master, s => cornerNodesOfSubdomains[s]);
         }
 
         private void ScatterSubdomainCornerNodes()

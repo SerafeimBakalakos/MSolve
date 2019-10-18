@@ -5,6 +5,7 @@ using System.Linq;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.GMSH;
@@ -126,14 +127,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         //public string PlotDirectory { get { return lsmPlotDirectory; } }
 
         public TipAdaptivePartitioner Partitioner { get; set; } // Refactor its injection
-
-        public void InitializeModel()
-        {
-            Model = new XModel();
-            CreateModel();
-            InitializeCrack();
-        }
-
+        
         public void CreateModel()
         {
             var builder = new Uniform2DXModelBuilder();
@@ -184,6 +178,25 @@ namespace ISAAR.MSolve.XFEM.Tests
             lsmCrack.InitializeGeometry(initialCrack);
             //lsmCrack.UpdateGeometry(-dTheta, da);
             this.crack = lsmCrack;
+        }
+
+        public void InitializeModel()
+        {
+            Model = new XModel();
+            CreateModel();
+            InitializeCrack();
+        }
+
+        public bool NodeIsOnBoundary(INode node)
+        {
+            double dx = L / numElementsY;
+            double dy = h / numElementsY;
+            double meshTolerance = 1E-10 * Math.Min(dx, dy);
+            if (Math.Abs(node.X) <= meshTolerance) return true;
+            if (Math.Abs(node.X - L) <= meshTolerance) return true;
+            if (Math.Abs(node.Y) <= meshTolerance) return true;
+            if (Math.Abs(node.Y - h) <= meshTolerance) return true;
+            return false;
         }
 
         public class Builder //: IBenchmarkBuilder
