@@ -1,5 +1,6 @@
 ﻿using System;
 using ISAAR.MSolve.Geometry.Coordinates;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 namespace ISAAR.MSolve.Geometry.Shapes
 {
@@ -8,7 +9,7 @@ namespace ISAAR.MSolve.Geometry.Shapes
         Inside, On, Outside
     }
 
-    public class Circle2D
+    public class Circle2D : ICurve2D
     {
         public CartesianPoint Center { get; }
         public double Radius { get; }
@@ -28,6 +29,13 @@ namespace ISAAR.MSolve.Geometry.Shapes
             if (distance > Radius) return CirclePointPosition.Outside;
             else if (distance < Radius) return CirclePointPosition.Inside;
             else return CirclePointPosition.On;
+        }
+
+        public double SignedDistanceOf(CartesianPoint point) => point.CalculateDistanceFrom(Center) - Radius;
+
+        public Vector2 NormalVectorThrough(CartesianPoint point)
+        {
+            throw new NotImplementedException();
         }
     }
 }
