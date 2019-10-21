@@ -18,6 +18,7 @@ using ISAAR.MSolve.XFEM.Thermal.Enrichments;
 using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.Integration;
+using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
 using ISAAR.MSolve.XFEM.Thermal.Materials;
 
 namespace ISAAR.MSolve.XFEM.Thermal.Elements
@@ -35,7 +36,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
             this.id = id;
             this.Thickness = thickness;
             this.Nodes = nodes;
-            this.Interpolation = interpolation;
+            this.StandardInterpolation = interpolation;
             this.GaussPointExtrapolation = gaussPointExtrapolation;
             this.StandardQuadrature = standardQuadrature;
             this.IntegrationStrategy = integrationStrategy;
@@ -47,7 +48,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
             for (int i = 0; i < nodes.Count; ++i) standardDofTypes[i] = new IDofType[] { ThermalDof.Temperature };
         }
 
-        public CellType CellType => Interpolation.CellType;
+        public CellType CellType => StandardInterpolation.CellType;
         public IElementDofEnumerator DofEnumerator { get; set; } = new GenericDofEnumerator();
 
         public IElementType ElementType => this;
@@ -81,8 +82,8 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
                     var edges = new (NaturalPoint node1, NaturalPoint node2)[Nodes.Count];
                     for (int i = 0; i < Nodes.Count; ++i)
                     {
-                        NaturalPoint node1 = Interpolation.NodalNaturalCoordinates[i];
-                        NaturalPoint node2 = Interpolation.NodalNaturalCoordinates[(i + 1) % Nodes.Count];
+                        NaturalPoint node1 = StandardInterpolation.NodalNaturalCoordinates[i];
+                        NaturalPoint node2 = StandardInterpolation.NodalNaturalCoordinates[(i + 1) % Nodes.Count];
                         edges[i] = (node1, node2);
                     }
                     return edges;
@@ -98,10 +99,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
 
         internal IIntegrationStrategy2D<XThermalElement2D> IntegrationStrategy { get; }
 
-        /// <summary>
-        /// Common interpolation for standard and enriched nodes.
-        /// </summary>
-        public IIsoparametricInterpolation2D Interpolation { get; }
+        
 
         //TODO: This must be refactored together with EnrichmentItems properties
         private bool IsStandardElement
@@ -127,6 +125,12 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
         public int NumGaussPointsInterface { get; }
 
         public int NumStandardDofs { get; }
+
+        /// <summary>
+        /// Common interpolation for standard and enriched nodes.
+        /// </summary>
+        public IIsoparametricInterpolation2D StandardInterpolation { get; }
+
         internal IQuadrature2D StandardQuadrature { get; } //TODO: This should not always be used for Kss. E.g. it doesn't work for bimaterial interface.
 
         ISubdomain IElement.Subdomain => this.Subdomain;
@@ -297,7 +301,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
             //TODO: Use the standard quadrature for Kss.
             foreach (GaussPoint gaussPoint in gaussPoints)
             {
-                EvalInterpolation2D evaluatedInterpolation = Interpolation.EvaluateAllAt(Nodes, gaussPoint);
+                EvalInterpolation2D evaluatedInterpolation = StandardInterpolation.EvaluateAllAt(Nodes, gaussPoint);
                 double dV = evaluatedInterpolation.Jacobian.DirectDeterminant * Thickness;
                 //TODO: The thickness is constant per element in FEM, but what about XFEM? Different materials within the same element are possible.
                 
@@ -323,7 +327,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
 
             foreach (GaussPoint gaussPoint in IntegrationStrategy.GenerateIntegrationPoints(this))
             {
-                EvalInterpolation2D evaluatedInterpolation = Interpolation.EvaluateAllAt(Nodes, gaussPoint);
+                EvalInterpolation2D evaluatedInterpolation = StandardInterpolation.EvaluateAllAt(Nodes, gaussPoint);
                 double dV = evaluatedInterpolation.Jacobian.DirectDeterminant * Thickness;
                 //TODO: The thickness is constant per element in FEM, but what about XFEM? Different materials within the same element are possible.
 
@@ -354,12 +358,13 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
             // For blending elements EnrichmentItems is empty. Luckily this is the case that we do not need to calculate Kii.
             foreach (ThermalInterfaceEnrichment enrichment in EnrichmentItems)
             {
-                GaussPoint[] gaussPoints = enrichment.Discontinuity.IntegrationPointsAlongInterface(this, NumGaussPointsInterface);
+                CurveElementIntersection intersection = enrichment.Discontinuity.IntersectElement(this);
+                GaussPoint[] gaussPoints = intersection.GetIntegrationPointsAlongIntersection(NumGaussPointsInterface);
                 if (gaussPoints.Length == 0) return Kii; // The element is not intersected by the discontinuity
                 foreach (GaussPoint gaussPoint in gaussPoints)
                 {
                     // Kee = sum(1/a * N^T * N)
-                    Vector N = Vector.CreateFromArray(Interpolation.EvaluateFunctionsAt(gaussPoint));
+                    Vector N = Vector.CreateFromArray(StandardInterpolation.EvaluateFunctionsAt(gaussPoint));
                     Matrix integratedFunction = N.TensorProduct(N.Scale(1.0 / enrichment.InterfaceResistance));
                     Kii.AxpyIntoThis(integratedFunction, enrichment.Discontinuity.Thickness * gaussPoint.Weight);
                 }

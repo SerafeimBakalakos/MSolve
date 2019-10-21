@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
@@ -10,11 +11,13 @@ using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Problems;
+using ISAAR.MSolve.Solvers.Direct;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.Integration;
+using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
 using ISAAR.MSolve.XFEM.Thermal.MaterialInterface;
-using ISAAR.MSolve.XFEM.Thermal.MaterialInterface.Geometry;
 using ISAAR.MSolve.XFEM.Thermal.Materials;
 using ISAAR.MSolve.XFEM.Thermal.Output.Fields;
 using ISAAR.MSolve.XFEM.Thermal.Output.Writers;
@@ -23,28 +26,53 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 {
     public static class ThermalInclusionBall2D
     {
-        private const string levelSetsPath = @"C:\Users\Serafeim\Desktop\HEAT\Ball\level_sets.vtk";
-        private const string temperaturePath = @"C:\Users\Serafeim\Desktop\HEAT\Ball\temperature.vtk";
-        private const string heatFluxPath = @"C:\Users\Serafeim\Desktop\HEAT\Ball\heat_flux.vtk";
+        private const string pathLevelSets = @"C:\Users\Serafeim\Desktop\HEAT\Ball\level_sets.vtk";
+        private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\Ball\temperature.vtk";
+        private const string pathHeatFlux = @"C:\Users\Serafeim\Desktop\HEAT\Ball\heat_flux.vtk";
+
+        private const int numElementsX = 5, numElementsY = 5;
         private const int subdomainID = 0;
 
         public static void PlotLevelSets()
         {
-            int numElementsX = 20;
-            int numElementsY = 20;
-
-            (XModel model, MaterialInterfaceLsm interfaceLSM) = CreateModel(numElementsX, numElementsY);
+            // Create model and LSM
+            (XModel model, SimpleLsmCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
             InitializeLSM(model, interfaceLSM);
 
-            var levelSetField = new LevelSetField(model, interfaceLSM);
-            using (var writer = new VtkFileWriter(levelSetsPath))
+            // Plot mesh and level sets
+            using (var writer = new VtkFileWriter(pathLevelSets))
             {
+                var levelSetField = new LevelSetField(model, interfaceLSM);
                 writer.WriteMesh(levelSetField.Mesh);
                 writer.WriteScalarField("inclusion_level_set", levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
             }
         }
 
-        private static (XModel, MaterialInterfaceLsm) CreateModel(int numElementsX, int numElementsY)
+        public static void PlotTemperature()
+        {
+            // Create model and LSM
+            (XModel model, SimpleLsmCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
+            InitializeLSM(model, interfaceLSM);
+            ApplyEnrichments(model, interfaceLSM);
+
+            // Run the analysis
+            SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(model);
+            var problem = new ProblemThermalSteadyState(model, solver);
+            var linearAnalyzer = new LinearAnalyzer(model, solver, problem);
+            var staticAnalyzer = new StaticAnalyzer(model, solver, problem, linearAnalyzer);
+            staticAnalyzer.Initialize();
+            staticAnalyzer.Solve();
+
+            // Plot mesh and level sets
+            using (var writer = new VtkFileWriter(pathLevelSets))
+            {
+                var levelSetField = new LevelSetField(model, interfaceLSM);
+                writer.WriteMesh(levelSetField.Mesh);
+                writer.WriteScalarField("inclusion_level_set", levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
+            }
+        }
+
+        private static (XModel, SimpleLsmCurve2D) CreateModel(int numElementsX, int numElementsY)
         {
             var model = new XModel();
             model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
@@ -54,7 +82,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             double thickness = 1.0;
             double density = 1.0;
             double specificHeat = 1.0, conductivity1 = 1.0, conductivity2 = 1000.0;
-            var interfaceLSM = new MaterialInterfaceLsm(thickness);
+            var interfaceLSM = new SimpleLsmCurve2D(thickness);
             var materialPos = new ThermalMaterial(density, specificHeat, conductivity1);
             var materialNeg = new ThermalMaterial(density, specificHeat, conductivity2);
             var materialField = new ThermalMultiMaterialField2D(materialPos, materialNeg, interfaceLSM);
@@ -118,7 +146,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             }
         }
 
-        private static void ApplyMaterialInterface(XModel model, MaterialInterfaceLsm interfaceLSM)
+        private static void ApplyEnrichments(XModel model, SimpleLsmCurve2D interfaceLSM)
         {
             double interfaceResistance = 0.01;
             var materialInterface = new SingleMaterialInterface(interfaceLSM, model.Elements.Select(e => (XThermalElement2D)e),
@@ -126,7 +154,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             materialInterface.ApplyEnrichments();
         }
 
-        private static void InitializeLSM(XModel model, MaterialInterfaceLsm interfaceLSM)
+        private static void InitializeLSM(XModel model, SimpleLsmCurve2D interfaceLSM)
         {
             var initialGeometry = new Circle2D(new CartesianPoint(0.0, 0.0), 0.5);
             interfaceLSM.InitializeGeometry(model.Nodes, initialGeometry);

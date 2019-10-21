@@ -10,7 +10,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Enrichments.Functions;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.MaterialInterface.Geometry;
+using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
 
 namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
 {
@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
         private readonly HalfSignFunction enrichmentFunction;
         private HashSet<XThermalElement2D> affectedElements;
 
-        public ThermalInterfaceEnrichment(IMaterialInterfaceGeometry discontinuity, double interfaceResistance)
+        public ThermalInterfaceEnrichment(ILsmCurve2D discontinuity, double interfaceResistance)
         {
             this.Discontinuity = discontinuity;
             this.InterfaceResistance = interfaceResistance;
@@ -30,7 +30,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
             this.affectedElements = new HashSet<XThermalElement2D>();
         }
 
-        public IMaterialInterfaceGeometry Discontinuity { get; }
+        public ILsmCurve2D Discontinuity { get; }
 
         public IReadOnlyList<EnrichedDof> Dofs { get; protected set; }
 

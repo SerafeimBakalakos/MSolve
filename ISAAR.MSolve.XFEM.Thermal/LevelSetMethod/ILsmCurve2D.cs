@@ -5,16 +5,15 @@ using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
+using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
 
-namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface.Geometry
+namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
 {
-    public interface IMaterialInterfaceGeometry
+    public interface ILsmCurve2D
     {
         double Thickness { get; } //TODO: Probably delete this
 
-        GaussPoint[] IntegrationPointsAlongInterface(IXFiniteElement element, int numIntegrationPoints);
-
-        bool IsElementIntersected(IXFiniteElement element);
+        CurveElementIntersection IntersectElement(IXFiniteElement element);
 
         double SignedDistanceOf(XNode node);
 

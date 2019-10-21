@@ -4,17 +4,17 @@ using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
-using ISAAR.MSolve.XFEM.Thermal.MaterialInterface.Geometry;
+using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
 
 namespace ISAAR.MSolve.XFEM.Thermal.Materials
 {
     public class ThermalMultiMaterialField2D : IThermalMaterialField2D
     {
         private readonly Dictionary<int, ThermalMaterial> materials;
-        private readonly MaterialInterfaceLsm materialInterface;
+        private readonly SimpleLsmCurve2D materialInterface;
 
         public ThermalMultiMaterialField2D(ThermalMaterial materialPositive, ThermalMaterial materialNegative,
-            MaterialInterfaceLsm materialInterface)
+            SimpleLsmCurve2D materialInterface)
         {
             this.materials = new Dictionary<int, ThermalMaterial>();
             this.materials[0] = materialPositive;

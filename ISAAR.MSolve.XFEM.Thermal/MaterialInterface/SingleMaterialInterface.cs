@@ -4,17 +4,18 @@ using System.Text;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.MaterialInterface.Geometry;
+using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
+using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
 
 namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
 {
     public class SingleMaterialInterface
     {
         private readonly IEnumerable<XThermalElement2D> modelElements;
-        private readonly IMaterialInterfaceGeometry geometry;
+        private readonly ILsmCurve2D geometry;
         private readonly ThermalInterfaceEnrichment enrichment;
 
-        public SingleMaterialInterface(IMaterialInterfaceGeometry geometry, IEnumerable<XThermalElement2D> modelElements, 
+        public SingleMaterialInterface(ILsmCurve2D geometry, IEnumerable<XThermalElement2D> modelElements, 
             double interfaceResistance)
         {
             this.geometry = geometry;
@@ -24,21 +25,27 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
 
         public void ApplyEnrichments()
         {
-            // Find elements that are intersected by the discontinuity
+            // Find elements that interact with the discontinuity. Their nodes will be enriched.
             var intersectedElements = new List<IXFiniteElement>();
-            foreach (XThermalElement2D element in modelElements)
+            var enrichedNodes = new HashSet<XNode>();
+
+            foreach (XThermalElement2D element in modelElements) //TODO: Better to ask the LSM to return the relevant elements
             {
-                bool isIntersected = geometry.IsElementIntersected(element);
-                if (isIntersected)
+                CurveElementIntersection intersection = geometry.IntersectElement(element);
+                if (intersection.RelativePosition == RelativePositionCurveElement.Intersection)
                 {
                     intersectedElements.Add(element);
                     element.EnrichmentItems.Add(enrichment);
+                    enrichedNodes.UnionWith(element.Nodes);
+                }
+                else if (intersection.RelativePosition == RelativePositionCurveElement.TangentAtSingleNode 
+                    || intersection.RelativePosition == RelativePositionCurveElement.TangentAlongElementEdge)
+                {
+                    enrichedNodes.UnionWith(intersection.ContactNodes);
                 }
             }
 
             // Calculate and store nodal enrichments
-            var enrichedNodes = new HashSet<XNode>();
-            foreach (XThermalElement2D element in intersectedElements) enrichedNodes.UnionWith(element.Nodes);
             foreach (XNode node in enrichedNodes)
             {
                 node.EnrichmentItems[enrichment] = enrichment.EvaluateFunctionsAt(node);
