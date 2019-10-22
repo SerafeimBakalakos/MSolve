@@ -30,7 +30,6 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
             foreach (XNode node in nodes) levelSets[node] = discontinuity.SignedDistanceOf(node);
         }
 
-
         //TODO: This only works for Tri3 and Quad4 elements
         public CurveElementIntersection IntersectElement(IXFiniteElement element)
         {
