@@ -56,11 +56,19 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             (XModel model, SimpleLsmCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
             InitializeLSM(model, interfaceLSM);
 
-            // Plot mesh and level sets
+            // Plot conforming mesh and level sets
             using (var writer = new VtkFileWriter(pathMesh))
             {
                 var mesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, interfaceLSM);
                 writer.WriteMesh(mesh);
+            }
+
+            // Plot original mesh and level sets
+            using (var writer = new VtkFileWriter(pathLevelSets))
+            {
+                var levelSetField = new LevelSetField(model, interfaceLSM);
+                writer.WriteMesh(levelSetField.Mesh);
+                writer.WriteScalarField("inclusion_level_set", levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
             }
         }
 

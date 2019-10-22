@@ -137,6 +137,18 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
             triangleVertices.UnionWith(element.StandardInterpolation.NodalNaturalCoordinates);
             triangleVertices.UnionWith(intersection.IntersectionPoints);
 
+            // Corner case: the curve intersects the element at 2 opposite nodes. In this case also add the middle of their 
+            // segment to force the Delauny algorithm to conform to the segment.
+            //TODO: I should use constrained Delauny in all cases and conform to the intersection segment.
+            Debug.Assert(intersection.IntersectionPoints.Length == 2);
+            NaturalPoint p0 = intersection.IntersectionPoints[0];
+            NaturalPoint p1 = intersection.IntersectionPoints[1];
+            if (element.StandardInterpolation.NodalNaturalCoordinates.Contains(p0)
+                && element.StandardInterpolation.NodalNaturalCoordinates.Contains(p1))
+            {
+                triangleVertices.Add(new NaturalPoint(05 * (p0.Xi + p1.Xi), 0.5 * (p0.Eta + p1.Eta)));
+            }
+
             // Create triangles
             var triangulator = new Triangulator2D<NaturalPoint>((x1, x2) => new NaturalPoint(x1, x2));
             List<Triangle2D<NaturalPoint>> triangles = triangulator.CreateMesh(triangleVertices);
