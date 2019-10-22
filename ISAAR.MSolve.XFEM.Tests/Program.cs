@@ -9,8 +9,9 @@ namespace ISAAR.MSolve.XFEM.Tests
     {
         public static void Main(string[] args)
         {
-            //ThermalInclusionBall2D.PlotLevelSets();
-            ThermalInclusionBall2D.PlotTemperature();
+            ThermalInclusionBall2D.PlotConformingMesh();
+            ThermalInclusionBall2D.PlotLevelSets();
+            //ThermalInclusionBall2D.PlotTemperature();
         }
     }
 }

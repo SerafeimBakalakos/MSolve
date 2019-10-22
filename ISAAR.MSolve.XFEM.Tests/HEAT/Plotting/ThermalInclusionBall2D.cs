@@ -20,17 +20,19 @@ using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
 using ISAAR.MSolve.XFEM.Thermal.MaterialInterface;
 using ISAAR.MSolve.XFEM.Thermal.Materials;
 using ISAAR.MSolve.XFEM.Thermal.Output.Fields;
+using ISAAR.MSolve.XFEM.Thermal.Output.Mesh;
 using ISAAR.MSolve.XFEM.Thermal.Output.Writers;
 
 namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 {
     public static class ThermalInclusionBall2D
     {
-        private const string pathLevelSets = @"C:\Users\Serafeim\Desktop\HEAT\Ball\level_sets.vtk";
-        private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\Ball\temperature.vtk";
         private const string pathHeatFlux = @"C:\Users\Serafeim\Desktop\HEAT\Ball\heat_flux.vtk";
+        private const string pathLevelSets = @"C:\Users\Serafeim\Desktop\HEAT\Ball\level_sets.vtk";
+        private const string pathMesh = @"C:\Users\Serafeim\Desktop\HEAT\Ball\mesh.vtk";
+        private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\Ball\temperature.vtk";
 
-        private const int numElementsX = 5, numElementsY = 5;
+        private const int numElementsX = 20, numElementsY = 10;
         private const int subdomainID = 0;
 
         public static void PlotLevelSets()
@@ -45,6 +47,20 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
                 var levelSetField = new LevelSetField(model, interfaceLSM);
                 writer.WriteMesh(levelSetField.Mesh);
                 writer.WriteScalarField("inclusion_level_set", levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
+            }
+        }
+
+        public static void PlotConformingMesh()
+        {
+            // Create model and LSM
+            (XModel model, SimpleLsmCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
+            InitializeLSM(model, interfaceLSM);
+
+            // Plot mesh and level sets
+            using (var writer = new VtkFileWriter(pathMesh))
+            {
+                var mesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, interfaceLSM);
+                writer.WriteMesh(mesh);
             }
         }
 
