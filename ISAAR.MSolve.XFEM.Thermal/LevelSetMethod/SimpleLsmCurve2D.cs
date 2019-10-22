@@ -7,6 +7,7 @@ using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
+using ISAAR.MSolve.Geometry.Triangulation;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
@@ -116,6 +117,28 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
                 signedDistance += shapeFunctionsAtNaturalPoint[n] * levelSets[element.Nodes[n]];
             }
             return signedDistance;
+        }
+
+        public bool TryConformingTriangulation(IXFiniteElement element, CurveElementIntersection intersection,
+            out IReadOnlyList<ElementSubtriangle> subtriangles)
+        {
+            if (intersection.RelativePosition != RelativePositionCurveElement.Intersection)
+            {
+                subtriangles = null;
+                return false;
+            }
+
+            // Triangle vertices = union(nodes, intersectionPoints)
+            var comparer = new Point2DComparerXMajor<NaturalPoint>(1E-7);
+            var triangleVertices = new SortedSet<NaturalPoint>(comparer); //TODO: Better use a HashSet, which needs a hash function for points.
+            triangleVertices.UnionWith(element.StandardInterpolation.NodalNaturalCoordinates);
+            triangleVertices.UnionWith(intersection.IntersectionPoints);
+
+            // Create triangles
+            var triangulator = new Triangulator2D<NaturalPoint>((x1, x2) => new NaturalPoint(x1, x2));
+            List<Triangle2D<NaturalPoint>> triangles = triangulator.CreateMesh(triangleVertices);
+            subtriangles = triangles.Select(t => new ElementSubtriangle(t.Vertices)).ToList();
+            return true;
         }
 
         private bool IsElementDisjoint(IXFiniteElement element)

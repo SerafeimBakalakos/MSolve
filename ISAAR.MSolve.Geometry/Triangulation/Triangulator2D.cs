@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.Geometry.Triangulation
             this.mesher = mesher;
         }
 
-        public IReadOnlyList<Triangle2D<TVertex>> CreateMesh(IEnumerable<TVertex> points)
+        public List<Triangle2D<TVertex>> CreateMesh(IEnumerable<TVertex> points)
         {
             List<Vertex> vertices = new List<Vertex>();
             foreach (TVertex point in points) vertices.Add(new Vertex(point.X1, point.X2));
@@ -44,7 +44,7 @@ namespace ISAAR.MSolve.Geometry.Triangulation
             return triangles;
         }
 
-        public IReadOnlyList<Triangle2D<TVertex>> CreateMesh(IEnumerable<TVertex> points, double maxTriangleArea)
+        public List<Triangle2D<TVertex>> CreateMesh(IEnumerable<TVertex> points, double maxTriangleArea)
         {
             // TODO: Refinement gives incorrect results. Probably the refined mesh doesn't conform to crack.
             throw new NotImplementedException("Refinement gives incorrect results. " +

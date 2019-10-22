@@ -3,7 +3,7 @@ using ISAAR.MSolve.Geometry.Commons;
 
 namespace ISAAR.MSolve.Geometry.Coordinates
 {
-    public class Point2DComparerXMajor<TPoint>: IComparer<TPoint> where TPoint : IPoint
+    public class Point2DComparerXMajor: IComparer<CartesianPoint>
     {
         private readonly ValueComparer valueComparer;
 
@@ -12,15 +12,15 @@ namespace ISAAR.MSolve.Geometry.Coordinates
             this.valueComparer = new ValueComparer(tolerance);
         }
 
-        public int Compare(TPoint point1, TPoint point2)
+        public int Compare(CartesianPoint point1, CartesianPoint point2)
         {
-            if (valueComparer.AreEqual(point1.X1, point2.X1))
+            if (valueComparer.AreEqual(point1.X, point2.X))
             {
-                if (valueComparer.AreEqual(point1.X2, point2.X2)) return 0;
-                else if (point1.X2 < point2.X2) return -1;
+                if (valueComparer.AreEqual(point1.Y, point2.Y)) return 0;
+                else if (point1.Y < point2.Y) return -1;
                 else return 1;
             }
-            else if (point1.X1 < point2.X1) return -1;
+            else if (point1.X < point2.X) return -1;
             else return 1;
         }
     }
