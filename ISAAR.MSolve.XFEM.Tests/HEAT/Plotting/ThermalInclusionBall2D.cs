@@ -32,7 +32,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         private const string pathMesh = @"C:\Users\Serafeim\Desktop\HEAT\Ball\mesh.vtk";
         private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\Ball\temperature.vtk";
 
-        private const int numElementsX = 20, numElementsY = 10;
+        private const int numElementsX = 20, numElementsY = 20;
         private const int subdomainID = 0;
 
         public static void PlotLevelSets()

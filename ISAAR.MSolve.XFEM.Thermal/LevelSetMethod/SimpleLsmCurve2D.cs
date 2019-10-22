@@ -17,11 +17,13 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
     public class SimpleLsmCurve2D : ILsmCurve2D
     {
         private readonly Dictionary<XNode, double> levelSets;
+        private readonly double zeroTolerance;
 
-        public SimpleLsmCurve2D(double interfaceThickness = 1.0)
+        public SimpleLsmCurve2D(double interfaceThickness = 1.0, double zeroTolerance = 1E-13)
         {
             this.levelSets = new Dictionary<XNode, double>();
             this.Thickness = interfaceThickness;
+            this.zeroTolerance = zeroTolerance;
         }
 
         public double Thickness { get; }
@@ -51,8 +53,9 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
                 NaturalPoint node1Natural = edgesNatural[i].node1;
                 NaturalPoint node2Natural = edgesNatural[i].node2;
 
-                double levelSet1 = levelSets[node1Cartesian];
-                double levelSet2 = levelSets[node2Cartesian];
+                //TODO: perhaps I should modify the level sets directly when I first calculate them
+                double levelSet1 = CalcLevelSetNearZero(node1Cartesian);
+                double levelSet2 = CalcLevelSetNearZero(node2Cartesian);
 
                 if (levelSet1 * levelSet2 > 0.0) continue; // Edge is not intersected
                 else if (levelSet1 * levelSet2 < 0.0) // Edge is intersected but not at its nodes
@@ -155,6 +158,13 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
 
             if (minLevelSet * maxLevelSet > 0.0) return true;
             else return false;
+        }
+
+        private double CalcLevelSetNearZero(XNode node)
+        {
+            double levelSet = levelSets[node];
+            if (Math.Abs(levelSet) <= zeroTolerance) return 0.0;
+            else return levelSet;
         }
     }
 }
