@@ -51,7 +51,7 @@ namespace ISAAR.MSolve.Analyzers
 
         public void Initialize(bool isFirstAnalysis = true)
         {
-            ILinearSystem linearSystem = solver.GetLinearSystem(model.GetSubdomain(procs.OwnSubdomainID));
+            ILinearSystemMpi linearSystem = solver.GetLinearSystem(model.GetSubdomain(procs.OwnSubdomainID));
             if (isFirstAnalysis)
             {
                 model.ConnectDataStructures();

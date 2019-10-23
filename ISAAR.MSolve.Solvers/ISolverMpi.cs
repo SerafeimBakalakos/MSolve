@@ -54,7 +54,7 @@ namespace ISAAR.MSolve.Solvers
         //Dictionary<int, (IMatrix matrixFreeFree, IMatrixView matrixFreeConstr, IMatrixView matrixConstrFree,
         //    IMatrixView matrixConstrConstr)> BuildGlobalSubmatrices(IElementMatrixProvider elementMatrixProvider);
 
-        ILinearSystem GetLinearSystem(ISubdomain subdomain);
+        ILinearSystemMpi GetLinearSystem(ISubdomain subdomain);
 
         /// <summary>
         /// Initializes the state of this <see cref="ISolver"/> instance. This needs to be called only once, since it  

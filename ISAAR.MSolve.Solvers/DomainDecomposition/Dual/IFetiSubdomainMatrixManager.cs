@@ -13,7 +13,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual
 {
     public interface IFetiSubdomainMatrixManager
     {
-        ISingleSubdomainLinearSystem LinearSystem { get; }
+        ISingleSubdomainLinearSystemMpi LinearSystem { get; }
 
         void BuildFreeDofsMatrix(ISubdomainFreeDofOrdering dofOrdering, IElementMatrixProvider matrixProvider); //TODO: This could be called by the serial/MPI IFetiMatrixManager, instead of the solver.
 

@@ -62,7 +62,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
             internal MockSubdomainMatrixManager(ISubdomain subdomain)
             {
                 int s = subdomain.ID;
-                LinearSystem = new SingleSubdomainSystem<Matrix>(subdomain);
+                LinearSystem = new SingleSubdomainSystemMpi<Matrix>(subdomain);
 
                 Fbc = Example4x4QuadsHomogeneous.GetVectorFbc(s);
                 FcStar = Example4x4QuadsHomogeneous.GetVectorFcStar(s);
@@ -87,7 +87,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
             public Vector Fr { get; }
             public IMatrixView KccStar { get; }
 
-            public ISingleSubdomainLinearSystem LinearSystem { get; }
+            public ISingleSubdomainLinearSystemMpi LinearSystem { get; }
 
             public (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildFreeConstrainedMatrices(
                 ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering, 

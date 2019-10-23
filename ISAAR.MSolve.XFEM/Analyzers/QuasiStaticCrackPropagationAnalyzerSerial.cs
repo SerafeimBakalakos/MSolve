@@ -90,7 +90,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 solver.OrderDofs(false);
                 foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
-                    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                    ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
                     if (linearSystem.Subdomain.ConnectivityModified)
                     {
                         linearSystem.Reset(); // Necessary to define the linear system's size 
@@ -106,7 +106,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 LoadingUtilities.ApplyNodalLoads(model, solver);
                 foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
-                    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                    ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
                     linearSystem.RhsVector = linearSystem.Subdomain.Forces;
                 }
                 AddEquivalentNodalLoadsToRhs();
@@ -128,7 +128,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 var freeDisplacements = new Dictionary<int, Vector>();
                 foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
-                    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                    ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
                     freeDisplacements[subdomain.ID] = (Vector)(linearSystem.Solution); //TODO: avoid this cast.
                 }
                     
@@ -157,32 +157,32 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             Termination = CrackPropagationTermination.RequiredIterationsWereCompleted;
         }
 
-        private static void PrintKff(IModel model, ISolverMpi solver)
-        {
-            //string path = @"C:\Users\Serafeim\Desktop\MPI\Tests\Kff_all.txt";
-            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
-            //foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-            //{
-            //    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
-            //    Console.WriteLine($"Subdomain {subdomain.ID}: norm(Kff) = {LinearAlgebra.Reduction.Reductions.Norm2(linearSystem.Matrix)}");
-            //    writer.WriteToFile(linearSystem.Matrix, path, true);
-            //}
+        //private static void PrintKff(IModel model, ISolverMpi solver)
+        //{
+        //    //string path = @"C:\Users\Serafeim\Desktop\MPI\Tests\Kff_all.txt";
+        //    //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+        //    //foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+        //    //{
+        //    //    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+        //    //    Console.WriteLine($"Subdomain {subdomain.ID}: norm(Kff) = {LinearAlgebra.Reduction.Reductions.Norm2(linearSystem.Matrix)}");
+        //    //    writer.WriteToFile(linearSystem.Matrix, path, true);
+        //    //}
 
-            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-            {
-                ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
-                int m = linearSystem.Matrix.NumRows;
-                int n = linearSystem.Matrix.NumColumns;
-                double norm = LinearAlgebra.Reduction.Reductions.Norm2(linearSystem.Matrix);
-                Console.WriteLine($"Subdomain {subdomain.ID}: Kff ({m} x {n}), norm(Kff) = {norm}");
-            }
-        }
+        //    foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+        //    {
+        //        ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
+        //        int m = linearSystem.Matrix.NumRows;
+        //        int n = linearSystem.Matrix.NumColumns;
+        //        double norm = LinearAlgebra.Reduction.Reductions.Norm2(linearSystem.Matrix);
+        //        Console.WriteLine($"Subdomain {subdomain.ID}: Kff ({m} x {n}), norm(Kff) = {norm}");
+        //    }
+        //}
 
         private void AddEquivalentNodalLoadsToRhs()
         {
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
                 loadsAssembler.ApplyEquivalentNodalLoads(subdomain, linearSystem.RhsVector);
             }
         }

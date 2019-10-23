@@ -105,7 +105,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 //Console.WriteLine($"Process {procs.OwnRank}: Ordering dofs and crack data");
                 solver.OrderDofs(false);
                 ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-                ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
                 linearSystem.Reset(); // Necessary to define the linear system's size 
                 linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
 
@@ -202,7 +202,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             return newTipEnrichedSubdomains;
         }
 
-        private Dictionary<int, Vector> GatherDisplacementsToMaster(ILinearSystem linearSystem)
+        private Dictionary<int, Vector> GatherDisplacementsToMaster(ILinearSystemMpi linearSystem)
         {
             Dictionary<int, Vector> freeDisplacements = null;
             if (procs.IsMasterProcess)

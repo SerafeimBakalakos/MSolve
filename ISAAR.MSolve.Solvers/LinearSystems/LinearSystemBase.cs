@@ -63,7 +63,6 @@ namespace ISAAR.MSolve.Solvers.LinearSystems
 
         public ISubdomain Subdomain { get; }
 
-
         internal TMatrix Matrix { get; set; }
 
         public TVector RhsConcrete { get; set; }

@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
     public class FetiDPSubdomainMatrixManagerSkyline : FetiDPSubdomainMatrixManagerBase
     {
         private readonly SkylineAssembler assembler = new SkylineAssembler();
-        private readonly SingleSubdomainSystem<SkylineMatrix> linearSystem;
+        private readonly SingleSubdomainSystemMpi<SkylineMatrix> linearSystem;
 
         private DiagonalMatrix inverseKiiDiagonal;
         private LdlSkyline inverseKii;
@@ -40,10 +40,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         public FetiDPSubdomainMatrixManagerSkyline(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator, 
             IReorderingAlgorithm reordering) : base(subdomain, dofSeparator, reordering)
         {
-            this.linearSystem = new SingleSubdomainSystem<SkylineMatrix>(subdomain);
+            this.linearSystem = new SingleSubdomainSystemMpi<SkylineMatrix>(subdomain);
         }
 
-        public override ISingleSubdomainLinearSystem LinearSystem => linearSystem;
+        public override ISingleSubdomainLinearSystemMpi LinearSystem => linearSystem;
 
         protected override IMatrixView KccStarImpl => this._KccStar;
 

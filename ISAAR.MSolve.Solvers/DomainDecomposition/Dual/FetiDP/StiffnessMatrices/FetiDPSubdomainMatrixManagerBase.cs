@@ -88,7 +88,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         }
         protected abstract IMatrixView KccStarImpl {get;}
 
-        public abstract ISingleSubdomainLinearSystem LinearSystem { get; }
+        public abstract ISingleSubdomainLinearSystemMpi LinearSystem { get; }
 
         public void BuildFreeDofsMatrix(ISubdomainFreeDofOrdering dofOrdering, IElementMatrixProvider matrixProvider)
         {

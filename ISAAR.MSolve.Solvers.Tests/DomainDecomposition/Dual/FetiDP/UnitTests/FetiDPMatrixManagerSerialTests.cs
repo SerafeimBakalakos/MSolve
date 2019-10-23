@@ -218,9 +218,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         //TODO: Jesus Christ! It is way too difficult to mess with linear system classes, even using reflection.
         //      I should allow some provisions for testing. Also ILinearSystem.Matrix {set;} should be internal. Analyzers and 
         //      providers should not even try.
-        internal static void SetSkylineLinearSystemMatrix(ISingleSubdomainLinearSystem linearSystem, IMatrixView matrix)
+        internal static void SetSkylineLinearSystemMatrix(ISingleSubdomainLinearSystemMpi linearSystem, IMatrixView matrix)
         {
-            var castedLS = (LinearSystemBase<SkylineMatrix, Vector>)linearSystem;
+            var castedLS = (SingleSubdomainSystemMpi<SkylineMatrix>)linearSystem;
             castedLS.Matrix = SkylineMatrix.CreateFromMatrix(matrix);
         }
     }

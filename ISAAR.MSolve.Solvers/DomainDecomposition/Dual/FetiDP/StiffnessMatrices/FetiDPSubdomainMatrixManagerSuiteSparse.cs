@@ -1,10 +1,11 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Reordering;
+using ISAAR.MSolve.LinearAlgebra.SchurComplements;
 using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.Assemblers;
@@ -12,42 +13,45 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
+//TODO: Kff should probably be a DOK. It will only be used to extract Krr, Krc, Kcc. This avoids dependencies between factorizing
+//      Krr and calculating the preconditioners. Boundary/internal dofs should be (also) defined with respect to Kff.
+//      What about dynamic problems, where Kff needs to do linear combinations and matrix-vector multiplications
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 {
     /// <summary>
-    /// Dense format for Kii, Kbi/Kib, Kbb, Krr, Krc/Kcr, Kcc, KccStar and Skyline for Kff.
-    /// Useful during prototyping and for debugging. For performance the other alternatives are probably better.
+    /// Dense format for Kbb, symmetric packed for Kcc, KccStar, skyline for Kff, Krr, Kii and CSC for Kib, Krc.
     /// Authors: Serafeim Bakalakos
     /// </summary>
-    public class FetiDPSubdomainMatrixManagerDense : FetiDPSubdomainMatrixManagerBase
-    {
+    public class FetiDPSubdomainMatrixManagerSuiteSparse : FetiDPSubdomainMatrixManagerBase
+    { 
         private readonly SkylineAssembler assembler = new SkylineAssembler();
         private readonly SingleSubdomainSystemMpi<SkylineMatrix> linearSystem;
 
         private DiagonalMatrix inverseKiiDiagonal;
-        private Matrix inverseKii;
-        private CholeskyFull inverseKrr;
+        private LdlSkyline inverseKii;
+        private LdlSkyline inverseKrr;
         private Matrix Kbb;
-        private Matrix Kbi;
-        private Matrix Kcc; //TODO: This can be overwritten with KccStar. Not high priority, since it is a small matrix.
-        private Matrix _KccStar; 
-        private Matrix Krc;
-        private Matrix Krr;
+        private CscMatrix Kib;
+        private SymmetricMatrix Kcc;
+        //TODO: This can be overwritten with KccStar. Not high priority, since it is a small matrix.
+        private SymmetricMatrix _KccStar;
+        private CscMatrix Krc;
+        private SkylineMatrix Krr;
 
-        public FetiDPSubdomainMatrixManagerDense(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator) : 
-            base(subdomain, dofSeparator, null)
+        public FetiDPSubdomainMatrixManagerSuiteSparse(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator, 
+            IReorderingAlgorithm reordering) : base(subdomain, dofSeparator, reordering)
         {
             this.linearSystem = new SingleSubdomainSystemMpi<SkylineMatrix>(subdomain);
         }
 
-        protected override IMatrixView KccStarImpl => this._KccStar;
-
         public override ISingleSubdomainLinearSystemMpi LinearSystem => linearSystem;
+
+        protected override IMatrixView KccStarImpl => this._KccStar;
 
         protected override void BuildFreeDofsMatrixImpl(ISubdomainFreeDofOrdering dofOrdering,
             IElementMatrixProvider matrixProvider)
         {
-            linearSystem.Matrix = assembler.BuildGlobalMatrix(dofOrdering,
+            linearSystem.Matrix = assembler.BuildGlobalMatrix(dofOrdering, 
                 linearSystem.Subdomain.EnumerateElements(), matrixProvider);
         }
 
@@ -73,8 +77,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             }
             else
             {
-                inverseKii = Krr.GetSubmatrix(internalDofs, internalDofs);
-                inverseKii.InvertInPlace();
+                SkylineMatrix Kii = Krr.GetSubmatrixSymmetricSkyline(internalDofs);
+                inverseKii = Kii.FactorLdl(true);
             }
         }
 
@@ -84,7 +88,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             inverseKiiDiagonal = null;
             inverseKrr = null;
             Kbb = null;
-            Kbi = null;
+            Kib = null;
             Kcc = null;
             Krc = null;
             Krr = null;
@@ -95,50 +99,52 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         protected override void CondenseMatricesStaticallyImpl()
         {
             // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s]
-            _KccStar = Kcc - Krc.MultiplyRight(inverseKrr.SolveLinearSystems(Krc), true);
+            _KccStar = SchurComplementCsc.CalcSchurComplementSymmetric(Kcc, Krc, inverseKrr);
         }
 
-        protected override void ExtractKbbImpl() => Kbb = Krr.GetSubmatrix(DofsBoundary, DofsBoundary);
-        protected override void ExtractKbiKibImpl() => Kbi = Krr.GetSubmatrix(DofsBoundary, DofsInternal);
+        protected override void ExtractKbbImpl() => Kbb = Krr.GetSubmatrixSymmetricFull(DofsBoundary);
+        protected override void ExtractKbiKibImpl() => Kib = Krr.GetSubmatrixCsc(DofsInternal, DofsBoundary);
         protected override void ExtractCornerRemainderSubmatricesImpl()
         {
-            Kcc = linearSystem.Matrix.GetSubmatrixFull(DofsCorner, DofsCorner);
-            Krc = linearSystem.Matrix.GetSubmatrixFull(DofsRemainder, DofsCorner);
-            Krr = linearSystem.Matrix.GetSubmatrixFull(DofsRemainder, DofsRemainder);
+            Kcc = linearSystem.Matrix.GetSubmatrixSymmetricPacked(DofsCorner);
+            Krc = linearSystem.Matrix.GetSubmatrixCsc(DofsRemainder, DofsCorner);
+            Krr = linearSystem.Matrix.GetSubmatrixSymmetricSkyline(DofsRemainder);
         }
 
         public override void HandleDofOrderingWillBeModified() => assembler.HandleDofOrderingWillBeModified();
 
-        protected override void InvertKrrImpl(bool inPlace) => inverseKrr = Krr.FactorCholesky(inPlace);
+        protected override void InvertKrrImpl(bool inPlace) => inverseKrr = Krr.FactorLdl(inPlace);
 
         protected override Vector MultiplyInverseKiiTimesImpl(Vector vector, bool diagonalOnly)
-            => diagonalOnly ? inverseKiiDiagonal * vector : inverseKii * vector;
+            => diagonalOnly ? inverseKiiDiagonal * vector : inverseKii.SolveLinearSystem(vector);
 
         protected override Matrix MultiplyInverseKiiTimesImpl(Matrix matrix, bool diagonalOnly)
-            => diagonalOnly ? inverseKiiDiagonal * matrix : inverseKii * matrix;
+            => diagonalOnly? inverseKiiDiagonal * matrix : inverseKii.SolveLinearSystems(matrix);
 
         protected override Vector MultiplyInverseKrrTimesImpl(Vector vector) => inverseKrr.SolveLinearSystem(vector);
 
         protected override Vector MultiplyKbbTimesImpl(Vector vector) => Kbb * vector;
         protected override Matrix MultiplyKbbTimesImpl(Matrix matrix) => Kbb * matrix;
-        protected override Vector MultiplyKbiTimesImpl(Vector vector) => Kbi * vector;
-        protected override Matrix MultiplyKbiTimesImpl(Matrix matrix) => Kbi * matrix;
+        protected override Vector MultiplyKbiTimesImpl(Vector vector) => Kib.Multiply(vector, true);
+        protected override Matrix MultiplyKbiTimesImpl(Matrix matrix) => Kib.MultiplyRight(matrix, true);
         protected override Vector MultiplyKccTimesImpl(Vector vector) => Kcc * vector;
         protected override Vector MultiplyKcrTimesImpl(Vector vector) => Krc.Multiply(vector, true);
-        protected override Vector MultiplyKibTimesImpl(Vector vector) => Kbi.Multiply(vector, true);
-        protected override Matrix MultiplyKibTimesImpl(Matrix matrix) => Kbi.MultiplyRight(matrix, true);
+        protected override Vector MultiplyKibTimesImpl(Vector vector) => Kib.Multiply(vector);
+        protected override Matrix MultiplyKibTimesImpl(Matrix matrix) => Kib.MultiplyRight(matrix);
         protected override Vector MultiplyKrcTimesImpl(Vector vector) => Krc.Multiply(vector);
 
         protected override DofPermutation ReorderInternalDofsImpl()
         {
-            // Do nothing, since the sparsity pattern is irrelevant for dense matrices.
-            return DofPermutation.CreateNoPermutation();
+            var pattern = Krr.GetSubmatrixSymmetricPattern(DofsInternal);
+            (int[] permutation, bool oldToNew) = reordering.FindPermutation(pattern);
+            return DofPermutation.Create(permutation, oldToNew);
         }
 
         protected override DofPermutation ReorderRemainderDofsImpl()
         {
-            // Do nothing, since the sparsity pattern is irrelevant for dense matrices.
-            return DofPermutation.CreateNoPermutation();
+            var pattern = linearSystem.Matrix.GetSubmatrixSymmetricPattern(DofsRemainder);
+            (int[] permutation, bool oldToNew) = reordering.FindPermutation(pattern);
+            return DofPermutation.Create(permutation, oldToNew);
         }
     }
 }

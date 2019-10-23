@@ -54,7 +54,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             // Run the analysis
             solver.OrderDofs(false);
             ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+            ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
             linearSystem.Reset(); // Necessary to define the linear system's size 
             linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
             linearSystem.RhsVector = linearSystem.Subdomain.Forces;

@@ -131,7 +131,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 sub => matrixManager.GetFetiDPSubdomainMatrixManager(sub).LinearSystem.SolutionConcrete);
         }
 
-        public ILinearSystem GetLinearSystem(ISubdomain subdomain)
+        public ILinearSystemMpi GetLinearSystem(ISubdomain subdomain)
             => matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).LinearSystem;
         
         public void HandleMatrixWillBeSet()
@@ -211,7 +211,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         {
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                ISingleSubdomainLinearSystem linearSystem = matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).LinearSystem;
+                ISingleSubdomainLinearSystemMpi linearSystem = 
+                    matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).LinearSystem;
                 linearSystem.SolutionConcrete = linearSystem.CreateZeroVectorConcrete();
             }
 

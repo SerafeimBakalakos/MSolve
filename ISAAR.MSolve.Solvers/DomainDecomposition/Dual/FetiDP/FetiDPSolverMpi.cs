@@ -130,7 +130,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         //TODO: I do not like these dependencies. The analyzer should not have to know that it must call ScatterSubdomainData() 
         //      before accessing the linear system or the subdomain.
-        public ILinearSystem GetLinearSystem(ISubdomain subdomain)
+        public ILinearSystemMpi GetLinearSystem(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
             return matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).LinearSystem;
@@ -201,7 +201,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         public void Solve()
         {
             IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(subdomain);
-            ISingleSubdomainLinearSystem linearSystem = subdomainMatrices.LinearSystem;
+            ISingleSubdomainLinearSystemMpi linearSystem = subdomainMatrices.LinearSystem;
             linearSystem.SolutionConcrete = linearSystem.CreateZeroVectorConcrete();
 
             if (isStiffnessModified)
