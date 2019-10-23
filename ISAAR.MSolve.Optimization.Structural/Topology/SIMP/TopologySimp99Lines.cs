@@ -251,7 +251,7 @@ namespace ISAAR.MSolve.Optimization.Structural.Topology.SIMP
             int[] freeDofs = Enumerable.Range(0, numAllDofs).Except(fixedDofs).ToArray();
 
             // Solve linear system
-            DokSymmetric Kf = K.GetSubmatrix(freeDofs);
+            DokSymmetric Kf = K.GetSubmatrixSymmetricDok(freeDofs);
             Vector Ff = F.GetSubvector(freeDofs);
             Vector Uf = CholeskyCSparseNet.Factorize(Kf.BuildSymmetricCscMatrix(true)).SolveLinearSystem(Ff);
             for (int i = 0; i < freeDofs.Length; ++i) U[freeDofs[i]] = Uf[i];
@@ -289,7 +289,7 @@ namespace ISAAR.MSolve.Optimization.Structural.Topology.SIMP
             int[] freeDofs = Enumerable.Range(0, numAllDofs).Except(fixedDofs).ToArray();
 
             // Solve linear system
-            DokSymmetric Kf = K.GetSubmatrix(freeDofs);
+            DokSymmetric Kf = K.GetSubmatrixSymmetricDok(freeDofs);
             Vector Ff = F.GetSubvector(freeDofs);
             Vector Uf = CholeskyCSparseNet.Factorize(Kf.BuildSymmetricCscMatrix(true)).SolveLinearSystem(Ff);
             for (int i = 0; i < freeDofs.Length; ++i) U[freeDofs[i]] = Uf[i];
@@ -334,7 +334,7 @@ namespace ISAAR.MSolve.Optimization.Structural.Topology.SIMP
 
             // Solve linear system
             CholeskyCSparseNet factorizedKf = CholeskyCSparseNet.Factorize(
-                K.GetSubmatrix(freeDofs).BuildSymmetricCscMatrix(true)); // only factorize the matrix once
+                K.GetSubmatrixSymmetricDok(freeDofs).BuildSymmetricCscMatrix(true)); // only factorize the matrix once
             for (int c = 0; c < numLoadCases; ++c)
             {
                 Vector Ff = F[c].GetSubvector(freeDofs);

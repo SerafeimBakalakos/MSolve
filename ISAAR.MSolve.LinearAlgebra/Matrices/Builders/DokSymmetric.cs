@@ -107,6 +107,30 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
         }
 
         /// <summary>
+        /// Initializes a new instance of <see cref="DokSymmetric"/> with the specified matrix dimensions and the non-zero 
+        /// entries of <paramref name="matrix"/>. 
+        /// </summary>
+        /// <param name="matrix">Must be symmetric.</param>
+        public static DokSymmetric CreateFromArray2D(double[,] matrix)
+        {
+            Preconditions.CheckSquare(matrix.GetLength(0), matrix.GetLength(1));
+            int order = matrix.GetLength(0);
+            var columns = new Dictionary<int, double>[order];
+            for (int j = 0; j < order; ++j)
+            {
+                var wholeCol = new Dictionary<int, double>(); //Initial capacity may be optimized.
+                for (int i = 0; i <= j; ++i)
+                {
+                    double val = matrix[j, i]; // traverse the transpose cloumn wise for best performance
+                    Debug.Assert(matrix[i, j] == val); //TODO: Perhaps some tolerance is needed
+                    if (val != 0.0) wholeCol[i] = val;
+                }
+                columns[j] = wholeCol;
+            }
+            return new DokSymmetric(order, columns);
+        }
+
+        /// <summary>
         /// Initializes a new instance of <see cref="DokSymmetric"/> with the specified matrix dimensions and the 
         /// non-zero entries of the provided sparse matrix.
         /// </summary>
@@ -604,6 +628,83 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
         }
 
         /// <summary>
+        /// Creates a new <see cref="DokColMajor"/> by copying only the entries whose row and column index belongs to 
+        /// <paramref name="rowsToKeep"/> and <paramref name="colsToKeep"/> respectively.
+        /// </summary>
+        /// <param name="rowsToKeep">
+        /// Only the entries (i, j) where i belongs to <paramref name="rowsToKeep"/> and j belongs to 
+        /// <paramref name="colsToKeep"/> will be copied to the new matrix.
+        /// The order of the indices is important. E.g. if <paramref name="rowsToKeep"/> = <paramref name="colsToKeep"/> = [1, 0],
+        /// then the resulting submatrix will be {{ this[1,1], this[1,0] }, { this[0,1], this[0,0] }}
+        /// </param>
+        public DokColMajor GetSubmatrixDokColMajor(int[] rowsToKeep, int[] colsToKeep)
+        {
+            int numSubRows = rowsToKeep.Length;
+            int numSubCols = colsToKeep.Length;
+            var subMatrix = new Dictionary<int, double>[numSubCols];
+            for (int subJ = 0; subJ < numSubCols; ++subJ)
+            {
+                int thisJ = colsToKeep[subJ];
+                var subColumn = new Dictionary<int, double>();
+                subMatrix[subJ] = subColumn;
+                for (int subI = 0; subI < numSubRows; ++subI)
+                {
+                    int thisI = rowsToKeep[subI];
+
+                    if (thisI > thisJ)
+                    {
+                        // Only set the entry, if it is non-zero
+                        if (columns[thisI].TryGetValue(thisJ, out double val)) subColumn[subI] = val;
+                    }
+                    else
+                    {
+                        // Only set the entry, if it is non-zero
+                        if (columns[thisJ].TryGetValue(thisI, out double val)) subColumn[subI] = val;
+                    }
+                }
+            }
+            return new DokColMajor(rowsToKeep.Length, colsToKeep.Length, subMatrix);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="Matrix"/> by copying only the entries whose row and column index belongs to 
+        /// <paramref name="rowsToKeep"/> and <paramref name="colsToKeep"/> respectively.
+        /// </summary>
+        /// <param name="rowsToKeep">
+        /// Only the entries (i, j) where i belongs to <paramref name="rowsToKeep"/> and j belongs to 
+        /// <paramref name="colsToKeep"/> will be copied to the new matrix.
+        /// The order of the indices is important. E.g. if <paramref name="rowsToKeep"/> = <paramref name="colsToKeep"/> = [1, 0],
+        /// then the resulting submatrix will be {{ this[1,1], this[1,0] }, { this[0,1], this[0,0] }}
+        /// </param>
+        public Matrix GetSubmatrixFull(int[] rowsToKeep, int[] colsToKeep)
+        {
+            int numSubRows = rowsToKeep.Length;
+            int numSubCols = colsToKeep.Length;
+            var subMatrix = new double[numSubRows * numSubCols];
+            for (int subJ = 0; subJ < numSubCols; ++subJ)
+            {
+                int thisJ = colsToKeep[subJ];
+                int subOffset = subJ * numSubRows;
+                for (int subI = 0; subI < numSubRows; ++subI)
+                {
+                    int thisI = rowsToKeep[subI];
+
+                    if (thisI > thisJ)
+                    {
+                        // Only set the entry, if it is non-zero
+                        if (columns[thisI].TryGetValue(thisJ, out double val)) subMatrix[subOffset + subI] = val;
+                    }
+                    else
+                    {
+                        // Only set the entry, if it is non-zero
+                        if (columns[thisJ].TryGetValue(thisI, out double val)) subMatrix[subOffset + subI] = val;
+                    }
+                }
+            }
+            return Matrix.CreateFromArray(subMatrix, numSubRows, numSubCols, false);
+        }
+
+        /// <summary>
         /// Creates a new <see cref="DokSymmetric"/> by copying only the entries whose row and column index belongs to 
         /// <paramref name="rowsColsToKeep"/>.
         /// </summary>
@@ -612,24 +713,99 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
         /// The order of the indices is important. E.g. if <paramref name="rowsColsToKeep"/> = [1, 0], then the resulting 
         /// submatrix will be {{ this[1,1], this[1,0] }, { this[0,1], this[0,0] }}
         /// </param>
-        public DokSymmetric GetSubmatrix(int[] rowsColsToKeep)
+        public DokSymmetric GetSubmatrixSymmetricDok(int[] rowsColsToKeep)
         {
-            //TODO: work with the stored dictionaries to speed this up. However keep in mind that if keep = {2, 1} then some 
-            //      transposition is necessary. 
+            //TODO: Perhaps I should not hardcode the implementation details of DOK column major format here.
+            //      Then again DOKs exist to convert to other formats.
             int subOrder = rowsColsToKeep.Length;
-            var submatrix = DokSymmetric.CreateEmpty(subOrder);
+            var subMatrix = DokSymmetric.CreateEmpty(subOrder);
             for (int subJ = 0; subJ < subOrder; ++subJ)
             {
                 int thisJ = rowsColsToKeep[subJ];
+
+                // In general the indices are expected to be sorted, thus col >= row and it makes sense to only read this once.
+                Dictionary<int, double> thisColumn = this.columns[thisJ];
+                Dictionary<int, double> subColumn = subMatrix.columns[subJ];
+
                 for (int subI = 0; subI <= subJ; ++subI)
                 {
                     int thisI = rowsColsToKeep[subI];
-                    double value = this[thisI, thisJ]; //TODO: This should be done explicitly
-                    if (value != 0.0) submatrix[subI, subJ] = value;
+
+                    // This is necessary if the indices in rowsColsToKeep are not sorted!
+                    if (thisI > thisJ)
+                    {
+                        // Only set the entry, if it is non-zero
+                        if (columns[thisI].TryGetValue(thisJ, out double val)) subColumn[subI] = val;
+                    }
+                    else
+                    {
+                        // Only set the entry, if it is non-zero
+                        if (thisColumn.TryGetValue(thisI, out double val)) subColumn[subI] = val;
+                    }
                 }
             }
-            return submatrix;
+            return subMatrix;
         }
+
+        /// <summary>
+        /// Creates a new <see cref="SymmetricMatrix"/> by copying only the entries whose row and column index belongs to 
+        /// <paramref name="rowsColsToKeep"/>.
+        /// </summary>
+        /// <param name="rowsColsToKeep">
+        /// Only the entries (i, j) where i and j belongs to <paramref name="rowsColsToKeep"/> will be copied to the new matrix.
+        /// The order of the indices is important. E.g. if <paramref name="rowsColsToKeep"/> = [1, 0], then the resulting 
+        /// submatrix will be {{ this[1,1], this[1,0] }, { this[0,1], this[0,0] }}
+        /// </param>
+        public SymmetricMatrix GetSubmatrixSymmetricPacked(int[] rowsColsToKeep)
+        {
+            //TODO: Perhaps I should not hardcode the implementation details of upper triangular packed format here.
+            //      Then again DOKs exist to convert to other formats.
+            int subOrder = rowsColsToKeep.Length;
+            var subMatrix = new double[((subOrder + 1) * subOrder) / 2];
+            for (int subCol = 0; subCol < subOrder; ++subCol)
+            {
+                int thisJ = rowsColsToKeep[subCol];
+                int subOffset = (subCol * (subCol + 1)) / 2;
+
+                // In general the indices are expected to be sorted, thus col >= row and it makes sense to only read this once.
+                Dictionary<int, double> thisColumn = columns[thisJ];
+                for (int subI = 0; subI <= subCol; ++subI)
+                {
+                    int thisI = rowsColsToKeep[subI];
+
+                    // This is necessary if the indices in rowsColsToKeep are not sorted!
+                    if (thisI > thisJ)
+                    {
+                        // Only set the entry, if it is non-zero
+                        if (columns[thisI].TryGetValue(thisJ, out double val))
+                        {
+                            subMatrix[subOffset + subI] = val;
+                        }
+                    }
+                    else
+                    {
+                        // Only set the entry, if it is non-zero
+                        if (thisColumn.TryGetValue(thisI, out double val))
+                        {
+                            subMatrix[subOffset + subI] = val;
+                        }
+                    }
+                }
+            }
+            return SymmetricMatrix.CreateFromPackedColumnMajorArray(subMatrix, subOrder, DefiniteProperty.Unknown, false);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="SkylineMatrix"/> by copying only the entries whose row and column index belongs to 
+        /// <paramref name="rowsColsToKeep"/>.
+        /// </summary>
+        /// <param name="rowsColsToKeep">
+        /// Only the entries (i, j) where i and j belongs to <paramref name="rowsColsToKeep"/> will be copied to the new matrix.
+        /// The order of the indices is important. E.g. if <paramref name="rowsColsToKeep"/> = [1, 0], then the resulting 
+        /// submatrix will be {{ this[1,1], this[1,0] }, { this[0,1], this[0,0] }}
+        /// </param>
+        public SkylineMatrix GetSubmatrixSymmetricSkyline(int[] rowsColsToKeep)
+            => GetSubmatrixSymmetricDok(rowsColsToKeep).BuildSkylineMatrix(); //TODO: implement this explicitly and do optimizations
 
         /// <summary>
         /// Sets the column with index <paramref name="colIdx"/> to be equal to the provided <paramref name="newColumn"/>.

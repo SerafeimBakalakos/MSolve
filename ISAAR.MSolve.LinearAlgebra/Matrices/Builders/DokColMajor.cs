@@ -22,7 +22,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
         /// </summary>
         private Dictionary<int, double>[] columns;
 
-        private DokColMajor(int numRows, int numCols, Dictionary<int, double>[] columns)
+        internal DokColMajor(int numRows, int numCols, Dictionary<int, double>[] columns)
         {
             this.columns = columns;
             this.NumRows = numRows;
