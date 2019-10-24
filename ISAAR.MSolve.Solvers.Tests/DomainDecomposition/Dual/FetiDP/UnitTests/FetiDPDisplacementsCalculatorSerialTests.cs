@@ -20,7 +20,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         public static void TestCornerDisplacements()
         {
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
+                FetiDPLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(Example4x4QuadsHomogeneous.CreateModel());
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
             Vector lagranges = Example4x4QuadsHomogeneous.SolutionLagrangeMultipliers;
@@ -39,7 +39,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         public static void TestFreeDisplacements()
         {
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
+                FetiDPLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
 

@@ -20,7 +20,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         {
             (ProcessDistribution procs, IModel model, IFetiDPDofSeparator dofSeparator,
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) = 
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
+                FetiDPLagrangesEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
             ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
 
             // Calculate Bpbr matrices

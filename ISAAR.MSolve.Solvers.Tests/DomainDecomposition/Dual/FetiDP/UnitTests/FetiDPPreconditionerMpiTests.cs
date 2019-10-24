@@ -53,7 +53,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator, 
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
+                FetiDPLagrangesEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
 
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             IStiffnessDistribution stiffnessDistribution = new MockHomogeneousStiffnessDistribution();

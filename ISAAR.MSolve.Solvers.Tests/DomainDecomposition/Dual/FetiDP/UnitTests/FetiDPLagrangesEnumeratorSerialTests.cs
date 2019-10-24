@@ -10,7 +10,7 @@ using Xunit;
 //TODO: Mock all other classes.
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 {
-    public static class LagrangeMultiplierEnumeratorSerialTests
+    public static class FetiDPLagrangesEnumeratorSerialTests
     {
         [Fact]
         public static void TestBooleanMappingMatrices()

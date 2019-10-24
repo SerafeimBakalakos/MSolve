@@ -16,6 +16,7 @@ using ISAAR.MSolve.LinearAlgebra.Orthogonalization;
 //TODO: Se https://software.intel.com/en-us/mkl-developer-reference-c-lapmr, 
 //      https://software.intel.com/en-us/mkl-developer-reference-c-laswp, 
 //      https://software.intel.com/en-us/mkl-developer-reference-c-syswapr for reordering
+//TODO: Implement Matlab's K[dofs, dofs] += k;
 namespace ISAAR.MSolve.LinearAlgebra.Matrices
 {
     /// <summary>
