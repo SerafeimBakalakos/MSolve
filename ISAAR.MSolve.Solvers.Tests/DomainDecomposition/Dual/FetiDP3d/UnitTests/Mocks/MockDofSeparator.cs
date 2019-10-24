@@ -6,6 +6,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x4x4Quads;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests.Mocks
 {
@@ -31,7 +32,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
         public UnsignedBooleanMatrix GetCornerBooleanMatrix(ISubdomain subdomain)
         {
-            Matrix dense = Example4x4x4.GetMatrixBc(subdomain.ID);
+            Matrix dense = ExpectedConnectivityData.GetMatrixBc(subdomain.ID);
             var sparse = new UnsignedBooleanMatrix(dense.NumRows, dense.NumColumns);
             for (int j = 0; j < dense.NumColumns; ++j)
             {

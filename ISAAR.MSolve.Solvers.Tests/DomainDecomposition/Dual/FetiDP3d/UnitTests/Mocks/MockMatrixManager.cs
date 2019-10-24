@@ -26,7 +26,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             }
         }
 
-        public Vector CoarseProblemRhs => Example4x4x4.VectorGlobalFcStar;
+        public Vector CoarseProblemRhs => Example4x4x4Quads.ExpectedGlobalMatrices.VectorGlobalFcStar;
 
         public void CalcCoarseProblemRhs() { }
 
@@ -78,9 +78,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 //Kcc = Example4x4x4.GetMatrixKcc(s);
                 //KccStar = Example4x4x4.GetMatrixKccStar(s);
                 //Kff = Example4x4x4.GetMatrixKff(s);
-                Krc = Example4x4x4.GetMatrixKrc(s);
-                Krr = Example4x4x4.GetMatrixKrr(s);
-                invKrr = Example4x4x4.GetMatrixKrr(s).Invert();
+                Krc = Example4x4x4Quads.ExpectedSubdomainMatrices.GetMatrixKrc(s);
+                Krr = Example4x4x4Quads.ExpectedSubdomainMatrices.GetMatrixKrr(s);
+                invKrr = Example4x4x4Quads.ExpectedSubdomainMatrices.GetMatrixKrr(s).Invert();
             }
 
             public Vector Fbc { get; }
