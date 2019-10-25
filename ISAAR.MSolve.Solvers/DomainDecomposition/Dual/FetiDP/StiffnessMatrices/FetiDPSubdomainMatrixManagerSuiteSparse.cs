@@ -4,6 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.SchurComplements;
 using ISAAR.MSolve.LinearAlgebra.Triangulation;
@@ -16,6 +17,7 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 //TODO: Kff should probably be a DOK. It will only be used to extract Krr, Krc, Kcc. This avoids dependencies between factorizing
 //      Krr and calculating the preconditioners. Boundary/internal dofs should be (also) defined with respect to Kff.
 //      What about dynamic problems, where Kff needs to do linear combinations and matrix-vector multiplications
+//TODO: This should be IDisposable. Probably IFetiSubdomainMatrixManager should be too.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 {
     /// <summary>
@@ -24,24 +26,24 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
     /// </summary>
     public class FetiDPSubdomainMatrixManagerSuiteSparse : FetiDPSubdomainMatrixManagerBase
     { 
-        private readonly SkylineAssembler assembler = new SkylineAssembler();
-        private readonly SingleSubdomainSystemMpi<SkylineMatrix> linearSystem;
+        private readonly SymmetricDokAssembler assembler = new SymmetricDokAssembler();
+        private readonly SingleSubdomainSystemMpi<DokSymmetric> linearSystem;
 
         private DiagonalMatrix inverseKiiDiagonal;
-        private LdlSkyline inverseKii;
-        private LdlSkyline inverseKrr;
+        private CholeskySuiteSparse inverseKii;
+        private CholeskySuiteSparse inverseKrr;
         private Matrix Kbb;
         private CscMatrix Kib;
         private SymmetricMatrix Kcc;
         //TODO: This can be overwritten with KccStar. Not high priority, since it is a small matrix.
         private SymmetricMatrix _KccStar;
         private CscMatrix Krc;
-        private SkylineMatrix Krr;
+        private DokSymmetric Krr; //TODO: Perhaps I should only use this for the static condensation and then discard it. Kff will be used for Kbb, Kib, Kii
 
         public FetiDPSubdomainMatrixManagerSuiteSparse(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator, 
             IReorderingAlgorithm reordering) : base(subdomain, dofSeparator, reordering)
         {
-            this.linearSystem = new SingleSubdomainSystemMpi<SkylineMatrix>(subdomain);
+            this.linearSystem = new SingleSubdomainSystemMpi<DokSymmetric>(subdomain);
         }
 
         public override ISingleSubdomainLinearSystemMpi LinearSystem => linearSystem;
@@ -58,7 +60,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         protected override (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildFreeConstrainedMatricesImpl(
             ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering,
             IEnumerable<IElement> elements, IElementMatrixProvider matrixProvider)
-            => assembler.BuildGlobalSubmatrices(freeDofOrdering, constrainedDofOrdering, elements, matrixProvider);
+            => throw new NotImplementedException();
 
         protected override void CalcInverseKiiImpl(bool diagonalOnly)
         {
@@ -77,15 +79,18 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             }
             else
             {
-                SkylineMatrix Kii = Krr.GetSubmatrixSymmetricSkyline(internalDofs);
-                inverseKii = Kii.FactorLdl(true);
+                SymmetricCscMatrix Kii = Krr.GetSubmatrixSymmetricDok(internalDofs).BuildSymmetricCscMatrix(true);
+                if (inverseKii != null) inverseKii.Dispose();
+                inverseKii = CholeskySuiteSparse.Factorize(Kii, true);
             }
         }
 
         protected override void ClearMatricesImpl()
         {
+            inverseKii.Dispose();
             inverseKii = null;
             inverseKiiDiagonal = null;
+            inverseKrr.Dispose();
             inverseKrr = null;
             Kbb = null;
             Kib = null;
@@ -103,17 +108,22 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         }
 
         protected override void ExtractKbbImpl() => Kbb = Krr.GetSubmatrixSymmetricFull(DofsBoundary);
-        protected override void ExtractKbiKibImpl() => Kib = Krr.GetSubmatrixCsc(DofsInternal, DofsBoundary);
+        protected override void ExtractKbiKibImpl() 
+            => Kib = Krr.GetSubmatrixDokColMajor(DofsInternal, DofsBoundary).BuildCscMatrix(true);
         protected override void ExtractCornerRemainderSubmatricesImpl()
         {
             Kcc = linearSystem.Matrix.GetSubmatrixSymmetricPacked(DofsCorner);
-            Krc = linearSystem.Matrix.GetSubmatrixCsc(DofsRemainder, DofsCorner);
-            Krr = linearSystem.Matrix.GetSubmatrixSymmetricSkyline(DofsRemainder);
+            Krc = linearSystem.Matrix.GetSubmatrixDokColMajor(DofsRemainder, DofsCorner).BuildCscMatrix(true);
+            Krr = linearSystem.Matrix.GetSubmatrixSymmetricDok(DofsRemainder);
         }
 
         public override void HandleDofOrderingWillBeModified() => assembler.HandleDofOrderingWillBeModified();
 
-        protected override void InvertKrrImpl(bool inPlace) => inverseKrr = Krr.FactorLdl(inPlace);
+        protected override void InvertKrrImpl(bool inPlace)
+        {
+            if (inverseKrr != null) inverseKrr.Dispose();
+            inverseKrr = CholeskySuiteSparse.Factorize(Krr.BuildSymmetricCscMatrix(true), true);
+        }
 
         protected override Vector MultiplyInverseKiiTimesImpl(Vector vector, bool diagonalOnly)
             => diagonalOnly ? inverseKiiDiagonal * vector : inverseKii.SolveLinearSystem(vector);
@@ -135,14 +145,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         protected override DofPermutation ReorderInternalDofsImpl()
         {
-            var pattern = Krr.GetSubmatrixSymmetricPattern(DofsInternal);
+            SparsityPatternSymmetric pattern = Krr.GetSubmatrixSymmetricPattern(DofsInternal);
             (int[] permutation, bool oldToNew) = reordering.FindPermutation(pattern);
             return DofPermutation.Create(permutation, oldToNew);
         }
 
         protected override DofPermutation ReorderRemainderDofsImpl()
         {
-            var pattern = linearSystem.Matrix.GetSubmatrixSymmetricPattern(DofsRemainder);
+            SparsityPatternSymmetric pattern = linearSystem.Matrix.GetSubmatrixSymmetricPattern(DofsRemainder);
             (int[] permutation, bool oldToNew) = reordering.FindPermutation(pattern);
             return DofPermutation.Create(permutation, oldToNew);
         }

@@ -73,5 +73,10 @@ namespace ISAAR.MSolve.Solvers.Assemblers
             (CsrMatrix matrixConstrFree, CsrMatrix matrixConstrConstr) = constrainedAssembler.BuildMatrices();
             return (subdomainMatrix, matrixConstrFree.TransposeToCSC(false), matrixConstrFree, matrixConstrConstr);
         }
+
+        public void HandleDofOrderingWillBeModified()
+        {
+            //TODO: Implement this
+        }
     }
 }

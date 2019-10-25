@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Reordering
         private readonly int order;
         private readonly HashSet<int>[] columns; //see performance concerns in DOKSymmetricColMajor.columns
 
-        private SparsityPatternSymmetric(int order, HashSet<int>[] columns)
+        internal SparsityPatternSymmetric(int order, HashSet<int>[] columns)
         {
             this.order = order;
             this.columns = columns;
@@ -201,6 +201,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Reordering
             }
         }
 
+
         /// <summary>
         /// See <see cref="ISparsityPatternSymmetric.EnumerateNonZerosUpper"/>.
         /// </summary>
@@ -210,6 +211,22 @@ namespace ISAAR.MSolve.LinearAlgebra.Reordering
             {
                 foreach (var i in columns[j]) yield return (i, j);
             }
+        }
+
+        public bool Equals(SparsityPatternSymmetric other)
+        {
+            if (this.Order != other.Order) return false;
+            for (int j = 0; j < Order; ++j)
+            {
+                HashSet<int> thisCol = this.columns[j];
+                HashSet<int> otherCol = other.columns[j];
+                if (thisCol.Count != otherCol.Count) return false;
+                foreach (int i in thisCol)
+                {
+                    if (!otherCol.Contains(i)) return false;
+                }
+            }
+            return true;
         }
 
         /// <summary>

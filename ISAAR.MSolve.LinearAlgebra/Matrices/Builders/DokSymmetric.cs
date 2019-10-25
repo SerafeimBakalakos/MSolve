@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using ISAAR.MSolve.LinearAlgebra.Commons;
 using ISAAR.MSolve.LinearAlgebra.Exceptions;
 using ISAAR.MSolve.LinearAlgebra.Output.Formatting;
+using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 //TODO: Add a create from dense method to facilitate testing.
@@ -37,6 +38,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
         /// converting.
         /// </summary>
         private Dictionary<int, double>[] columns;
+        
         private readonly int order;
 
         private DokSymmetric(int order, Dictionary<int, double>[] columns)
@@ -748,6 +750,56 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
         }
 
         /// <summary>
+        /// Creates a new <see cref="Matrix"/> by copying only the entries whose row and column index belongs to 
+        /// <paramref name="rowsColsToKeep"/>.
+        /// </summary>
+        /// <param name="rowsColsToKeep">
+        /// Only the entries (i, j) where i and j belongs to <paramref name="rowsColsToKeep"/> will be copied to the new matrix.
+        /// The order of the indices is important. E.g. if <paramref name="rowsColsToKeep"/> = [1, 0], then the resulting 
+        /// submatrix will be {{ this[1,1], this[1,0] }, { this[0,1], this[0,0] }}
+        /// </param>
+        public Matrix GetSubmatrixSymmetricFull(int[] rowsColsToKeep)
+        {
+            //TODO: Perhaps I should not hardcode the implementation details of upper triangular packed format here.
+            //      Then again DOKs exist to convert to other formats.
+            int subOrder = rowsColsToKeep.Length;
+            var subMatrix = new double[subOrder * subOrder];
+            for (int subJ = 0; subJ < subOrder; ++subJ)
+            {
+                int thisJ = rowsColsToKeep[subJ];
+                int subOffset = subJ * subOrder;
+
+                // In general the indices are expected to be sorted, thus col >= row and it makes sense to only read this once.
+                Dictionary<int, double> thisColumn = columns[thisJ];
+                for (int subI = 0; subI <= subJ; ++subI)
+                {
+                    int thisI = rowsColsToKeep[subI];
+
+                    // This is necessary if the indices in rowsColsToKeep are not sorted!
+                    if (thisI > thisJ)
+                    {
+                        // Only set the entry, if it is non-zero
+                        if (columns[thisI].TryGetValue(thisJ, out double val))
+                        {
+                            subMatrix[subOffset + subI] = val;
+                            subMatrix[subI * subOrder + subJ] = val;
+                        }
+                    }
+                    else
+                    {
+                        // Only set the entry, if it is non-zero
+                        if (thisColumn.TryGetValue(thisI, out double val))
+                        {
+                            subMatrix[subOffset + subI] = val;
+                            subMatrix[subI * subOrder + subJ] = val;
+                        }
+                    }
+                }
+            }
+            return Matrix.CreateFromArray(subMatrix, subOrder, subOrder, false);
+        }
+
+        /// <summary>
         /// Creates a new <see cref="SymmetricMatrix"/> by copying only the entries whose row and column index belongs to 
         /// <paramref name="rowsColsToKeep"/>.
         /// </summary>
@@ -762,14 +814,14 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
             //      Then again DOKs exist to convert to other formats.
             int subOrder = rowsColsToKeep.Length;
             var subMatrix = new double[((subOrder + 1) * subOrder) / 2];
-            for (int subCol = 0; subCol < subOrder; ++subCol)
+            for (int subJ = 0; subJ < subOrder; ++subJ)
             {
-                int thisJ = rowsColsToKeep[subCol];
-                int subOffset = (subCol * (subCol + 1)) / 2;
+                int thisJ = rowsColsToKeep[subJ];
+                int subOffset = (subJ * (subJ + 1)) / 2;
 
                 // In general the indices are expected to be sorted, thus col >= row and it makes sense to only read this once.
                 Dictionary<int, double> thisColumn = columns[thisJ];
-                for (int subI = 0; subI <= subCol; ++subI)
+                for (int subI = 0; subI <= subJ; ++subI)
                 {
                     int thisI = rowsColsToKeep[subI];
 
@@ -793,6 +845,50 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
                 }
             }
             return SymmetricMatrix.CreateFromPackedColumnMajorArray(subMatrix, subOrder, DefiniteProperty.Unknown, false);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="SparsityPatternSymmetric"/> by copying only the entries whose row and column index belongs to 
+        /// <paramref name="rowsColsToKeep"/>.
+        /// </summary>
+        /// <param name="rowsColsToKeep">
+        /// Only the entries (i, j) where i and j belongs to <paramref name="rowsColsToKeep"/> will be copied to the new matrix.
+        /// The order of the indices is important. E.g. if <paramref name="rowsColsToKeep"/> = [1, 0], then the resulting 
+        /// submatrix will be {{ this[1,1], this[1,0] }, { this[0,1], this[0,0] }}
+        /// </param>
+        public SparsityPatternSymmetric GetSubmatrixSymmetricPattern(int[] rowsColsToKeep)
+        {
+            //TODO: Perhaps I should not hardcode the implementation details of DOK column major format here.
+            //      Then again DOKs exist to convert to other formats.
+            int subOrder = rowsColsToKeep.Length;
+            var subMatrix = new HashSet<int>[subOrder];
+            for (int subJ = 0; subJ < subOrder; ++subJ)
+            {
+                int thisJ = rowsColsToKeep[subJ];
+
+                // In general the indices are expected to be sorted, thus col >= row and it makes sense to only read this once.
+                Dictionary<int, double> thisColumn = this.columns[thisJ];
+                var subColumn = new HashSet<int>();
+                subMatrix[subJ] = subColumn;
+
+                for (int subI = 0; subI <= subJ; ++subI)
+                {
+                    int thisI = rowsColsToKeep[subI];
+
+                    // This is necessary if the indices in rowsColsToKeep are not sorted!
+                    if (thisI > thisJ)
+                    {
+                        // Only set the entry, if it is non-zero
+                        if (columns[thisI].ContainsKey(thisJ)) subColumn.Add(subI);
+                    }
+                    else
+                    {
+                        // Only set the entry, if it is non-zero
+                        if (thisColumn.ContainsKey(thisI)) subColumn.Add(subI);
+                    }
+                }
+            }
+            return new SparsityPatternSymmetric(subOrder, subMatrix);
         }
 
         /// <summary>

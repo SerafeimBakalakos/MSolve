@@ -134,14 +134,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         protected override DofPermutation ReorderInternalDofsImpl()
         {
-            var pattern = Krr.GetSubmatrixSymmetricPattern(DofsInternal);
+            SparsityPatternSymmetric pattern = Krr.GetSubmatrixSymmetricPattern(DofsInternal);
             (int[] permutation, bool oldToNew) = reordering.FindPermutation(pattern);
             return DofPermutation.Create(permutation, oldToNew);
         }
 
         protected override DofPermutation ReorderRemainderDofsImpl()
         {
-            var pattern = linearSystem.Matrix.GetSubmatrixSymmetricPattern(DofsRemainder);
+            SparsityPatternSymmetric pattern = linearSystem.Matrix.GetSubmatrixSymmetricPattern(DofsRemainder);
             (int[] permutation, bool oldToNew) = reordering.FindPermutation(pattern);
             return DofPermutation.Create(permutation, oldToNew);
         }

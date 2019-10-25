@@ -1,5 +1,6 @@
 ﻿using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
+using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.Tests.TestData;
 using ISAAR.MSolve.LinearAlgebra.Tests.Utilities;
 using Xunit;
@@ -176,6 +177,30 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             SymmetricMatrix subMatrixPermPck = matrixDok.GetSubmatrixSymmetricPacked(indicesPerm);
             Matrix subMatrixPermExpected = matrixFull.GetSubmatrix(indicesPerm, indicesPerm);
             Assert.True(subMatrixPermExpected.Equals(subMatrixPermPck));
+        }
+
+        [Fact]
+        private static void TestGetSubmatrixSymmetricPattern()
+        {
+            //// These are useful for debugging
+            //string outputPath = @"C:\Users\Serafeim\Desktop\output.txt";
+            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+
+            var array2D = MultiDiagonalMatrices.CreateSymmetric(100, new int[] { 2, 4, 8, 16, 32, 64 });
+            var matrixFull = Matrix.CreateFromArray(array2D);
+            var matrixDok = DokSymmetric.CreateFromArray2D(array2D);
+
+            var indices = new int[] { 0, 2, 4, 6, 12, 24, 32, 50, 64, 80 };
+            var indicesPerm = new int[] { 32, 80, 64, 0, 12, 24, 6, 50, 4, 2 };
+
+            SparsityPatternSymmetric subMatrixPattern = matrixDok.GetSubmatrixSymmetricPattern(indices);
+            var subMatrixExpected = SparsityPatternSymmetric.CreateFromDense(matrixFull.GetSubmatrix(indices, indices));
+            Assert.True(subMatrixExpected.Equals(subMatrixPattern));
+
+            SparsityPatternSymmetric subMatrixPermPattern = matrixDok.GetSubmatrixSymmetricPattern(indicesPerm);
+            var subMatrixPermExpected = 
+                SparsityPatternSymmetric.CreateFromDense(matrixFull.GetSubmatrix(indicesPerm, indicesPerm));
+            Assert.True(subMatrixPermExpected.Equals(subMatrixPermPattern));
         }
 
         [Fact]
