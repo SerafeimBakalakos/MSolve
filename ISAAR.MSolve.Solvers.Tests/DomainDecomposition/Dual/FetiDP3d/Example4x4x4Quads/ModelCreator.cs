@@ -104,6 +104,27 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x
             return new HashSet<INode>(new INode[] { subdomain.GetNode(63), });
         }
 
+        public static Dictionary<ISubdomain, HashSet<INode>> DefineMidsideNodesAll(IModel model)
+        {
+            int[] midsideNodeIds = { 62, 64, 58, 70, 38, 100 };
+
+            var midsideNodes = new Dictionary<ISubdomain, HashSet<INode>>();
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                midsideNodes[subdomain] = new HashSet<INode>();
+                foreach (int midsideNodeId in midsideNodeIds)
+                {
+                    try
+                    {
+                        midsideNodes[subdomain].Add(subdomain.GetNode(midsideNodeId));
+                    }
+                    catch (Exception)
+                    {}
+                }
+            }
+            return midsideNodes;
+        }
+
         private static (int[], int[], int[], int[], int[,], double[,], int[,]) GetModelCreationData()
         {
             int[] ElementIds = new int[64] {1,

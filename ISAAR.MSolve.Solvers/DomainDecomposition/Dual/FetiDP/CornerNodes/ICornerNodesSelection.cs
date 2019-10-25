@@ -14,6 +14,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes
         HashSet<INode> GlobalCornerNodes { get; }
 
         HashSet<INode> GetCornerNodesOfSubdomain(ISubdomain subdomain);
+
         void Update(); // TODO: This should notify FETI-DP solver when then corner nodes are actually updated.
     }
 }

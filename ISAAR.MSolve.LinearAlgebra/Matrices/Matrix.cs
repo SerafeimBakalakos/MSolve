@@ -479,7 +479,10 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
                 var comparer = new ValueComparer(tolerance);
                 for (int i = 0; i < this.data.Length; ++i)
                 {
-                    if (!comparer.AreEqual(this.data[i], otherData[i])) return false;
+                    if (!comparer.AreEqual(this.data[i], otherData[i]))
+                    {
+                        return false;
+                    }
                 }
                 return true;
             }

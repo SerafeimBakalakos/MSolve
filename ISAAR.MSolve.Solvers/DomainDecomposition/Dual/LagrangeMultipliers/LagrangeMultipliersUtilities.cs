@@ -200,7 +200,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
             ICrosspointStrategy crosspointStrategy)
         {
             var lagranges = new List<LagrangeMultiplier>();
-            foreach (var nodeDofsPair in globalBoundaryDofs)
+            foreach (KeyValuePair<INode, IDofType[]> nodeDofsPair in globalBoundaryDofs)
             {
                 INode node = nodeDofsPair.Key;
                 IDofType[] dofsOfNode = nodeDofsPair.Value;
