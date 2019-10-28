@@ -17,6 +17,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
 using ISAAR.MSolve.Solvers.Logging;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Utilities;
 using MPI;
 using Xunit;
 
@@ -33,7 +34,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 
         private const double domainLengthX = 3.0, domainLengthY = 1.5;
 
-        public static void Run(double stiffnessRatio, Precond precond, Residual convergence, int iterExpected)
+        public static void Run(double stiffnessRatio, Precond precond, Residual convergence, int iterExpected, 
+            MatrixFormat format)
         {
             int master = 0;
             var procs = new ProcessDistribution(Communicator.world, master, new int[] { 0, 1, 2, 3, 4, 5, 6, 7 });
@@ -46,7 +48,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             }
 
             (IVectorView ddDisplacements, ISolverLogger logger) =
-                SolveModelWithSubdomains(procs, stiffnessRatio, precond, convergence, pcgConvergenceTol);
+                SolveModelWithSubdomains(procs, stiffnessRatio, precond, convergence, pcgConvergenceTol, format);
 
             //Checks
             if (procs.IsMasterProcess)
@@ -70,7 +72,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 
 
         private static (IVectorView globalDisplacements, ISolverLogger logger) SolveModelWithSubdomains(ProcessDistribution procs,
-            double stiffnessRatio, Precond precond, Residual residualConvergence, double pcgConvergenceTolerance)
+            double stiffnessRatio, Precond precond, Residual residualConvergence, double pcgConvergenceTolerance, 
+            MatrixFormat format)
         {
             // Model
             var model = new ModelMpi(procs, () => PapagiannakisFetiDPTests2DSerial.CreateModel(stiffnessRatio));
@@ -94,7 +97,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             var cornerNodeSelection = new UsedDefinedCornerNodesMpi(procs, cornerNodes);
 
             // Solver
-            var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(new OrderingAmdSuiteSparse());
+            IFetiDPMatrixManagerFactory fetiMatrices = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             var solverBuilder = new FetiDPSolverMpi.Builder(procs, fetiMatrices);
             solverBuilder.ProblemIsHomogeneous = stiffnessRatio == 1.0;
             solverBuilder.PcgSettings = new PcgSettings() { ConvergenceTolerance = pcgConvergenceTolerance };

@@ -16,6 +16,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
 using ISAAR.MSolve.Solvers.Logging;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Utilities;
 using Xunit;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.IntegrationTests
@@ -36,9 +37,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         //      accurately using the approximate residual yet.
         [Theory]
         // Homogeneous problem
-        [InlineData(1.0, Precond.Dirichlet, Residual.Approximate, 11)]
-        [InlineData(1.0, Precond.DirichletDiagonal, Residual.Approximate, 14)]
-        [InlineData(1.0, Precond.Lumped, Residual.Approximate, 18)]
+        [InlineData(1.0, Precond.Dirichlet, Residual.Approximate, 11, MatrixFormat.Skyline)]
+        [InlineData(1.0, Precond.Dirichlet, Residual.Approximate, 11, MatrixFormat.SuiteSparse)]
+        [InlineData(1.0, Precond.DirichletDiagonal, Residual.Approximate, 14, MatrixFormat.Skyline)]
+        [InlineData(1.0, Precond.DirichletDiagonal, Residual.Approximate, 14, MatrixFormat.SuiteSparse)]
+        [InlineData(1.0, Precond.Lumped, Residual.Approximate, 18, MatrixFormat.Skyline)]
+        [InlineData(1.0, Precond.Lumped, Residual.Approximate, 18, MatrixFormat.SuiteSparse)]
 
         //// Stiffness ratio = 1E-2
         //[InlineData(1E-2, Precond.Dirichlet, Residual.Approximate, 12)]
@@ -64,12 +68,13 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         //[InlineData(1E-6, Precond.Dirichlet, Residual.Approximate, 15)]
         //[InlineData(1E-6, Precond.DirichletDiagonal, Residual.Approximate, 27)]
         //[InlineData(1E-6, Precond.Lumped, Residual.Approximate, 33)]
-        public static void Run(double stiffnessRatio, Precond precond, Residual convergence, int iterExpected)
+        public static void Run(double stiffnessRatio, Precond precond, Residual convergence, int iterExpected, 
+            MatrixFormat format)
         {
             double pcgConvergenceTol = 1E-5;
             IVectorView directDisplacements = SolveModelWithoutSubdomains(stiffnessRatio);
             (IVectorView ddDisplacements, ISolverLogger logger) =
-                SolveModelWithSubdomains(stiffnessRatio, precond, convergence, pcgConvergenceTol);
+                SolveModelWithSubdomains(stiffnessRatio, precond, convergence, pcgConvergenceTol, format);
             double normalizedError = directDisplacements.Subtract(ddDisplacements).Norm2() / directDisplacements.Norm2();
 
             int analysisStep = 0;
@@ -150,7 +155,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         }
 
         private static (IVectorView globalDisplacements, ISolverLogger logger) SolveModelWithSubdomains(double stiffnessRatio,
-            Precond precond, Residual residualConvergence, double pcgConvergenceTolerance)
+            Precond precond, Residual residualConvergence, double pcgConvergenceTolerance, MatrixFormat format)
         {
             // Model
             Model multiSubdomainModel = CreateModel(stiffnessRatio);
@@ -177,7 +182,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 
 
             // Solver
-            var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(new OrderingAmdSuiteSparse());
+            IFetiDPMatrixManagerFactory fetiMatrices = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             var solverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);
             solverBuilder.ProblemIsHomogeneous = stiffnessRatio == 1.0;
             //solverBuilder.ProblemIsHomogeneous = false;

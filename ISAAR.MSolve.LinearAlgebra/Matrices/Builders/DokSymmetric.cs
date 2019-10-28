@@ -133,6 +133,30 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
         }
 
         /// <summary>
+        /// Initializes a new instance of <see cref="DokSymmetric"/> with the specified matrix dimensions and the non-zero 
+        /// entries of <paramref name="matrix"/>. 
+        /// </summary>
+        /// <param name="matrix">Must be symmetric.</param>
+        public static DokSymmetric CreateFromMatrix(IIndexable2D matrix)
+        {
+            Preconditions.CheckSquare(matrix.NumRows, matrix.NumColumns);
+            int order = matrix.NumRows;
+            var columns = new Dictionary<int, double>[order];
+            for (int j = 0; j < order; ++j)
+            {
+                var wholeCol = new Dictionary<int, double>(); //Initial capacity may be optimized.
+                for (int i = 0; i <= j; ++i)
+                {
+                    double val = matrix[j, i]; // traverse the transpose cloumn wise for best performance
+                    Debug.Assert(matrix[i, j] == val); //TODO: Perhaps some tolerance is needed
+                    if (val != 0.0) wholeCol[i] = val;
+                }
+                columns[j] = wholeCol;
+            }
+            return new DokSymmetric(order, columns);
+        }
+
+        /// <summary>
         /// Initializes a new instance of <see cref="DokSymmetric"/> with the specified matrix dimensions and the 
         /// non-zero entries of the provided sparse matrix.
         /// </summary>

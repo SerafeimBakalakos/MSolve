@@ -13,6 +13,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.LinearSystems;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Utilities;
 using MPI;
 using Xunit;
 
@@ -22,9 +23,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 {
     public static class FetiDPSolverMpiTests
     {
-        public static void TestSolutionGlobalDisplacements()
+        public static void TestSolutionGlobalDisplacements(MatrixFormat format)
         {
-            (ProcessDistribution procs, IModel model, FetiDPSolverMpi solver) = CreateModelAndSolver();
+            (ProcessDistribution procs, IModel model, FetiDPSolverMpi solver) = CreateModelAndSolver(format);
             RunAnalysis(procs, model, solver);
             Vector globalU = solver.GatherGlobalDisplacements();
 
@@ -36,9 +37,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             }
         }
 
-        public static void TestSolutionSubdomainDisplacements()
+        public static void TestSolutionSubdomainDisplacements(MatrixFormat format)
         {
-            (ProcessDistribution procs, IModel model, FetiDPSolverMpi solver) = CreateModelAndSolver();
+            (ProcessDistribution procs, IModel model, FetiDPSolverMpi solver) = CreateModelAndSolver(format);
             RunAnalysis(procs, model, solver);
 
             // Check solution
@@ -65,7 +66,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             solver.Solve();
         }
 
-        private static (ProcessDistribution, IModel, FetiDPSolverMpi) CreateModelAndSolver()
+        private static (ProcessDistribution, IModel, FetiDPSolverMpi) CreateModelAndSolver(MatrixFormat format)
         {
             int master = 0;
             var procs = new ProcessDistribution(Communicator.world, master, new int[] { 0, 1, 2, 3 });
@@ -75,8 +76,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             model.ConnectDataStructures();
             model.ScatterSubdomains();
             ICornerNodeSelection cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionMpi(procs, model);
-            var matrixManagerFactory = new FetiDPMatrixManagerFactorySkyline(null);
-            var solverBuilder = new FetiDPSolverMpi.Builder(procs, matrixManagerFactory);
+            IFetiDPMatrixManagerFactory fetiMatrices = MatrixFormatSelection.DefineMatrixManagerFactory(format);
+            var solverBuilder = new FetiDPSolverMpi.Builder(procs, fetiMatrices);
             FetiDPSolverMpi solver = solverBuilder.Build(model, cornerNodes);
 
             return (procs, model, solver);

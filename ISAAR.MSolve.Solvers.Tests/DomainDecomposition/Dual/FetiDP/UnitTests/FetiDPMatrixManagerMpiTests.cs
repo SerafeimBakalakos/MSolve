@@ -8,6 +8,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.LinearSystems;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Utilities;
 using ISAAR.MSolve.Solvers.Tests.Utilities;
 using Xunit;
 using static ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.FetiDPMatrixManagerSerialTests;
@@ -21,12 +22,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
     {
         public static void TestCoarseProblemMatrixAndRhs(MatrixFormat format)
         {
-            IFetiDPMatrixManagerFactory matricesFactory = DefineMatrixManagerFactory(format);
+            IFetiDPMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) = 
                 FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
 
             FetiDPMatrixManagerMpi matrixManager = 
-                PrepareCoarseProblemSubdomainMatrices(procs, model, dofSeparator, matricesFactory);
+                PrepareCoarseProblemSubdomainMatrices(procs, model, dofSeparator, matricesFactory, format);
 
             // Calculate the global data to test
             matrixManager.CalcInverseCoarseProblemMatrix(Example4x4QuadsHomogeneous.DefineCornerNodeSelectionMpi(procs, model));
@@ -48,7 +49,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
         public static void TestMatricesKbbKbiKii(MatrixFormat format)
         {
-            IFetiDPMatrixManagerFactory matricesFactory = DefineMatrixManagerFactory(format);
+            IFetiDPMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) =
                 FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
 
@@ -57,7 +58,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
             // Input data
             IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-            SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID));
+            SetLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID), format);
 
             // Calculate the matrices to test
             subdomainMatrices.ExtractCornerRemainderSubmatrices();
@@ -84,7 +85,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
         public static void TestMatricesKccKcrKrr(MatrixFormat format)
         {
-            IFetiDPMatrixManagerFactory matricesFactory = DefineMatrixManagerFactory(format);
+            IFetiDPMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) =
                 FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
 
@@ -93,7 +94,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
             // Input data
             IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-            SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID));
+            SetLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID), format);
 
             // Calculate the matrices to test
             subdomainMatrices.ExtractCornerRemainderSubmatrices();
@@ -118,7 +119,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
         public static void TestStaticCondensations(MatrixFormat format)
         {
-            IFetiDPMatrixManagerFactory matricesFactory = DefineMatrixManagerFactory(format);
+            IFetiDPMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) =
                 FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
 
@@ -127,7 +128,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
             // Input data
             IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-            SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID));
+            SetLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID), format);
             subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
 
             // Calculate the data to test
@@ -145,7 +146,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
         public static void TestVectorsFbcFr()
         {
-            IFetiDPMatrixManagerFactory matricesFactory = DefineMatrixManagerFactory(MatrixFormat.Dense);
+            IFetiDPMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(MatrixFormat.Dense);
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) =
                 FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
 
@@ -164,14 +165,14 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         }
 
         internal static FetiDPMatrixManagerMpi PrepareCoarseProblemSubdomainMatrices(ProcessDistribution procs, IModel model,
-            IFetiDPDofSeparator dofSeparator, IFetiDPMatrixManagerFactory matricesFactory)
+            IFetiDPDofSeparator dofSeparator, IFetiDPMatrixManagerFactory matricesFactory, MatrixFormat format)
         {
             ISubdomain sub = model.GetSubdomain(procs.OwnSubdomainID);
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
 
             // Input 
             IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-            SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID));
+            SetLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID), format);
             subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
 
             // Prepare the subdomain data

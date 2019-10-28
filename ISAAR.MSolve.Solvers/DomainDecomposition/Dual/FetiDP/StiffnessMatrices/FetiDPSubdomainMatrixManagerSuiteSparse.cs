@@ -87,10 +87,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         protected override void ClearMatricesImpl()
         {
-            inverseKii.Dispose();
+            if (inverseKii != null) inverseKii.Dispose();
             inverseKii = null;
             inverseKiiDiagonal = null;
-            inverseKrr.Dispose();
+            if (inverseKrr != null) inverseKrr.Dispose();
             inverseKrr = null;
             Kbb = null;
             Kib = null;

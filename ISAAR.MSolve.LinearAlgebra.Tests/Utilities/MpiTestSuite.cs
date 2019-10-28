@@ -39,6 +39,14 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Utilities
                 $"{methodName}(args = {input0}, {input1}, {input2}, {input3})"));
         }
 
+        public void AddTheory<TInput0, TInput1, TInput2, TInput3, TInput4>(
+            Action<TInput0, TInput1, TInput2, TInput3, TInput4> test,
+            string className, string methodName, TInput0 input0, TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4)
+        {
+            tests.Add((() => test(input0, input1, input2, input3, input4), className,
+                $"{methodName}(args = {input0}, {input1}, {input2}, {input3}, {input4})"));
+        }
+
         public void RunTests(string[] args)
         {
             using (new MPI.Environment(ref args))

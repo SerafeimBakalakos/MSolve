@@ -4,11 +4,13 @@ using System.Text;
 using ISAAR.MSolve.Analyzers.Loading;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
+using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.LinearSystems;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Utilities;
 using Xunit;
 
 //TODO: Perhaps I should also check intermediate steps by pulling the solver's compenent using reflection and check their state
@@ -17,10 +19,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 {
     public static class FetiDPSolverSerialTests
     {
-        [Fact]
-        public static void TestSolutionGlobalDisplacements()
+        [Theory]
+        [InlineData(MatrixFormat.Skyline)]
+        [InlineData(MatrixFormat.SuiteSparse)]
+        public static void TestSolutionGlobalDisplacements(MatrixFormat format)
         {
-            (IModel model, FetiDPSolverSerial solver) = CreateModelAndSolver();
+            (IModel model, FetiDPSolverSerial solver) = CreateModelAndSolver(format);
             RunAnalysis(model, solver);
             Vector globalU = solver.GatherGlobalDisplacements();
 
@@ -29,10 +33,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             Assert.True(Example4x4QuadsHomogeneous.SolutionGlobalDisplacements.Equals(globalU, tol));
         }
 
-        [Fact]
-        public static void TestSolutionSubdomainDisplacements()
+        [Theory]
+        [InlineData(MatrixFormat.Skyline)]
+        [InlineData(MatrixFormat.SuiteSparse)]
+        public static void TestSolutionSubdomainDisplacements(MatrixFormat format)
         {
-            (IModel model, FetiDPSolverSerial solver) = CreateModelAndSolver();
+            (IModel model, FetiDPSolverSerial solver) = CreateModelAndSolver(format);
             RunAnalysis(model, solver);
 
             // Check solution
@@ -62,14 +68,14 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             solver.Solve();
         }
 
-        private static (IModel, FetiDPSolverSerial) CreateModelAndSolver()
+        private static (IModel, FetiDPSolverSerial) CreateModelAndSolver(MatrixFormat format)
         {
             // Prepare solver
             IModel model = Example4x4QuadsHomogeneous.CreateModel();
             model.ConnectDataStructures();
             ICornerNodeSelection cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionSerial(model);
-            var matrixManagerFactory = new FetiDPMatrixManagerFactorySkyline(null);
-            var solverBuilder = new FetiDPSolverSerial.Builder(matrixManagerFactory);
+            IFetiDPMatrixManagerFactory fetiMatrices = MatrixFormatSelection.DefineMatrixManagerFactory(format);
+            var solverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);
             FetiDPSolverSerial solver = solverBuilder.Build(model, cornerNodes);
 
             return (model, solver);
