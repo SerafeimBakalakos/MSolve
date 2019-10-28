@@ -22,7 +22,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         }
 
         public IFetiDPGlobalMatrixManager CreateGlobalMatrixManager(IModel model, IFetiDPDofSeparator dofSeparator) 
-            => new FetiDPGlobalMatrixManagerSkyline(model, dofSeparator, reordering);
+            => new FetiDPGlobalMatrixManagerSuiteSparse(model, dofSeparator, reordering);
 
         public IFetiDPSubdomainMatrixManager CreateSubdomainMatrixManager(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator)
             => new FetiDPSubdomainMatrixManagerSuiteSparse(subdomain, dofSeparator, reordering);

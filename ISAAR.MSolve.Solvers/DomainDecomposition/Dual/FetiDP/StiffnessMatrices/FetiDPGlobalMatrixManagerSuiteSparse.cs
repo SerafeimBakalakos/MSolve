@@ -6,7 +6,6 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
-using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
@@ -16,12 +15,13 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 {
-    public class FetiDPGlobalMatrixManagerSkyline : FetiDPGlobalMatrixManagerBase
+    public class FetiDPGlobalMatrixManagerSuiteSparse : FetiDPGlobalMatrixManagerBase
     {
         private readonly IReorderingAlgorithm reordering;
-        private LdlSkyline inverseGlobalKccStar;
+        private CholeskySuiteSparse inverseGlobalKccStar;
 
-        public FetiDPGlobalMatrixManagerSkyline(IModel model, IFetiDPDofSeparator dofSeparator, IReorderingAlgorithm reordering):
+        public FetiDPGlobalMatrixManagerSuiteSparse(IModel model, IFetiDPDofSeparator dofSeparator, 
+            IReorderingAlgorithm reordering):
             base(model, dofSeparator)
         {
             this.reordering = reordering;
@@ -54,53 +54,28 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             // globalKccStar = sum_over_s(Lc[s]^T * KccStar[s] * Lc[s])
 
             // Assembly
-            int[] skylineColHeights = FindSkylineColumnHeights(cornerNodeSelection);
-            var skylineBuilder = SkylineBuilder.Create(dofSeparator.NumGlobalCornerDofs, skylineColHeights);
+            var dok = DokSymmetric.CreateEmpty(dofSeparator.NumGlobalCornerDofs);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int s = subdomain.ID;
                 IMatrixView subdomainKccStar = condensedMatrices[subdomain];
                 int[] subdomainToGlobalIndices = dofSeparator.GetCornerBooleanMatrix(subdomain).GetRowsToColumnsMap();
-                skylineBuilder.AddSubmatrixSymmetric(subdomainKccStar, subdomainToGlobalIndices);
+                dok.AddSubmatrixSymmetric(subdomainKccStar, subdomainToGlobalIndices);
             }
-            SkylineMatrix globalKccStar = skylineBuilder.BuildSkylineMatrix();
+            SymmetricCscMatrix globalKccStar = dok.BuildSymmetricCscMatrix(true);
 
-            // Factorization
-            this.inverseGlobalKccStar = globalKccStar.FactorLdl(true);
+            // Factorization using SuiteSparse
+            if (inverseGlobalKccStar != null) inverseGlobalKccStar.Dispose();
+            inverseGlobalKccStar = CholeskySuiteSparse.Factorize(globalKccStar, true);
         }
 
-        protected override void ClearInverseCoarseProblemMatrixImpl() => inverseGlobalKccStar = null;
+        protected override void ClearInverseCoarseProblemMatrixImpl()
+        {
+            if (inverseGlobalKccStar != null) inverseGlobalKccStar.Dispose();
+            inverseGlobalKccStar = null;
+        }
 
         protected override Vector MultiplyInverseCoarseProblemMatrixTimesImpl(Vector vector)
             => inverseGlobalKccStar.SolveLinearSystem(vector);
-
-        private int[] FindSkylineColumnHeights(ICornerNodeSelection cornerNodeSelection)
-        {
-            //only entries above the diagonal count towards the column height
-            int[] colHeights = new int[dofSeparator.NumGlobalCornerDofs];
-            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-            {
-                HashSet<INode> cornerNodes = cornerNodeSelection.GetCornerNodesOfSubdomain(subdomain);
-
-                // To determine the col height, first find the min of the dofs of this element. All these are 
-                // considered to interact with each other, even if there are 0.0 entries in the element stiffness matrix.
-                int minDof = Int32.MaxValue;
-                foreach (INode node in cornerNodes)
-                {
-                    foreach (int dof in dofSeparator.GlobalCornerDofOrdering.GetValuesOfRow(node)) minDof = Math.Min(dof, minDof);
-                }
-
-                // The height of each col is updated for all elements that engage the corresponding dof. 
-                // The max height is stored.
-                foreach (INode node in cornerNodes)
-                {
-                    foreach (int dof in dofSeparator.GlobalCornerDofOrdering.GetValuesOfRow(node))
-                    {
-                        colHeights[dof] = Math.Max(colHeights[dof], dof - minDof);
-                    }
-                }
-            }
-            return colHeights;
-        }
     }
 }

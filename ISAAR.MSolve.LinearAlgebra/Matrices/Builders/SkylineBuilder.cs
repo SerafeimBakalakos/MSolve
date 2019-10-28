@@ -190,10 +190,12 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
 
         /// <summary>
         /// Optimization of <see cref="AddSubmatrixSymmetric(IIndexable2D, int[], int[])"/> if all entries of the submatrix are 
-        /// to be considered. In this case there only 1 array is needed for the dof mapping.
+        /// to be considered. In this case only 1 array is needed for the dof mapping.
         /// </summary>
-        /// <param name="subMatrix"></param>
-        /// <param name="subToGlobalIndices"></param>
+        /// <param name="subMatrix">The other smaller matrix to add to this matrix.</param>
+        /// <param name="subToGlobalIndices">
+        /// If <paramref name="subToGlobalIndices"/>[i] = j, then the i row/column of <paramref name="subMatrix"/> corresponds 
+        /// to the j row/col index of this matrix.</param>
         public void AddSubmatrixSymmetric(IIndexable2D subMatrix, int[] subToGlobalIndices)
         {
             Debug.Assert(subMatrix.NumRows == subMatrix.NumColumns);
