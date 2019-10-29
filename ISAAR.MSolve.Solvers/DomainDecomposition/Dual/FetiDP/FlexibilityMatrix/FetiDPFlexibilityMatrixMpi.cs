@@ -16,7 +16,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
         private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
         private readonly IModel model;
         private readonly ProcessDistribution procs;
-        private readonly FetiDPSubdomainFlexibilityMatrix subdomainFlexibility;
+        private readonly IFetiDPSubdomainFlexibilityMatrix subdomainFlexibility;
 
         public FetiDPFlexibilityMatrixMpi(ProcessDistribution procs, IModel model, IFetiDPDofSeparator dofSeparator, 
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPMatrixManager matrixManager) 

@@ -8,11 +8,12 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
+//TODO: Ask Goat about this cache.
 //TODO: This should not exist. Its code should be defined in FetiDPFlexibilityMatrixBase. It is not like other CPW Part classes
 //      which actually stored state.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 {
-    public class FetiDPSubdomainFlexibilityMatrix
+    public class FetiDPSubdomainFlexibilityMatrix : IFetiDPSubdomainFlexibilityMatrix
     {
         //TODO:  If I store explicit matrices, then I would have to rebuild the flexibility matrix each time something changes. Not sure which is better
         //private readonly UnsignedBooleanMatrix Bc;
@@ -22,6 +23,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
         private readonly ILagrangeMultipliersEnumerator lagrangeEnumerator;
         private readonly IFetiDPSubdomainMatrixManager matrixManager;
         private readonly ISubdomain subdomain;
+
+        private Vector cachedInvKrrTimesBrTimesLambda;
+        private int numTimesCacheIsUsed;
+        private bool cacheCanBeUsed;
 
         public FetiDPSubdomainFlexibilityMatrix(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator,
             ILagrangeMultipliersEnumerator lagrangeEnumerator, IFetiDPMatrixManager matrixManager)
@@ -68,10 +73,23 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             // Summing is delegated to another class.
             // This class performs: fIrr[s] * x = Br[s] * (inv(Krr[s]) * (Br[s]^T * x))
 
-            SignedBooleanMatrixColMajor Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
-            Vector temp = Br.Multiply(vector, true);
-            temp = matrixManager.MultiplyInverseKrrTimes(temp);
-            return Br.Multiply(temp);
+            //if ((cachedInvKrrTimesBrTimesLambda != null) && (numTimesCacheIsUsed == 1))
+            if (cacheCanBeUsed)
+            {
+                SignedBooleanMatrixColMajor Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
+                Vector result = Br.Multiply(cachedInvKrrTimesBrTimesLambda);
+                cacheCanBeUsed = false;
+                return result;
+            }
+            else
+            {
+                SignedBooleanMatrixColMajor Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
+                Vector temp = Br.Multiply(vector, true);
+                cachedInvKrrTimesBrTimesLambda = matrixManager.MultiplyInverseKrrTimes(temp);
+                cacheCanBeUsed = true;
+                return Br.Multiply(cachedInvKrrTimesBrTimesLambda);
+            }
+            
         }
     }
 }
