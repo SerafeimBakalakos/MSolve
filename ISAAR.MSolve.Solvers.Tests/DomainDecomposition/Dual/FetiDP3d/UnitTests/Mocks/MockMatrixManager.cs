@@ -10,6 +10,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x4x4Quads;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests.Mocks
 {
@@ -26,7 +27,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             }
         }
 
-        public Vector CoarseProblemRhs => Example4x4x4Quads.ExpectedGlobalMatrices.VectorGlobalFcStar;
+        public Vector CoarseProblemRhs => ExpectedGlobalMatrices.VectorGlobalFcStar;
 
         public void CalcCoarseProblemRhs() { }
 
@@ -65,9 +66,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 int s = subdomain.ID;
                 LinearSystem = new SingleSubdomainSystem<Matrix>(subdomain);
 
-                //Fbc = Example4x4x4.GetVectorFbc(s);
-                //FcStar = Example4x4x4.GetVectorFcStar(s);
-                //Fr = Example4x4x4.GetVectorFr(s);
+                Fbc = ExpectedSubdomainMatrices.GetVectorFbc(s);
+                FcStar = ExpectedSubdomainMatrices.GetVectorFcStar(s);
+                Fr = ExpectedSubdomainMatrices.GetVectorFr(s);
 
                 //invDii = DiagonalMatrix.CreateFromArray(Example4x4x4.GetMatrixKii(s).GetDiagonalAsArray());
                 //invDii.Invert();
@@ -75,12 +76,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 //invKii = Example4x4x4.GetMatrixKii(s).Invert();
                 //Kbb = Example4x4x4.GetMatrixKbb(s);
                 //Kbi = Example4x4x4.GetMatrixKbi(s);
-                //Kcc = Example4x4x4.GetMatrixKcc(s);
-                //KccStar = Example4x4x4.GetMatrixKccStar(s);
-                //Kff = Example4x4x4.GetMatrixKff(s);
-                Krc = Example4x4x4Quads.ExpectedSubdomainMatrices.GetMatrixKrc(s);
-                Krr = Example4x4x4Quads.ExpectedSubdomainMatrices.GetMatrixKrr(s);
-                invKrr = Example4x4x4Quads.ExpectedSubdomainMatrices.GetMatrixKrr(s).Invert();
+                Kcc = ExpectedSubdomainMatrices.GetMatrixKcc(s);
+                KccStar = ExpectedSubdomainMatrices.GetMatrixKccStar(s);
+                Kff = ExpectedSubdomainMatrices.GetMatrixKff(s);
+                Krc = ExpectedSubdomainMatrices.GetMatrixKrc(s);
+                Krr = ExpectedSubdomainMatrices.GetMatrixKrr(s);
+                invKrr = ExpectedSubdomainMatrices.GetMatrixKrr(s).Invert();
             }
 
             public Vector Fbc { get; }

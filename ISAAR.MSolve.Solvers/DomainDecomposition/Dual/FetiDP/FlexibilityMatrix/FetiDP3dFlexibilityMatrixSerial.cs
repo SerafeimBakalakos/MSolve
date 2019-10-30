@@ -8,6 +8,8 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
+//TODO: The serial/MPI coordinators of regular FETI-DP should be used instead of this. Only the subdomain operations and 
+//      the dimensions are different.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 {
     public class FetiDP3dFlexibilityMatrixSerial : IFetiDPFlexibilityMatrix
@@ -15,7 +17,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
         private readonly IAugmentationConstraints augmentationConstraints;
         private readonly IFetiDPDofSeparator dofSeparator;
         private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
-        private readonly Dictionary<ISubdomain, FetiDPSubdomainFlexibilityMatrix> subdomainFlexibilities;
+        private readonly Dictionary<ISubdomain, FetiDP3dSubdomainFlexibilityMatrix> subdomainFlexibilities;
 
         public FetiDP3dFlexibilityMatrixSerial(IModel model, IFetiDPDofSeparator dofSeparator, 
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IAugmentationConstraints augmentationConstraints, 
@@ -26,11 +28,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             this.lagrangesEnumerator = lagrangesEnumerator;
             this.NumGlobalLagrangeMultipliers = lagrangesEnumerator.NumLagrangeMultipliers;
 
-            this.subdomainFlexibilities = new Dictionary<ISubdomain, FetiDPSubdomainFlexibilityMatrix>();
+            this.subdomainFlexibilities = new Dictionary<ISubdomain, FetiDP3dSubdomainFlexibilityMatrix>();
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                this.subdomainFlexibilities[sub] = new FetiDPSubdomainFlexibilityMatrix(sub, dofSeparator, lagrangesEnumerator, 
-                    matrixManager);
+                this.subdomainFlexibilities[sub] = new FetiDP3dSubdomainFlexibilityMatrix(sub, dofSeparator, lagrangesEnumerator,
+                    augmentationConstraints, matrixManager);
             }
         }
 
@@ -38,7 +40,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 
         public Vector MultiplyGlobalFIrc(Vector vIn)
         {
-            FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrc(vIn, dofSeparator, lagrangesEnumerator);
+            FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrc3d(vIn, dofSeparator, lagrangesEnumerator, 
+                augmentationConstraints);
             var vOut = Vector.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers);
             foreach (ISubdomain sub in subdomainFlexibilities.Keys)
             {

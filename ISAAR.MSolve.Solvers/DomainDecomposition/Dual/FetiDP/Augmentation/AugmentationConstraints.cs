@@ -11,9 +11,9 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Augmentation
 {
-    public class AugmentationConstraintsGlobal : IAugmentationConstraints
+    public class AugmentationConstraints : IAugmentationConstraints
     {
-        public AugmentationConstraintsGlobal(IMidsideNodesSelection midsideNodesSelection, IDofType[] dofsPerNode,
+        public AugmentationConstraints(IMidsideNodesSelection midsideNodesSelection, IDofType[] dofsPerNode,
             ILagrangeMultipliersEnumerator lagrangesEnumerator)
         {
             Table<INode, IDofType, HashSet<int>> augmentationLagranges = 
@@ -50,10 +50,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Augmentation
                 foreach (IDofType dof in dofsPerNode) augmentationLagranges[node, dof] = new HashSet<int>();
             }
 
+            var midsideNodes = new HashSet<INode>(midsideNodesSelection.MidsideNodesGlobal); // for faster look-ups. TODO: Use the table for look-ups
             for (int i = 0; i < lagrangesEnumerator.NumLagrangeMultipliers; ++i)
             {
                 LagrangeMultiplier lagr = lagrangesEnumerator.LagrangeMultipliers[i];
-                if (midsideNodesSelection.MidsideNodesGlobal.Contains(lagr.Node))
+                if (midsideNodes.Contains(lagr.Node))
                 {
                     Debug.Assert(dofsPerNode.Contains(lagr.DofType));
                     augmentationLagranges[lagr.Node, lagr.DofType].Add(i);

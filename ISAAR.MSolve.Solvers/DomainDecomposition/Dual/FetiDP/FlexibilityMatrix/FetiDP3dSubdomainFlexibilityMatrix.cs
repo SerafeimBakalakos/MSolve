@@ -12,6 +12,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 //TODO: This should not exist. Its code should be defined in FetiDPFlexibilityMatrixBase. It is not like other CPW Part classes
 //      which actually stored state.
+//TODO: Instead of extracting subvectors, implement multiplications that operate on subvectors
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 {
     public class FetiDP3dSubdomainFlexibilityMatrix
@@ -43,21 +44,24 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
         {
             // FIrc_tilde[s] * x = sum_over_s(fIrc_tilde[s] * x) 
             // Summing is delegated to another class.
-            // This class performs: fIrc_tilde[s] * x = Br[s] * (inv(Krr[s]) * ((Krc[s] * (Bc[s] * x) + (Br[s]^T * (Qr * x) ))
+            // This class performs: fIrc_tilde[s] * x = Br[s] * (inv(Krr[s]) * ((Krc[s] * (Bc[s] * xc) + (Br[s]^T * (Qr * xm) ))
 
             SignedBooleanMatrixColMajor Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
             UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
             Matrix Qr = augmentationConstraints.MatrixQr;
-            
-            // Krc[s] * (Bc[s] * x)
-            Vector temp = Bc.Multiply(vector);
+
+            // Krc[s] * (Bc[s] * xc)
+            Vector xc = vector.GetSubvector(0, dofSeparator.NumGlobalCornerDofs);
+            Vector temp = Bc.Multiply(xc);
             temp = matrixManager.MultiplyKrcTimes(temp);
 
-            // Br[s]^T * (Qr * x)
-            Vector temp2 = Qr.Multiply(vector);
+            // Br[s]^T * (Qr * xm)
+            Vector xm = vector.GetSubvector(dofSeparator.NumGlobalCornerDofs, 
+                dofSeparator.NumGlobalCornerDofs + augmentationConstraints.NumGlobalAugmentationConstraints);
+            Vector temp2 = Qr.Multiply(xm);
             temp2 = Br.Multiply(temp2, true);
 
-            // (Krc[s] * (Bc[s] * x) + (Br[s] ^ T * (Qr * x)
+            // (Krc[s] * (Bc[s] * xc) + (Br[s] ^ T * (Qr * xm)
             temp.AddIntoThis(temp2);
 
             // Br[s] * (inv(Krr[s]) * previousSum
