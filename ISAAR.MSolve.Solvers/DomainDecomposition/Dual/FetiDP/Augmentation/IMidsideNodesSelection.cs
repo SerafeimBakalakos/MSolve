@@ -7,7 +7,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Augmentation
 {
     public interface IMidsideNodesSelection
     {
-        HashSet<INode> MidsideNodesGlobal { get; }
+        List<INode> MidsideNodesGlobal { get; }
 
         HashSet<INode> GetMidsideNodesOfSubdomain(ISubdomain subdomain);
     }

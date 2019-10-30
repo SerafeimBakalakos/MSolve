@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
         [Theory]
         [InlineData(ConstraintsSelection.Farhat)]
-        [InlineData(ConstraintsSelection.Gerasimos)]
+        //[InlineData(ConstraintsSelection.Gerasimos)]
         private static void TestMatrixQr(ConstraintsSelection constraints)
         {
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
@@ -49,11 +49,13 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 QrExpected = ExpectedConnectivityData.MatrixQrCase1;
             }
 
-            string pathEx = @"C:\Users\Serafeim\Desktop\MPI\Tests\expectedQr.txt";
-            string path = @"C:\Users\Serafeim\Desktop\MPI\Tests\Qr.txt";
-            var writer = new LinearAlgebra.Output.FullMatrixWriter();
-            writer.WriteToFile(QrExpected, pathEx);
-            writer.WriteToFile(augmentationConstraints.MatrixQr, path);
+            //string pathEx = @"C:\Users\Serafeim\Desktop\MPI\Tests\expectedQr.txt";
+            //string path = @"C:\Users\Serafeim\Desktop\MPI\Tests\Qr.txt";
+            //string pathDiff = @"C:\Users\Serafeim\Desktop\MPI\Tests\diffQr.txt";
+            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+            //writer.WriteToFile(QrExpected, pathEx);
+            //writer.WriteToFile(augmentationConstraints.MatrixQr, path);
+            //writer.WriteToFile(QrExpected - augmentationConstraints.MatrixQr, pathDiff);
 
             // Check
             Assert.Equal(numAugmentationConstraints, augmentationConstraints.NumGlobalAugmentationConstraints);
