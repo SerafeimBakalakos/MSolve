@@ -10,6 +10,7 @@ using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
@@ -34,6 +35,9 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 
         private const int numElementsX = 20, numElementsY = 20;
         private const int subdomainID = 0;
+
+        private const double conductivityMatrix = 1.0, conductivityInclusion = 1000.0;
+        private const double interfaceResistance = 1E-10;
 
         public static void PlotLevelSets()
         {
@@ -87,12 +91,70 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             staticAnalyzer.Initialize();
             staticAnalyzer.Solve();
 
-            // Plot mesh and level sets
+            // Plot original mesh and level sets
             using (var writer = new VtkFileWriter(pathLevelSets))
             {
                 var levelSetField = new LevelSetField(model, interfaceLSM);
                 writer.WriteMesh(levelSetField.Mesh);
                 writer.WriteScalarField("inclusion_level_set", levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
+            }
+
+            // Plot conforming mesh and temperature field
+            using (var writer = new VtkFileWriter(pathTemperature))
+            {
+                var mesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, interfaceLSM);
+                var temperatureField = new TemperatureField2D(model, interfaceLSM, mesh);
+                writer.WriteMesh(mesh);
+                IVectorView solution = solver.LinearSystems[subdomainID].Solution;
+                writer.WriteScalarField("temperature", mesh, temperatureField.CalcValuesAtVertices(solution));
+            }
+        }
+
+        public static void PlotTemperatureAndFlux()
+        {
+            // Create model and LSM
+            (XModel model, SimpleLsmCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
+            InitializeLSM(model, interfaceLSM);
+            ApplyEnrichments(model, interfaceLSM);
+
+            // Run the analysis
+            SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(model);
+            var problem = new ProblemThermalSteadyState(model, solver);
+            var linearAnalyzer = new LinearAnalyzer(model, solver, problem);
+            var staticAnalyzer = new StaticAnalyzer(model, solver, problem, linearAnalyzer);
+            staticAnalyzer.Initialize();
+            staticAnalyzer.Solve();
+
+            // Plot original mesh and level sets
+            using (var writer = new VtkFileWriter(pathLevelSets))
+            {
+                var levelSetField = new LevelSetField(model, interfaceLSM);
+                writer.WriteMesh(levelSetField.Mesh);
+                writer.WriteScalarField("inclusion_level_set", levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
+            }
+
+            // Plot conforming mesh, temperature field
+            using (var writer = new VtkFileWriter(pathTemperature))
+            {
+                var mesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, interfaceLSM);
+                var temperatureField = new TemperatureField2D(model, interfaceLSM, mesh);
+                var fluxField = new HeatFluxField2D(model, interfaceLSM, mesh);
+                writer.WriteMesh(mesh);
+                IVectorView solution = solver.LinearSystems[subdomainID].Solution;
+                writer.WriteScalarField("temperature", mesh, temperatureField.CalcValuesAtVertices(solution));
+                writer.WriteVector2DField("heat_flux", mesh, fluxField.CalcValuesAtVertices(solution));
+            }
+
+            // Plot conforming mesh, heat flux
+            using (var writer = new VtkFileWriter(pathTemperature))
+            {
+                var mesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, interfaceLSM);
+                var temperatureField = new TemperatureField2D(model, interfaceLSM, mesh);
+                var fluxField = new HeatFluxField2D(model, interfaceLSM, mesh);
+                writer.WriteMesh(mesh);
+                IVectorView solution = solver.LinearSystems[subdomainID].Solution;
+                writer.WriteScalarField("temperature", mesh, temperatureField.CalcValuesAtVertices(solution));
+                writer.WriteVector2DField("heat_flux", mesh, fluxField.CalcValuesAtVertices(solution));
             }
         }
 
@@ -105,10 +167,10 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             // Materials
             double thickness = 1.0;
             double density = 1.0;
-            double specificHeat = 1.0, conductivity1 = 1.0, conductivity2 = 1000.0;
+            double specificHeat = 1.0;
             var interfaceLSM = new SimpleLsmCurve2D(thickness);
-            var materialPos = new ThermalMaterial(density, specificHeat, conductivity1);
-            var materialNeg = new ThermalMaterial(density, specificHeat, conductivity2);
+            var materialPos = new ThermalMaterial(density, specificHeat, conductivityMatrix);
+            var materialNeg = new ThermalMaterial(density, specificHeat, conductivityInclusion);
             var materialField = new ThermalMultiMaterialField2D(materialPos, materialNeg, interfaceLSM);
 
             // Mesh generation
@@ -141,11 +203,11 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         {
             double meshTol = 1E-7;
 
-            // Left side: T = 100
+            // Left side: T = -100
             double minX = model.Nodes.Select(n => n.X).Min();
             foreach (var node in model.Nodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
             {
-                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 100 });
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = -100 });
             }
 
             // Right side: T = 100
@@ -155,24 +217,23 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
                 node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 100 });
             }
 
-            // Bottom side: T = 100
-            double minY = model.Nodes.Select(n => n.Y).Min();
-            foreach (var node in model.Nodes.Where(n => Math.Abs(n.Y - minY) <= meshTol))
-            {
-                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 100 });
-            }
+            //// Bottom side: T = 100
+            //double minY = model.Nodes.Select(n => n.Y).Min();
+            //foreach (var node in model.Nodes.Where(n => Math.Abs(n.Y - minY) <= meshTol))
+            //{
+            //    node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 100 });
+            //}
 
-            // Top side: T = 100
-            double maxY = model.Nodes.Select(n => n.Y).Max();
-            foreach (var node in model.Nodes.Where(n => Math.Abs(n.Y - maxY) <= meshTol))
-            {
-                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 100 });
-            }
+            //// Top side: T = 100
+            //double maxY = model.Nodes.Select(n => n.Y).Max();
+            //foreach (var node in model.Nodes.Where(n => Math.Abs(n.Y - maxY) <= meshTol))
+            //{
+            //    node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 100 });
+            //}
         }
 
         private static void ApplyEnrichments(XModel model, SimpleLsmCurve2D interfaceLSM)
         {
-            double interfaceResistance = 0.01;
             var materialInterface = new SingleMaterialInterface(interfaceLSM, model.Elements.Select(e => (XThermalElement2D)e),
                 interfaceResistance);
             materialInterface.ApplyEnrichments();

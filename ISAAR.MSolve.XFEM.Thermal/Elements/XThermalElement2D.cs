@@ -11,6 +11,7 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.FEM.Interpolation.GaussPointExtrapolation;
 using ISAAR.MSolve.Geometry.Coordinates;
+using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
@@ -137,59 +138,6 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
         public XSubdomain Subdomain { get; set; }
 
         public double Thickness { get; }
-
-        /// <summary>
-        /// This only works for points that do not lie on the crack interface. As such it is safe to pass GPs only
-        /// </summary>
-        /// <param name="gaussPoint"></param>
-        /// <param name="evaluatedInterpolation"></param>
-        /// <param name="standardNodalDisplacements"></param>
-        /// <param name="enrichedNodalDisplacements"></param>
-        /// <returns></returns>
-        public Vector2 CalculateDisplacementField(NaturalPoint gaussPoint, EvalInterpolation2D evaluatedInterpolation,
-            Vector standardNodalDisplacements, Vector enrichedNodalDisplacements)
-        {
-            #region debug
-            double tol = 1e-6;
-            if ((Math.Abs(gaussPoint.Xi) <= tol) || (Math.Abs(gaussPoint.Eta) <= tol))
-            {
-                Console.WriteLine("Found an intersection point that isn't a node.");
-            }
-            #endregion
-            var displacements = new double[2];
-
-            // Standard contributions
-            for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
-            {
-                double shapeFunction = evaluatedInterpolation.ShapeFunctions[nodeIdx];
-                displacements[0] += shapeFunction * standardNodalDisplacements[2 * nodeIdx];
-                displacements[1] += shapeFunction * standardNodalDisplacements[2 * nodeIdx + 1];
-            }
-
-            // Enriched contributions
-            //TODO: this should be taken as input, so that it is only computed once if it is needed for displacements, strains, 
-            //      stresses, just like the evaluated interpolation.
-            IReadOnlyDictionary<IEnrichmentItem, EvaluatedFunction[]> evalEnrichments =
-                EvaluateEnrichments(gaussPoint, evaluatedInterpolation);
-            int dof = 0;
-            for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
-            {
-                double shapeFunction = evaluatedInterpolation.ShapeFunctions[nodeIdx];
-                foreach (var nodalEnrichment in Nodes[nodeIdx].EnrichmentItems)
-                {
-                    EvaluatedFunction[] currentEvalEnrichments = evalEnrichments[nodalEnrichment.Key];
-                    for (int e = 0; e < currentEvalEnrichments.Length; ++e)
-                    {
-                        double basisFunction = shapeFunction * (currentEvalEnrichments[e].Value - nodalEnrichment.Value[e]);
-                        //double basisFunction = shapeFunction * currentEvalEnrichments[e].Value; // for debugging
-                        displacements[0] += basisFunction * enrichedNodalDisplacements[dof++];
-                        displacements[1] += basisFunction * enrichedNodalDisplacements[dof++];
-                    }
-                }
-            }
-
-            return Vector2.CreateFromArray(displacements);
-        }
 
         /// <summary>
         /// The displacement field derivatives are a 2x2 matrix: gradientU[i,j] = dui/dj where i is the vector component 
@@ -482,7 +430,8 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
             }
         }
 
-        internal IReadOnlyList<IReadOnlyList<IDofType>> OrderDofsNodeMajor()
+        //TODO: There is one dof per node. Simplify this like SeparateStandardTemperaturesNodeMajor().
+        internal IReadOnlyList<IReadOnlyList<IDofType>> OrderDofsNodeMajor() 
         {
             //TODO: should they enriched dofs also be cached per element?
             if (IsStandardElement) return standardDofTypes;
@@ -494,7 +443,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
                 var dofTypes = new List<IDofType>[Nodes.Count];
                 for (int i = 0; i < Nodes.Count; ++i)
                 {
-                    dofTypes[i] = new List<IDofType>(4); // At least 2 * num std dofs
+                    dofTypes[i] = new List<IDofType>();
                     dofTypes[i].AddRange(standardDofTypes[i]);
                     foreach (IEnrichmentItem enrichment in Nodes[i].EnrichmentItems.Keys)
                     {
@@ -505,38 +454,6 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
             }
         }
 
-        /// <summary>
-        /// BUG: This does not work. MSolve assumes all dofs of the same node have consecutive indices in the stiffness matrix.
-        /// </summary>
-        internal IReadOnlyList<IReadOnlyList<IDofType>> OrderDofsStandardFirst()
-        {
-            //TODO: should they enriched dofs also be cached per element?
-            if (IsStandardElement) return standardDofTypes;
-            else
-            {
-                // The dof order in increasing frequency of change is: node, enrichment item, enrichment function, axis.
-                // A similar convention should also hold for each enrichment item: enrichment function major, axis minor.
-                // WARNING: The order here must match the order in JoinStiffnessesStandardFirst().
-                var dofTypes = new List<IDofType>[Nodes.Count];
-
-                // Standard dofs first
-                for (int i = 0; i < Nodes.Count; ++i)
-                {
-                    dofTypes[i] = new List<IDofType>(4); // At least 2 * num std dofs
-                    dofTypes[i].AddRange(standardDofTypes[i]);
-                }
-
-                // Then enriched dofs
-                for (int i = 0; i < Nodes.Count; ++i)
-                {
-                    foreach (IEnrichmentItem enrichment in Nodes[i].EnrichmentItems.Keys)
-                    {
-                        dofTypes[i].AddRange(enrichment.Dofs);
-                    }
-                }
-                return dofTypes;
-            }
-        }
 
         internal (double[] standardElementDisplacements, double[] enrichedElementDisplacements)
             SeparateStdEnrVectorNodeMajor(double[] elementDisplacements)
@@ -644,5 +561,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
             }
             return cachedEvalEnrichments;
         }
+
+        
     }
 }

@@ -102,6 +102,14 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Writers
             writer.WriteLine();
         }
 
+        public void WriteVector2DField<TNode>(string fieldName, IOutputMesh<TNode> mesh, IEnumerable<double[]> vectorsAtVertices)
+        {
+            WriteFieldsHeader(mesh.NumOutVertices);
+            writer.WriteLine($"VECTORS {fieldName} double");
+            foreach (double[] vector in vectorsAtVertices) writer.WriteLine($"{vector[0]} {vector[1]} 0.0");
+            writer.WriteLine();
+        }
+
         public void WriteVector2DField<TNode>(string fieldName, IOutputMesh<TNode> mesh, Func<VtkPoint, double[]> getVectorValue)
         {
             WriteFieldsHeader(mesh.NumOutVertices);

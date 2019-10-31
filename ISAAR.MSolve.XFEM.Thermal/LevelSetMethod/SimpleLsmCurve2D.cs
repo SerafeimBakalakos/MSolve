@@ -125,7 +125,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
         public bool TryConformingTriangulation(IXFiniteElement element, CurveElementIntersection intersection,
             out IReadOnlyList<ElementSubtriangle> subtriangles)
         {
-            if (intersection.RelativePosition != RelativePositionCurveElement.Intersection)
+            if (intersection.RelativePosition == RelativePositionCurveElement.Disjoint)
             {
                 subtriangles = null;
                 return false;
@@ -137,16 +137,22 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
             triangleVertices.UnionWith(element.StandardInterpolation.NodalNaturalCoordinates);
             triangleVertices.UnionWith(intersection.IntersectionPoints);
 
+
+            // Corner case: the element is tangent to the discontinuity. We need to triangulate for plotting the temperature field.
+            //Debug.Assert(intersection.IntersectionPoints.Length == 2);  
+
             // Corner case: the curve intersects the element at 2 opposite nodes. In this case also add the middle of their 
             // segment to force the Delauny algorithm to conform to the segment.
             //TODO: I should use constrained Delauny in all cases and conform to the intersection segment.
-            Debug.Assert(intersection.IntersectionPoints.Length == 2);
-            NaturalPoint p0 = intersection.IntersectionPoints[0];
-            NaturalPoint p1 = intersection.IntersectionPoints[1];
-            if (element.StandardInterpolation.NodalNaturalCoordinates.Contains(p0)
-                && element.StandardInterpolation.NodalNaturalCoordinates.Contains(p1))
+            if (intersection.IntersectionPoints.Length == 2)
             {
-                triangleVertices.Add(new NaturalPoint(05 * (p0.Xi + p1.Xi), 0.5 * (p0.Eta + p1.Eta)));
+                NaturalPoint p0 = intersection.IntersectionPoints[0];
+                NaturalPoint p1 = intersection.IntersectionPoints[1];
+                if (element.StandardInterpolation.NodalNaturalCoordinates.Contains(p0)
+                    && element.StandardInterpolation.NodalNaturalCoordinates.Contains(p1))
+                {
+                    triangleVertices.Add(new NaturalPoint(05 * (p0.Xi + p1.Xi), 0.5 * (p0.Eta + p1.Eta)));
+                }
             }
 
             // Create triangles

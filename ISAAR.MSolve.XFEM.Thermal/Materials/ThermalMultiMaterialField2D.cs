@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Materials
         {
             this.materials = new Dictionary<int, ThermalMaterial>();
             this.materials[0] = materialPositive;
-            this.materials[1] = materialPositive;
+            this.materials[1] = materialNegative;
             this.materialInterface = materialInterface;
         }
 

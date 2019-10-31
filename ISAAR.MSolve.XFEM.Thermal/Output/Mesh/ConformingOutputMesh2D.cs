@@ -12,13 +12,15 @@ using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
 
+//TODO: Needs tidying up.
 namespace ISAAR.MSolve.XFEM.Thermal.Output.Mesh
 {
     public class ConformingOutputMesh2D : IOutputMesh<XNode>
     {
         private readonly List<VtkCell> outCells;
         private readonly List<VtkPoint> outVertices;
-        //private readonly Dictionary<IXFiniteElement, VtkCell> original2OutCells;
+        private readonly Dictionary<IXFiniteElement, HashSet<VtkCell>> original2OutCells;
+        private readonly Dictionary<IXFiniteElement, HashSet<Subtriangle>> originalCells2Subtriangles;
         //private readonly Dictionary<XNode, HashSet<VtkPoint>> original2OutVertices;
 
         public ConformingOutputMesh2D(IReadOnlyList<XNode> originalVertices, IReadOnlyList<IXFiniteElement> originalCells, 
@@ -29,19 +31,22 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Mesh
 
             //this.original2OutVertices = new Dictionary<XNode, HashSet<VtkPoint>>();
             //foreach (XNode vertex in originalVertices) original2OutVertices[vertex] = new HashSet<VtkPoint>();
-            //this.original2OutCells = new Dictionary<IXFiniteElement, VtkCell>();
-
+            this.original2OutCells = new Dictionary<IXFiniteElement, HashSet<VtkCell>>();
+            this.originalCells2Subtriangles = new Dictionary<IXFiniteElement, HashSet<Subtriangle>>();
+            
             int outVertexID = 0;
             for (int c = 0; c < originalCells.Count; ++c)
             {
                 IXFiniteElement originalCell = originalCells[c];
+                original2OutCells[originalCell] = new HashSet<VtkCell>();
 
                 CurveElementIntersection intersection = discontinuity.IntersectElement(originalCell);
-                if (intersection.RelativePosition == RelativePositionCurveElement.Intersection)
+                if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
                 {
                     bool success = discontinuity.TryConformingTriangulation(originalCell, intersection,
                         out IReadOnlyList<ElementSubtriangle> subtriangles);
                     Debug.Assert(success);
+                    originalCells2Subtriangles[originalCell] = new HashSet<Subtriangle>();
                     foreach (ElementSubtriangle triangle in subtriangles)
                     {
                         VtkPoint[] subvertices = triangle.GetVerticesCartesian(originalCell).
@@ -52,7 +57,11 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Mesh
                         //TODO: The resulting triangle is Tri3 only for 1st order elements. Extend this.
                         Debug.Assert(originalCell.StandardInterpolation == FEM.Interpolation.InterpolationQuad4.UniqueInstance
                             || originalCell.StandardInterpolation == FEM.Interpolation.InterpolationTri3.UniqueInstance);
-                        outCells.Add(new VtkCell(CellType.Tri3, subvertices));
+                        var outCell = new VtkCell(CellType.Tri3, subvertices);
+                        outCells.Add(outCell);
+                        original2OutCells[originalCell].Add(outCell);
+
+                        originalCells2Subtriangles[originalCell].Add(new Subtriangle(triangle, subvertices));
                     }
                 }
                 else
@@ -68,7 +77,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Mesh
                     }
                     var outCell = new VtkCell(((IElementType)originalCell).CellType, verticesOfCell);
                     outCells.Add(outCell);
-                    //original2OutCells[originalCell] = outCell;
+                    original2OutCells[originalCell].Add(outCell);
                 }
             }
 
@@ -84,10 +93,31 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Mesh
 
         public IEnumerable<VtkPoint> OutVertices => outVertices;
 
-        //public IEnumerable<VtkCell> GetOutCellsForOriginal(IXFiniteElement originalCell)
-        //    => new VtkCell[] { original2OutCells[originalCell] };
+        public IEnumerable<VtkCell> GetOutCellsForOriginal(IXFiniteElement originalCell)
+            => original2OutCells[originalCell];
 
         //public IEnumerable<VtkPoint> GetOutVerticesForOriginal(XNode originalVertex)
         //    => original2OutVertices[originalVertex];
+
+        public IEnumerable<Subtriangle> GetSubtrianglesForOriginal(IXFiniteElement originalCell)
+            => originalCells2Subtriangles[originalCell];
+
+        //TODO: This is could be derived from VtkCell. Right now there is both a Subtriangle and a VtkCell and they store the 
+        //      same data.
+        public class Subtriangle
+        {
+            public Subtriangle(ElementSubtriangle originalTriangle, IReadOnlyList<VtkPoint> outVertices)
+            {
+                this.OriginalTriangle = originalTriangle;
+                this.OutVertices = outVertices;
+            }
+
+            public ElementSubtriangle OriginalTriangle { get; }
+
+            /// <summary>
+            /// Same order as <see cref="ElementSubtriangle.VerticesNatural"/> of <see cref="OriginalTriangle"/>.
+            /// </summary>
+            public IReadOnlyList<VtkPoint> OutVertices { get; }
+        }
     }
 }

@@ -26,9 +26,15 @@ namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
         //void EnrichElement(XContinuumElement2D element);
 
         IReadOnlyList<CartesianPoint> IntersectionPointsForIntegration(IXFiniteElement element);
+        EvaluatedFunction[] EvaluateAllAt(IXFiniteElement element, double[] shapeFunctionsAtNaturalPoint);
 
         double[] EvaluateFunctionsAt(XNode node);
 
-        EvaluatedFunction[] EvaluateAllAt(IXFiniteElement element, double[] shapeFunctionsAtNaturalPoint);
+        IList<EvaluatedFunction[]> EvaluateAllAtSubtriangleVertices(IXFiniteElement element,
+            IList<double[]> shapeFunctionsAtVertices, double[] shapeFunctionsAtCentroid);
+
+        IList<double[]> EvaluateFunctionsAtSubtriangleVertices(IXFiniteElement element,
+            IList<double[]> shapeFunctionsAtVertices, double[] shapeFunctionsAtCentroid);
+
     }
 }
