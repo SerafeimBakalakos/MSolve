@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.Commons;
+using ISAAR.MSolve.Discretization.Entities;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
@@ -29,8 +30,7 @@ namespace ISAAR.MSolve.IGA.Entities
 
 		//public IList<EmbeddedNode> EmbeddedNodes { get; } = new List<EmbeddedNode>();
 
-		public IList<Cluster> Clusters => ClustersDictionary.Values.ToList();
-		public Dictionary<int, Cluster> ClustersDictionary { get; } = new Dictionary<int, Cluster>();
+		public Dictionary<int, Cluster> Clusters { get; } = new Dictionary<int, Cluster>();
 
         public IDofSerializer DofSerializer => throw new NotImplementedException();
 
@@ -142,7 +142,7 @@ namespace ISAAR.MSolve.IGA.Entities
         public void Clear()
 		{
 			Loads.Clear();
-			ClustersDictionary.Clear();
+			Clusters.Clear();
 			PatchesDictionary.Clear();
 			ElementsDictionary.Clear();
 			ControlPointsDictionary.Clear();

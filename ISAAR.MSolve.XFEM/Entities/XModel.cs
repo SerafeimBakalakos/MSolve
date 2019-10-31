@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.Commons;
+using ISAAR.MSolve.Discretization.Entities;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
@@ -21,6 +22,8 @@ namespace ISAAR.MSolve.XFEM.Entities
     public class XModel : IModel
     {
         public IDomain2DBoundary Boundary { get; set; }
+
+        public Dictionary<int, Cluster> Clusters { get; } = new Dictionary<int, Cluster>();
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();
 

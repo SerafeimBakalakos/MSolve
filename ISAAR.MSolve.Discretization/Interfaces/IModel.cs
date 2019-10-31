@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Commons;
+using ISAAR.MSolve.Discretization.Entities;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.FEM.Interfaces;
@@ -9,6 +10,8 @@ namespace ISAAR.MSolve.Discretization.Interfaces
 {
     public interface IModel
     {
+        Dictionary<int, Cluster> Clusters { get; }
+
         Table<INode, IDofType, double> Constraints { get; }
 
         IDofSerializer DofSerializer { get; }

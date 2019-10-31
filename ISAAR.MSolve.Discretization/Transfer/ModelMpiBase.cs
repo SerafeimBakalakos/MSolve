@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Commons;
+using ISAAR.MSolve.Discretization.Entities;
 using ISAAR.MSolve.Discretization.Exceptions;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
@@ -27,6 +28,8 @@ namespace ISAAR.MSolve.Discretization.Transfer
         {
             this.procs = processDistribution;
         }
+
+        public Dictionary<int, Cluster> Clusters { get; } = new Dictionary<int, Cluster>();
 
         public Table<INode, IDofType, double> Constraints
         {
