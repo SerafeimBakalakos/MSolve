@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Analyzers.Loading;
+using ISAAR.MSolve.Discretization.Entities;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
 using ISAAR.MSolve.Discretization.Transfer;
@@ -69,10 +70,20 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         private static (ProcessDistribution, IModel, FetiDPSolverMpi) CreateModelAndSolver(MatrixFormat format)
         {
             int master = 0;
-            var procs = new ProcessDistribution(Communicator.world, master, new int[] { 0, 1, 2, 3 });
+            int[] processesToClusters = { 0, 1, 2, 3 };
+            int[] processesToSubdomains = { 0, 1, 2, 3 };
+            var procs = new ProcessDistribution(Communicator.world, master, processesToClusters, processesToSubdomains);
 
             // Prepare solver
             var model = new ModelMpi(procs, Example4x4QuadsHomogeneous.CreateModel);
+            if (procs.IsMasterProcess)
+            {
+                for (int s = 0; s < 4; ++s)
+                {
+                    model.Clusters[s] = new Cluster(s);
+                    model.Clusters[s].Subdomains.Add(model.GetSubdomain(s));
+                }
+            }
             model.ConnectDataStructures();
             model.ScatterSubdomains();
             ICornerNodeSelection cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionMpi(procs, model);

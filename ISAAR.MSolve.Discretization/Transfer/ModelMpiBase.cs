@@ -21,6 +21,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
     public abstract class ModelMpiBase<TModel> : IModelMpi
         where TModel : IModel
     {
+        protected readonly Dictionary<int, Cluster> clusters;
         protected readonly ProcessDistribution procs;
         protected TModel model; // This is set in the concrete class's contructor for master and after scattering the subdomains for the other processes.
 
@@ -29,7 +30,14 @@ namespace ISAAR.MSolve.Discretization.Transfer
             this.procs = processDistribution;
         }
 
-        public Dictionary<int, Cluster> Clusters { get; } = new Dictionary<int, Cluster>();
+        public Dictionary<int, Cluster> Clusters
+        {
+            get
+            {
+                procs.CheckProcessIsMaster();
+                return clusters;
+            }
+        }
 
         public Table<INode, IDofType, double> Constraints
         {
@@ -54,6 +62,15 @@ namespace ISAAR.MSolve.Discretization.Transfer
             {
                 procs.CheckProcessIsMaster();
                 return model.MassAccelerationHistoryLoads;
+            }
+        }
+
+        public int NumClusters
+        {
+            get
+            {
+                procs.CheckProcessIsMaster();
+                return clusters.Count;
             }
         }
 
@@ -87,7 +104,11 @@ namespace ISAAR.MSolve.Discretization.Transfer
         public void ApplyLoads()
         {
             //model.ApplyLoads(); //TODO: This does not work in MPI environment.
-            model.GetSubdomain(procs.OwnSubdomainID).Forces.Clear(); // Thus I will have to do the operations here.
+            Cluster cluster = clusters[procs.OwnClusterID];
+            foreach (ISubdomain subdomain in cluster.Subdomains)
+            {
+                model.GetSubdomain(procs.OwnSubdomainID).Forces.Clear(); // Thus I will have to do the operations here.
+            }
         }
 
         public void ApplyMassAccelerationHistoryLoads(int timeStep)
@@ -100,6 +121,11 @@ namespace ISAAR.MSolve.Discretization.Transfer
         {
             if (procs.IsMasterProcess) model.ConnectDataStructures();
             // If it is not master, then just return
+        }
+
+        public IEnumerable<Cluster> EnumerateClusters()
+        {
+            return clusters.Values;
         }
 
         public IEnumerable<IElement> EnumerateElements()
@@ -119,6 +145,12 @@ namespace ISAAR.MSolve.Discretization.Transfer
             return model.EnumerateSubdomains();
         }
 
+        public Cluster GetCluster(int clusterID)
+        {
+            procs.CheckProcessMatchesClusterUnlessMaster(clusterID);
+            return clusters[clusterID];
+        }
+
         public IElement GetElement(int elementID)
         {
             procs.CheckProcessIsMaster();
@@ -131,7 +163,11 @@ namespace ISAAR.MSolve.Discretization.Transfer
             return model.GetNode(nodeID);
         }
 
-        public ISubdomain GetSubdomain(int subdomainID) => model.GetSubdomain(subdomainID);
+        public ISubdomain GetSubdomain(int subdomainID)
+        {
+            procs.CheckProcessMatchesSubdomainUnlessMaster(subdomainID);
+            return model.GetSubdomain(subdomainID);
+        }
 
         public abstract void ScatterSubdomains();
     }

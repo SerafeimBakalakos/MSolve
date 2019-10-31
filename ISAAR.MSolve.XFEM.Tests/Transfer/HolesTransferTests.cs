@@ -25,7 +25,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
             using (new MPI.Environment(ref args))
             {
                 int master = 0;
-                var procs = new ProcessDistribution(Communicator.world, master, Enumerable.Range(0, numProcesses).ToArray());
+                int[] processesToClusters = Enumerable.Range(0, numProcesses).ToArray();
+                int[] processesToSubdomains = Enumerable.Range(0, numProcesses).ToArray();
+                var procs = new ProcessDistribution(Communicator.world, master, processesToClusters, processesToSubdomains);
 
                 // Expected model
                 HolesBenchmark expectedBenchmark = CreateExpectedModel();
@@ -61,7 +63,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
             using (new MPI.Environment(ref args))
             {
                 int master = 0;
-                var procs = new ProcessDistribution(Communicator.world, master, Enumerable.Range(0, numProcesses).ToArray());
+                int[] processesToClusters = Enumerable.Range(0, numProcesses).ToArray();
+                int[] processesToSubdomains = Enumerable.Range(0, numProcesses).ToArray();
+                var procs = new ProcessDistribution(Communicator.world, master, processesToClusters, processesToSubdomains);
 
                 // Expected model
                 XModel expectedModel = CreateExpectedModel().Model;

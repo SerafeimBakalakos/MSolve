@@ -42,8 +42,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
                 int numSubdomainsX = 3 * numSubdomainsY;
 
                 int master = 0;
-                var procs = new ProcessDistribution(Communicator.world, master, 
-                    Enumerable.Range(0, numSubdomainsY * numSubdomainsX).ToArray());
+                int[] processesToClusters = Enumerable.Range(0, numSubdomainsY * numSubdomainsX).ToArray();
+                int[] processesToSubdomains = Enumerable.Range(0, numSubdomainsY * numSubdomainsX).ToArray();
+                var procs = new ProcessDistribution(Communicator.world, master, processesToClusters, processesToSubdomains);
 
                 DcbBenchmarkBelytschkoMpi benchmark = CreateBenchmark(procs, numElementsY, numSubdomainsX, numSubdomainsY,
                     tipEnrichementRadius);
