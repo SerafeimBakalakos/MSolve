@@ -24,9 +24,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
         private readonly IFetiDPSubdomainMatrixManager matrixManager;
         private readonly ISubdomain subdomain;
 
-        private Vector cachedInvKrrTimesBrTimesLambda;
-        private int numTimesCacheIsUsed;
-        private bool cacheCanBeUsed;
+        private Vector cachedInvKrrTimesBrTimesLagranges;
+        private bool cacheCanBeUsed = false;
+        private Vector lagrangesForCache; //TODO: These are only used when testing. 
 
         public FetiDPSubdomainFlexibilityMatrix(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator,
             ILagrangeMultipliersEnumerator lagrangeEnumerator, IFetiDPMatrixManager matrixManager)
@@ -53,43 +53,53 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             return Br.Multiply(temp);
         }
 
-        public Vector MultiplySubdomainFIrcTransposed(Vector vector)
+        public Vector MultiplySubdomainFIrcTransposed(Vector lagranges)
         {
             // FIrc[s]^T * x = sum_over_s( Bc[s]^T * (Krc[s]^T * (inv(Krr[s]) * (Br[s]^T * x))) ) 
             // Summing is delegated to another class.
             // This class performs: fIrc[s]^T * x = Bc[s]^T * (Krc[s]^T * (inv(Krr[s]) * (Br[s]^T * x)))
 
-            SignedBooleanMatrixColMajor Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
             UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
-            Vector temp = Br.Multiply(vector, true);
-            temp = matrixManager.MultiplyInverseKrrTimes(temp);
-            temp = matrixManager.MultiplyKcrTimes(temp);
+            Vector invKrrTimesBrTimesLagranges = CalcInvKrrTimesBrTimesLagranges(lagranges);
+            Vector temp = matrixManager.MultiplyKcrTimes(invKrrTimesBrTimesLagranges);
             return Bc.Multiply(temp, true);
         }
         
-        public Vector MultiplySubdomainFIrr(Vector vector)
+        public Vector MultiplySubdomainFIrr(Vector lagranges)
         {
             // FIrr[s] * x = sum_over_s( Br[s] * (inv(Krr[s]) * (Br[s]^T * x)) ) 
             // Summing is delegated to another class.
             // This class performs: fIrr[s] * x = Br[s] * (inv(Krr[s]) * (Br[s]^T * x))
 
-            //if ((cachedInvKrrTimesBrTimesLambda != null) && (numTimesCacheIsUsed == 1))
-            if (cacheCanBeUsed)
+            SignedBooleanMatrixColMajor Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
+            Vector invKrrTimesBrTimesLagranges = CalcInvKrrTimesBrTimesLagranges(lagranges);
+            return Br.Multiply(invKrrTimesBrTimesLagranges);
+        }
+
+        /// <summary>
+        /// This operation is done twice: once in FIrr * lagranges and once in FIrc^T * lagranges
+        /// </summary>
+        /// <param name="lagranges"></param>
+        private Vector CalcInvKrrTimesBrTimesLagranges(Vector lagranges)
+        {
+            //TODO: I should make sure the vector here is the same as the one used to calculate the cache
+            if (cacheCanBeUsed && (lagranges == lagrangesForCache))
             {
-                SignedBooleanMatrixColMajor Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
-                Vector result = Br.Multiply(cachedInvKrrTimesBrTimesLambda);
-                cacheCanBeUsed = false;
-                return result;
+                Vector invKrrTimesBrTimesLagranges = this.cachedInvKrrTimesBrTimesLagranges;
+                this.cachedInvKrrTimesBrTimesLagranges = null;
+                this.cacheCanBeUsed = false; // The cache must only be reused once. After that a new PCG iteration is processed.
+                this.lagrangesForCache = null;
+                return invKrrTimesBrTimesLagranges;
             }
             else
             {
                 SignedBooleanMatrixColMajor Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
-                Vector temp = Br.Multiply(vector, true);
-                cachedInvKrrTimesBrTimesLambda = matrixManager.MultiplyInverseKrrTimes(temp);
-                cacheCanBeUsed = true;
-                return Br.Multiply(cachedInvKrrTimesBrTimesLambda);
+                Vector temp = Br.Multiply(lagranges, true);
+                this.cachedInvKrrTimesBrTimesLagranges = matrixManager.MultiplyInverseKrrTimes(temp);
+                this.lagrangesForCache = lagranges;
+                this.cacheCanBeUsed = true;
+                return this.cachedInvKrrTimesBrTimesLagranges;
             }
-            
         }
     }
 }

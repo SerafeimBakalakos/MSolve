@@ -15,8 +15,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 
         Vector MultiplySubdomainFIrc(Vector vector);
 
-        Vector MultiplySubdomainFIrcTransposed(Vector vector);
+        Vector MultiplySubdomainFIrcTransposed(Vector lagranges);
 
-        Vector MultiplySubdomainFIrr(Vector vector);
+        Vector MultiplySubdomainFIrr(Vector lagranges);
     }
 }
