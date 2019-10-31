@@ -10,8 +10,6 @@ namespace ISAAR.MSolve.Discretization.Interfaces
 {
     public interface IModel
     {
-        Dictionary<int, Cluster> Clusters { get; }
-
         Table<INode, IDofType, double> Constraints { get; }
 
         IDofSerializer DofSerializer { get; }
