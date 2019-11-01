@@ -9,7 +9,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Augmentation
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 {
     public class AugmentationConstraints : IAugmentationConstraints
     {

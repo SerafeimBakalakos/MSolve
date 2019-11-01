@@ -4,7 +4,7 @@ using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 
 //TODO: Qr matrix should be defined per subdomain. Crucial for MPI
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Augmentation
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 {
     public interface IAugmentationConstraints
     {

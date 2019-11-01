@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Augmentation;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 
 //TODO: The serial/MPI coordinators of regular FETI-DP should be used instead of this. Only the subdomain operations and 
 //      the dimensions are different.
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.FlexibilityMatrix
 {
     public class FetiDP3dFlexibilityMatrixSerial : IFetiDPFlexibilityMatrix
     {
@@ -40,7 +41,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 
         public Vector MultiplyGlobalFIrc(Vector vIn)
         {
-            FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrc3d(vIn, dofSeparator, lagrangesEnumerator, 
+            FetiDP3dFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrc3d(vIn, dofSeparator, lagrangesEnumerator, 
                 augmentationConstraints);
             var vOut = Vector.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers);
             foreach (ISubdomain sub in subdomainFlexibilities.Keys)

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Augmentation
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 {
     public class UsedDefinedMidsideNodes : IMidsideNodesSelection
     {

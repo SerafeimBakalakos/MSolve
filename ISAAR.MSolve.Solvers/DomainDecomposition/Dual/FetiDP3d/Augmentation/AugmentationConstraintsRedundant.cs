@@ -10,7 +10,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 //TODO: This creates larger coarse problems and more MPI communication per PCG iteration. However the PCG iterations are fewer!!!
-namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Augmentation
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 {
     public class AugmentationConstraintsRedundant : IAugmentationConstraints
     {
