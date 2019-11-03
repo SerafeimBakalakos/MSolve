@@ -28,8 +28,10 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Fields
         private readonly XModel model;
         private readonly ILsmCurve2D discontinuity;
         private readonly ConformingOutputMesh2D outMesh;
+        private readonly double zeroLevelSetTolerance;
 
-        public HeatFluxField2D(XModel model, ILsmCurve2D discontinuity, ConformingOutputMesh2D outMesh)
+        public HeatFluxField2D(XModel model, ILsmCurve2D discontinuity, ConformingOutputMesh2D outMesh, 
+            double zeroLevelSetTolerance)
         {
             this.model = model;
             this.discontinuity = discontinuity;
@@ -162,6 +164,13 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Fields
                             ++idx;
                         }
                     }
+                }
+
+                // If the vertex is on the interface, enforce that flux = 0, to avoid artifacts when plotting
+                if (Math.Abs(discontinuity.SignedDistanceOf(element, N)) <= zeroLevelSetTolerance)
+                {
+                    flux[0] = 0.0;
+                    flux[1] = 0.0;
                 }
 
                 fluxAtVertices.Add(new double[]

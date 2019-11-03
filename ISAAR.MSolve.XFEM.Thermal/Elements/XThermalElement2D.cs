@@ -317,7 +317,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
                     Kii.AxpyIntoThis(integratedFunction, enrichment.Discontinuity.Thickness * gaussPoint.Weight);
                 }
             }
-            
+
             return Kii;
         }
 

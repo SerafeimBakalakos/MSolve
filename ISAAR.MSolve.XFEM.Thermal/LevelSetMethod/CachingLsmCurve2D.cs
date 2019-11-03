@@ -12,13 +12,13 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
 {
     public class CachingLsmCurve2D : ILsmCurve2D
     {
-        private readonly SimpleLsmCurve2D lsm;
+        private readonly SimpleLsmClosedCurve2D lsm;
         private readonly Dictionary<IXFiniteElement, CurveElementIntersection> affectedElements;
         private readonly Dictionary<IXFiniteElement, IReadOnlyList<ElementSubtriangle>> triangulatedElements;
 
         public CachingLsmCurve2D(double interfaceThickness = 1.0)
         {
-            this.lsm = new SimpleLsmCurve2D(interfaceThickness);
+            this.lsm = new SimpleLsmClosedCurve2D(interfaceThickness);
             this.affectedElements = new Dictionary<IXFiniteElement, CurveElementIntersection>();
             this.triangulatedElements = new Dictionary<IXFiniteElement, IReadOnlyList<ElementSubtriangle>>();
         }

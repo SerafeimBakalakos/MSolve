@@ -26,24 +26,28 @@ using ISAAR.MSolve.XFEM.Thermal.Output.Writers;
 
 namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 {
-    public static class ThermalInclusionBall2D
+    public static class ThermalInclusionMultipleBalls2D
     {
-        private const string pathHeatFlux = @"C:\Users\Serafeim\Desktop\HEAT\Ball\heat_flux.vtk";
-        private const string pathLevelSets = @"C:\Users\Serafeim\Desktop\HEAT\Ball\level_sets.vtk";
-        private const string pathMesh = @"C:\Users\Serafeim\Desktop\HEAT\Ball\mesh.vtk";
-        private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\Ball\temperature.vtk";
+        private const string pathHeatFlux = @"C:\Users\Serafeim\Desktop\HEAT\MultipleBalls\heat_flux.vtk";
+        private const string pathLevelSets = @"C:\Users\Serafeim\Desktop\HEAT\MultipleBalls\level_sets.vtk";
+        private const string pathMesh = @"C:\Users\Serafeim\Desktop\HEAT\MultipleBalls\mesh.vtk";
+        private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\MultipleBalls\temperature.vtk";
 
-        private const int numElementsX = 20, numElementsY = 20;
+        private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0; 
+        private const int numElementsX = 100, numElementsY = 100;
+        private const int numBallsX = 5, numBallsY = 5;
+        private const double ballRadius = 0.1;
+
         private const double zeroLevelSetTolerance = 1E-6;
         private const int subdomainID = 0;
 
-        private const double conductivityMatrix = 1.0, conductivityInclusion = 1.0;
-        private const double interfaceResistance = 1E10;
+        private const double conductivityMatrix = 1.0, conductivityInclusion = 1;
+        private const double interfaceResistance = 1E30;
 
         public static void PlotLevelSets()
         {
             // Create model and LSM
-            (XModel model, SimpleLsmClosedCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
+            (XModel model, MultiLsmClosedCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
             InitializeLSM(model, interfaceLSM);
 
             // Plot mesh and level sets
@@ -58,7 +62,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         public static void PlotConformingMesh()
         {
             // Create model and LSM
-            (XModel model, SimpleLsmClosedCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
+            (XModel model, MultiLsmClosedCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
             InitializeLSM(model, interfaceLSM);
 
             // Plot conforming mesh and level sets
@@ -80,7 +84,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         public static void PlotTemperature()
         {
             // Create model and LSM
-            (XModel model, SimpleLsmClosedCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
+            (XModel model, MultiLsmClosedCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
             InitializeLSM(model, interfaceLSM);
             ApplyEnrichments(model, interfaceLSM);
 
@@ -114,7 +118,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         public static void PlotTemperatureAndFlux()
         {
             // Create model and LSM
-            (XModel model, SimpleLsmClosedCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
+            (XModel model, MultiLsmClosedCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
             InitializeLSM(model, interfaceLSM);
             ApplyEnrichments(model, interfaceLSM);
 
@@ -147,7 +151,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             }
         }
 
-        private static (XModel, SimpleLsmClosedCurve2D) CreateModel(int numElementsX, int numElementsY)
+        private static (XModel, MultiLsmClosedCurve2D) CreateModel(int numElementsX, int numElementsY)
         {
             var model = new XModel();
             model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
@@ -157,13 +161,13 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             double thickness = 1.0;
             double density = 1.0;
             double specificHeat = 1.0;
-            var interfaceLSM = new SimpleLsmClosedCurve2D(thickness, zeroLevelSetTolerance);
+            var interfaceLSM = new MultiLsmClosedCurve2D(thickness, zeroLevelSetTolerance);
             var materialPos = new ThermalMaterial(density, specificHeat, conductivityMatrix);
             var materialNeg = new ThermalMaterial(density, specificHeat, conductivityInclusion);
             var materialField = new ThermalMultiMaterialField2D(materialPos, materialNeg, interfaceLSM);
 
             // Mesh generation
-            var meshGen = new UniformMeshGenerator2D<XNode>(-1.0, -1.0, 1.0, 1.0, numElementsX, numElementsY);
+            var meshGen = new UniformMeshGenerator2D<XNode>(xMin, yMin, xMax, yMax, numElementsX, numElementsY);
             (IReadOnlyList<XNode> nodes, IReadOnlyList<CellConnectivity<XNode>> cells) =
                 meshGen.CreateMesh((id, x, y, z) => new XNode(id, x, y));
 
@@ -196,7 +200,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             double minX = model.Nodes.Select(n => n.X).Min();
             foreach (var node in model.Nodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
             {
-                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = -100 });
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = -100.0 });
             }
 
             // Right side: T = 100
@@ -205,11 +209,6 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             {
                 node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 100 });
             }
-
-            // Node inside circle
-            XNode internalNode = model.Nodes.Where(n => (Math.Abs(n.X + 0.4) <= meshTol) && (Math.Abs(n.Y) <= meshTol)).First();
-            System.Diagnostics.Debug.Assert(internalNode != null);
-            internalNode.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.1 });
 
             //// Bottom side: T = 100
             //double minY = model.Nodes.Select(n => n.Y).Min();
@@ -226,17 +225,28 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             //}
         }
 
-        private static void ApplyEnrichments(XModel model, SimpleLsmClosedCurve2D interfaceLSM)
+        private static void ApplyEnrichments(XModel model, ILsmCurve2D interfaceLSM)
         {
             var materialInterface = new SingleMaterialInterface(interfaceLSM, model.Elements.Select(e => (XThermalElement2D)e),
                 interfaceResistance);
             materialInterface.ApplyEnrichments();
         }
 
-        private static void InitializeLSM(XModel model, SimpleLsmClosedCurve2D interfaceLSM)
+        private static void InitializeLSM(XModel model, MultiLsmClosedCurve2D interfaceLSM)
         {
-            var initialGeometry = new Circle2D(new CartesianPoint(-0.4, 0.0), 0.5);
-            interfaceLSM.InitializeGeometry(model.Nodes, initialGeometry);
+            var inclusions = new List<Circle2D>();
+            double dx = (xMax - xMin) / (numBallsX + 1);
+            double dy = (yMax - yMin) / (numBallsY + 1);
+            for (int i = 0; i < numBallsX; ++i)
+            {
+                double centreX = xMin + (i + 1) * dx;
+                for (int j = 0; j < numBallsY; ++j)
+                {
+                    double centreY = yMin + (j + 1) * dy;
+                    inclusions.Add(new Circle2D(new CartesianPoint(centreX, centreY), ballRadius));
+                }
+            }
+            interfaceLSM.InitializeGeometry(model.Nodes, inclusions);
         }
     }
 }

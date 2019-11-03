@@ -43,7 +43,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT
             int numElementsX = 3;
             int numElementsY = 1;
 
-            (XModel model, SimpleLsmCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
+            (XModel model, SimpleLsmClosedCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
             ApplyMaterialInterface(model, interfaceLSM);
 
             SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(model);
@@ -63,7 +63,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT
             }
         }
 
-        private static (XModel, SimpleLsmCurve2D) CreateModel(int numElementsX, int numElementsY)
+        private static (XModel, SimpleLsmClosedCurve2D) CreateModel(int numElementsX, int numElementsY)
         {
             var model = new XModel();
             model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
@@ -72,7 +72,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT
             int elementIdStart = model.Elements.Count;
 
             // Materials
-            var interfaceLSM = new SimpleLsmCurve2D(thickness);
+            var interfaceLSM = new SimpleLsmClosedCurve2D(thickness);
             var materialPos = new ThermalMaterial(density, specificHeat, conductivity1);
             var materialNeg = new ThermalMaterial(density, specificHeat, conductivity2);
             var materialField = new ThermalMultiMaterialField2D(materialPos, materialNeg, interfaceLSM);
@@ -122,7 +122,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT
             }
         }
 
-        private static void ApplyMaterialInterface(XModel model, SimpleLsmCurve2D interfaceLSM)
+        private static void ApplyMaterialInterface(XModel model, SimpleLsmClosedCurve2D interfaceLSM)
         {
             // Mesh - geometry interactions
             var initialGeometry = new PolyLine2D(new CartesianPoint(0.0, -1.0), new CartesianPoint(0.0, 1.0));

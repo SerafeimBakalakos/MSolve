@@ -11,10 +11,10 @@ namespace ISAAR.MSolve.XFEM.Thermal.Materials
     public class ThermalMultiMaterialField2D : IThermalMaterialField2D
     {
         private readonly Dictionary<int, ThermalMaterial> materials;
-        private readonly SimpleLsmCurve2D materialInterface;
+        private readonly ILsmCurve2D materialInterface;
 
         public ThermalMultiMaterialField2D(ThermalMaterial materialPositive, ThermalMaterial materialNegative,
-            SimpleLsmCurve2D materialInterface)
+            ILsmCurve2D materialInterface)
         {
             this.materials = new Dictionary<int, ThermalMaterial>();
             this.materials[0] = materialPositive;
@@ -30,6 +30,5 @@ namespace ISAAR.MSolve.XFEM.Thermal.Materials
             if (levelSet >= 0.0) return materials[0];
             else return materials[1];
         }
-
     }
 }

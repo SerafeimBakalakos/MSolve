@@ -14,12 +14,12 @@ using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
 
 namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
 {
-    public class SimpleLsmCurve2D : ILsmCurve2D
+    public class SimpleLsmClosedCurve2D : ILsmCurve2D
     {
         private readonly Dictionary<XNode, double> levelSets;
         private readonly double zeroTolerance;
 
-        public SimpleLsmCurve2D(double interfaceThickness = 1.0, double zeroTolerance = 1E-13)
+        public SimpleLsmClosedCurve2D(double interfaceThickness = 1.0, double zeroTolerance = 1E-13)
         {
             this.levelSets = new Dictionary<XNode, double>();
             this.Thickness = interfaceThickness;
@@ -138,7 +138,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
             triangleVertices.UnionWith(intersection.IntersectionPoints);
 
 
-            // Corner case: the element is tangent to the discontinuity. We need to triangulate for plotting the temperature field.
+            // Corner case: the element is tangent to the discontinuity. We need to triangulate for plotting the temperature field. //TODO: Really?
             //Debug.Assert(intersection.IntersectionPoints.Length == 2);  
 
             // Corner case: the curve intersects the element at 2 opposite nodes. In this case also add the middle of their 

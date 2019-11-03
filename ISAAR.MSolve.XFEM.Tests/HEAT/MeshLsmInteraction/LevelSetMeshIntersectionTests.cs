@@ -29,7 +29,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.MeshLsmInteraction
         {
             IXFiniteElement element = CreateElement(cellType, numNodeOrderRotations);
             var curve = new PolyLine2D(new CartesianPoint(-1.2, 1.0), new CartesianPoint(1.0, 2.0));
-            var lsmCurve = new SimpleLsmCurve2D();
+            var lsmCurve = new SimpleLsmClosedCurve2D();
             lsmCurve.InitializeGeometry(element.Nodes, curve);
 
             CurveElementIntersection intersection = lsmCurve.IntersectElement(element);
@@ -50,7 +50,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.MeshLsmInteraction
         {
             IXFiniteElement element = CreateElement(cellType, numNodeOrderRotations);
             var curve = new PolyLine2D(new CartesianPoint(-1.0, 0.0), new CartesianPoint(0.0, -1.0));
-            var lsmCurve = new SimpleLsmCurve2D();
+            var lsmCurve = new SimpleLsmClosedCurve2D();
             lsmCurve.InitializeGeometry(element.Nodes, curve);
 
             CurveElementIntersection intersection = lsmCurve.IntersectElement(element);
@@ -81,7 +81,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.MeshLsmInteraction
         {
             IXFiniteElement element = CreateElement(cellType, numNodeOrderRotations);
             var curve = new PolyLine2D(new CartesianPoint(-1.0, 0.0), new CartesianPoint(1.0, -1.0));
-            var lsmCurve = new SimpleLsmCurve2D();
+            var lsmCurve = new SimpleLsmClosedCurve2D();
             lsmCurve.InitializeGeometry(element.Nodes, curve);
 
             CurveElementIntersection intersection = lsmCurve.IntersectElement(element);
@@ -109,7 +109,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.MeshLsmInteraction
         {
             IXFiniteElement element = CreateElement(CellType.Quad4, numNodeOrderRotations);
             var curve = new PolyLine2D(new CartesianPoint(-1.0, -1.0), new CartesianPoint(1.0, 1.0));
-            var lsmCurve = new SimpleLsmCurve2D();
+            var lsmCurve = new SimpleLsmClosedCurve2D();
             lsmCurve.InitializeGeometry(element.Nodes, curve);
 
             CurveElementIntersection intersection = lsmCurve.IntersectElement(element);
@@ -140,7 +140,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.MeshLsmInteraction
         {
             IXFiniteElement element = CreateElement(cellType, numNodeOrderRotations);
             var curve = new PolyLine2D(new CartesianPoint(-1.0, -2.0), new CartesianPoint(-1.0, 2.0));
-            var lsmCurve = new SimpleLsmCurve2D();
+            var lsmCurve = new SimpleLsmClosedCurve2D();
             lsmCurve.InitializeGeometry(element.Nodes, curve);
 
             CurveElementIntersection intersection = lsmCurve.IntersectElement(element);
@@ -168,7 +168,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.MeshLsmInteraction
         {
             IXFiniteElement element = CreateElement(cellType, numNodeOrderRotations);
             var curve = new PolyLine2D(new CartesianPoint(-1.0, 1.0), new CartesianPoint(1.0, 2.0));
-            var lsmCurve = new SimpleLsmCurve2D();
+            var lsmCurve = new SimpleLsmClosedCurve2D();
             lsmCurve.InitializeGeometry(element.Nodes, curve);
 
             CurveElementIntersection intersection = lsmCurve.IntersectElement(element);
