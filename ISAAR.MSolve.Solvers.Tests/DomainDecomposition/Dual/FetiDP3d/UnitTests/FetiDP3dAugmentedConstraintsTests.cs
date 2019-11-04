@@ -60,7 +60,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             // Check
             Assert.Equal(numAugmentationConstraints, augmentationConstraints.NumGlobalAugmentationConstraints);
             double tolerance = 1E-13;
-            Assert.True(QrExpected.Equals(augmentationConstraints.MatrixQr, tolerance));
+            Assert.True(QrExpected.Equals(augmentationConstraints.MatrixGlobalQr, tolerance));
         }
     }
 }

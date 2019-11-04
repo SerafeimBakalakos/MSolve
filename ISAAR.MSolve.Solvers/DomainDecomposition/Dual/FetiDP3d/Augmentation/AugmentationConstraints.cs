@@ -13,13 +13,34 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 {
     public class AugmentationConstraints : IAugmentationConstraints
     {
-        public AugmentationConstraints(IMidsideNodesSelection midsideNodesSelection, IDofType[] dofsPerNode,
+        private readonly IDofType[] dofsPerNode;
+        private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
+        private readonly IMidsideNodesSelection midsideNodesSelection;
+        private readonly IModel model;
+
+        public AugmentationConstraints(IModel model, IMidsideNodesSelection midsideNodesSelection, IDofType[] dofsPerNode,
             ILagrangeMultipliersEnumerator lagrangesEnumerator)
         {
-            Table<INode, IDofType, HashSet<int>> augmentationLagranges = 
+            this.model = model;
+            this.midsideNodesSelection = midsideNodesSelection;
+            this.dofsPerNode = dofsPerNode;
+            this.lagrangesEnumerator = lagrangesEnumerator;
+        }
+
+        public Dictionary<ISubdomain, Matrix> MatricesBa { get; } = new Dictionary<ISubdomain, Matrix>();
+
+        public Dictionary<ISubdomain, Matrix> MatricesQ1 { get; } = new Dictionary<ISubdomain, Matrix>();
+
+        public Matrix MatrixGlobalQr { get; private set; }
+
+        public int NumGlobalAugmentationConstraints { get; private set; }
+
+        public void CreateGlobalMatrixQr()
+        {
+            Table<INode, IDofType, HashSet<int>> augmentationLagranges =
                 FindAugmentationLagranges(midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
             NumGlobalAugmentationConstraints = dofsPerNode.Length * midsideNodesSelection.MidsideNodesGlobal.Count;
-            MatrixQr = Matrix.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers, NumGlobalAugmentationConstraints);
+            MatrixGlobalQr = Matrix.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers, NumGlobalAugmentationConstraints);
 
             for (int n = 0; n < midsideNodesSelection.MidsideNodesGlobal.Count; ++n)
             {
@@ -28,15 +49,54 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
                 for (int j = 0; j < dofsPerNode.Length; ++j)
                 {
                     HashSet<int> rowIndices = augmentationLagranges[node, dofsPerNode[j]];
-                    foreach (int i in rowIndices) MatrixQr[i, offset + j] = 1.0;
+                    foreach (int i in rowIndices) MatrixGlobalQr[i, offset + j] = 1.0;
                 }
             }
-            
         }
 
-        public Matrix MatrixQr { get; }
+        //public void CreateSubdomainMappingMatrices()
+        //{
+        //    foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+        //    {
+        //        (Matrix Ba, Matrix Q1) = CreateSubdomainMappingMatrices(subdomain);
+        //        MatricesBa[subdomain] = Ba;
+        //        MatricesQ1[subdomain] = Q1;
+        //    }
+        //}
 
-        public int NumGlobalAugmentationConstraints { get; }
+        private void CreateSubdomainMappingMatrices(Table<INode, IDofType, HashSet<int>> augmentationLagranges)
+        {
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                int numSubdomainAugmentedConstraints = 
+                    midsideNodesSelection.GetMidsideNodesOfSubdomain(subdomain).Count * dofsPerNode.Length;
+                MatricesBa[subdomain] = Matrix.CreateZero(numSubdomainAugmentedConstraints, NumGlobalAugmentationConstraints);
+            }
+
+            int globalOffset = 0;
+            Dictionary<ISubdomain, int> subdomainOffsets = new Dictionary<ISubdomain, int>();
+            for (int n = 0; n < midsideNodesSelection.MidsideNodesGlobal.Count; ++n)
+            {
+                INode node = midsideNodesSelection.MidsideNodesGlobal[n];
+                foreach (IDofType dof in dofsPerNode)
+                {
+                    
+
+
+                    HashSet<int> lagranges = augmentationLagranges[node, dof];
+                    foreach (int i in lagranges)
+                    {
+                        LagrangeMultiplier lagr = lagrangesEnumerator.LagrangeMultipliers[i];
+                        Matrix Ba = MatricesBa[lagr.SubdomainPlus];
+                        Ba[subdomainOffsets[lagr.SubdomainPlus], globalOffset] = 1;
+                    }
+                    ++subdomainOffsets[lagr.SubdomainPlus];
+                    ++globalOffset;
+                }
+                
+            }
+
+        }
 
         //TODO: This would be much faster if I used a Table<INode, IDofType, int> where int is the index of each lagrange 
         //multiplier in a vector with all lagrange multipliers (e.g. the solution of PCG).

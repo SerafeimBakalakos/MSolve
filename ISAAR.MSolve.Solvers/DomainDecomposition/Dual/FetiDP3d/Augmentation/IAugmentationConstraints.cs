@@ -12,7 +12,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
         /// Qr is a (nL x nQ) matrix where nL is the number of global lagrange multipliers and nQ is 
         /// <see cref="NumGlobalAugmentationConstraints"/>.
         /// </summary>
-        Matrix MatrixQr { get; }
+        Matrix MatrixGlobalQr { get; }
 
         /// <summary>
         /// The number of extra constraints for the 3D problem. E.g. in "A scalable dual–primal domain decomposition method, 

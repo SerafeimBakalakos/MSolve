@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             {
                 NumGlobalAugmentationConstraints += val.Count;
             }
-            MatrixQr = Matrix.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers, NumGlobalAugmentationConstraints);
+            MatrixGlobalQr = Matrix.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers, NumGlobalAugmentationConstraints);
 
             int col = 0;
             foreach (INode node in midsideNodesSelection.MidsideNodesGlobal)
@@ -33,14 +33,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
                 {
                     foreach (int idx in augmentationLagranges[node, dof])
                     {
-                        MatrixQr[idx, col] = 1.0;
+                        MatrixGlobalQr[idx, col] = 1.0;
                         ++col;
                     }
                 }
             }
         }
 
-        public Matrix MatrixQr { get; }
+        public Matrix MatrixGlobalQr { get; }
 
         public int NumGlobalAugmentationConstraints { get; }
 
