@@ -15,9 +15,14 @@ namespace ISAAR.MSolve.Solvers.Tests
     {
         public static void Main(string[] args)
         {
+            RunTestsWith4MpiProcesses(args);
+            //RunTestsWith8MpiProcesses(args);
+        }
+
+        private static void RunTestsWith4MpiProcesses(string[] args)
+        {
             var suite = new MpiTestSuite();
 
-            #region 4 MPI processes
             suite.AddFact(FetiDPDofSeparatorMpiTests.TestDofSeparation, typeof(FetiDPDofSeparatorMpiTests).Name, "TestDofSeparation");
             suite.AddFact(FetiDPDofSeparatorMpiTests.TestCornerBooleanMatrices, typeof(FetiDPDofSeparatorMpiTests).Name, "TestCornerBooleanMatrices");
             suite.AddFact(LagrangeMultiplierEnumeratorMpiTests.TestBooleanMappingMatrices, typeof(LagrangeMultiplierEnumeratorMpiTests).Name, "TestBooleanMappingMatrices");
@@ -58,16 +63,20 @@ namespace ISAAR.MSolve.Solvers.Tests
             suite.AddTheory(FetiDPSolverMpiTests.TestSolutionSubdomainDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionSubdomainDisplacements", MatrixFormat.SuiteSparse);
             suite.AddTheory(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionGlobalDisplacements", MatrixFormat.Skyline);
             suite.AddTheory(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionGlobalDisplacements", MatrixFormat.SuiteSparse);
-            #endregion
 
-            #region 8 MPI processes
-            //suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.Dirichlet, Residual.Approximate, 11, MatrixFormat.Skyline);
-            //suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.Dirichlet, Residual.Approximate, 11, MatrixFormat.SuiteSparse);
-            //suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.DirichletDiagonal, Residual.Approximate, 14, MatrixFormat.Skyline);
-            //suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.DirichletDiagonal, Residual.Approximate, 14, MatrixFormat.SuiteSparse);
-            //suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.Lumped, Residual.Approximate, 18, MatrixFormat.Skyline);
-            //suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.Lumped, Residual.Approximate, 18, MatrixFormat.SuiteSparse);
-            #endregion
+            suite.RunTests(args);
+        }
+
+        private static void RunTestsWith8MpiProcesses(string[] args)
+        {
+            var suite = new MpiTestSuite();
+
+            suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.Dirichlet, Residual.Approximate, 11, MatrixFormat.Skyline);
+            suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.Dirichlet, Residual.Approximate, 11, MatrixFormat.SuiteSparse);
+            suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.DirichletDiagonal, Residual.Approximate, 14, MatrixFormat.Skyline);
+            suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.DirichletDiagonal, Residual.Approximate, 14, MatrixFormat.SuiteSparse);
+            suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.Lumped, Residual.Approximate, 18, MatrixFormat.Skyline);
+            suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.Lumped, Residual.Approximate, 18, MatrixFormat.SuiteSparse);
 
             suite.RunTests(args);
         }

@@ -70,91 +70,74 @@ namespace ISAAR.MSolve.XFEM.Entities
                     if (p == procs.MasterProcess) continue;
                     else
                     {
-                        XSubdomain subdomain = model.Subdomains[procs.GetSubdomainIdOfProcess(p)];
-                        if (modifiedSubdomains.Contains(subdomain.ID))
+                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
                         {
-                            XSubdomainDto subdomainDto = XSubdomainDto.Serialize(subdomain, model.DofSerializer);
-                            procs.Communicator.Send<XSubdomainDto>(subdomainDto, p, subdomainDataTag);
+                            if (!modifiedSubdomains.Contains(s)) continue;
+                            XSubdomain subdomain = model.Subdomains[s];
+                            var subdomainDto = XSubdomainDto.Serialize(subdomain, model.DofSerializer);
+                            procs.Communicator.Send<XSubdomainDto>(subdomainDto, p, s);
                         }
                     }
                 }
             }
             else
             {
-                // Receive and deserialize and store the subdomain data in processes, where it is modified.
-                XSubdomain subdomain = model.Subdomains[procs.OwnSubdomainID];
-                if (modifiedSubdomains.Contains(subdomain.ID))
+                // At first, receive all subdomains of each cluster, so that master process can continue to the next cluster.
+                var serializedSubdomains = new Dictionary<int, XSubdomainDto>();
+                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
                 {
+                    if (!modifiedSubdomains.Contains(s)) continue;
+                    serializedSubdomains[s] = procs.Communicator.Receive<XSubdomainDto>(procs.MasterProcess, s);
+                }
+
+                // Receive and deserialize and store the subdomain data in processes, where it is modified.
+                foreach (int s in serializedSubdomains.Keys)
+                {
+                    XSubdomain subdomain = model.Subdomains[s];
                     subdomain.ClearEntities();
-                    XSubdomainDto serializedSubdomain = 
-                        procs.Communicator.Receive<XSubdomainDto>(procs.MasterProcess, subdomainDataTag);
-                    serializedSubdomain.Deserialize(subdomain, model.DofSerializer, elementFactory);
+                    serializedSubdomains[s].Deserialize(subdomain, model.DofSerializer, elementFactory);
                     subdomain.ConnectDataStructures();
                 }
             }
         }
 
-        //public override void ScatterSubdomains()
-        //{
-        //    BroadcastSubdomainsState();
-
-        //    // Serialize the data of each subdomain
-        //    XSubdomainDto[] serializedSubdomains = null;
-        //    if (procs.IsMasterProcess)
-        //    {
-        //        serializedSubdomains = new XSubdomainDto[procs.Communicator.Size];
-
-        //        for (int p = 0; p < procs.Communicator.Size; ++p)
-        //        {
-        //            if (p == procs.MasterProcess) serializedSubdomains[p] = XSubdomainDto.CreateEmpty();
-        //            else
-        //            {
-        //                XSubdomain subdomain = model.Subdomains[procs.GetSubdomainIdOfProcess(p)];
-        //                serializedSubdomains[p] = XSubdomainDto.Serialize(subdomain, DofSerializer);
-        //            }
-        //        }
-        //    }
-
-        //    // Scatter the serialized subdomain data from master process
-        //    XSubdomainDto serializedSubdomain = procs.Communicator.Scatter(serializedSubdomains, procs.MasterProcess);
-
-        //    // Deserialize and store the subdomain data in each process
-        //    if (!procs.IsMasterProcess)
-        //    {
-        //        XSubdomain subdomain = model.Subdomains[procs.OwnSubdomainID];
-        //        serializedSubdomain.Deserialize(subdomain, DofSerializer, elementFactory);
-        //        subdomain.ConnectDataStructures();
-        //    }
-        //}
-
         public void ScatterSubdomainsState()
         {
-            ISubdomain ownSubdomain = GetSubdomain(procs.OwnSubdomainID);
+            ScatterSubdomainsState(sub => sub.ConnectivityModified, (sub, modified) => sub.ConnectivityModified = modified);
+            ScatterSubdomainsState(sub => sub.StiffnessModified, (sub, modified) => sub.StiffnessModified = modified);
+        }
 
-            // Connectivity
+        private void ScatterSubdomainsState(Func<ISubdomain, bool> inquireStateModified, 
+            Action<ISubdomain, bool> setStateModified)
+        {
+            int[] numSubdomainsPerProcess = procs.GetNumSubdomainsPerProcess();
             bool[] areSubdomainsModified = null;
             if (procs.IsMasterProcess)
             {
-                areSubdomainsModified = new bool[procs.Communicator.Size];
+                areSubdomainsModified = new bool[model.NumSubdomains];
+                int offset = 0;
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    XSubdomain subdomain = model.Subdomains[procs.GetSubdomainIdOfProcess(p)];
-                    areSubdomainsModified[ p] = subdomain.ConnectivityModified;
+                    foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                    {
+                        XSubdomain subdomain = model.Subdomains[s];
+                        bool isModified = inquireStateModified(subdomain);
+                        areSubdomainsModified[offset++] = isModified;
+                    }
                 }
             }
-            ownSubdomain.ConnectivityModified = procs.Communicator.Scatter<bool>(areSubdomainsModified, procs.MasterProcess);
-
-            // Stiffness
-            if (procs.IsMasterProcess)
+            bool[] areProcessSubdomainsModified = procs.Communicator.ScatterFromFlattened(
+                areSubdomainsModified, numSubdomainsPerProcess, procs.MasterProcess);
+            if (!procs.IsMasterProcess)
             {
-                areSubdomainsModified = new bool[procs.Communicator.Size];
-                for (int p = 0; p < procs.Communicator.Size; ++p)
+                int subOffset = 0; //TODO: This is quite risky: 2 offsets that are processed independently by different processes
+                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
                 {
-                    XSubdomain subdomain = model.Subdomains[procs.GetSubdomainIdOfProcess(p)];
-                    areSubdomainsModified[p] = subdomain.StiffnessModified;
+                    XSubdomain subdomain = model.Subdomains[s];
+                    bool isModified = areProcessSubdomainsModified[subOffset++];
+                    setStateModified(subdomain, isModified);
                 }
             }
-            ownSubdomain.StiffnessModified = procs.Communicator.Scatter<bool>(areSubdomainsModified, procs.MasterProcess);
         }
     }
 }

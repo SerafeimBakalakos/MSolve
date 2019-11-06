@@ -98,6 +98,13 @@ namespace ISAAR.MSolve.Discretization.Transfer
                 $"Process {OwnRank}: This process does not have access to subdomain {subdomainID}");
         }
 
+        public int[] GetNumSubdomainsPerProcess()
+        {
+            var counts = new int[Communicator.Size];
+            for (int p = 0; p < counts.Length; ++p) counts[p] = processesToSubdomains[p].Length;
+            return counts;
+        }
+
         public int GetProcessOfSubdomain(int subdomainID) => subdomainsToProcesses[subdomainID];
         public int GetSubdomainIdOfProcess(int processRank) => processesToSubdomains[processRank][0];
         public int[] GetSubdomainIdsOfProcess(int processRank) => processesToSubdomains[processRank];
