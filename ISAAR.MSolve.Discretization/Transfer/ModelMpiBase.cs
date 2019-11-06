@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
     public abstract class ModelMpiBase<TModel> : IModelMpi
         where TModel : IModel
     {
-        protected readonly Dictionary<int, Cluster> clusters;
+        protected readonly Dictionary<int, Cluster> clusters = new Dictionary<int, Cluster>();
         protected readonly ProcessDistribution procs;
         protected TModel model; // This is set in the concrete class's contructor for master and after scattering the subdomains for the other processes.
 
@@ -104,7 +104,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
         public void ApplyLoads()
         {
             //model.ApplyLoads(); //TODO: This does not work in MPI environment.
-            Cluster cluster = clusters[procs.OwnClusterID];
+            Cluster cluster = clusters[procs.OwnRank];
             foreach (ISubdomain subdomain in cluster.Subdomains)
             {
                 model.GetSubdomain(procs.OwnSubdomainID).Forces.Clear(); // Thus I will have to do the operations here.
@@ -119,7 +119,16 @@ namespace ISAAR.MSolve.Discretization.Transfer
 
         public void ConnectDataStructures()
         {
-            if (procs.IsMasterProcess) model.ConnectDataStructures();
+            if (procs.IsMasterProcess)
+            {
+                model.ConnectDataStructures();
+                for (int p = 0; p < procs.Communicator.Size; ++p)
+                {
+                    var cluster = new Cluster(p);
+                    foreach (int s in procs.GetSubdomainIdsOfProcess(p)) cluster.Subdomains.Add(model.GetSubdomain(s));
+                    clusters[p] = cluster;
+                }
+            }
             // If it is not master, then just return
         }
 
@@ -169,6 +178,17 @@ namespace ISAAR.MSolve.Discretization.Transfer
             return model.GetSubdomain(subdomainID);
         }
 
-        public abstract void ScatterSubdomains();
+        public void ScatterSubdomains()
+        {
+            ScatterSubdomainData();
+            if (!procs.IsMasterProcess)
+            {
+                var cluster = new Cluster(procs.OwnRank);
+                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank)) cluster.Subdomains.Add(model.GetSubdomain(s));
+                clusters[procs.OwnRank] = cluster;
+            }
+        }
+
+        protected abstract void ScatterSubdomainData();
     }
 }

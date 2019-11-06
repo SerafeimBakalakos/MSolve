@@ -70,20 +70,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         private static (ProcessDistribution, IModel, FetiDPSolverMpi) CreateModelAndSolver(MatrixFormat format)
         {
             int master = 0;
-            int[] processesToClusters = { 0, 1, 2, 3 };
-            int[] processesToSubdomains = { 0, 1, 2, 3 };
-            var procs = new ProcessDistribution(Communicator.world, master, processesToClusters, processesToSubdomains);
+            //int[] processesToClusters = { 0, 1, 2, 3 };
+            int[][] processesToSubdomains = { new int[] { 0 }, new int[] { 1 }, new int[] { 2 }, new int[] { 3 } };
+            var procs = new ProcessDistribution(Communicator.world, master, processesToSubdomains);
 
             // Prepare solver
             var model = new ModelMpi(procs, Example4x4QuadsHomogeneous.CreateModel);
-            if (procs.IsMasterProcess)
-            {
-                for (int s = 0; s < 4; ++s)
-                {
-                    model.Clusters[s] = new Cluster(s);
-                    model.Clusters[s].Subdomains.Add(model.GetSubdomain(s));
-                }
-            }
             model.ConnectDataStructures();
             model.ScatterSubdomains();
             ICornerNodeSelection cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionMpi(procs, model);

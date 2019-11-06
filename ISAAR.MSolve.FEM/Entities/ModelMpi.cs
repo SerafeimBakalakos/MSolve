@@ -13,7 +13,7 @@ namespace ISAAR.MSolve.FEM.Entities
             if (processDistribution.IsMasterProcess) this.model = createModel();
         }
 
-        public override void ScatterSubdomains()
+        protected override void ScatterSubdomainData()
         {
             // Serialize the data of each subdomain
             Subdomain[] originalSubdomains = null;

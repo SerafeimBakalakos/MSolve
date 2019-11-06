@@ -46,7 +46,7 @@ namespace ISAAR.MSolve.XFEM.Entities
             return model.Subdomains[subdomainID];
         }
 
-        public override void ScatterSubdomains()
+        protected override void ScatterSubdomainData()
         {
             HashSet<int> allSubdomainIDs = null;
             if (procs.IsMasterProcess) allSubdomainIDs = new HashSet<int>(model.EnumerateSubdomains().Select(sub => sub.ID));

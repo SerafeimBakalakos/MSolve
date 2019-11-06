@@ -39,9 +39,13 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             MatrixFormat format)
         {
             int master = 0;
-            int[] processesToClusters = { 0, 1, 2, 3, 4, 5, 6, 7 };
-            int[] processesToSubdomains = { 0, 1, 2, 3, 4, 5, 6, 7 };
-            var procs = new ProcessDistribution(Communicator.world, master, processesToClusters, processesToSubdomains);
+            //int[] processesToSubdomains = { 0, 1, 2, 3, 4, 5, 6, 7 };
+            int[][] processesToSubdomains = 
+            {
+                new int[] { 0 }, new int[] { 1 }, new int[] { 2 }, new int[] { 3 },
+                new int[] {4 }, new int[] { 5 }, new int[] { 6 }, new int[] { 7 }
+            };
+            var procs = new ProcessDistribution(Communicator.world, master, processesToSubdomains);
 
             double pcgConvergenceTol = 1E-5;
             IVectorView directDisplacements = null;
@@ -80,14 +84,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         {
             // Model
             var model = new ModelMpi(procs, () => PapagiannakisFetiDPTests2DSerial.CreateModel(stiffnessRatio));
-            if (procs.IsMasterProcess)
-            {
-                for (int s = 0; s < 4; ++s)
-                {
-                    model.Clusters[s] = new Cluster(s);
-                    model.Clusters[s].Subdomains.Add(model.GetSubdomain(s));
-                }
-            }
             model.ConnectDataStructures();
             model.ScatterSubdomains();
 

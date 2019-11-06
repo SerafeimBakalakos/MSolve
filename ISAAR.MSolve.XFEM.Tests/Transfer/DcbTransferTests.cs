@@ -18,9 +18,10 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
             using (new MPI.Environment(ref args))
             {
                 int master = 0;
-                int[] processesToClusters = Enumerable.Range(0, numProcesses).ToArray();
-                int[] processesToSubdomains = Enumerable.Range(0, numProcesses).ToArray();
-                var procs = new ProcessDistribution(Communicator.world, master, processesToClusters, processesToSubdomains);
+                //int[] processesToSubdomains = Enumerable.Range(0, numProcesses).ToArray();
+                int[][] processesToSubdomains = new int[numProcesses][];
+                for (int p = 0; p < numProcesses; ++p) processesToSubdomains[p] = new int[] { p };
+                var procs = new ProcessDistribution(Communicator.world, master, processesToSubdomains);
 
                 // Expected model
                 DcbBenchmarkBelytschko expectedBenchmark = CreateExpectedModel();
@@ -53,9 +54,10 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
             using (new MPI.Environment(ref args))
             {
                 int master = 0;
-                int[] processesToClusters = Enumerable.Range(0, numProcesses).ToArray();
-                int[] processesToSubdomains = Enumerable.Range(0, numProcesses).ToArray();
-                var procs = new ProcessDistribution(Communicator.world, master, processesToClusters, processesToSubdomains);
+                //int[] processesToSubdomains = Enumerable.Range(0, numProcesses).ToArray();
+                int[][] processesToSubdomains = new int[numProcesses][];
+                for (int p = 0; p < numProcesses; ++p) processesToSubdomains[p] = new int[] { p };
+                var procs = new ProcessDistribution(Communicator.world, master, processesToSubdomains);
 
                 // Expected model
                 XModel expectedModel = CreateExpectedModel().Model;

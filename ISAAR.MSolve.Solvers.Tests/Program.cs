@@ -55,13 +55,12 @@ namespace ISAAR.MSolve.Solvers.Tests
             suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalForcesNorm, typeof(FetiDPSubdomainGlobalMappingMpiTests).Name, "TestGlobalForcesNorm");
 
             suite.AddTheory(FetiDPSolverMpiTests.TestSolutionSubdomainDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionSubdomainDisplacements", MatrixFormat.Skyline);
-            //suite.AddTheory(FetiDPSolverMpiTests.TestSolutionSubdomainDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionSubdomainDisplacements", MatrixFormat.SuiteSparse);
+            suite.AddTheory(FetiDPSolverMpiTests.TestSolutionSubdomainDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionSubdomainDisplacements", MatrixFormat.SuiteSparse);
             suite.AddTheory(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionGlobalDisplacements", MatrixFormat.Skyline);
-            //suite.AddTheory(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionGlobalDisplacements", MatrixFormat.SuiteSparse);
+            suite.AddTheory(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionGlobalDisplacements", MatrixFormat.SuiteSparse);
             #endregion
 
             #region 8 MPI processes
-            // Homogeneous problem
             //suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.Dirichlet, Residual.Approximate, 11, MatrixFormat.Skyline);
             //suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.Dirichlet, Residual.Approximate, 11, MatrixFormat.SuiteSparse);
             //suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.DirichletDiagonal, Residual.Approximate, 14, MatrixFormat.Skyline);

@@ -16,31 +16,48 @@ namespace ISAAR.MSolve.Discretization.Transfer
     /// </summary>
     public class ProcessDistribution
     {
-        private readonly int[] processesToClusters;
-        private readonly int[] processesToSubdomains;
+        //private readonly int[] processesToSubdomains;
+        private readonly int[][] processesToSubdomains;
         private readonly Dictionary<int, int> subdomainsToProcesses;
 
-        public ProcessDistribution(Intracommunicator comm, int masterProcess, int[] processRanksToClusterIDs, 
-            int[] processRanksToSubdomainIDs)
+        public ProcessDistribution(Intracommunicator comm, int masterProcess, int[][] processRanksToSubdomainIDs)
         {
             this.Communicator = comm;
             this.IsMasterProcess = comm.Rank == masterProcess;
             this.MasterProcess = masterProcess;
             this.OwnRank = comm.Rank;
-            this.OwnClusterID = processRanksToClusterIDs[OwnRank];
-            this.OwnSubdomainID = processRanksToSubdomainIDs[OwnRank];
 
-            this.processesToClusters = processRanksToClusterIDs;
+            this.OwnSubdomainID = processRanksToSubdomainIDs[OwnRank][0]; //TODO: Remove this
+
             this.processesToSubdomains = processRanksToSubdomainIDs;
             this.subdomainsToProcesses = new Dictionary<int, int>();
-            for (int p = 0; p < comm.Size; ++p) this.subdomainsToProcesses[processRanksToSubdomainIDs[p]] = p;
+            for (int p = 0; p < comm.Size; ++p)
+            {
+                foreach (int s in processRanksToSubdomainIDs[p]) this.subdomainsToProcesses[s] = p;
+            }
         }
+
+
+        //public ProcessDistribution(Intracommunicator comm, int masterProcess, int[] processRanksToClusterIDs, 
+        //    int[] processRanksToSubdomainIDs)
+        //{
+        //    this.Communicator = comm;
+        //    this.IsMasterProcess = comm.Rank == masterProcess;
+        //    this.MasterProcess = masterProcess;
+        //    this.OwnRank = comm.Rank;
+        //    this.OwnClusterID = processRanksToClusterIDs[OwnRank];
+        //    this.OwnSubdomainID = processRanksToSubdomainIDs[OwnRank];
+
+        //    this.processesToClusters = processRanksToClusterIDs;
+        //    this.processesToSubdomains = processRanksToSubdomainIDs;
+        //    this.subdomainsToProcesses = new Dictionary<int, int>();
+        //    for (int p = 0; p < comm.Size; ++p) this.subdomainsToProcesses[processRanksToSubdomainIDs[p]] = p;
+        //}
 
         public Intracommunicator Communicator { get; }
         public bool IsMasterProcess { get; }
         public int MasterProcess { get; }
         public int OwnRank { get; }
-        public int OwnClusterID { get; }
         public int OwnSubdomainID { get; }
 
         [Conditional("DEBUG")]
@@ -53,7 +70,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
         [Conditional("DEBUG")]
         public void CheckProcessMatchesCluster(int clusterID)
         {
-            if (clusterID != OwnClusterID) throw new MpiException(
+            if (clusterID != OwnRank) throw new MpiException(
                 $"Process {OwnRank}: This process does not have access to cluster {clusterID}");
         }
 
@@ -61,7 +78,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
         public void CheckProcessMatchesClusterUnlessMaster(int clusterID)
         {
             if (IsMasterProcess) return;
-            if (clusterID != OwnClusterID) throw new MpiException(
+            if (clusterID != OwnRank) throw new MpiException(
                 $"Process {OwnRank}: This process does not have access to subdomain {clusterID}");
         }
 
@@ -81,8 +98,8 @@ namespace ISAAR.MSolve.Discretization.Transfer
                 $"Process {OwnRank}: This process does not have access to subdomain {subdomainID}");
         }
 
-        public int GetClusterIdOfProcess(int processRank) => processesToClusters[processRank];
         public int GetProcessOfSubdomain(int subdomainID) => subdomainsToProcesses[subdomainID];
-        public int GetSubdomainIdOfProcess(int processRank) => processesToSubdomains[processRank];
+        public int GetSubdomainIdOfProcess(int processRank) => processesToSubdomains[processRank][0];
+        public int[] GetSubdomainIdsOfProcess(int processRank) => processesToSubdomains[processRank];
     }
 }

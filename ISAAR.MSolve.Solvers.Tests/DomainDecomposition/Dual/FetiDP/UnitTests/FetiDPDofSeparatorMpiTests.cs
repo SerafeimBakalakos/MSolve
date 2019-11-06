@@ -64,9 +64,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         internal static (ProcessDistribution, IModel, FetiDPDofSeparatorMpi) CreateModelAndDofSeparator()
         {
             int master = 0;
-            int[] processesToClusters = { 0, 1, 2, 3 };
-            int[] processesToSubdomains = { 0, 1, 2, 3 };
-            var procs = new ProcessDistribution(Communicator.world, master, processesToClusters, processesToSubdomains);
+            //int[] processesToSubdomains = { 0, 1, 2, 3 };
+            int[][] processesToSubdomains = { new int[] { 0 }, new int[] { 1 }, new int[] { 2 }, new int[] { 3 } };
+            var procs = new ProcessDistribution(Communicator.world, master, processesToSubdomains);
             //Console.WriteLine($"(process {procs.OwnRank}) Hello World!"); // Run this to check if MPI works correctly.
 
             // Output
@@ -77,14 +77,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
             // Create the model in master process
             var model = new ModelMpi(procs, Example4x4QuadsHomogeneous.CreateModel);
-            if (procs.IsMasterProcess)
-            {
-                for (int s = 0; s < 4; ++s)
-                {
-                    model.Clusters[s] = new Cluster(s);
-                    model.Clusters[s].Subdomains.Add(model.GetSubdomain(s));
-                }
-            }
             model.ConnectDataStructures();
 
             // Scatter subdomain data to each process
