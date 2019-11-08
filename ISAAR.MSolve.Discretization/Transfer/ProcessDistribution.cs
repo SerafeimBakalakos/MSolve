@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Exceptions;
 using ISAAR.MSolve.Discretization.Interfaces;
@@ -31,8 +32,10 @@ namespace ISAAR.MSolve.Discretization.Transfer
 
             this.processesToSubdomains = processRanksToSubdomainIDs;
             this.subdomainsToProcesses = new Dictionary<int, int>();
+            NumSubdomainsTotal = 0;
             for (int p = 0; p < comm.Size; ++p)
             {
+                NumSubdomainsTotal += processRanksToSubdomainIDs[p].Length;
                 foreach (int s in processRanksToSubdomainIDs[p]) this.subdomainsToProcesses[s] = p;
             }
         }
@@ -57,6 +60,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
         public Intracommunicator Communicator { get; }
         public bool IsMasterProcess { get; }
         public int MasterProcess { get; }
+        public int NumSubdomainsTotal { get; }
         public int OwnRank { get; }
         public int OwnSubdomainID { get; }
 
@@ -86,7 +90,8 @@ namespace ISAAR.MSolve.Discretization.Transfer
         [Conditional("DEBUG")]
         public void CheckProcessMatchesSubdomain(int subdomainID)
         {
-            if (subdomainID != OwnSubdomainID) throw new MpiException(
+            bool isStored = processesToSubdomains[OwnRank].Contains(subdomainID);
+            if (!isStored) throw new MpiException(
                 $"Process {OwnRank}: This process does not have access to subdomain {subdomainID}");
         }
 
@@ -94,7 +99,8 @@ namespace ISAAR.MSolve.Discretization.Transfer
         public void CheckProcessMatchesSubdomainUnlessMaster(int subdomainID)
         {
             if (IsMasterProcess) return;
-            if (subdomainID != OwnSubdomainID) throw new MpiException(
+            bool isStored = processesToSubdomains[OwnRank].Contains(subdomainID);
+            if (!isStored) throw new MpiException(
                 $"Process {OwnRank}: This process does not have access to subdomain {subdomainID}");
         }
 
@@ -107,6 +113,11 @@ namespace ISAAR.MSolve.Discretization.Transfer
 
         public int GetProcessOfSubdomain(int subdomainID) => subdomainsToProcesses[subdomainID];
         public int GetSubdomainIdOfProcess(int processRank) => processesToSubdomains[processRank][0];
+
+        /// <summary>
+        /// The subdomain IDs are in the same order for all processes.
+        /// </summary>
+        /// <param name="processRank"></param>
         public int[] GetSubdomainIdsOfProcess(int processRank) => processesToSubdomains[processRank];
     }
 }
