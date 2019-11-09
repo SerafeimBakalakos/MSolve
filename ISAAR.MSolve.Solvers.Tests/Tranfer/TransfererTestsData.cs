@@ -63,7 +63,7 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
 
             public SampleDto(SampleClass obj)
             {
-                this.data = new int[obj.Data.Length];
+                this.data = new int[obj.Data.Length + 1];
                 this.data[0] = obj.ID;
                 Array.Copy(obj.Data, 0, this.data, 1, obj.Data.Length);
             }

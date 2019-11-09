@@ -55,5 +55,18 @@ namespace ISAAR.MSolve.Discretization.Transfer
             }
             return processData;
         }
+
+        public Dictionary<int, T> ScatterToSomeSubdomains<T>(Dictionary<int, T> allSubdomainsData_master, 
+            ActiveSubdomains activeSubdomains)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Dictionary<int, TRaw> ScatterToSomeSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> allSubdomainsData_master,
+            PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData, 
+            ActiveSubdomains activeSubdomains)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

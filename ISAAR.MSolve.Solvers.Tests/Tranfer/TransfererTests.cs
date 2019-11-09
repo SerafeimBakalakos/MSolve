@@ -30,200 +30,179 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
         public static void RegisterAllTests(MpiTestSuite suite)
         {
             // Tests for: TransfererPerSubdomain
-            suite.AddTheory(TestScatterAllPrimitive, typeof(TransfererTests).Name, "TestScatterAllPrimitive", 
+            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransfererTests).Name, "TestScatterToAllPrimitive",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterAllPrimitive, typeof(TransfererTests).Name, "TestScatterAllPrimitive",
+            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransfererTests).Name, "TestScatterToAllPrimitive",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterAllPrimitive, typeof(TransfererTests).Name, "TestScatterAllPrimitive",
+            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransfererTests).Name, "TestScatterToAllPrimitive",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterAllArray, typeof(TransfererTests).Name, "TestScatterAllArray",
+            suite.AddTheory(TestScatterToAllArray, typeof(TransfererTests).Name, "TestScatterToAllArray",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterAllArray, typeof(TransfererTests).Name, "TestScatterAllArray",
+            suite.AddTheory(TestScatterToAllArray, typeof(TransfererTests).Name, "TestScatterToAllArray",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterAllArray, typeof(TransfererTests).Name, "TestScatterAllArray",
+            suite.AddTheory(TestScatterToAllArray, typeof(TransfererTests).Name, "TestScatterToAllArray",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterAllClass, typeof(TransfererTests).Name, "TestScatterAllClass",
+            suite.AddTheory(TestScatterToAllClass, typeof(TransfererTests).Name, "TestScatterToAllClass",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterAllClass, typeof(TransfererTests).Name, "TestScatterAllClass",
+            suite.AddTheory(TestScatterToAllClass, typeof(TransfererTests).Name, "TestScatterToAllClass",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterAllClass, typeof(TransfererTests).Name, "TestScatterAllClass",
+            suite.AddTheory(TestScatterToAllClass, typeof(TransfererTests).Name, "TestScatterToAllClass",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterAllClassPacked, typeof(TransfererTests).Name, "TestScatterAllClassPacked",
+            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererTests).Name, "TestScatterToAllClassPacked",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterAllClassPacked, typeof(TransfererTests).Name, "TestScatterAllClassPacked",
+            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererTests).Name, "TestScatterToAllClassPacked",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterAllClassPacked, typeof(TransfererTests).Name, "TestScatterAllClassPacked",
+            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererTests).Name, "TestScatterToAllClassPacked",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+
+
+            suite.AddTheory(TestScatterToSomePrimitive, typeof(TransfererTests).Name, "TestScatterToSomePrimitive",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToSomePrimitive, typeof(TransfererTests).Name, "TestScatterToSomePrimitive",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToSomePrimitive, typeof(TransfererTests).Name, "TestScatterToSomePrimitive",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+
+            suite.AddTheory(TestScatterToSomeArray, typeof(TransfererTests).Name, "TestScatterToSomeArray",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToSomeArray, typeof(TransfererTests).Name, "TestScatterToSomeArray",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToSomeArray, typeof(TransfererTests).Name, "TestScatterToSomeArray",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+
+            suite.AddTheory(TestScatterToSomeClass, typeof(TransfererTests).Name, "TestScatterToSomeClass",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToSomeClass, typeof(TransfererTests).Name, "TestScatterToSomeClass",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToSomeClass, typeof(TransfererTests).Name, "TestScatterToSomeClass",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+
+            suite.AddTheory(TestScatterToSomeClassPacked, typeof(TransfererTests).Name, "TestScatterToSomeClassPacked",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToSomeClassPacked, typeof(TransfererTests).Name, "TestScatterToSomeClassPacked",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToSomeClassPacked, typeof(TransfererTests).Name, "TestScatterToSomeClassPacked",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
 
             // Tests for: TransfererAltogetherFlattened
-            suite.AddTheory(TestScatterAllPrimitive, typeof(TransfererTests).Name, "TestScatterAllPrimitive",
+            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransfererTests).Name, "TestScatterToAllPrimitive",
                 TransfererChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterAllPrimitive, typeof(TransfererTests).Name, "TestScatterAllPrimitive",
+            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransfererTests).Name, "TestScatterToAllPrimitive",
                 TransfererChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterAllPrimitive, typeof(TransfererTests).Name, "TestScatterAllPrimitive",
+            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransfererTests).Name, "TestScatterToAllPrimitive",
                 TransfererChoice.AltogetherFlattened, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterAllArray, typeof(TransfererTests).Name, "TestScatterAllArray",
+            suite.AddTheory(TestScatterToAllArray, typeof(TransfererTests).Name, "TestScatterToAllArray",
                 TransfererChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterAllArray, typeof(TransfererTests).Name, "TestScatterAllArray",
+            suite.AddTheory(TestScatterToAllArray, typeof(TransfererTests).Name, "TestScatterToAllArray",
                 TransfererChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterAllArray, typeof(TransfererTests).Name, "TestScatterAllArray",
+            suite.AddTheory(TestScatterToAllArray, typeof(TransfererTests).Name, "TestScatterToAllArray",
                 TransfererChoice.AltogetherFlattened, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterAllClass, typeof(TransfererTests).Name, "TestScatterAllClass",
+            suite.AddTheory(TestScatterToAllClass, typeof(TransfererTests).Name, "TestScatterToAllClass",
                 TransfererChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterAllClass, typeof(TransfererTests).Name, "TestScatterAllClass",
+            suite.AddTheory(TestScatterToAllClass, typeof(TransfererTests).Name, "TestScatterToAllClass",
                 TransfererChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterAllClass, typeof(TransfererTests).Name, "TestScatterAllClass",
+            suite.AddTheory(TestScatterToAllClass, typeof(TransfererTests).Name, "TestScatterToAllClass",
                 TransfererChoice.AltogetherFlattened, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterAllClassPacked, typeof(TransfererTests).Name, "TestScatterAllClassPacked",
+            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererTests).Name, "TestScatterToAllClassPacked",
                 TransfererChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterAllClassPacked, typeof(TransfererTests).Name, "TestScatterAllClassPacked",
+            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererTests).Name, "TestScatterToAllClassPacked",
                 TransfererChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterAllClassPacked, typeof(TransfererTests).Name, "TestScatterAllClassPacked",
+            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererTests).Name, "TestScatterToAllClassPacked",
                 TransfererChoice.AltogetherFlattened, SubdomainDistribution.Variable);
         }
 
-        public static void TestScatterAllArray(TransfererChoice transfererChoice,
+        public static void TestScatterToAllArray(TransfererChoice transfererChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
-            ISubdomainDataTransferer transferer = DetermineTransferer(transfererChoice, procs);
-
-            // Prepare data in master
-            Dictionary<int, double[]> allData_master = null;
-            if (procs.IsMasterProcess)
-            {
-                allData_master = new Dictionary<int, double[]>();
-                for (int p = 0; p < procs.Communicator.Size; ++p)
-                {
-                    foreach (int s in procs.GetSubdomainIdsOfProcess(p))
-                    {
-                        allData_master[s] = GetArrayDataOfSubdomain(s);
-                    }
-                }
-            }
-
-            // Scatter them to other processes
-            Dictionary<int, double[]> processData = transferer.ScatterToAllSubdomains(allData_master);
-
-            // Check the received data in each process other than master
-            if (!procs.IsMasterProcess)
-            {
-                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
-                {
-                    double[] dataExpected = GetArrayDataOfSubdomain(s);
-                    Assert.True(CheckEquality(dataExpected, processData[s]));
-                }
-            }
+            TestScatterTemplate(transfererChoice, subdomainDistribution, true,
+                s => GetArrayDataOfSubdomain(s),
+                (transf, allData, activeSubdomains) => transf.ScatterToAllSubdomains(allData),
+                (s, computed) => Assert.True(CheckEquality(GetArrayDataOfSubdomain(s), computed)));
         }
 
-        public static void TestScatterAllClass(TransfererChoice transfererChoice,
+        public static void TestScatterToAllClass(TransfererChoice transfererChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
-            ISubdomainDataTransferer transferer = DetermineTransferer(transfererChoice, procs);
-
-            // Prepare data in master
-            Dictionary<int, SampleClass> allData_master = null;
-            if (procs.IsMasterProcess)
-            {
-                allData_master = new Dictionary<int, SampleClass>();
-                for (int p = 0; p < procs.Communicator.Size; ++p)
-                {
-                    foreach (int s in procs.GetSubdomainIdsOfProcess(p))
-                    {
-                        allData_master[s] = GetClassDataOfSubdomain(s);
-                    }
-                }
-            }
-
-            // Scatter them to other processes
-            Dictionary<int, SampleClass> processData = transferer.ScatterToAllSubdomains(allData_master);
-
-            // Check the received data in each process other than master
-            if (!procs.IsMasterProcess)
-            {
-                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
-                {
-                    SampleClass dataExpected = GetClassDataOfSubdomain(s);
-                    Assert.True(dataExpected.Equals(processData[s]));
-                }
-            }
+            TestScatterTemplate(transfererChoice, subdomainDistribution, true,
+                s => GetClassDataOfSubdomain(s),
+                (transf, allData, activeSubdomains) => transf.ScatterToAllSubdomains(allData),
+                (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
 
-        public static void TestScatterAllClassPacked(TransfererChoice transfererChoice,
+        public static void TestScatterToAllClassPacked(TransfererChoice transfererChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
-            ISubdomainDataTransferer transferer = DetermineTransferer(transfererChoice, procs);
-
-            // Prepare data in master
-            Dictionary<int, SampleClass> allData_master = null;
-            if (procs.IsMasterProcess)
-            {
-                allData_master = new Dictionary<int, SampleClass>();
-                for (int p = 0; p < procs.Communicator.Size; ++p)
+            TestScatterTemplate(transfererChoice, subdomainDistribution, true,
+                s => GetClassDataOfSubdomain(s),
+                (transf, allData, activeSubdomains) =>
                 {
-                    foreach (int s in procs.GetSubdomainIdsOfProcess(p))
-                    {
-                        allData_master[s] = GetClassDataOfSubdomain(s);
-                    }
-                }
-            }
-
-            // Scatter them to other processes
-            PackSubdomainData<SampleClass, SampleDto> packData = (id, data) => new SampleDto(data);
-            UnpackSubdomainData<SampleClass, SampleDto> unpackData = (id, dto) => dto.Unpack();
-            Dictionary<int, SampleClass> processData = transferer.ScatterToAllSubdomains(allData_master);
-
-            // Check the received data in each process other than master
-            if (!procs.IsMasterProcess)
-            {
-                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
-                {
-                    SampleClass dataExpected = GetClassDataOfSubdomain(s);
-                    Assert.True(dataExpected.Equals(processData[s]));
-                }
-            }
+                    PackSubdomainData<SampleClass, SampleDto> packData = (id, data) => new SampleDto(data);
+                    UnpackSubdomainData<SampleClass, SampleDto> unpackData = (id, dto) => dto.Unpack();
+                    return transf.ScatterToAllSubdomainsPacked(allData, packData, unpackData);
+                },
+                (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
 
-        public static void TestScatterAllPrimitive(TransfererChoice transfererChoice, 
+        public static void TestScatterToAllPrimitive(TransfererChoice transfererChoice, 
             SubdomainDistribution subdomainDistribution)
         {
-            ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
-            ISubdomainDataTransferer transferer = DetermineTransferer(transfererChoice, procs);
+            TestScatterTemplate(transfererChoice, subdomainDistribution, true,
+                s => GetPrimitiveDataOfSubdomain(s),
+                (transf, allData, activeSubdomains) => transf.ScatterToAllSubdomains(allData),
+                (s, computed) => Assert.Equal(GetPrimitiveDataOfSubdomain(s), computed));
+        }
 
-            // Prepare data in master
-            Dictionary<int, long> allData_master = null;
-            if (procs.IsMasterProcess)
-            {
-                allData_master = new Dictionary<int, long>();
-                for (int p = 0; p < procs.Communicator.Size; ++p)
+        public static void TestScatterToSomeArray(TransfererChoice transfererChoice,
+            SubdomainDistribution subdomainDistribution)
+        {
+            TestScatterTemplate(transfererChoice, subdomainDistribution, false,
+                s => GetArrayDataOfSubdomain(s),
+                (transf, allData, activeSubdomains) => transf.ScatterToSomeSubdomains(allData, activeSubdomains),
+                (s, computed) => Assert.True(CheckEquality(GetArrayDataOfSubdomain(s), computed)));
+        }
+
+        public static void TestScatterToSomeClass(TransfererChoice transfererChoice,
+            SubdomainDistribution subdomainDistribution)
+        {
+            TestScatterTemplate(transfererChoice, subdomainDistribution, false,
+                s => GetClassDataOfSubdomain(s),
+                (transf, allData, activeSubdomains) => transf.ScatterToSomeSubdomains(allData, activeSubdomains),
+                (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
+        }
+
+        public static void TestScatterToSomeClassPacked(TransfererChoice transfererChoice,
+            SubdomainDistribution subdomainDistribution)
+        {
+            TestScatterTemplate(transfererChoice, subdomainDistribution, false,
+                s => GetClassDataOfSubdomain(s),
+                (transf, allData, activeSubdomains) =>
                 {
-                    foreach (int s in procs.GetSubdomainIdsOfProcess(p))
-                    {
-                        allData_master[s] = GetPrimitiveDataOfSubdomain(s);
-                    }
-                }
-            }
+                    PackSubdomainData<SampleClass, SampleDto> packData = (id, data) => new SampleDto(data);
+                    UnpackSubdomainData<SampleClass, SampleDto> unpackData = (id, dto) => dto.Unpack();
+                    return transf.ScatterToSomeSubdomainsPacked(allData, packData, unpackData, activeSubdomains);
+                },
+                (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
+        }
 
-            // Scatter them to other processes
-            Dictionary<int, long> processData = transferer.ScatterToAllSubdomains(allData_master);
+        public static void TestScatterToSomePrimitive(TransfererChoice transfererChoice,
+            SubdomainDistribution subdomainDistribution)
+        {
+            TestScatterTemplate(transfererChoice, subdomainDistribution, false,
+                s => GetPrimitiveDataOfSubdomain(s),
+                (transf, allData, activeSubdomains) => transf.ScatterToSomeSubdomains(allData, activeSubdomains),
+                (s, computed) => Assert.Equal(GetPrimitiveDataOfSubdomain(s), computed));
+        }
 
-            // Check the received data in each process other than master
-            if (!procs.IsMasterProcess)
-            {
-                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
-                {
-                    long dataExpected = GetPrimitiveDataOfSubdomain(s);
-                    Assert.Equal(dataExpected, processData[s]);
-                }
-            }
+        private static ActiveSubdomains DetermineActiveSubdomains(ProcessDistribution procs)
+        {
+            // Every third subdomain is active
+            return new ActiveSubdomains(procs, s => (s + 1) % 3 == 0);
         }
 
         private static ProcessDistribution DetermineProcesses(SubdomainDistribution subdomainDistribution)
@@ -254,6 +233,45 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
             if (transfererChoice == TransfererChoice.PerSubdomain) return new TransfererPerSubdomain(procs);
             else if (transfererChoice == TransfererChoice.AltogetherFlattened) return new TransfererAltogetherFlattened(procs);
             else throw new NotImplementedException();
+        }
+
+        private static void TestScatterTemplate<T>(TransfererChoice transfererChoice,
+            SubdomainDistribution subdomainDistribution, bool scatterAll, Func<int, T> createSubdomainData,
+            Func<ISubdomainDataTransferer, Dictionary<int, T>, ActiveSubdomains, Dictionary<int, T>> scatterSubdomainData,
+            Action<int, T> checkReceivedData)
+        {
+            ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
+            ISubdomainDataTransferer transferer = DetermineTransferer(transfererChoice, procs);
+            ActiveSubdomains activeSubdomains = DetermineActiveSubdomains(procs);
+
+            // Prepare data in master
+            Dictionary<int, T> allData_master = null;
+            if (procs.IsMasterProcess)
+            {
+                allData_master = new Dictionary<int, T>();
+                for (int p = 0; p < procs.Communicator.Size; ++p)
+                {
+                    foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                    {
+                        if (scatterAll || activeSubdomains.IsActive(s)) allData_master[s] = createSubdomainData(s);
+                    }
+                }
+            }
+
+            // Scatter them to other processes
+            Dictionary<int, T> processData = scatterSubdomainData(transferer, allData_master, activeSubdomains);
+
+            // Check the received data in each process other than master
+            if (!procs.IsMasterProcess)
+            {
+                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+                {
+                    if (scatterAll || activeSubdomains.IsActive(s))
+                    {
+                        checkReceivedData(s, processData[s]);
+                    }
+                }
+            }
         }
     }
 }
