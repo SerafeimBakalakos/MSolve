@@ -12,11 +12,17 @@ using System.Text;
 //  5) Control serialization/deserialization and combine it with packing/unpacking
 //TODO: If the data is an array of primitives, then serialization/deserialization can be avoided. Perhaps a dedicated class is 
 //      needed for that, or even better dedicated methods in this interface
+//TODO: Perhaps provide overloads that take IEnumerable<ISubdomain> and function pointers for gathering the data before 
+//      transmission and using them after.
 namespace ISAAR.MSolve.Discretization.Transfer
 {
     //TODO: Not sure that the subdomainID is needed
     public delegate TPacked PackSubdomainData<TRaw, TPacked>(int subdomainID, TRaw originalData);
     public delegate TRaw UnpackSubdomainData<TRaw, TPacked>(int subdomainID, TPacked packedData);
+    public delegate int GetArrayLengthOfPackedData<TRaw>(int subdomainID, TRaw originalData);
+    public delegate void PackSubdomainDataIntoArray<TRaw, TPacked>(int subdomainID, TRaw originalData, 
+        TPacked[] packingArray, int offset);
+    public delegate TRaw UnpackSubdomainDataFromArray<TRaw, TPacked>(int subdomainID, TPacked[] packingArray, int offset);
 
     public interface ISubdomainDataTransferer
     {
@@ -35,6 +41,14 @@ namespace ISAAR.MSolve.Discretization.Transfer
 
         /// <summary>
         /// This method returns null in master process. For other processes, it returns a Dictionary with the data for each 
+        /// associated subdomain.
+        /// </summary>
+        Dictionary<int, TRaw> ScatterToAllSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> allSubdomainsData_master,
+            GetArrayLengthOfPackedData<TRaw> getPackedDataLength, PackSubdomainDataIntoArray<TRaw, TPacked> packData,
+            UnpackSubdomainDataFromArray<TRaw, TPacked> unpackData);
+
+        /// <summary>
+        /// This method returns null in master process. For other processes, it returns a Dictionary with the data for each 
         /// associated subdomain or an empty Dictionary if none of that process's subdomains are active.
         /// </summary>
         Dictionary<int, T> ScatterToSomeSubdomains<T>(Dictionary<int, T> allSubdomainsData_master,
@@ -47,5 +61,13 @@ namespace ISAAR.MSolve.Discretization.Transfer
         Dictionary<int, TRaw> ScatterToSomeSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> allSubdomainsData_master, 
             PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData, 
             ActiveSubdomains activeSubdomains);
+
+        /// <summary>
+        /// This method returns null in master process. For other processes, it returns a Dictionary with the data for each 
+        /// associated subdomain or an empty Dictionary if none of that process's subdomains are active.
+        /// </summary>
+        Dictionary<int, TRaw> ScatterToSomeSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> allSubdomainsData_master,
+            GetArrayLengthOfPackedData<TRaw> getPackedDataLength, PackSubdomainDataIntoArray<TRaw, TPacked> packData, 
+            UnpackSubdomainDataFromArray<TRaw, TPacked> unpackData, ActiveSubdomains activeSubdomains);
     }
 }

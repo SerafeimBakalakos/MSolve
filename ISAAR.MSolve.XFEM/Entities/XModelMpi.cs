@@ -110,32 +110,28 @@ namespace ISAAR.MSolve.XFEM.Entities
         private void ScatterSubdomainsState(Func<ISubdomain, bool> inquireStateModified, 
             Action<ISubdomain, bool> setStateModified)
         {
-            int[] numSubdomainsPerProcess = procs.GetNumSubdomainsPerProcess();
-            bool[] areSubdomainsModified = null;
+            // Prepare data in master
+            Dictionary<int, bool> allSubdomainsState_master = null;
             if (procs.IsMasterProcess)
             {
-                areSubdomainsModified = new bool[model.NumSubdomains];
-                int offset = 0;
-                for (int p = 0; p < procs.Communicator.Size; ++p)
+                allSubdomainsState_master = new Dictionary<int, bool>();
+                foreach (XSubdomain subdomain in model.Subdomains.Values)
                 {
-                    foreach (int s in procs.GetSubdomainIdsOfProcess(p))
-                    {
-                        XSubdomain subdomain = model.Subdomains[s];
-                        bool isModified = inquireStateModified(subdomain);
-                        areSubdomainsModified[offset++] = isModified;
-                    }
+                    allSubdomainsState_master[subdomain.ID] = inquireStateModified(subdomain);
                 }
             }
-            bool[] areProcessSubdomainsModified = procs.Communicator.ScatterFromFlattened(
-                areSubdomainsModified, numSubdomainsPerProcess, procs.MasterProcess);
+
+            // Scatter them to all processes
+            var transferer = new TransfererAltogetherFlattened(procs);
+            Dictionary<int, bool> processSubdomainsState = transferer.ScatterToAllSubdomains(allSubdomainsState_master);
+
+            // Update subdomains in other processes
             if (!procs.IsMasterProcess)
             {
-                int subOffset = 0; //TODO: This is quite risky: 2 offsets that are processed independently by different processes
-                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+                foreach (int s in processSubdomainsState.Keys)
                 {
                     XSubdomain subdomain = model.Subdomains[s];
-                    bool isModified = areProcessSubdomainsModified[subOffset++];
-                    setStateModified(subdomain, isModified);
+                    setStateModified(subdomain, processSubdomainsState[s]);
                 }
             }
         }

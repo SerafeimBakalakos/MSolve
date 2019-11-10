@@ -39,7 +39,7 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
         {
             private readonly int id;
             private readonly int[] data;
-
+            
             public SampleClass(int id, int[] data)
             {
                 this.id = id;
@@ -49,10 +49,33 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
             public int ID => id;
             public int[] Data => data;
 
+            public int PackedArrayLength => data.Length + 1;
+
+            public static SampleClass UnpackFromArray(int subdomainID, int[] packingArray, int offset)
+            {
+                int length = 2 * subdomainID + 1; ; // This must match GetClassDataOfSubdomain()
+                var rawData = new int[length];
+                Array.Copy(packingArray, offset + 1, rawData, 0, rawData.Length);
+                return new SampleClass(packingArray[offset], rawData);
+            }
+
             public bool Equals(SampleClass other)
             {
                 if (this.id != other.id) return false;
                 return CheckEquality(this.data, other.data);
+            }
+
+            public void PackIntoArray(int[] packingArray, int offset)
+            {
+                packingArray[offset] = ID;
+                Array.Copy(data, 0, packingArray, offset + 1, data.Length);
+            }
+
+            public override string ToString()
+            {
+                var builder = new StringBuilder($"id = {id}, values =");
+                foreach (int d in data) builder.Append(" " + d);
+                return builder.ToString();
             }
         }
 

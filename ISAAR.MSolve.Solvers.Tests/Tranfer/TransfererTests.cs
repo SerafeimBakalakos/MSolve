@@ -58,6 +58,12 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
             suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererTests).Name, "TestScatterToAllClassPacked",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
 
+            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransfererTests).Name, "TestScatterToAllClassPackedArray",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransfererTests).Name, "TestScatterToAllClassPackedArray",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransfererTests).Name, "TestScatterToAllClassPackedArray",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
 
             suite.AddTheory(TestScatterToSomePrimitive, typeof(TransfererTests).Name, "TestScatterToSomePrimitive",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
@@ -85,6 +91,13 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
             suite.AddTheory(TestScatterToSomeClassPacked, typeof(TransfererTests).Name, "TestScatterToSomeClassPacked",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
             suite.AddTheory(TestScatterToSomeClassPacked, typeof(TransfererTests).Name, "TestScatterToSomeClassPacked",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+
+            suite.AddTheory(TestScatterToSomeClassPackedArray, typeof(TransfererTests).Name, "TestScatterToSomeClassPackedArray",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToSomeClassPackedArray, typeof(TransfererTests).Name, "TestScatterToSomeClassPackedArray",
+                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToSomeClassPackedArray, typeof(TransfererTests).Name, "TestScatterToSomeClassPackedArray",
                 TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
 
             // Tests for: TransfererAltogetherFlattened
@@ -114,6 +127,13 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
             suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererTests).Name, "TestScatterToAllClassPacked",
                 TransfererChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
             suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererTests).Name, "TestScatterToAllClassPacked",
+                TransfererChoice.AltogetherFlattened, SubdomainDistribution.Variable);
+
+            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransfererTests).Name, "TestScatterToAllClassPackedArray",
+                TransfererChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransfererTests).Name, "TestScatterToAllClassPackedArray",
+                TransfererChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransfererTests).Name, "TestScatterToAllClassPackedArray",
                 TransfererChoice.AltogetherFlattened, SubdomainDistribution.Variable);
         }
 
@@ -145,6 +165,23 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
                     PackSubdomainData<SampleClass, SampleDto> packData = (id, data) => new SampleDto(data);
                     UnpackSubdomainData<SampleClass, SampleDto> unpackData = (id, dto) => dto.Unpack();
                     return transf.ScatterToAllSubdomainsPacked(allData, packData, unpackData);
+                },
+                (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
+        }
+
+        public static void TestScatterToAllClassPackedArray(TransfererChoice transfererChoice,
+            SubdomainDistribution subdomainDistribution)
+        {
+            TestScatterTemplate(transfererChoice, subdomainDistribution, true,
+                s => GetClassDataOfSubdomain(s),
+                (transf, allData, activeSubdomains) =>
+                {
+                    GetArrayLengthOfPackedData<SampleClass> getPackedDataLength = (id, data) => data.PackedArrayLength;
+                    PackSubdomainDataIntoArray<SampleClass, int> packData = 
+                        (id, data, packingArray, offset) => data.PackIntoArray(packingArray, offset);
+                    UnpackSubdomainDataFromArray<SampleClass, int> unpackData = 
+                        (id, packingArray, offset) => SampleClass.UnpackFromArray(id, packingArray, offset);
+                    return transf.ScatterToAllSubdomainsPacked(allData, getPackedDataLength, packData, unpackData);
                 },
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
@@ -186,6 +223,24 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
                     PackSubdomainData<SampleClass, SampleDto> packData = (id, data) => new SampleDto(data);
                     UnpackSubdomainData<SampleClass, SampleDto> unpackData = (id, dto) => dto.Unpack();
                     return transf.ScatterToSomeSubdomainsPacked(allData, packData, unpackData, activeSubdomains);
+                },
+                (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
+        }
+
+        public static void TestScatterToSomeClassPackedArray(TransfererChoice transfererChoice,
+            SubdomainDistribution subdomainDistribution)
+        {
+            TestScatterTemplate(transfererChoice, subdomainDistribution, false,
+                s => GetClassDataOfSubdomain(s),
+                (transf, allData, activeSubdomains) =>
+                {
+                    GetArrayLengthOfPackedData<SampleClass> getPackedDataLength = (id, data) => data.PackedArrayLength;
+                    PackSubdomainDataIntoArray<SampleClass, int> packData =
+                        (id, data, packingArray, offset) => data.PackIntoArray(packingArray, offset);
+                    UnpackSubdomainDataFromArray<SampleClass, int> unpackData =
+                        (id, packingArray, offset) => SampleClass.UnpackFromArray(id, packingArray, offset);
+                    return transf.ScatterToSomeSubdomainsPacked(allData, getPackedDataLength, packData, unpackData, 
+                        activeSubdomains);
                 },
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
