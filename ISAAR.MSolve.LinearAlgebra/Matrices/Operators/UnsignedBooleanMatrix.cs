@@ -125,6 +125,21 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             else return MultiplyUntransposed(vector);
         }
 
+        public Matrix MultiplyLeft(IMatrixView other)
+        {
+            //TODO: Properly implement this
+            var dense = Matrix.CreateZero(this.NumRows, this.NumColumns);
+            foreach (KeyValuePair<int, HashSet<int>> wholeRow in data)
+            {
+                int row = wholeRow.Key;
+                foreach (int col in wholeRow.Value)
+                {
+                    dense[row, col] = 1.0;
+                }
+            }
+            return other.MultiplyRight(dense);
+        }
+
         public Matrix MultiplyRight(Matrix other, bool transposeThis = false)
         {
             if (transposeThis) return MultiplyRightTransposed(other);
