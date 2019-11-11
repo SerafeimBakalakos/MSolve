@@ -15,7 +15,7 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices
 {
-    public class FetiDP3dGlobalMatrixManagerDense
+    public class FetiDP3dGlobalMatrixManagerDense : IFetiDP3dGlobalMatrixManager
     {
         private readonly IAugmentationConstraints augmentationConstraints;
         private readonly IFetiDPDofSeparator dofSeparator;
@@ -31,8 +31,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             this.dofSeparator = dofSeparator;
             this.augmentationConstraints = augmentationConstraints;
         }
-
-        public DofPermutation ReorderGlobalCornerDofs() => DofPermutation.CreateNoPermutation();
 
         public void CalcInverseCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection,
             Dictionary<ISubdomain, (IMatrixView KccStar, IMatrixView KacStar, IMatrixView KaaStar)> matrices)
@@ -67,7 +65,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             inverseGlobalKccStarTilde.InvertInPlace();
         }
 
-        public void ClearInverseCoarseProblemMatrixI()
+        public void ClearInverseCoarseProblemMatrix()
         {
             inverseGlobalKccStarTilde = null;
             hasInverseGlobalKccStarTilde = false;
@@ -79,5 +77,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
                 "The inverse of the coarse problem matrix must be calculated first.");
             return inverseGlobalKccStarTilde * vector;
         }
+
+        public DofPermutation ReorderCoarseProblemDofs() => DofPermutation.CreateNoPermutation();
     }
 }
