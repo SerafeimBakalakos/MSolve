@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 
 //TODO: Qr matrix should be defined per subdomain. Crucial for MPI
@@ -9,7 +10,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
     public interface IAugmentationConstraints
     {
         /// <summary>
-        /// Qr is a (nL x nQ) matrix where nL is the number of global lagrange multipliers and nQ is 
+        /// Qr is a (nL x na) matrix where nL is the number of global lagrange multipliers and na is 
         /// <see cref="NumGlobalAugmentationConstraints"/>.
         /// </summary>
         Matrix MatrixGlobalQr { get; }
@@ -20,5 +21,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
         /// subdomains.
         /// </summary>
         int NumGlobalAugmentationConstraints { get; }
+
+        void CalcAugmentationMappingMatrices();
+
+        Matrix GetMatrixBa(ISubdomain subdomain);
+        Matrix GetMatrixQ1(ISubdomain subdomain);
     }
 }

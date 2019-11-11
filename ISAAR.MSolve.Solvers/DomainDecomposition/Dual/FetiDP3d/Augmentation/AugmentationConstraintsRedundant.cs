@@ -14,11 +14,27 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 {
     public class AugmentationConstraintsRedundant : IAugmentationConstraints
     {
-        public AugmentationConstraintsRedundant(IMidsideNodesSelection midsideNodesSelection, IDofType[] dofsPerNode,
-            ILagrangeMultipliersEnumerator lagrangesEnumerator)
+        private readonly IDofType[] dofsPerNode;
+        private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
+        private readonly IMidsideNodesSelection midsideNodesSelection;
+        private readonly IModel model;
+
+        public AugmentationConstraintsRedundant(IModel model, IMidsideNodesSelection midsideNodesSelection,
+            IDofType[] dofsPerNode, ILagrangeMultipliersEnumerator lagrangesEnumerator)
         {
-            Table<INode, IDofType, HashSet<int>> augmentationLagranges =
-                FindAugmentationLagranges(midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
+            this.model = model;
+            this.midsideNodesSelection = midsideNodesSelection;
+            this.dofsPerNode = dofsPerNode;
+            this.lagrangesEnumerator = lagrangesEnumerator;
+        }
+
+        public Matrix MatrixGlobalQr { get; private set; }
+
+        public int NumGlobalAugmentationConstraints { get; private set; }
+
+        public void CalcAugmentationMappingMatrices()
+        {
+            Table<INode, IDofType, HashSet<int>> augmentationLagranges = FindAugmentationLagranges();
             NumGlobalAugmentationConstraints = 0;
             foreach ((INode node, IDofType dof, HashSet<int> val) in augmentationLagranges)
             {
@@ -40,13 +56,17 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             }
         }
 
-        public Matrix MatrixGlobalQr { get; }
+        public Matrix GetMatrixBa(ISubdomain subdomain)
+        {
+            throw new NotImplementedException();
+        }
 
-        public int NumGlobalAugmentationConstraints { get; }
+        public Matrix GetMatrixQ1(ISubdomain subdomain)
+        {
+            throw new NotImplementedException();
+        }
 
-        private static Table<INode, IDofType, HashSet<int>> FindAugmentationLagranges(
-            IMidsideNodesSelection midsideNodesSelection, IEnumerable<IDofType> dofsPerNode,
-            ILagrangeMultipliersEnumerator lagrangesEnumerator)
+        private Table<INode, IDofType, HashSet<int>> FindAugmentationLagranges()
         {
             var augmentationLagranges = new Table<INode, IDofType, HashSet<int>>();
             foreach (INode node in midsideNodesSelection.MidsideNodesGlobal)

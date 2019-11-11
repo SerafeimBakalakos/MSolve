@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
@@ -18,6 +17,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
         private readonly IMidsideNodesSelection midsideNodesSelection;
         private readonly IModel model;
 
+        private Dictionary<ISubdomain, Matrix> matricesBa = new Dictionary<ISubdomain, Matrix>();
+        private Dictionary<ISubdomain, Matrix> matricesQ1 = new Dictionary<ISubdomain, Matrix>();
+
         public AugmentationConstraints(IModel model, IMidsideNodesSelection midsideNodesSelection, IDofType[] dofsPerNode,
             ILagrangeMultipliersEnumerator lagrangesEnumerator)
         {
@@ -27,100 +29,72 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             this.lagrangesEnumerator = lagrangesEnumerator;
         }
 
-        public Dictionary<ISubdomain, Matrix> MatricesBa { get; } = new Dictionary<ISubdomain, Matrix>();
-
-        public Dictionary<ISubdomain, Matrix> MatricesQ1 { get; } = new Dictionary<ISubdomain, Matrix>();
-
         public Matrix MatrixGlobalQr { get; private set; }
 
         public int NumGlobalAugmentationConstraints { get; private set; }
 
-        public void CreateGlobalMatrixQr()
+        public void CalcAugmentationMappingMatrices()
         {
-            Table<INode, IDofType, HashSet<int>> augmentationLagranges =
-                FindAugmentationLagranges(midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
+            DofTable augmentedOrdering = OrderAugmentationConstraints();
+            CalcGlobalMatrixQr(augmentedOrdering);
+            CalcMatricesBa(augmentedOrdering);
+            CalcMatricesQ1();
+        }
+
+        public Matrix GetMatrixBa(ISubdomain subdomain) => matricesBa[subdomain];
+
+        public Matrix GetMatrixQ1(ISubdomain subdomain) => matricesQ1[subdomain];
+
+        private void CalcGlobalMatrixQr(DofTable augmentedOrdering)
+        {
             NumGlobalAugmentationConstraints = dofsPerNode.Length * midsideNodesSelection.MidsideNodesGlobal.Count;
             MatrixGlobalQr = Matrix.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers, NumGlobalAugmentationConstraints);
-
-            for (int n = 0; n < midsideNodesSelection.MidsideNodesGlobal.Count; ++n)
-            {
-                INode node = midsideNodesSelection.MidsideNodesGlobal[n];
-                int offset = n * dofsPerNode.Length;
-                for (int j = 0; j < dofsPerNode.Length; ++j)
-                {
-                    HashSet<int> rowIndices = augmentationLagranges[node, dofsPerNode[j]];
-                    foreach (int i in rowIndices) MatrixGlobalQr[i, offset + j] = 1.0;
-                }
-            }
-        }
-
-        //public void CreateSubdomainMappingMatrices()
-        //{
-        //    foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-        //    {
-        //        (Matrix Ba, Matrix Q1) = CreateSubdomainMappingMatrices(subdomain);
-        //        MatricesBa[subdomain] = Ba;
-        //        MatricesQ1[subdomain] = Q1;
-        //    }
-        //}
-
-        private void CreateSubdomainMappingMatrices(Table<INode, IDofType, HashSet<int>> augmentationLagranges)
-        {
-            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-            {
-                int numSubdomainAugmentedConstraints = 
-                    midsideNodesSelection.GetMidsideNodesOfSubdomain(subdomain).Count * dofsPerNode.Length;
-                MatricesBa[subdomain] = Matrix.CreateZero(numSubdomainAugmentedConstraints, NumGlobalAugmentationConstraints);
-            }
-
-            int globalOffset = 0;
-            Dictionary<ISubdomain, int> subdomainOffsets = new Dictionary<ISubdomain, int>();
-            for (int n = 0; n < midsideNodesSelection.MidsideNodesGlobal.Count; ++n)
-            {
-                INode node = midsideNodesSelection.MidsideNodesGlobal[n];
-                foreach (IDofType dof in dofsPerNode)
-                {
-                    
-
-
-                    HashSet<int> lagranges = augmentationLagranges[node, dof];
-                    foreach (int i in lagranges)
-                    {
-                        LagrangeMultiplier lagr = lagrangesEnumerator.LagrangeMultipliers[i];
-                        Matrix Ba = MatricesBa[lagr.SubdomainPlus];
-                        Ba[subdomainOffsets[lagr.SubdomainPlus], globalOffset] = 1;
-                    }
-                    ++subdomainOffsets[lagr.SubdomainPlus];
-                    ++globalOffset;
-                }
-                
-            }
-
-        }
-
-        //TODO: This would be much faster if I used a Table<INode, IDofType, int> where int is the index of each lagrange 
-        //multiplier in a vector with all lagrange multipliers (e.g. the solution of PCG).
-        private static Table<INode, IDofType, HashSet<int>> FindAugmentationLagranges(
-            IMidsideNodesSelection midsideNodesSelection, IEnumerable<IDofType> dofsPerNode, 
-            ILagrangeMultipliersEnumerator lagrangesEnumerator)
-        {
-            var augmentationLagranges = new Table<INode, IDofType, HashSet<int>>();
-            foreach (INode node in midsideNodesSelection.MidsideNodesGlobal)
-            {
-                foreach (IDofType dof in dofsPerNode) augmentationLagranges[node, dof] = new HashSet<int>();
-            }
-
-            var midsideNodes = new HashSet<INode>(midsideNodesSelection.MidsideNodesGlobal); // for faster look-ups. TODO: Use the table for look-ups
             for (int i = 0; i < lagrangesEnumerator.NumLagrangeMultipliers; ++i)
             {
                 LagrangeMultiplier lagr = lagrangesEnumerator.LagrangeMultipliers[i];
-                if (midsideNodes.Contains(lagr.Node))
-                {
-                    Debug.Assert(dofsPerNode.Contains(lagr.DofType));
-                    augmentationLagranges[lagr.Node, lagr.DofType].Add(i);
-                }
+                bool isMidside = augmentedOrdering.TryGetValue(lagr.Node, lagr.DofType, out int augmentedIdx);
+                if (isMidside) MatrixGlobalQr[i, augmentedIdx] = 1;
             }
-            return augmentationLagranges;
+        }
+
+        private void CalcMatricesBa(DofTable augmentedOrdering)
+        {
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                HashSet<INode> midsideNodes = midsideNodesSelection.GetMidsideNodesOfSubdomain(subdomain);
+                int numSubdomainAugmentedConstraints = midsideNodes.Count * dofsPerNode.Length;
+                var Ba = Matrix.CreateZero(numSubdomainAugmentedConstraints, NumGlobalAugmentationConstraints);
+                int subdomainIdx = 0;
+                foreach (INode node in midsideNodes)
+                {
+                    foreach (IDofType dof in dofsPerNode)
+                    {
+                        int globalIdx = augmentedOrdering[node, dof];
+                        Ba[subdomainIdx, globalIdx] = 1;
+                        ++subdomainIdx;
+                    }
+                }
+                matricesBa[subdomain] = Ba;
+            }
+        }
+
+        private void CalcMatricesQ1()
+        {
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                matricesQ1[subdomain] =  matricesBa[subdomain].MultiplyLeft(MatrixGlobalQr, true, false);
+            }
+        }
+
+        private DofTable OrderAugmentationConstraints()
+        {
+            var ordering = new DofTable();
+            int idx = 0;
+            foreach (INode node in midsideNodesSelection.MidsideNodesGlobal)
+            {
+                foreach (IDofType dof in dofsPerNode) ordering[node, dof] = idx++;
+            }
+            return ordering;
         }
     }
 }

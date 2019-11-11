@@ -44,14 +44,16 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             if (constraints == ConstraintsSelection.Simple)
             {
                 augmentationConstraints =
-                    new AugmentationConstraints(midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
+                    new AugmentationConstraints(model, midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
+                augmentationConstraints.CalcAugmentationMappingMatrices();
                 numAugmentationConstraints = ExpectedConnectivityData.NumGlobalAugmentationConstraintsCase2;
                 FIrcTildeExpected = ExpectedGlobalMatrices.MatrixFIrcTilde;
             }
             else
             {
                 augmentationConstraints =
-                    new AugmentationConstraintsRedundant(midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
+                    new AugmentationConstraintsRedundant(model, midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
+                augmentationConstraints.CalcAugmentationMappingMatrices();
                 numAugmentationConstraints = ExpectedConnectivityData.NumGlobalAugmentationConstraintsCase1;
                 FIrcTildeExpected = ExpectedGlobalMatrices.MatrixFIrcTildeRedundant;
             }
