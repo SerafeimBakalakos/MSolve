@@ -13,6 +13,8 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 //TODO: This should not exist. Its code should be defined in FetiDPFlexibilityMatrixBase. It is not like other CPW Part classes
 //      which actually stored state.
 //TODO: Instead of extracting subvectors, implement multiplications that operate on subvectors
+//TODO: Perhaps Qr should not exist in all processes. In this case R1[s] should be used, which was already calculated during the 
+//      coarse problem matrix assembly.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.FlexibilityMatrix
 {
     public class FetiDP3dSubdomainFlexibilityMatrix
