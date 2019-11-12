@@ -38,7 +38,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         private const int subdomainID = 0;
 
         private const double conductivityMatrix = 1.0, conductivityInclusion = 1.0;
-        private const double interfaceResistance = 1E10;
+        private const double interfaceResistance = 1E1;
 
         public static void PlotLevelSets()
         {
@@ -207,9 +207,9 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             }
 
             // Node inside circle
-            XNode internalNode = model.Nodes.Where(n => (Math.Abs(n.X + 0.4) <= meshTol) && (Math.Abs(n.Y) <= meshTol)).First();
-            System.Diagnostics.Debug.Assert(internalNode != null);
-            internalNode.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.1 });
+            //XNode internalNode = model.Nodes.Where(n => (Math.Abs(n.X + 0.4) <= meshTol) && (Math.Abs(n.Y) <= meshTol)).First();
+            //System.Diagnostics.Debug.Assert(internalNode != null);
+            //internalNode.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.1 });
 
             //// Bottom side: T = 100
             //double minY = model.Nodes.Select(n => n.Y).Min();

@@ -311,8 +311,8 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
                 if (gaussPoints.Length == 0) return Kii; // The element is not intersected by the discontinuity
                 foreach (GaussPoint gaussPoint in gaussPoints)
                 {
-                    // Kee = sum(1/a * N^T * N)
-                    Vector N = Vector.CreateFromArray(StandardInterpolation.EvaluateFunctionsAt(gaussPoint));
+                    // Kii = sum(1/a * N^T * N)
+                    Vector N = CalculateEnrichedShapeFunctionVector(numEnrichedDofs, gaussPoint, enrichment);
                     Matrix integratedFunction = N.TensorProduct(N.Scale(1.0 / enrichment.InterfaceResistance));
                     Kii.AxpyIntoThis(integratedFunction, enrichment.Discontinuity.Thickness * gaussPoint.Weight);
                 }
@@ -477,13 +477,13 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
             return (standardElementDisplacements, enrichedElementDisplacements);
         }
 
-        private Matrix CalculateEnrichedDeformationMatrix(int artificialDofsCount,
+        private Matrix CalculateEnrichedDeformationMatrix(int numEnrichedDofs,
             NaturalPoint gaussPoint, EvalInterpolation2D evaluatedInterpolation)
         {
             //CartesianPoint cartesianPoint = evaluatedInterpolation.TransformPointNaturalToGlobalCartesian(gaussPoint);
             var uniqueEnrichments = new Dictionary<IEnrichmentItem, EvaluatedFunction[]>();
 
-            var deformationMatrix = Matrix.CreateZero(2, artificialDofsCount);
+            var deformationMatrix = Matrix.CreateZero(2, numEnrichedDofs);
             int currentColumn = 0;
             for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
             {
@@ -522,8 +522,27 @@ namespace ISAAR.MSolve.XFEM.Thermal.Elements
                     }
                 }
             }
-            Debug.Assert(currentColumn == artificialDofsCount);
+            Debug.Assert(currentColumn == numEnrichedDofs);
             return deformationMatrix;
+        }
+
+        private Vector CalculateEnrichedShapeFunctionVector(int numEnrichedDofs, NaturalPoint gaussPoint, 
+            IEnrichmentItem enrichment)
+        {
+            //TODO: Optimize this: The mapping should be done once per enrichment and the evaluation of N once per Gauss point
+            Vector result = Vector.CreateZero(numEnrichedDofs);
+            double[] N = StandardInterpolation.EvaluateFunctionsAt(gaussPoint);
+            int idx = 0;
+            for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
+            {
+                foreach (var e in Nodes[nodeIdx].EnrichmentItems)
+                {
+                    IEnrichmentItem enrichmentItem = e.Key;
+                    if (enrichmentItem == enrichment) result[idx] = N[nodeIdx];
+                    ++idx;
+                }
+            }
+            return result;
         }
 
         /// <summary>

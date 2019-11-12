@@ -42,7 +42,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         private const int subdomainID = 0;
 
         private const double conductivityMatrix = 1.0, conductivityInclusion = 1;
-        private const double interfaceResistance = 1E30;
+        private const double interfaceResistance = 1E-10;
 
         public static void PlotLevelSets()
         {

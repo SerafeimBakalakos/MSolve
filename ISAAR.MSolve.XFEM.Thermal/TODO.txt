@@ -1,0 +1,14 @@
+﻿1) XFEM 2D multiple inclusions interacting with the same element
+	- [DONE] The interface integral must be updated: 
+		- Each interface only affects some enrichment node. 
+		- Kii(e) = 1/a(e) * N(e)^T*N(e) must have rows/cols that match the enriched dofs for the enrichment corresponding to a(e).
+		- Therefore N(e) must be limited to the shape functions of nodes enriched with the enrichment e
+		- Then Kii(e) must be assembled into Kii, which has all the enriched dofs as its dimensions.
+		- Another option is to use the full N as N(e), but to set as zero the shape functions of zero nodes
+	- The usual stiffness matrices Kee, Kes are probably ok, since this mapping is handled by the deformation matrices
+	- The method that calculates element-curve intersection should take as parameter, which curve (or enrichement item) this 
+	corresponds to. 
+		- Not
+2) XFEM 2D multiple circular inclusions which intersect each other
+3) Resolve singularities using gauss points instead of relative area
+4) Near-band level sets

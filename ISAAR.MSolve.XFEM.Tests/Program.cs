@@ -16,8 +16,8 @@ namespace ISAAR.MSolve.XFEM.Tests
 
             //ThermalInclusionMultipleBalls2D.PlotLevelSets();
             //ThermalInclusionMultipleBalls2D.PlotConformingMesh();
-            ThermalInclusionMultipleBalls2D.PlotTemperature();
-            //ThermalInclusionMultipleBalls2D.PlotTemperatureAndFlux();
+            //ThermalInclusionMultipleBalls2D.PlotTemperature();
+            ThermalInclusionMultipleBalls2D.PlotTemperatureAndFlux();
         }
     }
 }
