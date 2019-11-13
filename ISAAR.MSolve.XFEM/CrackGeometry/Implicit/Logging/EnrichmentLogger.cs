@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ISAAR.MSolve.Geometry.Coordinates;
+using ISAAR.MSolve.Logging.VTK;
 using ISAAR.MSolve.XFEM.Entities;
 using ISAAR.MSolve.XFEM.Output.VTK;
 

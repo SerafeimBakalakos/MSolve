@@ -20,6 +20,7 @@ using ISAAR.MSolve.XFEM.Thermal.Integration;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
 using ISAAR.MSolve.XFEM.Thermal.MaterialInterface;
 using ISAAR.MSolve.XFEM.Thermal.Materials;
+using ISAAR.MSolve.XFEM.Thermal.Output.Enrichments;
 using ISAAR.MSolve.XFEM.Thermal.Output.Fields;
 using ISAAR.MSolve.XFEM.Thermal.Output.Mesh;
 using ISAAR.MSolve.XFEM.Thermal.Output.Writers;
@@ -28,6 +29,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 {
     public static class ThermalInclusionBall2D
     {
+        private const string directoryEnrichments = @"C:\Users\Serafeim\Desktop\HEAT\Ball";
         private const string pathHeatFlux = @"C:\Users\Serafeim\Desktop\HEAT\Ball\heat_flux.vtk";
         private const string pathLevelSets = @"C:\Users\Serafeim\Desktop\HEAT\Ball\level_sets.vtk";
         private const string pathMesh = @"C:\Users\Serafeim\Desktop\HEAT\Ball\mesh.vtk";
@@ -46,6 +48,10 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             (XModel model, SimpleLsmClosedCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
             InitializeLSM(model, interfaceLSM);
 
+            // Plot enrichments
+            var enrichmentPlotter = new EnrichmentPlotter(model, interfaceLSM, directoryEnrichments);
+            enrichmentPlotter.PlotEnrichedNodes();
+
             // Plot mesh and level sets
             using (var writer = new VtkFileWriter(pathLevelSets))
             {
@@ -60,6 +66,10 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             // Create model and LSM
             (XModel model, SimpleLsmClosedCurve2D interfaceLSM) = CreateModel(numElementsX, numElementsY);
             InitializeLSM(model, interfaceLSM);
+
+            // Plot enrichments
+            var enrichmentPlotter = new EnrichmentPlotter(model, interfaceLSM, directoryEnrichments);
+            enrichmentPlotter.PlotEnrichedNodes();
 
             // Plot conforming mesh and level sets
             using (var writer = new VtkFileWriter(pathMesh))
@@ -100,6 +110,10 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
                 writer.WriteScalarField("inclusion_level_set", levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
             }
 
+            // Plot enrichments
+            var enrichmentPlotter = new EnrichmentPlotter(model, interfaceLSM, directoryEnrichments);
+            enrichmentPlotter.PlotEnrichedNodes();
+
             // Plot conforming mesh and temperature field
             using (var writer = new VtkFileWriter(pathTemperature))
             {
@@ -133,6 +147,10 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
                 writer.WriteMesh(levelSetField.Mesh);
                 writer.WriteScalarField("inclusion_level_set", levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
             }
+
+            // Plot enrichments
+            var enrichmentPlotter = new EnrichmentPlotter(model, interfaceLSM, directoryEnrichments);
+            enrichmentPlotter.PlotEnrichedNodes();
 
             // Plot conforming mesh, temperature field
             using (var writer = new VtkFileWriter(pathTemperature))
@@ -184,7 +202,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             }
 
             ApplyBoundaryConditions(model);
-
+            model.ConnectDataStructures();
             return (model, interfaceLSM);
         }
 
@@ -235,7 +253,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 
         private static void InitializeLSM(XModel model, SimpleLsmClosedCurve2D interfaceLSM)
         {
-            var initialGeometry = new Circle2D(new CartesianPoint(-0.4, 0.0), 0.5);
+            var initialGeometry = new Circle2D(new CartesianPoint(-0.4, 0.0), 0.50001);
             interfaceLSM.InitializeGeometry(model.Nodes, initialGeometry);
         }
     }

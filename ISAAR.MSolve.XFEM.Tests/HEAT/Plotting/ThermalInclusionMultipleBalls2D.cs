@@ -189,6 +189,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 
             ApplyBoundaryConditions(model);
 
+            model.ConnectDataStructures();
             return (model, interfaceLSM);
         }
 

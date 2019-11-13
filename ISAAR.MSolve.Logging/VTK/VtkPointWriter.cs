@@ -4,7 +4,7 @@ using System.IO;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Geometry.Coordinates;
 
-namespace ISAAR.MSolve.XFEM.Output.VTK
+namespace ISAAR.MSolve.Logging.VTK
 {
     public class VtkPointWriter : IDisposable
     {
