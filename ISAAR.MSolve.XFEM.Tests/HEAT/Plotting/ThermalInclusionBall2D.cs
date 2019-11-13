@@ -37,8 +37,8 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         private const double zeroLevelSetTolerance = 1E-6;
         private const int subdomainID = 0;
 
-        private const double conductivityMatrix = 1.0, conductivityInclusion = 1.0;
-        private const double interfaceResistance = 1E1;
+        private const double conductivityMatrix = 1.0, conductivityInclusion = 10.0;
+        private const double interfaceResistance = 1E-10;
 
         public static void PlotLevelSets()
         {
@@ -160,7 +160,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             var interfaceLSM = new SimpleLsmClosedCurve2D(thickness, zeroLevelSetTolerance);
             var materialPos = new ThermalMaterial(density, specificHeat, conductivityMatrix);
             var materialNeg = new ThermalMaterial(density, specificHeat, conductivityInclusion);
-            var materialField = new ThermalMultiMaterialField2D(materialPos, materialNeg, interfaceLSM);
+            var materialField = new ThermalBiMaterialField2D(materialPos, materialNeg, interfaceLSM);
 
             // Mesh generation
             var meshGen = new UniformMeshGenerator2D<XNode>(-1.0, -1.0, 1.0, 1.0, numElementsX, numElementsY);

@@ -12,15 +12,16 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
 {
     public class MultiLsmClosedCurve2D : ILsmCurve2D
     {
-        private readonly List<SimpleLsmClosedCurve2D> singleCurves;
         private readonly double zeroTolerance;
 
         public MultiLsmClosedCurve2D(double interfaceThickness = 1.0, double zeroTolerance = 1E-13)
         {
-            this.singleCurves = new List<SimpleLsmClosedCurve2D>();
+            this.SingleCurves = new List<SimpleLsmClosedCurve2D>();
             this.Thickness = interfaceThickness;
             this.zeroTolerance = zeroTolerance;
         }
+
+        public List<SimpleLsmClosedCurve2D> SingleCurves { get; }
 
         public double Thickness { get; }
 
@@ -30,13 +31,13 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
             {
                 var singleCurve = new SimpleLsmClosedCurve2D(Thickness, zeroTolerance);
                 singleCurve.InitializeGeometry(nodes, discontinuity);
-                singleCurves.Add(singleCurve);
+                SingleCurves.Add(singleCurve);
             }
         }
 
         public CurveElementIntersection IntersectElement(IXFiniteElement element)
         {
-            foreach (SimpleLsmClosedCurve2D curve in singleCurves)
+            foreach (SimpleLsmClosedCurve2D curve in SingleCurves)
             {
                 var intersection = curve.IntersectElement(element);
                 if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint) return intersection;
@@ -47,7 +48,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
         public double SignedDistanceOf(XNode node)
         {
             double min = double.MaxValue;
-            foreach (SimpleLsmClosedCurve2D curve in singleCurves)
+            foreach (SimpleLsmClosedCurve2D curve in SingleCurves)
             {
                 double signedDistance = curve.SignedDistanceOf(node);
                 if (signedDistance < min) min = signedDistance;
@@ -58,7 +59,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
         public double SignedDistanceOf(IXFiniteElement element, double[] shapeFunctionsAtNaturalPoint)
         {
             double min = double.MaxValue;
-            foreach (SimpleLsmClosedCurve2D curve in singleCurves)
+            foreach (SimpleLsmClosedCurve2D curve in SingleCurves)
             {
                 double signedDistance = curve.SignedDistanceOf(element, shapeFunctionsAtNaturalPoint);
                 if (signedDistance < min) min = signedDistance;
@@ -69,7 +70,8 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
         public bool TryConformingTriangulation(IXFiniteElement element, CurveElementIntersection intersectionIgnored, 
             out IReadOnlyList<ElementSubtriangle> subtriangles)
         {
-            foreach (SimpleLsmClosedCurve2D curve in singleCurves)
+            //start here!!!
+            foreach (SimpleLsmClosedCurve2D curve in SingleCurves)
             {
                 var intersection = curve.IntersectElement(element);
                 if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)

@@ -75,7 +75,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT
             var interfaceLSM = new SimpleLsmClosedCurve2D(thickness);
             var materialPos = new ThermalMaterial(density, specificHeat, conductivity1);
             var materialNeg = new ThermalMaterial(density, specificHeat, conductivity2);
-            var materialField = new ThermalMultiMaterialField2D(materialPos, materialNeg, interfaceLSM);
+            var materialField = new ThermalBiMaterialField2D(materialPos, materialNeg, interfaceLSM);
 
             // Mesh generation
             var meshGen = new UniformMeshGenerator2D<XNode>(-1.0, -1.0, 1.0, 1.0, numElementsX, numElementsY);
