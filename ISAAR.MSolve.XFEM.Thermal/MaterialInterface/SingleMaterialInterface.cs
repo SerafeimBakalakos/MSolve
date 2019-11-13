@@ -6,6 +6,7 @@ using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
+using ISAAR.MSolve.XFEM.Thermal.MaterialInterface.SingularityResolving;
 
 namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
 {
@@ -14,13 +15,20 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
         private readonly IEnumerable<XThermalElement2D> modelElements;
         private readonly ILsmCurve2D geometry;
         private readonly ThermalInterfaceEnrichment enrichment;
+        private readonly IHeavisideSingularityResolver singularityResolver;
+
+        public SingleMaterialInterface(ILsmCurve2D geometry, IEnumerable<XThermalElement2D> modelElements,
+            double interfaceResistance) : this(geometry, modelElements, interfaceResistance, new RelativeAreaResolver())
+        {
+        }
 
         public SingleMaterialInterface(ILsmCurve2D geometry, IEnumerable<XThermalElement2D> modelElements, 
-            double interfaceResistance)
+            double interfaceResistance, IHeavisideSingularityResolver singularityResolver)
         {
             this.geometry = geometry;
             this.modelElements = modelElements;
             this.enrichment = new ThermalInterfaceEnrichment(geometry, interfaceResistance);
+            this.singularityResolver = singularityResolver;
         }
 
         public void ApplyEnrichments()
@@ -44,6 +52,10 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
                     enrichedNodes.UnionWith(intersection.ContactNodes);
                 }
             }
+
+            // Remove nodes whose nodal support does not include Gauss points in both sides of the discontinuity
+            HashSet<XNode> nodesToRemove = singularityResolver.FindHeavisideNodesToRemove(geometry, enrichedNodes);
+            enrichedNodes.ExceptWith(nodesToRemove);
 
             // Calculate and store nodal enrichments
             foreach (XNode node in enrichedNodes)

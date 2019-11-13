@@ -1,133 +1,121 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using ISAAR.MSolve.Discretization.Mesh;
-//using ISAAR.MSolve.FEM.Interpolation;
-//using ISAAR.MSolve.Geometry.Coordinates;
-//using ISAAR.MSolve.Geometry.Triangulation;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using ISAAR.MSolve.Discretization.Mesh;
+using ISAAR.MSolve.FEM.Interpolation;
+using ISAAR.MSolve.Geometry.Coordinates;
+using ISAAR.MSolve.Geometry.Shapes;
+using ISAAR.MSolve.XFEM.Thermal.Elements;
+using ISAAR.MSolve.XFEM.Thermal.Entities;
+using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
+using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
 
-//namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface.SingularityResolving
-//{
-//    public class RelativeAreaResolver : IHeavisideSingularityResolver
-//    {
-//        private readonly double relativeAreaTolerance;
-//        private readonly Triangulator2D<CartesianPoint> triangulator;
-//        private readonly double zeroDistanceTolerance;
+namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface.SingularityResolving
+{
+    public class RelativeAreaResolver : IHeavisideSingularityResolver
+    {
+        private readonly double relativeAreaTolerance;
 
-//        public RelativeAreaResolver(double relativeAreaTolerance = 1E-4, double zeroDistanceTolerance = 1E-10)
-//        {
-//            this.relativeAreaTolerance = relativeAreaTolerance;
-//            this.zeroDistanceTolerance = zeroDistanceTolerance;
-//            this.triangulator = new Triangulator2D<CartesianPoint>((x, y) => new CartesianPoint(x, y));
-//        }
+        public RelativeAreaResolver(double relativeAreaTolerance = 1E-4)
+        {
+            this.relativeAreaTolerance = relativeAreaTolerance;
+        }
 
-//        /// <summary>
-//        /// Given a set of Heaviside enriched nodes, find which of them must not be enriched, in order to avoid the global
-//        /// stiffness matrix being singular.
-//        /// </summary>
-//        /// <param name="mesh"></param>
-//        /// <param name="heavisideNodes">They will not be altered.</param>
-//        /// <returns></returns>
-//        public ISet<XNode> FindHeavisideNodesToRemove(ISingleCrack crack, IMesh2D<XNode, XContinuumElement2D> mesh, 
-//            ISet<XNode> heavisideNodes)
-//        {
-//            var processedElements = new Dictionary<XContinuumElement2D, Tuple<double, double>>();
-//            var nodesToRemove = new HashSet<XNode>();
-//            foreach (var node in heavisideNodes)
-//            {
-//                double nodePositiveArea = 0.0;
-//                double nodeNegativeArea = 0.0;
+        /// <summary>
+        /// Given a set of Heaviside enriched nodes, find which of them must not be enriched, in order to avoid the global
+        /// stiffness matrix being singular.
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <param name="heavisideNodes">They will not be altered.</param>
+        /// <returns></returns>
+        public HashSet<XNode> FindHeavisideNodesToRemove(ILsmCurve2D curve, IEnumerable<XNode> heavisideNodes)
+        {
+            var processedElements = new Dictionary<IXFiniteElement, (double elementPosArea, double elementNegArea)>();
+            var nodesToRemove = new HashSet<XNode>();
+            foreach (XNode node in heavisideNodes)
+            {
+                double nodePositiveArea = 0.0;
+                double nodeNegativeArea = 0.0;
 
-//                foreach (var element in mesh.FindElementsWithNode(node))
-//                {
-//                    bool alreadyProcessed = processedElements.TryGetValue(element, out Tuple<double, double> elementPosNegAreas);
-//                    if (!alreadyProcessed)
-//                    {
-//                        (double elementPosArea, double elementNegArea) = FindSignedAreasOfElement(crack, element);
-//                        elementPosNegAreas = new Tuple<double, double>(elementPosArea, elementNegArea);
-//                        processedElements[element] = elementPosNegAreas;
-//                    }
-//                    nodePositiveArea += elementPosNegAreas.Item1;
-//                    nodeNegativeArea += elementPosNegAreas.Item2;
-//                }
+                foreach (IXFiniteElement element in node.ElementsDictionary.Values)
+                {
+                    bool alreadyProcessed = processedElements.TryGetValue(element, out (double pos, double neg) elementAreas);
+                    if (!alreadyProcessed)
+                    {
+                        elementAreas = FindSignedAreasOfElement(curve, element);
+                        processedElements[element] = elementAreas;
+                    }
+                    nodePositiveArea += elementAreas.pos;
+                    nodeNegativeArea += elementAreas.neg;
+                }
 
-//                if (crack.SignedDistanceOf(node) >= 0.0)
-//                {
-//                    double negativeAreaRatio = nodeNegativeArea / (nodePositiveArea + nodeNegativeArea);
-//                    if (negativeAreaRatio < relativeAreaTolerance) nodesToRemove.Add(node);
-//                }
-//                else
-//                {
-//                    double positiveAreaRatio = nodePositiveArea / (nodePositiveArea + nodeNegativeArea);
-//                    if (positiveAreaRatio < relativeAreaTolerance) nodesToRemove.Add(node);
-//                }
-//            }
+                if (curve.SignedDistanceOf(node) >= 0.0)
+                {
+                    double negativeAreaRatio = nodeNegativeArea / (nodePositiveArea + nodeNegativeArea);
+                    if (negativeAreaRatio < relativeAreaTolerance) nodesToRemove.Add(node);
+                }
+                else
+                {
+                    double positiveAreaRatio = nodePositiveArea / (nodePositiveArea + nodeNegativeArea);
+                    if (positiveAreaRatio < relativeAreaTolerance) nodesToRemove.Add(node);
+                }
+            }
 
-//            return nodesToRemove;
-//        }
+            return nodesToRemove;
+        }
 
-//        // TODO: I should really cache these somehow, so that they can be accessible from the crack object. They are used at various points.
-//        private (double positiveArea, double negativeArea) FindSignedAreasOfElement(ISingleCrack crack, 
-//            XContinuumElement2D element)
-//        {
-//            SortedSet<CartesianPoint> triangleVertices = crack.FindTriangleVertices(element);
-//            IReadOnlyList<Triangle2D<CartesianPoint>> triangles = triangulator.CreateMesh(triangleVertices);
+        private NaturalPoint FindElementCentroid2D(IXFiniteElement element)
+        {
+            double centroidXi = 0.0, centroidEta = 0.0;
+            IReadOnlyList<NaturalPoint> nodes = element.StandardInterpolation.NodalNaturalCoordinates;
+            foreach (NaturalPoint node in nodes)
+            {
+                centroidXi += node.Xi;
+                centroidEta += node.Eta;
+            }
+            centroidXi /= nodes.Count;
+            centroidEta /= nodes.Count;
+            return new NaturalPoint(centroidXi, centroidEta);
+        }
 
-//            double positiveArea = 0.0;
-//            double negativeArea = 0.0;
-//            foreach (var triangle in triangles)
-//            {
-//                CartesianPoint v0 = triangle.Vertices[0];
-//                CartesianPoint v1 = triangle.Vertices[1];
-//                CartesianPoint v2 = triangle.Vertices[2];
-//                double area = 0.5 * Math.Abs(v0.X * (v1.Y - v2.Y) + v1.X * (v2.Y - v0.Y) + v2.X * (v0.Y - v1.Y));
+        // TODO: I should really cache these somehow, so that they can be accessible from the crack object. They are used at various points.
+        private (double positiveArea, double negativeArea) FindSignedAreasOfElement(ILsmCurve2D curve, IXFiniteElement element)
+        {
+            double positiveArea = 0.0;
+            double negativeArea = 0.0;
 
-//                // The sign of the area can be derived from any node with body level set != 0
-//                int sign = 0;
-//                foreach (var vertex in triangle.Vertices)
-//                {
-//                    XNode vertexAsNode = null;
-//                    foreach (var node in element.Nodes) // TODO: find a faster way to do this
-//                    {
-//                        if ((vertex.X == node.X) && (vertex.Y == node.Y))
-//                        {
-//                            vertexAsNode = node;
-//                            break;
-//                        }
-//                    }
-//                    if (vertexAsNode != null)
-//                    {
-//                        double distance = crack.SignedDistanceOf(vertexAsNode);
-//                        if (Math.Abs(distance) <= zeroDistanceTolerance) sign = 0;
-//                        else sign = Math.Sign(distance);
-//                        if (sign != 0) break;
-//                    }
-//                }
+            CurveElementIntersection intersection = curve.IntersectElement(element);
+            if (intersection.RelativePosition == RelativePositionCurveElement.Intersection)
+            {
+                // Split the element into subtriangles
+                bool success = curve.TryConformingTriangulation(element, intersection,
+                    out IReadOnlyList<ElementSubtriangle> subtriangles);
+                Debug.Assert(success);
+                foreach (ElementSubtriangle triangle in subtriangles)
+                {
+                    // Calculate their areas and on which side they lie, based on their centroids
+                    double area = triangle.CalcAreaCartesian(element);
+                    NaturalPoint centroid = triangle.FindCentroid();
+                    double[] shapeFunctions = element.StandardInterpolation.EvaluateFunctionsAt(centroid);
+                    double signedDistance = curve.SignedDistanceOf(element, shapeFunctions);
+                    if (signedDistance > 0) positiveArea += area;
+                    else if (signedDistance < 0) negativeArea += area;
+                    else throw new Exception("Found subtriangle whose centroid lies on a discontinuity");
+                }
+            }
+            else
+            {
+                // Calculate the are of the whole element and on which side it lies, based on its centroid
+                double area = ConvexPolygon2D.CreateUnsafe(element.Nodes).ComputeArea(); //TODO: This only works for 1st order elements.
+                NaturalPoint centroid = FindElementCentroid2D(element);
+                double[] shapeFunctions = element.StandardInterpolation.EvaluateFunctionsAt(centroid);
+                double signedDistance = curve.SignedDistanceOf(element, shapeFunctions);
+                if (signedDistance > 0) positiveArea += area;
+                else if (signedDistance < 0) negativeArea += area;
+                else throw new Exception("Found element not intersected by the discontinuity whose centroid lies on it");
+            }
 
-//                // If no node with non-zero body level set is found, then find the body level set of its centroid
-//                if (sign == 0)
-//                {
-//                    // Report this instance in DEBUG messages. It should not happen with linear level sets and only 1 crack.
-//                    //if (reports)
-//                    //{
-//                    //    Console.WriteLine("--- DEBUG: Triangulation resulted in a triangle where no vertex is an element node. ---");
-//                    //}
-
-
-//                    var centroid = new CartesianPoint((v0.X + v1.X + v2.X) / 3.0, (v0.Y + v1.Y + v2.Y) / 3.0);
-//                    NaturalPoint centroidNatural = element.Interpolation.
-//                        CreateInverseMappingFor(element.Nodes).TransformPointCartesianToNatural(centroid);
-//                    EvalInterpolation2D centroidInterpolation =
-//                        element.Interpolation.EvaluateAllAt(element.Nodes, centroidNatural);
-//                    sign = Math.Sign(crack.SignedDistanceOf(centroidNatural, element, centroidInterpolation));
-//                }
-
-//                if (sign > 0) positiveArea += area;
-//                else if (sign < 0) negativeArea += area;
-//                else throw new Exception(
-//                    "Even after finding the signed distance of its centroid, the sign of the area is unidentified");
-//            }
-
-//            return (positiveArea, negativeArea);
-//        }
-//    }
-//}
+            return (positiveArea, negativeArea);
+        }
+    }
+}
