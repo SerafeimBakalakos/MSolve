@@ -14,6 +14,156 @@ namespace ISAAR.MSolve.Discretization.Transfer
             this.procs = processDistribution;
         }
 
+        public Dictionary<int, T> GatherFromAllSubdomains<T>(Dictionary<int, T> processSubdomainsData)
+            => GatherFromAllSubdomainsPacked<T, T>(processSubdomainsData, (s, data) => data, (s, data) => data);
+
+        public Dictionary<int, TRaw> GatherFromAllSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData, 
+            PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData)
+        {
+            var activeSubdomains = new ActiveSubdomains(procs, s => true);
+            return GatherFromSomeSubdomainsPacked<TRaw, TPacked>(processSubdomainsData, packData, unpackData, activeSubdomains);
+        }
+
+        public Dictionary<int, TRaw> GatherFromAllSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData, 
+            GetArrayLengthOfPackedData<TRaw> getPackedDataLength, PackSubdomainDataIntoArray<TRaw, TPacked> packData, 
+            UnpackSubdomainDataFromArray<TRaw, TPacked> unpackData)
+        {
+            var activeSubdomains = new ActiveSubdomains(procs, s => true);
+            return GatherFromSomeSubdomainsPacked<TRaw, TPacked>(processSubdomainsData, getPackedDataLength, packData, 
+                unpackData, activeSubdomains);
+        }
+
+        public Dictionary<int, T> GatherFromSomeSubdomains<T>(Dictionary<int, T> processSubdomainsData, 
+            ActiveSubdomains activeSubdomains)
+        {
+            return GatherFromSomeSubdomainsPacked<T, T>(processSubdomainsData, (s, data) => data, (s, data) => data,
+                activeSubdomains);
+        }
+
+        public Dictionary<int, TRaw> GatherFromSomeSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData,
+            PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData,
+            ActiveSubdomains activeSubdomains)
+        {
+            Dictionary<int, TRaw> allSubdomainsData = null;
+
+            // Gather and unpack the subdomain data from the corresponding processes, one subdomain at a time
+            if (procs.IsMasterProcess)
+            {
+                allSubdomainsData = new Dictionary<int, TRaw>();
+                for (int p = 0; p < procs.Communicator.Size; ++p)
+                {
+                    if (p == procs.MasterProcess) // Just copy the references
+                    {
+                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        {
+                            if (activeSubdomains.IsActive(s)) allSubdomainsData[s] = processSubdomainsData[s]; 
+                        }
+                    }
+                    else
+                    {
+                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        {
+                            if (activeSubdomains.IsActive(s))
+                            {
+                                TPacked packed = procs.Communicator.Receive<TPacked>(p, s);
+                                allSubdomainsData[s] = unpackData(s, packed);
+                            }
+                        }
+                    }
+                }
+                return allSubdomainsData;
+            }
+            else
+            {
+                // At first pack all subdomain data of this process, so that master process doe not have to wait inbetween
+                //TODO: For the first process, master must wait longer this way. Use asynchronous sends or another thread instead.
+                int[] processSubdomains = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+                var processDataPacked = new Dictionary<int, TPacked>(processSubdomains.Length);
+                foreach (int s in processSubdomains)
+                {
+                    if (activeSubdomains.IsActive(s))
+                    {
+                        processDataPacked[s] = packData(s, processSubdomainsData[s]);
+                    }
+                }
+
+                // Then send the packed subdomain data to master
+                foreach (int s in processSubdomains)
+                {
+                    if (activeSubdomains.IsActive(s))
+                    {
+                        procs.Communicator.Send<TPacked>(processDataPacked[s], procs.MasterProcess, s);
+                        processDataPacked.Remove(s); // Free up some memory
+                    }
+                }
+                return null;
+            }
+        }
+
+        public Dictionary<int, TRaw> GatherFromSomeSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData, 
+            GetArrayLengthOfPackedData<TRaw> getPackedDataLength, PackSubdomainDataIntoArray<TRaw, TPacked> packData, 
+            UnpackSubdomainDataFromArray<TRaw, TPacked> unpackData, ActiveSubdomains activeSubdomains)
+        {
+            Dictionary<int, TRaw> allSubdomainsData = null;
+
+            // Pack and send the subdomain data to the corresponding process, one subdomain at a time
+            if (procs.IsMasterProcess)
+            {
+                allSubdomainsData = new Dictionary<int, TRaw>();
+                for (int p = 0; p < procs.Communicator.Size; ++p)
+                {
+                    if (p == procs.MasterProcess) // Just copy the references
+                    {
+                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        {
+                            if (activeSubdomains.IsActive(s)) allSubdomainsData[s] = processSubdomainsData[s];
+                        }
+                    }
+                    else
+                    {
+                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        {
+                            if (activeSubdomains.IsActive(s))
+                            {
+                                TPacked[] packed = MpiUtilities.ReceiveArray<TPacked>(procs.Communicator, p, s);
+                                allSubdomainsData[s] = unpackData(s, packed, 0);
+                            }
+                        }
+                    }
+                }
+                return allSubdomainsData;
+            }
+            else
+            {
+                // At first pack all subdomain data of this process, so that master process doe not have to wait inbetween
+                //TODO: For the first process, master must wait longer this way. Use asynchronous sends or another thread instead.
+                int[] processSubdomains = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+                var processDataPacked = new Dictionary<int, TPacked[]>(processSubdomains.Length);
+                foreach (int s in processSubdomains)
+                {
+                    if (activeSubdomains.IsActive(s))
+                    {
+                        TRaw rawData = processSubdomainsData[s];
+                        int packedLength = getPackedDataLength(s, rawData);
+                        var packedData = new TPacked[packedLength];
+                        packData(s, rawData, packedData, 0);
+                        processDataPacked[s] = packedData;
+                    }
+                }
+
+                // Then send the packed subdomain data to master
+                foreach (int s in processSubdomains)
+                {
+                    if (activeSubdomains.IsActive(s))
+                    {
+                        MpiUtilities.SendArray<TPacked>(procs.Communicator, processDataPacked[s], procs.MasterProcess, s);
+                        processDataPacked.Remove(s); // Free up some memory
+                    }
+                }
+                return null;
+            }
+        }
+
         public Dictionary<int, T> ScatterToAllSubdomains<T>(Dictionary<int, T> allSubdomainsData_master)
             => ScatterToAllSubdomainsPacked<T, T>(allSubdomainsData_master, (s, data) => data, (s, data) => data);
 
@@ -29,12 +179,12 @@ namespace ISAAR.MSolve.Discretization.Transfer
         }
 
         public Dictionary<int, TRaw> ScatterToAllSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> allSubdomainsData_master, 
-            GetArrayLengthOfPackedData<TRaw> packedDataLength, PackSubdomainDataIntoArray<TRaw, TPacked> packData, 
+            GetArrayLengthOfPackedData<TRaw> getPackedDataLength, PackSubdomainDataIntoArray<TRaw, TPacked> packData, 
             UnpackSubdomainDataFromArray<TRaw, TPacked> unpackData)
         {
             var activeSubdomains = new ActiveSubdomains(procs, s => true);
-            return ScatterToSomeSubdomainsPacked<TRaw, TPacked>(allSubdomainsData_master, packedDataLength, packData, unpackData,
-                activeSubdomains);
+            return ScatterToSomeSubdomainsPacked<TRaw, TPacked>(allSubdomainsData_master, getPackedDataLength, packData, 
+                unpackData, activeSubdomains);
         }
 
         /// <summary>
@@ -64,8 +214,8 @@ namespace ISAAR.MSolve.Discretization.Transfer
                         {
                             if (activeSubdomains.IsActive(s))
                             {
-                                TPacked dto = packData(s, allSubdomainsData_master[s]);
-                                procs.Communicator.Send<TPacked>(dto, p, s);
+                                TPacked packed = packData(s, allSubdomainsData_master[s]);
+                                procs.Communicator.Send<TPacked>(packed, p, s);
                             }
                         }
                     }

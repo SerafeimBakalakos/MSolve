@@ -27,6 +27,56 @@ namespace ISAAR.MSolve.Discretization.Transfer
     public interface ISubdomainDataTransferer
     {
         /// <summary>
+        /// In master process this method returns a Dictionary with the data for each subdomain. In other processes, it returns 
+        /// null.
+        /// </summary>
+        Dictionary<int, T> GatherFromAllSubdomains<T>(Dictionary<int, T> processSubdomainsData);
+
+        /// <summary>
+        /// In master process this method returns a Dictionary with the data for each subdomain. In other processes, it returns 
+        /// null.
+        /// </summary>
+        Dictionary<int, TRaw> GatherFromAllSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData,
+            PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData);
+
+        /// <summary>
+        /// Like <see cref="GatherFromAllSubdomainsPacked{TRaw, TPacked}(Dictionary{int, TRaw}, PackSubdomainData{TRaw, TPacked}, 
+        /// UnpackSubdomainData{TRaw, TPacked})"/>, but packing is done using arrays of possible primitive data types to avoid
+        /// serialization/deserialization.
+        /// In master process this method returns a Dictionary with the data for each subdomain. In other processes, it returns 
+        /// null.
+        /// </summary>
+        Dictionary<int, TRaw> GatherFromAllSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData,
+            GetArrayLengthOfPackedData<TRaw> getPackedDataLength, PackSubdomainDataIntoArray<TRaw, TPacked> packData,
+            UnpackSubdomainDataFromArray<TRaw, TPacked> unpackData);
+
+        /// <summary>
+        /// In master process this method returns a Dictionary with the data for each subdomain. In other processes, it returns 
+        /// null.
+        /// </summary>
+        Dictionary<int, T> GatherFromSomeSubdomains<T>(Dictionary<int, T> processSubdomainsData,
+            ActiveSubdomains activeSubdomains);
+
+        /// <summary>
+        /// In master process this method returns a Dictionary with the data for each subdomain. In other processes, it returns 
+        /// null.
+        /// </summary>
+        Dictionary<int, TRaw> GatherFromSomeSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData,
+            PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData,
+            ActiveSubdomains activeSubdomains);
+
+        /// <summary>
+        /// Like <see cref="GatherFromSomeSubdomainsPacked{TRaw, TPacked}(Dictionary{int, TRaw}, PackSubdomainData{TRaw, TPacked},
+        /// UnpackSubdomainData{TRaw, TPacked}, ActiveSubdomains)"/>, but packing is done using arrays of possible primitive 
+        /// data types to avoid serialization/deserialization.
+        /// In master process this method returns a Dictionary with the data for each subdomain. In other processes, it returns 
+        /// null.
+        /// </summary>
+        Dictionary<int, TRaw> GatherFromSomeSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData,
+            GetArrayLengthOfPackedData<TRaw> getPackedDataLength, PackSubdomainDataIntoArray<TRaw, TPacked> packData,
+            UnpackSubdomainDataFromArray<TRaw, TPacked> unpackData, ActiveSubdomains activeSubdomains);
+
+        /// <summary>
         /// This method returns null in master process. For other processes, it returns a Dictionary with the data for each 
         /// associated subdomain.
         /// </summary>
@@ -40,6 +90,9 @@ namespace ISAAR.MSolve.Discretization.Transfer
             PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData);
 
         /// <summary>
+        /// Like <see cref="ScatterToAllSubdomainsPacked{TRaw, TPacked}(Dictionary{int, TRaw}, PackSubdomainData{TRaw, TPacked}, 
+        /// UnpackSubdomainData{TRaw, TPacked})"/>, but packing is done using arrays of possible primitive data types to avoid
+        /// serialization/deserialization.
         /// This method returns null in master process. For other processes, it returns a Dictionary with the data for each 
         /// associated subdomain.
         /// </summary>
@@ -63,6 +116,9 @@ namespace ISAAR.MSolve.Discretization.Transfer
             ActiveSubdomains activeSubdomains);
 
         /// <summary>
+        /// Like <see cref="ScatterToSomeSubdomainsPacked{TRaw, TPacked}(Dictionary{int, TRaw}, PackSubdomainData{TRaw, TPacked},
+        /// UnpackSubdomainData{TRaw, TPacked}, ActiveSubdomains)"/>, but packing is done using arrays of possible primitive data
+        /// types to avoid serialization/deserialization.
         /// This method returns null in master process. For other processes, it returns a Dictionary with the data for each 
         /// associated subdomain or an empty Dictionary if none of that process's subdomains are active.
         /// </summary>

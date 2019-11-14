@@ -24,7 +24,8 @@ namespace ISAAR.MSolve.Solvers.Tests
         {
             var suite = new MpiTestSuite();
 
-            TransfererTests.RegisterAllTests(suite);
+            //TransfererScatterTests.RegisterAllTests(suite);
+            TransfererGatherTests.RegisterAllTests(suite);
 
             //suite.AddFact(FetiDPDofSeparatorMpiTests.TestDofSeparation, typeof(FetiDPDofSeparatorMpiTests).Name, "TestDofSeparation");
             //suite.AddFact(FetiDPDofSeparatorMpiTests.TestCornerBooleanMatrices, typeof(FetiDPDofSeparatorMpiTests).Name, "TestCornerBooleanMatrices");
