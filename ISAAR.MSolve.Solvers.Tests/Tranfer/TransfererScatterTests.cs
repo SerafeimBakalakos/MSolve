@@ -169,7 +169,7 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
                     PackSubdomainDataIntoArray<SampleClass, int> packData = 
                         (id, data, packingArray, offset) => data.PackIntoArray(packingArray, offset);
                     UnpackSubdomainDataFromArray<SampleClass, int> unpackData = 
-                        (id, packingArray, offset) => SampleClass.UnpackFromArray(id, packingArray, offset);
+                        (id, packingArray, start, end) => SampleClass.UnpackFromArray(id, packingArray, start, end);
                     return transf.ScatterToAllSubdomainsPacked(allData, getPackedDataLength, packData, unpackData);
                 },
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
@@ -227,7 +227,7 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
                     PackSubdomainDataIntoArray<SampleClass, int> packData =
                         (id, data, packingArray, offset) => data.PackIntoArray(packingArray, offset);
                     UnpackSubdomainDataFromArray<SampleClass, int> unpackData =
-                        (id, packingArray, offset) => SampleClass.UnpackFromArray(id, packingArray, offset);
+                        (id, packingArray, start, end) => SampleClass.UnpackFromArray(id, packingArray, start, end);
                     return transf.ScatterToSomeSubdomainsPacked(allData, getPackedDataLength, packData, unpackData, 
                         activeSubdomains);
                 },
@@ -270,14 +270,11 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
             Dictionary<int, T> processData = scatterSubdomainData(transferer, allData_master, activeSubdomains);
 
             // Check the received data in each process other than master
-            if (!procs.IsMasterProcess)
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
             {
-                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+                if (scatterAll || activeSubdomains.IsActive(s))
                 {
-                    if (scatterAll || activeSubdomains.IsActive(s))
-                    {
-                        checkReceivedData(s, processData[s]);
-                    }
+                    checkReceivedData(s, processData[s]);
                 }
             }
         }

@@ -41,6 +41,18 @@ namespace ISAAR.MSolve.Discretization.Transfer
             return table;
         }
 
+        public int CalcPackedLength(DofTable table) => 3 * table.EntryCount;
+
+        public void PackTableIntoArray(DofTable table, int[] packingArray, int offset)
+        {
+            foreach ((INode row, IDofType col, int val) in table)
+            {
+                packingArray[offset++] = row.ID;                          // Node
+                packingArray[offset++] = dofSerializer.Serialize(col);    // Dof type
+                packingArray[offset++] = val;                             // Dof index in vectors/matrices
+            }
+        }
+
         public int[] Serialize(DofTable table)
         {
             int numEntries = table.EntryCount;
@@ -53,6 +65,20 @@ namespace ISAAR.MSolve.Discretization.Transfer
                 serializedTable[++counter] = val;                             // Dof index in vectors/matrices
             }
             return serializedTable;
+        }
+
+        public DofTable UnpackTableFromArray(int[] packingArray, int start, int end, Func<int, INode> getGlobalNode)
+        {
+            int numEntries = (end - start) / 3;
+            var table = new DofTable();
+            for (int i = 0; i < numEntries; ++i)
+            {
+                INode node = getGlobalNode(packingArray[start + 3 * i]);
+                IDofType dofType = dofSerializer.Deserialize(packingArray[start + 3 * i + 1]);
+                int dofIdx = packingArray[start + 3 * i + 2];
+                table[node, dofType] = dofIdx; //TODO: perhaps this can be optimized to avoid checking if there is already such an entry.
+            }
+            return table;
         }
     }
 }

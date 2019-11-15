@@ -19,30 +19,30 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 {
     public class FetiDPDofSeparatorMpi : IFetiDPDofSeparator
     {
-        private const int cornerDofOrderingTag = 0;
-        private const int cornerMappingMatrixTag = 1;
-
         private readonly ICornerNodeSelection cornerNodeSelection;
         private readonly FetiDPGlobalDofSeparator globalDofs;
         private readonly IModel model;
         private readonly string msgHeader;
         private readonly ProcessDistribution procs;
-        private readonly ISubdomain processSubdomain;
-        private readonly FetiDPSubdomainDofSeparator subdomainDofs;
+        private readonly Dictionary<ISubdomain, FetiDPSubdomainDofSeparator> subdomainDofs;
 
         // These are defined per subdomain and are needed both in the corresponding process and in master.
         private Dictionary<ISubdomain, UnsignedBooleanMatrix> subdomainCornerBooleanMatrices_master;
         private Dictionary<ISubdomain, DofTable> subdomainCornerDofOrderings_master = new Dictionary<ISubdomain, DofTable>();
 
-        public FetiDPDofSeparatorMpi(ProcessDistribution processDistribution, IModel model, 
+        public FetiDPDofSeparatorMpi(ProcessDistribution processDistribution, IModel model,
             ICornerNodeSelection cornerNodeSelection)
         {
             this.procs = processDistribution;
             this.model = model;
-            this.processSubdomain = model.GetSubdomain(processDistribution.OwnSubdomainID);
             this.cornerNodeSelection = cornerNodeSelection;
 
-            subdomainDofs = new FetiDPSubdomainDofSeparator(model.GetSubdomain(procs.OwnSubdomainID));
+            subdomainDofs = new Dictionary<ISubdomain, FetiDPSubdomainDofSeparator>();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                subdomainDofs[subdomain] = new FetiDPSubdomainDofSeparator(model.GetSubdomain(procs.OwnSubdomainID));
+            }
             if (procs.IsMasterProcess) globalDofs = new FetiDPGlobalDofSeparator(model);
 
             this.msgHeader = $"Process {processDistribution.OwnRank}, {this.GetType().Name}: ";
@@ -75,26 +75,18 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             }
         }
 
-        public int NumGlobalCornerDofs
-        {
-            get
-            {
-                //procs.CheckProcessIsMaster(); //TODO: Shouldn't this be available to all processes?
-                if (procs.IsMasterProcess) return globalDofs.NumGlobalCornerDofs;
-                else return subdomainDofs.CornerBooleanMatrix.NumColumns;
-            }
-        }
+        public int NumGlobalCornerDofs { get; private set; }
 
         public int[] GetBoundaryDofIndices(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
-            return subdomainDofs.BoundaryDofIndices;
+            return subdomainDofs[subdomain].BoundaryDofIndices;
         }
 
         public (INode node, IDofType dofType)[] GetBoundaryDofs(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
-            return subdomainDofs.BoundaryDofs;
+            return subdomainDofs[subdomain].BoundaryDofs;
         }
 
         public UnsignedBooleanMatrix GetCornerBooleanMatrix(ISubdomain subdomain)
@@ -103,14 +95,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             else
             {
                 procs.CheckProcessMatchesSubdomain(subdomain.ID);
-                return subdomainDofs.CornerBooleanMatrix;
+                return subdomainDofs[subdomain].CornerBooleanMatrix;
             }
         }
 
         public int[] GetCornerDofIndices(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
-            return subdomainDofs.CornerDofIndices;
+            return subdomainDofs[subdomain].CornerDofIndices;
         }
 
         public DofTable GetCornerDofOrdering(ISubdomain subdomain)
@@ -119,65 +111,75 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             else
             {
                 procs.CheckProcessMatchesSubdomain(subdomain.ID);
-                return subdomainDofs.CornerDofOrdering;
+                return subdomainDofs[subdomain].CornerDofOrdering;
             }
         }
 
         public IReadOnlyList<(INode node, IDofType dofType)> GetCornerDofs(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
-            return subdomainDofs.GetCornerDofs(cornerNodeSelection.GetCornerNodesOfSubdomain(subdomain));
+            return subdomainDofs[subdomain].GetCornerDofs(cornerNodeSelection.GetCornerNodesOfSubdomain(subdomain));
         }
 
         public DofTable GetRemainderDofOrdering(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
-            return subdomainDofs.RemainderDofOrdering;
+            return subdomainDofs[subdomain].RemainderDofOrdering;
         }
 
         public int[] GetRemainderDofIndices(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
-            return subdomainDofs.RemainderDofIndices;
+            return subdomainDofs[subdomain].RemainderDofIndices;
         }
 
         public int[] GetInternalDofIndices(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
-            return subdomainDofs.InternalDofIndices;
+            return subdomainDofs[subdomain].InternalDofIndices;
         }
 
         public void ReorderInternalDofs(IFetiDPSeparatedDofReordering reordering)
         {
-            if (processSubdomain.ConnectivityModified)
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
             {
-                Debug.WriteLine(msgHeader + $"Reordering internal dofs of subdomain {processSubdomain.ID}.");
-                subdomainDofs.ReorderInternalDofs(reordering.ReorderSubdomainInternalDofs(processSubdomain));
+                ISubdomain subdomain = model.GetSubdomain(s);
+                if (subdomain.ConnectivityModified)
+                {
+                    Debug.WriteLine(msgHeader + $"Reordering internal dofs of subdomain {subdomain.ID}.");
+                    subdomainDofs[subdomain].ReorderInternalDofs(reordering.ReorderSubdomainInternalDofs(subdomain));
+                }
             }
         }
 
         //TODO: This is too detailed for a coordinator class. All calls to global separator should be in 1 method. Ditto for subdomain separator. 
-        public void SeparateDofs(IFetiDPSeparatedDofReordering reordering) 
+        public void SeparateDofs(IFetiDPSeparatedDofReordering reordering)
         {
             // Global dofs
             if (procs.IsMasterProcess)
             {
                 globalDofs.DefineGlobalBoundaryDofs(cornerNodeSelection.GlobalCornerNodes);
                 globalDofs.DefineGlobalCornerDofs(cornerNodeSelection.GlobalCornerNodes);
+                NumGlobalCornerDofs = globalDofs.NumGlobalCornerDofs;
             }
 
             // Subdomain dofs
-            if (processSubdomain.ConnectivityModified)
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
             {
-                int s = processSubdomain.ID;
-                Debug.WriteLine(msgHeader + $"Separating and ordering corner-remainder dofs of subdomain {s}");
-                subdomainDofs.SeparateCornerRemainderDofs(cornerNodeSelection.GetCornerNodesOfSubdomain(processSubdomain));
+                ISubdomain subdomain = model.GetSubdomain(s);
+                if (subdomain.ConnectivityModified)
+                {
+                    HashSet<INode> cornerNodes = cornerNodeSelection.GetCornerNodesOfSubdomain(subdomain);
 
-                Debug.WriteLine(msgHeader + $"Reordering internal dofs of subdomain {s}.");
-                subdomainDofs.ReorderRemainderDofs(reordering.ReorderSubdomainRemainderDofs(processSubdomain));
+                    Debug.WriteLine(msgHeader + $"Separating and ordering corner-remainder dofs of subdomain {s}");
+                    subdomainDofs[subdomain].SeparateCornerRemainderDofs(cornerNodes);
 
-                Debug.WriteLine(msgHeader + $"Separating and ordering boundary-internal dofs of subdomain {s}");
-                subdomainDofs.SeparateBoundaryInternalDofs(cornerNodeSelection.GetCornerNodesOfSubdomain(processSubdomain));
+                    Debug.WriteLine(msgHeader + $"Reordering internal dofs of subdomain {s}.");
+                    subdomainDofs[subdomain].ReorderRemainderDofs(reordering.ReorderSubdomainRemainderDofs(subdomain));
+
+                    Debug.WriteLine(msgHeader + $"Separating and ordering boundary-internal dofs of subdomain {s}");
+                    subdomainDofs[subdomain].SeparateBoundaryInternalDofs(cornerNodes);
+                }
             }
 
             // Reorder global corner dofs
@@ -212,32 +214,35 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         private void GatherCornerDofOrderingsFromSubdomains()
         {
             var tableSerializer = new DofTableSerializer(model.DofSerializer);
-
-            // Gather the corner dof ordering of each subdomain from the corresponding process to master
-            var transfer = new DofTableTransfer(model, procs);
-            if (procs.IsMasterProcess)
+            var activeSubdomains = new ActiveSubdomains(procs, s => model.GetSubdomain(s).ConnectivityModified);
+            
+            // Prepare data in each process
+            var processOrderings = new Dictionary<int, DofTable>();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
             {
-                // Only process the subdomains that have changed and need to update their dof orderings.
-                IEnumerable<ISubdomain> modifiedSubdomains = model.EnumerateSubdomains().Where(sub => sub.ConnectivityModified); //TODO: Is this what I should check?
-                transfer.DefineModelData_master(modifiedSubdomains);
+                ISubdomain subdomain = model.GetSubdomain(s);
+                processOrderings[s] = subdomainDofs[subdomain].CornerDofOrdering;
             }
-            else
-            {
-                transfer.DefineSubdomainData_slave(subdomainDofs.Subdomain.ConnectivityModified,
-                    subdomainDofs.CornerDofOrdering);
-            }
-            transfer.Transfer(cornerDofOrderingTag);
 
+            // Gather data in master
+            var transferer = new TransfererPerSubdomain(procs);
+            GetArrayLengthOfPackedData<DofTable> getPackedDataLength = (s, table) => tableSerializer.CalcPackedLength(table);
+            PackSubdomainDataIntoArray<DofTable, int> packData =
+                (s, table, packingArray, offset) => tableSerializer.PackTableIntoArray(table, packingArray, offset);
+            UnpackSubdomainDataFromArray<DofTable, int> unpackData =
+                (s, packingArray, start, end) => tableSerializer.UnpackTableFromArray(packingArray, start, end, model.GetNode);
+            Dictionary<int, DofTable> allOrderings = transferer.GatherFromSomeSubdomainsPacked(processOrderings, 
+                getPackedDataLength, packData, unpackData, activeSubdomains);
+
+            // Store the received data in master
             if (procs.IsMasterProcess)
             {
                 // Assign the received orderings
-                foreach (ISubdomain sub in transfer.SubdomainDofOrderings_master.Keys)
+                foreach (int s in allOrderings.Keys)
                 {
-                    subdomainCornerDofOrderings_master[sub] = transfer.SubdomainDofOrderings_master[sub];
+                    ISubdomain subdomain = model.GetSubdomain(s);
+                    subdomainCornerDofOrderings_master[subdomain] = allOrderings[s];
                 }
-
-                // For the subdomain of the master process, just copy the reference. Even if it isn't updated, it is costless.
-                subdomainCornerDofOrderings_master[processSubdomain] = subdomainDofs.CornerDofOrdering;
             }
         }
 
@@ -247,21 +252,27 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         /// <param name="subdomain"></param>
         private void ScatterCornerBooleanMatricesToSubdomains()
         {
-            UnsignedBooleanMatrix[] matricesBc = null;
-            
-            // Place the data to scatter in an array, since MPI does not work with dictionaries
-            if (procs.IsMasterProcess)
+            // Scatter the matrices from master process
+            var transferer = new TransfererPerSubdomain(procs);
+            Dictionary<int, UnsignedBooleanMatrix> allMatricesBc = null;
+            if (procs.IsMasterProcess) //TODO: Perhaps I should make the Dictionary have int as keys. Otherwise call a utility method that does this
             {
-                matricesBc = new UnsignedBooleanMatrix[procs.Communicator.Size];
-                for (int p = 0; p < procs.Communicator.Size; ++p)
+                allMatricesBc = new Dictionary<int, UnsignedBooleanMatrix>();
+                foreach (var subdomainBcPair in subdomainCornerBooleanMatrices_master)
                 {
-                    matricesBc[p] = subdomainCornerBooleanMatrices_master[model.GetSubdomain(p)];
+                    allMatricesBc[subdomainBcPair.Key.ID] = subdomainBcPair.Value;
                 }
             }
+            Dictionary<int, UnsignedBooleanMatrix> processMatricesBc = transferer.ScatterToAllSubdomains(allMatricesBc);
 
-            // Scatter the matrices. // TODO: This will use the automatic serialization of MPI.NET. Should I write something custom for this matrix type?
-            UnsignedBooleanMatrix Bc = procs.Communicator.Scatter(matricesBc, procs.MasterProcess);
-            subdomainDofs.SetCornerBooleanMatrix(Bc, this);
+            // Store them in other processes
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                var temp = subdomainDofs[subdomain];
+                var Bc = processMatricesBc[s];
+                temp.SetCornerBooleanMatrix(Bc, this);
+            }
         }
     }
 }

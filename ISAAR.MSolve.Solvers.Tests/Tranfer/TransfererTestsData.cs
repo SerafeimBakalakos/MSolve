@@ -51,12 +51,13 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
 
             public int PackedArrayLength => data.Length + 1;
 
-            public static SampleClass UnpackFromArray(int subdomainID, int[] packingArray, int offset)
+            public static SampleClass UnpackFromArray(int subdomainID, int[] packingArray, int start, int end)
             {
-                int length = 2 * subdomainID + 1; ; // This must match GetClassDataOfSubdomain()
-                var rawData = new int[length];
-                Array.Copy(packingArray, offset + 1, rawData, 0, rawData.Length);
-                return new SampleClass(packingArray[offset], rawData);
+                //int length = 2 * subdomainID + 1; ; // This must match GetClassDataOfSubdomain()
+                int packedLength = end - start;
+                var rawData = new int[packedLength - 1];
+                Array.Copy(packingArray, start + 1, rawData, 0, rawData.Length);
+                return new SampleClass(packingArray[start], rawData);
             }
 
             public bool Equals(SampleClass other)

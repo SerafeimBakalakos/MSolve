@@ -25,10 +25,10 @@ namespace ISAAR.MSolve.Solvers.Tests
             var suite = new MpiTestSuite();
 
             //TransfererScatterTests.RegisterAllTests(suite);
-            TransfererGatherTests.RegisterAllTests(suite);
+            //TransfererGatherTests.RegisterAllTests(suite);
 
-            //suite.AddFact(FetiDPDofSeparatorMpiTests.TestDofSeparation, typeof(FetiDPDofSeparatorMpiTests).Name, "TestDofSeparation");
-            //suite.AddFact(FetiDPDofSeparatorMpiTests.TestCornerBooleanMatrices, typeof(FetiDPDofSeparatorMpiTests).Name, "TestCornerBooleanMatrices");
+            suite.AddFact(FetiDPDofSeparatorMpiTests.TestDofSeparation, typeof(FetiDPDofSeparatorMpiTests).Name, "TestDofSeparation");
+            suite.AddFact(FetiDPDofSeparatorMpiTests.TestCornerBooleanMatrices, typeof(FetiDPDofSeparatorMpiTests).Name, "TestCornerBooleanMatrices");
             //suite.AddFact(LagrangeMultiplierEnumeratorMpiTests.TestBooleanMappingMatrices, typeof(LagrangeMultiplierEnumeratorMpiTests).Name, "TestBooleanMappingMatrices");
             //suite.AddFact(HomogeneousStiffnessDistributionMpiTests.TestBooleanMappingMatrices, typeof(HomogeneousStiffnessDistributionMpiTests).Name, "TestBooleanMappingMatrices");
 

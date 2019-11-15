@@ -61,37 +61,53 @@ namespace ISAAR.MSolve.Discretization.Transfer
             GetArrayLengthOfPackedData<TRaw> getPackedDataLength, PackSubdomainDataIntoArray<TRaw, TPacked> packData, 
             UnpackSubdomainDataFromArray<TRaw, TPacked> unpackData)
         {
-            // Determine the array sizes in each process
+            // Determine the size of each subdomain's packed data in each process
+            var processPackedSizes = new Dictionary<int, int>();
+            int processPackedSizeTotal = 0;
             int[] processSubdomains = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
-            int processCount = 0;
-            var processOffsets = new int[processSubdomains.Length];
-            for (int s = 0; s < processSubdomains.Length; ++s)
+            foreach (int sub in processSubdomains)
             {
-                int sub = processSubdomains[s];
                 TRaw rawData = processSubdomainsData[sub];
-                int packedLength = getPackedDataLength(sub, rawData);
-                if (s < processSubdomains.Length - 1) processOffsets[s + 1] = processOffsets[s] + packedLength;
-                processCount += packedLength;
+                int packedSize = getPackedDataLength(sub, rawData);
+                processPackedSizes[sub] = packedSize;
+                processPackedSizeTotal += packedSize;
             }
 
-            // Determine the array sizes in master
-            int[] allCounts = procs.Communicator.Gather<int>(processCount, procs.MasterProcess);
+            // Determine the size of each subdomain's packed data in master
+            Dictionary<int, int> allPackedSizes = GatherFromAllSubdomains<int>(processPackedSizes);
+            int totalPackedSize = 0;
+            int[] processTotalPackedSizes = null; 
+            if (procs.IsMasterProcess)
+            {
+                processTotalPackedSizes = new int[procs.Communicator.Size];
+                for (int p = 0; p < procs.Communicator.Size; ++p)
+                {
+                    foreach (int sub in procs.GetSubdomainIdsOfProcess(p))
+                    {
+                        int size = allPackedSizes[sub];
+                        processTotalPackedSizes[p] += size;
+                        totalPackedSize += size;
+                    }
+                }
+            }
 
             // Pack the subdomain data in each process
-            var processDataPacked = new TPacked[processCount];
+            var processDataPacked = new TPacked[processPackedSizeTotal];
+            int offset = 0;
             for (int s = 0; s < processSubdomains.Length; ++s)
             {
                 int sub = processSubdomains[s];
-                packData(sub, processSubdomainsData[sub], processDataPacked, processOffsets[s]);
+                packData(sub, processSubdomainsData[sub], processDataPacked, offset);
+                offset += processPackedSizes[sub];
             }
 
             // Gather all subdomain data in master
             TPacked[] allDataPacked = procs.Communicator.GatherFlattened<TPacked>(
-                processDataPacked, allCounts, procs.MasterProcess);
+                processDataPacked, processTotalPackedSizes, procs.MasterProcess);
 
             // Unpack all subdomain data in master
             Dictionary<int, TRaw> allData = null;
-            int offset = 0;
+            int start = 0;
             if (procs.IsMasterProcess)
             {
                 allData = new Dictionary<int, TRaw>();
@@ -99,10 +115,9 @@ namespace ISAAR.MSolve.Discretization.Transfer
                 {
                     foreach (int sub in procs.GetSubdomainIdsOfProcess(p))
                     {
-                        TPacked packed = allDataPacked[offset];
-                        TRaw raw = unpackData(sub, allDataPacked, offset);
-                        allData[sub] = raw;
-                        offset += getPackedDataLength(sub, raw);
+                        int end = start + allPackedSizes[sub];
+                        allData[sub] = unpackData(sub, allDataPacked, start, end);
+                        start = end;
                     }
                 }
             }
@@ -157,12 +172,17 @@ namespace ISAAR.MSolve.Discretization.Transfer
             TPacked[] processDataPacked = procs.Communicator.ScatterFromFlattened(
                 allDataPacked, numSubdomainsPerProcess, procs.MasterProcess);
 
-            // Unpack the subdomain data of this process
-            Dictionary<int, TRaw> processData = null;
-            if (!procs.IsMasterProcess)
+            // Unpack the subdomain data of this process. In master only copy the references
+            int[] subdomainsOfProcess = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+            Dictionary<int, TRaw> processData = new Dictionary<int, TRaw>(subdomainsOfProcess.Length);
+            if (procs.IsMasterProcess)
             {
-                int[] subdomainsOfProcess = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
-                processData = new Dictionary<int, TRaw>(subdomainsOfProcess.Length);
+                foreach (int sub in subdomainsOfProcess)
+                {
+                    processData[sub] = allSubdomainsData_master[sub];
+                }
+            }
+            {
                 for (int s = 0; s < subdomainsOfProcess.Length; ++s)
                 {
                     int sub = subdomainsOfProcess[s];
@@ -176,31 +196,38 @@ namespace ISAAR.MSolve.Discretization.Transfer
             GetArrayLengthOfPackedData<TRaw> getPackedDataLength, PackSubdomainDataIntoArray<TRaw, TPacked> packData, 
             UnpackSubdomainDataFromArray<TRaw, TPacked> unpackData)
         {
-            // Determine the array sizes in master
-            TPacked[] allDataPacked = null;
-            var processCounts = new int[procs.Communicator.Size];
+            // Determine the size of each subdomain's packed data in master
+            Dictionary<int, int> allPackedSizes = null;
+            int totalPackedSize = 0;
+            var processTotalPackedSizes = new int[procs.Communicator.Size];
             if (procs.IsMasterProcess)
             {
-                int totalSize = 0;
+                allPackedSizes = new Dictionary<int, int>();
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
                     foreach (int sub in procs.GetSubdomainIdsOfProcess(p))
                     {
                         TRaw rawData = allSubdomainsData_master[sub];
-                        int packedLength = getPackedDataLength(sub, rawData);
-                        totalSize += packedLength;
-                        processCounts[p] += packedLength;
+                        int packedSize = getPackedDataLength(sub, rawData);
+                        totalPackedSize += packedSize;
+                        processTotalPackedSizes[p] += packedSize;
+                        allPackedSizes[sub] = packedSize;
                     }
                 }
-                allDataPacked = new TPacked[totalSize];
             }
 
-            // Determine the array sizes in other processes. //TODO: Why is this necessary?
-            procs.Communicator.Broadcast<int>(ref processCounts, procs.MasterProcess);
+            // Determine the size of each subdomain's packed data in other processes
+            Dictionary<int, int> processPackedSizes = ScatterToAllSubdomains<int>(allPackedSizes);
+            if (!procs.IsMasterProcess)
+            {
+                foreach (int size in processPackedSizes.Values) processTotalPackedSizes[procs.OwnRank] += size;
+            }
 
             // Put all data in a global array in master
+            TPacked[] allDataPacked = null;
             if (procs.IsMasterProcess)
             {
+                allDataPacked = new TPacked[totalPackedSize];
                 int offset = 0;
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
@@ -214,21 +241,31 @@ namespace ISAAR.MSolve.Discretization.Transfer
             }
 
             // Scatter the global array
+            // In processes other than master, the "counts" parameter is an int array that contains the actual count/size only 
+            // at the index that corresponds to this process. All other entries are 0 and ignored.
             TPacked[] processDataPacked = procs.Communicator.ScatterFromFlattened(
-                allDataPacked, processCounts, procs.MasterProcess);
+                allDataPacked, processTotalPackedSizes, procs.MasterProcess);
 
-            // Unpack the subdomain data of this process
-            Dictionary<int, TRaw> processData = null;
-            if (!procs.IsMasterProcess)
+            // Unpack the subdomain data of this process. In master only copy the references
+            int[] subdomainsOfProcess = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+            Dictionary<int, TRaw> processData = new Dictionary<int, TRaw>(subdomainsOfProcess.Length);
+            if (procs.IsMasterProcess)
             {
-                int[] subdomainsOfProcess = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
-                processData = new Dictionary<int, TRaw>(subdomainsOfProcess.Length);
-                int offset = 0;
+                foreach (int sub in subdomainsOfProcess)
+                {
+                    processData[sub] = allSubdomainsData_master[sub];
+                }
+            }
+            else
+            {
+                int start = 0;
                 for (int s = 0; s < subdomainsOfProcess.Length; ++s)
                 {
                     int sub = subdomainsOfProcess[s];
-                    processData[sub] = unpackData(sub, processDataPacked, offset);
-                    offset += getPackedDataLength(sub, processData[sub]);
+                    int packedSize = processPackedSizes[sub];
+                    int end = start + packedSize;
+                    processData[sub] = unpackData(sub, processDataPacked, start, end);
+                    start = end;
                 }
             }
             return processData;
