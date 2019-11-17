@@ -30,7 +30,7 @@
 //    {
 //        private const string pathHeatFlux = @"C:\Users\Serafeim\Desktop\HEAT\MultipleBalls\heat_flux.vtk";
 //        private const string pathLevelSets = @"C:\Users\Serafeim\Desktop\HEAT\MultipleBalls\level_sets.vtk";
-//        private const string pathMesh = @"C:\Users\Serafeim\Desktop\HEAT\MultipleBalls\mesh.vtk";
+//        private const string pathMesh = @"C:\Users\Serafeim\Desktop\HEAT\MultipleBalls\conforming_mesh.vtk";
 //        private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\MultipleBalls\temperature.vtk";
 
 //        private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0;

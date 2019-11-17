@@ -11,38 +11,61 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Enrichments
 {
     public class EnrichmentPlotter
     {
-        private readonly ILsmCurve2D curve;
+        private readonly GeometricModel2D geometricModel;
         private readonly XModel model;
         private readonly string outputDirectory;
 
-        public EnrichmentPlotter(XModel model, ILsmCurve2D curve, string outputDirectory)
+        public EnrichmentPlotter(XModel model, GeometricModel2D geometricModel, string outputDirectory)
         {
             this.model = model;
-            this.curve = curve;
-            this.outputDirectory = outputDirectory;
+            this.geometricModel = geometricModel;
+            this.outputDirectory = outputDirectory.Trim('\\'); ;
         }
 
         public void PlotEnrichedNodes()
         {
-            // Find heaviside enriched nodes and their signed distances
-            var heavisideNodes = new Dictionary<CartesianPoint, double>();
-            foreach (XNode node in model.Nodes)
+            Dictionary<IEnrichmentItem, HashSet<XNode>> classifiedNodes = ClassifyEnrichedNodes();
+            int enrichmentID = 0;
+            foreach (var category in classifiedNodes)
             {
-                foreach (var enrichment in node.EnrichmentItems)
+                IEnrichmentItem enrichment = category.Key;
+                HashSet<XNode> enrichedNodes = category.Value;
+
+                var outputData = new Dictionary<CartesianPoint, double>();
+                foreach (XNode node in enrichedNodes)
                 {
-                    if (enrichment.Key is ThermalInterfaceEnrichment)
-                    {
-                        double distance = curve.SignedDistanceOf(node);
-                        heavisideNodes[node] = Math.Sign(distance);
-                    }
+                    //TODO: This does not work if 1 enrichment item uses multiple enrichment functions, e.g. crack tip
+                    double[] enrichedValues = node.EnrichmentItems[enrichment];
+                    outputData[node] = enrichedValues[0]; 
+                }
+
+                string suffix = (geometricModel.SingleCurves.Count == 1) ? "" : $"{enrichmentID}";
+                ++enrichmentID;
+                string file = $"{outputDirectory}\\enriched_nodes{suffix}.vtk";
+                using (var writer = new VtkPointWriter(file))
+                {
+                    writer.WriteScalarField("enriched_nodes", outputData);
                 }
             }
+        }
 
-            // Log heaviside enriched nodes and the signs of their level sets.
-            using (var writer = new VtkPointWriter($"{outputDirectory}\\heaviside_nodes.vtk"))
+        private Dictionary<IEnrichmentItem, HashSet<XNode>> ClassifyEnrichedNodes()
+        {
+            var classifiedNodes = new Dictionary<IEnrichmentItem, HashSet<XNode>>();
+            foreach (XNode node in model.Nodes)
             {
-                writer.WriteScalarField("Heaviside_nodes", heavisideNodes);
+                foreach (IEnrichmentItem enrichment in node.EnrichmentItems.Keys)
+                {
+                    bool isEnrichmentStored = classifiedNodes.TryGetValue(enrichment, out HashSet<XNode> enrichedNodes);
+                    if (!isEnrichmentStored)
+                    {
+                        enrichedNodes = new HashSet<XNode>();
+                        classifiedNodes[enrichment] = enrichedNodes;
+                    }
+                    enrichedNodes.Add(node);
+                }
             }
+            return classifiedNodes;
         }
     }
 }

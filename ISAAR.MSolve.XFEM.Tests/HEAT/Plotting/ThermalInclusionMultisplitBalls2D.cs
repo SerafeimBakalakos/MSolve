@@ -20,6 +20,7 @@ using ISAAR.MSolve.XFEM.Thermal.Integration;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
 using ISAAR.MSolve.XFEM.Thermal.MaterialInterface;
 using ISAAR.MSolve.XFEM.Thermal.Materials;
+using ISAAR.MSolve.XFEM.Thermal.Output.Enrichments;
 using ISAAR.MSolve.XFEM.Thermal.Output.Fields;
 using ISAAR.MSolve.XFEM.Thermal.Output.Mesh;
 using ISAAR.MSolve.XFEM.Thermal.Output.Writers;
@@ -28,9 +29,10 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 {
     public static class ThermalInclusionMultisplitBalls2D
     {
+        private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls";
         private const string pathHeatFlux = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls\heat_flux.vtk";
         private const string pathLevelSets = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls\level_sets.vtk";
-        private const string pathMesh = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls\mesh.vtk";
+        private const string pathMesh = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls\conforming_mesh.vtk";
         private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls\temperature.vtk";
 
         private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0;
@@ -52,17 +54,12 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             (XModel model, GeometricModel2D geometricModel) = CreateModel(numElementsX, numElementsY);
             InitializeLSM(model, geometricModel);
 
-            // Plot mesh and level sets
-            int counter = 0;
-            foreach (SimpleLsmClosedCurve2D curve in geometricModel.SingleCurves)
-            {
-                using (var writer = new VtkFileWriter(pathLevelSets.Replace(".vtk", $"{counter++}.vtk")))
-                {
-                    var levelSetField = new LevelSetField(model, curve);
-                    writer.WriteMesh(levelSetField.Mesh);
-                    writer.WriteScalarField("inclusion_level_set", levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
-                }
-            }
+            // Plot original mesh and level sets
+            Utilities.PlotInclusionLevelSets(outputDirectory, "level_set", model, geometricModel);
+
+            // Plot enrichments
+            var enrichmentPlotter = new EnrichmentPlotter(model, geometricModel, outputDirectory);
+            enrichmentPlotter.PlotEnrichedNodes();
         }
 
         public static void PlotConformingMesh()
@@ -78,52 +75,46 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
                 writer.WriteMesh(mesh);
             }
 
-            // Plot mesh and level sets
-            int counter = 0;
-            foreach (SimpleLsmClosedCurve2D curve in geometricModel.SingleCurves)
-            {
-                using (var writer = new VtkFileWriter(pathLevelSets.Replace(".vtk", $"{counter++}.vtk")))
-                {
-                    var levelSetField = new LevelSetField(model, curve);
-                    writer.WriteMesh(levelSetField.Mesh);
-                    writer.WriteScalarField("inclusion_level_set", levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
-                }
-            }
+            // Plot original mesh and level sets
+            Utilities.PlotInclusionLevelSets(outputDirectory, "level_set", model, geometricModel);
+
+            // Plot enrichments
+            var enrichmentPlotter = new EnrichmentPlotter(model, geometricModel, outputDirectory);
+            enrichmentPlotter.PlotEnrichedNodes();
         }
 
-        //public static void PlotTemperature()
-        //{
-        //    // Create model and LSM
-        //    (XModel model, GeometricModel2D geometricModel) = CreateModel(numElementsX, numElementsY);
-        //    InitializeLSM(model, geometricModel);
-        //    ApplyEnrichments(model, geometricModel);
+        public static void PlotTemperature()
+        {
+            // Create model and LSM
+            (XModel model, GeometricModel2D geometricModel) = CreateModel(numElementsX, numElementsY);
+            InitializeLSM(model, geometricModel);
+            ApplyEnrichments(model, geometricModel);
 
-        //    // Run the analysis
-        //    SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(model);
-        //    var problem = new ProblemThermalSteadyState(model, solver);
-        //    var linearAnalyzer = new LinearAnalyzer(model, solver, problem);
-        //    var staticAnalyzer = new StaticAnalyzer(model, solver, problem, linearAnalyzer);
-        //    staticAnalyzer.Initialize();
-        //    staticAnalyzer.Solve();
+            // Run the analysis
+            SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(model);
+            var problem = new ProblemThermalSteadyState(model, solver);
+            var linearAnalyzer = new LinearAnalyzer(model, solver, problem);
+            var staticAnalyzer = new StaticAnalyzer(model, solver, problem, linearAnalyzer);
+            staticAnalyzer.Initialize();
+            staticAnalyzer.Solve();
 
-        //    // Plot original mesh and level sets
-        //    using (var writer = new VtkFileWriter(pathLevelSets))
-        //    {
-        //        var levelSetField = new LevelSetField(model, geometricModel);
-        //        writer.WriteMesh(levelSetField.Mesh);
-        //        writer.WriteScalarField("inclusion_level_set", levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
-        //    }
+            // Plot original mesh and level sets
+            Utilities.PlotInclusionLevelSets(outputDirectory, "level_set", model, geometricModel);
 
-        //    // Plot conforming mesh and temperature field
-        //    using (var writer = new VtkFileWriter(pathTemperature))
-        //    {
-        //        var mesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, geometricModel);
-        //        var temperatureField = new TemperatureField2D(model, geometricModel, mesh);
-        //        writer.WriteMesh(mesh);
-        //        IVectorView solution = solver.LinearSystems[subdomainID].Solution;
-        //        writer.WriteScalarField("temperature", mesh, temperatureField.CalcValuesAtVertices(solution));
-        //    }
-        //}
+            // Plot enrichments
+            var enrichmentPlotter = new EnrichmentPlotter(model, geometricModel, outputDirectory);
+            enrichmentPlotter.PlotEnrichedNodes();
+
+            // Plot conforming mesh and temperature field
+            using (var writer = new VtkFileWriter(pathTemperature))
+            {
+                var mesh = new ConformingOutputMesh2D(geometricModel, model.Nodes, model.Elements);
+                //var temperatureField = new TemperatureField2D(model, geometricModel, mesh);
+                writer.WriteMesh(mesh);
+                IVectorView solution = solver.LinearSystems[subdomainID].Solution;
+                //writer.WriteScalarField("temperature", mesh, temperatureField.CalcValuesAtVertices(solution));
+            }
+        }
 
         //public static void PlotTemperatureAndFlux()
         //{
@@ -140,13 +131,12 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         //    staticAnalyzer.Initialize();
         //    staticAnalyzer.Solve();
 
-        //    // Plot original mesh and level sets
-        //    using (var writer = new VtkFileWriter(pathLevelSets))
-        //    {
-        //        var levelSetField = new LevelSetField(model, geometricModel);
-        //        writer.WriteMesh(levelSetField.Mesh);
-        //        writer.WriteScalarField("inclusion_level_set", levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
-        //    }
+        //// Plot original mesh and level sets
+        //using (var writer = new VtkFileWriter(pathLevelSets))
+        //{
+        //    var levelSetField = new LevelSetField(model, geometricModel);
+        //    levelSetField.OutputLevelSetFields(writer);
+        //}
 
         //    // Plot conforming mesh, temperature field
         //    using (var writer = new VtkFileWriter(pathTemperature))

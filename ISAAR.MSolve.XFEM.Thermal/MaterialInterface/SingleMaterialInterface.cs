@@ -13,22 +13,22 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
     public class SingleMaterialInterface
     {
         private readonly IEnumerable<XThermalElement2D> modelElements;
-        private readonly GeometricModel2D geometry;
+        private readonly ILsmCurve2D curve;
         private readonly ThermalInterfaceEnrichment enrichment;
         private readonly IHeavisideSingularityResolver singularityResolver;
 
-        public SingleMaterialInterface(GeometricModel2D geometry, 
+        public SingleMaterialInterface(GeometricModel2D geometricModel, ILsmCurve2D curve, 
             IEnumerable<XThermalElement2D> modelElements, double interfaceResistance) : 
-            this(geometry, modelElements, interfaceResistance, new RelativeAreaResolver(geometry))
+            this(curve, modelElements, interfaceResistance, new RelativeAreaResolver(geometricModel))
         {
         }
 
-        public SingleMaterialInterface(GeometricModel2D geometry, IEnumerable<XThermalElement2D> modelElements, 
+        public SingleMaterialInterface(ILsmCurve2D curve, IEnumerable<XThermalElement2D> modelElements, 
             double interfaceResistance, IHeavisideSingularityResolver singularityResolver)
         {
-            this.geometry = geometry;
+            this.curve = curve;
             this.modelElements = modelElements;
-            this.enrichment = new ThermalInterfaceEnrichment(geometry.SingleCurves[0], interfaceResistance);
+            this.enrichment = new ThermalInterfaceEnrichment(curve, interfaceResistance);
             this.singularityResolver = singularityResolver;
         }
 
@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
 
             foreach (XThermalElement2D element in modelElements) //TODO: Better to ask the LSM to return the relevant elements
             {
-                CurveElementIntersection intersection = geometry.SingleCurves[0].IntersectElement(element);
+                CurveElementIntersection intersection = curve.IntersectElement(element);
                 if (intersection.RelativePosition == RelativePositionCurveElement.Intersection)
                 {
                     intersectedElements.Add(element);
@@ -55,7 +55,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
             }
 
             // Remove nodes whose nodal support does not include Gauss points in both sides of the discontinuity
-            HashSet<XNode> nodesToRemove = singularityResolver.FindHeavisideNodesToRemove(geometry.SingleCurves[0], enrichedNodes);
+            HashSet<XNode> nodesToRemove = singularityResolver.FindHeavisideNodesToRemove(curve, enrichedNodes);
             enrichedNodes.ExceptWith(nodesToRemove);
 
             // Calculate and store nodal enrichments

@@ -7,6 +7,7 @@ using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
 
+//TODO: Curves should have IDs
 namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
 {
     public interface ILsmCurve2D

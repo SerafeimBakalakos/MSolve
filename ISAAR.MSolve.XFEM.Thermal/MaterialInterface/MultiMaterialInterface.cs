@@ -7,6 +7,7 @@ using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
+using ISAAR.MSolve.XFEM.Thermal.MaterialInterface.SingularityResolving;
 
 namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
 {
@@ -24,9 +25,11 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
 
             int numCurves = geometricModel.SingleCurves.Count;
             singleMaterialInterfaces = new SingleMaterialInterface[numCurves];
+            var resolver = new RelativeAreaResolver(geometricModel);
             for (int c = 0; c < numCurves; ++c)
             {
-                singleMaterialInterfaces[c] = new SingleMaterialInterface(geometricModel, modelElements, interfaceResistances[c]);
+                singleMaterialInterfaces[c] = new SingleMaterialInterface(
+                    geometricModel.SingleCurves[c], modelElements, interfaceResistances[c], resolver);
             }
         }
 
