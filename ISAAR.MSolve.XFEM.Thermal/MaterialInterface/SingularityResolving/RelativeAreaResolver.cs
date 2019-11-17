@@ -14,10 +14,12 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface.SingularityResolving
 {
     public class RelativeAreaResolver : IHeavisideSingularityResolver
     {
+        private readonly GeometricModel2D geometricModel;
         private readonly double relativeAreaTolerance;
 
-        public RelativeAreaResolver(double relativeAreaTolerance = 1E-4)
+        public RelativeAreaResolver(GeometricModel2D geometricModel, double relativeAreaTolerance = 1E-4)
         {
+            this.geometricModel = geometricModel;
             this.relativeAreaTolerance = relativeAreaTolerance;
         }
 
@@ -84,13 +86,10 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface.SingularityResolving
             double positiveArea = 0.0;
             double negativeArea = 0.0;
 
-            CurveElementIntersection intersection = curve.IntersectElement(element);
-            if (intersection.RelativePosition == RelativePositionCurveElement.Intersection)
+            // Split the element into subtriangles
+            bool success = geometricModel.TryConformingTriangulation(element, out IReadOnlyList<ElementSubtriangle> subtriangles);
+            if (success)
             {
-                // Split the element into subtriangles
-                bool success = curve.TryConformingTriangulation(element, intersection,
-                    out IReadOnlyList<ElementSubtriangle> subtriangles);
-                Debug.Assert(success);
                 foreach (ElementSubtriangle triangle in subtriangles)
                 {
                     // Calculate their areas and on which side they lie, based on their centroids

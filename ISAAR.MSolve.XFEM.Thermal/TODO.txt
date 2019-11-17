@@ -12,3 +12,19 @@
 2) XFEM 2D multiple circular inclusions which intersect each other
 3) Resolve singularities using gauss points instead of relative area
 4) Near-band level sets
+5) Vector Level Set Method:
+	- It is near band by default. It has the same complications to implement it though
+	- Much better approximation of curved interfaces
+		- The 2nd option of interpolation from Ventura's paper is straightforward and much more accurate than regular LSM. 
+			- What happens if nodes are on both sides of the interface?
+		- The 3rd option is also very promising
+			- It is independent of shape functions and their order
+			- The circle fitting idea could be extended to other shapes: ellipsis or general curves
+			- Circle fitting could be combined with a triangular mesh. 
+				- The initial mesh could be structured with Tri3 elements
+				- Even better, after locating the elements that interact with the interface, refine them!
+					- Refining them is easy, since they are triangles
+					- Not sure about the accuracy of such a refinement
+	- Needs formulas for identifying element - curve intersection in natural/cartesian system
+	- Needs formulas for identifying conforming triangulation in natural/cartesian system
+	- Needs formulas for identifying curve-curve intersection in natural/cartesian system

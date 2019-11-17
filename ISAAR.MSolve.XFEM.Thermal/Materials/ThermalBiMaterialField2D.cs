@@ -10,25 +10,25 @@ namespace ISAAR.MSolve.XFEM.Thermal.Materials
 {
     public class ThermalBiMaterialField2D : IThermalMaterialField2D
     {
-        private readonly Dictionary<int, ThermalMaterial> materials;
-        private readonly ILsmCurve2D curve;
+        private readonly ThermalMaterial materialPositive;
+        private readonly ThermalMaterial materialNegative;
+        private readonly GeometricModel2D geometricModel;
 
         public ThermalBiMaterialField2D(ThermalMaterial materialPositive, ThermalMaterial materialNegative,
-            ILsmCurve2D materialInterface)
+            GeometricModel2D geometricModel)
         {
-            this.materials = new Dictionary<int, ThermalMaterial>();
-            this.materials[0] = materialPositive;
-            this.materials[1] = materialNegative;
-            this.curve = materialInterface;
+            this.materialPositive = materialPositive;
+            this.materialNegative = materialNegative;
+            this.geometricModel = geometricModel;
         }
 
         //TODO: If we use narrow band level set then foreach interface, then this method will not work for the standard/blending
         //      elements outside the narrow band. 
         public ThermalMaterial GetMaterialAt(IXFiniteElement element, double[] shapeFunctionsAtNaturalPoint)
         {
-            double levelSet = curve.SignedDistanceOf(element, shapeFunctionsAtNaturalPoint);
-            if (levelSet >= 0.0) return materials[0];
-            else return materials[1];
+            double levelSet = geometricModel.SingleCurves[0].SignedDistanceOf(element, shapeFunctionsAtNaturalPoint);
+            if (levelSet >= 0.0) return materialPositive;
+            else return materialNegative;
         }
     }
 }

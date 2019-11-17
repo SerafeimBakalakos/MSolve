@@ -28,6 +28,36 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
 
         public double Thickness { get; }
 
+        public ISet<NaturalPoint> FindConformingTriangleVertices(IXFiniteElement element, CurveElementIntersection intersection)
+        {
+            // Triangle vertices = union(nodes, intersectionPoints)
+            var comparer = new Point2DComparerXMajor<NaturalPoint>(1E-7); //TODO: This should be avoided.
+            var triangleVertices = new SortedSet<NaturalPoint>(comparer); //TODO: Better use a HashSet, which needs a hash function for points.
+
+            if (intersection.RelativePosition == RelativePositionCurveElement.Disjoint) return triangleVertices;
+            triangleVertices.UnionWith(element.StandardInterpolation.NodalNaturalCoordinates);
+            triangleVertices.UnionWith(intersection.IntersectionPoints);
+
+            // Corner case: the element is tangent to the discontinuity. We need to triangulate for plotting the temperature field. //TODO: Really?
+            //Debug.Assert(intersection.IntersectionPoints.Length == 2);  
+
+            // Corner case: the curve intersects the element at 2 opposite nodes. In this case also add the middle of their 
+            // segment to force the Delauny algorithm to conform to the segment.
+            //TODO: I should use constrained Delauny in all cases and conform to the intersection segment.
+            if (intersection.IntersectionPoints.Length == 2)
+            {
+                NaturalPoint p0 = intersection.IntersectionPoints[0];
+                NaturalPoint p1 = intersection.IntersectionPoints[1];
+                if (element.StandardInterpolation.NodalNaturalCoordinates.Contains(p0)
+                    && element.StandardInterpolation.NodalNaturalCoordinates.Contains(p1))
+                {
+                    triangleVertices.Add(new NaturalPoint(05 * (p0.Xi + p1.Xi), 0.5 * (p0.Eta + p1.Eta)));
+                }
+            }
+
+            return triangleVertices;
+        }
+
         public void InitializeGeometry(IEnumerable<XNode> nodes, ICurve2D discontinuity)
         {
             foreach (XNode node in nodes) levelSets[node] = discontinuity.SignedDistanceOf(node);
@@ -120,46 +150,6 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
                 signedDistance += shapeFunctionsAtNaturalPoint[n] * levelSets[element.Nodes[n]];
             }
             return signedDistance;
-        }
-
-        public bool TryConformingTriangulation(IXFiniteElement element, CurveElementIntersection intersection,
-            out IReadOnlyList<ElementSubtriangle> subtriangles)
-        {
-            if (intersection.RelativePosition == RelativePositionCurveElement.Disjoint)
-            {
-                subtriangles = null;
-                return false;
-            }
-
-            // Triangle vertices = union(nodes, intersectionPoints)
-            var comparer = new Point2DComparerXMajor<NaturalPoint>(1E-7);
-            var triangleVertices = new SortedSet<NaturalPoint>(comparer); //TODO: Better use a HashSet, which needs a hash function for points.
-            triangleVertices.UnionWith(element.StandardInterpolation.NodalNaturalCoordinates);
-            triangleVertices.UnionWith(intersection.IntersectionPoints);
-
-
-            // Corner case: the element is tangent to the discontinuity. We need to triangulate for plotting the temperature field. //TODO: Really?
-            //Debug.Assert(intersection.IntersectionPoints.Length == 2);  
-
-            // Corner case: the curve intersects the element at 2 opposite nodes. In this case also add the middle of their 
-            // segment to force the Delauny algorithm to conform to the segment.
-            //TODO: I should use constrained Delauny in all cases and conform to the intersection segment.
-            if (intersection.IntersectionPoints.Length == 2)
-            {
-                NaturalPoint p0 = intersection.IntersectionPoints[0];
-                NaturalPoint p1 = intersection.IntersectionPoints[1];
-                if (element.StandardInterpolation.NodalNaturalCoordinates.Contains(p0)
-                    && element.StandardInterpolation.NodalNaturalCoordinates.Contains(p1))
-                {
-                    triangleVertices.Add(new NaturalPoint(05 * (p0.Xi + p1.Xi), 0.5 * (p0.Eta + p1.Eta)));
-                }
-            }
-
-            // Create triangles
-            var triangulator = new Triangulator2D<NaturalPoint>((x1, x2) => new NaturalPoint(x1, x2));
-            List<Triangle2D<NaturalPoint>> triangles = triangulator.CreateMesh(triangleVertices);
-            subtriangles = triangles.Select(t => new ElementSubtriangle(t.Vertices)).ToList();
-            return true;
         }
 
         private bool IsElementDisjoint(IXFiniteElement element)

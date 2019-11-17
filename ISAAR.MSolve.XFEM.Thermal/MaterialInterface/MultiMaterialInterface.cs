@@ -13,21 +13,20 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
     public class MultiMaterialInterface
     {
         private readonly IEnumerable<XThermalElement2D> modelElements;
-        private readonly MultiLsmClosedCurve2D geometry;
+        private readonly GeometricModel2D geometricModel;
         private readonly SingleMaterialInterface[] singleMaterialInterfaces;
 
-        public MultiMaterialInterface(MultiLsmClosedCurve2D geometry, IEnumerable<XThermalElement2D> modelElements,
+        public MultiMaterialInterface(GeometricModel2D geometricModel, IEnumerable<XThermalElement2D> modelElements,
             double[] interfaceResistances)
         {
-            this.geometry = geometry;
+            this.geometricModel = geometricModel;
             this.modelElements = modelElements;
 
-            int numCurves = geometry.SingleCurves.Count;
+            int numCurves = geometricModel.SingleCurves.Count;
             singleMaterialInterfaces = new SingleMaterialInterface[numCurves];
             for (int c = 0; c < numCurves; ++c)
             {
-                singleMaterialInterfaces[c] = new SingleMaterialInterface(
-                    geometry.SingleCurves[c], modelElements, interfaceResistances[c]);
+                singleMaterialInterfaces[c] = new SingleMaterialInterface(geometricModel, modelElements, interfaceResistances[c]);
             }
         }
 

@@ -23,8 +23,8 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Mesh
         private readonly Dictionary<IXFiniteElement, HashSet<Subtriangle>> originalCells2Subtriangles;
         //private readonly Dictionary<XNode, HashSet<VtkPoint>> original2OutVertices;
 
-        public ConformingOutputMesh2D(IReadOnlyList<XNode> originalVertices, IReadOnlyList<IXFiniteElement> originalCells, 
-            ILsmCurve2D discontinuity)
+        public ConformingOutputMesh2D(GeometricModel2D geometricModel, 
+            IReadOnlyList<XNode> originalVertices, IReadOnlyList<IXFiniteElement> originalCells)
         {
             this.outVertices = new List<VtkPoint>(originalVertices.Count);
             this.outCells = new List<VtkCell>(originalCells.Count);
@@ -40,12 +40,10 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Mesh
                 IXFiniteElement originalCell = originalCells[c];
                 original2OutCells[originalCell] = new HashSet<VtkCell>();
 
-                CurveElementIntersection intersection = discontinuity.IntersectElement(originalCell);
-                if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
+                bool success = geometricModel.TryConformingTriangulation(originalCell, 
+                    out IReadOnlyList<ElementSubtriangle> subtriangles);
+                if (success)
                 {
-                    bool success = discontinuity.TryConformingTriangulation(originalCell, intersection,
-                        out IReadOnlyList<ElementSubtriangle> subtriangles);
-                    Debug.Assert(success);
                     originalCells2Subtriangles[originalCell] = new HashSet<Subtriangle>();
                     foreach (ElementSubtriangle triangle in subtriangles)
                     {
