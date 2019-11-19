@@ -21,13 +21,11 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Fields
     public class TemperatureField2D
     {
         private readonly XModel model;
-        private readonly ILsmCurve2D discontinuity;
         private readonly ConformingOutputMesh2D outMesh;
 
-        public TemperatureField2D(XModel model, ILsmCurve2D discontinuity, ConformingOutputMesh2D outMesh)
+        public TemperatureField2D(XModel model, ConformingOutputMesh2D outMesh)
         {
             this.model = model;
-            this.discontinuity = discontinuity;
             this.outMesh = outMesh;
         }
 
@@ -41,8 +39,8 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Fields
             {
                 var element = (XThermalElement2D)e;
 
-                var intersection = discontinuity.IntersectElement(element);
-                if (intersection.RelativePosition == RelativePositionCurveElement.Disjoint) //TODO: perhaps decide based on outMesh.GetOutCellsForOriginal(element)
+                IEnumerable<ConformingOutputMesh2D.Subtriangle> subtriangles = outMesh.GetSubtrianglesForOriginal(element);
+                if (subtriangles.Count() == 0)
                 {
                     double[] nodalTemperatures = ExtractNodalTemperaturesStandard(element, subdomain, systemSolution);
                     Debug.Assert(outMesh.GetOutCellsForOriginal(element).Count() == 1);
@@ -52,7 +50,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Fields
                 else
                 {
                     double[] nodalTemperatures = ExtractNodalTemperatures(element, subdomain, systemSolution);
-                    foreach (ConformingOutputMesh2D.Subtriangle subtriangle in outMesh.GetSubtrianglesForOriginal(element))
+                    foreach (ConformingOutputMesh2D.Subtriangle subtriangle in subtriangles)
                     {
                         Debug.Assert(subtriangle.OutVertices.Count == 3); //TODO: Not sure what happens for 2nd order elements
 

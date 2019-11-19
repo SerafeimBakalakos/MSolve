@@ -31,7 +31,6 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
     {
         private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Ball";
         private const string pathHeatFlux = @"C:\Users\Serafeim\Desktop\HEAT\Ball\heat_flux.vtk";
-        private const string pathLevelSets = @"C:\Users\Serafeim\Desktop\HEAT\Ball\level_sets.vtk";
         private const string pathMesh = @"C:\Users\Serafeim\Desktop\HEAT\Ball\conforming_mesh.vtk";
         private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\Ball\temperature.vtk";
 
@@ -95,7 +94,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             using (var writer = new VtkFileWriter(pathTemperature))
             {
                 var mesh = new ConformingOutputMesh2D(geometricModel, model.Nodes, model.Elements);
-                var temperatureField = new TemperatureField2D(model, geometricModel.SingleCurves[0], mesh);
+                var temperatureField = new TemperatureField2D(model, mesh);
                 writer.WriteMesh(mesh);
                 IVectorView solution = solver.LinearSystems[subdomainID].Solution;
                 writer.WriteScalarField("temperature", mesh, temperatureField.CalcValuesAtVertices(solution));
@@ -128,7 +127,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             using (var writer = new VtkFileWriter(pathTemperature))
             {
                 var mesh = new ConformingOutputMesh2D(geometricModel, model.Nodes, model.Elements);
-                var temperatureField = new TemperatureField2D(model, geometricModel.SingleCurves[0], mesh);
+                var temperatureField = new TemperatureField2D(model, mesh);
                 var fluxField = new HeatFluxField2D(model, geometricModel.SingleCurves[0], mesh, zeroLevelSetTolerance);
                 writer.WriteMesh(mesh);
                 IVectorView solution = solver.LinearSystems[subdomainID].Solution;

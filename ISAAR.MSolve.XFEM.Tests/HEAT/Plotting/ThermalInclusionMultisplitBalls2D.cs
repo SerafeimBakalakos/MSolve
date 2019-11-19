@@ -31,22 +31,21 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
     {
         private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls";
         private const string pathHeatFlux = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls\heat_flux.vtk";
-        private const string pathLevelSets = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls\level_sets.vtk";
         private const string pathMesh = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls\conforming_mesh.vtk";
         private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls\temperature.vtk";
 
         private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0;
 
         // There are 2 or more inclusions in the same element
-        private const int numElementsX = 15, numElementsY = 15;
+        private const int numElementsX = 30, numElementsY = 30;
         private const int numBallsX = 2, numBallsY = 1;
         private const double ballRadius = 0.3;
 
         private const double zeroLevelSetTolerance = 1E-6;
         private const int subdomainID = 0;
 
-        private const double conductivityMatrix = 1.0, conductivityInclusion = 10000;
-        private const double interfaceResistance = 1E-10;
+        private const double conductivityMatrix = 1.0, conductivityInclusion = 1000;
+        private const double interfaceResistanceLeft = 1E-10, interfaceResistanceRight = 1E-10;
 
         public static void PlotLevelSets()
         {
@@ -56,10 +55,6 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 
             // Plot original mesh and level sets
             Utilities.PlotInclusionLevelSets(outputDirectory, "level_set", model, geometricModel);
-
-            // Plot enrichments
-            var enrichmentPlotter = new EnrichmentPlotter(model, geometricModel, outputDirectory);
-            enrichmentPlotter.PlotEnrichedNodes();
         }
 
         public static void PlotConformingMesh()
@@ -77,10 +72,6 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 
             // Plot original mesh and level sets
             Utilities.PlotInclusionLevelSets(outputDirectory, "level_set", model, geometricModel);
-
-            // Plot enrichments
-            var enrichmentPlotter = new EnrichmentPlotter(model, geometricModel, outputDirectory);
-            enrichmentPlotter.PlotEnrichedNodes();
         }
 
         public static void PlotTemperature()
@@ -109,10 +100,10 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             using (var writer = new VtkFileWriter(pathTemperature))
             {
                 var mesh = new ConformingOutputMesh2D(geometricModel, model.Nodes, model.Elements);
-                //var temperatureField = new TemperatureField2D(model, geometricModel, mesh);
+                var temperatureField = new TemperatureField2D(model, mesh);
                 writer.WriteMesh(mesh);
                 IVectorView solution = solver.LinearSystems[subdomainID].Solution;
-                //writer.WriteScalarField("temperature", mesh, temperatureField.CalcValuesAtVertices(solution));
+                writer.WriteScalarField("temperature", mesh, temperatureField.CalcValuesAtVertices(solution));
             }
         }
 
@@ -216,7 +207,8 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         {
             int numCurves = geometricModel.SingleCurves.Count;
             var interfaceResistances = new double[numCurves];
-            for (int c = 0; c < numCurves; ++c) interfaceResistances[c] = interfaceResistance;
+            interfaceResistances[0] = interfaceResistanceLeft;
+            interfaceResistances[1] = interfaceResistanceRight;
             var materialInterface = new MultiMaterialInterface(geometricModel, model.Elements.Select(e => (XThermalElement2D)e),
                 interfaceResistances);
             materialInterface.ApplyEnrichments();

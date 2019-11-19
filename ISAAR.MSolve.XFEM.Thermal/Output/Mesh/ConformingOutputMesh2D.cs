@@ -97,8 +97,17 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Mesh
         //public IEnumerable<VtkPoint> GetOutVerticesForOriginal(XNode originalVertex)
         //    => original2OutVertices[originalVertex];
 
+        /// <summary>
+        /// If the <paramref name="originalCell"/> is not intersected by any curve, then an empty collection will be returned.
+        /// </summary>
+        /// <param name="originalCell"></param>
+        /// <returns></returns>
         public IEnumerable<Subtriangle> GetSubtrianglesForOriginal(IXFiniteElement originalCell)
-            => originalCells2Subtriangles[originalCell];
+        {
+            bool isIntersected = originalCells2Subtriangles.TryGetValue(originalCell, out HashSet<Subtriangle> subtriangles);
+            if (isIntersected) return subtriangles;
+            else return new Subtriangle[0];
+        }
 
         //TODO: This is could be derived from VtkCell. Right now there is both a Subtriangle and a VtkCell and they store the 
         //      same data.
