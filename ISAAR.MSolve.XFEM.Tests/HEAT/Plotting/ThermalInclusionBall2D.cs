@@ -128,7 +128,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             {
                 var mesh = new ConformingOutputMesh2D(geometricModel, model.Nodes, model.Elements);
                 var temperatureField = new TemperatureField2D(model, mesh);
-                var fluxField = new HeatFluxField2D(model, geometricModel.SingleCurves[0], mesh, zeroLevelSetTolerance);
+                var fluxField = new HeatFluxField2D(model, mesh, zeroLevelSetTolerance);
                 writer.WriteMesh(mesh);
                 IVectorView solution = solver.LinearSystems[subdomainID].Solution;
                 writer.WriteScalarField("temperature", mesh, temperatureField.CalcValuesAtVertices(solution));

@@ -37,15 +37,15 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0;
 
         // There are 2 or more inclusions in the same element
-        private const int numElementsX = 30, numElementsY = 30;
+        private const int numElementsX = 15, numElementsY = 15;
         private const int numBallsX = 2, numBallsY = 1;
         private const double ballRadius = 0.3;
 
         private const double zeroLevelSetTolerance = 1E-6;
         private const int subdomainID = 0;
 
-        private const double conductivityMatrix = 1.0, conductivityInclusion = 1000;
-        private const double interfaceResistanceLeft = 1E-10, interfaceResistanceRight = 1E-10;
+        private const double conductivityMatrix = 1E0, conductivityInclusion = 1E4;
+        private const double interfaceConductivityLeft = 1E0, interfaceConductivityRight = 1E0;
 
         public static void PlotLevelSets()
         {
@@ -107,40 +107,37 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             }
         }
 
-        //public static void PlotTemperatureAndFlux()
-        //{
-        //    // Create model and LSM
-        //    (XModel model, GeometricModel2D geometricModel) = CreateModel(numElementsX, numElementsY);
-        //    InitializeLSM(model, geometricModel);
-        //    ApplyEnrichments(model, geometricModel);
+        public static void PlotTemperatureAndFlux()
+        {
+            // Create model and LSM
+            (XModel model, GeometricModel2D geometricModel) = CreateModel(numElementsX, numElementsY);
+            InitializeLSM(model, geometricModel);
+            ApplyEnrichments(model, geometricModel);
 
-        //    // Run the analysis
-        //    SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(model);
-        //    var problem = new ProblemThermalSteadyState(model, solver);
-        //    var linearAnalyzer = new LinearAnalyzer(model, solver, problem);
-        //    var staticAnalyzer = new StaticAnalyzer(model, solver, problem, linearAnalyzer);
-        //    staticAnalyzer.Initialize();
-        //    staticAnalyzer.Solve();
+            // Run the analysis
+            SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(model);
+            var problem = new ProblemThermalSteadyState(model, solver);
+            var linearAnalyzer = new LinearAnalyzer(model, solver, problem);
+            var staticAnalyzer = new StaticAnalyzer(model, solver, problem, linearAnalyzer);
+            staticAnalyzer.Initialize();
+            staticAnalyzer.Solve();
 
-        //// Plot original mesh and level sets
-        //using (var writer = new VtkFileWriter(pathLevelSets))
-        //{
-        //    var levelSetField = new LevelSetField(model, geometricModel);
-        //    levelSetField.OutputLevelSetFields(writer);
-        //}
+            // Plot original mesh and level sets
+            Utilities.PlotInclusionLevelSets(outputDirectory, "level_set", model, geometricModel);
 
-        //    // Plot conforming mesh, temperature field
-        //    using (var writer = new VtkFileWriter(pathTemperature))
-        //    {
-        //        var mesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, geometricModel);
-        //        var temperatureField = new TemperatureField2D(model, geometricModel, mesh);
-        //        var fluxField = new HeatFluxField2D(model, geometricModel, mesh, zeroLevelSetTolerance);
-        //        writer.WriteMesh(mesh);
-        //        IVectorView solution = solver.LinearSystems[subdomainID].Solution;
-        //        writer.WriteScalarField("temperature", mesh, temperatureField.CalcValuesAtVertices(solution));
-        //        writer.WriteVector2DField("heat_flux", mesh, fluxField.CalcValuesAtVertices(solution));
-        //    }
-        //}
+            // Plot conforming mesh, temperature field
+            using (var writer = new VtkFileWriter(pathTemperature))
+            {
+                var mesh = new ConformingOutputMesh2D(geometricModel, model.Nodes, model.Elements);
+                var temperatureField = new TemperatureField2D(model, mesh);
+                var fluxField = new HeatFluxField2D(model, mesh, zeroLevelSetTolerance);
+                writer.WriteMesh(mesh);
+                IVectorView solution = solver.LinearSystems[subdomainID].Solution;
+                writer.WriteScalarField("temperature", mesh, temperatureField.CalcValuesAtVertices(solution));
+                writer.WriteVector2DField("heat_flux", mesh, fluxField.CalcValuesAtVertices(solution));
+
+            }
+        }
 
         private static (XModel, GeometricModel2D) CreateModel(int numElementsX, int numElementsY)
         {
@@ -207,8 +204,8 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         {
             int numCurves = geometricModel.SingleCurves.Count;
             var interfaceResistances = new double[numCurves];
-            interfaceResistances[0] = interfaceResistanceLeft;
-            interfaceResistances[1] = interfaceResistanceRight;
+            interfaceResistances[0] = 1 / interfaceConductivityLeft;
+            interfaceResistances[1] = 1 / interfaceConductivityRight;
             var materialInterface = new MultiMaterialInterface(geometricModel, model.Elements.Select(e => (XThermalElement2D)e),
                 interfaceResistances);
             materialInterface.ApplyEnrichments();

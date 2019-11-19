@@ -26,15 +26,12 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Fields
     public class HeatFluxField2D
     {
         private readonly XModel model;
-        private readonly ILsmCurve2D discontinuity;
         private readonly ConformingOutputMesh2D outMesh;
         private readonly double zeroLevelSetTolerance;
 
-        public HeatFluxField2D(XModel model, ILsmCurve2D discontinuity, ConformingOutputMesh2D outMesh, 
-            double zeroLevelSetTolerance)
+        public HeatFluxField2D(XModel model, ConformingOutputMesh2D outMesh, double zeroLevelSetTolerance)
         {
             this.model = model;
-            this.discontinuity = discontinuity;
             this.outMesh = outMesh;
         }
 
@@ -48,8 +45,10 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Fields
             {
                 var element = (XThermalElement2D)e;
 
-                var intersection = discontinuity.IntersectElement(element);
-                if (intersection.RelativePosition == RelativePositionCurveElement.Disjoint) //TODO: perhaps decide based on outMesh.GetOutCellsForOriginal(element)
+                //var intersection = discontinuity.IntersectElement(element);
+                //if (intersection.RelativePosition == RelativePositionCurveElement.Disjoint) //TODO: perhaps decide based on outMesh.GetOutCellsForOriginal(element)
+                IEnumerable<ConformingOutputMesh2D.Subtriangle> subtriangles = outMesh.GetSubtrianglesForOriginal(element);
+                if (subtriangles.Count() == 0)
                 {
                     double[] nodalTemperaturesStd = ExtractNodalTemperaturesStandard(element, subdomain, systemSolution);
                     Debug.Assert(outMesh.GetOutCellsForOriginal(element).Count() == 1);
@@ -60,7 +59,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Fields
                 else
                 {
                     double[] nodalTemperatures = ExtractNodalTemperatures(element, subdomain, systemSolution);
-                    foreach (ConformingOutputMesh2D.Subtriangle subtriangle in outMesh.GetSubtrianglesForOriginal(element))
+                    foreach (ConformingOutputMesh2D.Subtriangle subtriangle in subtriangles)
                     {
                         Debug.Assert(subtriangle.OutVertices.Count == 3); //TODO: Not sure what happens for 2nd order elements
 
@@ -71,7 +70,8 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Fields
                         for (int v = 0; v < 3; ++v)
                         {
                             VtkPoint vertexOut = subtriangle.OutVertices[v];
-                            outFlux[vertexOut] = fluxAtVertices[v];
+                            //outFlux[vertexOut] = fluxAtVertices[v]; //TODO: This should have been the correct one, but it creates huge flux vectors.
+                            outFlux[vertexOut] = new double[3];
                         }
                     }
                 }
@@ -166,12 +166,13 @@ namespace ISAAR.MSolve.XFEM.Thermal.Output.Fields
                     }
                 }
 
-                // If the vertex is on the interface, enforce that flux = 0, to avoid artifacts when plotting
-                if (Math.Abs(discontinuity.SignedDistanceOf(element, N)) <= zeroLevelSetTolerance)
-                {
-                    flux[0] = 0.0;
-                    flux[1] = 0.0;
-                }
+                //TODO: This does not work correctly!
+                // If the vertex is on the interface, enforce that flux = 0, to avoid artifacts when plotting 
+                //if (Math.Abs(discontinuity.SignedDistanceOf(element, N)) <= zeroLevelSetTolerance)
+                //{
+                //    flux[0] = 0.0;
+                //    flux[1] = 0.0;
+                //}
 
                 fluxAtVertices.Add(new double[]
                 {
