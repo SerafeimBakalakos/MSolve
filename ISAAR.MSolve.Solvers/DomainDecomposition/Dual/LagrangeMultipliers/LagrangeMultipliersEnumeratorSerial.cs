@@ -46,8 +46,38 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
             }
 
             // Calculate the boolean matrices
-            subdomainBooleanMatrices = 
-                LagrangeMultipliersUtilities.CalcAllBooleanMatrices(LagrangeMultipliers, subdomainDofOrderings);
+            subdomainBooleanMatrices = CalcAllBooleanMatrices(LagrangeMultipliers, subdomainDofOrderings);
+        }
+
+        /// <summary>
+        /// This method is slower than <see cref="CalcBooleanMatricesAndLagranges(IModel, int, 
+        /// List{(INode node, IDofType[] dofs, ISubdomain[] subdomainsPlus, ISubdomain[] subdomainsMinus)}, Dictionary{int, int}, 
+        /// Dictionary{int, DofTable})"/>. It probably does not matter that much though.
+        /// </summary>
+        private static Dictionary<ISubdomain, SignedBooleanMatrixColMajor> CalcAllBooleanMatrices(
+            IReadOnlyList<LagrangeMultiplier> globalLagranges, Dictionary<ISubdomain, DofTable> subdomainDofOrderings)
+        {
+            // Initialize the signed boolean matrices
+            var booleanMatrices = new Dictionary<ISubdomain, SignedBooleanMatrixColMajor>();
+            foreach (ISubdomain subdomain in subdomainDofOrderings.Keys)
+            {
+                booleanMatrices[subdomain] =
+                    new SignedBooleanMatrixColMajor(globalLagranges.Count, subdomainDofOrderings[subdomain].EntryCount);
+            }
+
+            // Fill all boolean matrices simultaneously
+            for (int i = 0; i < globalLagranges.Count; ++i) // Global lagrange multiplier index
+            {
+                LagrangeMultiplier lagrange = globalLagranges[i];
+
+                int dofIdxPlus = subdomainDofOrderings[lagrange.SubdomainPlus][lagrange.Node, lagrange.DofType];
+                booleanMatrices[lagrange.SubdomainPlus].AddEntry(i, dofIdxPlus, true);
+
+                int dofIdxMinus = subdomainDofOrderings[lagrange.SubdomainMinus][lagrange.Node, lagrange.DofType];
+                booleanMatrices[lagrange.SubdomainMinus].AddEntry(i, dofIdxMinus, false);
+            }
+
+            return booleanMatrices;
         }
     }
 }

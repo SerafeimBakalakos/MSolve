@@ -119,5 +119,13 @@ namespace ISAAR.MSolve.Discretization.Transfer
         /// </summary>
         /// <param name="processRank"></param>
         public int[] GetSubdomainIdsOfProcess(int processRank) => processesToSubdomains[processRank];
+
+        //TODO: Shouldn't this be accessed by model itself? But then what happens for master process, which contains all subdomains?
+        public Dictionary<int, ISubdomain> GetSubdomainsOfProcess(int processRank, IModel model)
+        {
+            var processSubdomains = new Dictionary<int, ISubdomain>();
+            foreach (int s in processesToSubdomains[processRank]) processSubdomains[s] = model.GetSubdomain(s);
+            return processSubdomains;
+        }
     }
 }

@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
         //      IReadOnlyList<LagrangeMultiplier> in MPI implementation. That data would be stored as an int[] with each lagrange
         //      multiplier occupying 4 consecutive entries. Reading/writing the entries would be delegated to ILagrangeSerializer.
         //      Then I guess, this overload would be the only one actually used.
-        public static SignedBooleanMatrixColMajor CalcSubdomainBooleanMatrix(int numGlobalLagranges,
+        public static SignedBooleanMatrixColMajor CalcSubdomainBooleanMatrixOLD(int numGlobalLagranges,
             IEnumerable<SubdomainLagrangeMultiplier> subdomainLagranges, DofTable subdomainDofOrdering)
         {
             int numSubdomainDofs = subdomainDofOrdering.EntryCount;
@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
             return booleanMatrix;
         }
 
-        public static SignedBooleanMatrixColMajor CalcSubdomainBooleanMatrix(ISubdomain subdomain, 
+        public static SignedBooleanMatrixColMajor CalcSubdomainBooleanMatrixOLD(ISubdomain subdomain, 
             IReadOnlyList<LagrangeMultiplier> globalLagranges, DofTable subdomainDofOrdering)
         {
             int numGlobalLagranges = globalLagranges.Count;
@@ -65,66 +65,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
             return booleanMatrix;
         }
 
-        //TODO: Not thrilled about having an array with missing or incomplete objects
-        public static SignedBooleanMatrixColMajor CalcBooleanMatrixFromIncompleteData(ISubdomain subdomain,
-            LagrangeMultiplier[] incompleteGlobalLagranges, int numRemainderDofs, DofTable remainderDofOrdering)
-        {
-            int numGlobalLagranges = incompleteGlobalLagranges.Length;
-            var booleanMatrix = new SignedBooleanMatrixColMajor(numGlobalLagranges, numRemainderDofs);
-
-            for (int i = 0; i < numGlobalLagranges; ++i) // Global lagrange multiplier index
-            {
-                LagrangeMultiplier lagrange = incompleteGlobalLagranges[i];
-                if (lagrange == null) continue; // This lagrange's data is irrelevant and unavailable for the current subdomain.
-                if ((lagrange.SubdomainPlus != null) && (lagrange.SubdomainPlus.ID == subdomain.ID))
-                {
-                    int dofIdx = remainderDofOrdering[lagrange.Node, lagrange.DofType];
-                    booleanMatrix.AddEntry(i, dofIdx, true);
-                }
-                else if ((lagrange.SubdomainMinus != null) && (lagrange.SubdomainMinus.ID == subdomain.ID))
-                {
-                    int dofIdx = remainderDofOrdering[lagrange.Node, lagrange.DofType];
-                    booleanMatrix.AddEntry(i, dofIdx, false);
-                }
-            }
-
-            return booleanMatrix;
-        }
-
-
-        /// <summary>
-        /// This method is slower than <see cref="CalcBooleanMatricesAndLagranges(IModel, int, 
-        /// List{(INode node, IDofType[] dofs, ISubdomain[] subdomainsPlus, ISubdomain[] subdomainsMinus)}, Dictionary{int, int}, 
-        /// Dictionary{int, DofTable})"/>. It probably does not matter that much though.
-        /// </summary>
-        public static Dictionary<ISubdomain, SignedBooleanMatrixColMajor> CalcAllBooleanMatrices(
-            IReadOnlyList<LagrangeMultiplier> globalLagranges, Dictionary<ISubdomain, DofTable> subdomainDofOrderings)
-        {
-            // Initialize the signed boolean matrices
-            var booleanMatrices = new Dictionary<ISubdomain, SignedBooleanMatrixColMajor>();
-            foreach (ISubdomain subdomain in subdomainDofOrderings.Keys)
-            {
-                booleanMatrices[subdomain] = 
-                    new SignedBooleanMatrixColMajor(globalLagranges.Count, subdomainDofOrderings[subdomain].EntryCount);
-            }
-
-            // Fill all boolean matrices simultaneously
-            for (int i = 0; i < globalLagranges.Count; ++i) // Global lagrange multiplier index
-            {
-                LagrangeMultiplier lagrange = globalLagranges[i];
-
-                int dofIdxPlus = subdomainDofOrderings[lagrange.SubdomainPlus][lagrange.Node, lagrange.DofType];
-                booleanMatrices[lagrange.SubdomainPlus].AddEntry(i, dofIdxPlus, true);
-
-                int dofIdxMinus = subdomainDofOrderings[lagrange.SubdomainMinus][lagrange.Node, lagrange.DofType];
-                booleanMatrices[lagrange.SubdomainMinus].AddEntry(i, dofIdxMinus, false);
-            }
-
-            return booleanMatrices;
-        }
-
         public static (Dictionary<int, SignedBooleanMatrixColMajor> booleanMatrices, LagrangeMultiplier[] lagranges)
-            CalcBooleanMatricesAndLagranges(IModel model, int numLagrangeMultipliers,
+            CalcBooleanMatricesAndLagrangesOLD(IModel model, int numLagrangeMultipliers,
             List<(INode node, IDofType[] dofs, ISubdomain[] subdomainsPlus, ISubdomain[] subdomainsMinus)> boundaryNodeData,
             Dictionary<int, int> numRemainderDofs, Dictionary<int, DofTable> remainderDofOrderings) //TODO: Rename the "remainder"
         {
@@ -167,7 +109,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
         }
 
         public static (List<(INode node, IDofType[] dofs, ISubdomain[] subdomainsPlus, ISubdomain[] subdomainsMinus)> combos,
-            int numLagranges) DefineLagrangeCombinations(IDofSeparator dofSeparator, ICrosspointStrategy crosspointStrategy)
+            int numLagranges) DefineLagrangeCombinationsOLD(IDofSeparator dofSeparator, ICrosspointStrategy crosspointStrategy)
         {
             // Find boundary dual nodes and dofs
             var boundaryNodeData = new List<(INode node, IDofType[] dofs, ISubdomain[] subdomainsPlus,

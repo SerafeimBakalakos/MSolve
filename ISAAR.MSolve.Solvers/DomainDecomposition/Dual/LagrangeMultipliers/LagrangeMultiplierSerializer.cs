@@ -42,15 +42,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
             return (numGlobalLagranges, subdomainLagranges);
         }
 
-        //TODO: Not thrilled about having an array of DTOs with null entries in the array and the DTOs
+        //TODO: Not thrilled about having an array of DTOs with null entries in the array and the DTOs. Especially if it is passed between classes
         /// <summary>
         /// For the lagrange multipliers that are applied to the subdomain corresponding to this process, the opposite subdomain
         /// may be null. For all other lagrange multipliers, the corresponding array entries may be null. 
         /// </summary>
         /// <param name="serializedLagranges"></param>
         /// <param name="subdomain"></param>
-        public LagrangeMultiplier[] DeserializeIncompletely(int[] serializedLagranges, ISubdomain subdomain, 
-            Dictionary<int, INode> subdomainNodes)
+        public LagrangeMultiplier[] DeserializeIncompletely(int[] serializedLagranges,
+            Dictionary<int, ISubdomain> processSubdomains)
         {
             CheckSerializedLength(serializedLagranges);
             int numLagranges = serializedLagranges.Length / 4;
@@ -59,16 +59,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
             {
                 int subdomainPlusID = serializedLagranges[4 * i + 2];
                 int subdomainMinusID = serializedLagranges[4 * i + 3];
-                int sign = 0;
-                if (subdomainPlusID == subdomain.ID) sign = +1;
-                if (subdomainMinusID == subdomain.ID) sign = -1;
+                bool subdomainPlusIsStored = processSubdomains.TryGetValue(subdomainPlusID, out ISubdomain subdomainPlus);
+                bool subdomainMinusIsStored = processSubdomains.TryGetValue(subdomainMinusID, out ISubdomain subdomainMinus);
 
-                if (sign != 0)
+                if (subdomainPlusIsStored || subdomainMinusIsStored)
                 {
-                    INode node = subdomainNodes[serializedLagranges[4 * i]];
+                    int nodeID = serializedLagranges[4 * i];
+                    INode node = subdomainPlusIsStored ? subdomainPlus.GetNode(nodeID) : subdomainMinus.GetNode(nodeID);
                     IDofType dofType = dofSerializer.Deserialize(serializedLagranges[4 * i + 1]);
-                    if (sign == +1) lagranges[i] = new LagrangeMultiplier(node, dofType, subdomain, null);
-                    else lagranges[i] = new LagrangeMultiplier(node, dofType, null, subdomain);
+                    lagranges[i] = new LagrangeMultiplier(node, dofType, subdomainPlus, subdomainMinus); // one of them may be null
                 }
             }
             return lagranges;

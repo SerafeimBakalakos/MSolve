@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
         private readonly ProcessDistribution procs;
 
         private List<LagrangeMultiplier> lagrangeMultipliers_master;
-        private SignedBooleanMatrixColMajor subdomainBooleanMatrix;
+        private Dictionary<int, SignedBooleanMatrixColMajor> subdomainBooleanMatrices;
 
         public LagrangeMultipliersEnumeratorMpi(ProcessDistribution processDistribution, IModel model,
             ICrosspointStrategy crosspointStrategy, IDofSeparator dofSeparator)
@@ -44,12 +44,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
         public SignedBooleanMatrixColMajor GetBooleanMatrix(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
-            return subdomainBooleanMatrix;
+            return subdomainBooleanMatrices[subdomain.ID];
         }
 
         public void CalcBooleanMatrices(Func<ISubdomain, DofTable> getSubdomainDofOrdering)
         {
-            // Define the lagrange multipliers and serialize and broadcast them to other processes
+            // Define the lagrange multipliers, serialize and broadcast them to other processes
             int[] serializedLagranges = null;
             if (procs.IsMasterProcess)
             {
@@ -60,25 +60,111 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
             }
             MpiUtilities.BroadcastArray(procs.Communicator, ref serializedLagranges, procs.MasterProcess);
 
-            // Deserialize the lagrange multipliers in other processes and calculate the boolean matrices
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            DofTable subdomainDofOrdering = getSubdomainDofOrdering(subdomain);
+            // Deserialize the lagrange multipliers in other processes and calculate the boolean matrices for each subdomain
+            //ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
+            //DofTable subdomainDofOrdering = getSubdomainDofOrdering(subdomain);
+            var subdomainDofOrderings = new Dictionary<int, DofTable>();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                subdomainDofOrderings[s] = getSubdomainDofOrdering(subdomain);
+            }
             if (procs.IsMasterProcess)
             {
-                subdomainBooleanMatrix = LagrangeMultipliersUtilities.CalcSubdomainBooleanMatrix(subdomain,
-                    lagrangeMultipliers_master, subdomainDofOrdering);
+                subdomainBooleanMatrices = CalcSubdomainBooleanMatrices(lagrangeMultipliers_master, subdomainDofOrderings);
             }
             else
             {
-                (int numGlobalLagranges, List<SubdomainLagrangeMultiplier> subdomainLagranges) =
-                    lagrangeSerializer.Deserialize(serializedLagranges, subdomain);
-                NumLagrangeMultipliers = numGlobalLagranges;
-                subdomainBooleanMatrix = LagrangeMultipliersUtilities.CalcSubdomainBooleanMatrix(
-                    numGlobalLagranges, subdomainLagranges, subdomainDofOrdering);
-
-                // Alternatively I could call LagrangeMultiplierSerializer.DeserializeIncompletely(...) and its matching
-                // LagrangeMultipliersUtilities.CalcBooleanMatrixFromIncompleteData(...), but that is too fragile.
+                //TODO: Using incomplete data and especially passing it between multiple classes is very fragile.
+                Dictionary<int, ISubdomain> processSubdomains = procs.GetSubdomainsOfProcess(procs.OwnRank, model);
+                LagrangeMultiplier[] incompleteLagranges = lagrangeSerializer.DeserializeIncompletely(serializedLagranges,
+                    processSubdomains);
+                NumLagrangeMultipliers = incompleteLagranges.Length;
+                subdomainBooleanMatrices = CalcSubdomainBooleanMatricesFromIncompleteData(incompleteLagranges, 
+                    subdomainDofOrderings);
             }
+        }
+
+        // Optimized version of CalcSubdomainBooleanMatricesFromIncompleteData. Avoids null checks
+        private static Dictionary<int, SignedBooleanMatrixColMajor> CalcSubdomainBooleanMatrices(
+            IReadOnlyList<LagrangeMultiplier> globalLagranges, Dictionary<int, DofTable> remainderDofOrderings)
+        {
+            int numGlobalLagranges = globalLagranges.Count;
+            var booleanMatrices = new Dictionary<int, SignedBooleanMatrixColMajor>();
+            foreach (var subdomainOrderingPair in remainderDofOrderings)
+            {
+                int sub = subdomainOrderingPair.Key;
+                DofTable ordering = subdomainOrderingPair.Value;
+                booleanMatrices[sub] = new SignedBooleanMatrixColMajor(numGlobalLagranges, ordering.EntryCount);
+            }
+
+            for (int i = 0; i < numGlobalLagranges; ++i) // Global lagrange multiplier index
+            {
+                LagrangeMultiplier lagrange = globalLagranges[i];
+
+                // Subdomain plus
+                bool isInProcess = remainderDofOrderings.TryGetValue(lagrange.SubdomainPlus.ID, out DofTable orderingPlus);
+                if (isInProcess)
+                {
+                    int dofIdx = orderingPlus[lagrange.Node, lagrange.DofType];
+                    booleanMatrices[lagrange.SubdomainPlus.ID].AddEntry(i, dofIdx, true);
+                }
+
+                // Subdomain minus
+                isInProcess = remainderDofOrderings.TryGetValue(lagrange.SubdomainMinus.ID, out DofTable orderingMinus);
+                if (isInProcess)
+                {
+                    int dofIdx = orderingMinus[lagrange.Node, lagrange.DofType];
+                    booleanMatrices[lagrange.SubdomainMinus.ID].AddEntry(i, dofIdx, false);
+                }
+            }
+
+            return booleanMatrices;
+        }
+
+        private static Dictionary<int, SignedBooleanMatrixColMajor> CalcSubdomainBooleanMatricesFromIncompleteData(
+            IReadOnlyList<LagrangeMultiplier> incompleteGlobalLagranges, Dictionary<int, DofTable> remainderDofOrderings)
+        {
+            int numGlobalLagranges = incompleteGlobalLagranges.Count;
+            var booleanMatrices = new Dictionary<int, SignedBooleanMatrixColMajor>();
+            foreach (var subdomainOrderingPair in remainderDofOrderings)
+            {
+                int sub = subdomainOrderingPair.Key;
+                DofTable ordering = subdomainOrderingPair.Value;
+                booleanMatrices[sub] = new SignedBooleanMatrixColMajor(numGlobalLagranges, ordering.EntryCount);
+            }
+
+            for (int i = 0; i < numGlobalLagranges; ++i) // Global lagrange multiplier index
+            {
+                LagrangeMultiplier lagrange = incompleteGlobalLagranges[i];
+                if (lagrange == null) continue; // This lagrange's data is irrelevant and unavailable for the current subdomains.
+
+                // Subdomain plus
+                if (lagrange.SubdomainPlus != null)
+                {
+                    int sub = lagrange.SubdomainPlus.ID;
+                    bool isInProcess = remainderDofOrderings.TryGetValue(sub, out DofTable ordering);
+                    if (isInProcess)
+                    {
+                        int dofIdx = ordering[lagrange.Node, lagrange.DofType];
+                        booleanMatrices[sub].AddEntry(i, dofIdx, true);
+                    }
+                }
+
+                // Subdomain minus
+                if (lagrange.SubdomainMinus != null)
+                {
+                    int sub = lagrange.SubdomainMinus.ID;
+                    bool isInProcess = remainderDofOrderings.TryGetValue(sub, out DofTable ordering);
+                    if (isInProcess)
+                    {
+                        int dofIdx = ordering[lagrange.Node, lagrange.DofType];
+                        booleanMatrices[sub].AddEntry(i, dofIdx, false);
+                    }
+                }
+            }
+
+            return booleanMatrices;
         }
     }
 }
