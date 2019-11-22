@@ -14,6 +14,9 @@ using System.Text;
 //      needed for that, or even better dedicated methods in this interface
 //TODO: Perhaps provide overloads that take IEnumerable<ISubdomain> and function pointers for gathering the data before 
 //      transmission and using them after.
+//TODO: Also have variants of the gather methods with an Action<int,T> to use each received item as soon as it is available and 
+//      then discard it. In that case, Dictionary<int, T> is not returned. These methods are to be used if there is not enough
+//      memory to gather all data in one process and afterwards use them.
 namespace ISAAR.MSolve.Discretization.Transfer
 {
     //TODO: Not sure that the subdomainID is needed
@@ -21,8 +24,8 @@ namespace ISAAR.MSolve.Discretization.Transfer
     public delegate TRaw UnpackSubdomainData<TRaw, TPacked>(int subdomainID, TPacked packedData);
     public delegate int GetArrayLengthOfPackedData<TRaw>(int subdomainID, TRaw originalData);
     public delegate void PackSubdomainDataIntoArray<TRaw, TPacked>(int subdomainID, TRaw originalData, 
-        TPacked[] packingArray, int offset);
-    public delegate TRaw UnpackSubdomainDataFromArray<TRaw, TPacked>(int subdomainID, TPacked[] packingArray, int start, int end);
+        TPacked[] buffer, int offset);
+    public delegate TRaw UnpackSubdomainDataFromArray<TRaw, TPacked>(int subdomainID, TPacked[] buffer, int start, int end);
 
     public interface ISubdomainDataTransferer
     {

@@ -51,13 +51,13 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
 
             public int PackedArrayLength => data.Length + 1;
 
-            public static SampleClass UnpackFromArray(int subdomainID, int[] packingArray, int start, int end)
+            public static SampleClass UnpackFromArray(int subdomainID, int[] buffer, int start, int end)
             {
                 //int length = 2 * subdomainID + 1; ; // This must match GetClassDataOfSubdomain()
                 int packedLength = end - start;
                 var rawData = new int[packedLength - 1];
-                Array.Copy(packingArray, start + 1, rawData, 0, rawData.Length);
-                return new SampleClass(packingArray[start], rawData);
+                Array.Copy(buffer, start + 1, rawData, 0, rawData.Length);
+                return new SampleClass(buffer[start], rawData);
             }
 
             public bool Equals(SampleClass other)
@@ -66,10 +66,10 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
                 return CheckEquality(this.data, other.data);
             }
 
-            public void PackIntoArray(int[] packingArray, int offset)
+            public void PackIntoArray(int[] buffer, int offset)
             {
-                packingArray[offset] = ID;
-                Array.Copy(data, 0, packingArray, offset + 1, data.Length);
+                buffer[offset] = ID;
+                Array.Copy(data, 0, buffer, offset + 1, data.Length);
             }
 
             public override string ToString()

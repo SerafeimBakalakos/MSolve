@@ -228,9 +228,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             var transferer = new TransfererPerSubdomain(procs);
             GetArrayLengthOfPackedData<DofTable> getPackedDataLength = (s, table) => tableSerializer.CalcPackedLength(table);
             PackSubdomainDataIntoArray<DofTable, int> packData =
-                (s, table, packingArray, offset) => tableSerializer.PackTableIntoArray(table, packingArray, offset);
+                (s, table, buffer, offset) => tableSerializer.PackTableIntoArray(table, buffer, offset);
             UnpackSubdomainDataFromArray<DofTable, int> unpackData =
-                (s, packingArray, start, end) => tableSerializer.UnpackTableFromArray(packingArray, start, end, model.GetNode);
+                (s, buffer, start, end) => tableSerializer.UnpackTableFromArray(buffer, start, end, model.GetNode);
             Dictionary<int, DofTable> allOrderings = transferer.GatherFromSomeSubdomainsPacked(processOrderings, 
                 getPackedDataLength, packData, unpackData, activeSubdomains);
 

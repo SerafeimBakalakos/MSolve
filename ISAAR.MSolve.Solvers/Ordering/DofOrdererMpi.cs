@@ -31,9 +31,11 @@ namespace ISAAR.MSolve.Solvers.Ordering
         public override void OrderFreeDofs(IModel model)
         {
             // Each process orders its subdomain dofs
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            ISubdomainFreeDofOrdering subdomainOrdering = OrderFreeDofs(subdomain);
-            subdomain.FreeDofOrdering = subdomainOrdering;
+            foreach (ISubdomain subdomain in procs.GetSubdomainsOfProcess(procs.OwnRank, model).Values)
+            {
+                ISubdomainFreeDofOrdering subdomainOrdering = OrderFreeDofs(subdomain);
+                subdomain.FreeDofOrdering = subdomainOrdering;
+            }
 
             // Order global dofs
             int numGlobalFreeDofs = -1;

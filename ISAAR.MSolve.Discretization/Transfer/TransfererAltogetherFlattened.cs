@@ -21,12 +21,12 @@ namespace ISAAR.MSolve.Discretization.Transfer
         public Dictionary<int, T[]> GatherFromAllSubdomains<T>(Dictionary<int, T[]> processSubdomainsData)
         {
             GetArrayLengthOfPackedData<T[]> getPackedDataLength = (s, subdomainArray) => subdomainArray.Length;
-            PackSubdomainDataIntoArray<T[], T> packData = (s, subdomainArray, packingArray, offset)
-                => Array.Copy(subdomainArray, 0, packingArray, offset, subdomainArray.Length);
-            UnpackSubdomainDataFromArray<T[], T> unpackData = (s, packingArray, start, end) =>
+            PackSubdomainDataIntoArray<T[], T> packData = (s, subdomainArray, buffer, offset)
+                => Array.Copy(subdomainArray, 0, buffer, offset, subdomainArray.Length);
+            UnpackSubdomainDataFromArray<T[], T> unpackData = (s, buffer, start, end) =>
             {
                 var subdomainArray = new T[end - start];
-                Array.Copy(packingArray, start, subdomainArray, 0, end - start);
+                Array.Copy(buffer, start, subdomainArray, 0, end - start);
                 return subdomainArray;
             };
             return GatherFromAllSubdomainsPacked(processSubdomainsData, getPackedDataLength, packData, unpackData);
@@ -171,12 +171,12 @@ namespace ISAAR.MSolve.Discretization.Transfer
         public Dictionary<int, T[]> ScatterToAllSubdomains<T>(Dictionary<int, T[]> allSubdomainsData_master)
         {
             GetArrayLengthOfPackedData<T[]> getPackedDataLength = (s, subdomainArray) => subdomainArray.Length;
-            PackSubdomainDataIntoArray<T[], T> packData = (s, subdomainArray, packingArray, offset) 
-                => Array.Copy(subdomainArray, 0, packingArray, offset, subdomainArray.Length);
-            UnpackSubdomainDataFromArray<T[], T> unpackData = (s, packingArray, start, end) =>
+            PackSubdomainDataIntoArray<T[], T> packData = (s, subdomainArray, buffer, offset) 
+                => Array.Copy(subdomainArray, 0, buffer, offset, subdomainArray.Length);
+            UnpackSubdomainDataFromArray<T[], T> unpackData = (s, buffer, start, end) =>
             {
                 var subdomainArray = new T[end - start];
-                Array.Copy(packingArray, start, subdomainArray, 0, end - start);
+                Array.Copy(buffer, start, subdomainArray, 0, end - start);
                 return subdomainArray;
             };
             return ScatterToAllSubdomainsPacked(allSubdomainsData_master, getPackedDataLength, packData, unpackData);

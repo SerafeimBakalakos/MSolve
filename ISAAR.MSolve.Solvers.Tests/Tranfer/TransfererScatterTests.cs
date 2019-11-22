@@ -167,9 +167,9 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
                 {
                     GetArrayLengthOfPackedData<SampleClass> getPackedDataLength = (id, data) => data.PackedArrayLength;
                     PackSubdomainDataIntoArray<SampleClass, int> packData = 
-                        (id, data, packingArray, offset) => data.PackIntoArray(packingArray, offset);
+                        (id, data, buffer, offset) => data.PackIntoArray(buffer, offset);
                     UnpackSubdomainDataFromArray<SampleClass, int> unpackData = 
-                        (id, packingArray, start, end) => SampleClass.UnpackFromArray(id, packingArray, start, end);
+                        (id, buffer, start, end) => SampleClass.UnpackFromArray(id, buffer, start, end);
                     return transf.ScatterToAllSubdomainsPacked(allData, getPackedDataLength, packData, unpackData);
                 },
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
@@ -225,9 +225,9 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
                 {
                     GetArrayLengthOfPackedData<SampleClass> getPackedDataLength = (id, data) => data.PackedArrayLength;
                     PackSubdomainDataIntoArray<SampleClass, int> packData =
-                        (id, data, packingArray, offset) => data.PackIntoArray(packingArray, offset);
+                        (id, data, buffer, offset) => data.PackIntoArray(buffer, offset);
                     UnpackSubdomainDataFromArray<SampleClass, int> unpackData =
-                        (id, packingArray, start, end) => SampleClass.UnpackFromArray(id, packingArray, start, end);
+                        (id, buffer, start, end) => SampleClass.UnpackFromArray(id, buffer, start, end);
                     return transf.ScatterToSomeSubdomainsPacked(allData, getPackedDataLength, packData, unpackData, 
                         activeSubdomains);
                 },

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
@@ -51,11 +52,49 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 
         private Vector AssembleSubdomainVectors(Func<ISubdomain, Vector> getSubdomainVector)
         {
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            Vector subdomainVector = getSubdomainVector(subdomain);
+            //TODO: Subdomain vectors should not be gathered in master altogether. Instead the vector of each CLUSTER should be 
+            //      received and then added
+
+            //TODO: This class and the following one need serious refactoring
+            ((GlobalFreeDofOrderingMpi)(model.GlobalDofOrdering)).CreateSubdomainGlobalMaps();
+
+            // Prepare the subdomain vectors of each process
+            var processVectors = new Dictionary<int, Vector>();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank)) //ERROR: For master this means that only its own subdomains are processes.
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                processVectors[s] = getSubdomainVector(subdomain);
+            }
+
+            // Set up packing/unpacking of vectors
+            ////TODO: The next is stupid, since it copies the vector to an array, while I could access its backing storage in 
+            ////      most cases. I need a class that handles transfering the concrete vector class. That would live in an 
+            ////      LinearAlgebra.MPI project
+            GetArrayLengthOfPackedData<Vector> getPackedDataLength = (s, vector) => vector.Length;
+            PackSubdomainDataIntoArray<Vector, double> packData = (s, vector, buffer, offset) 
+                => Array.Copy(vector.CopyToArray(), 0, buffer, offset, vector.Length);
+            UnpackSubdomainDataFromArray<Vector, double> unpackData = (s, buffer, start, end) =>
+            {
+                var subdomainArray = new double[end - start];
+                Array.Copy(buffer, start, subdomainArray, 0, end - start);
+                return Vector.CreateFromArray(subdomainArray);
+            };
+
+            // Gather subdomain vectors in master 
+            var transferer = new TransfererPerSubdomain(procs);
+            Dictionary<int, Vector> allVectors = transferer.GatherFromAllSubdomainsPacked(processVectors,
+                getPackedDataLength, packData, unpackData);
+
+            // Assemble the subdomain vectors into a global one
             Vector globalVector = null;
-            if (procs.IsMasterProcess) globalVector = Vector.CreateZero(model.GlobalDofOrdering.NumGlobalFreeDofs);
-            model.GlobalDofOrdering.AddVectorSubdomainToGlobal(subdomain, subdomainVector, globalVector);
+            if (procs.IsMasterProcess)
+            {
+                globalVector = Vector.CreateZero(model.GlobalDofOrdering.NumGlobalFreeDofs);
+                foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+                {
+                    model.GlobalDofOrdering.AddVectorSubdomainToGlobal(subdomain, allVectors[subdomain.ID], globalVector);
+                }
+            }
             return globalVector;
         }
     }

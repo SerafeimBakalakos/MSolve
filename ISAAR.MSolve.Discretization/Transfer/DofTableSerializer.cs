@@ -43,13 +43,13 @@ namespace ISAAR.MSolve.Discretization.Transfer
 
         public int CalcPackedLength(DofTable table) => 3 * table.EntryCount;
 
-        public void PackTableIntoArray(DofTable table, int[] packingArray, int offset)
+        public void PackTableIntoArray(DofTable table, int[] buffer, int offset)
         {
             foreach ((INode row, IDofType col, int val) in table)
             {
-                packingArray[offset++] = row.ID;                          // Node
-                packingArray[offset++] = dofSerializer.Serialize(col);    // Dof type
-                packingArray[offset++] = val;                             // Dof index in vectors/matrices
+                buffer[offset++] = row.ID;                          // Node
+                buffer[offset++] = dofSerializer.Serialize(col);    // Dof type
+                buffer[offset++] = val;                             // Dof index in vectors/matrices
             }
         }
 
@@ -67,15 +67,15 @@ namespace ISAAR.MSolve.Discretization.Transfer
             return serializedTable;
         }
 
-        public DofTable UnpackTableFromArray(int[] packingArray, int start, int end, Func<int, INode> getGlobalNode)
+        public DofTable UnpackTableFromArray(int[] buffer, int start, int end, Func<int, INode> getGlobalNode)
         {
             int numEntries = (end - start) / 3;
             var table = new DofTable();
             for (int i = 0; i < numEntries; ++i)
             {
-                INode node = getGlobalNode(packingArray[start + 3 * i]);
-                IDofType dofType = dofSerializer.Deserialize(packingArray[start + 3 * i + 1]);
-                int dofIdx = packingArray[start + 3 * i + 2];
+                INode node = getGlobalNode(buffer[start + 3 * i]);
+                IDofType dofType = dofSerializer.Deserialize(buffer[start + 3 * i + 1]);
+                int dofIdx = buffer[start + 3 * i + 2];
                 table[node, dofType] = dofIdx; //TODO: perhaps this can be optimized to avoid checking if there is already such an entry.
             }
             return table;

@@ -24,49 +24,49 @@ namespace ISAAR.MSolve.Solvers.Tests
         {
             var suite = new MpiTestSuite();
 
-            TransfererScatterTests.RegisterAllTests(suite);
-            TransfererGatherTests.RegisterAllTests(suite);
+            //TransfererScatterTests.RegisterAllTests(suite);
+            //TransfererGatherTests.RegisterAllTests(suite);
 
-            //suite.AddFact(FetiDPDofSeparatorMpiTests.TestDofSeparation, typeof(FetiDPDofSeparatorMpiTests).Name, "TestDofSeparation");
-            //suite.AddFact(FetiDPDofSeparatorMpiTests.TestCornerBooleanMatrices, typeof(FetiDPDofSeparatorMpiTests).Name, "TestCornerBooleanMatrices");
-            //suite.AddFact(LagrangeMultiplierEnumeratorMpiTests.TestBooleanMappingMatrices, typeof(LagrangeMultiplierEnumeratorMpiTests).Name, "TestBooleanMappingMatrices");
-            //suite.AddFact(HomogeneousStiffnessDistributionMpiTests.TestBooleanMappingMatrices, typeof(HomogeneousStiffnessDistributionMpiTests).Name, "TestBooleanMappingMatrices");
+            suite.AddFact(FetiDPDofSeparatorMpiTests.TestDofSeparation, typeof(FetiDPDofSeparatorMpiTests).Name, "TestDofSeparation");
+            suite.AddFact(FetiDPDofSeparatorMpiTests.TestCornerBooleanMatrices, typeof(FetiDPDofSeparatorMpiTests).Name, "TestCornerBooleanMatrices");
+            suite.AddFact(LagrangeMultiplierEnumeratorMpiTests.TestBooleanMappingMatrices, typeof(LagrangeMultiplierEnumeratorMpiTests).Name, "TestBooleanMappingMatrices");
+            suite.AddFact(HomogeneousStiffnessDistributionMpiTests.TestBooleanMappingMatrices, typeof(HomogeneousStiffnessDistributionMpiTests).Name, "TestBooleanMappingMatrices");
 
-            //suite.AddFact(FetiDPMatrixManagerMpiTests.TestVectorsFbcFr, typeof(FetiDPMatrixManagerMpiTests).Name, "TestVectorsFbcFr");
-            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKccKcrKrr, typeof(FetiDPMatrixManagerMpiTests).Name, "TestMatricesKccKcrKrr", MatrixFormat.Dense);
-            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKccKcrKrr, typeof(FetiDPMatrixManagerMpiTests).Name, "TestMatricesKccKcrKrr", MatrixFormat.Skyline);
-            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKccKcrKrr, typeof(FetiDPMatrixManagerMpiTests).Name, "TestMatricesKccKcrKrr", MatrixFormat.SuiteSparse);
-            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKbbKbiKii, typeof(FetiDPMatrixManagerMpiTests).Name, "TestMatricesKbbKbiKii", MatrixFormat.Dense);
-            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKbbKbiKii, typeof(FetiDPMatrixManagerMpiTests).Name, "TestMatricesKbbKbiKii", MatrixFormat.Skyline);
-            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKbbKbiKii, typeof(FetiDPMatrixManagerMpiTests).Name, "TestMatricesKbbKbiKii", MatrixFormat.SuiteSparse);
-            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestStaticCondensations, typeof(FetiDPMatrixManagerMpiTests).Name, "TestStaticCondensations", MatrixFormat.Dense);
-            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestStaticCondensations, typeof(FetiDPMatrixManagerMpiTests).Name, "TestStaticCondensations", MatrixFormat.Skyline);
-            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestStaticCondensations, typeof(FetiDPMatrixManagerMpiTests).Name, "TestStaticCondensations", MatrixFormat.SuiteSparse);
-            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestCoarseProblemMatrixAndRhs, typeof(FetiDPMatrixManagerMpiTests).Name, "TestCoarseProblemMatrixAndRhs", MatrixFormat.Dense);
-            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestCoarseProblemMatrixAndRhs, typeof(FetiDPMatrixManagerMpiTests).Name, "TestCoarseProblemMatrixAndRhs", MatrixFormat.Skyline);
-            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestCoarseProblemMatrixAndRhs, typeof(FetiDPMatrixManagerMpiTests).Name, "TestCoarseProblemMatrixAndRhs", MatrixFormat.SuiteSparse);
+            suite.AddFact(FetiDPMatrixManagerMpiTests.TestVectorsFbcFr, typeof(FetiDPMatrixManagerMpiTests).Name, "TestVectorsFbcFr");
+            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKccKcrKrr, typeof(FetiDPMatrixManagerMpiTests).Name, "TestMatricesKccKcrKrr", MatrixFormat.Dense);
+            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKccKcrKrr, typeof(FetiDPMatrixManagerMpiTests).Name, "TestMatricesKccKcrKrr", MatrixFormat.Skyline);
+            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKccKcrKrr, typeof(FetiDPMatrixManagerMpiTests).Name, "TestMatricesKccKcrKrr", MatrixFormat.SuiteSparse);
+            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKbbKbiKii, typeof(FetiDPMatrixManagerMpiTests).Name, "TestMatricesKbbKbiKii", MatrixFormat.Dense);
+            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKbbKbiKii, typeof(FetiDPMatrixManagerMpiTests).Name, "TestMatricesKbbKbiKii", MatrixFormat.Skyline);
+            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKbbKbiKii, typeof(FetiDPMatrixManagerMpiTests).Name, "TestMatricesKbbKbiKii", MatrixFormat.SuiteSparse);
+            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestStaticCondensations, typeof(FetiDPMatrixManagerMpiTests).Name, "TestStaticCondensations", MatrixFormat.Dense);
+            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestStaticCondensations, typeof(FetiDPMatrixManagerMpiTests).Name, "TestStaticCondensations", MatrixFormat.Skyline);
+            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestStaticCondensations, typeof(FetiDPMatrixManagerMpiTests).Name, "TestStaticCondensations", MatrixFormat.SuiteSparse);
+            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestCoarseProblemMatrixAndRhs, typeof(FetiDPMatrixManagerMpiTests).Name, "TestCoarseProblemMatrixAndRhs", MatrixFormat.Dense);
+            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestCoarseProblemMatrixAndRhs, typeof(FetiDPMatrixManagerMpiTests).Name, "TestCoarseProblemMatrixAndRhs", MatrixFormat.Skyline);
+            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestCoarseProblemMatrixAndRhs, typeof(FetiDPMatrixManagerMpiTests).Name, "TestCoarseProblemMatrixAndRhs", MatrixFormat.SuiteSparse);
 
 
-            //suite.AddFact(FetiDPFlexibilityMatrixMpiTests.TestFlexibilityMatrices, typeof(FetiDPFlexibilityMatrixMpiTests).Name, "TestFlexibilityMatrices");
-            //suite.AddFact(FetiDPPreconditionerMpiTests.TestLumpedPreconditioner, typeof(FetiDPPreconditionerMpiTests).Name, "TestLumpedPreconditioner");
-            //suite.AddFact(FetiDPPreconditionerMpiTests.TestDirichletPreconditioner, typeof(FetiDPPreconditionerMpiTests).Name, "TestDirichletPreconditioner");
-            //suite.AddFact(FetiDPPreconditionerMpiTests.TestDiagonalDirichletPreconditioner, typeof(FetiDPPreconditionerMpiTests).Name, "TestDiagonalDirichletPreconditioner");
+            suite.AddFact(FetiDPFlexibilityMatrixMpiTests.TestFlexibilityMatrices, typeof(FetiDPFlexibilityMatrixMpiTests).Name, "TestFlexibilityMatrices");
+            suite.AddFact(FetiDPPreconditionerMpiTests.TestLumpedPreconditioner, typeof(FetiDPPreconditionerMpiTests).Name, "TestLumpedPreconditioner");
+            suite.AddFact(FetiDPPreconditionerMpiTests.TestDirichletPreconditioner, typeof(FetiDPPreconditionerMpiTests).Name, "TestDirichletPreconditioner");
+            suite.AddFact(FetiDPPreconditionerMpiTests.TestDiagonalDirichletPreconditioner, typeof(FetiDPPreconditionerMpiTests).Name, "TestDiagonalDirichletPreconditioner");
 
-            //suite.AddFact(FetiDPInterfaceProblemMpiTests.TestVectorDr, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestVectorDr");
-            //suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemMatrix, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestInterfaceProblemMatrix");
-            //suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemRhs, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestInterfaceProblemRhs");
-            //suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemSolution, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestInterfaceProblemSolution");
+            suite.AddFact(FetiDPInterfaceProblemMpiTests.TestVectorDr, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestVectorDr");
+            suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemMatrix, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestInterfaceProblemMatrix");
+            suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemRhs, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestInterfaceProblemRhs");
+            suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemSolution, typeof(FetiDPInterfaceProblemMpiTests).Name, "TestInterfaceProblemSolution");
 
-            //suite.AddFact(FetiDPDisplacementsCalculatorMpiTests.TestCornerDisplacements, typeof(FetiDPDisplacementsCalculatorMpiTests).Name, "TestCornerDisplacements");
-            //suite.AddFact(FetiDPDisplacementsCalculatorMpiTests.TestFreeDisplacements, typeof(FetiDPDisplacementsCalculatorMpiTests).Name, "TestFreeDisplacements");
+            suite.AddFact(FetiDPDisplacementsCalculatorMpiTests.TestCornerDisplacements, typeof(FetiDPDisplacementsCalculatorMpiTests).Name, "TestCornerDisplacements");
+            suite.AddFact(FetiDPDisplacementsCalculatorMpiTests.TestFreeDisplacements, typeof(FetiDPDisplacementsCalculatorMpiTests).Name, "TestFreeDisplacements");
 
-            //suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalDiplacements, typeof(FetiDPSubdomainGlobalMappingMpiTests).Name, "TestGlobalDiplacements");
-            //suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalForcesNorm, typeof(FetiDPSubdomainGlobalMappingMpiTests).Name, "TestGlobalForcesNorm");
+            suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalDiplacements, typeof(FetiDPSubdomainGlobalMappingMpiTests).Name, "TestGlobalDiplacements");
+            suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalForcesNorm, typeof(FetiDPSubdomainGlobalMappingMpiTests).Name, "TestGlobalForcesNorm");
 
-            //suite.AddTheory(FetiDPSolverMpiTests.TestSolutionSubdomainDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionSubdomainDisplacements", MatrixFormat.Skyline);
-            //suite.AddTheory(FetiDPSolverMpiTests.TestSolutionSubdomainDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionSubdomainDisplacements", MatrixFormat.SuiteSparse);
-            //suite.AddTheory(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionGlobalDisplacements", MatrixFormat.Skyline);
-            //suite.AddTheory(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionGlobalDisplacements", MatrixFormat.SuiteSparse);
+            suite.AddTheory(FetiDPSolverMpiTests.TestSolutionSubdomainDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionSubdomainDisplacements", MatrixFormat.Skyline);
+            suite.AddTheory(FetiDPSolverMpiTests.TestSolutionSubdomainDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionSubdomainDisplacements", MatrixFormat.SuiteSparse);
+            suite.AddTheory(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionGlobalDisplacements", MatrixFormat.Skyline);
+            suite.AddTheory(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionGlobalDisplacements", MatrixFormat.SuiteSparse);
 
             suite.RunTests(args);
         }
