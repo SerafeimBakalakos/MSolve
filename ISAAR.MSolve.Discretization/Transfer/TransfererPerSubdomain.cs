@@ -17,6 +17,12 @@ namespace ISAAR.MSolve.Discretization.Transfer
         public Dictionary<int, T> GatherFromAllSubdomains<T>(Dictionary<int, T> processSubdomainsData)
             => GatherFromAllSubdomainsPacked<T, T>(processSubdomainsData, (s, data) => data, (s, data) => data);
 
+        public Dictionary<int, T[]> GatherFromAllSubdomains<T>(Dictionary<int, T[]> processSubdomainsData)
+        {
+            var activeSubdomains = new ActiveSubdomains(procs, s => true);
+            return GatherFromSomeSubdomains<T>(processSubdomainsData, activeSubdomains);
+        }
+
         public Dictionary<int, TRaw> GatherFromAllSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData, 
             PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData)
         {
@@ -40,16 +46,57 @@ namespace ISAAR.MSolve.Discretization.Transfer
                 activeSubdomains);
         }
 
+        public Dictionary<int, T[]> GatherFromSomeSubdomains<T>(Dictionary<int, T[]> processSubdomainsData,
+            ActiveSubdomains activeSubdomains)
+        {
+            // Pack and send the subdomain data to the corresponding process, one subdomain at a time
+            if (procs.IsMasterProcess)
+            {
+                var allSubdomainsData = new Dictionary<int, T[]>();
+                for (int p = 0; p < procs.Communicator.Size; ++p)
+                {
+                    if (p == procs.MasterProcess) // Just copy the references
+                    {
+                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        {
+                            if (activeSubdomains.IsActive(s)) allSubdomainsData[s] = processSubdomainsData[s];
+                        }
+                    }
+                    else
+                    {
+                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        {
+                            if (activeSubdomains.IsActive(s))
+                            {
+                                allSubdomainsData[s] = MpiUtilities.ReceiveArray<T>(procs.Communicator, p, s);
+                            }
+                        }
+                    }
+                }
+                return allSubdomainsData;
+            }
+            else
+            {
+                // Send the data of each subdomain to master
+                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+                {
+                    if (activeSubdomains.IsActive(s))
+                    {
+                        MpiUtilities.SendArray<T>(procs.Communicator, processSubdomainsData[s], procs.MasterProcess, s);
+                    }
+                }
+                return null;
+            }
+        }
+
         public Dictionary<int, TRaw> GatherFromSomeSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData,
             PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData,
             ActiveSubdomains activeSubdomains)
         {
-            Dictionary<int, TRaw> allSubdomainsData = null;
-
             // Gather and unpack the subdomain data from the corresponding processes, one subdomain at a time
             if (procs.IsMasterProcess)
             {
-                allSubdomainsData = new Dictionary<int, TRaw>();
+                var allSubdomainsData = new Dictionary<int, TRaw>();
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
                     if (p == procs.MasterProcess) // Just copy the references
@@ -99,6 +146,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
                 return null;
             }
         }
+
 
         public Dictionary<int, TRaw> GatherFromSomeSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData, 
             GetArrayLengthOfPackedData<TRaw> getPackedDataLength, PackSubdomainDataIntoArray<TRaw, TPacked> packData, 
@@ -167,6 +215,12 @@ namespace ISAAR.MSolve.Discretization.Transfer
         public Dictionary<int, T> ScatterToAllSubdomains<T>(Dictionary<int, T> allSubdomainsData_master)
             => ScatterToAllSubdomainsPacked<T, T>(allSubdomainsData_master, (s, data) => data, (s, data) => data);
 
+        public Dictionary<int, T[]> ScatterToAllSubdomains<T>(Dictionary<int, T[]> allSubdomainsData_master)
+        {
+            var activeSubdomains = new ActiveSubdomains(procs, s => true);
+            return ScatterToSomeSubdomains<T>(allSubdomainsData_master, activeSubdomains);
+        }
+
         /// <summary>
         /// This method returns null in master process. For other processes, it returns a Dictionary with the data for each 
         /// associated subdomain.
@@ -196,6 +250,52 @@ namespace ISAAR.MSolve.Discretization.Transfer
         {
             return ScatterToSomeSubdomainsPacked<T, T>(allSubdomainsData_master, (s, data) => data, (s, data) => data,
                 activeSubdomains);
+        }
+
+        public Dictionary<int, T[]> ScatterToSomeSubdomains<T>(Dictionary<int, T[]> allSubdomainsData_master,
+            ActiveSubdomains activeSubdomains)
+        {
+            int[] processSubdomains = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+            var processData = new Dictionary<int, T[]>(processSubdomains.Length);
+
+            // Pack send the subdomain data to the corresponding process, one subdomain at a time
+            if (procs.IsMasterProcess)
+            {
+                for (int p = 0; p < procs.Communicator.Size; ++p)
+                {
+                    if (p == procs.MasterProcess)
+                    {
+                        foreach (int s in processSubdomains)
+                        {
+                            if (activeSubdomains.IsActive(s)) processData[s] = allSubdomainsData_master[s];
+                        }
+                    }
+                    else
+                    {
+                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        {
+                            if (activeSubdomains.IsActive(s))
+                            {
+                                T[] data = allSubdomainsData_master[s];
+                                MpiUtilities.SendArray<T>(procs.Communicator, data, p, s);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Receive all subdomain data of this process
+                foreach (int s in processSubdomains)
+                {
+                    if (activeSubdomains.IsActive(s))
+                    {
+                        processData[s] = MpiUtilities.ReceiveArray<T>(procs.Communicator, procs.MasterProcess, s);
+                    }
+                }
+            }
+
+            return processData;
         }
 
         public Dictionary<int, TRaw> ScatterToSomeSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> allSubdomainsData_master,

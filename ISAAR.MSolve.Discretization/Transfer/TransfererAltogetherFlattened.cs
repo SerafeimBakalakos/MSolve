@@ -18,6 +18,20 @@ namespace ISAAR.MSolve.Discretization.Transfer
         public Dictionary<int, T> GatherFromAllSubdomains<T>(Dictionary<int, T> processSubdomainsData)
             => GatherFromAllSubdomainsPacked<T, T>(processSubdomainsData, (s, data) => data, (s, data) => data);
 
+        public Dictionary<int, T[]> GatherFromAllSubdomains<T>(Dictionary<int, T[]> processSubdomainsData)
+        {
+            GetArrayLengthOfPackedData<T[]> getPackedDataLength = (s, subdomainArray) => subdomainArray.Length;
+            PackSubdomainDataIntoArray<T[], T> packData = (s, subdomainArray, packingArray, offset)
+                => Array.Copy(subdomainArray, 0, packingArray, offset, subdomainArray.Length);
+            UnpackSubdomainDataFromArray<T[], T> unpackData = (s, packingArray, start, end) =>
+            {
+                var subdomainArray = new T[end - start];
+                Array.Copy(packingArray, start, subdomainArray, 0, end - start);
+                return subdomainArray;
+            };
+            return GatherFromAllSubdomainsPacked(processSubdomainsData, getPackedDataLength, packData, unpackData);
+        }
+
         public Dictionary<int, TRaw> GatherFromAllSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData, 
             PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData)
         {
@@ -61,20 +75,20 @@ namespace ISAAR.MSolve.Discretization.Transfer
             GetArrayLengthOfPackedData<TRaw> getPackedDataLength, PackSubdomainDataIntoArray<TRaw, TPacked> packData, 
             UnpackSubdomainDataFromArray<TRaw, TPacked> unpackData)
         {
-            // Determine the size of each subdomain's packed data in each process
-            var processPackedSizes = new Dictionary<int, int>();
-            int processPackedSizeTotal = 0;
+            // Determine the size of each subdomain's array in each process
+            var processArraySizes = new Dictionary<int, int>();
+            int processArraySizeTotal = 0;
             int[] processSubdomains = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
             foreach (int sub in processSubdomains)
             {
                 TRaw rawData = processSubdomainsData[sub];
                 int packedSize = getPackedDataLength(sub, rawData);
-                processPackedSizes[sub] = packedSize;
-                processPackedSizeTotal += packedSize;
+                processArraySizes[sub] = packedSize;
+                processArraySizeTotal += packedSize;
             }
 
             // Determine the size of each subdomain's packed data in master
-            Dictionary<int, int> allPackedSizes = GatherFromAllSubdomains<int>(processPackedSizes);
+            Dictionary<int, int> allPackedSizes = GatherFromAllSubdomains<int>(processArraySizes);
             int totalPackedSize = 0;
             int[] processTotalPackedSizes = null; 
             if (procs.IsMasterProcess)
@@ -92,13 +106,13 @@ namespace ISAAR.MSolve.Discretization.Transfer
             }
 
             // Pack the subdomain data in each process
-            var processDataPacked = new TPacked[processPackedSizeTotal];
+            var processDataPacked = new TPacked[processArraySizeTotal];
             int offset = 0;
             for (int s = 0; s < processSubdomains.Length; ++s)
             {
                 int sub = processSubdomains[s];
                 packData(sub, processSubdomainsData[sub], processDataPacked, offset);
-                offset += processPackedSizes[sub];
+                offset += processArraySizes[sub];
             }
 
             // Gather all subdomain data in master
@@ -131,6 +145,12 @@ namespace ISAAR.MSolve.Discretization.Transfer
                 activeSubdomains);
         }
 
+        public Dictionary<int, T[]> GatherFromSomeSubdomains<T>(Dictionary<int, T[]> processSubdomainsData, 
+            ActiveSubdomains activeSubdomains)
+        {
+            throw new NotImplementedException();
+        }
+
         public Dictionary<int, TRaw> GatherFromSomeSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData, 
             PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData, 
             ActiveSubdomains activeSubdomains)
@@ -147,6 +167,20 @@ namespace ISAAR.MSolve.Discretization.Transfer
 
         public Dictionary<int, T> ScatterToAllSubdomains<T>(Dictionary<int, T> allSubdomainsData_master)
             => ScatterToAllSubdomainsPacked<T, T>(allSubdomainsData_master, (s, data) => data, (s, data) => data);
+
+        public Dictionary<int, T[]> ScatterToAllSubdomains<T>(Dictionary<int, T[]> allSubdomainsData_master)
+        {
+            GetArrayLengthOfPackedData<T[]> getPackedDataLength = (s, subdomainArray) => subdomainArray.Length;
+            PackSubdomainDataIntoArray<T[], T> packData = (s, subdomainArray, packingArray, offset) 
+                => Array.Copy(subdomainArray, 0, packingArray, offset, subdomainArray.Length);
+            UnpackSubdomainDataFromArray<T[], T> unpackData = (s, packingArray, start, end) =>
+            {
+                var subdomainArray = new T[end - start];
+                Array.Copy(packingArray, start, subdomainArray, 0, end - start);
+                return subdomainArray;
+            };
+            return ScatterToAllSubdomainsPacked(allSubdomainsData_master, getPackedDataLength, packData, unpackData);
+        }
 
         public Dictionary<int, TRaw> ScatterToAllSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> allSubdomainsData_master, 
             PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData)
@@ -276,6 +310,12 @@ namespace ISAAR.MSolve.Discretization.Transfer
         {
             return ScatterToSomeSubdomainsPacked<T, T>(allSubdomainsData_master, (s, data) => data, (s, data) => data,
                 activeSubdomains);
+        }
+
+        public Dictionary<int, T[]> ScatterToSomeSubdomains<T>(Dictionary<int, T[]> allSubdomainsData_master, 
+            ActiveSubdomains activeSubdomains)
+        {
+            throw new NotImplementedException();
         }
 
         public Dictionary<int, TRaw> ScatterToSomeSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> allSubdomainsData_master,

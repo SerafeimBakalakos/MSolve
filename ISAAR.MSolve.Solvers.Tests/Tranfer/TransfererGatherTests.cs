@@ -189,7 +189,7 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
         {
             TestGatherTemplate(transfererChoice, subdomainDistribution, false,
                 s => GetArrayDataOfSubdomain(s),
-                (transf, allData, activeSubdomains) => transf.GatherFromSomeSubdomains(allData, activeSubdomains),
+                (transf, allData, activeSubdomains) => transf.GatherFromSomeSubdomains<double>(allData, activeSubdomains),
                 (s, computed) => Assert.True(CheckEquality(GetArrayDataOfSubdomain(s), computed)));
         }
 

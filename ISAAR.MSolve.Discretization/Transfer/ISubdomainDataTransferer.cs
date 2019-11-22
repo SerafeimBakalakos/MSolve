@@ -36,6 +36,12 @@ namespace ISAAR.MSolve.Discretization.Transfer
         /// In master process this method returns a Dictionary with the data for each subdomain. In other processes, it returns 
         /// null.
         /// </summary>
+        Dictionary<int, T[]> GatherFromAllSubdomains<T>(Dictionary<int, T[]> processSubdomainsData);
+
+        /// <summary>
+        /// In master process this method returns a Dictionary with the data for each subdomain. In other processes, it returns 
+        /// null.
+        /// </summary>
         Dictionary<int, TRaw> GatherFromAllSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData,
             PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData);
 
@@ -61,6 +67,13 @@ namespace ISAAR.MSolve.Discretization.Transfer
         /// In master process this method returns a Dictionary with the data for each subdomain. In other processes, it returns 
         /// null.
         /// </summary>
+        Dictionary<int, T[]> GatherFromSomeSubdomains<T>(Dictionary<int, T[]> processSubdomainsData,
+            ActiveSubdomains activeSubdomains);
+
+        /// <summary>
+        /// In master process this method returns a Dictionary with the data for each subdomain. In other processes, it returns 
+        /// null.
+        /// </summary>
         Dictionary<int, TRaw> GatherFromSomeSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> processSubdomainsData,
             PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData,
             ActiveSubdomains activeSubdomains);
@@ -78,6 +91,8 @@ namespace ISAAR.MSolve.Discretization.Transfer
 
         Dictionary<int, T> ScatterToAllSubdomains<T>(Dictionary<int, T> allSubdomainsData_master);
 
+        Dictionary<int, T[]> ScatterToAllSubdomains<T>(Dictionary<int, T[]> allSubdomainsData_master);
+
         Dictionary<int, TRaw> ScatterToAllSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> allSubdomainsData_master,
             PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData);
 
@@ -91,6 +106,9 @@ namespace ISAAR.MSolve.Discretization.Transfer
             UnpackSubdomainDataFromArray<TRaw, TPacked> unpackData);
 
         Dictionary<int, T> ScatterToSomeSubdomains<T>(Dictionary<int, T> allSubdomainsData_master,
+            ActiveSubdomains activeSubdomains);
+
+        Dictionary<int, T[]> ScatterToSomeSubdomains<T>(Dictionary<int, T[]> allSubdomainsData_master, 
             ActiveSubdomains activeSubdomains);
 
         Dictionary<int, TRaw> ScatterToSomeSubdomainsPacked<TRaw, TPacked>(Dictionary<int, TRaw> allSubdomainsData_master, 
