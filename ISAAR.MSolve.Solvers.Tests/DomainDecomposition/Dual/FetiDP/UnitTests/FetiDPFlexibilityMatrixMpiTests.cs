@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
                 numLagranges, numLagranges, flexibility.MultiplyGlobalFIrr);
             Matrix FIrc = ImplicitMatrixUtilities.MultiplyWithIdentityMpi(
                 numLagranges, numCornerDofs, flexibility.MultiplyGlobalFIrc);
-
+            
             if (procs.IsMasterProcess)
             {
                 // Check

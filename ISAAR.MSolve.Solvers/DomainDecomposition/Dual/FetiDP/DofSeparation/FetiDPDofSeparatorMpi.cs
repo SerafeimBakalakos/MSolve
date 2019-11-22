@@ -272,6 +272,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
                 var temp = subdomainDofs[subdomain];
                 var Bc = processMatricesBc[s];
                 temp.SetCornerBooleanMatrix(Bc, this);
+                NumGlobalCornerDofs = Bc.NumColumns;
             }
         }
     }
