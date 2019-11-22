@@ -13,18 +13,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
     public class HomogeneousStiffnessDistributionMpi : IStiffnessDistribution
     {
-        private const int multiplicityTag = 0;
-
         private readonly IFetiDPDofSeparator dofSeparator;
-
-        /// <summary>
-        /// Each process stores only the ones corresponding to its subdomain. Master stores all of them.
-        /// </summary>
-        private readonly Dictionary<ISubdomain, double[]> inverseBoundaryDofMultiplicities;
-
         private readonly IHomogeneousDistributionLoadScaling loadScaling;
         private readonly IModel model;
         private readonly ProcessDistribution procs;
+
+        /// <summary>
+        /// Each process stores only the ones corresponding to their subdomains. Master stores all of them.
+        /// </summary>
+        private Dictionary<int, double[]> inverseBoundaryDofMultiplicities;
 
         public HomogeneousStiffnessDistributionMpi(ProcessDistribution processDistribution, IModel model,
             IFetiDPDofSeparator dofSeparator, IHomogeneousDistributionLoadScaling loadScaling)
@@ -33,13 +30,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             this.model = model;
             this.dofSeparator = dofSeparator;
             this.loadScaling = loadScaling;
-            this.inverseBoundaryDofMultiplicities = new Dictionary<ISubdomain, double[]>();
         }
 
         public double[] CalcBoundaryDofCoefficients(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
-            return inverseBoundaryDofMultiplicities[subdomain];
+            return inverseBoundaryDofMultiplicities[subdomain.ID];
         }
 
         public IMappingMatrix CalcBoundaryPreconditioningSignedBooleanMatrix(ILagrangeMultipliersEnumerator lagrangeEnumerator,
@@ -47,7 +43,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
             return new HomogeneousStiffnessDistributionUtilities.ScalingBooleanMatrixImplicit(
-                inverseBoundaryDofMultiplicities[subdomain], boundarySignedBooleanMatrix);
+                inverseBoundaryDofMultiplicities[subdomain.ID], boundarySignedBooleanMatrix);
         }
 
         /// <summary>
@@ -56,68 +52,47 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         /// </summary>
         public void GatherDataInMaster()
         {
-            // Gather all boundary dof multiplicites in master. It is faster to send int[] than double[].
-            if (procs.IsMasterProcess)
-            {
-                // Receive the boundary multiplicities of each subdomain
-                IEnumerable<ISubdomain> modifiedSubdomains = model.EnumerateSubdomains().Where(
-                    sub => sub.ConnectivityModified && sub.ID != procs.OwnSubdomainID);
-                var gatheredMultiplicities = new Dictionary<ISubdomain, int[]>();
-                foreach (ISubdomain sub in modifiedSubdomains)
-                {
-                    int source = procs.GetProcessOfSubdomain(sub.ID);
-                    //Console.WriteLine($"Process {procs.OwnRank} (master): Started receiving multiplicites from process {source}.");
-                    gatheredMultiplicities[sub] = MpiUtilities.ReceiveArray<int>(procs.Communicator, source, multiplicityTag);
-                    //Console.WriteLine($"Process {procs.OwnRank} (master): Finished receiving multiplicites from process {source}.");
-                }
+            var activeSubdomains = new ActiveSubdomains(procs, s => model.GetSubdomain(s).ConnectivityModified);
 
-                // After finishing with all comunications, invert the multiplicities. //TODO: Perhaps this should be done concurrently with the transfers, by another thread.
-                foreach (ISubdomain sub in modifiedSubdomains)
-                {
-                    //Console.WriteLine($"Process {procs.OwnRank} (master): Started inverting multiplicites of subdomain {subdomain.ID}.");
-                    this.inverseBoundaryDofMultiplicities[sub] = Invert(gatheredMultiplicities[sub]);
-                    //Console.WriteLine($"Process {procs.OwnRank} (master): Finished inverting multiplicites of subdomain {subdomain.ID}.");
-                    gatheredMultiplicities.Remove(sub); // Free up some temporary memory.
-                }
-            }
-            else
-            {
-                ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-                if (subdomain.ConnectivityModified)
-                {
-                    //Console.WriteLine($"Process {procs.OwnRank}: Started sending multiplicities it to master");
-                    int[] multiplicities = Invert(inverseBoundaryDofMultiplicities[subdomain]);
-                    MpiUtilities.SendArray(procs.Communicator, multiplicities, procs.MasterProcess, multiplicityTag);
-                    //Console.WriteLine($"Process {procs.OwnRank}: Finished sending multiplicities to master.");
-                }
-            }
+            // Gather all boundary dof multiplicites in master. It is faster to send int[] than double[].
+            var transferer = new TransfererPerSubdomain(procs);
+            GetArrayLengthOfPackedData<double[]> getPackedDataLength = (s, arry) => arry.Length;
+            PackSubdomainDataIntoArray<double[], int> packData =
+                (s, inverse, direct, offsetDirect) => Invert(inverse, direct, offsetDirect);
+            UnpackSubdomainDataFromArray<double[], int> unpackData =
+                (s, direct, start, end) => Invert(direct, start, end);
+            this.inverseBoundaryDofMultiplicities = transferer.GatherFromSomeSubdomainsPacked(
+                this.inverseBoundaryDofMultiplicities, getPackedDataLength, packData, unpackData, activeSubdomains);
         }
 
         public double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load) => loadScaling.ScaleNodalLoad(subdomain, load);
 
         public void Update() 
         {
-            // Calculate and store the inverse boundary dof multiplicities of each subdomain in its process
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            if (subdomain.ConnectivityModified) //TODO: Is this what I should check?
+            // Calculate and store the inverse boundary dof multiplicities of each subdomain in this process
+            inverseBoundaryDofMultiplicities = new Dictionary<int, double[]>();
+            foreach (ISubdomain subdomain in procs.GetSubdomainsOfProcess(procs.OwnRank, model).Values)
             {
-                inverseBoundaryDofMultiplicities[subdomain] = 
-                    HomogeneousStiffnessDistributionUtilities.CalcBoundaryDofInverseMultiplicities(
-                        subdomain, dofSeparator.GetBoundaryDofs(subdomain));
+                if (subdomain.ConnectivityModified) //TODO: Is this what I should check?
+                {
+                    inverseBoundaryDofMultiplicities[subdomain.ID] =
+                        HomogeneousStiffnessDistributionUtilities.CalcBoundaryDofInverseMultiplicities(
+                            subdomain, dofSeparator.GetBoundaryDofs(subdomain));
+                }
             }
         }
-
-        private static int[] Invert(double[] oneOverIntegers)
+        
+        private static int[] Invert(double[] inverse, int[] direct, int offsetDirect)
         {
-            var inverse = new int[oneOverIntegers.Length];
-            for (int i = 0; i < oneOverIntegers.Length; ++i) inverse[i] = (int)(Math.Round(1.0 / oneOverIntegers[i]));
-            return inverse;
+            for (int i = 0; i < inverse.Length; ++i) direct[offsetDirect + i] = (int)(Math.Round(1.0 / inverse[i]));
+            return direct;
         }
 
-        private static double[] Invert(int[] integers)
+        private static double[] Invert(int[] direct, int start, int end)
         {
-            var inverse = new double[integers.Length];
-            for (int i = 0; i < integers.Length; ++i) inverse[i] = 1.0 / integers[i];
+            int length = end - start;
+            var inverse = new double[length];
+            for (int i = 0; i < length; ++i) inverse[i] = 1.0 / direct[start + i];
             return inverse;
         }
     }
