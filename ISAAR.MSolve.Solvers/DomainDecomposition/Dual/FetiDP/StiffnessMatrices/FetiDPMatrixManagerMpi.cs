@@ -5,6 +5,8 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.MPI.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
@@ -63,8 +65,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
             // Gather them in master
             //TODO: Perhaps I should cache them and reuse the unchanged ones.
-            var transferer = new TransfererAltogetherFlattened(procs);
-            Dictionary<int, Vector> allVectors_master = transferer.GatherFromAllSubdomains(processVectors);
+            var transferrer = new TransferrerAltogetherFlattened(procs);
+            Dictionary<int, Vector> allVectors_master = transferrer.GatherFromAllSubdomains(processVectors);
 
             // Calculate globalFcStar in master
             if (procs.IsMasterProcess)
@@ -96,8 +98,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
             // Gather them in master
             //TODO: Perhaps I should cache them and reuse the unchanged ones.
-            var transferer = new TransfererAltogetherFlattened(procs);
-            Dictionary<int, IMatrixView> allMatrices_master = transferer.GatherFromAllSubdomains(processMatrices);
+            var transferrer = new TransferrerAltogetherFlattened(procs);
+            Dictionary<int, IMatrixView> allMatrices_master = transferrer.GatherFromAllSubdomains(processMatrices);
 
             // Calculate globalKccStar and invert it in master
             if (procs.IsMasterProcess)

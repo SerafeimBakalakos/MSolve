@@ -7,6 +7,8 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
+using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.MPI.Transfer;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using MPI;
 
@@ -224,13 +226,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             }
 
             // Gather data in master
-            var transferer = new TransfererPerSubdomain(procs);
+            var transferrer = new TransferrerPerSubdomain(procs);
             GetArrayLengthOfPackedData<DofTable> getPackedDataLength = (s, table) => tableSerializer.CalcPackedLength(table);
             PackSubdomainDataIntoArray<DofTable, int> packData =
                 (s, table, buffer, offset) => tableSerializer.PackTableIntoArray(table, buffer, offset);
             UnpackSubdomainDataFromArray<DofTable, int> unpackData =
                 (s, buffer, start, end) => tableSerializer.UnpackTableFromArray(buffer, start, end, model.GetNode);
-            Dictionary<int, DofTable> allOrderings = transferer.GatherFromSomeSubdomainsPacked(processOrderings, 
+            Dictionary<int, DofTable> allOrderings = transferrer.GatherFromSomeSubdomainsPacked(processOrderings, 
                 getPackedDataLength, packData, unpackData, activeSubdomains);
 
             // Store the received data in master
@@ -244,13 +246,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         private void ScatterCornerBooleanMatricesToSubdomains()
         {
             // Scatter the matrices from master process
-            var transferer = new TransfererPerSubdomain(procs);
+            var transferrer = new TransferrerPerSubdomain(procs);
             Dictionary<int, UnsignedBooleanMatrix> allMatricesBc = null;
             if (procs.IsMasterProcess) //TODO: Perhaps I should make the Dictionary have int as keys.
             {
                 allMatricesBc = subdomainCornerBooleanMatrices_master.ChangeKey();
             }
-            Dictionary<int, UnsignedBooleanMatrix> processMatricesBc = transferer.ScatterToAllSubdomains(allMatricesBc);
+            Dictionary<int, UnsignedBooleanMatrix> processMatricesBc = transferrer.ScatterToAllSubdomains(allMatricesBc);
 
             // Store them in other processes
             foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))

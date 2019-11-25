@@ -4,7 +4,7 @@ using System.Text;
 
 //TODO: Gradually replace ISubdomain.StiffnessModified and ISubdomain.ConnectivityModified with this
 //TODO: So far this is just a wrapped Dictionary
-namespace ISAAR.MSolve.Discretization.Transfer
+namespace ISAAR.MSolve.LinearAlgebra.MPI
 {
     public class ActiveSubdomains
     {

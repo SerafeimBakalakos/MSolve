@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.Discretization.Exceptions;
 using ISAAR.MSolve.Discretization.Interfaces;
-using ISAAR.MSolve.Discretization.Transfer;
+using ISAAR.MSolve.LinearAlgebra.MPI;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes
 {
@@ -19,7 +18,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes
         /// <param name="processDistribution"></param>
         /// <param name="cornerNodesOfSubdomains">
         /// For master process it must contain all subdomain data. For every other process it should only contain the data of
-        /// the corresponding subdomain.
+        /// the corresponding subdomains.
         /// </param>
         public UsedDefinedCornerNodesMpi(ProcessDistribution processDistribution, 
             Dictionary<ISubdomain, HashSet<INode>> cornerNodesOfSubdomains)

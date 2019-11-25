@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
-using ISAAR.MSolve.Discretization.Transfer;
+using ISAAR.MSolve.LinearAlgebra.MPI;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.Logging.DomainDecomposition;
 using ISAAR.MSolve.Solvers;

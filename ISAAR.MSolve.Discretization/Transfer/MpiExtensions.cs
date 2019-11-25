@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.LinearAlgebra.MPI;
 
-//TODO: Scatter, Gather operations that entail all subdomains should be provided as extension methods. Transferer classes need 
-//      only provide versions where only some subdomains are used.
 namespace ISAAR.MSolve.Discretization.Transfer
 {
-    public static class TransfererExtensions
+    public static class MpiExtensions
     {
         public static Dictionary<ISubdomain, T> ChangeKey<T>(this Dictionary<int, T> subdomainIDsToData, IModel model)
         {
@@ -25,6 +24,14 @@ namespace ISAAR.MSolve.Discretization.Transfer
             var subdomainIDsToData = new Dictionary<int, T>();
             foreach (var pair in subdomainsToData) subdomainIDsToData[pair.Key.ID] = pair.Value;
             return subdomainIDsToData;
+        }
+
+        //TODO: Shouldn't this be accessed by model itself? But then what happens for master process, which contains all subdomains?
+        public static Dictionary<int, ISubdomain> GetSubdomainsOfProcess(this ProcessDistribution procs, IModel model)
+        {
+            var processSubdomains = new Dictionary<int, ISubdomain>();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank)) processSubdomains[s] = model.GetSubdomain(s);
+            return processSubdomains;
         }
     }
 }

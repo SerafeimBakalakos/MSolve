@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
-using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
+using ISAAR.MSolve.LinearAlgebra.MPI;
 using ISAAR.MSolve.LinearAlgebra.Output;
 using ISAAR.MSolve.LinearAlgebra.Output.Formatting;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;

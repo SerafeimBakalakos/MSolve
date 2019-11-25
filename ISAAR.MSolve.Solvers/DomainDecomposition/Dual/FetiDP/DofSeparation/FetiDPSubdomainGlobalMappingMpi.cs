@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
-using ISAAR.MSolve.Discretization.Transfer;
+using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.MPI.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 
@@ -81,8 +82,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             };
 
             // Gather subdomain vectors in master 
-            var transferer = new TransfererPerSubdomain(procs);
-            Dictionary<int, Vector> allVectors = transferer.GatherFromAllSubdomainsPacked(processVectors,
+            var transferrer = new TransferrerPerSubdomain(procs);
+            Dictionary<int, Vector> allVectors = transferrer.GatherFromAllSubdomainsPacked(processVectors,
                 getPackedDataLength, packData, unpackData);
 
             // Assemble the subdomain vectors into a global one

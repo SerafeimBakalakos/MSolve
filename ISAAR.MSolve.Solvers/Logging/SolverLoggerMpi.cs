@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using ISAAR.MSolve.Discretization.Transfer;
+using ISAAR.MSolve.LinearAlgebra.MPI;
 
 //TODO: Use enums instead of strings for the solver task and dof category. Or use interfaces & enum classes, to adhere to 
 //      open-closed principle.

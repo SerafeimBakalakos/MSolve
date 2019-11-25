@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.Discretization.Transfer;
+using ISAAR.MSolve.LinearAlgebra.MPI;
 using ISAAR.MSolve.XFEM.CrackGeometry.Implicit;
 using ISAAR.MSolve.XFEM.Entities;
 using MPI;

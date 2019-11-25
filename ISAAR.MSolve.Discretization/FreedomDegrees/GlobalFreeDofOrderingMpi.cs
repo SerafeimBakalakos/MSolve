@@ -5,7 +5,8 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Exceptions;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
-using ISAAR.MSolve.Discretization.Transfer.Utilities;
+using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.MPI.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Output;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MPI;
@@ -151,14 +152,14 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             }
 
             // Gather data in master
-            var transferer = new TransfererPerSubdomain(procs);
+            var transferrer = new TransferrerPerSubdomain(procs);
             var tableSerializer = new DofTableSerializer(model.DofSerializer);
             GetArrayLengthOfPackedData<DofTable> getPackedDataLength = (s, table) => tableSerializer.CalcPackedLength(table);
             PackSubdomainDataIntoArray<DofTable, int> packData =
                 (s, table, buffer, offset) => tableSerializer.PackTableIntoArray(table, buffer, offset);
             UnpackSubdomainDataFromArray<DofTable, int> unpackData =
                 (s, buffer, start, end) => tableSerializer.UnpackTableFromArray(buffer, start, end, model.GetNode);
-            Dictionary<int, DofTable> allOrderings = transferer.GatherFromAllSubdomainsPacked(processOrderings,
+            Dictionary<int, DofTable> allOrderings = transferrer.GatherFromAllSubdomainsPacked(processOrderings,
                 getPackedDataLength, packData, unpackData);
 
             // Store the received data in master
@@ -197,8 +198,8 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             if (hasScatteredSubdomainGlobalMaps) return;
 
             CreateSubdomainGlobalMaps();
-            var transferer = new TransfererPerSubdomain(procs);
-            Dictionary<int, int[]> processMappings = transferer.ScatterToAllSubdomains(subdomainToGlobalDofMaps);
+            var transferrer = new TransferrerPerSubdomain(procs);
+            Dictionary<int, int[]> processMappings = transferrer.ScatterToAllSubdomains(subdomainToGlobalDofMaps);
 
             // Store each one in processes other than master, since it already has all of them.
             if (!procs.IsMasterProcess) subdomainToGlobalDofMaps = processMappings;

@@ -4,13 +4,13 @@ using System.Text;
 
 //TODO: This class uses the flattened versions of MPI calls. Add another one that uses the regular ones and benchmark.
 //TODO: I should avoid packing/unpacking the subdomains of the master process. Also avoid placing them onto arrays.
-namespace ISAAR.MSolve.Discretization.Transfer
+namespace ISAAR.MSolve.LinearAlgebra.MPI.Transfer
 {
-    public class TransfererAltogetherFlattened : ISubdomainDataTransferer
+    public class TransferrerAltogetherFlattened : ISubdomainDataTransferrer
     {
         private readonly ProcessDistribution procs;
 
-        public TransfererAltogetherFlattened(ProcessDistribution processDistribution)
+        public TransferrerAltogetherFlattened(ProcessDistribution processDistribution)
         {
             this.procs = processDistribution;
         }

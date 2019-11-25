@@ -17,7 +17,9 @@ using System.Text;
 //TODO: Also have variants of the gather methods with an Action<int,T> to use each received item as soon as it is available and 
 //      then discard it. In that case, Dictionary<int, T> is not returned. These methods are to be used if there is not enough
 //      memory to gather all data in one process and afterwards use them.
-namespace ISAAR.MSolve.Discretization.Transfer
+//TODO: Scatter, Gather operations that entail all subdomains should be provided as extension methods. Transferrer classes need 
+//      only provide versions where only some subdomains are used.
+namespace ISAAR.MSolve.LinearAlgebra.MPI.Transfer
 {
     //TODO: Not sure that the subdomainID is needed
     public delegate TPacked PackSubdomainData<TRaw, TPacked>(int subdomainID, TRaw originalData);
@@ -27,7 +29,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
         TPacked[] buffer, int offset);
     public delegate TRaw UnpackSubdomainDataFromArray<TRaw, TPacked>(int subdomainID, TPacked[] buffer, int start, int end);
 
-    public interface ISubdomainDataTransferer
+    public interface ISubdomainDataTransferrer
     {
         /// <summary>
         /// In master process this method returns a Dictionary with the data for each subdomain. In other processes, it returns 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.LinearAlgebra.MPI;
 using MPI;
 
 namespace ISAAR.MSolve.Discretization.Transfer.Utilities

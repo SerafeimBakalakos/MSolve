@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.Discretization.Transfer;
+using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.MPI.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Tests.Utilities;
 using MPI;
 using Xunit;
-using static ISAAR.MSolve.Solvers.Tests.Tranfer.TransfererTestsData;
-using static ISAAR.MSolve.Solvers.Tests.Tranfer.TransfererTestUtilities;
+using static ISAAR.MSolve.Solvers.Tests.Tranfer.TransferrerTestsData;
+using static ISAAR.MSolve.Solvers.Tests.Tranfer.TransferrerTestUtilities;
 
 namespace ISAAR.MSolve.Solvers.Tests.Tranfer
 {
-    public static class TransfererScatterTests
+    public static class TransferrerScatterTests
     {
         /// <summary>
         /// All tests need 4 MPI processes.
@@ -18,136 +19,136 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
         /// <param name="suite"></param>
         public static void RegisterAllTests(MpiTestSuite suite)
         {
-            // Tests for: TransfererPerSubdomain
-            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransfererScatterTests).Name, "TestScatterToAllPrimitive",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransfererScatterTests).Name, "TestScatterToAllPrimitive",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransfererScatterTests).Name, "TestScatterToAllPrimitive",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+            // Tests for: TransferrerPerSubdomain
+            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransferrerScatterTests).Name, "TestScatterToAllPrimitive",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransferrerScatterTests).Name, "TestScatterToAllPrimitive",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransferrerScatterTests).Name, "TestScatterToAllPrimitive",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterToAllArray, typeof(TransfererScatterTests).Name, "TestScatterToAllArray",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToAllArray, typeof(TransfererScatterTests).Name, "TestScatterToAllArray",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToAllArray, typeof(TransfererScatterTests).Name, "TestScatterToAllArray",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+            suite.AddTheory(TestScatterToAllArray, typeof(TransferrerScatterTests).Name, "TestScatterToAllArray",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToAllArray, typeof(TransferrerScatterTests).Name, "TestScatterToAllArray",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToAllArray, typeof(TransferrerScatterTests).Name, "TestScatterToAllArray",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterToAllClass, typeof(TransfererScatterTests).Name, "TestScatterToAllClass",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToAllClass, typeof(TransfererScatterTests).Name, "TestScatterToAllClass",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToAllClass, typeof(TransfererScatterTests).Name, "TestScatterToAllClass",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+            suite.AddTheory(TestScatterToAllClass, typeof(TransferrerScatterTests).Name, "TestScatterToAllClass",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToAllClass, typeof(TransferrerScatterTests).Name, "TestScatterToAllClass",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToAllClass, typeof(TransferrerScatterTests).Name, "TestScatterToAllClass",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererScatterTests).Name, "TestScatterToAllClassPacked",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererScatterTests).Name, "TestScatterToAllClassPacked",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererScatterTests).Name, "TestScatterToAllClassPacked",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransferrerScatterTests).Name, "TestScatterToAllClassPacked",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransferrerScatterTests).Name, "TestScatterToAllClassPacked",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransferrerScatterTests).Name, "TestScatterToAllClassPacked",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransfererScatterTests).Name, "TestScatterToAllClassPackedArray",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransfererScatterTests).Name, "TestScatterToAllClassPackedArray",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransfererScatterTests).Name, "TestScatterToAllClassPackedArray",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransferrerScatterTests).Name, "TestScatterToAllClassPackedArray",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransferrerScatterTests).Name, "TestScatterToAllClassPackedArray",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransferrerScatterTests).Name, "TestScatterToAllClassPackedArray",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterToSomePrimitive, typeof(TransfererScatterTests).Name, "TestScatterToSomePrimitive",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToSomePrimitive, typeof(TransfererScatterTests).Name, "TestScatterToSomePrimitive",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToSomePrimitive, typeof(TransfererScatterTests).Name, "TestScatterToSomePrimitive",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+            suite.AddTheory(TestScatterToSomePrimitive, typeof(TransferrerScatterTests).Name, "TestScatterToSomePrimitive",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToSomePrimitive, typeof(TransferrerScatterTests).Name, "TestScatterToSomePrimitive",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToSomePrimitive, typeof(TransferrerScatterTests).Name, "TestScatterToSomePrimitive",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterToSomeArray, typeof(TransfererScatterTests).Name, "TestScatterToSomeArray",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToSomeArray, typeof(TransfererScatterTests).Name, "TestScatterToSomeArray",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToSomeArray, typeof(TransfererScatterTests).Name, "TestScatterToSomeArray",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+            suite.AddTheory(TestScatterToSomeArray, typeof(TransferrerScatterTests).Name, "TestScatterToSomeArray",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToSomeArray, typeof(TransferrerScatterTests).Name, "TestScatterToSomeArray",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToSomeArray, typeof(TransferrerScatterTests).Name, "TestScatterToSomeArray",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterToSomeClass, typeof(TransfererScatterTests).Name, "TestScatterToSomeClass",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToSomeClass, typeof(TransfererScatterTests).Name, "TestScatterToSomeClass",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToSomeClass, typeof(TransfererScatterTests).Name, "TestScatterToSomeClass",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+            suite.AddTheory(TestScatterToSomeClass, typeof(TransferrerScatterTests).Name, "TestScatterToSomeClass",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToSomeClass, typeof(TransferrerScatterTests).Name, "TestScatterToSomeClass",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToSomeClass, typeof(TransferrerScatterTests).Name, "TestScatterToSomeClass",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterToSomeClassPacked, typeof(TransfererScatterTests).Name, "TestScatterToSomeClassPacked",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToSomeClassPacked, typeof(TransfererScatterTests).Name, "TestScatterToSomeClassPacked",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToSomeClassPacked, typeof(TransfererScatterTests).Name, "TestScatterToSomeClassPacked",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+            suite.AddTheory(TestScatterToSomeClassPacked, typeof(TransferrerScatterTests).Name, "TestScatterToSomeClassPacked",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToSomeClassPacked, typeof(TransferrerScatterTests).Name, "TestScatterToSomeClassPacked",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToSomeClassPacked, typeof(TransferrerScatterTests).Name, "TestScatterToSomeClassPacked",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterToSomeClassPackedArray, typeof(TransfererScatterTests).Name, "TestScatterToSomeClassPackedArray",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToSomeClassPackedArray, typeof(TransfererScatterTests).Name, "TestScatterToSomeClassPackedArray",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToSomeClassPackedArray, typeof(TransfererScatterTests).Name, "TestScatterToSomeClassPackedArray",
-                TransfererChoice.PerSubdomain, SubdomainDistribution.Variable);
+            suite.AddTheory(TestScatterToSomeClassPackedArray, typeof(TransferrerScatterTests).Name, "TestScatterToSomeClassPackedArray",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToSomeClassPackedArray, typeof(TransferrerScatterTests).Name, "TestScatterToSomeClassPackedArray",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToSomeClassPackedArray, typeof(TransferrerScatterTests).Name, "TestScatterToSomeClassPackedArray",
+                TransferrerChoice.PerSubdomain, SubdomainDistribution.Variable);
 
-            // Tests for: TransfererAltogetherFlattened
-            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransfererScatterTests).Name, "TestScatterToAllPrimitive",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransfererScatterTests).Name, "TestScatterToAllPrimitive",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransfererScatterTests).Name, "TestScatterToAllPrimitive",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.Variable);
+            // Tests for: TransferrerAltogetherFlattened
+            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransferrerScatterTests).Name, "TestScatterToAllPrimitive",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransferrerScatterTests).Name, "TestScatterToAllPrimitive",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToAllPrimitive, typeof(TransferrerScatterTests).Name, "TestScatterToAllPrimitive",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterToAllArray, typeof(TransfererScatterTests).Name, "TestScatterToAllArray",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToAllArray, typeof(TransfererScatterTests).Name, "TestScatterToAllArray",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToAllArray, typeof(TransfererScatterTests).Name, "TestScatterToAllArray",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.Variable);
+            suite.AddTheory(TestScatterToAllArray, typeof(TransferrerScatterTests).Name, "TestScatterToAllArray",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToAllArray, typeof(TransferrerScatterTests).Name, "TestScatterToAllArray",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToAllArray, typeof(TransferrerScatterTests).Name, "TestScatterToAllArray",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterToAllClass, typeof(TransfererScatterTests).Name, "TestScatterToAllClass",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToAllClass, typeof(TransfererScatterTests).Name, "TestScatterToAllClass",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToAllClass, typeof(TransfererScatterTests).Name, "TestScatterToAllClass",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.Variable);
+            suite.AddTheory(TestScatterToAllClass, typeof(TransferrerScatterTests).Name, "TestScatterToAllClass",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToAllClass, typeof(TransferrerScatterTests).Name, "TestScatterToAllClass",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToAllClass, typeof(TransferrerScatterTests).Name, "TestScatterToAllClass",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererScatterTests).Name, "TestScatterToAllClassPacked",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererScatterTests).Name, "TestScatterToAllClassPacked",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransfererScatterTests).Name, "TestScatterToAllClassPacked",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.Variable);
+            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransferrerScatterTests).Name, "TestScatterToAllClassPacked",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransferrerScatterTests).Name, "TestScatterToAllClassPacked",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToAllClassPacked, typeof(TransferrerScatterTests).Name, "TestScatterToAllClassPacked",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.Variable);
 
-            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransfererScatterTests).Name, "TestScatterToAllClassPackedArray",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransfererScatterTests).Name, "TestScatterToAllClassPackedArray",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
-            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransfererScatterTests).Name, "TestScatterToAllClassPackedArray",
-                TransfererChoice.AltogetherFlattened, SubdomainDistribution.Variable);
+            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransferrerScatterTests).Name, "TestScatterToAllClassPackedArray",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransferrerScatterTests).Name, "TestScatterToAllClassPackedArray",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestScatterToAllClassPackedArray, typeof(TransferrerScatterTests).Name, "TestScatterToAllClassPackedArray",
+                TransferrerChoice.AltogetherFlattened, SubdomainDistribution.Variable);
         }
 
-        public static void TestScatterToAllArray(TransfererChoice transfererChoice,
+        public static void TestScatterToAllArray(TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestScatterTemplate(transfererChoice, subdomainDistribution, true,
+            TestScatterTemplate(transferrerChoice, subdomainDistribution, true,
                 s => GetArrayDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) => transf.ScatterToAllSubdomains(allData),
                 (s, computed) => Assert.True(CheckEquality(GetArrayDataOfSubdomain(s), computed)));
         }
 
-        public static void TestScatterToAllClass(TransfererChoice transfererChoice,
+        public static void TestScatterToAllClass(TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestScatterTemplate(transfererChoice, subdomainDistribution, true,
+            TestScatterTemplate(transferrerChoice, subdomainDistribution, true,
                 s => GetClassDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) => transf.ScatterToAllSubdomains(allData),
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
 
-        public static void TestScatterToAllClassPacked(TransfererChoice transfererChoice,
+        public static void TestScatterToAllClassPacked(TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestScatterTemplate(transfererChoice, subdomainDistribution, true,
+            TestScatterTemplate(transferrerChoice, subdomainDistribution, true,
                 s => GetClassDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) =>
                 {
@@ -158,10 +159,10 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
 
-        public static void TestScatterToAllClassPackedArray(TransfererChoice transfererChoice,
+        public static void TestScatterToAllClassPackedArray(TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestScatterTemplate(transfererChoice, subdomainDistribution, true,
+            TestScatterTemplate(transferrerChoice, subdomainDistribution, true,
                 s => GetClassDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) =>
                 {
@@ -175,37 +176,37 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
 
-        public static void TestScatterToAllPrimitive(TransfererChoice transfererChoice, 
+        public static void TestScatterToAllPrimitive(TransferrerChoice transferrerChoice, 
             SubdomainDistribution subdomainDistribution)
         {
-            TestScatterTemplate(transfererChoice, subdomainDistribution, true,
+            TestScatterTemplate(transferrerChoice, subdomainDistribution, true,
                 s => GetPrimitiveDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) => transf.ScatterToAllSubdomains(allData),
                 (s, computed) => Assert.Equal(GetPrimitiveDataOfSubdomain(s), computed));
         }
 
-        public static void TestScatterToSomeArray(TransfererChoice transfererChoice,
+        public static void TestScatterToSomeArray(TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestScatterTemplate(transfererChoice, subdomainDistribution, false,
+            TestScatterTemplate(transferrerChoice, subdomainDistribution, false,
                 s => GetArrayDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) => transf.ScatterToSomeSubdomains<double>(allData, activeSubdomains),
                 (s, computed) => Assert.True(CheckEquality(GetArrayDataOfSubdomain(s), computed)));
         }
 
-        public static void TestScatterToSomeClass(TransfererChoice transfererChoice,
+        public static void TestScatterToSomeClass(TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestScatterTemplate(transfererChoice, subdomainDistribution, false,
+            TestScatterTemplate(transferrerChoice, subdomainDistribution, false,
                 s => GetClassDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) => transf.ScatterToSomeSubdomains(allData, activeSubdomains),
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
 
-        public static void TestScatterToSomeClassPacked(TransfererChoice transfererChoice,
+        public static void TestScatterToSomeClassPacked(TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestScatterTemplate(transfererChoice, subdomainDistribution, false,
+            TestScatterTemplate(transferrerChoice, subdomainDistribution, false,
                 s => GetClassDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) =>
                 {
@@ -216,10 +217,10 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
 
-        public static void TestScatterToSomeClassPackedArray(TransfererChoice transfererChoice,
+        public static void TestScatterToSomeClassPackedArray(TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestScatterTemplate(transfererChoice, subdomainDistribution, false,
+            TestScatterTemplate(transferrerChoice, subdomainDistribution, false,
                 s => GetClassDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) =>
                 {
@@ -234,22 +235,22 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
 
-        public static void TestScatterToSomePrimitive(TransfererChoice transfererChoice,
+        public static void TestScatterToSomePrimitive(TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestScatterTemplate(transfererChoice, subdomainDistribution, false,
+            TestScatterTemplate(transferrerChoice, subdomainDistribution, false,
                 s => GetPrimitiveDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) => transf.ScatterToSomeSubdomains(allData, activeSubdomains),
                 (s, computed) => Assert.Equal(GetPrimitiveDataOfSubdomain(s), computed));
         }
 
-        private static void TestScatterTemplate<T>(TransfererChoice transfererChoice,
+        private static void TestScatterTemplate<T>(TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution, bool scatterAll, Func<int, T> createSubdomainData,
-            Func<ISubdomainDataTransferer, Dictionary<int, T>, ActiveSubdomains, Dictionary<int, T>> scatterSubdomainData,
+            Func<ISubdomainDataTransferrer, Dictionary<int, T>, ActiveSubdomains, Dictionary<int, T>> scatterSubdomainData,
             Action<int, T> checkReceivedData)
         {
             ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
-            ISubdomainDataTransferer transferer = DetermineTransferer(transfererChoice, procs);
+            ISubdomainDataTransferrer transferrer = DetermineTransferrer(transferrerChoice, procs);
             ActiveSubdomains activeSubdomains = DetermineActiveSubdomains(procs);
 
             // Prepare data in master
@@ -267,7 +268,7 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
             }
 
             // Scatter them to other processes
-            Dictionary<int, T> processData = scatterSubdomainData(transferer, allData_master, activeSubdomains);
+            Dictionary<int, T> processData = scatterSubdomainData(transferrer, allData_master, activeSubdomains);
 
             // Check the received data in each process other than master
             foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))

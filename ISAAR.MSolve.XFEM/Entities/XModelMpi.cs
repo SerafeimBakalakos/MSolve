@@ -5,6 +5,8 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Transfer;
+using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.MPI.Transfer;
 using ISAAR.MSolve.XFEM.Elements;
 using ISAAR.MSolve.XFEM.Transfer;
 
@@ -122,8 +124,8 @@ namespace ISAAR.MSolve.XFEM.Entities
             }
 
             // Scatter them to all processes
-            var transferer = new TransfererAltogetherFlattened(procs);
-            Dictionary<int, bool> processSubdomainsState = transferer.ScatterToAllSubdomains(allSubdomainsState_master);
+            var transferrer = new TransferrerAltogetherFlattened(procs);
+            Dictionary<int, bool> processSubdomainsState = transferrer.ScatterToAllSubdomains(allSubdomainsState_master);
 
             // Update subdomains in other processes
             if (!procs.IsMasterProcess)

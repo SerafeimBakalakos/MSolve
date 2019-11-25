@@ -6,7 +6,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
-using ISAAR.MSolve.LinearAlgebra.Reordering;
+using ISAAR.MSolve.LinearAlgebra.MPI;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 using MPI;
 
@@ -31,7 +31,7 @@ namespace ISAAR.MSolve.Solvers.Ordering
         public override void OrderFreeDofs(IModel model)
         {
             // Each process orders its subdomain dofs
-            foreach (ISubdomain subdomain in procs.GetSubdomainsOfProcess(procs.OwnRank, model).Values)
+            foreach (ISubdomain subdomain in procs.GetSubdomainsOfProcess(model).Values)
             {
                 ISubdomainFreeDofOrdering subdomainOrdering = OrderFreeDofs(subdomain);
                 subdomain.FreeDofOrdering = subdomainOrdering;

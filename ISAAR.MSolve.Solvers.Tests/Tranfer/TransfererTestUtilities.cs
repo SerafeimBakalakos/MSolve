@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.Discretization.Transfer;
+using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.MPI.Transfer;
 using MPI;
 
 namespace ISAAR.MSolve.Solvers.Tests.Tranfer
 {
-    public static class TransfererTestUtilities
+    public static class TransferrerTestUtilities
     {
         private const int numProcesses = 4;
 
@@ -15,7 +16,7 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
             OnePerProcess, Uniform, Variable
         }
 
-        public enum TransfererChoice
+        public enum TransferrerChoice
         {
             PerSubdomain, AltogetherFlattened
         }
@@ -49,10 +50,10 @@ namespace ISAAR.MSolve.Solvers.Tests.Tranfer
             return new ProcessDistribution(Communicator.world, master, processesToSubdomains);
         }
 
-        public static ISubdomainDataTransferer DetermineTransferer(TransfererChoice transfererChoice, ProcessDistribution procs)
+        public static ISubdomainDataTransferrer DetermineTransferrer(TransferrerChoice transferrerChoice, ProcessDistribution procs)
         {
-            if (transfererChoice == TransfererChoice.PerSubdomain) return new TransfererPerSubdomain(procs);
-            else if (transfererChoice == TransfererChoice.AltogetherFlattened) return new TransfererAltogetherFlattened(procs);
+            if (transferrerChoice == TransferrerChoice.PerSubdomain) return new TransferrerPerSubdomain(procs);
+            else if (transferrerChoice == TransferrerChoice.AltogetherFlattened) return new TransferrerAltogetherFlattened(procs);
             else throw new NotImplementedException();
         }
     }

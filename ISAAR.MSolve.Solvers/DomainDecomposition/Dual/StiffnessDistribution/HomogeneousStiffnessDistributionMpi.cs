@@ -5,6 +5,8 @@ using System.Linq;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
+using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.MPI.Transfer;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
@@ -55,13 +57,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             var activeSubdomains = new ActiveSubdomains(procs, s => model.GetSubdomain(s).ConnectivityModified);
 
             // Gather all boundary dof multiplicites in master. It is faster to send int[] than double[].
-            var transferer = new TransfererPerSubdomain(procs);
+            var transferrer = new TransferrerPerSubdomain(procs);
             GetArrayLengthOfPackedData<double[]> getPackedDataLength = (s, arry) => arry.Length;
             PackSubdomainDataIntoArray<double[], int> packData =
                 (s, inverse, direct, offsetDirect) => Invert(inverse, direct, offsetDirect);
             UnpackSubdomainDataFromArray<double[], int> unpackData =
                 (s, direct, start, end) => Invert(direct, start, end);
-            this.inverseBoundaryDofMultiplicities = transferer.GatherFromSomeSubdomainsPacked(
+            this.inverseBoundaryDofMultiplicities = transferrer.GatherFromSomeSubdomainsPacked(
                 this.inverseBoundaryDofMultiplicities, getPackedDataLength, packData, unpackData, activeSubdomains);
         }
 
@@ -71,7 +73,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         {
             // Calculate and store the inverse boundary dof multiplicities of each subdomain in this process
             inverseBoundaryDofMultiplicities = new Dictionary<int, double[]>();
-            foreach (ISubdomain subdomain in procs.GetSubdomainsOfProcess(procs.OwnRank, model).Values)
+            foreach (ISubdomain subdomain in procs.GetSubdomainsOfProcess(model).Values)
             {
                 if (subdomain.ConnectivityModified) //TODO: Is this what I should check?
                 {

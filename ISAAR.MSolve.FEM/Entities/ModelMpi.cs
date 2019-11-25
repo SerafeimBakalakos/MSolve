@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.FEM.Transfer;
+using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.MPI.Transfer;
 
 namespace ISAAR.MSolve.FEM.Entities
 {
@@ -18,12 +20,12 @@ namespace ISAAR.MSolve.FEM.Entities
         protected override void ScatterSubdomainData()
         {
             // Scatter subdomain data to all processes
-            var transferer = new TransfererPerSubdomain(procs);
+            var transferrer = new TransferrerPerSubdomain(procs);
             PackSubdomainData<Subdomain, SubdomainDto> packData = 
                 (id, subdomain) => SubdomainDto.Serialize(subdomain, DofSerializer);
             UnpackSubdomainData<Subdomain, SubdomainDto> unpackData =
                 (id, subdomainDto) => subdomainDto.Deserialize(DofSerializer);
-            Dictionary<int, Subdomain> subdomainsOfProcess = transferer.ScatterToAllSubdomainsPacked(
+            Dictionary<int, Subdomain> subdomainsOfProcess = transferrer.ScatterToAllSubdomainsPacked(
                 model.SubdomainsDictionary, packData, unpackData);
 
             if (!procs.IsMasterProcess)

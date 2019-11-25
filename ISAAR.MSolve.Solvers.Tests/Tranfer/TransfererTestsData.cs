@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ISAAR.MSolve.Solvers.Tests.Tranfer
 {
-    internal static class TransfererTestsData
+    internal static class TransferrerTestsData
     {
         internal static bool CheckEquality<T>(T[] array1, T[] array2)
         {

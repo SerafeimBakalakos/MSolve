@@ -5,6 +5,7 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
+using ISAAR.MSolve.LinearAlgebra.MPI;
 using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
@@ -76,7 +77,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
             else
             {
                 //TODO: Using incomplete data and especially passing it between multiple classes is very fragile.
-                Dictionary<int, ISubdomain> processSubdomains = procs.GetSubdomainsOfProcess(procs.OwnRank, model);
+                Dictionary<int, ISubdomain> processSubdomains = procs.GetSubdomainsOfProcess(model);
                 LagrangeMultiplier[] incompleteLagranges = lagrangeSerializer.DeserializeIncompletely(serializedLagranges,
                     processSubdomains);
                 NumLagrangeMultipliers = incompleteLagranges.Length;

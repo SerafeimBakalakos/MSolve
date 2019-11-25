@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.Discretization.Interfaces;
 
-namespace ISAAR.MSolve.Discretization.Transfer
+namespace ISAAR.MSolve.LinearAlgebra.MPI.Transfer
 {
-    public class TransfererPerSubdomain : ISubdomainDataTransferer
+    public class TransferrerPerSubdomain : ISubdomainDataTransferrer
     {
         private readonly ProcessDistribution procs;
 
-        public TransfererPerSubdomain(ProcessDistribution processDistribution)
+        public TransferrerPerSubdomain(ProcessDistribution processDistribution)
         {
             this.procs = processDistribution;
         }

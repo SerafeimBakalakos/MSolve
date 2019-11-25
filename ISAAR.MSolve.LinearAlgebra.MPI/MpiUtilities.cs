@@ -3,15 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.Discretization.Exceptions;
-using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MPI;
 
 //TODO: Ideally these would be strategy objects
-namespace ISAAR.MSolve.Discretization.Transfer
+namespace ISAAR.MSolve.LinearAlgebra.MPI
 {
     public static class MpiUtilities
     {

@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.Discretization.Exceptions;
-using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.LinearAlgebra.MPI.Exceptions;
 using MPI;
 
 //TODO: What about the case where more than one subdomains are delegated to the same process?
 //TODO: Remove the subdomains and keep only clusters
 //TODO: If there are point2point communications between two processes, should this be transfered to all of them?
-namespace ISAAR.MSolve.Discretization.Transfer
+namespace ISAAR.MSolve.LinearAlgebra.MPI
 {
     /// <summary>
     /// This should be present in all processes.
@@ -119,13 +118,5 @@ namespace ISAAR.MSolve.Discretization.Transfer
         /// </summary>
         /// <param name="processRank"></param>
         public int[] GetSubdomainIdsOfProcess(int processRank) => processesToSubdomains[processRank];
-
-        //TODO: Shouldn't this be accessed by model itself? But then what happens for master process, which contains all subdomains?
-        public Dictionary<int, ISubdomain> GetSubdomainsOfProcess(int processRank, IModel model)
-        {
-            var processSubdomains = new Dictionary<int, ISubdomain>();
-            foreach (int s in processesToSubdomains[processRank]) processSubdomains[s] = model.GetSubdomain(s);
-            return processSubdomains;
-        }
     }
 }
