@@ -15,20 +15,24 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
     public class FetiDPMatrixManagerMpi : IFetiDPMatrixManager
     {
         private readonly IFetiDPGlobalMatrixManager matrixManagerGlobal_master;
-        private readonly IFetiDPSubdomainMatrixManager matrixManagerSubdomain;
+        private readonly Dictionary<int, IFetiDPSubdomainMatrixManager> matrixManagerSubdomains;
         private readonly IModel model;
         private readonly string msgHeader;
         private readonly ProcessDistribution procs;
-        private readonly ISubdomain subdomain;
 
         public FetiDPMatrixManagerMpi(ProcessDistribution processDistribution, IModel model, IFetiDPDofSeparator dofSeparator,
             IFetiDPMatrixManagerFactory matrixManagerFactory)
         {
             this.procs = processDistribution;
             this.model = model;
-            this.subdomain = model.GetSubdomain(processDistribution.OwnSubdomainID);
 
-            this.matrixManagerSubdomain = matrixManagerFactory.CreateSubdomainMatrixManager(subdomain, dofSeparator);
+            this.matrixManagerSubdomains = new Dictionary<int, IFetiDPSubdomainMatrixManager>();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                this.matrixManagerSubdomains[s] = matrixManagerFactory.CreateSubdomainMatrixManager(subdomain, dofSeparator);
+            }
+
             if (processDistribution.IsMasterProcess)
             {
                 matrixManagerGlobal_master = matrixManagerFactory.CreateGlobalMatrixManager(model, dofSeparator);
@@ -48,53 +52,60 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         public void CalcCoarseProblemRhs()
         {
             // Calculate the subdomain FcStar in each process
-            // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s] -> delegated to the SubdomainMatrixManager
-            // globalFcStar = sum_over_s(Lc[s]^T * fcStar[s]) -> delegated to the GlobalMatrixManager
-            matrixManagerSubdomain.CondenseRhsVectorsStatically();
+            var processVectors = new Dictionary<int, Vector>();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s] -> delegated to the SubdomainMatrixManager
+                // globalFcStar = sum_over_s(Lc[s]^T * fcStar[s]) -> delegated to the GlobalMatrixManager
+                matrixManagerSubdomains[s].CondenseRhsVectorsStatically();
+                processVectors[s] = matrixManagerSubdomains[s].FcStar;
+            }
 
             // Gather them in master
-            Dictionary<ISubdomain, Vector> allFcStar_master = null;
-            Vector[] receivedFcStar_master = GatherCondensedRhsVectors(matrixManagerSubdomain.FcStar);
+            //TODO: Perhaps I should cache them and reuse the unchanged ones.
+            var transferer = new TransfererAltogetherFlattened(procs);
+            Dictionary<int, Vector> allVectors_master = transferer.GatherFromAllSubdomains(processVectors);
+
+            // Calculate globalFcStar in master
             if (procs.IsMasterProcess)
             {
-                allFcStar_master = new Dictionary<ISubdomain, Vector>();
-                for (int p = 0; p < procs.Communicator.Size; ++p)
-                {
-                    ISubdomain sub = model.GetSubdomain(p);
-                    allFcStar_master[sub] = receivedFcStar_master[p];
-                }
+                var subdomainToVectors = allVectors_master.ChangeKey(model); //TODO: Changing the key of the Dictionary should be avoided
 
                 // Give them to the global matrix manager so that it can create the global FcStar
-                matrixManagerGlobal_master.CalcCoarseProblemRhs(allFcStar_master);
+                matrixManagerGlobal_master.CalcCoarseProblemRhs(subdomainToVectors); 
             }
         }
 
         public void CalcInverseCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection)
         {
             // Calculate the subdomain KccStar in each process
-            // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s] -> delegated to the SubdomainMatrixManager
-            // globalKccStar = sum_over_s(Lc[s]^T * KccStar[s] * Lc[s]) -> delegated to the GlobalMatrixManager 
-            if (subdomain.StiffnessModified)
+            var processMatrices = new Dictionary<int, IMatrixView>();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
             {
-                Debug.WriteLine(msgHeader + "Calculating Schur complement of remainder dofs"
-                    + $" for the stiffness of subdomain {subdomain.ID}");
-                matrixManagerSubdomain.CondenseMatricesStatically(); //TODO: At this point Kcc and Krc can be cleared. Maybe Krr too.
+                // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s] -> delegated to the SubdomainMatrixManager
+                // globalKccStar = sum_over_s(Lc[s]^T * KccStar[s] * Lc[s]) -> delegated to the GlobalMatrixManager 
+                ISubdomain subdomain = model.GetSubdomain(s);
+                if (subdomain.StiffnessModified)
+                {
+                    Debug.WriteLine(msgHeader + "Calculating Schur complement of remainder dofs"
+                        + $" for the stiffness of subdomain {subdomain.ID}");
+                    matrixManagerSubdomains[s].CondenseMatricesStatically(); //TODO: At this point Kcc and Krc can be cleared. Maybe Krr too.
+                }
+                processMatrices[s] = matrixManagerSubdomains[s].KccStar;
             }
 
             // Gather them in master
-            Dictionary<ISubdomain, IMatrixView> allKccStar_master = null;
-            IMatrixView[] receivedKccStar_master = GatherSchurComplementsOfRemainderDofs(matrixManagerSubdomain.KccStar);
+            //TODO: Perhaps I should cache them and reuse the unchanged ones.
+            var transferer = new TransfererAltogetherFlattened(procs);
+            Dictionary<int, IMatrixView> allMatrices_master = transferer.GatherFromAllSubdomains(processMatrices);
+
+            // Calculate globalKccStar and invert it in master
             if (procs.IsMasterProcess)
             {
-                allKccStar_master = new Dictionary<ISubdomain, IMatrixView>();
-                for (int p = 0; p < procs.Communicator.Size; ++p)
-                {
-                    ISubdomain sub = model.GetSubdomain(p);
-                    allKccStar_master[sub] = receivedKccStar_master[p];
-                }
+                var subdomainsToMatrices = allMatrices_master.ChangeKey(model); //TODO: Changing the key of the Dictionary should be avoided
 
                 // Give them to the global matrix manager so that it can create the global KccStar
-                matrixManagerGlobal_master.CalcInverseCoarseProblemMatrix(cornerNodeSelection, allKccStar_master);
+                matrixManagerGlobal_master.CalcInverseCoarseProblemMatrix(cornerNodeSelection, subdomainsToMatrices);
             }
         }
 
@@ -114,7 +125,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         public IFetiDPSubdomainMatrixManager GetFetiDPSubdomainMatrixManager(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
-            return matrixManagerSubdomain;
+            return matrixManagerSubdomains[subdomain.ID];
         }
 
         public Vector MultiplyInverseCoarseProblemMatrix(Vector vector)
@@ -132,13 +143,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         public DofPermutation ReorderSubdomainInternalDofs(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
-            return matrixManagerSubdomain.ReorderInternalDofs();
+            return matrixManagerSubdomains[subdomain.ID].ReorderInternalDofs();
         }
 
         public DofPermutation ReorderSubdomainRemainderDofs(ISubdomain subdomain)
         {
             procs.CheckProcessMatchesSubdomain(subdomain.ID);
-            return matrixManagerSubdomain.ReorderRemainderDofs();
+            return matrixManagerSubdomains[subdomain.ID].ReorderRemainderDofs();
         }
 
         private Vector[] GatherCondensedRhsVectors(Vector subdomainVector)
