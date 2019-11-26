@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ISAAR.MSolve.XFEM.Thermal.Enrichments
+﻿namespace ISAAR.MSolve.XFEM.Thermal.Enrichments
 {
     /// <summary>
     /// Data transfer object to store and pass around the value and derivatives of a function, evaluated at some point.

@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.Geometry.Triangulation;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
-using ISAAR.MSolve.XFEM.Thermal.Entities;
+using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
 
-namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
+namespace ISAAR.MSolve.XFEM.Thermal.Entities
 {
     public class GeometricModel2D
     {
@@ -17,12 +15,15 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
 
         public GeometricModel2D(double interfaceThickness = 1.0, double zeroTolerance = 1E-13)
         {
-            this.SingleCurves = new List<SimpleLsmClosedCurve2D>();
             this.Thickness = interfaceThickness;
             this.zeroTolerance = zeroTolerance;
         }
 
-        public List<SimpleLsmClosedCurve2D> SingleCurves { get; }
+        public List<PhaseJunction> Junctions { get; } = new List<PhaseJunction>();
+
+        public List<MaterialPhase> Phases { get; } = new List<MaterialPhase>();
+
+        public List<SimpleLsmClosedCurve2D> SingleCurves { get; } = new List<SimpleLsmClosedCurve2D>();
 
         public double Thickness { get; }
 

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
@@ -15,8 +13,6 @@ using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Enrichments;
 using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
 using ISAAR.MSolve.XFEM.Thermal.Output.Mesh;
 
 

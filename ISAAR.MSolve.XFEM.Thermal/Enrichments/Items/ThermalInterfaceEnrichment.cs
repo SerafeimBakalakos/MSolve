@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.Discretization.Integration;
-using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Geometry.Shapes;
-using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Enrichments.Functions;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
@@ -17,8 +12,6 @@ namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
 {
     public class ThermalInterfaceEnrichment : IEnrichmentItem
     {
-        //public enum Subdomain { Positive, Negative, Boundary }
-
         private readonly HalfSignFunction2D enrichmentFunction;
         private HashSet<XThermalElement2D> affectedElements;
 
@@ -33,7 +26,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
 
         public ILsmCurve2D Discontinuity { get; }
 
-        public IReadOnlyList<EnrichedDof> Dofs { get; protected set; }
+        public IReadOnlyList<EnrichedDof> Dofs { get; }
 
         public double InterfaceResistance { get; } //TODO: This should be accessed from some material class.
 
@@ -91,8 +84,5 @@ namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
                 enrichmentFunction.EvaluateAtSubtriangleVertices(signedDistancesAtVertices, signedDistanceAtCentroid);
             return enrichmentFunctions.Select(e => new double[] { e }).ToList();
         }
-
-        public IReadOnlyList<CartesianPoint> IntersectionPointsForIntegration(IXFiniteElement element)
-            => throw new NotImplementedException();
     }
 }

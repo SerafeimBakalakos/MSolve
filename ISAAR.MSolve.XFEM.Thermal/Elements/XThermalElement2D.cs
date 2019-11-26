@@ -14,7 +14,6 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.XFEM.Thermal.Enrichments;
 using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Thermal.Entities;

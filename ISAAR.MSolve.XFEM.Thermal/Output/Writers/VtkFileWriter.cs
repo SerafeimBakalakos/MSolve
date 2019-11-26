@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using ISAAR.MSolve.Logging.VTK;
-using ISAAR.MSolve.XFEM.Thermal.Output.Fields;
 using ISAAR.MSolve.XFEM.Thermal.Output.Mesh;
 
 namespace ISAAR.MSolve.XFEM.Thermal.Output.Writers

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ISAAR.MSolve.Discretization.Mesh;
+﻿using System.Collections.Generic;
 using ISAAR.MSolve.Logging.VTK;
 
 //TODO: Perhaps I should use IDs for vertices, cells and avoid any generics.

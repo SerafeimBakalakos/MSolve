@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.FEM.Interpolation.GaussPointExtrapolation;
-using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.Integration;
 using ISAAR.MSolve.XFEM.Thermal.Materials;

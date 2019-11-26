@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Materials;
+﻿using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
+using ISAAR.MSolve.XFEM.Thermal.Entities;
 
 namespace ISAAR.MSolve.XFEM.Thermal.Materials
 {

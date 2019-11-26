@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ISAAR.MSolve.Discretization.Integration;
+﻿using System.Collections.Generic;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;

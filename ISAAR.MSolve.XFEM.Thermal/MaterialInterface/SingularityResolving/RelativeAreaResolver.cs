@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.XFEM.Thermal.Elements;

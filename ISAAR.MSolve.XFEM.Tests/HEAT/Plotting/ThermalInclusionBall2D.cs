@@ -203,7 +203,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 
         private static void ApplyEnrichments(XModel model, GeometricModel2D geometricModel)
         {
-            var materialInterface = new SingleMaterialInterface(geometricModel, geometricModel.SingleCurves[0], 
+            var materialInterface = new SingleMaterialInterfaceEnricher(geometricModel, geometricModel.SingleCurves[0], 
                 model.Elements.Select(e => (XThermalElement2D)e), interfaceResistance);
             materialInterface.ApplyEnrichments();
         }

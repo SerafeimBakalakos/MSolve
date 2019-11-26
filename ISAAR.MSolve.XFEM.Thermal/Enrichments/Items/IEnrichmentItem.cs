@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
@@ -16,7 +15,6 @@ namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
         /// </summary>
         IReadOnlyList<EnrichedDof> Dofs { get; } 
 
-        //IReadOnlyList<XContinuumElement2D> AffectedElements { get; }
 
         ///// <summary>
         ///// Assigns enrichment functions and their nodal values to each enriched node.
@@ -25,7 +23,6 @@ namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
 
         //void EnrichElement(XContinuumElement2D element);
 
-        IReadOnlyList<CartesianPoint> IntersectionPointsForIntegration(IXFiniteElement element);
         EvaluatedFunction[] EvaluateAllAt(IXFiniteElement element, double[] shapeFunctionsAtNaturalPoint);
 
         double[] EvaluateFunctionsAt(XNode node);

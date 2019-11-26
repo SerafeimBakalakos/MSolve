@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Logging.VTK;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
 
 //TODO: Needs tidying up.

@@ -1,5 +1,4 @@
 ﻿using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.FEM.Entities;
 
 namespace ISAAR.MSolve.XFEM.Thermal.Entities
 {

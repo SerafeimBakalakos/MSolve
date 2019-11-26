@@ -2,12 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using ISAAR.MSolve.Discretization.Integration;
-using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
-using ISAAR.MSolve.Geometry.Triangulation;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;

@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Logging.VTK;
 using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
 
 namespace ISAAR.MSolve.XFEM.Thermal.Output.Enrichments
 {

@@ -28,3 +28,31 @@
 	- Needs formulas for identifying element - curve intersection in natural/cartesian system
 	- Needs formulas for identifying conforming triangulation in natural/cartesian system
 	- Needs formulas for identifying curve-curve intersection in natural/cartesian system
+
+
+6) XFEM via Simone et al:
+	- Each phase (matrix, each inclusion) is has an ID
+	- Each element stores which phases it contains (warning: singularity resolver)
+	- Finding the material of an element with only 1 phase does not need level sets => good for narrow band LSM
+	- For an element that is contains more than 1 phases:
+		- The element also contains their intersections
+		- The element is enriched.
+		- Each enrichment is explicitly associated with one phase
+	- Line integral of an element containing 2 phases: 1, 2
+		- Find the geometry of their intersection and the gauss points on it
+		- We need to calculate 4 matrices A11, A12, A21=A12^T, A22 
+		- Each one will be added to the dofs 1 or 2 respectively of the stiffness matrix
+		- We calculate them based on the Theory.doc and Simone et al.
+
+7) Single (or triple) junction enrichments:
+	- Test: Enrich all interacting elements with Junction ramp function, instead of enriching elements that do not contain the 
+	juction with Heaviside. 
+		- The result should be the same. That would indicate that having blending elements with some Heaviside 
+	nodes and some junction nodes is ok. 
+		- This could be done with & without the line integrals
+	- Test: Try using different values for the areas in Junction function and Heaviside functions
+		- No matter what values we choose, the plots should be the same.
+		
+
+
+	

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction
+﻿namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction
 {
     public enum RelativePositionCurveElement
     {

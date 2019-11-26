@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Thermal.Elements;
 
 //TODO: Perhaps the interpolation extensions should be included in the original classes, e.g. in abstract classes or as default 
 //      interface implementations.

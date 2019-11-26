@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
 

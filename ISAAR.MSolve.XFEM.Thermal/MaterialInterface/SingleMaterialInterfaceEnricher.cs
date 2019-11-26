@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
@@ -10,20 +8,20 @@ using ISAAR.MSolve.XFEM.Thermal.MaterialInterface.SingularityResolving;
 
 namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
 {
-    public class SingleMaterialInterface
+    public class SingleMaterialInterfaceEnricher
     {
         private readonly IEnumerable<XThermalElement2D> modelElements;
         private readonly ILsmCurve2D curve;
         private readonly ThermalInterfaceEnrichment enrichment;
         private readonly IHeavisideSingularityResolver singularityResolver;
 
-        public SingleMaterialInterface(GeometricModel2D geometricModel, ILsmCurve2D curve, 
+        public SingleMaterialInterfaceEnricher(GeometricModel2D geometricModel, ILsmCurve2D curve, 
             IEnumerable<XThermalElement2D> modelElements, double interfaceResistance) : 
             this(curve, modelElements, interfaceResistance, new RelativeAreaResolver(geometricModel))
         {
         }
 
-        public SingleMaterialInterface(ILsmCurve2D curve, IEnumerable<XThermalElement2D> modelElements, 
+        public SingleMaterialInterfaceEnricher(ILsmCurve2D curve, IEnumerable<XThermalElement2D> modelElements, 
             double interfaceResistance, IHeavisideSingularityResolver singularityResolver)
         {
             this.curve = curve;
@@ -35,7 +33,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
         public void ApplyEnrichments()
         {
             // Find elements that interact with the discontinuity. Their nodes will be enriched.
-            var intersectedElements = new List<IXFiniteElement>();
+            var intersectedElements = new List<IXFiniteElement>(); //TODO: This is unused
             var enrichedNodes = new HashSet<XNode>();
 
             foreach (XThermalElement2D element in modelElements) //TODO: Better to ask the LSM to return the relevant elements

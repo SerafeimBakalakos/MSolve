@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.XFEM.Thermal.Elements;

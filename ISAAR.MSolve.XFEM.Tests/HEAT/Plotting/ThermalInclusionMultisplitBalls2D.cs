@@ -206,7 +206,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             var interfaceResistances = new double[numCurves];
             interfaceResistances[0] = 1 / interfaceConductivityLeft;
             interfaceResistances[1] = 1 / interfaceConductivityRight;
-            var materialInterface = new MultiMaterialInterface(geometricModel, model.Elements.Select(e => (XThermalElement2D)e),
+            var materialInterface = new MultiMaterialInterfaceEnricher(geometricModel, model.Elements.Select(e => (XThermalElement2D)e),
                 interfaceResistances);
             materialInterface.ApplyEnrichments();
         }
