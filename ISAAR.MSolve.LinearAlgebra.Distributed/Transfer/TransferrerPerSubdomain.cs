@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ISAAR.MSolve.LinearAlgebra.MPI.Transfer
+namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
 {
     public class TransferrerPerSubdomain : ISubdomainDataTransferrer
     {

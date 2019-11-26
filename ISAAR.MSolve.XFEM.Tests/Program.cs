@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.LinearAlgebra.Tests.Utilities;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Tests;
 using ISAAR.MSolve.XFEM.Tests.Transfer;
 
 namespace ISAAR.MSolve.XFEM.Tests

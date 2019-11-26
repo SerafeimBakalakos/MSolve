@@ -37,4 +37,4 @@ using System.Runtime.InteropServices;
 
 // Expose internal methods to the testing project.
 [assembly: InternalsVisibleTo("ISAAR.MSolve.LinearAlgebra.Tests")]
-[assembly: InternalsVisibleTo("ISAAR.MSolve.LinearAlgebra.MPI")]
+[assembly: InternalsVisibleTo("ISAAR.MSolve.LinearAlgebra.Distributed")]

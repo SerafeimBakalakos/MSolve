@@ -5,7 +5,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
 	<RuntimeFrameworkVersion>2.2.0</RuntimeFrameworkVersion>
     <ApplicationIcon />
-    <StartupObject>ISAAR.MSolve.LinearAlgebra.Tests.Program</StartupObject>
+    <StartupObject></StartupObject>
   </PropertyGroup>
 
   <PropertyGroup>

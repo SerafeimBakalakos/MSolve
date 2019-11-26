@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Tests;
 using ISAAR.MSolve.LinearAlgebra.Tests.Utilities;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.IntegrationTests;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Utilities;
-using ISAAR.MSolve.Solvers.Tests.Tranfer;
 using ISAAR.MSolve.Solvers.Tests.Utilities;
 using static ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.IntegrationTests.PapagiannakisFetiDPTests2DMpi;
 using static ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.FetiDPMatrixManagerSerialTests;
@@ -23,9 +23,6 @@ namespace ISAAR.MSolve.Solvers.Tests
         private static void RunTestsWith4MpiProcesses(string[] args)
         {
             var suite = new MpiTestSuite();
-
-            //TransferrerScatterTests.RegisterAllTests(suite);
-            //TransferrerGatherTests.RegisterAllTests(suite);
 
             suite.AddFact(FetiDPDofSeparatorMpiTests.TestDofSeparation, typeof(FetiDPDofSeparatorMpiTests).Name, "TestDofSeparation");
             suite.AddFact(FetiDPDofSeparatorMpiTests.TestCornerBooleanMatrices, typeof(FetiDPDofSeparatorMpiTests).Name, "TestCornerBooleanMatrices");

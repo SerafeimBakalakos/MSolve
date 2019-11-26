@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using ISAAR.MSolve.LinearAlgebra.Commons;
+using ISAAR.MSolve.LinearAlgebra.Iterative;
 using ISAAR.MSolve.LinearAlgebra.Iterative.ConjugateGradient;
+using ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Preconditioning;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
@@ -12,7 +14,7 @@ using MPI;
 //      should read them from a reference of CG/PCG/PCPG, instead of having them injected.
 //TODO: In regular CG, there is a check to perevent premature convergence, by correcting the residual. Can this be done for PCG 
 //      as well? Would the preconditioned residual be updated as well?
-namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
+namespace ISAAR.MSolve.LinearAlgebra.Distributed.Iterative
 {
     /// <summary>
     /// Implements the untransformed Preconditioned Conjugate Gradient algorithm for solving linear systems with symmetric 

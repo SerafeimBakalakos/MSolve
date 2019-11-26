@@ -7,7 +7,7 @@ using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Commons;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
-using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.Distributed;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.XFEM.CrackGeometry.CrackTip;
 using ISAAR.MSolve.XFEM.CrackGeometry.HeavisideSingularityResolving;

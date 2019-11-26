@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
-using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.Distributed;
 
 namespace ISAAR.MSolve.Discretization.Transfer
 {

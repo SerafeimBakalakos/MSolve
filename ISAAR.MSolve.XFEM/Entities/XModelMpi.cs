@@ -5,8 +5,8 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Transfer;
-using ISAAR.MSolve.LinearAlgebra.MPI;
-using ISAAR.MSolve.LinearAlgebra.MPI.Transfer;
+using ISAAR.MSolve.LinearAlgebra.Distributed;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Transfer;
 using ISAAR.MSolve.XFEM.Elements;
 using ISAAR.MSolve.XFEM.Transfer;
 

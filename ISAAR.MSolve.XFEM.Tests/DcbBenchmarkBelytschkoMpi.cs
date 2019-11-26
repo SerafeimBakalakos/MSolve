@@ -10,7 +10,7 @@ using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.GMSH;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
-using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.Distributed;
 using ISAAR.MSolve.Logging.DomainDecomposition;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;

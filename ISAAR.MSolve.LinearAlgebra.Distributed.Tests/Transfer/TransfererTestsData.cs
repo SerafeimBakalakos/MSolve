@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ISAAR.MSolve.Solvers.Tests.Tranfer
+namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
 {
     internal static class TransferrerTestsData
     {

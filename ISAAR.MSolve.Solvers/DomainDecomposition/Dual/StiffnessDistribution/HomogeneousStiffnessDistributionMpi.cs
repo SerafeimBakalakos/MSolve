@@ -5,8 +5,8 @@ using System.Linq;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
-using ISAAR.MSolve.LinearAlgebra.MPI;
-using ISAAR.MSolve.LinearAlgebra.MPI.Transfer;
+using ISAAR.MSolve.LinearAlgebra.Distributed;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Transfer;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 

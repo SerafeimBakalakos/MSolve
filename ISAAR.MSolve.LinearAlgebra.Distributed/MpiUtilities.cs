@@ -8,7 +8,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MPI;
 
 //TODO: Ideally these would be strategy objects
-namespace ISAAR.MSolve.LinearAlgebra.MPI
+namespace ISAAR.MSolve.LinearAlgebra.Distributed
 {
     public static class MpiUtilities
     {
@@ -37,13 +37,6 @@ namespace ISAAR.MSolve.LinearAlgebra.MPI
             comm.Broadcast<T>(ref values, root);
         }
 
-        public static void BroadcastMatrix(this Intracommunicator comm, ref Matrix matrix, int root)
-        {
-            //TODO: Use a dedicated class for MPI communication of Matrix. This class belongs to a project LinearAlgebra.MPI.
-            //      Avoid the automatic serialization of MPI.NET.
-            comm.Broadcast<Matrix>(ref matrix, root);
-        }
-
         public static void BroadcastVector(this Intracommunicator comm, ref Vector vector, int length, int root)
         {
             //TODO: Use a dedicated class for MPI communication of Vector. This class belongs to a project LinearAlgebra.MPI.
@@ -53,6 +46,13 @@ namespace ISAAR.MSolve.LinearAlgebra.MPI
             else asArray = new double[length];
             comm.Broadcast<double>(ref asArray, root);
             vector = Vector.CreateFromArray(asArray);
+        }
+
+        public static void BroadcastMatrix(this Intracommunicator comm, ref Matrix matrix, int root)
+        {
+            //TODO: Use a dedicated class for MPI communication of Matrix. This class belongs to a project LinearAlgebra.MPI.
+            //      Avoid the automatic serialization of MPI.NET.
+            comm.Broadcast<Matrix>(ref matrix, root);
         }
 
         public static void DoInTurn(Intracommunicator comm, Action action)
@@ -135,10 +135,7 @@ namespace ISAAR.MSolve.LinearAlgebra.MPI
             return processArrays;
         }
 
-        public static T[] GatherFromSubdomains<T>(Intracommunicator comm, T subdomainData, int masterProcess)
-        {
-            return comm.Gather(subdomainData, masterProcess);
-        }
+        
 
         //public static T[] GatherFromSubdomains<T>(Intracommunicator comm, T subdomainData, int masterProcess)
         //{

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ISAAR.MSolve.LinearAlgebra.MPI.Exceptions
+namespace ISAAR.MSolve.LinearAlgebra.Distributed.Exceptions
 {
     /// <summary>
     /// The exception that is thrown when a method or property that is invalid for a particular process is called for that 

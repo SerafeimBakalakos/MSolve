@@ -12,8 +12,9 @@ using ISAAR.MSolve.LinearAlgebra.Tests.Utilities;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using Xunit;
 using MPI;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Iterative;
 
-namespace ISAAR.MSolve.LinearAlgebra.Tests.Iterative
+namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Iterative
 {
     /// <summary>
     /// Tests for <see cref="PcgAlgorithm"/>.

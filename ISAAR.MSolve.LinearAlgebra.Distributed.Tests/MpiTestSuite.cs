@@ -7,7 +7,7 @@ using MPI;
 //TODO: Avoid forcing the user to pass the class and method names. At least find a better way to pass the method name.
 //TODO: Perhaps the static method should be moved to Solvers.Tests.Program.Main(string[] args) instead of being here and called
 //      by SamplesConsole.Program.Main(string[] args).
-namespace ISAAR.MSolve.LinearAlgebra.Tests.Utilities
+namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests
 {
     public class MpiTestSuite
     {

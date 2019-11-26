@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.LinearAlgebra.MPI.Exceptions;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Exceptions;
 using MPI;
 
 //TODO: What about the case where more than one subdomains are delegated to the same process?
 //TODO: Remove the subdomains and keep only clusters
 //TODO: If there are point2point communications between two processes, should this be transfered to all of them?
-namespace ISAAR.MSolve.LinearAlgebra.MPI
+namespace ISAAR.MSolve.LinearAlgebra.Distributed
 {
     /// <summary>
     /// This should be present in all processes.

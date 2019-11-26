@@ -25,7 +25,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 using ISAAR.MSolve.Solvers.Logging;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements;
-using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.Distributed;
 
 //TODO: Add time logging
 //TODO: Use a base class for the code that is identical between FETI-1 and FETI-DP.

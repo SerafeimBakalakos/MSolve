@@ -26,6 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ISAAR.MSolve.LinearAlgebra.Distributed.Tests\ISAAR.MSolve.LinearAlgebra.Distributed.Tests.csproj" />
+    <ProjectReference Include="..\ISAAR.MSolve.LinearAlgebra.Distributed\ISAAR.MSolve.LinearAlgebra.Distributed.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.LinearAlgebra.Tests\ISAAR.MSolve.LinearAlgebra.Tests.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.LinearAlgebra\ISAAR.MSolve.LinearAlgebra.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.Problems\ISAAR.MSolve.Problems.csproj" />

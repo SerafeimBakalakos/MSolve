@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
-using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.Distributed;
 using ISAAR.MSolve.Solvers;
 
 namespace ISAAR.MSolve.Analyzers.Loading

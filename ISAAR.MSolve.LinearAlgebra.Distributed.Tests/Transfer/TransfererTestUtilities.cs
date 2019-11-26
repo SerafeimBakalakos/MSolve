@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.LinearAlgebra.MPI;
-using ISAAR.MSolve.LinearAlgebra.MPI.Transfer;
+using ISAAR.MSolve.LinearAlgebra.Distributed;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Transfer;
 using MPI;
 
-namespace ISAAR.MSolve.Solvers.Tests.Tranfer
+namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
 {
     public static class TransferrerTestUtilities
     {

@@ -9,18 +9,18 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Utilities
     /// Compares scalars, vectors and matrices.
     /// Authors: Serafeim Bakalakos
     /// </summary>
-    internal class MatrixComparer
+    public class MatrixComparer
     {
         private readonly ValueComparer valueComparer;
 
-        internal MatrixComparer(double tolerance = 1e-13)
+        public MatrixComparer(double tolerance = 1e-13)
         {
             this.valueComparer = new ValueComparer(tolerance);
         }
 
-        internal bool AreEqual(double a, double b) => valueComparer.AreEqual(a, b);
+        public bool AreEqual(double a, double b) => valueComparer.AreEqual(a, b);
 
-        internal bool AreEqual(int[] a, int[] b)
+        public bool AreEqual(int[] a, int[] b)
         {
             int n = a.Length;
             if (b.Length != n) return false;
@@ -31,7 +31,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Utilities
             return true;
         }
 
-        internal bool AreEqual(double[] a, double[] b)
+        public bool AreEqual(double[] a, double[] b)
         {
             int n = a.Length;
             if (b.Length != n) return false;
@@ -42,7 +42,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Utilities
             return true;
         }
 
-        internal bool AreEqual(double[,] a, double[,] b)
+        public bool AreEqual(double[,] a, double[,] b)
         {
             int m = a.GetLength(0);
             int n = a.GetLength(1);
@@ -57,7 +57,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Utilities
             return true;
         }
 
-        internal bool AreEqual(IIndexable1D a, IIndexable1D b)
+        public bool AreEqual(IIndexable1D a, IIndexable1D b)
         {
             int n = a.Length;
             if (b.Length != n) return false;
@@ -68,7 +68,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Utilities
             return true;
         }
 
-        internal bool AreEqual(IIndexable2D a, IIndexable2D b)
+        public bool AreEqual(IIndexable2D a, IIndexable2D b)
         {
             int m = a.NumRows;
             int n = a.NumColumns;
@@ -83,11 +83,11 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Utilities
             return true;
         }
 
-        internal void AssertEqual(double a, double b) => Assert.True(AreEqual(a, b), $"a={a}, b={b}");
-        internal void AssertEqual(int[] a, int[] b) => Assert.True(AreEqual(a, b));
-        internal void AssertEqual(double[] a, double[] b) => Assert.True(AreEqual(a, b));
-        internal void AssertEqual(double[,] a, double[,] b) => Assert.True(AreEqual(a, b));
-        internal void AssertEqual(IIndexable1D a, IIndexable1D b) => Assert.True(AreEqual(a, b));
-        internal void AssertEqual(IIndexable2D a, IIndexable2D b) => Assert.True(AreEqual(a, b));
+        public void AssertEqual(double a, double b) => Assert.True(AreEqual(a, b), $"a={a}, b={b}");
+        public void AssertEqual(int[] a, int[] b) => Assert.True(AreEqual(a, b));
+        public void AssertEqual(double[] a, double[] b) => Assert.True(AreEqual(a, b));
+        public void AssertEqual(double[,] a, double[,] b) => Assert.True(AreEqual(a, b));
+        public void AssertEqual(IIndexable1D a, IIndexable1D b) => Assert.True(AreEqual(a, b));
+        public void AssertEqual(IIndexable2D a, IIndexable2D b) => Assert.True(AreEqual(a, b));
     }
 }

@@ -8,7 +8,7 @@ using ISAAR.MSolve.Discretization.Exceptions;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM.Interfaces;
-using ISAAR.MSolve.LinearAlgebra.MPI;
+using ISAAR.MSolve.LinearAlgebra.Distributed;
 
 //TODO: The redirection to IModel is necessary to safeguard against a process trying to access unavailable data, but it slows 
 //      access to the items needed by client code. This is especially pronounced for GetNode(), GetElement(), etc that will be 

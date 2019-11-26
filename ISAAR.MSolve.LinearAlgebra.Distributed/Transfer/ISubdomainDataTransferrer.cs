@@ -19,7 +19,7 @@ using System.Text;
 //      memory to gather all data in one process and afterwards use them.
 //TODO: Scatter, Gather operations that entail all subdomains should be provided as extension methods. Transferrer classes need 
 //      only provide versions where only some subdomains are used.
-namespace ISAAR.MSolve.LinearAlgebra.MPI.Transfer
+namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
 {
     //TODO: Not sure that the subdomainID is needed
     public delegate TPacked PackSubdomainData<TRaw, TPacked>(int subdomainID, TRaw originalData);

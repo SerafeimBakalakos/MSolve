@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.LinearAlgebra.MPI;
-using ISAAR.MSolve.LinearAlgebra.MPI.Transfer;
+using ISAAR.MSolve.LinearAlgebra.Distributed;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Tests;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Transfer;
 using ISAAR.MSolve.LinearAlgebra.Tests.Utilities;
 using MPI;
 using Xunit;
-using static ISAAR.MSolve.Solvers.Tests.Tranfer.TransferrerTestsData;
-using static ISAAR.MSolve.Solvers.Tests.Tranfer.TransferrerTestUtilities;
+using static ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer.TransferrerTestsData;
+using static ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer.TransferrerTestUtilities;
 
-namespace ISAAR.MSolve.Solvers.Tests.Tranfer
+namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
 {
     public static class TransferrerScatterTests
     {
