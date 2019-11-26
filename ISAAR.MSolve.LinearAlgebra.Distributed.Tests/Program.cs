@@ -18,8 +18,12 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests
         {
             var suite = new MpiTestSuite();
 
-            TransferrerScatterTests.RegisterAllTests(suite);
-            TransferrerGatherTests.RegisterAllTests(suite);
+            //TransferrerScatterTests.RegisterAllTests(suite);
+            //TransferrerGatherTests.RegisterAllTests(suite);
+
+            VectorTransferrerTests.RegisterAllTests(suite);
+            MatrixTransferrerTests.RegisterAllTests(suite);
+
             //suite.AddFact(PcgMpiTests.TestPosDefSystemOnMaster, typeof(PcgMpiTests).Name, "TestPosDefSystemOnMaster");
 
             suite.RunTests(args);
