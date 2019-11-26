@@ -26,7 +26,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Entities
             foreach ((ILsmCurve2D curve, int signIfInside) in boundaries)
             {
                 double signedDistance = curve.SignedDistanceOf(node);
-                Debug.Assert(signedDistance == 0.0);
+                Debug.Assert(signedDistance != 0.0);
                 if (Math.Sign(signedDistance) != signIfInside) return false;
             }
             return true;

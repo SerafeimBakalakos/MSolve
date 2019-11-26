@@ -8,7 +8,7 @@ namespace ISAAR.MSolve.Geometry.Shapes
     /// I would name it Vector, but that means a gazillion of things.
     /// TODO: I don't see why I need the LineSegment2D inheritance; I override pretty much everything.
     /// </summary>
-    public class DirectedSegment2D
+    public class DirectedSegment2D : ICurve2D
     {
         /// <summary>
         /// a is the counter-clockwise angle from the global x axis to the local x axis

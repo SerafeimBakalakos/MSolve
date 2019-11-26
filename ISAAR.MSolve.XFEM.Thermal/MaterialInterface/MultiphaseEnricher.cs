@@ -10,6 +10,7 @@ using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
 using ISAAR.MSolve.XFEM.Thermal.MaterialInterface.SingularityResolving;
 
+//TODO: Use IHeavisideSingularityResolver when selecting enriched nodes!!!
 //TODO: Avoid processing all elements in the model to see if they must be enriched. Limit the efforts to the elements near the 
 //      level sets.
 namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface

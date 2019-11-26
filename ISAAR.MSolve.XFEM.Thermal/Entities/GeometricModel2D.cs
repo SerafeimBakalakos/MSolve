@@ -32,6 +32,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Entities
             InitializeGeometry(nodes, new ICurve2D[] { discontinuity });
         }
 
+        //TODO: This must work for open curves too.
         public void InitializeGeometry(IEnumerable<XNode> nodes, IReadOnlyList<ICurve2D> discontinuities)
         {
             foreach (ICurve2D discontinuity in discontinuities)
