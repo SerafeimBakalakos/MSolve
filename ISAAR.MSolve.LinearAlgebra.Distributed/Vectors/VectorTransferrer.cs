@@ -7,6 +7,8 @@ using MPI;
 
 //TODO: Repeat many of the methods of ISubdomainDataTransferrer here, but only for Vector. These will call some of the methods
 //      in ISubdomainDataTransferrer.
+//TODO: Perhaps I should provide overloads for the summation method that accept a delegate that calculates the subdomain vectors 
+//      instead of the vectors themselves. 
 namespace ISAAR.MSolve.LinearAlgebra.Distributed.Vectors
 {
     public class VectorTransferrer

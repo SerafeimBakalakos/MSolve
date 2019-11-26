@@ -6,7 +6,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MPI;
 
-//TODO: Repeat many of the methods of ISubdomainDataTransferrer here, but only for Vector. These will call some of the methods
+//TODO: Repeat many of the methods of ISubdomainDataTransferrer here, but only for Matrix. These will call some of the methods
 //      in ISubdomainDataTransferrer.
 namespace ISAAR.MSolve.LinearAlgebra.Distributed.Vectors
 {
