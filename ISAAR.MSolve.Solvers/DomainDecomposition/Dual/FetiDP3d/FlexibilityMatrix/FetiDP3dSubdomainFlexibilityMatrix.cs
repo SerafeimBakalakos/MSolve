@@ -7,8 +7,8 @@ using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 
 //TODO: This should not exist. Its code should be defined in FetiDPFlexibilityMatrixBase. It is not like other CPW Part classes
 //      which actually stored state.
@@ -26,12 +26,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.FlexibilityMatr
         private readonly IAugmentationConstraints augmentationConstraints;
         private readonly IFetiDPDofSeparator dofSeparator;
         private readonly ILagrangeMultipliersEnumerator lagrangeEnumerator;
-        private readonly IFetiDP3dSubdomainMatrixManager matrixManager;
+        private readonly IFetiDPSubdomainMatrixManager matrixManager;
         private readonly ISubdomain subdomain;
 
         public FetiDP3dSubdomainFlexibilityMatrix(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator,
             ILagrangeMultipliersEnumerator lagrangeEnumerator, IAugmentationConstraints augmentationConstraints, 
-            IFetiDP3dMatrixManager matrixManager)
+            IFetiDPMatrixManager matrixManager)
         {
             this.subdomain = subdomain;
             this.dofSeparator = dofSeparator;

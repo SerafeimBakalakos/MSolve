@@ -7,8 +7,9 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 
+//TODO: This class should not exist. The FetiDPFlexibilityMatrixSerial used in regular FETI-DP should be used instead
 //TODO: The serial/MPI coordinators of regular FETI-DP should be used instead of this. Only the subdomain operations and 
 //      the dimensions are different.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.FlexibilityMatrix
@@ -22,7 +23,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.FlexibilityMatr
 
         public FetiDP3dFlexibilityMatrixSerial(IModel model, IFetiDPDofSeparator dofSeparator, 
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IAugmentationConstraints augmentationConstraints, 
-            IFetiDP3dMatrixManager matrixManager) 
+            IFetiDPMatrixManager matrixManager) 
         {
             this.dofSeparator = dofSeparator;
             this.augmentationConstraints = augmentationConstraints;

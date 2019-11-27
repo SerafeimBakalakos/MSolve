@@ -7,13 +7,16 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
+//TODO: Unify this with FetiDPMatrixManagerSerial. SubdomainMatrixManager should provide access to a list of matrices, not just
+//      KccStar.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices
 {
-    public class FetiDP3dMatrixManagerSerial : IFetiDP3dMatrixManager
+    public class FetiDP3dMatrixManagerSerial : IFetiDPMatrixManager
     {
         private readonly IFetiDP3dGlobalMatrixManager matrixManagerGlobal;
         private readonly Dictionary<ISubdomain, IFetiDP3dSubdomainMatrixManager> matrixManagersSubdomain;
@@ -46,7 +49,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             var allFcStar = new Dictionary<ISubdomain, Vector>();
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                matrixManagersSubdomain[sub].CalcSubdomainFcStartVector();
+                matrixManagersSubdomain[sub].CondenseRhsVectorsStatically();
                 allFcStar[sub] = matrixManagersSubdomain[sub].FcStar;
             }
 
@@ -67,7 +70,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
                 {
                     Debug.WriteLine(msgHeader + "Calculating Schur complement of remainder dofs"
                         + $" for the stiffness of subdomain {sub.ID}");
-                    matrices.CalcSubdomainKStarMatrices(); //TODO: At this point Kcc and Krc can be cleared. Maybe Krr too.
+                    matrices.CondenseMatricesStatically(); //TODO: At this point Kcc and Krc can be cleared. Maybe Krr too.
                 }
                 allKStarMatrices[sub] = (matrices.KccStar, matrices.KacStar, matrices.KaaStar);
             }
@@ -79,10 +82,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         public void ClearCoarseProblemRhs() => matrixManagerGlobal.ClearCoarseProblemRhs();
         public void ClearInverseCoarseProblemMatrix() => matrixManagerGlobal.ClearInverseCoarseProblemMatrix();
 
-        IFetiSubdomainMatrixManager IFetiMatrixManager.GetSubdomainMatrixManager(ISubdomain subdomain)
+        public IFetiSubdomainMatrixManager GetSubdomainMatrixManager(ISubdomain subdomain)
             => matrixManagersSubdomain[subdomain];
 
-        public IFetiDP3dSubdomainMatrixManager GetFetiDPSubdomainMatrixManager(ISubdomain subdomain) 
+        public IFetiDPSubdomainMatrixManager GetFetiDPSubdomainMatrixManager(ISubdomain subdomain) 
             => matrixManagersSubdomain[subdomain];
 
         public Vector MultiplyInverseCoarseProblemMatrix(Vector vector) 

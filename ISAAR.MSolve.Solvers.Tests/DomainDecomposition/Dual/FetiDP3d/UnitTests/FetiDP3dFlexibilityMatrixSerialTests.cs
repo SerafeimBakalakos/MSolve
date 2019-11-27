@@ -12,6 +12,7 @@ using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests.Moc
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x4x4Quads;
 using ISAAR.MSolve.Solvers.Tests.Utilities;
 using Xunit;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 {
@@ -26,7 +27,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
 
             // Setup matrix manager
-            IFetiDP3dMatrixManager matrixManager = new MockMatrixManager(model);
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
 
             // Create explicit matrices that can be checked
             var flexibility = new FetiDP3dFlexibilityMatrixSerial(model, dofSeparator, lagrangesEnumerator,

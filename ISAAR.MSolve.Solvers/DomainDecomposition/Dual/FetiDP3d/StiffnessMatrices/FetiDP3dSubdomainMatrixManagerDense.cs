@@ -113,38 +113,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             }
         }
 
-        public void CalcSubdomainFcStartVector()
-        {
-            // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s]
-            Vector temp = MultiplyInverseKrrTimes(Fr);
-            temp = MultiplyKcrTimes(temp);
-            fcStar = Fbc - temp;
-        }
-
-        public void CalcSubdomainKStarMatrices()
-        {
-            // Top left
-            // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s]
-            Matrix invKrrTimesKrc = inverseKrr.SolveLinearSystems(Krc);
-            _KccStar = Kcc - Krc.MultiplyRight(invKrrTimesKrc, true);
-
-
-            // Bottom right
-            // KaaStar[s] = - R1[s]^T * inv(Krr[s]) * R1[s]
-            // R1[s] = Br[s]^T * Q1[s]
-            SignedBooleanMatrixColMajor Br = lagrangesEnumerator.GetBooleanMatrix(subdomain);
-            Matrix Q1 = augmentationConstraints.GetMatrixQ1(subdomain);
-            Matrix R1 = Br.MultiplyRight(Q1, true);
-            _KaaStar = R1.MultiplyRight(inverseKrr.SolveLinearSystems(R1), true); //TODO: This should be a method in boolean matrices
-            _KaaStar.ScaleIntoThis(-1);
-
-            // Bottom left
-            // KacStar[s] = - R1[s]^T * inv(Krr[s]) * Krc[s]
-            _KacStar = R1.MultiplyRight(invKrrTimesKrc, true);
-            _KacStar.ScaleIntoThis(-1);
-
-        }
-
         public void ClearMatrices()
         {
             inverseKii = null;
@@ -166,6 +134,37 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             fbc = null;
             fr = null;
             fcStar = null;
+        }
+
+        public void CondenseMatricesStatically()
+        {
+            // Top left
+            // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s]
+            Matrix invKrrTimesKrc = inverseKrr.SolveLinearSystems(Krc);
+            _KccStar = Kcc - Krc.MultiplyRight(invKrrTimesKrc, true);
+
+
+            // Bottom right
+            // KaaStar[s] = - R1[s]^T * inv(Krr[s]) * R1[s]
+            // R1[s] = Br[s]^T * Q1[s]
+            SignedBooleanMatrixColMajor Br = lagrangesEnumerator.GetBooleanMatrix(subdomain);
+            Matrix Q1 = augmentationConstraints.GetMatrixQ1(subdomain);
+            Matrix R1 = Br.MultiplyRight(Q1, true);
+            _KaaStar = R1.MultiplyRight(inverseKrr.SolveLinearSystems(R1), true); //TODO: This should be a method in boolean matrices
+            _KaaStar.ScaleIntoThis(-1);
+
+            // Bottom left
+            // KacStar[s] = - R1[s]^T * inv(Krr[s]) * Krc[s]
+            _KacStar = R1.MultiplyRight(invKrrTimesKrc, true);
+            _KacStar.ScaleIntoThis(-1);
+        }
+
+        public void CondenseRhsVectorsStatically()
+        {
+            // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s]
+            Vector temp = MultiplyInverseKrrTimes(Fr);
+            temp = MultiplyKcrTimes(temp);
+            fcStar = Fbc - temp;
         }
 
         public void ExtractCornerRemainderRhsSubvectors()
@@ -219,6 +218,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         public Vector MultiplyKbiTimes(Vector vector) => Kbi * vector;
 
         public Matrix MultiplyKbiTimes(Matrix matrix) => Kbi * matrix;
+
+        public Vector MultiplyKccTimes(Vector vector) => Kcc * vector;
 
         public Vector MultiplyKcrTimes(Vector vector) => Krc.Multiply(vector, true);
 
