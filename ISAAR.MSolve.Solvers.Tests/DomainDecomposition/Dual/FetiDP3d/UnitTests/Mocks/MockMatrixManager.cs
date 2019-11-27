@@ -8,19 +8,20 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x4x4Quads;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests.Mocks
 {
-    public class MockMatrixManager : IFetiDPMatrixManager
+    public class MockMatrixManager : IFetiDP3dMatrixManager
     {
-        private readonly Dictionary<ISubdomain, IFetiDPSubdomainMatrixManager> subdomainMatrices;
+        private readonly Dictionary<ISubdomain, IFetiDP3dSubdomainMatrixManager> subdomainMatrices;
 
         public MockMatrixManager(IModel model)
         {
-            subdomainMatrices = new Dictionary<ISubdomain, IFetiDPSubdomainMatrixManager>();
+            subdomainMatrices = new Dictionary<ISubdomain, IFetiDP3dSubdomainMatrixManager>();
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
                 subdomainMatrices[sub] = new MockSubdomainMatrixManager(sub);
@@ -37,7 +38,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
         public void ClearInverseCoarseProblemMatrix() { }
 
-        public IFetiDPSubdomainMatrixManager GetFetiDPSubdomainMatrixManager(ISubdomain subdomain)
+        public IFetiDP3dSubdomainMatrixManager GetFetiDPSubdomainMatrixManager(ISubdomain subdomain)
             => subdomainMatrices[subdomain];
 
         public IFetiSubdomainMatrixManager GetSubdomainMatrixManager(ISubdomain subdomain)
@@ -45,9 +46,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
         public Vector MultiplyInverseCoarseProblemMatrix(Vector vector)
         {
-            throw new NotImplementedException();
-            //if (vector != null) return Example4x4x4.MatrixGlobalKccStar.Invert() * vector;
-            //else return null;
+            if (vector != null) return ExpectedGlobalMatrices.MatrixGlobalKccStarTildeSimple.Invert() * vector;
+            else return null;
         }
 
         public DofPermutation ReorderGlobalCornerDofs() => DofPermutation.CreateNoPermutation();
@@ -56,9 +56,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
         public DofPermutation ReorderSubdomainRemainderDofs(ISubdomain subdomain) => DofPermutation.CreateNoPermutation();
 
-        private class MockSubdomainMatrixManager : IFetiDPSubdomainMatrixManager
+        private class MockSubdomainMatrixManager : IFetiDP3dSubdomainMatrixManager
         {
-            private readonly DiagonalMatrix invDii;
+            private readonly DiagonalMatrix invDii = null;
             private readonly Matrix invKii, invKrr, Kbb, Kbi, Kcc, Kff, Krc, Krr;
 
             internal MockSubdomainMatrixManager(ISubdomain subdomain)
@@ -76,6 +76,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 //invKii = Example4x4x4.GetMatrixKii(s).Invert();
                 //Kbb = Example4x4x4.GetMatrixKbb(s);
                 //Kbi = Example4x4x4.GetMatrixKbi(s);
+                KaaStar = null;
+                KacStar = null;
                 Kcc = ExpectedSubdomainMatrices.GetMatrixKcc(s);
                 KccStar = ExpectedSubdomainMatrices.GetMatrixKccStar(s);
                 Kff = ExpectedSubdomainMatrices.GetMatrixKff(s);
@@ -87,6 +89,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             public Vector Fbc { get; }
             public Vector FcStar { get; }
             public Vector Fr { get; }
+
+            public IMatrixView KaaStar { get; }
+            public IMatrixView KacStar { get; }
             public IMatrixView KccStar { get; }
 
             public ISingleSubdomainLinearSystem LinearSystem { get; }
@@ -101,6 +106,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             public void BuildFreeDofsMatrix(ISubdomainFreeDofOrdering dofOrdering, IElementMatrixProvider matrixProvider) { }
 
             public void CalcInverseKii(bool diagonalOnly) { }
+            public void CalcSubdomainFcStartVector() { }
+            public void CalcSubdomainKStarMatrices() { }
+
             public void ClearMatrices() { }
             public void ClearRhsVectors() { }
             public void CondenseMatricesStatically() { }
