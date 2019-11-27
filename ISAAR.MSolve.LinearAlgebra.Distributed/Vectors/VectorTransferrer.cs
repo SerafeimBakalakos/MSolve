@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Output;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MPI;
 
@@ -67,11 +69,13 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Vectors
         public void SumVectors(IEnumerable<Vector> processVectors, Vector totalVector_master)
         {
             // First add the vectors of this process
-            Vector first = processVectors.First();
-            Vector processSum = first.Copy();
-            foreach (Vector vector in processVectors)
+            Vector processSum = null;
+            using (IEnumerator<Vector> iterator = processVectors.GetEnumerator())
             {
-                if (vector != first) processSum.AddIntoThis(vector);
+                bool isNotEmpty = iterator.MoveNext();
+                if (!isNotEmpty) throw new ArgumentException("There must be at least 1 vector");
+                processSum = iterator.Current.Copy(); // Optimization for the first one
+                while (iterator.MoveNext()) processSum.AddIntoThis(iterator.Current);
             }
 
             // MPI-reduce the vectors of all processes

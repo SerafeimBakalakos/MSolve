@@ -12,6 +12,7 @@ using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.Mocks
 using ISAAR.MSolve.Solvers.Tests.Utilities;
 using Xunit;
 
+// perhaps add tests for repeated use to simulate PCG
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 {
     public static class FetiDPFlexibilityMatrixMpiTests

@@ -156,6 +156,9 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Iterative
 
                 comm.Broadcast<double>(ref residualNormRatio, master);
                 Debug.WriteLine($"Process {comm.Rank}: PCG Iteration = {iteration}: residual norm ratio = {residualNormRatio}");
+                #region debug
+                if (comm.Rank == 0) Console.WriteLine($"Process {comm.Rank}: PCG Iteration = {iteration}: residual norm ratio = {residualNormRatio}");
+                #endregion
                 if (residualNormRatio <= residualTolerance)
                 {
                     return new IterativeStatistics

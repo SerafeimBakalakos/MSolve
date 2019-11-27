@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Distributed;
 using ISAAR.MSolve.LinearAlgebra.Distributed.Tests;
@@ -36,6 +37,14 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
                 SubdomainDistribution.Uniform);
             suite.AddTheory(TestVectorSum, typeof(VectorTransferrerTests).Name, "TestVectorSum",
                 SubdomainDistribution.Variable);
+            
+            // Tests for summing vectors with lazy evaluation
+            suite.AddTheory(TestVectorSumLazy, typeof(VectorTransferrerTests).Name, "TestVectorSumLazy",
+                SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestVectorSumLazy, typeof(VectorTransferrerTests).Name, "TestVectorSumLazy",
+                SubdomainDistribution.Uniform);
+            suite.AddTheory(TestVectorSumLazy, typeof(VectorTransferrerTests).Name, "TestVectorSumLazy",
+                SubdomainDistribution.Variable);
         }
 
         public static void TestVectorBroadcast(SubdomainDistribution subdomainDistribution)
@@ -70,6 +79,29 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
             Vector sum2_master = null;
             if (procs.IsMasterProcess) sum2_master = Vector.CreateZero(vectorLength);
             transferrer.SumVectors(processVectors.Values, sum2_master);
+
+            // Check
+            if (procs.IsMasterProcess)
+            {
+                double tolerance = 1E-10;
+                Vector sumExpected = GetTotalSum(procs);
+                Assert.True(sumExpected.Equals(sum1_master, tolerance));
+                Assert.True(sumExpected.Equals(sum2_master, tolerance));
+            }
+        }
+
+        public static void TestVectorSumLazy(SubdomainDistribution subdomainDistribution)
+        {
+            // Prepare vectors in each process to be lazily computed
+            ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
+            IEnumerable<Vector> processVectors = procs.GetSubdomainIdsOfProcess(procs.OwnRank).Select(s => GetSubdomainVector(s));
+
+            // Sum the individual vectors
+            var transferrer = new VectorTransferrer(procs);
+            Vector sum1_master = transferrer.SumVectors(processVectors);
+            Vector sum2_master = null;
+            if (procs.IsMasterProcess) sum2_master = Vector.CreateZero(vectorLength);
+            transferrer.SumVectors(processVectors, sum2_master);
 
             // Check
             if (procs.IsMasterProcess)

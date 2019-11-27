@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Distributed;
 using ISAAR.MSolve.LinearAlgebra.Distributed.Tests;
@@ -37,6 +38,14 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
                 SubdomainDistribution.Uniform);
             suite.AddTheory(TestMatrixSum, typeof(MatrixTransferrerTests).Name, "TestMatrixSum",
                 SubdomainDistribution.Variable);
+
+            // Tests for summing matrices with lazy evaluation
+            suite.AddTheory(TestMatrixSumLazy, typeof(VectorTransferrerTests).Name, "TestMatrixSumLazy",
+                SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestMatrixSumLazy, typeof(VectorTransferrerTests).Name, "TestMatrixSumLazy",
+                SubdomainDistribution.Uniform);
+            suite.AddTheory(TestMatrixSumLazy, typeof(VectorTransferrerTests).Name, "TestMatrixSumLazy",
+                SubdomainDistribution.Variable);
         }
 
         public static void TestMatrixBroadcast(SubdomainDistribution subdomainDistribution)
@@ -70,6 +79,28 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
             Matrix sum_master = null;
             if (procs.IsMasterProcess) sum_master = Matrix.CreateZero(numRows, numCols);
             transferrer.SumMatrices(processMatrices.Values, sum_master);
+
+            // Check
+            if (procs.IsMasterProcess)
+            {
+                double tolerance = 1E-10;
+                Matrix sumExpected = GetTotalSum(procs);
+                Assert.True(sumExpected.Equals(sum_master, tolerance));
+                Assert.True(sumExpected.Equals(sum_master, tolerance));
+            }
+        }
+
+        public static void TestMatrixSumLazy(SubdomainDistribution subdomainDistribution)
+        {
+            // Prepare vectors in each process
+            ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
+            IEnumerable<Matrix> processMatrices = procs.GetSubdomainIdsOfProcess(procs.OwnRank).Select(s => GetSubdomainMatrix(s));
+
+            // Sum the individual vectors
+            var transferrer = new MatrixTransferrer(procs);
+            Matrix sum_master = null;
+            if (procs.IsMasterProcess) sum_master = Matrix.CreateZero(numRows, numCols);
+            transferrer.SumMatrices(processMatrices, sum_master);
 
             // Check
             if (procs.IsMasterProcess)

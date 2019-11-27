@@ -51,12 +51,13 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Vectors
 
         public void SumMatrices(IEnumerable<Matrix> processMatrices, Matrix totalMatrix_master)
         {
-            // First add the vectors of this process
-            Matrix first = processMatrices.First();
-            Matrix processSum = first.Copy();
-            foreach (Matrix matrix in processMatrices)
+            Matrix processSum = null;
+            using (IEnumerator<Matrix> iterator = processMatrices.GetEnumerator())
             {
-                if (matrix != first) processSum.AddIntoThis(matrix);
+                bool isNotEmpty = iterator.MoveNext();
+                if (!isNotEmpty) throw new ArgumentException("There must be at least 1 matrix");
+                processSum = iterator.Current.Copy(); // Optimization for the first one
+                while (iterator.MoveNext()) processSum.AddIntoThis(iterator.Current);
             }
 
             // MPI-reduce the vectors of all processes

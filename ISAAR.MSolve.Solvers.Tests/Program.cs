@@ -45,7 +45,7 @@ namespace ISAAR.MSolve.Solvers.Tests
             //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestCoarseProblemMatrixAndRhs, typeof(FetiDPMatrixManagerMpiTests).Name, "TestCoarseProblemMatrixAndRhs", MatrixFormat.SuiteSparse);
 
 
-            suite.AddFact(FetiDPFlexibilityMatrixMpiTests.TestFlexibilityMatrices, typeof(FetiDPFlexibilityMatrixMpiTests).Name, "TestFlexibilityMatrices");
+            //suite.AddFact(FetiDPFlexibilityMatrixMpiTests.TestFlexibilityMatrices, typeof(FetiDPFlexibilityMatrixMpiTests).Name, "TestFlexibilityMatrices");
             //suite.AddFact(FetiDPPreconditionerMpiTests.TestLumpedPreconditioner, typeof(FetiDPPreconditionerMpiTests).Name, "TestLumpedPreconditioner");
             //suite.AddFact(FetiDPPreconditionerMpiTests.TestDirichletPreconditioner, typeof(FetiDPPreconditionerMpiTests).Name, "TestDirichletPreconditioner");
             //suite.AddFact(FetiDPPreconditionerMpiTests.TestDiagonalDirichletPreconditioner, typeof(FetiDPPreconditionerMpiTests).Name, "TestDiagonalDirichletPreconditioner");
@@ -61,7 +61,7 @@ namespace ISAAR.MSolve.Solvers.Tests
             //suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalDiplacements, typeof(FetiDPSubdomainGlobalMappingMpiTests).Name, "TestGlobalDiplacements");
             //suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalForcesNorm, typeof(FetiDPSubdomainGlobalMappingMpiTests).Name, "TestGlobalForcesNorm");
 
-            //suite.AddTheory(FetiDPSolverMpiTests.TestSolutionSubdomainDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionSubdomainDisplacements", MatrixFormat.Skyline);
+            suite.AddTheory(FetiDPSolverMpiTests.TestSolutionSubdomainDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionSubdomainDisplacements", MatrixFormat.Skyline);
             //suite.AddTheory(FetiDPSolverMpiTests.TestSolutionSubdomainDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionSubdomainDisplacements", MatrixFormat.SuiteSparse);
             //suite.AddTheory(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionGlobalDisplacements", MatrixFormat.Skyline);
             //suite.AddTheory(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionGlobalDisplacements", MatrixFormat.SuiteSparse);
