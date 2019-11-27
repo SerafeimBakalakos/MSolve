@@ -25,13 +25,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         private readonly SingleSubdomainSystem<SkylineMatrix> linearSystem;
         private readonly ISubdomain subdomain;
 
+        private Vector fbc, fr, fcStar;
         private Matrix inverseKii;
         private DiagonalMatrix inverseKiiDiagonal;
         private CholeskyFull inverseKrr;
         private Matrix Kbb, Kbi;
         private Matrix Kcc, Krc, Krr;
         private Matrix _KccStar, _KacStar, _KaaStar;
-
 
         public FetiDP3dSubdomainMatrixManagerDense(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator, 
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IAugmentationConstraints augmentationConstraints)
@@ -49,6 +49,36 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
 
 
         public ISingleSubdomainLinearSystem LinearSystem => linearSystem;
+
+        public Vector Fbc
+        {
+            get
+            {
+                if (fbc == null) throw new InvalidOperationException(
+                    "The remainder and corner subvectors (Fr and Fbc) must be calculated first.");
+                return fbc;
+            }
+        }
+
+        public Vector Fr
+        {
+            get
+            {
+                if (fr == null) throw new InvalidOperationException(
+                    "The remainder and corner subvectors (Fr and Fbc) must be calculated first.");
+                return fr;
+            }
+        }
+
+        public Vector FcStar
+        {
+            get
+            {
+                if (fcStar == null) throw new InvalidOperationException(
+                    "The remainder and corner subvectors (Fr and Fbc) must be condensed into FcStar first.");
+                return fcStar;
+            }
+        }
 
         public (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildFreeConstrainedMatrices(
             ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering, 
@@ -83,6 +113,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             }
         }
 
+        public void CalcSubdomainFcStartVector()
+        {
+            // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s]
+            Vector temp = MultiplyInverseKrrTimes(Fr);
+            temp = MultiplyKcrTimes(temp);
+            fcStar = Fbc - temp;
+        }
+
         public void CalcSubdomainKStarMatrices()
         {
             // Top left
@@ -96,12 +134,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             // R1[s] = Br[s]^T * Q1[s]
             SignedBooleanMatrixColMajor Br = lagrangesEnumerator.GetBooleanMatrix(subdomain);
             Matrix Q1 = augmentationConstraints.GetMatrixQ1(subdomain);
-            Matrix R1 = Br.MultiplyRight(Q1);
-            _KaaStar = R1.MultiplyRight(inverseKrr.SolveLinearSystems(R1));
+            Matrix R1 = Br.MultiplyRight(Q1, true);
+            _KaaStar = R1.MultiplyRight(inverseKrr.SolveLinearSystems(R1), true); //TODO: This should be a method in boolean matrices
 
             // Bottom left
             // KacStar[s] = R1[s]^T * inv(Krr[s]) * Krc[s]
-            _KacStar = R1.MultiplyRight(invKrrTimesKrc);
+            _KacStar = R1.MultiplyRight(invKrrTimesKrc, true);
 
         }
 
@@ -119,6 +157,23 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             _KacStar = null;
             _KaaStar = null;
             //linearSystem.Matrix = null; // DO NOT DO THAT!!! The analyzer manages that.
+        }
+
+        public void ClearRhsVectors()
+        {
+            fbc = null;
+            fr = null;
+            fcStar = null;
+        }
+
+        public void ExtractCornerRemainderRhsSubvectors()
+        {
+            Vector Ff = LinearSystem.RhsConcrete;
+            int[] cornerDofs = dofSeparator.GetCornerDofIndices(subdomain);
+            int[] remainderDofs = dofSeparator.GetRemainderDofIndices(subdomain);
+            fr = Ff.GetSubvector(remainderDofs);
+            fbc = Ff.GetSubvector(cornerDofs);
+            fcStar = null;
         }
 
         public void ExtractCornerRemainderSubmatrices()
