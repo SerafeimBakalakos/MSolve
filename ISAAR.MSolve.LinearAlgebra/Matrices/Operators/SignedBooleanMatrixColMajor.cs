@@ -211,7 +211,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             //TODO: I think that it will pay off to transpose an all integer CSR matrix and store both. Especially in the case 
             //     of subdomain boolean matrices, that little extra memory should not be of concern.
             Preconditions.CheckMultiplicationDimensions(this.NumRows, other.NumRows);
-            var result = new double[this.NumColumns * other.NumRows];
+            var result = new double[this.NumColumns * other.NumColumns];
             for (int j = 0; j < other.NumColumns; ++j)
             {
                 int offset = j * this.NumColumns;
