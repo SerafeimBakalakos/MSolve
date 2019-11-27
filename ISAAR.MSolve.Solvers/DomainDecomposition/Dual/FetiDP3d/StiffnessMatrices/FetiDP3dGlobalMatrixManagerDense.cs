@@ -86,6 +86,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
 
             // Invert
             inverseGlobalKccStarTilde.InvertInPlace();
+            hasInverseGlobalKccStarTilde = true;
         }
 
         public void ClearCoarseProblemRhs() => globalFcStar = null;

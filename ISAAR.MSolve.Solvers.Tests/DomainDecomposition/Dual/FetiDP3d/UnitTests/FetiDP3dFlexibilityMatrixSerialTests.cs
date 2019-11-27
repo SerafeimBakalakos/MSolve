@@ -46,15 +46,15 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 augmentationConstraints =
                     new AugmentationConstraints(model, midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
                 augmentationConstraints.CalcAugmentationMappingMatrices();
-                numAugmentationConstraints = ExpectedConnectivityData.NumGlobalAugmentationConstraintsCase2;
-                FIrcTildeExpected = ExpectedGlobalMatrices.MatrixFIrcTilde;
+                numAugmentationConstraints = ExpectedConnectivityData.NumGlobalAugmentationConstraintsSimple;
+                FIrcTildeExpected = ExpectedGlobalMatrices.MatrixFIrcTildeSimple;
             }
             else
             {
                 augmentationConstraints =
                     new AugmentationConstraintsRedundant(model, midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
                 augmentationConstraints.CalcAugmentationMappingMatrices();
-                numAugmentationConstraints = ExpectedConnectivityData.NumGlobalAugmentationConstraintsCase1;
+                numAugmentationConstraints = ExpectedConnectivityData.NumGlobalAugmentationConstraintsRedundant;
                 FIrcTildeExpected = ExpectedGlobalMatrices.MatrixFIrcTildeRedundant;
             }
 

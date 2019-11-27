@@ -130,16 +130,18 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
 
 
             // Bottom right
-            // KaaStar[s] = R1[s]^T * inv(Krr[s]) * R1[s]
+            // KaaStar[s] = - R1[s]^T * inv(Krr[s]) * R1[s]
             // R1[s] = Br[s]^T * Q1[s]
             SignedBooleanMatrixColMajor Br = lagrangesEnumerator.GetBooleanMatrix(subdomain);
             Matrix Q1 = augmentationConstraints.GetMatrixQ1(subdomain);
             Matrix R1 = Br.MultiplyRight(Q1, true);
             _KaaStar = R1.MultiplyRight(inverseKrr.SolveLinearSystems(R1), true); //TODO: This should be a method in boolean matrices
+            _KaaStar.ScaleIntoThis(-1);
 
             // Bottom left
-            // KacStar[s] = R1[s]^T * inv(Krr[s]) * Krc[s]
+            // KacStar[s] = - R1[s]^T * inv(Krr[s]) * Krc[s]
             _KacStar = R1.MultiplyRight(invKrrTimesKrc, true);
+            _KacStar.ScaleIntoThis(-1);
 
         }
 

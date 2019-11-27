@@ -156,7 +156,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x
             {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
         });
 
-        public static Matrix MatrixQr => Matrix.CreateFromArray(new double[144, 18]
+        public static Matrix MatrixQrSimple => Matrix.CreateFromArray(new double[144, 18]
         {
             {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
             {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -304,8 +304,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x
             {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
         });
 
-        public static int NumGlobalAugmentationConstraintsCase1 => 108;
-        public static int NumGlobalAugmentationConstraintsCase2 => 18;
+        public static int NumGlobalAugmentationConstraintsRedundant => 108;
+        public static int NumGlobalAugmentationConstraintsSimple => 18;
         public static int NumGlobalCornerDofs => 3;
         public static int NumGlobalLagrangeMultipliers => 144;
 

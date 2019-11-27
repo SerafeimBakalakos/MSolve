@@ -9,6 +9,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x4x4Quads;
 using Xunit;
+using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 {
@@ -27,27 +28,19 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
                 FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
 
-            Dictionary<ISubdomain, HashSet<INode>> midsideNodes = ModelCreator.DefineMidsideNodesAll(model);
-            IMidsideNodesSelection midsideNodesSelection = new UsedDefinedMidsideNodes(midsideNodes);
-            IDofType[] dofsPerNode = { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ };
-
             IAugmentationConstraints augmentationConstraints;
             int numAugmentationConstraints; 
             Matrix QrExpected;
             if (constraints == ConstraintsSelection.Simple)
             {
-                augmentationConstraints =
-                    new AugmentationConstraints(model, midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
-                augmentationConstraints.CalcAugmentationMappingMatrices();
-                numAugmentationConstraints = ExpectedConnectivityData.NumGlobalAugmentationConstraintsCase2;
-                QrExpected = ExpectedConnectivityData.MatrixQr;
+                augmentationConstraints = CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
+                numAugmentationConstraints = ExpectedConnectivityData.NumGlobalAugmentationConstraintsSimple;
+                QrExpected = ExpectedConnectivityData.MatrixQrSimple;
             }
             else
             {
-                augmentationConstraints = 
-                    new AugmentationConstraintsRedundant(model, midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
-                augmentationConstraints.CalcAugmentationMappingMatrices();
-                numAugmentationConstraints = ExpectedConnectivityData.NumGlobalAugmentationConstraintsCase1;
+                augmentationConstraints = CalcAugmentationConstraintsRedundant(model, lagrangesEnumerator);
+                numAugmentationConstraints = ExpectedConnectivityData.NumGlobalAugmentationConstraintsRedundant;
                 QrExpected = ExpectedConnectivityData.MatrixQrRedundant;
             }
 
@@ -63,6 +56,61 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             Assert.Equal(numAugmentationConstraints, augmentationConstraints.NumGlobalAugmentationConstraints);
             double tolerance = 1E-13;
             Assert.True(QrExpected.Equals(augmentationConstraints.MatrixGlobalQr, tolerance));
+        }
+
+        [Fact]
+        private static void TestMatricesQ1Ba()
+        {
+            (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
+                FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
+
+            IAugmentationConstraints augmentationConstraints = CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
+
+            Matrix Q = augmentationConstraints.MatrixGlobalQr;
+            Matrix expectedQ = augmentationConstraints.MatrixGlobalQr;
+
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                Matrix Q1 = augmentationConstraints.GetMatrixQ1(subdomain);
+                Matrix Ba = augmentationConstraints.GetMatrixBa(subdomain);
+
+                SignedBooleanMatrixColMajor Br = lagrangesEnumerator.GetBooleanMatrix(subdomain);
+                Matrix expectedBr = ExpectedConnectivityData.GetMatrixBr(subdomain.ID);
+
+
+                Matrix R1 = Br.MultiplyRight(Q1, true);
+
+                Matrix expected = expectedBr.MultiplyRight(expectedQ, true);
+                Matrix computed = R1 * Ba;
+
+                // Check
+                double tolerance = 1E-13;
+                Assert.True(expected.Equals(computed, tolerance));
+            }
+        }
+
+        internal static IAugmentationConstraints CalcAugmentationConstraintsSimple(IModel model, 
+            LagrangeMultipliersEnumeratorSerial lagrangesEnumerator)
+        {
+            Dictionary<ISubdomain, HashSet<INode>> midsideNodes = ModelCreator.DefineMidsideNodesAll(model);
+            IMidsideNodesSelection midsideNodesSelection = new UsedDefinedMidsideNodes(midsideNodes);
+            IDofType[] dofsPerNode = { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ };
+            IAugmentationConstraints augmentationConstraints =
+                    new AugmentationConstraints(model, midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
+            augmentationConstraints.CalcAugmentationMappingMatrices();
+            return augmentationConstraints;
+        }
+
+        internal static IAugmentationConstraints CalcAugmentationConstraintsRedundant(IModel model,
+            LagrangeMultipliersEnumeratorSerial lagrangesEnumerator)
+        {
+            Dictionary<ISubdomain, HashSet<INode>> midsideNodes = ModelCreator.DefineMidsideNodesAll(model);
+            IMidsideNodesSelection midsideNodesSelection = new UsedDefinedMidsideNodes(midsideNodes);
+            IDofType[] dofsPerNode = { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ };
+            IAugmentationConstraints augmentationConstraints =
+                    new AugmentationConstraintsRedundant(model, midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
+            augmentationConstraints.CalcAugmentationMappingMatrices();
+            return augmentationConstraints;
         }
     }
 }
