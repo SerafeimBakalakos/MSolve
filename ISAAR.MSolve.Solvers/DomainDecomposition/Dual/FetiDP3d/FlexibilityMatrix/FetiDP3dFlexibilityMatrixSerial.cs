@@ -9,7 +9,8 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 
-//TODO: This class should not exist. The FetiDPFlexibilityMatrixSerial used in regular FETI-DP should be used instead
+//TODO: This class should not exist. The FetiDPFlexibilityMatrixSerial used in regular FETI-DP should be used instead. However 
+//      rename it to match the more general 3D names
 //TODO: The serial/MPI coordinators of regular FETI-DP should be used instead of this. Only the subdomain operations and 
 //      the dimensions are different.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.FlexibilityMatrix
