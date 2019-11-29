@@ -10,6 +10,8 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
+//TODO: This should not exist. Its code should be defined in FetiDPFlexibilityMatrixBase. It is not like other CPW Part classes
+//      which actually stored state.
 //TODO: Useless checks probably. Should be removed
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.FlexibilityMatrix
 {

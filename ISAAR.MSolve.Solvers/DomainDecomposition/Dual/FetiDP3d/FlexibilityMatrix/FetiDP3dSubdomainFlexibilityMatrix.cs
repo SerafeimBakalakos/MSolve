@@ -9,6 +9,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 
 //TODO: This should not exist. Its code should be defined in FetiDPFlexibilityMatrixBase. It is not like other CPW Part classes
 //      which actually stored state.
@@ -17,7 +18,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 //      coarse problem matrix assembly.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.FlexibilityMatrix
 {
-    public class FetiDP3dSubdomainFlexibilityMatrix
+    public class FetiDP3dSubdomainFlexibilityMatrix : IFetiDPSubdomainFlexibilityMatrix
     {
         //TODO:  If I store explicit matrices, then I would have to rebuild the flexibility matrix each time something changes. Not sure which is better
         //private readonly UnsignedBooleanMatrix Bc;
