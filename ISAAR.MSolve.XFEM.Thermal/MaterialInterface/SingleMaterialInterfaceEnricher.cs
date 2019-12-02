@@ -2,8 +2,8 @@
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
+using ISAAR.MSolve.XFEM.Thermal.Curves;
+using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
 using ISAAR.MSolve.XFEM.Thermal.MaterialInterface.SingularityResolving;
 
 namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
@@ -11,17 +11,17 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface
     public class SingleMaterialInterfaceEnricher
     {
         private readonly IEnumerable<XThermalElement2D> modelElements;
-        private readonly ILsmCurve2D curve;
+        private readonly ICurve2D curve;
         private readonly ThermalInterfaceEnrichment enrichment;
         private readonly IHeavisideSingularityResolver singularityResolver;
 
-        public SingleMaterialInterfaceEnricher(GeometricModel2D geometricModel, ILsmCurve2D curve, 
+        public SingleMaterialInterfaceEnricher(GeometricModel2D geometricModel, ICurve2D curve, 
             IEnumerable<XThermalElement2D> modelElements, double interfaceResistance) : 
             this(curve, modelElements, interfaceResistance, new RelativeAreaResolver(geometricModel))
         {
         }
 
-        public SingleMaterialInterfaceEnricher(ILsmCurve2D curve, IEnumerable<XThermalElement2D> modelElements, 
+        public SingleMaterialInterfaceEnricher(ICurve2D curve, IEnumerable<XThermalElement2D> modelElements, 
             double interfaceResistance, IHeavisideSingularityResolver singularityResolver)
         {
             this.curve = curve;

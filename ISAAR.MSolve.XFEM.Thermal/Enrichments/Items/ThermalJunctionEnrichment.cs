@@ -5,7 +5,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Enrichments.Functions;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
+using ISAAR.MSolve.XFEM.Thermal.Curves;
 
 namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
 {

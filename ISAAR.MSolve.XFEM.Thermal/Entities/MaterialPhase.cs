@@ -3,27 +3,27 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
+using ISAAR.MSolve.XFEM.Thermal.Curves;
 
 namespace ISAAR.MSolve.XFEM.Thermal.Entities
 {
     public class MaterialPhase
     {
-        private List<(ILsmCurve2D curve, int signIfInside)> boundaries;
+        private List<(ICurve2D curve, int signIfInside)> boundaries;
 
         public MaterialPhase(int id)
         {
             this.ID = id;
-            this.boundaries = new List<(ILsmCurve2D curve, int signIfInside)>();
+            this.boundaries = new List<(ICurve2D curve, int signIfInside)>();
         }
 
         public int ID { get; }
 
-        public void AddBoundary(ILsmCurve2D curve, int signIfInside) => boundaries.Add((curve, signIfInside));
+        public void AddBoundary(ICurve2D curve, int signIfInside) => boundaries.Add((curve, signIfInside));
 
         public bool IsInside(XNode node)
         {
-            foreach ((ILsmCurve2D curve, int signIfInside) in boundaries)
+            foreach ((ICurve2D curve, int signIfInside) in boundaries)
             {
                 double signedDistance = curve.SignedDistanceOf(node);
                 Debug.Assert(signedDistance != 0.0);
@@ -34,7 +34,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Entities
 
         public bool IsInside(IXFiniteElement element, double[] shapeFunctionsAtNaturalPoint)
         {
-            foreach ((ILsmCurve2D curve, int signIfInside) in boundaries)
+            foreach ((ICurve2D curve, int signIfInside) in boundaries)
             {
                 double signedDistance = curve.SignedDistanceOf(element, shapeFunctionsAtNaturalPoint);
                 Debug.Assert(signedDistance == 0.0);

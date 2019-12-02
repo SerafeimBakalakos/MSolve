@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
+using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
 
-namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
+namespace ISAAR.MSolve.XFEM.Thermal.Curves.LevelSetMethod
 {
-    public class SimpleLsmClosedCurve2D : ILsmCurve2D
+    public class SimpleLsmClosedCurve2D : ICurve2D
     {
         private readonly Dictionary<XNode, double> levelSets;
         private readonly double zeroTolerance;
@@ -54,7 +53,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
             return triangleVertices;
         }
 
-        public void InitializeGeometry(IEnumerable<XNode> nodes, ICurve2D discontinuity)
+        public void InitializeGeometry(IEnumerable<XNode> nodes, Geometry.Shapes.ICurve2D discontinuity)
         {
             foreach (XNode node in nodes) levelSets[node] = discontinuity.SignedDistanceOf(node);
         }

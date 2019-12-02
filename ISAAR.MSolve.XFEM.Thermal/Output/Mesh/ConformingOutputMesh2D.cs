@@ -6,7 +6,7 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Logging.VTK;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
+using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
 
 //TODO: Needs tidying up.
 namespace ISAAR.MSolve.XFEM.Thermal.Output.Mesh

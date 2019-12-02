@@ -8,7 +8,7 @@
 //using ISAAR.MSolve.XFEM.Thermal.Entities;
 //using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
 
-//namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
+//namespace ISAAR.MSolve.XFEM.Thermal.Curves.LevelSetMethod
 //{
 //    public class CachingLsmCurve2D : ILsmCurve2D
 //    {

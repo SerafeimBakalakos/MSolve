@@ -17,7 +17,7 @@ using ISAAR.MSolve.Solvers.Direct;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.Integration;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
+using ISAAR.MSolve.XFEM.Thermal.Curves;
 using ISAAR.MSolve.XFEM.Thermal.MaterialInterface;
 using ISAAR.MSolve.XFEM.Thermal.Materials;
 using ISAAR.MSolve.XFEM.Thermal.Output.Fields;

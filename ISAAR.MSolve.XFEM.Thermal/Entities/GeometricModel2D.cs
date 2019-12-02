@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.Geometry.Triangulation;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
+using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
+using ISAAR.MSolve.XFEM.Thermal.Curves.LevelSetMethod;
 
 namespace ISAAR.MSolve.XFEM.Thermal.Entities
 {
@@ -27,15 +26,15 @@ namespace ISAAR.MSolve.XFEM.Thermal.Entities
 
         public double Thickness { get; }
 
-        public void InitializeGeometry(IEnumerable<XNode> nodes, ICurve2D discontinuity)
+        public void InitializeGeometry(IEnumerable<XNode> nodes, Geometry.Shapes.ICurve2D discontinuity)
         {
-            InitializeGeometry(nodes, new ICurve2D[] { discontinuity });
+            InitializeGeometry(nodes, new Geometry.Shapes.ICurve2D[] { discontinuity });
         }
 
         //TODO: This must work for open curves too.
-        public void InitializeGeometry(IEnumerable<XNode> nodes, IReadOnlyList<ICurve2D> discontinuities)
+        public void InitializeGeometry(IEnumerable<XNode> nodes, IReadOnlyList<Geometry.Shapes.ICurve2D> discontinuities)
         {
-            foreach (ICurve2D discontinuity in discontinuities)
+            foreach (Geometry.Shapes.ICurve2D discontinuity in discontinuities)
             {
                 var singleCurve = new SimpleLsmClosedCurve2D(Thickness, zeroTolerance);
                 singleCurve.InitializeGeometry(nodes, discontinuity);

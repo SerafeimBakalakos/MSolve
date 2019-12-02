@@ -8,7 +8,7 @@ using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
 
 //TODO: Perhaps it should also store it sign, store Gauss points and interpolate/extrapolate
-namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction
+namespace ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction
 {
     public class ElementSubtriangle
     {

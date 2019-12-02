@@ -2,12 +2,12 @@
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
+using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
 
 //TODO: Curves should have IDs
-namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod
+namespace ISAAR.MSolve.XFEM.Thermal.Curves
 {
-    public interface ILsmCurve2D
+    public interface ICurve2D
     {
         double Thickness { get; } //TODO: Probably delete this
 

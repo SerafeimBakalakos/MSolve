@@ -4,8 +4,8 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
+using ISAAR.MSolve.XFEM.Thermal.Curves;
+using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
 
 namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface.SingularityResolving
 {
@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface.SingularityResolving
         /// <param name="mesh"></param>
         /// <param name="heavisideNodes">They will not be altered.</param>
         /// <returns></returns>
-        public HashSet<XNode> FindHeavisideNodesToRemove(ILsmCurve2D curve, IEnumerable<XNode> heavisideNodes)
+        public HashSet<XNode> FindHeavisideNodesToRemove(Curves.ICurve2D curve, IEnumerable<XNode> heavisideNodes)
         {
             var processedElements = new Dictionary<IXFiniteElement, (double elementPosArea, double elementNegArea)>();
             var nodesToRemove = new HashSet<XNode>();
@@ -78,7 +78,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface.SingularityResolving
         }
 
         // TODO: I should really cache these somehow, so that they can be accessible from the crack object. They are used at various points.
-        private (double positiveArea, double negativeArea) FindSignedAreasOfElement(ILsmCurve2D curve, IXFiniteElement element)
+        private (double positiveArea, double negativeArea) FindSignedAreasOfElement(Curves.ICurve2D curve, IXFiniteElement element)
         {
             double positiveArea = 0.0;
             double negativeArea = 0.0;

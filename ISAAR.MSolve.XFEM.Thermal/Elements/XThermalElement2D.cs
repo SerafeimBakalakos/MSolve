@@ -18,7 +18,7 @@ using ISAAR.MSolve.XFEM.Thermal.Enrichments;
 using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.Integration;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
+using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
 using ISAAR.MSolve.XFEM.Thermal.Materials;
 
 namespace ISAAR.MSolve.XFEM.Thermal.Elements

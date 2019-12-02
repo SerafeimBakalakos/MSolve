@@ -1,7 +1,7 @@
 ﻿using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
+using ISAAR.MSolve.XFEM.Thermal.Curves.LevelSetMethod;
 
 namespace ISAAR.MSolve.XFEM.Thermal.Materials
 {

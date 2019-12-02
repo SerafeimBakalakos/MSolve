@@ -1,4 +1,4 @@
-﻿namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction
+﻿namespace ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction
 {
     public enum RelativePositionCurveElement
     {

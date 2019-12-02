@@ -7,9 +7,9 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
+using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
 using Xunit;
+using ISAAR.MSolve.XFEM.Thermal.Curves.LevelSetMethod;
 
 //TODO: Plot the intersections is a private constant is set to a non null path.
 //TODO: Standarize ploting intersections (e.g. intersection points, intersection segment, tangent points, tangent segment).

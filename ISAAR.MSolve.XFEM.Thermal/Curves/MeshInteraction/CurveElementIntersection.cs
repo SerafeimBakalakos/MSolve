@@ -5,7 +5,7 @@ using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
 
-namespace ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction
+namespace ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction
 {
     public class CurveElementIntersection
     {

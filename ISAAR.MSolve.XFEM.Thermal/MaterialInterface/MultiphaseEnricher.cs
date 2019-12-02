@@ -7,7 +7,7 @@ using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.LevelSetMethod.MeshInteraction;
+using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
 using ISAAR.MSolve.XFEM.Thermal.MaterialInterface.SingularityResolving;
 
 //TODO: Use IHeavisideSingularityResolver when selecting enriched nodes!!!
