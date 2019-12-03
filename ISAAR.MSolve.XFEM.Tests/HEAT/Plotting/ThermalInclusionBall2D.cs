@@ -24,6 +24,7 @@ using ISAAR.MSolve.XFEM.Thermal.Output.Enrichments;
 using ISAAR.MSolve.XFEM.Thermal.Output.Fields;
 using ISAAR.MSolve.XFEM.Thermal.Output.Mesh;
 using ISAAR.MSolve.XFEM.Thermal.Output.Writers;
+using ISAAR.MSolve.XFEM.Thermal.Curves.LevelSetMethod;
 
 namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 {
@@ -35,6 +36,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\Ball\temperature.vtk";
 
         private const int numElementsX = 20, numElementsY = 20;
+        private const double thickness = 1.0;
         private const double zeroLevelSetTolerance = 1E-6;
         private const int subdomainID = 0;
 
@@ -143,10 +145,9 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 
 
             // Materials
-            double thickness = 1.0;
             double density = 1.0;
             double specificHeat = 1.0;
-            var geometricModel = new GeometricModel2D(thickness, zeroLevelSetTolerance);
+            var geometricModel = new GeometricModel2D(thickness);
             var materialPos = new ThermalMaterial(density, specificHeat, conductivityMatrix);
             var materialNeg = new ThermalMaterial(density, specificHeat, conductivityInclusion);
             var materialField = new ThermalBiMaterialField2D(materialPos, materialNeg, geometricModel);
@@ -211,7 +212,9 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         private static void InitializeLSM(XModel model, GeometricModel2D geometricModel)
         {
             var initialGeometry = new Circle2D(new CartesianPoint(-0.4, 0.0), 0.50001);
-            geometricModel.InitializeGeometry(model.Nodes, initialGeometry);
+            var lsm = new SimpleLsmClosedCurve2D(thickness, zeroLevelSetTolerance);
+            lsm.InitializeGeometry(model.Nodes, initialGeometry);
+            geometricModel.SingleCurves.Add(lsm);
         }
     }
 }

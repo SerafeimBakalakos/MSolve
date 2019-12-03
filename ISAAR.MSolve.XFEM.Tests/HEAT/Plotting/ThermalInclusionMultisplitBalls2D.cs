@@ -24,6 +24,7 @@ using ISAAR.MSolve.XFEM.Thermal.Output.Enrichments;
 using ISAAR.MSolve.XFEM.Thermal.Output.Fields;
 using ISAAR.MSolve.XFEM.Thermal.Output.Mesh;
 using ISAAR.MSolve.XFEM.Thermal.Output.Writers;
+using ISAAR.MSolve.XFEM.Thermal.Curves.LevelSetMethod;
 
 namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 {
@@ -35,6 +36,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls\temperature.vtk";
 
         private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0;
+        private const double thickness = 1.0;
 
         // There are 2 or more inclusions in the same element
         private const int numElementsX = 15, numElementsY = 15;
@@ -149,7 +151,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             double thickness = 1.0;
             double density = 1.0;
             double specificHeat = 1.0;
-            var interfaceLSM = new GeometricModel2D(thickness, zeroLevelSetTolerance);
+            var interfaceLSM = new GeometricModel2D(thickness);
             var materialPos = new ThermalMaterial(density, specificHeat, conductivityMatrix);
             var materialNeg = new ThermalMaterial(density, specificHeat, conductivityInclusion);
             var materialField = new ThermalMultiMaterialField2D(materialPos, materialNeg, interfaceLSM);
@@ -213,7 +215,6 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 
         private static void InitializeLSM(XModel model, GeometricModel2D geometricModel)
         {
-            var inclusions = new List<Circle2D>();
             double dx = (xMax - xMin) / (numBallsX + 1);
             double dy = (yMax - yMin) / (numBallsY + 1);
             for (int i = 0; i < numBallsX; ++i)
@@ -222,10 +223,12 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
                 for (int j = 0; j < numBallsY; ++j)
                 {
                     double centreY = yMin + (j + 1) * dy;
-                    inclusions.Add(new Circle2D(new CartesianPoint(centreX, centreY), ballRadius));
+                    var circle = new Circle2D(new CartesianPoint(centreX, centreY), ballRadius);
+                    var lsm = new SimpleLsmClosedCurve2D(thickness, zeroLevelSetTolerance);
+                    lsm.InitializeGeometry(model.Nodes, circle);
+                    geometricModel.SingleCurves.Add(lsm);
                 }
             }
-            geometricModel.InitializeGeometry(model.Nodes, inclusions);
         }
     }
 }

@@ -5,6 +5,7 @@ using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
 
 //TODO: Curves should have IDs
+//TODO: Duplication between this and Geometry.Shapes.ICurve2D
 namespace ISAAR.MSolve.XFEM.Thermal.Curves
 {
     public interface ICurve2D

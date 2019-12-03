@@ -13,7 +13,7 @@ using ISAAR.MSolve.XFEM.Thermal.Curves.LevelSetMethod;
 
 //TODO: Plot the intersections is a private constant is set to a non null path.
 //TODO: Standarize ploting intersections (e.g. intersection points, intersection segment, tangent points, tangent segment).
-namespace ISAAR.MSolve.XFEM.Tests.HEAT.MeshLsmInteraction
+namespace ISAAR.MSolve.XFEM.Tests.HEAT.CurveMeshInteraction
 {
     public static class LevelSetMeshIntersectionTests
     {

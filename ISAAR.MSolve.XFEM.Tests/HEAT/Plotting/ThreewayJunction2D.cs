@@ -10,6 +10,7 @@ using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.XFEM.Thermal.Curves.LevelSetMethod;
 using ISAAR.MSolve.XFEM.Thermal.Elements;
 using ISAAR.MSolve.XFEM.Thermal.Entities;
 using ISAAR.MSolve.XFEM.Thermal.Integration;
@@ -27,9 +28,9 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\Junction\temperature.vtk";
 
         private const int numElementsX = 3, numElementsY = 3;
+        private const double thickness = 1.0;
         private const double zeroLevelSetTolerance = 1E-6;
         private const int subdomainID = 0;
-        private const double thickness = 1.0;
 
         private const double conductivityMatrix = 1.0, conductivityInclusion = 1000.0;
         private const double cntCntResistance = 1E1;
@@ -56,12 +57,18 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             var point0 = new CartesianPoint(-1.0, 1.2);
             var point1 = new CartesianPoint(1.0, 1.2);
             var point2 = new CartesianPoint(0.0, -1.2);
-            var curve0 = new DirectedSegment2D(point0, junction);
-            var curve1 = new DirectedSegment2D(point1, junction);
-            var curve2 = new DirectedSegment2D(point2, junction);
+            var curves = new List<DirectedSegment2D>();
+            curves.Add(new DirectedSegment2D(point0, junction));
+            curves.Add(new DirectedSegment2D(point1, junction));
+            curves.Add(new DirectedSegment2D(point2, junction));
 
             // Create level set methods
-            geometricModel.InitializeGeometry(model.Nodes, new ICurve2D[] { curve0, curve1, curve2});
+            foreach (DirectedSegment2D curve in curves)
+            {
+                var lsm = new SimpleLsmClosedCurve2D(thickness, zeroLevelSetTolerance);
+                lsm.InitializeGeometry(model.Nodes, curve);
+                geometricModel.SingleCurves.Add(lsm);
+            }
 
             #region these should be done by a preprocessor
             // Define material phases
@@ -89,7 +96,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
         {
             var model = new XModel();
             model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
-            var geometricModel = new GeometricModel2D(thickness, zeroLevelSetTolerance);
+            var geometricModel = new GeometricModel2D(thickness);
 
             // Materials
             double density = 1.0;

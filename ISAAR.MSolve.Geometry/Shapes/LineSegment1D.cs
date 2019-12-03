@@ -28,6 +28,7 @@
             if (other.End > this.Start && other.End < this.End) return SegmentSegmentPosition.Overlapping;
             if (other.Start == this.End) return SegmentSegmentPosition.CommonVertexOnly; // TODO: return the vertex itself
             else return SegmentSegmentPosition.CommonVertexOnly; // TODO: return the vertex itself
+            //TODO: what about one being inside the other or one completely covering the other (which is the same but it might matter which is bigger)
         }
 
         public enum SegmentSegmentPosition
