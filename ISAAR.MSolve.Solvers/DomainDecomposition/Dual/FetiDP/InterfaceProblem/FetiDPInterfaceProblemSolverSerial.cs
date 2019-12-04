@@ -62,7 +62,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         {
             // rhs = dr - FIrc * inv(KccStar) * fcStar
             Vector temp = matrixManager.MultiplyInverseCoarseProblemMatrix(matrixManager.CoarseProblemRhs);
-            temp = flexibility.MultiplyGlobalFIrc(temp);
+            temp = flexibility.MultiplyFIrc(temp);
             return globalDr - temp;
         }
 

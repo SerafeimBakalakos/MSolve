@@ -32,39 +32,53 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 
         public int NumGlobalLagrangeMultipliers { get; }
 
-        public Vector MultiplyGlobalFIrc(Vector vIn)
+        public Vector MultiplyFIrc(Vector vIn)
         {
-            FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrc(vIn, dofSeparator, lagrangesEnumerator);
+            FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrc(vIn, dofSeparator);
             var vOut = Vector.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers);
             foreach (ISubdomain sub in subdomainFlexibilities.Keys)
             {
-                Vector subdomainRhs = subdomainFlexibilities[sub].MultiplySubdomainFIrc(vIn);
-                vOut.AddIntoThis(subdomainRhs);
+                Vector subdomainRhs = subdomainFlexibilities[sub].MultiplyFIrc(vIn);
+                vOut.AddIntoThis(subdomainRhs); //TODO: The operation y = A * x + y is important here to avoid extra allocations and additions
             }
             return vOut;
         }
 
-        public Vector MultiplyGlobalFIrcTransposed(Vector vIn)
+        public Vector MultiplyFIrcTransposed(Vector vIn)
         {
-            FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrcTransposed(vIn, dofSeparator, lagrangesEnumerator);
+            FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrcTransposed(vIn, lagrangesEnumerator);
             var vOut = Vector.CreateZero(dofSeparator.NumGlobalCornerDofs);
             foreach (ISubdomain sub in subdomainFlexibilities.Keys)
             {
-                Vector subdomainRhs = subdomainFlexibilities[sub].MultiplySubdomainFIrcTransposed(vIn);
-                vOut.AddIntoThis(subdomainRhs);
+                Vector subdomainRhs = subdomainFlexibilities[sub].MultiplyFIrcTransposed(vIn);
+                vOut.AddIntoThis(subdomainRhs); //TODO: The operation y = A * x + y is important here to avoid extra allocations and additions
             }
             return vOut;
         }
 
-        public void MultiplyGlobalFIrr(Vector vIn, Vector vOut)
+        public void MultiplyFIrr(Vector vIn, Vector vOut)
         {
             FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrr(vIn, vOut, lagrangesEnumerator);
-            vOut.Clear();
             foreach (ISubdomain sub in subdomainFlexibilities.Keys)
             {
-                Vector subdomainRhs = subdomainFlexibilities[sub].MultiplySubdomainFIrr(vIn);
-                vOut.AddIntoThis(subdomainRhs);
+                Vector subdomainRhs = subdomainFlexibilities[sub].MultiplyFIrr(vIn);
+                vOut.AddIntoThis(subdomainRhs); //TODO: The operation y = A * x + y is important here to avoid extra allocations and additions
             }
+        }
+
+        public (Vector FIrrTimesVector, Vector FIrcTransposedTimesVector) MultiplyFIrrAndFIrcTransposedTimesVector(Vector vIn)
+        {
+            FetiDPFlexibilityMatrixUtilities.CheckMultiplicationGlobalFIrcTransposed(vIn, lagrangesEnumerator);
+            var FIrrTimesVector = Vector.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers);
+            var FIrcTransposedTimesVector = Vector.CreateZero(dofSeparator.NumGlobalCornerDofs);
+            foreach (ISubdomain sub in subdomainFlexibilities.Keys)
+            {
+                (Vector subdomainFIrrTimesVector, Vector subdomainFIrcTransposedTimesVector) =
+                    subdomainFlexibilities[sub].MultiplyFIrrAndFIrcTransposedTimesVector(vIn);
+                FIrrTimesVector.AddIntoThis(subdomainFIrrTimesVector); //TODO: The operation y = A * x + y is important here to avoid extra allocations and additions
+                FIrcTransposedTimesVector.AddIntoThis(subdomainFIrcTransposedTimesVector);
+            }
+            return (FIrrTimesVector, FIrcTransposedTimesVector);
         }
     }
 }

@@ -30,16 +30,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         {
             //TODO: remove casts. I think PCG, LinearTransformation and preconditioners should be generic, bounded by 
             //      IVectorView and IVector
-            var lhs = (Vector)lhsVector;
-            var rhs = (Vector)rhsVector;
-
-            // rhs = (FIrr + FIrc * inv(KccStar) * FIrc^T) * lhs
-            flexibility.MultiplyGlobalFIrr(lhs, rhs);
-
-            Vector temp = flexibility.MultiplyGlobalFIrcTransposed(lhs);
-            temp = matrixManager.MultiplyInverseCoarseProblemMatrix(temp);
-            temp = flexibility.MultiplyGlobalFIrc(temp);
-            rhs.AddIntoThis(temp);
+            var x = (Vector)lhsVector;
+            var y = (Vector)rhsVector;
+            
+            // y = (FIrr + FIrc * inv(KccStar) * FIrc^T) * x
+            (Vector FIrrX, Vector transpFIrcTranspX) = flexibility.MultiplyFIrrAndFIrcTransposedTimesVector(x);
+            y.CopyFrom(FIrrX);
+            Vector temp = matrixManager.MultiplyInverseCoarseProblemMatrix(transpFIrcTranspX);
+            temp = flexibility.MultiplyFIrc(temp);
+            y.AddIntoThis(temp);
         }
     }
 }

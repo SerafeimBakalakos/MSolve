@@ -12,11 +12,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 {
     public interface IFetiDPSubdomainFlexibilityMatrix
     {
+        Vector MultiplyFIrc(Vector vector);
 
-        Vector MultiplySubdomainFIrc(Vector vector);
+        Vector MultiplyFIrcTransposed(Vector vector);
 
-        Vector MultiplySubdomainFIrcTransposed(Vector lagranges);
+        Vector MultiplyFIrr(Vector vector);
 
-        Vector MultiplySubdomainFIrr(Vector lagranges);
+        (Vector FIrrTimesVector, Vector FIrcTransposedTimesVector) MultiplyFIrrAndFIrcTransposedTimesVector(Vector vector);
     }
 }

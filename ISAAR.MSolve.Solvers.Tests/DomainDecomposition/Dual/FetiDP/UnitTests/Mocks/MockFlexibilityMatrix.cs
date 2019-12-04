@@ -10,21 +10,32 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
     {
         public int NumGlobalLagrangeMultipliers => Example4x4QuadsHomogeneous.SolutionLagrangeMultipliers.Length;
 
-        public Vector MultiplyGlobalFIrc(Vector vIn)
+        public Vector MultiplyFIrc(Vector vIn)
         {
             if (vIn != null) return Example4x4QuadsHomogeneous.MatrixFIrc * vIn;
             else return null;
         }
 
-        public Vector MultiplyGlobalFIrcTransposed(Vector vIn)
+        public Vector MultiplyFIrcTransposed(Vector vIn)
         {
             if (vIn != null) return Example4x4QuadsHomogeneous.MatrixFIrc.Multiply(vIn, true);
             else return null;
         }
 
-        public void MultiplyGlobalFIrr(Vector vIn, Vector vOut)
+        public void MultiplyFIrr(Vector vIn, Vector vOut)
         {
             if ((vIn != null) && (vOut != null)) vOut.CopyFrom(Example4x4QuadsHomogeneous.MatrixFIrr * vIn);
+        }
+
+        public (Vector FIrrTimesVector, Vector FIrcTransposedTimesVector) MultiplyFIrrAndFIrcTransposedTimesVector(Vector vIn)
+        {
+            if (vIn != null)
+            {
+                Vector FIrrTimesVector = Example4x4QuadsHomogeneous.MatrixFIrr * vIn;
+                Vector FIrcTransposedTimesVector = Example4x4QuadsHomogeneous.MatrixFIrc.Multiply(vIn, true);
+                return (FIrrTimesVector, FIrcTransposedTimesVector);
+            }
+            else return (null, null);
         }
     }
 }

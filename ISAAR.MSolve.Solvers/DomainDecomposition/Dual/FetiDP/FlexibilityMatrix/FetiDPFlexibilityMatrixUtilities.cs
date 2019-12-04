@@ -9,21 +9,19 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
-//TODO: Useless checks probably. Should be removed
+//TODO: Useless checks probably. Should be removed. Either way it complicates things needlessly
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 {
     public static class FetiDPFlexibilityMatrixUtilities
     {
         [Conditional("DEBUG")]
-        public static void CheckMultiplicationGlobalFIrc(Vector vIn, IFetiDPDofSeparator dofSeparator, 
-            ILagrangeMultipliersEnumerator lagrangeEnumerator)
+        public static void CheckMultiplicationGlobalFIrc(Vector vIn, IFetiDPDofSeparator dofSeparator)
         {
             Preconditions.CheckMultiplicationDimensions(dofSeparator.NumGlobalCornerDofs, vIn.Length);
         }
 
         [Conditional("DEBUG")]
-        public static void CheckMultiplicationGlobalFIrcTransposed(Vector vIn, IFetiDPDofSeparator dofSeparator,
-            ILagrangeMultipliersEnumerator lagrangeEnumerator)
+        public static void CheckMultiplicationGlobalFIrcTransposed(Vector vIn, ILagrangeMultipliersEnumerator lagrangeEnumerator)
         {
             Preconditions.CheckMultiplicationDimensions(lagrangeEnumerator.NumLagrangeMultipliers, vIn.Length);
         }

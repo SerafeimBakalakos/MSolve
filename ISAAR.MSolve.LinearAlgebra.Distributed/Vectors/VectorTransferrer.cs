@@ -11,6 +11,9 @@ using MPI;
 //      in ISubdomainDataTransferrer.
 //TODO: Perhaps I should provide overloads for the summation method that accept a delegate that calculates the subdomain vectors 
 //      instead of the vectors themselves. 
+//TODO: Also provide overloads to afacilitate the operation y = A * x + y . It is important here to avoid extra allocations and 
+//      additions, since the subdomain vectors usually come from a multiplication like this. E.g. define a GEMV method that 
+//      takes adds the multiplication result on top of the rhs vector, which is also passed in 
 namespace ISAAR.MSolve.LinearAlgebra.Distributed.Vectors
 {
     public class VectorTransferrer
@@ -75,7 +78,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Vectors
                 bool isNotEmpty = iterator.MoveNext();
                 if (!isNotEmpty) throw new ArgumentException("There must be at least 1 vector");
                 processSum = iterator.Current.Copy(); // Optimization for the first one
-                while (iterator.MoveNext()) processSum.AddIntoThis(iterator.Current);
+                while (iterator.MoveNext()) processSum.AddIntoThis(iterator.Current); 
             }
 
             // MPI-reduce the vectors of all processes

@@ -44,7 +44,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements
         private Vector CalcCornerDisplacements(IFetiDPFlexibilityMatrix flexibility, Vector lagranges)
         {
             // uc = inv(KccStar) * (fcStar + FIrc^T * lagranges)
-            Vector temp = flexibility.MultiplyGlobalFIrcTransposed(lagranges);
+            Vector temp = flexibility.MultiplyFIrcTransposed(lagranges);
             if (procs.IsMasterProcess)
             {
                 temp.AddIntoThis(matrixManager.CoarseProblemRhs);

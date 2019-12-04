@@ -52,7 +52,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly FetiDPSubdomainGlobalMappingMpi subdomainGlobalMapping;
 
         private bool factorizeInPlace = true;
-        private FetiDPFlexibilityMatrixMpi flexibility;
+        private IFetiDPFlexibilityMatrix flexibility;
         private bool isStiffnessModified = true;
         private IFetiPreconditioner preconditioner;
 

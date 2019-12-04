@@ -10,8 +10,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
     {
         int NumGlobalLagrangeMultipliers { get; }
 
-        Vector MultiplyGlobalFIrc(Vector vIn);
-        Vector MultiplyGlobalFIrcTransposed(Vector vIn);
-        void MultiplyGlobalFIrr(Vector vIn, Vector vOut);
+        Vector MultiplyFIrc(Vector vIn);
+        Vector MultiplyFIrcTransposed(Vector vIn);
+        void MultiplyFIrr(Vector vIn, Vector vOut);
+
+        (Vector FIrrTimesVector, Vector FIrcTransposedTimesVector) MultiplyFIrrAndFIrcTransposedTimesVector(Vector vIn);
+
     }
 }

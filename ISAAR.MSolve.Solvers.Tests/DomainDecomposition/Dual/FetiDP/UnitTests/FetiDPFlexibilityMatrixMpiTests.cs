@@ -17,7 +17,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 {
     public static class FetiDPFlexibilityMatrixMpiTests
     {
-        public static void TestFlexibilityMatrices() 
+        public static void TestFIrcTimesVector() 
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator, 
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
@@ -30,17 +30,88 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             var flexibility = new FetiDPFlexibilityMatrixMpi(procs, model, dofSeparator, lagrangesEnumerator, matrixManager);
             int numCornerDofs = dofSeparator.NumGlobalCornerDofs;
             int numLagranges = lagrangesEnumerator.NumLagrangeMultipliers;
-            Matrix FIrr = ImplicitMatrixUtilities.MultiplyWithIdentityMpi(
-                numLagranges, numLagranges, flexibility.MultiplyGlobalFIrr);
-            Matrix FIrc = ImplicitMatrixUtilities.MultiplyWithIdentityMpi(
-                numLagranges, numCornerDofs, flexibility.MultiplyGlobalFIrc);
+            Matrix FIrc = ImplicitMatrixUtilities.MultiplyWithIdentityMpi(numLagranges, numCornerDofs, 
+                flexibility.MultiplyFIrc);
             
             if (procs.IsMasterProcess)
             {
                 // Check
                 double tol = 1E-11;
-                Assert.True(Example4x4QuadsHomogeneous.MatrixFIrr.Equals(FIrr, tol));
                 Assert.True(Example4x4QuadsHomogeneous.MatrixFIrc.Equals(FIrc, tol));
+            }
+        }
+
+        public static void TestFIrcTransposedTimesVector()
+        {
+            (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator,
+                LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
+                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
+
+            // Setup matrix manager
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
+
+            // Create explicit matrices that can be checked
+            var flexibility = new FetiDPFlexibilityMatrixMpi(procs, model, dofSeparator, lagrangesEnumerator, matrixManager);
+            int numCornerDofs = dofSeparator.NumGlobalCornerDofs;
+            int numLagranges = lagrangesEnumerator.NumLagrangeMultipliers;
+            Matrix FIrcTransposed = ImplicitMatrixUtilities.MultiplyWithIdentityMpi(numLagranges, numCornerDofs, 
+                flexibility.MultiplyFIrcTransposed);
+
+            if (procs.IsMasterProcess)
+            {
+                // Check
+                double tol = 1E-11;
+                Assert.True(Example4x4QuadsHomogeneous.MatrixFIrc.Transpose().Equals(FIrcTransposed, tol));
+            }
+        }
+
+        public static void TestFIrrTimesVector()
+        {
+            (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator,
+                LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
+                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
+
+            // Setup matrix manager
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
+
+            // Create explicit matrices that can be checked
+            var flexibility = new FetiDPFlexibilityMatrixMpi(procs, model, dofSeparator, lagrangesEnumerator, matrixManager);
+            int numLagranges = lagrangesEnumerator.NumLagrangeMultipliers;
+            Matrix FIrr = ImplicitMatrixUtilities.MultiplyWithIdentityMpi(numLagranges, numLagranges, 
+                flexibility.MultiplyFIrr);
+
+            if (procs.IsMasterProcess)
+            {
+                // Check
+                double tol = 1E-11;
+                Assert.True(Example4x4QuadsHomogeneous.MatrixFIrr.Equals(FIrr, tol));
+            }
+        }
+
+        public static void TestFIrrAndFIrcTransposedTimesVector()
+        {
+            (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator,
+                LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
+                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
+
+            // Setup matrix manager
+            IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
+
+            // Create explicit matrices that can be checked
+            var flexibility = new FetiDPFlexibilityMatrixMpi(procs, model, dofSeparator, lagrangesEnumerator, matrixManager);
+            int numCornerDofs = dofSeparator.NumGlobalCornerDofs;
+            int numLagranges = lagrangesEnumerator.NumLagrangeMultipliers;
+            Matrix FIrr = ImplicitMatrixUtilities.MultiplyWithIdentityMpi(numLagranges, numLagranges,
+                x => flexibility.MultiplyFIrrAndFIrcTransposedTimesVector(x).FIrrTimesVector);
+            Matrix FIrcTransposed = ImplicitMatrixUtilities.MultiplyWithIdentityMpi(numLagranges, numCornerDofs,
+                x => flexibility.MultiplyFIrrAndFIrcTransposedTimesVector(x).FIrcTransposedTimesVector);
+
+            if (procs.IsMasterProcess)
+            {
+                // Check
+                double tol = 1E-11;
+                Assert.True(Example4x4QuadsHomogeneous.MatrixFIrr.Equals(FIrr, tol));
+                Assert.True(Example4x4QuadsHomogeneous.MatrixFIrc.Transpose().Equals(FIrcTransposed, tol));
             }
         }
     }
