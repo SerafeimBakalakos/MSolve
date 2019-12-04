@@ -56,7 +56,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             }
             var transferrer = new VectorTransferrer(procs);
             transferrer.BroadcastVector(ref vIn, dofSeparator.NumGlobalCornerDofs);
-            IEnumerable<Vector> subdomainRhs = subdomainFlexibilities.Values.Select(F => F.MultiplyFIrc(vIn));
+            //IEnumerable<Vector> subdomainRhs = subdomainFlexibilities.Values.Select(F => F.MultiplyFIrc(vIn));
+            Vector[] subdomainRhs = subdomainFlexibilities.Values.Select(F => F.MultiplyFIrc(vIn)).ToArray();
             return transferrer.SumVectors(subdomainRhs);
         }
 

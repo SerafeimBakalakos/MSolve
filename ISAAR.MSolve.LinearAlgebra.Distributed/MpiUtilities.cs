@@ -48,13 +48,6 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed
             vector = Vector.CreateFromArray(asArray);
         }
 
-        public static void BroadcastMatrix(this Intracommunicator comm, ref Matrix matrix, int root)
-        {
-            //TODO: Use a dedicated class for MPI communication of Matrix. This class belongs to a project LinearAlgebra.MPI.
-            //      Avoid the automatic serialization of MPI.NET.
-            comm.Broadcast<Matrix>(ref matrix, root);
-        }
-
         public static void DoInTurn(Intracommunicator comm, Action action)
         {
             comm.Barrier();
@@ -254,16 +247,6 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed
             // arrays. Not sure if this is good or bad.
             comm.Send<int>(vals.Length, dest, tag);
             comm.Send<T>(vals, dest, tag);
-        }
-
-        public static void SumMatrix(this Intracommunicator comm, Matrix subdomainMatrix, Matrix globalMatrix, int root)
-        {
-            //TODO: Use a dedicated class for MPI communication of Matrix.This class belongs to a project LinearAlgebra.MPI.
-            //      Avoid the automatic serialization of MPI.NET and use built-in reductions which are much faster.
-
-            ReductionOperation<Matrix> matrixAddition = (A, B) => A + B;
-            Matrix sum = comm.Reduce<Matrix>(subdomainMatrix, matrixAddition, root);
-            if (comm.Rank == root) globalMatrix.CopyFrom(sum);
         }
 
         public static Vector SumVector(this Intracommunicator comm, Vector vector, int root)

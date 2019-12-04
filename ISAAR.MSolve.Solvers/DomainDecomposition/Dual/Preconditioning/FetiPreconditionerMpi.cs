@@ -10,13 +10,14 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Vectors;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
 {
     public class FetiPreconditionerMpi : IFetiPreconditioner
     {
-        private readonly IMappingMatrix Bpb;
-        private readonly IFetiSubdomainMatrixManager matrixManager;
+        private readonly Dictionary<int, IMappingMatrix> matricesBpb;
+        private readonly Dictionary<int, IFetiSubdomainMatrixManager> matrixManagers;
         private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
         private readonly IFetiPreconditioningOperations preconditioning;
         private readonly ProcessDistribution procs;
@@ -25,30 +26,44 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
             IModel model, IDofSeparator dofSeparator, ILagrangeMultipliersEnumerator lagrangesEnumerator,
             IFetiMatrixManager matrixManager, IStiffnessDistribution stiffnessDistribution)
         {
-
-            ISubdomain subdomain = model.GetSubdomain(processDistribution.OwnSubdomainID);
             this.procs = processDistribution;
             this.preconditioning = preconditioning;
             this.lagrangesEnumerator = lagrangesEnumerator;
-            this.matrixManager = matrixManager.GetSubdomainMatrixManager(subdomain);
 
-            this.Bpb = PreconditioningUtilities.CalcBoundaryPreconditioningBooleanMatrix(
-                subdomain, dofSeparator, lagrangesEnumerator, stiffnessDistribution); //TODO: When can these ones be reused?
-            preconditioning.PrepareSubdomainSubmatrices(matrixManager.GetSubdomainMatrixManager(subdomain));
+            this.matricesBpb = new Dictionary<int, IMappingMatrix>();
+            this.matrixManagers = new Dictionary<int, IFetiSubdomainMatrixManager>();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                this.matricesBpb[s] = PreconditioningUtilities.CalcBoundaryPreconditioningBooleanMatrix(
+                    subdomain, dofSeparator, lagrangesEnumerator, stiffnessDistribution); //TODO: When can these ones be reused?
+                this.matrixManagers[s] = matrixManager.GetSubdomainMatrixManager(subdomain);
+                preconditioning.PrepareSubdomainSubmatrices(matrixManager.GetSubdomainMatrixManager(subdomain));
+            }
         }
 
         public void SolveLinearSystem(Vector rhs, Vector lhs)
         {
-            procs.Communicator.BroadcastVector(ref rhs, lagrangesEnumerator.NumLagrangeMultipliers, procs.MasterProcess);
-            Vector subdomainContribution = preconditioning.PreconditionSubdomainVector(rhs, matrixManager, Bpb);
-            procs.Communicator.SumVector(subdomainContribution, lhs, procs.MasterProcess);
+            var transferrer = new VectorTransferrer(procs);
+            transferrer.BroadcastVector(ref rhs, lagrangesEnumerator.NumLagrangeMultipliers);
+            var subdomainContributions = new List<Vector>();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                subdomainContributions.Add(preconditioning.PreconditionSubdomainVector(rhs, matrixManagers[s], matricesBpb[s]));
+            }
+            transferrer.SumVectors(subdomainContributions, lhs);
         }
 
         public void SolveLinearSystems(Matrix rhs, Matrix lhs)
         {
-            procs.Communicator.BroadcastMatrix(ref rhs, procs.MasterProcess);
-            Matrix subdomainContribution = preconditioning.PreconditionSubdomainMatrix(rhs, matrixManager, Bpb);
-            procs.Communicator.SumMatrix(subdomainContribution, lhs, procs.MasterProcess);
+            var transferrer = new MatrixTransferrer(procs);
+            transferrer.BroadcastMatrix(ref rhs); //TODO: Perhaps the dimensions are already known and we can avoid broadcasting them too.
+            var subdomainContributions = new List<Matrix>();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                subdomainContributions.Add(preconditioning.PreconditionSubdomainMatrix(rhs, matrixManagers[s], matricesBpb[s]));
+            }
+            transferrer.SumMatrices(subdomainContributions, lhs);
         }
 
         public class Factory : IFetiPreconditionerFactory
