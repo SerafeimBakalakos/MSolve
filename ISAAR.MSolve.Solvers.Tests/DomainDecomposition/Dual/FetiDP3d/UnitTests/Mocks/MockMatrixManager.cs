@@ -72,12 +72,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 FcStar = ExpectedSubdomainMatrices.GetVectorFcStar(s);
                 Fr = ExpectedSubdomainMatrices.GetVectorFr(s);
 
-                //invDii = DiagonalMatrix.CreateFromArray(Example4x4x4.GetMatrixKii(s).GetDiagonalAsArray());
-                //invDii.Invert();
+                invDii = DiagonalMatrix.CreateFromArray(ExpectedSubdomainMatrices.GetMatrixKii(s).GetDiagonalAsArray());
+                invDii.Invert();
 
-                //invKii = Example4x4x4.GetMatrixKii(s).Invert();
-                //Kbb = Example4x4x4.GetMatrixKbb(s);
-                //Kbi = Example4x4x4.GetMatrixKbi(s);
+                invKii = ExpectedSubdomainMatrices.GetMatrixKii(s).Invert();
+                Kbb = ExpectedSubdomainMatrices.GetMatrixKbb(s);
+                Kbi = ExpectedSubdomainMatrices.GetMatrixKbi(s);
                 KaaStar = null;
                 KacStar = null;
                 Kcc = ExpectedSubdomainMatrices.GetMatrixKcc(s);

@@ -19,10 +19,26 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
     public static class FetiDP3dPreconditionerSerialTests
     {
         [Fact]
+        public static void TestDiagonalDirichletPreconditioner()
+        {
+            Matrix preconditioner = CalcPreconditioner(new DiagonalDirichletPreconditioning());
+            double tol = 1E-4;
+            Assert.True(Example4x4x4Quads.ExpectedGlobalMatrices.PreconditionerDiagonalDirichlet.Equals(preconditioner, tol));
+        }
+
+        [Fact]
+        public static void TestDirichletPreconditioner()
+        {
+            Matrix preconditioner = CalcPreconditioner(new DirichletPreconditioning());
+            double tol = 1E-4;
+            Assert.True(Example4x4x4Quads.ExpectedGlobalMatrices.PreconditionerDirichlet.Equals(preconditioner, tol));
+        }
+
+        [Fact]
         public static void TestLumpedPreconditioner()
         {
             Matrix preconditioner = CalcPreconditioner(new LumpedPreconditioning());
-            double tol = 1E-13;
+            double tol = 1E-5;
             Assert.True(Example4x4x4Quads.ExpectedGlobalMatrices.PreconditionerLumped.Equals(preconditioner, tol));
         }
 

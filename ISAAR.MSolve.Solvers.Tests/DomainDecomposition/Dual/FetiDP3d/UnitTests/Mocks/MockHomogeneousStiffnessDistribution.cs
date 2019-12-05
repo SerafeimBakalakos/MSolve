@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
         public IMappingMatrix CalcBoundaryPreconditioningSignedBooleanMatrix(ILagrangeMultipliersEnumerator lagrangeEnumerator,
             ISubdomain subdomain, SignedBooleanMatrixColMajor boundarySignedBooleanMatrix)
-            => new MatrixBpbr(subdomain.ID);
+            => new MatrixBpbr(subdomain.ID, boundarySignedBooleanMatrix);
 
         public double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load) => load.Amount / load.Node.Multiplicity;
 
@@ -28,10 +28,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
         {
             private readonly Matrix Bpbr;
 
-            internal MatrixBpbr(int subdomainID)
+            internal MatrixBpbr(int subdomainID, SignedBooleanMatrixColMajor Bbr)
             {
-                throw new NotImplementedException();
-                //Bpbr = Example4x4QuadsHomogeneous.GetMatrixBpbr(subdomainID);
+                Bpbr = Example4x4x4Quads.ExpectedConnectivityData.MatrixW * Bbr.CopyToFullMatrix(false);
             }
 
             public int NumColumns => Bpbr.NumColumns;
