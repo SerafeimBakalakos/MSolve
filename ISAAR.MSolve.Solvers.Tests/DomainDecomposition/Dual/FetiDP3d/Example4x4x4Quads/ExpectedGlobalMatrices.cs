@@ -8,6 +8,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 //TODO: We need more decimal digits for better precision
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x4x4Quads
 {
+    [System.Runtime.InteropServices.Guid("3B2A23EE-0B5D-4504-BC01-96E445798878")]
     public static class ExpectedGlobalMatrices
     {
         public static double GlobalForcesNorm => 1.0;
@@ -1645,11 +1646,21 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x
 
         public static Vector VectorGlobalFcStar => Vector.CreateFromArray(new double[3] { 0, 0, 1 });
 
-        public static Vector VectorGlobalFcStarTilde
+        public static Vector VectorGlobalFcStarTildeRedundant
         {
             get
             {
                 var result = Vector.CreateZero(111);
+                result[2] = 1;
+                return result;
+            }
+        }
+
+        public static Vector VectorGlobalFcStarTildeSimple
+        {
+            get
+            {
+                var result = Vector.CreateZero(21);
                 result[2] = 1;
                 return result;
             }

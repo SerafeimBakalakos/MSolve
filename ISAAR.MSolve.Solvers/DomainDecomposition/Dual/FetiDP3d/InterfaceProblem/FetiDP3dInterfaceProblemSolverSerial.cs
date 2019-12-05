@@ -13,8 +13,9 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.Logging;
 
-//TODO: Most of this class should be inherited by FetiDP3dInterfaceProblemSolverSerial. The only thing that changes is the 
-//      calculation of the coarse problem RHS. This should be defined regardless of serial/MPI environment
+//TODO: This class should not exist. Instead the corresponding one in FETI-DP 2D should be used. The only difference is in the 
+//      calculation of dr, fcStarTilde, which are assigned to MatrixManager component. For now only the 3D MatrixManager provides
+//      these vectors, but they should be in 2D as well. This would also remove the need for casting
 //TODO: IAugmentationConstraints augmentationConstraints are injected into the constructor since they do not exist in 2D FETI-DP.
 //      Perhaps LagrangeEnumerator and MatrixManager should also be injected
 //TODO: Reorder both corner and augmented dofs and store the coarse problem dof ordering. Do this in matrix manager. Then use it 
@@ -49,7 +50,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             // Prepare PCG matrix, preconditioner, rhs and solution
             var pcgMatrix = new FetiDPInterfaceProblemMatrixSerial(matrixManager, flexibility);
             var pcgPreconditioner = new FetiDPInterfaceProblemPreconditioner(preconditioner);
-            Vector globalDr = CalcGlobalDr(matrixManager, lagrangesEnumerator);
+            Vector globalDr = ((IFetiDP3dMatrixManager)matrixManager).GlobalDr;
             Vector pcgRhs = CalcInterfaceProblemRhs(matrixManager, flexibility, globalDr);
             var lagranges = Vector.CreateZero(systemOrder);
 
@@ -69,26 +70,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             return lagranges;
         }
 
-        private Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility,
+        private Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility, 
             Vector globalDr)
         {
             // rhs = dr - FIrcTilde * inv(KccStarTilde) * fcStarTilde
-            Vector QrDr = augmentationConstraints.MatrixGlobalQr.Multiply(globalDr.Scale(-1), true);
-            Vector fcStarTilde = matrixManager.CoarseProblemRhs.Append(QrDr); 
+            Vector fcStarTilde = matrixManager.CoarseProblemRhs; 
             Vector temp = matrixManager.MultiplyInverseCoarseProblemMatrix(fcStarTilde);
             temp = flexibility.MultiplyGlobalFIrc(temp);
             return globalDr - temp;
-        }
-
-        private Vector CalcGlobalDr(IFetiDPMatrixManager matrixManager, ILagrangeMultipliersEnumerator lagrangesEnumerator)
-        {
-            var globalDr = Vector.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers);
-            foreach (ISubdomain sub in model.EnumerateSubdomains())
-            {
-                Vector subdomainDr = FetiDPInterfaceProblemUtilities.CalcSubdomainDr(sub, matrixManager, lagrangesEnumerator);
-                globalDr.AddIntoThis(subdomainDr);
-            }
-            return globalDr;
         }
     }
 }

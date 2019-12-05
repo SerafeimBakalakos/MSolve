@@ -64,7 +64,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             // Check
             double tol = 1E-3;
             Assert.True(ExpectedGlobalMatrices.MatrixGlobalKccStarTildeSimple.Invert().Equals(globalInverseKccStarTilde, tol));
-            Assert.True(ExpectedGlobalMatrices.VectorGlobalFcStar.Equals(matrixManager.CoarseProblemRhs, tol));
+            Assert.True(ExpectedGlobalMatrices.VectorGlobalFcStarTildeSimple.Equals(matrixManager.CoarseProblemRhs, tol));
         }
 
 
@@ -184,6 +184,35 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 Assert.True(ExpectedSubdomainMatrices.GetMatrixKccStar(sub.ID).Equals(subdomainMatrices.KccStar, tol));
                 Assert.True(ExpectedSubdomainMatrices.GetVectorFcStar(sub.ID).Equals(subdomainMatrices.FcStar, tol));
             }
+        }
+
+        [Fact]
+        public static void TestVectorDr()
+        {
+            IFetiDP3dMatrixManagerFactory matricesFactory = new FetiDP3dMatrixManagerFactoryDense();
+            (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
+                FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
+            IAugmentationConstraints augmentationConstraints =
+                FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
+            FetiDP3dMatrixManagerSerial matrixManager = PrepareCoarseProblemSubdomainMatrices(model, dofSeparator,
+                lagrangesEnumerator, augmentationConstraints, matricesFactory);
+
+            foreach (ISubdomain sub in model.EnumerateSubdomains())
+            {
+                // Input data
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
+                subdomainMatrices.LinearSystem.RhsConcrete = ExpectedSubdomainMatrices.GetVectorFf(sub.ID);
+
+                // Prepare the subdomain data
+                subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
+            }
+
+            // Calculate the global data to test
+            matrixManager.CalcCoarseProblemRhs();
+
+            // Check
+            double tol = 1E-13;
+            Assert.True(ExpectedGlobalMatrices.VectorDr.Equals(matrixManager.GlobalDr, tol));
         }
 
         [Fact]

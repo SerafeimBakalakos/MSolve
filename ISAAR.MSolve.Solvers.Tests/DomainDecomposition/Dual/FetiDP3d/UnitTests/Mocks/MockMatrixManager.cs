@@ -15,7 +15,7 @@ using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x4x4Q
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests.Mocks
 {
-    public class MockMatrixManager : IFetiDPMatrixManager
+    public class MockMatrixManager : IFetiDP3dMatrixManager
     {
         private readonly Dictionary<ISubdomain, IFetiDP3dSubdomainMatrixManager> subdomainMatrices;
 
@@ -28,7 +28,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             }
         }
 
-        public Vector CoarseProblemRhs => ExpectedGlobalMatrices.VectorGlobalFcStar;
+        public Vector CoarseProblemRhs => ExpectedGlobalMatrices.VectorGlobalFcStarTildeSimple;
+
+        public Vector GlobalDr => ExpectedGlobalMatrices.VectorDr;
 
         public void CalcCoarseProblemRhs() { }
 

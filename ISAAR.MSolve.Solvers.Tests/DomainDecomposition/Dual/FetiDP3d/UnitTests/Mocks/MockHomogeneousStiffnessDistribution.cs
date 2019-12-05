@@ -13,7 +13,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
     public class MockHomogeneousStiffnessDistribution : IStiffnessDistribution
     {
         public double[] CalcBoundaryDofCoefficients(ISubdomain subdomain)
-            => Example4x4QuadsHomogeneous.GetBoundaryDofCoefficients(subdomain.ID);
+            => throw new NotImplementedException();
+            //=> Example4x4QuadsHomogeneous.GetBoundaryDofCoefficients(subdomain.ID);
 
         public IMappingMatrix CalcBoundaryPreconditioningSignedBooleanMatrix(ILagrangeMultipliersEnumerator lagrangeEnumerator,
             ISubdomain subdomain, SignedBooleanMatrixColMajor boundarySignedBooleanMatrix)
@@ -29,7 +30,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
             internal MatrixBpbr(int subdomainID)
             {
-                Bpbr = Example4x4QuadsHomogeneous.GetMatrixBpbr(subdomainID);
+                throw new NotImplementedException();
+                //Bpbr = Example4x4QuadsHomogeneous.GetMatrixBpbr(subdomainID);
             }
 
             public int NumColumns => Bpbr.NumColumns;

@@ -7,6 +7,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
@@ -16,8 +17,10 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 //      KccStar.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices
 {
-    public class FetiDP3dMatrixManagerSerial : IFetiDPMatrixManager
+    public class FetiDP3dMatrixManagerSerial : IFetiDP3dMatrixManager
     {
+        private readonly IAugmentationConstraints augmentationConstraints;
+        private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
         private readonly IFetiDP3dGlobalMatrixManager matrixManagerGlobal;
         private readonly Dictionary<ISubdomain, IFetiDP3dSubdomainMatrixManager> matrixManagersSubdomain;
         private readonly IModel model;
@@ -28,6 +31,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             IFetiDP3dMatrixManagerFactory matrixManagerFactory)
         {
             this.model = model;
+            this.lagrangesEnumerator = lagrangesEnumerator;
+            this.augmentationConstraints = augmentationConstraints;
             this.matrixManagersSubdomain = new Dictionary<ISubdomain, IFetiDP3dSubdomainMatrixManager>();
             matrixManagerGlobal = matrixManagerFactory.CreateGlobalMatrixManager(model, dofSeparator, augmentationConstraints);
             foreach (ISubdomain sub in model.EnumerateSubdomains())
@@ -39,22 +44,19 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             this.msgHeader = $"{this.GetType().Name}: ";
         }
 
-        public Vector CoarseProblemRhs => matrixManagerGlobal.CoarseProblemRhs;
+        //TODO: These 2 vectors should be stored and calculated by the class that manages global vectors, such as fcStar. 
+        //      For now this component is IFetiDP3dGlobalMatrixManager.
+        public Vector CoarseProblemRhs { get; private set; }
+        public Vector GlobalDr { get; private set; }
 
         public void CalcCoarseProblemRhs()
         {
-            // Calculate FcStar of each subdomain
-            // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s] -> delegated to the SubdomainMatrixManager
-            // globalFcStar = sum_over_s(Lc[s]^T * fcStar[s]) -> delegated to the GlobalMatrixManager
-            var allFcStar = new Dictionary<ISubdomain, Vector>();
-            foreach (ISubdomain sub in model.EnumerateSubdomains())
-            {
-                matrixManagersSubdomain[sub].CondenseRhsVectorsStatically();
-                allFcStar[sub] = matrixManagersSubdomain[sub].FcStar;
-            }
-
-            // Give them to the global matrix manager so that it can create the global FcStar
-            matrixManagerGlobal.CalcCoarseProblemRhs(allFcStar);
+            // fcStarTilde = [fcStar ; -Qr^T * dr]
+            CalcGlobalFcStar();
+            CalcGlobalDr();
+            Vector QrDr = augmentationConstraints.MatrixGlobalQr.Multiply(GlobalDr.Scale(-1), true);
+            Vector fcStarTilde = matrixManagerGlobal.CoarseProblemRhs.Append(QrDr);
+            this.CoarseProblemRhs = fcStarTilde;
         }
 
         public void CalcInverseCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection)
@@ -98,5 +100,34 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
 
         public DofPermutation ReorderSubdomainRemainderDofs(ISubdomain subdomain)
             => matrixManagersSubdomain[subdomain].ReorderRemainderDofs();
+
+        //TODO: For now this is a side effect of CalcCoarseProblemRhs(). It should be called explicitly by whoever calls 
+        //CalcCoarseProblemRhs().
+        private void CalcGlobalDr()
+        {
+            GlobalDr = Vector.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers);
+            foreach (ISubdomain sub in model.EnumerateSubdomains())
+            {
+                //TODO: This should be done by the same class as subdomain's fcStar
+                Vector subdomainDr = FetiDPInterfaceProblemUtilities.CalcSubdomainDr(sub, this, lagrangesEnumerator);
+                GlobalDr.AddIntoThis(subdomainDr); //TODO: This should be done by the same class as global fcStar
+            }
+        }
+
+        private void CalcGlobalFcStar()
+        {
+            // Calculate FcStar of each subdomain
+            // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s] -> delegated to the SubdomainMatrixManager
+            // globalFcStar = sum_over_s(Lc[s]^T * fcStar[s]) -> delegated to the GlobalMatrixManager
+            var allFcStar = new Dictionary<ISubdomain, Vector>();
+            foreach (ISubdomain sub in model.EnumerateSubdomains())
+            {
+                matrixManagersSubdomain[sub].CondenseRhsVectorsStatically();
+                allFcStar[sub] = matrixManagersSubdomain[sub].FcStar;
+            }
+
+            // Give them to the global matrix manager so that it can create the global FcStar
+            matrixManagerGlobal.CalcCoarseProblemRhs(allFcStar);
+        }
     }
 }

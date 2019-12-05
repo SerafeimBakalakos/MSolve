@@ -86,23 +86,5 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             Vector lagrangesExpected = Example4x4x4Quads.ExpectedGlobalMatrices.SolutionLagrangeMultipliersSimple;
             Assert.True(lagrangesExpected.Equals(lagranges, tol));
         }
-
-        [Fact]
-        public static void TestVectorDr()
-        {
-            (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
-                FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
-            IAugmentationConstraints augmentationConstraints =
-                FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
-            IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
-
-            var interfaceSolver = new FetiDP3dInterfaceProblemSolverSerial(model, new PcgSettings(), augmentationConstraints);
-            MethodInfo method = interfaceSolver.GetType().GetMethod("CalcGlobalDr",
-                BindingFlags.NonPublic | BindingFlags.Instance); // reflection for the private method
-            Vector globalDr = (Vector)method.Invoke(interfaceSolver, new object[] { matrixManager, lagrangesEnumerator });
-
-            double tol = 1E-13;
-            Assert.True(Example4x4x4Quads.ExpectedGlobalMatrices.VectorDr.Equals(globalDr, tol));
-        }
     }
 }
