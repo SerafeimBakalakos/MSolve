@@ -26,37 +26,43 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         public static void TestDofSeparation()
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) = CreateModelAndDofSeparator();
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
 
-            // Check dof separation 
-            (int[] cornerDofs, int[] remainderDofs, int[] boundaryRemainderDofs, int[] internalRemainderDofs) =
-                Example4x4QuadsHomogeneous.GetDofSeparation(subdomain.ID);
-            ArrayChecking.CheckEqualMpi(procs, cornerDofs, dofSeparator.GetCornerDofIndices(subdomain));
-            ArrayChecking.CheckEqualMpi(procs, remainderDofs, dofSeparator.GetRemainderDofIndices(subdomain));
-            ArrayChecking.CheckEqualMpi(procs, boundaryRemainderDofs, dofSeparator.GetBoundaryDofIndices(subdomain));
-            ArrayChecking.CheckEqualMpi(procs, internalRemainderDofs, dofSeparator.GetInternalDofIndices(subdomain));
+                // Check dof separation 
+                (int[] cornerDofs, int[] remainderDofs, int[] boundaryRemainderDofs, int[] internalRemainderDofs) =
+                    Example4x4QuadsHomogeneous.GetDofSeparation(subdomain.ID);
+                ArrayChecking.CheckEqualMpi(procs, cornerDofs, dofSeparator.GetCornerDofIndices(subdomain));
+                ArrayChecking.CheckEqualMpi(procs, remainderDofs, dofSeparator.GetRemainderDofIndices(subdomain));
+                ArrayChecking.CheckEqualMpi(procs, boundaryRemainderDofs, dofSeparator.GetBoundaryDofIndices(subdomain));
+                ArrayChecking.CheckEqualMpi(procs, internalRemainderDofs, dofSeparator.GetInternalDofIndices(subdomain));
+            }
         }
 
         public static void TestCornerBooleanMatrices()
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) = CreateModelAndDofSeparator();
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-
-            // Check corner boolean matrices
-            UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
-            Matrix expectedBc = Example4x4QuadsHomogeneous.GetMatrixBc(subdomain.ID);
-            double tolerance = 1E-13;
-            //writer.WriteToFile(Bc, outputFile, true);
-            Assert.True(expectedBc.Equals(Bc, tolerance));
-            if (procs.IsMasterProcess)
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
             {
-                Assert.Equal(8, dofSeparator.NumGlobalCornerDofs);
-                foreach (ISubdomain sub in model.EnumerateSubdomains())
+                ISubdomain subdomain = model.GetSubdomain(s);
+
+                // Check corner boolean matrices
+                UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
+                Matrix expectedBc = Example4x4QuadsHomogeneous.GetMatrixBc(subdomain.ID);
+                double tolerance = 1E-13;
+                //writer.WriteToFile(Bc, outputFile, true);
+                Assert.True(expectedBc.Equals(Bc, tolerance));
+                if (procs.IsMasterProcess)
                 {
-                    // All Bc matrices are also stored in master process
-                    UnsignedBooleanMatrix globalLc = dofSeparator.GetCornerBooleanMatrix(sub);
-                    Matrix expectedGlobalLc = Example4x4QuadsHomogeneous.GetMatrixBc(sub.ID);
-                    Assert.True(expectedGlobalLc.Equals(globalLc, tolerance));
+                    Assert.Equal(8, dofSeparator.NumGlobalCornerDofs);
+                    foreach (ISubdomain sub in model.EnumerateSubdomains())
+                    {
+                        // All Bc matrices are also stored in master process
+                        UnsignedBooleanMatrix globalLc = dofSeparator.GetCornerBooleanMatrix(sub);
+                        Matrix expectedGlobalLc = Example4x4QuadsHomogeneous.GetMatrixBc(sub.ID);
+                        Assert.True(expectedGlobalLc.Equals(globalLc, tolerance));
+                    }
                 }
             }
         }
@@ -81,7 +87,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
             // Scatter subdomain data to each process
             model.ScatterSubdomains();
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
             //Console.WriteLine($"(process {procs.OwnRank}) Subdomain {model.GetSubdomain(procs.OwnSubdomainID).ID}");
 
             // Order dofs

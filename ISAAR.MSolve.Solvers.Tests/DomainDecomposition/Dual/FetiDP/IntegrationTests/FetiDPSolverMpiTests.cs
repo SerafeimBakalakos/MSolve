@@ -45,21 +45,27 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 
             // Check solution
             double tol = 1E-6;
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            IVectorView ufComputed = solver.GetLinearSystem(subdomain).Solution;
-            Vector ufExpected = Example4x4QuadsHomogeneous.GetSolutionFreeDisplacements(subdomain.ID);
-            Assert.True(ufExpected.Equals(ufComputed, tol));
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                IVectorView ufComputed = solver.GetLinearSystem(subdomain).Solution;
+                Vector ufExpected = Example4x4QuadsHomogeneous.GetSolutionFreeDisplacements(subdomain.ID);
+                Assert.True(ufExpected.Equals(ufComputed, tol));
+            }
         }
 
         internal static void RunAnalysis(ProcessDistribution procs, IModel model, ISolverMpi solver)
         {
             // Run the analysis
             solver.OrderDofs(false);
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
-            linearSystem.Reset(); // Necessary to define the linear system's size 
-            linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
-            linearSystem.RhsVector = linearSystem.Subdomain.Forces;
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
+                linearSystem.Reset(); // Necessary to define the linear system's size 
+                linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
+                linearSystem.RhsVector = linearSystem.Subdomain.Forces;
+            }
 
             solver.BuildGlobalMatrix(new ElementStructuralStiffnessProvider());
             model.ApplyLoads();
