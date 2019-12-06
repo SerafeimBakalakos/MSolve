@@ -51,27 +51,31 @@ namespace ISAAR.MSolve.Analyzers
 
         public void Initialize(bool isFirstAnalysis = true)
         {
-            ILinearSystemMpi linearSystem = solver.GetLinearSystem(model.GetSubdomain(procs.OwnSubdomainID));
-            if (isFirstAnalysis)
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
             {
-                model.ConnectDataStructures();
-                model.ScatterSubdomains(); 
+                ISubdomain subdomain = model.GetSubdomain(s);
+                ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
+                if (isFirstAnalysis)
+                {
+                    model.ConnectDataStructures();
+                    model.ScatterSubdomains();
 
-                // Order dofs
-                solver.OrderDofs(false);
+                    // Order dofs
+                    solver.OrderDofs(false);
 
-                // Initialize linear system
-                linearSystem.Reset(); // Necessary to define the linear system's size 
-                linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
+                    // Initialize linear system
+                    linearSystem.Reset(); // Necessary to define the linear system's size 
+                    linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
+                }
+                else
+                {
+                    //TODO: Perhaps these shouldn't be done if an analysis has already been executed. The model will not be 
+                    //      modified. Why should the linear system be?
+                    linearSystem.Reset();
+                    linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
+                }
             }
-            else
-            {
-                //TODO: Perhaps these shouldn't be done if an analysis has already been executed. The model will not be 
-                //      modified. Why should the linear system be?
-                linearSystem.Reset();
-                linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
-            }
-
+            
             //TODO: Perhaps this should be called by the child analyzer
             BuildMatrices();
 

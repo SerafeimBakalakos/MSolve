@@ -64,10 +64,14 @@ namespace ISAAR.MSolve.Analyzers
             StoreLogResults(start, end);
         }
 
-        private void AddEquivalentNodalLoadsToRHS() //TODO: This must be distributed
+        private void AddEquivalentNodalLoadsToRHS()
         {
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            provider.DirichletLoadsAssembler.ApplyEquivalentNodalLoads(subdomain, solver.GetLinearSystem(subdomain).RhsVector);
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                var rhs = solver.GetLinearSystem(subdomain).RhsVector;
+                provider.DirichletLoadsAssembler.ApplyEquivalentNodalLoads(subdomain, rhs);
+            }
         }
 
         private void InitializeLogs()
@@ -77,8 +81,11 @@ namespace ISAAR.MSolve.Analyzers
 
         private void StoreLogResults(DateTime start, DateTime end)
         {
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            foreach (IAnalyzerLog log in Logs) log.StoreResults(start, end, solver.GetLinearSystem(subdomain).Solution);
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                foreach (IAnalyzerLog log in Logs) log.StoreResults(start, end, solver.GetLinearSystem(subdomain).Solution);
+            }
         }
     }
 }
