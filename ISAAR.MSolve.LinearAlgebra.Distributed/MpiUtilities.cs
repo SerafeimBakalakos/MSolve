@@ -248,23 +248,5 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed
             comm.Send<int>(vals.Length, dest, tag);
             comm.Send<T>(vals, dest, tag);
         }
-
-        public static Vector SumVector(this Intracommunicator comm, Vector vector, int root)
-        {
-            //TODO: Use a dedicated class for MPI communication of Vector. This class belongs to a project LinearAlgebra.MPI.
-            //      Avoid copying the array.
-
-            double[] asArray = vector.CopyToArray();
-            double[] sum = comm.Reduce<double>(asArray, Operation<double>.Add, root);
-            if (comm.Rank == root) return Vector.CreateFromArray(sum);
-            else return null;
-        }
-
-        public static void SumVector(this Intracommunicator comm, Vector subdomainVector, Vector globalVector, int root)
-        {
-            double[] asArray = subdomainVector.CopyToArray();
-            double[] sum = comm.Reduce<double>(asArray, Operation<double>.Add, root);
-            if (comm.Rank == root) globalVector.CopyFrom(Vector.CreateFromArray(sum));
-        }
     }
 }

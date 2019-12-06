@@ -43,9 +43,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
             // y = (FIrr + FIrc * inv(KccStar) * FIrc^T) * x
             (Vector FIrrX, Vector transpFIrcTranspX) = flexibility.MultiplyFIrrAndFIrcTransposedTimesVector(x);
-            if (procs.IsMasterProcess) y.CopyFrom(FIrrX);
             Vector temp = null;
-            if (procs.IsMasterProcess) temp = matrixManager.MultiplyInverseCoarseProblemMatrix(transpFIrcTranspX);
+            if (procs.IsMasterProcess)
+            {
+                y.CopyFrom(FIrrX);
+                temp = matrixManager.MultiplyInverseCoarseProblemMatrix(transpFIrcTranspX);
+            }
             temp = flexibility.MultiplyFIrc(temp);
             if (procs.IsMasterProcess) y.AddIntoThis(temp);
         }

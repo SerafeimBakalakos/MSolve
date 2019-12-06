@@ -12,6 +12,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.Logging;
 using MPI;
 using ISAAR.MSolve.LinearAlgebra.Distributed.Iterative;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Vectors;
 
 //TODO: Reduce the duplication between MPI and serial implementations. Most is FETI-DP specific code.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
@@ -67,9 +68,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
         private Vector CalcGlobalDr(IFetiDPMatrixManager matrixManager, ILagrangeMultipliersEnumerator lagrangesEnumerator)
         {
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-            Vector subdomainDr = FetiDPInterfaceProblemUtilities.CalcSubdomainDr(subdomain, matrixManager, lagrangesEnumerator);
-            return procs.Communicator.SumVector(subdomainDr, procs.MasterProcess);
+            var transferrer = new VectorTransferrer(procs);
+            var subdomainContributions = new List<Vector>();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                subdomainContributions.Add(
+                    FetiDPInterfaceProblemUtilities.CalcSubdomainDr(subdomain, matrixManager, lagrangesEnumerator));
+            }
+            return transferrer.SumVectors(subdomainContributions);
         }
 
         private Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility,

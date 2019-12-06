@@ -5,6 +5,7 @@ using ISAAR.MSolve.LinearAlgebra.Iterative.Preconditioning;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 
+//TODO: Perhaps remove this class and make IFetiPreconditioner implement IPreconditioner.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 {
     public class FetiDPInterfaceProblemPreconditioner : IPreconditioner
