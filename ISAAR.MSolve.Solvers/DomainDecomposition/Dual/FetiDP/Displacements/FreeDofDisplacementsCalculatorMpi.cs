@@ -33,12 +33,20 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements
 
         public void CalculateSubdomainDisplacements(Vector lagranges, IFetiDPFlexibilityMatrix flexibility)
         {
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
             procs.Communicator.BroadcastVector(ref lagranges, lagrangesEnumerator.NumLagrangeMultipliers, procs.MasterProcess); //TODO: Ideally calculate Br^T*lambda and scatter that
-            Vector uc = CalcCornerDisplacements(flexibility, lagranges);
+            
+            //TODO: This will also broadcast lagranges. I should provide an overload of FIrc^T * vector that does not broadcast vIn.
+            //      Actually lagranges are probably broadcasted in other components too. Perhaps they should be accessed by a dedicated class
+            Vector uc = CalcCornerDisplacements(flexibility, lagranges); 
+            
             procs.Communicator.BroadcastVector(ref uc, dofSeparator.NumGlobalCornerDofs, procs.MasterProcess);
-            FreeDofDisplacementsCalculatorUtilities.CalcAndStoreFreeDisplacements(subdomain, dofSeparator, matrixManager,
-                lagrangesEnumerator, lagranges, uc);
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                FreeDofDisplacementsCalculatorUtilities.CalcAndStoreFreeDisplacements(subdomain, dofSeparator, matrixManager,
+                    lagrangesEnumerator, lagranges, uc);
+            }
+            
         }
 
         private Vector CalcCornerDisplacements(IFetiDPFlexibilityMatrix flexibility, Vector lagranges)
