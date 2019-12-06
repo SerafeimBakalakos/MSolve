@@ -17,8 +17,12 @@ namespace ISAAR.MSolve.Solvers.Logging
             if (procs.IsMasterProcess) Console.WriteLine("\nDof separation:");
             MpiUtilities.DoInTurn(procs.Communicator, () =>
             {
-                Console.Write($"Process {procs.OwnRank} - ");
-                PrintSubdomainDofSeparation(model.GetSubdomain(procs.OwnSubdomainID), dofSeparator);
+                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+                {
+                    ISubdomain subdomain = model.GetSubdomain(s);
+                    Console.Write($"Process {procs.OwnRank} - ");
+                    PrintSubdomainDofSeparation(subdomain, dofSeparator);
+                }
             });
         }
 

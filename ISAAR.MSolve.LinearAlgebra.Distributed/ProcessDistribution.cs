@@ -30,31 +30,14 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed
             this.OwnSubdomainID = processRanksToSubdomainIDs[OwnRank][0]; //TODO: Remove this
 
             this.processesToSubdomains = processRanksToSubdomainIDs;
-            this.subdomainsToProcesses = new Dictionary<int, int>();
+            //this.subdomainsToProcesses = new Dictionary<int, int>();
             NumSubdomainsTotal = 0;
             for (int p = 0; p < comm.Size; ++p)
             {
                 NumSubdomainsTotal += processRanksToSubdomainIDs[p].Length;
-                foreach (int s in processRanksToSubdomainIDs[p]) this.subdomainsToProcesses[s] = p;
+                //foreach (int s in processRanksToSubdomainIDs[p]) this.subdomainsToProcesses[s] = p;
             }
         }
-
-
-        //public ProcessDistribution(Intracommunicator comm, int masterProcess, int[] processRanksToClusterIDs, 
-        //    int[] processRanksToSubdomainIDs)
-        //{
-        //    this.Communicator = comm;
-        //    this.IsMasterProcess = comm.Rank == masterProcess;
-        //    this.MasterProcess = masterProcess;
-        //    this.OwnRank = comm.Rank;
-        //    this.OwnClusterID = processRanksToClusterIDs[OwnRank];
-        //    this.OwnSubdomainID = processRanksToSubdomainIDs[OwnRank];
-
-        //    this.processesToClusters = processRanksToClusterIDs;
-        //    this.processesToSubdomains = processRanksToSubdomainIDs;
-        //    this.subdomainsToProcesses = new Dictionary<int, int>();
-        //    for (int p = 0; p < comm.Size; ++p) this.subdomainsToProcesses[processRanksToSubdomainIDs[p]] = p;
-        //}
 
         public Intracommunicator Communicator { get; }
         public bool IsMasterProcess { get; }
@@ -110,7 +93,6 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed
             return counts;
         }
 
-        public int GetProcessOfSubdomain(int subdomainID) => subdomainsToProcesses[subdomainID];
         public int GetSubdomainIdOfProcess(int processRank) => processesToSubdomains[processRank][0];
 
         /// <summary>

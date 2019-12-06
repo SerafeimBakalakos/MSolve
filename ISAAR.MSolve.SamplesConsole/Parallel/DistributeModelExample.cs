@@ -35,7 +35,8 @@ namespace ISAAR.MSolve.SamplesConsole.Parallel
 
                 // Scatter subdomain data to each process
                 model.ScatterSubdomains();
-                ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
+                int ownSubdomainID = procs.GetSubdomainIdsOfProcess(procs.OwnRank)[0];
+                ISubdomain subdomain = model.GetSubdomain(ownSubdomainID);
                 //Console.WriteLine($"(process {procs.OwnRank}) Subdomain {model.GetSubdomain(procs.OwnSubdomainID).ID}");
 
                 // Order dofs
