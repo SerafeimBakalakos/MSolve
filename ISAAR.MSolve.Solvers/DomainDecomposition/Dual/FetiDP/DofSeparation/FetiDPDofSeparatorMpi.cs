@@ -42,7 +42,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
-                subdomainDofs[subdomain] = new FetiDPSubdomainDofSeparator(model.GetSubdomain(procs.OwnSubdomainID));
+                subdomainDofs[subdomain] = new FetiDPSubdomainDofSeparator(subdomain);
             }
             if (procs.IsMasterProcess) globalDofs = new FetiDPGlobalDofSeparator(model);
 

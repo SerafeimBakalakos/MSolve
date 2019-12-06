@@ -48,7 +48,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly IFetiPreconditioningOperations preconditioning; //TODO: perhaps this should be hidden inside IFetiPreconditionerFactory
         private readonly ProcessDistribution procs;
         private readonly IStiffnessDistribution stiffnessDistribution;
-        private readonly ISubdomain subdomain;
         private readonly FetiDPSubdomainGlobalMappingMpi subdomainGlobalMapping;
 
         private bool factorizeInPlace = true;
@@ -63,7 +62,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             this.procs = processDistribution;
             this.msgHeader = $"Process {procs.OwnRank}, {this.GetType().Name}: ";
             this.model = model;
-            this.subdomain = model.GetSubdomain(processDistribution.OwnSubdomainID);
 
             this.Logger = new SolverLoggerMpi(procs, name);
 
@@ -111,11 +109,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             Logger.StartMeasuringTime();
 
-            IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(subdomain);
-            if (subdomain.StiffnessModified)
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
             {
-                Debug.WriteLine(msgHeader + $" Assembling the free-free stiffness matrix of subdomain {procs.OwnSubdomainID}");
-                subdomainMatrices.BuildFreeDofsMatrix(subdomain.FreeDofOrdering, elementMatrixProvider);
+                ISubdomain subdomain = model.GetSubdomain(s);
+                if (subdomain.StiffnessModified)
+                {
+                    Debug.WriteLine(msgHeader + $" Assembling the free-free stiffness matrix of subdomain {s}");
+                    IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(subdomain);
+                    subdomainMatrices.BuildFreeDofsMatrix(subdomain.FreeDofOrdering, elementMatrixProvider);
+                }
             }
 
             Logger.LogCurrentTaskDuration("Matrix assembly");
@@ -141,11 +143,16 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         {
             isStiffnessModified = true;
 
-            if (subdomain.StiffnessModified)
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
             {
-                Debug.WriteLine(msgHeader + $"Clearing saved matrices of subdomain {subdomain.ID}.");
-                matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).ClearMatrices();
+                ISubdomain subdomain = model.GetSubdomain(s);
+                if (subdomain.StiffnessModified)
+                {
+                    Debug.WriteLine(msgHeader + $"Clearing saved matrices of subdomain {subdomain.ID}.");
+                    matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).ClearMatrices();
+                }
             }
+
 
             flexibility = null;
             preconditioner = null;
@@ -181,16 +188,27 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             Logger.StartMeasuringTime();
 
             // Order dofs
-            if (subdomain.ConnectivityModified)
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
             {
-                matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).HandleDofOrderingWillBeModified(); //TODO: Not sure about this
+                ISubdomain subdomain = model.GetSubdomain(s);
+                if (subdomain.ConnectivityModified)
+                {
+                    matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).HandleDofOrderingWillBeModified(); //TODO: Not sure about this
+                }
             }
 
             // This should not create subdomain-global mappings which require MPI communication
             //TODO: What about subdomain-global mappings, especially for boundary dofs? Who should create them? 
             dofOrderer.OrderFreeDofs(model);
 
-            if (alsoOrderConstrainedDofs) subdomain.ConstrainedDofOrdering = dofOrderer.OrderConstrainedDofs(subdomain);
+            if (alsoOrderConstrainedDofs)
+            {
+                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+                {
+                    ISubdomain subdomain = model.GetSubdomain(s);
+                    subdomain.ConstrainedDofOrdering = dofOrderer.OrderConstrainedDofs(subdomain);
+                }
+            }
 
             // Log dof statistics
             Logger.LogCurrentTaskDuration("Dof ordering");
@@ -201,17 +219,25 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         public void Solve()
         {
-            IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(subdomain);
-            ISingleSubdomainLinearSystemMpi linearSystem = subdomainMatrices.LinearSystem;
-            linearSystem.SolutionConcrete = linearSystem.CreateZeroVectorConcrete();
-
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(subdomain);
+                ISingleSubdomainLinearSystemMpi linearSystem = subdomainMatrices.LinearSystem;
+                linearSystem.SolutionConcrete = linearSystem.CreateZeroVectorConcrete();
+            }
+            
             if (isStiffnessModified)
             {
                 // Separate the stiffness matrix
                 Logger.StartMeasuringTime();
-                if (subdomain.StiffnessModified)
+                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
                 {
-                    subdomainMatrices.ExtractCornerRemainderSubmatrices();
+                    ISubdomain subdomain = model.GetSubdomain(s);
+                    if (subdomain.StiffnessModified)
+                    {
+                        matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).ExtractCornerRemainderSubmatrices();
+                    }
                 }
                 Logger.LogCurrentTaskDuration("Calculating coarse problem matrix");
 
@@ -225,12 +251,16 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
                 Logger.StartMeasuringTime();
                 // Factorize each subdomain's Krr
-                if (subdomain.StiffnessModified)
+                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
                 {
-                    //TODO: If I can reuse Krr, I can also reuse its factorization. Therefore this must be inPlace. In contrast, FETI-1 needs Kff intact for Stiffness distribution, in the current design).
-                    Debug.WriteLine(msgHeader
-                        + $"Inverting the remainder-remainder stiffness matrix of subdomain {subdomain.ID} in place.");
-                    subdomainMatrices.InvertKrr(true);
+                    ISubdomain subdomain = model.GetSubdomain(s);
+                    if (subdomain.StiffnessModified)
+                    {
+                        //TODO: If I can reuse Krr, I can also reuse its factorization. Therefore this must be inPlace. In contrast, FETI-1 needs Kff intact for Stiffness distribution, in the current design).
+                        Debug.WriteLine(msgHeader
+                            + $"Inverting the remainder-remainder stiffness matrix of subdomain {subdomain.ID} in place.");
+                        matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).InvertKrr(true);
+                    }
                 }
 
                 // Calculate FETI-DP coarse problem matrix
@@ -243,7 +273,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             // Calculate FETI-DP coarse problem rhs 
             Logger.StartMeasuringTime();
-            subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).ExtractCornerRemainderRhsSubvectors();
+
+            }
             matrixManager.CalcCoarseProblemRhs();
             Logger.LogCurrentTaskDuration("Calculating coarse problem rhs");
 
