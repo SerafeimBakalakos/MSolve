@@ -31,7 +31,10 @@ namespace ISAAR.MSolve.XFEM.Entities
             else
             {
                 this.model = new XModel();
-                this.model.Subdomains[procs.OwnSubdomainID] = new XSubdomain(procs.OwnSubdomainID);
+                foreach (int s in processDistribution.GetSubdomainIdsOfProcess(processDistribution.OwnRank))
+                {
+                    this.model.Subdomains[s] = new XSubdomain(s);
+                }
             }
         }
 
@@ -64,40 +67,22 @@ namespace ISAAR.MSolve.XFEM.Entities
             if (!procs.IsMasterProcess) modifiedSubdomains = new HashSet<int>(subdomainIDs);
 
             // Scatter the modified subdomain data
-            if (procs.IsMasterProcess)
-            {
-                for (int p = 0; p < procs.Communicator.Size; ++p)
-                {
-                    // Serialize and send the data of each subdomain that is modified
-                    if (p == procs.MasterProcess) continue;
-                    else
-                    {
-                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
-                        {
-                            if (!modifiedSubdomains.Contains(s)) continue;
-                            XSubdomain subdomain = model.Subdomains[s];
-                            var subdomainDto = XSubdomainDto.Serialize(subdomain, model.DofSerializer);
-                            procs.Communicator.Send<XSubdomainDto>(subdomainDto, p, s);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // At first, receive all subdomains of each cluster, so that master process can continue to the next cluster.
-                var serializedSubdomains = new Dictionary<int, XSubdomainDto>();
-                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
-                {
-                    if (!modifiedSubdomains.Contains(s)) continue;
-                    serializedSubdomains[s] = procs.Communicator.Receive<XSubdomainDto>(procs.MasterProcess, s);
-                }
+            var activeSubdomains = new ActiveSubdomains(procs, s => modifiedSubdomains.Contains(s));
+            var transferrer = new TransferrerPerSubdomain(procs);
+            PackSubdomainData<XSubdomain, XSubdomainDto> packData =
+                (s, subdomain) => XSubdomainDto.Serialize(subdomain, model.DofSerializer);
+            UnpackSubdomainData<XSubdomain, XSubdomainDto> unpackData = 
+                (s, subdomainDto) => subdomainDto.Deserialize(model.DofSerializer, elementFactory);
+            Dictionary<int, XSubdomain> subdomainsOfProcess = transferrer.ScatterToSomeSubdomainsPacked(
+                model.Subdomains, packData, unpackData, activeSubdomains);
 
-                // Receive and deserialize and store the subdomain data in processes, where it is modified.
-                foreach (int s in serializedSubdomains.Keys)
+            // Connect data structures of each subdomain in slave processes
+            if (!procs.IsMasterProcess)
+            {
+                foreach (int s in subdomainsOfProcess.Keys)
                 {
                     XSubdomain subdomain = model.Subdomains[s];
-                    subdomain.ClearEntities();
-                    serializedSubdomains[s].Deserialize(subdomain, model.DofSerializer, elementFactory);
+                    subdomain.ReplaceEntitiesWith(subdomainsOfProcess[s]);
                     subdomain.ConnectDataStructures();
                 }
             }

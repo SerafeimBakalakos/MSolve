@@ -20,7 +20,8 @@ namespace ISAAR.MSolve.XFEM.Entities
         public ISubdomainConstrainedDofOrdering ConstrainedDofOrdering { get ; set; }
         public ISubdomainFreeDofOrdering FreeDofOrdering { get; set; }
 
-        public SortedDictionary<int, IXFiniteElement> Elements { get; } = new SortedDictionary<int, IXFiniteElement>();
+        public SortedDictionary<int, IXFiniteElement> Elements { get; private set; } 
+            = new SortedDictionary<int, IXFiniteElement>();
 
         public Vector Forces { get; set; } //TODO: this doesn't belong here
 
@@ -29,9 +30,9 @@ namespace ISAAR.MSolve.XFEM.Entities
         public bool StiffnessModified { get; set; } = true; // At first it is modified
         public bool ConnectivityModified { get; set; } = true; // At first it is modified
 
-        public List<NodalLoad> NodalLoads { get; } = new List<NodalLoad>();
+        public List<NodalLoad> NodalLoads { get; private set; } = new List<NodalLoad>();
 
-        public Dictionary<int, XNode> Nodes { get; } = new Dictionary<int, XNode>();
+        public Dictionary<int, XNode> Nodes { get; private set; } = new Dictionary<int, XNode>();
 
         public int NumElements => Elements.Count;
         public int NumNodalLoads => NodalLoads.Count;
@@ -44,17 +45,6 @@ namespace ISAAR.MSolve.XFEM.Entities
                 FreeDofOrdering.ExtractVectorElementFromSubdomain(element, globalDisplacementVector);
             SubdomainConstrainedDofOrderingBase.ApplyConstraintDisplacements(element, elementNodalDisplacements, Constraints);
             return elementNodalDisplacements;
-        }
-
-        public void ClearEntities()
-        {
-            Nodes.Clear();
-            Elements.Clear();
-            NodalLoads.Clear();
-            Constraints.Clear();
-            FreeDofOrdering = null;
-            ConstrainedDofOrdering = null;
-            Forces = null;
         }
 
         public void ClearMaterialStresses() => throw new NotImplementedException();
@@ -107,6 +97,17 @@ namespace ISAAR.MSolve.XFEM.Entities
         public IVector GetRhsFromSolution(IVectorView solution, IVectorView dSolution)
         {
             throw new NotImplementedException();
+        }
+
+        public void ReplaceEntitiesWith(XSubdomain other)
+        {
+            this.Nodes = other.Nodes;
+            this.Elements = other.Elements;
+            this.NodalLoads = other.NodalLoads;
+            Constraints.Clear();
+            FreeDofOrdering = null;
+            ConstrainedDofOrdering = null;
+            Forces = null;
         }
 
         public void ResetMaterialsModifiedProperty() => throw new NotImplementedException();

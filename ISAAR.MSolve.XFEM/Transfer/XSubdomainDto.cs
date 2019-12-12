@@ -58,8 +58,10 @@ namespace ISAAR.MSolve.XFEM.Transfer
             return dto;
         }
 
-        public void Deserialize(XSubdomain subdomain, IDofSerializer dofSerializer, IXFiniteElementFactory elementFactory)
+        public XSubdomain Deserialize(IDofSerializer dofSerializer, IXFiniteElementFactory elementFactory)
         {
+            var subdomain = new XSubdomain(id);
+
             // Nodes
             foreach (XNodeDto n in this.nodes)
             {
@@ -79,6 +81,8 @@ namespace ISAAR.MSolve.XFEM.Transfer
 
             // Nodal loads
             foreach (XNodalLoadDto nl in this.nodalLoads) subdomain.NodalLoads.Add(nl.Deserialize(subdomain.Nodes, dofSerializer));
+
+            return subdomain;
         }
     }
 }
