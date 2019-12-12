@@ -19,14 +19,18 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         {
             (ProcessDistribution procs, IModel model, IFetiDPDofSeparator dofSeparator,
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) = CreateModelDofSeparatorLagrangesEnumerator();
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
 
             // Check
-            double tolerance = 1E-13;
             Assert.Equal(8, lagrangesEnumerator.NumLagrangeMultipliers);
-            Matrix Br = lagrangesEnumerator.GetBooleanMatrix(subdomain).CopyToFullMatrix(false);
-            Matrix expectedBr = Example4x4QuadsHomogeneous.GetMatrixBr(subdomain.ID);
-            Assert.True(expectedBr.Equals(Br, tolerance));
+            double tolerance = 1E-13;
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                // Calculate Bpbr matrix
+                ISubdomain subdomain = model.GetSubdomain(s);
+                Matrix Br = lagrangesEnumerator.GetBooleanMatrix(subdomain).CopyToFullMatrix(false);
+                Matrix expectedBr = Example4x4QuadsHomogeneous.GetMatrixBr(subdomain.ID);
+                Assert.True(expectedBr.Equals(Br, tolerance));
+            }
         }
 
         internal static (ProcessDistribution, IModel, FetiDPDofSeparatorMpi, LagrangeMultipliersEnumeratorMpi) 

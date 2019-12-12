@@ -98,8 +98,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             }
             else
             {
-                ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-                cornerNodes[subdomain] = DefineCornerNodes(subdomain);
+                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+                {
+                    ISubdomain subdomain = model.GetSubdomain(s);
+                    cornerNodes[subdomain] = DefineCornerNodes(subdomain);
+                }
             }
             var cornerNodeSelection = new UsedDefinedCornerNodesMpi(procs, cornerNodes);
 

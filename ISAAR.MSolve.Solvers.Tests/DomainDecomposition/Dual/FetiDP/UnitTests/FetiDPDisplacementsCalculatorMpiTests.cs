@@ -52,10 +52,14 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             Vector lagranges = Example4x4QuadsHomogeneous.SolutionLagrangeMultipliers;
             displacementsCalculator.CalculateSubdomainDisplacements(lagranges, flexibility);
 
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
+
             double tol = 1E-7;
-            IVectorView uf = matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).LinearSystem.Solution;
-            Assert.True(Example4x4QuadsHomogeneous.GetSolutionFreeDisplacements(subdomain.ID).Equals(uf, tol));
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain subdomain = model.GetSubdomain(s);
+                IVectorView uf = matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).LinearSystem.Solution;
+                Assert.True(Example4x4QuadsHomogeneous.GetSolutionFreeDisplacements(subdomain.ID).Equals(uf, tol));
+            }
         }
     }
 }

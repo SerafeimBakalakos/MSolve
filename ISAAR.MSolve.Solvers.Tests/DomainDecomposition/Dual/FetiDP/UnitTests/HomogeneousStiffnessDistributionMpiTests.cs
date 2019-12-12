@@ -21,21 +21,26 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             (ProcessDistribution procs, IModel model, IFetiDPDofSeparator dofSeparator,
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) = 
                 LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
-            ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
 
-            // Calculate Bpbr matrices
+            // Caclulate scaling coefficients
             var stiffnessDistribution = new HomogeneousStiffnessDistributionMpi(procs, model, dofSeparator,
                 new FetiDPHomogeneousDistributionLoadScaling(dofSeparator));
             stiffnessDistribution.Update();
-            SignedBooleanMatrixColMajor Bb = lagrangesEnumerator.GetBooleanMatrix(subdomain).GetColumns(
-                dofSeparator.GetBoundaryDofIndices(subdomain), false);
-            IMappingMatrix Bpbr =
-                stiffnessDistribution.CalcBoundaryPreconditioningSignedBooleanMatrix(lagrangesEnumerator, subdomain, Bb);
 
-            // Check Bpbr matrices
-            double tol = 1E-13;
-            Matrix explicitBpr = Bpbr.MultiplyRight(Matrix.CreateIdentity(Bpbr.NumColumns));
-            Assert.True(Example4x4QuadsHomogeneous.GetMatrixBpbr(subdomain.ID).Equals(explicitBpr, tol));
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                // Calculate Bpbr matrix
+                ISubdomain subdomain = model.GetSubdomain(s);
+                int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);
+                SignedBooleanMatrixColMajor Bb = lagrangesEnumerator.GetBooleanMatrix(subdomain).GetColumns(boundaryDofs, false);
+                IMappingMatrix Bpbr =
+                    stiffnessDistribution.CalcBoundaryPreconditioningSignedBooleanMatrix(lagrangesEnumerator, subdomain, Bb);
+
+                // Check Bpbr matrix
+                double tol = 1E-13;
+                Matrix explicitBpr = Bpbr.MultiplyRight(Matrix.CreateIdentity(Bpbr.NumColumns));
+                Assert.True(Example4x4QuadsHomogeneous.GetMatrixBpbr(subdomain.ID).Equals(explicitBpr, tol));
+            }
         }
     }
 }

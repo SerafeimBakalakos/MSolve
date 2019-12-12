@@ -54,33 +54,37 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
                 FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
 
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
-            ISubdomain sub = model.GetSubdomain(procs.OwnSubdomainID);
 
-            // Input data
-            IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-            SetLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID), format);
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain sub = model.GetSubdomain(s);
 
-            // Calculate the matrices to test
-            subdomainMatrices.ExtractCornerRemainderSubmatrices();
-            subdomainMatrices.ExtractKbb();
-            subdomainMatrices.ExtractKbiKib();
-            subdomainMatrices.CalcInverseKii(false);
+                // Input data
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
+                SetLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID), format);
 
-            // Create explicit matrices from the matrix manager
-            int numBoundaryDofs = dofSeparator.GetBoundaryDofIndices(sub).Length;
-            int numInternalDofs = dofSeparator.GetInternalDofIndices(sub).Length;
-            Matrix Kbb = ImplicitMatrixUtilities.MultiplyWithIdentity(
-                numBoundaryDofs, numBoundaryDofs, subdomainMatrices.MultiplyKbbTimes);
-            Matrix Kbi = ImplicitMatrixUtilities.MultiplyWithIdentity(
-                numBoundaryDofs, numInternalDofs, subdomainMatrices.MultiplyKbiTimes);
-            Matrix inverseKii = ImplicitMatrixUtilities.MultiplyWithIdentity(
-                numInternalDofs, numInternalDofs, x => subdomainMatrices.MultiplyInverseKiiTimes(x, false));
+                // Calculate the matrices to test
+                subdomainMatrices.ExtractCornerRemainderSubmatrices();
+                subdomainMatrices.ExtractKbb();
+                subdomainMatrices.ExtractKbiKib();
+                subdomainMatrices.CalcInverseKii(false);
 
-            // Check
-            double tol = 1E-13;
-            Assert.True(Example4x4QuadsHomogeneous.GetMatrixKbb(sub.ID).Equals(Kbb, tol));
-            Assert.True(Example4x4QuadsHomogeneous.GetMatrixKbi(sub.ID).Equals(Kbi, tol));
-            Assert.True(Example4x4QuadsHomogeneous.GetMatrixKii(sub.ID).Invert().Equals(inverseKii, tol));
+                // Create explicit matrices from the matrix manager
+                int numBoundaryDofs = dofSeparator.GetBoundaryDofIndices(sub).Length;
+                int numInternalDofs = dofSeparator.GetInternalDofIndices(sub).Length;
+                Matrix Kbb = ImplicitMatrixUtilities.MultiplyWithIdentity(
+                    numBoundaryDofs, numBoundaryDofs, subdomainMatrices.MultiplyKbbTimes);
+                Matrix Kbi = ImplicitMatrixUtilities.MultiplyWithIdentity(
+                    numBoundaryDofs, numInternalDofs, subdomainMatrices.MultiplyKbiTimes);
+                Matrix inverseKii = ImplicitMatrixUtilities.MultiplyWithIdentity(
+                    numInternalDofs, numInternalDofs, x => subdomainMatrices.MultiplyInverseKiiTimes(x, false));
+
+                // Check
+                double tol = 1E-13;
+                Assert.True(Example4x4QuadsHomogeneous.GetMatrixKbb(sub.ID).Equals(Kbb, tol));
+                Assert.True(Example4x4QuadsHomogeneous.GetMatrixKbi(sub.ID).Equals(Kbi, tol));
+                Assert.True(Example4x4QuadsHomogeneous.GetMatrixKii(sub.ID).Invert().Equals(inverseKii, tol));
+            }
         }
 
         public static void TestMatricesKccKcrKrr(MatrixFormat format)
@@ -90,31 +94,35 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
                 FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
 
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
-            ISubdomain sub = model.GetSubdomain(procs.OwnSubdomainID);
 
-            // Input data
-            IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-            SetLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID), format);
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain sub = model.GetSubdomain(s);
 
-            // Calculate the matrices to test
-            subdomainMatrices.ExtractCornerRemainderSubmatrices();
-            subdomainMatrices.InvertKrr(true);
+                // Input data
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
+                SetLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID), format);
 
-            // Create explicit matrices from the matrix manager
-            int numCornerDofs = dofSeparator.GetCornerDofIndices(sub).Length;
-            int numRemainderDofs = dofSeparator.GetRemainderDofIndices(sub).Length;
-            Matrix Kcc = ImplicitMatrixUtilities.MultiplyWithIdentity(
-                numCornerDofs, numCornerDofs, subdomainMatrices.MultiplyKccTimes);
-            Matrix Krc = ImplicitMatrixUtilities.MultiplyWithIdentity(
-                numRemainderDofs, numCornerDofs, subdomainMatrices.MultiplyKrcTimes);
-            Matrix inverseKrr = ImplicitMatrixUtilities.MultiplyWithIdentity(
-                numRemainderDofs, numRemainderDofs, subdomainMatrices.MultiplyInverseKrrTimes);
+                // Calculate the matrices to test
+                subdomainMatrices.ExtractCornerRemainderSubmatrices();
+                subdomainMatrices.InvertKrr(true);
 
-            // Check
-            double tol = 1E-13;
-            Assert.True(Example4x4QuadsHomogeneous.GetMatrixKcc(sub.ID).Equals(Kcc, tol));
-            Assert.True(Example4x4QuadsHomogeneous.GetMatrixKrc(sub.ID).Equals(Krc, tol));
-            Assert.True(Example4x4QuadsHomogeneous.GetMatrixKrr(sub.ID).Invert().Equals(inverseKrr, tol));
+                // Create explicit matrices from the matrix manager
+                int numCornerDofs = dofSeparator.GetCornerDofIndices(sub).Length;
+                int numRemainderDofs = dofSeparator.GetRemainderDofIndices(sub).Length;
+                Matrix Kcc = ImplicitMatrixUtilities.MultiplyWithIdentity(
+                    numCornerDofs, numCornerDofs, subdomainMatrices.MultiplyKccTimes);
+                Matrix Krc = ImplicitMatrixUtilities.MultiplyWithIdentity(
+                    numRemainderDofs, numCornerDofs, subdomainMatrices.MultiplyKrcTimes);
+                Matrix inverseKrr = ImplicitMatrixUtilities.MultiplyWithIdentity(
+                    numRemainderDofs, numRemainderDofs, subdomainMatrices.MultiplyInverseKrrTimes);
+
+                // Check
+                double tol = 1E-13;
+                Assert.True(Example4x4QuadsHomogeneous.GetMatrixKcc(sub.ID).Equals(Kcc, tol));
+                Assert.True(Example4x4QuadsHomogeneous.GetMatrixKrc(sub.ID).Equals(Krc, tol));
+                Assert.True(Example4x4QuadsHomogeneous.GetMatrixKrr(sub.ID).Invert().Equals(inverseKrr, tol));
+            }
         }
 
         public static void TestStaticCondensations(MatrixFormat format)
@@ -124,24 +132,28 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
                 FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
 
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
-            ISubdomain sub = model.GetSubdomain(procs.OwnSubdomainID);
 
-            // Input data
-            IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-            SetLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID), format);
-            subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain sub = model.GetSubdomain(s);
 
-            // Calculate the data to test
-            subdomainMatrices.ExtractCornerRemainderSubmatrices();
-            subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
-            subdomainMatrices.InvertKrr(true);
-            subdomainMatrices.CondenseMatricesStatically();
-            subdomainMatrices.CondenseRhsVectorsStatically();
+                // Input data
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
+                SetLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID), format);
+                subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
 
-            // Check
-            double tol = 1E-13;
-            Assert.True(Example4x4QuadsHomogeneous.GetMatrixKccStar(sub.ID).Equals(subdomainMatrices.KccStar, tol));
-            Assert.True(Example4x4QuadsHomogeneous.GetVectorFcStar(sub.ID).Equals(subdomainMatrices.FcStar, tol));
+                // Calculate the data to test
+                subdomainMatrices.ExtractCornerRemainderSubmatrices();
+                subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
+                subdomainMatrices.InvertKrr(true);
+                subdomainMatrices.CondenseMatricesStatically();
+                subdomainMatrices.CondenseRhsVectorsStatically();
+
+                // Check
+                double tol = 1E-13;
+                Assert.True(Example4x4QuadsHomogeneous.GetMatrixKccStar(sub.ID).Equals(subdomainMatrices.KccStar, tol));
+                Assert.True(Example4x4QuadsHomogeneous.GetVectorFcStar(sub.ID).Equals(subdomainMatrices.FcStar, tol));
+            }
         }
 
         public static void TestVectorsFbcFr()
@@ -151,34 +163,41 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
                 FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
 
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
-            ISubdomain sub = model.GetSubdomain(procs.OwnSubdomainID);
 
-            // Calculate the necessary vectors
-            IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-            subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
-            subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain sub = model.GetSubdomain(s);
 
-            // Check
-            double tol = 1E-13;
-            Assert.True(Example4x4QuadsHomogeneous.GetVectorFbc(sub.ID).Equals(subdomainMatrices.Fbc, tol));
-            Assert.True(Example4x4QuadsHomogeneous.GetVectorFr(sub.ID).Equals(subdomainMatrices.Fr, tol));
+                // Calculate the necessary vectors
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
+                subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
+                subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
+
+                // Check
+                double tol = 1E-13;
+                Assert.True(Example4x4QuadsHomogeneous.GetVectorFbc(sub.ID).Equals(subdomainMatrices.Fbc, tol));
+                Assert.True(Example4x4QuadsHomogeneous.GetVectorFr(sub.ID).Equals(subdomainMatrices.Fr, tol));
+            }
         }
 
         internal static FetiDPMatrixManagerMpi PrepareCoarseProblemSubdomainMatrices(ProcessDistribution procs, IModel model,
             IFetiDPDofSeparator dofSeparator, IFetiDPMatrixManagerFactory matricesFactory, MatrixFormat format)
         {
-            ISubdomain sub = model.GetSubdomain(procs.OwnSubdomainID);
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
 
-            // Input 
-            IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-            SetLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID), format);
-            subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            {
+                ISubdomain sub = model.GetSubdomain(s);
+                // Input 
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
+                SetLinearSystemMatrix(subdomainMatrices.LinearSystem, Example4x4QuadsHomogeneous.GetMatrixKff(sub.ID), format);
+                subdomainMatrices.LinearSystem.RhsConcrete = Example4x4QuadsHomogeneous.GetVectorFf(sub.ID);
 
-            // Prepare the subdomain data
-            subdomainMatrices.ExtractCornerRemainderSubmatrices();
-            subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
-            subdomainMatrices.InvertKrr(true);
+                // Prepare the subdomain data
+                subdomainMatrices.ExtractCornerRemainderSubmatrices();
+                subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
+                subdomainMatrices.InvertKrr(true);
+            }
 
             return matrixManager;
         }

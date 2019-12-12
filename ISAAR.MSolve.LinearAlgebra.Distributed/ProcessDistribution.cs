@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed
     {
         //private readonly int[] processesToSubdomains;
         private readonly int[][] processesToSubdomains;
-        private readonly Dictionary<int, int> subdomainsToProcesses;
+        //private readonly Dictionary<int, int> subdomainsToProcesses;
 
         public ProcessDistribution(Intracommunicator comm, int masterProcess, int[][] processRanksToSubdomainIDs)
         {
