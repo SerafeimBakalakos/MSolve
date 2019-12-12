@@ -23,28 +23,19 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
         public static void RegisterAllTests(MpiTestSuite suite)
         {
             // Tests for vector broadcasting
-            suite.AddTheory(TestVectorBroadcast, typeof(VectorTransferrerTests).Name, "TestVectorBroadcast",
-                SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestVectorBroadcast, typeof(VectorTransferrerTests).Name, "TestVectorBroadcast",
-                SubdomainDistribution.Uniform);
-            suite.AddTheory(TestVectorBroadcast, typeof(VectorTransferrerTests).Name, "TestVectorBroadcast",
-                SubdomainDistribution.Variable);
+            suite.AddTheory(TestVectorBroadcast, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestVectorBroadcast, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestVectorBroadcast, SubdomainDistribution.Variable);
 
             // Tests for summing vectors
-            suite.AddTheory(TestVectorSum, typeof(VectorTransferrerTests).Name, "TestVectorSum",
-                SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestVectorSum, typeof(VectorTransferrerTests).Name, "TestVectorSum",
-                SubdomainDistribution.Uniform);
-            suite.AddTheory(TestVectorSum, typeof(VectorTransferrerTests).Name, "TestVectorSum",
-                SubdomainDistribution.Variable);
+            suite.AddTheory(TestVectorSum, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestVectorSum, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestVectorSum, SubdomainDistribution.Variable);
             
             // Tests for summing vectors with lazy evaluation
-            suite.AddTheory(TestVectorSumLazy, typeof(VectorTransferrerTests).Name, "TestVectorSumLazy",
-                SubdomainDistribution.OnePerProcess);
-            suite.AddTheory(TestVectorSumLazy, typeof(VectorTransferrerTests).Name, "TestVectorSumLazy",
-                SubdomainDistribution.Uniform);
-            suite.AddTheory(TestVectorSumLazy, typeof(VectorTransferrerTests).Name, "TestVectorSumLazy",
-                SubdomainDistribution.Variable);
+            suite.AddTheory(TestVectorSumLazy, SubdomainDistribution.OnePerProcess);
+            suite.AddTheory(TestVectorSumLazy, SubdomainDistribution.Uniform);
+            suite.AddTheory(TestVectorSumLazy, SubdomainDistribution.Variable);
         }
 
         public static void TestVectorBroadcast(SubdomainDistribution subdomainDistribution)

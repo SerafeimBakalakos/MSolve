@@ -14,35 +14,51 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests
         private readonly List<(Action test, string className, string methodName)> tests =
             new List<(Action test, string className, string methodName)>();
 
-        public void AddFact(Action test, string className, string methodName) => tests.Add((test, className, methodName));
-
-        public void AddTheory<TInput>(Action<TInput> test, string className, string methodName, TInput input)
-            => tests.Add(( () => test(input), className, $"{methodName}(args = {input})" ));
-
-        public void AddTheory<TInput0, TInput1>(Action<TInput0, TInput1> test,
-            string className, string methodName, TInput0 input0, TInput1 input1)
+        public void AddFact(Action test)
         {
+            string methodName = test.Method.Name;
+            string className = test.Method.DeclaringType.Name;
+            tests.Add((test, className, methodName));
+        }
+
+        public void AddTheory<TInput>(Action<TInput> test, TInput input)
+        {
+            string methodName = test.Method.Name;
+            string className = test.Method.DeclaringType.Name;
+            tests.Add((() => test(input), className, $"{methodName}(args = {input})"));
+        }
+
+        public void AddTheory<TInput0, TInput1>(Action<TInput0, TInput1> test, TInput0 input0, TInput1 input1)
+        {
+            string methodName = test.Method.Name;
+            string className = test.Method.DeclaringType.Name;
             tests.Add((() => test(input0, input1), className, $"{methodName}(args = {input0}, {input1})"));
         }
 
         public void AddTheory<TInput0, TInput1, TInput2>(Action<TInput0, TInput1, TInput2> test,
-            string className, string methodName, TInput0 input0, TInput1 input1, TInput2 input2)
+            TInput0 input0, TInput1 input1, TInput2 input2)
         {
+            string methodName = test.Method.Name;
+            string className = test.Method.DeclaringType.Name;
             tests.Add((() => test(input0, input1, input2), className,
                 $"{methodName}(args = {input0}, {input1}, {input2})"));
         }
 
         public void AddTheory<TInput0, TInput1, TInput2, TInput3>(Action<TInput0, TInput1, TInput2, TInput3> test, 
-            string className, string methodName, TInput0 input0, TInput1 input1, TInput2 input2, TInput3 input3)
+            TInput0 input0, TInput1 input1, TInput2 input2, TInput3 input3)
         {
-            tests.Add((() => test(input0, input1, input2, input3), className, 
+            string methodName = test.Method.Name;
+            string className = test.Method.DeclaringType.Name;
+            tests.Add((() => test(input0, input1, input2, input3), className,
                 $"{methodName}(args = {input0}, {input1}, {input2}, {input3})"));
         }
 
         public void AddTheory<TInput0, TInput1, TInput2, TInput3, TInput4>(
-            Action<TInput0, TInput1, TInput2, TInput3, TInput4> test,
-            string className, string methodName, TInput0 input0, TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4)
+            Action<TInput0, TInput1, TInput2, TInput3, TInput4> test, 
+            TInput0 input0, TInput1 input1, TInput2 input2, TInput3 input3, TInput4 input4)
         {
+            string methodName = test.Method.Name;
+            string className = test.Method.DeclaringType.Name;
             tests.Add((() => test(input0, input1, input2, input3, input4), className,
                 $"{methodName}(args = {input0}, {input1}, {input2}, {input3}, {input4})"));
         }
