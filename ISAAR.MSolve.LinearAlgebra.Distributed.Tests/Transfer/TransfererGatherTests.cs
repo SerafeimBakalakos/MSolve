@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
         /// All tests need 4 MPI processes.
         /// </summary>
         /// <param name="suite"></param>
-        public static void RegisterAllTests(MpiTestSuite suite)
+        public static void RegisterAllTests(int numProcesses, MpiTestSuite suite)
         {
             // Tests for: TransferrerPerSubdomain
             suite.AddTheory(TestGatherFromAllPrimitive, TransferrerChoice.PerSubdomain, SubdomainDistribution.OnePerProcess);
@@ -83,28 +83,28 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
             suite.AddTheory(TestGatherFromAllClassPackedArray, TransferrerChoice.AltogetherFlattened, SubdomainDistribution.Variable);
         }
 
-        public static void TestGatherFromAllArray(TransferrerChoice transferrerChoice,
+        public static void TestGatherFromAllArray(int numProcesses, TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestGatherTemplate(transferrerChoice, subdomainDistribution, true,
+            TestGatherTemplate(numProcesses, transferrerChoice, subdomainDistribution, true,
                 s => GetArrayDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) => transf.GatherFromAllSubdomains(allData),
                 (s, computed) => Assert.True(CheckEquality(GetArrayDataOfSubdomain(s), computed)));
         }
 
-        public static void TestGatherFromAllClass(TransferrerChoice transferrerChoice,
+        public static void TestGatherFromAllClass(int numProcesses, TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestGatherTemplate(transferrerChoice, subdomainDistribution, true,
+            TestGatherTemplate(numProcesses, transferrerChoice, subdomainDistribution, true,
                 s => GetClassDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) => transf.GatherFromAllSubdomains(allData),
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
 
-        public static void TestGatherFromAllClassPacked(TransferrerChoice transferrerChoice,
+        public static void TestGatherFromAllClassPacked(int numProcesses, TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestGatherTemplate(transferrerChoice, subdomainDistribution, true,
+            TestGatherTemplate(numProcesses, transferrerChoice, subdomainDistribution, true,
                 s => GetClassDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) =>
                 {
@@ -115,10 +115,10 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
 
-        public static void TestGatherFromAllClassPackedArray(TransferrerChoice transferrerChoice,
+        public static void TestGatherFromAllClassPackedArray(int numProcesses, TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestGatherTemplate(transferrerChoice, subdomainDistribution, true,
+            TestGatherTemplate(numProcesses, transferrerChoice, subdomainDistribution, true,
                 s => GetClassDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) =>
                 {
@@ -132,37 +132,37 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
 
-        public static void TestGatherFromAllPrimitive(TransferrerChoice transferrerChoice, 
+        public static void TestGatherFromAllPrimitive(int numProcesses, TransferrerChoice transferrerChoice, 
             SubdomainDistribution subdomainDistribution)
         {
-            TestGatherTemplate(transferrerChoice, subdomainDistribution, true,
+            TestGatherTemplate(numProcesses, transferrerChoice, subdomainDistribution, true,
                 s => GetPrimitiveDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) => transf.GatherFromAllSubdomains(allData),
                 (s, computed) => Assert.Equal(GetPrimitiveDataOfSubdomain(s), computed));
         }
 
-        public static void TestGatherFromSomeArray(TransferrerChoice transferrerChoice,
+        public static void TestGatherFromSomeArray(int numProcesses, TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestGatherTemplate(transferrerChoice, subdomainDistribution, false,
+            TestGatherTemplate(numProcesses, transferrerChoice, subdomainDistribution, false,
                 s => GetArrayDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) => transf.GatherFromSomeSubdomains<double>(allData, activeSubdomains),
                 (s, computed) => Assert.True(CheckEquality(GetArrayDataOfSubdomain(s), computed)));
         }
 
-        public static void TestGatherFromSomeClass(TransferrerChoice transferrerChoice,
+        public static void TestGatherFromSomeClass(int numProcesses, TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestGatherTemplate(transferrerChoice, subdomainDistribution, false,
+            TestGatherTemplate(numProcesses, transferrerChoice, subdomainDistribution, false,
                 s => GetClassDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) => transf.GatherFromSomeSubdomains(allData, activeSubdomains),
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
 
-        public static void TestGatherFromSomeClassPacked(TransferrerChoice transferrerChoice,
+        public static void TestGatherFromSomeClassPacked(int numProcesses, TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestGatherTemplate(transferrerChoice, subdomainDistribution, false,
+            TestGatherTemplate(numProcesses, transferrerChoice, subdomainDistribution, false,
                 s => GetClassDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) =>
                 {
@@ -173,10 +173,10 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
 
-        public static void TestGatherFromSomeClassPackedArray(TransferrerChoice transferrerChoice,
+        public static void TestGatherFromSomeClassPackedArray(int numProcesses, TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestGatherTemplate(transferrerChoice, subdomainDistribution, false,
+            TestGatherTemplate(numProcesses, transferrerChoice, subdomainDistribution, false,
                 s => GetClassDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) =>
                 {
@@ -191,21 +191,21 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
                 (s, computed) => Assert.True(GetClassDataOfSubdomain(s).Equals(computed)));
         }
 
-        public static void TestGatherFromSomePrimitive(TransferrerChoice transferrerChoice,
+        public static void TestGatherFromSomePrimitive(int numProcesses, TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution)
         {
-            TestGatherTemplate(transferrerChoice, subdomainDistribution, false,
+            TestGatherTemplate(numProcesses, transferrerChoice, subdomainDistribution, false,
                 s => GetPrimitiveDataOfSubdomain(s),
                 (transf, allData, activeSubdomains) => transf.GatherFromSomeSubdomains(allData, activeSubdomains),
                 (s, computed) => Assert.Equal(GetPrimitiveDataOfSubdomain(s), computed));
         }
 
-        private static void TestGatherTemplate<T>(TransferrerChoice transferrerChoice,
+        private static void TestGatherTemplate<T>(int numProcesses, TransferrerChoice transferrerChoice,
             SubdomainDistribution subdomainDistribution, bool gatherAll, Func<int, T> createSubdomainData,
             Func<ISubdomainDataTransferrer, Dictionary<int, T>, ActiveSubdomains, Dictionary<int, T>> gatherSubdomainData,
             Action<int, T> checkReceivedData)
         {
-            ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
+            ProcessDistribution procs = DetermineProcesses(numProcesses, subdomainDistribution);
             ISubdomainDataTransferrer transferrer = DetermineTransferrer(transferrerChoice, procs);
             ActiveSubdomains activeSubdomains = DetermineActiveSubdomains(procs);
 

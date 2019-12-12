@@ -17,11 +17,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 {
     public static class FetiDPDisplacementsCalculatorMpiTests
     {
-        public static void TestCornerDisplacements()
+        public static void TestCornerDisplacements(int numProcesses)
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator,
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
+                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(Example4x4QuadsHomogeneous.CreateModel());
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
             Vector lagranges = Example4x4QuadsHomogeneous.SolutionLagrangeMultipliers;
@@ -39,11 +39,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
-        public static void TestFreeDisplacements()
+        public static void TestFreeDisplacements(int numProcesses)
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator, 
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
+                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
 

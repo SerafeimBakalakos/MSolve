@@ -17,14 +17,15 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests
         private static void RunTestsWith4MpiProcesses(string[] args)
         {
             var suite = new MpiTestSuite();
+            int numProcesses = int.Parse(args[0]);
 
-            //TransferrerScatterTests.RegisterAllTests(suite);
-            //TransferrerGatherTests.RegisterAllTests(suite);
+            TransferrerScatterTests.RegisterAllTests(numProcesses, suite);
+            TransferrerGatherTests.RegisterAllTests(numProcesses, suite);
 
-            VectorTransferrerTests.RegisterAllTests(suite);
-            MatrixTransferrerTests.RegisterAllTests(suite);
+            VectorTransferrerTests.RegisterAllTests(numProcesses, suite);
+            MatrixTransferrerTests.RegisterAllTests(numProcesses, suite);
 
-            //suite.AddFact(PcgMpiTests.TestPosDefSystemOnMaster, typeof(PcgMpiTests).Name, "TestPosDefSystemOnMaster");
+            suite.AddFact(PcgMpiTests.TestPosDefSystemOnMaster);
 
             suite.RunTests(args);
         }

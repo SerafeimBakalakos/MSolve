@@ -15,10 +15,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 {
     public static class LagrangeMultiplierEnumeratorMpiTests
     {
-        public static void TestBooleanMappingMatrices()
+        public static void TestBooleanMappingMatrices(int numProcesses)
         {
             (ProcessDistribution procs, IModel model, IFetiDPDofSeparator dofSeparator,
-                LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) = CreateModelDofSeparatorLagrangesEnumerator();
+                LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) = CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
 
             // Check
             Assert.Equal(8, lagrangesEnumerator.NumLagrangeMultipliers);
@@ -34,10 +34,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         }
 
         internal static (ProcessDistribution, IModel, FetiDPDofSeparatorMpi, LagrangeMultipliersEnumeratorMpi) 
-            CreateModelDofSeparatorLagrangesEnumerator()
+            CreateModelDofSeparatorLagrangesEnumerator(int numProcesses)
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) =
-                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
+                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator(numProcesses);
 
             // Enumerate lagranges and calculate the boolean matrices
             var crosspointStrategy = new FullyRedundantConstraints();

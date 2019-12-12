@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Iterative
     {
         private static readonly MatrixComparer comparer = new MatrixComparer(1E-5);
 
-        public static void TestPosDefSystemOnMaster()
+        public static void TestPosDefSystemOnMaster(int numProcesses)
         {
             Intracommunicator comm = Communicator.world;
             int master = 0;

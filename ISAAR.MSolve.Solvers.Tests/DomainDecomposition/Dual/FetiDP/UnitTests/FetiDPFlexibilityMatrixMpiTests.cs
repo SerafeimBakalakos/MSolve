@@ -17,11 +17,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 {
     public static class FetiDPFlexibilityMatrixMpiTests
     {
-        public static void TestFIrcTimesVector() 
+        public static void TestFIrcTimesVector(int numProcesses) 
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator, 
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
+                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
 
             // Setup matrix manager
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
@@ -41,11 +41,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
-        public static void TestFIrcTransposedTimesVector()
+        public static void TestFIrcTransposedTimesVector(int numProcesses)
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator,
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
+                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
 
             // Setup matrix manager
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
@@ -65,11 +65,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
-        public static void TestFIrrTimesVector()
+        public static void TestFIrrTimesVector(int numProcesses)
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator,
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
+                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
 
             // Setup matrix manager
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
@@ -88,11 +88,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
-        public static void TestFIrrAndFIrcTransposedTimesVector()
+        public static void TestFIrrAndFIrcTransposedTimesVector(int numProcesses)
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator,
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
+                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
 
             // Setup matrix manager
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);

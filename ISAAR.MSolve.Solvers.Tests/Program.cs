@@ -8,23 +8,22 @@ using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Utilities;
 using ISAAR.MSolve.Solvers.Tests.Utilities;
 using static ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.IntegrationTests.PapagiannakisFetiDPTests2DMpi;
-using static ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.FetiDPMatrixManagerSerialTests;
 
-// 1) Debug these 2) Replace MpiUtilities with the Vector and Matrix transferrer in other classes. 3) Delete MpiUtilities
 namespace ISAAR.MSolve.Solvers.Tests
 {
     public static class Program
     {
         public static void Main(string[] args)
         {
-            RunTestsWith4MpiProcesses(args);
-            //RunTestsWith8MpiProcesses(args);
+            var suite = new MpiTestSuite();
+            RegisterFetiDP2dUnitTests(args, suite);
+            RegisterFetiDP2dIntegrationTests(args, suite);
+            RegisterFetiDP2dPapagiannakisTests(args, suite);
+            suite.RunTests(args);
         }
 
-        private static void RunTestsWith4MpiProcesses(string[] args)
+        private static void RegisterFetiDP2dUnitTests(string[] args, MpiTestSuite suite)
         {
-            var suite = new MpiTestSuite();
-
             suite.AddFact(FetiDPDofSeparatorMpiTests.TestDofSeparation);
             suite.AddFact(FetiDPDofSeparatorMpiTests.TestCornerBooleanMatrices);
             suite.AddFact(LagrangeMultiplierEnumeratorMpiTests.TestBooleanMappingMatrices);
@@ -63,27 +62,24 @@ namespace ISAAR.MSolve.Solvers.Tests
 
             suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalDiplacements);
             suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalForcesNorm);
+        }
 
+        private static void RegisterFetiDP2dIntegrationTests(string[] args, MpiTestSuite suite)
+        {
             suite.AddTheory(FetiDPSolverMpiTests.TestSolutionSubdomainDisplacements, MatrixFormat.Skyline);
             suite.AddTheory(FetiDPSolverMpiTests.TestSolutionSubdomainDisplacements, MatrixFormat.SuiteSparse);
             suite.AddTheory(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, MatrixFormat.Skyline);
             suite.AddTheory(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, MatrixFormat.SuiteSparse);
-
-            suite.RunTests(args);
         }
 
-        private static void RunTestsWith8MpiProcesses(string[] args)
+        private static void RegisterFetiDP2dPapagiannakisTests(string[] args, MpiTestSuite suite)
         {
-            var suite = new MpiTestSuite();
-
             suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, 1.0, Precond.Dirichlet, Residual.Approximate, 11, MatrixFormat.Skyline);
             suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, 1.0, Precond.Dirichlet, Residual.Approximate, 11, MatrixFormat.SuiteSparse);
             suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, 1.0, Precond.DirichletDiagonal, Residual.Approximate, 14, MatrixFormat.Skyline);
             suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, 1.0, Precond.DirichletDiagonal, Residual.Approximate, 14, MatrixFormat.SuiteSparse);
             suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, 1.0, Precond.Lumped, Residual.Approximate, 18, MatrixFormat.Skyline);
             suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, 1.0, Precond.Lumped, Residual.Approximate, 18, MatrixFormat.SuiteSparse);
-
-            suite.RunTests(args);
         }
     }
 }

@@ -19,9 +19,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 {
     public static class FetiDPPreconditionerMpiTests
     {
-        public static void TestDiagonalDirichletPreconditioner()
+        public static void TestDiagonalDirichletPreconditioner(int numProcesses)
         {
-            (ProcessDistribution procs, Matrix preconditioner) = CalcPreconditioner(new DiagonalDirichletPreconditioning());
+            (ProcessDistribution procs, Matrix preconditioner) = 
+                CalcPreconditioner(numProcesses, new DiagonalDirichletPreconditioning());
             if (procs.IsMasterProcess)
             {
                 double tol = 1E-13;
@@ -29,9 +30,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
-        public static void TestDirichletPreconditioner()
+        public static void TestDirichletPreconditioner(int numProcesses)
         {
-            (ProcessDistribution procs, Matrix preconditioner) = CalcPreconditioner(new DirichletPreconditioning());
+            (ProcessDistribution procs, Matrix preconditioner) = 
+                CalcPreconditioner(numProcesses, new DirichletPreconditioning());
             if (procs.IsMasterProcess)
             {
                 double tol = 1E-13;
@@ -39,9 +41,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
-        public static void TestLumpedPreconditioner()
+        public static void TestLumpedPreconditioner(int numProcesses)
         {
-            (ProcessDistribution procs, Matrix preconditioner) = CalcPreconditioner(new LumpedPreconditioning());
+            (ProcessDistribution procs, Matrix preconditioner) = CalcPreconditioner(numProcesses, new LumpedPreconditioning());
             if (procs.IsMasterProcess)
             {
                 double tol = 1E-13;
@@ -49,11 +51,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
-        private static (ProcessDistribution, Matrix) CalcPreconditioner(IFetiPreconditioningOperations preconditioning)
+        private static (ProcessDistribution, Matrix) CalcPreconditioner(int numProcesses, 
+            IFetiPreconditioningOperations preconditioning)
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator, 
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
+                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
 
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             IStiffnessDistribution stiffnessDistribution = new MockHomogeneousStiffnessDistribution();

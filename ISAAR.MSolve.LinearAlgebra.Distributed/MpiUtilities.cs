@@ -8,6 +8,8 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MPI;
 
 //TODO: Ideally these would be strategy objects
+//TODO: Send/Receive/BroadcastArray should be in a dedicated ArrayTransferrer class, similar to VectorTransferrer and 
+//      MatrixTransferrer.
 namespace ISAAR.MSolve.LinearAlgebra.Distributed
 {
     public static class MpiUtilities

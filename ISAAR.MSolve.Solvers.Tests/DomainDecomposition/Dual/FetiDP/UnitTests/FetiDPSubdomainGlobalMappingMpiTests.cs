@@ -13,10 +13,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 {
     public static class FetiDPSubdomainGlobalMappingMpiTests
     {
-        public static void TestGlobalDiplacements()
+        public static void TestGlobalDiplacements(int numProcesses)
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) =
-                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
+                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator(numProcesses);
             var stiffnessDistribution = new MockHomogeneousStiffnessDistribution();
 
             var mapping = new FetiDPSubdomainGlobalMappingMpi(procs, model, dofSeparator, stiffnessDistribution);
@@ -30,10 +30,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
-        public static void TestGlobalForcesNorm()
+        public static void TestGlobalForcesNorm(int numProcesses)
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) =
-                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
+                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator(numProcesses);
             var stiffnessDistribution = new MockHomogeneousStiffnessDistribution();
 
             var mapping = new FetiDPSubdomainGlobalMappingMpi(procs, model, dofSeparator, stiffnessDistribution);

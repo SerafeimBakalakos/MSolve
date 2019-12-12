@@ -1,5 +1,5 @@
 @echo off
-set /p np="Enter number of processes: "
+set /p np="Enter number of MPI processes: "
 echo ---------------------------
 echo Compiling code...
 echo ---------------------------
@@ -8,6 +8,6 @@ cd bin\Debug\netcoreapp2.2\win10-x64
 echo ---------------------------
 echo Running executable...
 echo ---------------------------
-mpiexec -n %np% ISAAR.MSolve.LinearAlgebra.Distributed.Tests.exe
+mpiexec -n %np% ISAAR.MSolve.LinearAlgebra.Distributed.Tests.exe %np%
 cd \..\..\..\...
 PAUSE

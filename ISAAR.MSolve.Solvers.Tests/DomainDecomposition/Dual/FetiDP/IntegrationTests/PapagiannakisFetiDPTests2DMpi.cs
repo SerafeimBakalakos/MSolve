@@ -6,6 +6,7 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Distributed;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Exceptions;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
@@ -35,9 +36,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 
         private const double domainLengthX = 3.0, domainLengthY = 1.5;
 
-        public static void Run(double stiffnessRatio, Precond precond, Residual convergence, int iterExpected, 
+        public static void Run(int numProcesses, double stiffnessRatio, Precond precond, Residual convergence, int iterExpected, 
             MatrixFormat format)
         {
+            if (numProcesses != 8) throw new MpiProcessesException("Number of MPI processes must belong to [2, 8]");
             int master = 0;
             //int[] processesToSubdomains = { 0, 1, 2, 3, 4, 5, 6, 7 };
             int[][] processesToSubdomains = 
@@ -76,7 +78,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
                 Assert.InRange(pcgIterations, 1, maxIterationsForApproximateResidual); // the upper bound is inclusive!
             }
         }
-
 
         private static (IVectorView globalDisplacements, ISolverLogger logger) SolveModelWithSubdomains(ProcessDistribution procs,
             double stiffnessRatio, Precond precond, Residual residualConvergence, double pcgConvergenceTolerance, 

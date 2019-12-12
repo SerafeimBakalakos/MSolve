@@ -7,6 +7,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Distributed;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Exceptions;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
@@ -24,9 +25,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 {
     public static class FetiDPSolverMpiTests
     {
-        public static void TestSolutionGlobalDisplacements(MatrixFormat format)
+        public static void TestSolutionGlobalDisplacements(int numProcesses, MatrixFormat format)
         {
-            (ProcessDistribution procs, IModel model, FetiDPSolverMpi solver) = CreateModelAndSolver(format);
+            (ProcessDistribution procs, IModel model, FetiDPSolverMpi solver) = CreateModelAndSolver(numProcesses, format);
             RunAnalysis(procs, model, solver);
             Vector globalU = solver.GatherGlobalDisplacements();
 
@@ -38,9 +39,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             }
         }
 
-        public static void TestSolutionSubdomainDisplacements(MatrixFormat format)
+        public static void TestSolutionSubdomainDisplacements(int numProcesses, MatrixFormat format)
         {
-            (ProcessDistribution procs, IModel model, FetiDPSolverMpi solver) = CreateModelAndSolver(format);
+            (ProcessDistribution procs, IModel model, FetiDPSolverMpi solver) = CreateModelAndSolver(numProcesses, format);
             RunAnalysis(procs, model, solver);
 
             // Check solution
@@ -73,8 +74,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             solver.Solve();
         }
 
-        private static (ProcessDistribution, IModel, FetiDPSolverMpi) CreateModelAndSolver(MatrixFormat format)
+        private static (ProcessDistribution, IModel, FetiDPSolverMpi) CreateModelAndSolver(int numProcesses, MatrixFormat format)
         {
+            if (numProcesses != 4) throw new MpiProcessesException("Number of MPI processes must belong to [2, 4]");
             int master = 0;
             //int[] processesToClusters = { 0, 1, 2, 3 };
             int[][] processesToSubdomains = { new int[] { 0 }, new int[] { 1 }, new int[] { 2 }, new int[] { 3 } };

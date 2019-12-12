@@ -16,11 +16,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 {
     public static class HomogeneousStiffnessDistributionMpiTests
     {
-        public static void TestBooleanMappingMatrices()
+        public static void TestBooleanMappingMatrices(int numProcesses)
         {
             (ProcessDistribution procs, IModel model, IFetiDPDofSeparator dofSeparator,
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) = 
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator();
+                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
 
             // Caclulate scaling coefficients
             var stiffnessDistribution = new HomogeneousStiffnessDistributionMpi(procs, model, dofSeparator,

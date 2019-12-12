@@ -20,7 +20,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
         /// All tests need 4 MPI processes.
         /// </summary>
         /// <param name="suite"></param>
-        public static void RegisterAllTests(MpiTestSuite suite)
+        public static void RegisterAllTests(int numProcesses, MpiTestSuite suite)
         {
             // Tests for vector broadcasting
             suite.AddTheory(TestVectorBroadcast, SubdomainDistribution.OnePerProcess);
@@ -38,9 +38,9 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
             suite.AddTheory(TestVectorSumLazy, SubdomainDistribution.Variable);
         }
 
-        public static void TestVectorBroadcast(SubdomainDistribution subdomainDistribution)
+        public static void TestVectorBroadcast(int numProcesses, SubdomainDistribution subdomainDistribution)
         {
-            ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
+            ProcessDistribution procs = DetermineProcesses(numProcesses, subdomainDistribution);
             int s = 5;
             Vector vector = null;
             if (procs.IsMasterProcess) vector = GetSubdomainVector(s);
@@ -54,10 +54,10 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
             }
         }
 
-        public static void TestVectorSum(SubdomainDistribution subdomainDistribution)
+        public static void TestVectorSum(int numProcesses, SubdomainDistribution subdomainDistribution)
         {
             // Prepare vectors in each process
-            ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
+            ProcessDistribution procs = DetermineProcesses(numProcesses, subdomainDistribution);
             var processVectors = new Dictionary<int, Vector>();
             foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
             {
@@ -81,10 +81,10 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
             }
         }
 
-        public static void TestVectorSumLazy(SubdomainDistribution subdomainDistribution)
+        public static void TestVectorSumLazy(int numProcesses, SubdomainDistribution subdomainDistribution)
         {
             // Prepare vectors in each process to be lazily computed
-            ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
+            ProcessDistribution procs = DetermineProcesses(numProcesses, subdomainDistribution);
             IEnumerable<Vector> processVectors = procs.GetSubdomainIdsOfProcess(procs.OwnRank).Select(s => GetSubdomainVector(s));
 
             // Sum the individual vectors

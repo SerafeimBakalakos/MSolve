@@ -20,11 +20,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 {
     public static class FetiDPMatrixManagerMpiTests
     {
-        public static void TestCoarseProblemMatrixAndRhs(MatrixFormat format)
+        public static void TestCoarseProblemMatrixAndRhs(int numProcesses, MatrixFormat format)
         {
             IFetiDPMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) = 
-                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
+                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator(numProcesses);
 
             FetiDPMatrixManagerMpi matrixManager = 
                 PrepareCoarseProblemSubdomainMatrices(procs, model, dofSeparator, matricesFactory, format);
@@ -47,11 +47,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
-        public static void TestMatricesKbbKbiKii(MatrixFormat format)
+        public static void TestMatricesKbbKbiKii(int numProcesses, MatrixFormat format)
         {
             IFetiDPMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) =
-                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
+                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator(numProcesses);
 
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
 
@@ -87,11 +87,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
-        public static void TestMatricesKccKcrKrr(MatrixFormat format)
+        public static void TestMatricesKccKcrKrr(int numProcesses, MatrixFormat format)
         {
             IFetiDPMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) =
-                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
+                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator(numProcesses);
 
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
 
@@ -125,11 +125,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
-        public static void TestStaticCondensations(MatrixFormat format)
+        public static void TestStaticCondensations(int numProcesses, MatrixFormat format)
         {
             IFetiDPMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) =
-                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
+                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator(numProcesses);
 
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
 
@@ -156,11 +156,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             }
         }
 
-        public static void TestVectorsFbcFr()
+        public static void TestVectorsFbcFr(int numProcesses)
         {
             IFetiDPMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(MatrixFormat.Dense);
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator) =
-                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator();
+                FetiDPDofSeparatorMpiTests.CreateModelAndDofSeparator(numProcesses);
 
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
 

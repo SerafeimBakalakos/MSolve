@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
         /// All tests need 4 MPI processes.
         /// </summary>
         /// <param name="suite"></param>
-        public static void RegisterAllTests(MpiTestSuite suite)
+        public static void RegisterAllTests(int numProcesses, MpiTestSuite suite)
         {
             // Tests for matrix broadcasting
             suite.AddTheory(TestMatrixBroadcast, SubdomainDistribution.OnePerProcess);
@@ -39,9 +39,9 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
             suite.AddTheory(TestMatrixSumLazy, SubdomainDistribution.Variable);
         }
 
-        public static void TestMatrixBroadcast(SubdomainDistribution subdomainDistribution)
+        public static void TestMatrixBroadcast(int numProcesses, SubdomainDistribution subdomainDistribution)
         {
-            ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
+            ProcessDistribution procs = DetermineProcesses(numProcesses, subdomainDistribution);
             int s = 5;
             Matrix matrix = null;
             if (procs.IsMasterProcess) matrix = GetSubdomainMatrix(s);
@@ -55,10 +55,10 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
             }
         }
 
-        public static void TestMatrixSum(SubdomainDistribution subdomainDistribution)
+        public static void TestMatrixSum(int numProcesses, SubdomainDistribution subdomainDistribution)
         {
             // Prepare vectors in each process
-            ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
+            ProcessDistribution procs = DetermineProcesses(numProcesses, subdomainDistribution);
             var processMatrices = new Dictionary<int, Matrix>();
             foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
             {
@@ -81,10 +81,10 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
             }
         }
 
-        public static void TestMatrixSumLazy(SubdomainDistribution subdomainDistribution)
+        public static void TestMatrixSumLazy(int numProcesses, SubdomainDistribution subdomainDistribution)
         {
             // Prepare vectors in each process
-            ProcessDistribution procs = DetermineProcesses(subdomainDistribution);
+            ProcessDistribution procs = DetermineProcesses(numProcesses, subdomainDistribution);
             IEnumerable<Matrix> processMatrices = procs.GetSubdomainIdsOfProcess(procs.OwnRank).Select(s => GetSubdomainMatrix(s));
 
             // Sum the individual vectors
