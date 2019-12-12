@@ -2,21 +2,17 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Analyzers.Loading;
-using ISAAR.MSolve.Discretization.Entities;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Distributed;
-using ISAAR.MSolve.LinearAlgebra.Distributed.Exceptions;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Utilities;
-using MPI;
+using ISAAR.MSolve.Solvers.Tests.Utilities;
 using Xunit;
 
 //TODO: Perhaps I should also check intermediate steps by pulling the solver's compenent using reflection and check their state
@@ -76,11 +72,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 
         private static (ProcessDistribution, IModel, FetiDPSolverMpi) CreateModelAndSolver(int numProcesses, MatrixFormat format)
         {
-            if (numProcesses != 4) throw new MpiProcessesException("Number of MPI processes must belong to [2, 4]");
-            int master = 0;
-            //int[] processesToClusters = { 0, 1, 2, 3 };
-            int[][] processesToSubdomains = { new int[] { 0 }, new int[] { 1 }, new int[] { 2 }, new int[] { 3 } };
-            var procs = new ProcessDistribution(Communicator.world, master, processesToSubdomains);
+            ProcessDistribution procs = MpiProcessDistributionUtilities.DefineProcesses(numProcesses, 4);
 
             // Prepare solver
             var model = new ModelMpi(procs, Example4x4QuadsHomogeneous.CreateModel);

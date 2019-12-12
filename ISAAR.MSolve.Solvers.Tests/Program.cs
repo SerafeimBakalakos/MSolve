@@ -17,8 +17,8 @@ namespace ISAAR.MSolve.Solvers.Tests
         {
             var suite = new MpiTestSuite();
             RegisterFetiDP2dUnitTests(args, suite);
-            RegisterFetiDP2dIntegrationTests(args, suite);
-            RegisterFetiDP2dPapagiannakisTests(args, suite);
+            //RegisterFetiDP2dIntegrationTests(args, suite);
+            //RegisterFetiDP2dPapagiannakisTests(args, suite);
             suite.RunTests(args);
         }
 

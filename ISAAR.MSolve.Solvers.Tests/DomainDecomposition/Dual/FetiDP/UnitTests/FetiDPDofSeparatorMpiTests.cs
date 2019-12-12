@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ISAAR.MSolve.Discretization.Entities;
-using ISAAR.MSolve.Discretization.Interfaces;
+﻿using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM.Entities;
+using ISAAR.MSolve.LinearAlgebra.Distributed;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
-using ISAAR.MSolve.LinearAlgebra.Distributed;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.IntegrationTests;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.Mocks;
 using ISAAR.MSolve.Solvers.Tests.Utilities;
-using MPI;
 using Xunit;
-using ISAAR.MSolve.LinearAlgebra.Distributed.Exceptions;
 
 //TODO: Mock all other classes.
 //TODO: I should call the private methods that create the dof indices and the ones that create the corner boolean matrices,
@@ -72,13 +67,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
         internal static (ProcessDistribution, IModel, FetiDPDofSeparatorMpi) CreateModelAndDofSeparator(int numProcesses)
         {
-            if (numProcesses != 4) throw new MpiProcessesException("Number of MPI processes must belong to [2, 4]");
-
-            int master = 0;
-            //int[] processesToSubdomains = { 0, 1, 2, 3 };
-            int[][] processesToSubdomains = { new int[] { 0 }, new int[] { 1 }, new int[] { 2 }, new int[] { 3 } };
-            var procs = new ProcessDistribution(Communicator.world, master, processesToSubdomains);
-            //Console.WriteLine($"(process {procs.OwnRank}) Hello World!"); // Run this to check if MPI works correctly.
+            ProcessDistribution procs = MpiProcessDistributionUtilities.DefineProcesses(numProcesses, 4);
 
             // Output
             string outputDirectory = @"C:\Users\Serafeim\Desktop\MPI\Tests";

@@ -100,5 +100,38 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed
         /// </summary>
         /// <param name="processRank"></param>
         public int[] GetSubdomainIdsOfProcess(int processRank) => processesToSubdomains[processRank];
+
+        public void PrintProcessDistribution()
+        {
+            if (IsMasterProcess)
+            {
+                Console.WriteLine("---------------------------------------");
+                Console.WriteLine($"Printing from process {OwnRank}");
+                for (int p = 0; p < Communicator.Size; ++p)
+                {
+                    var builder1 = new StringBuilder();
+                    builder1.Append($"Process {p} - subdomain IDs: ");
+                    foreach (int s in GetSubdomainIdsOfProcess(p))
+                    {
+                        builder1.Append(s + " ");
+                    }
+                    Console.WriteLine(builder1);
+                }
+            }
+
+            if (IsMasterProcess)
+            {
+                Console.WriteLine("---------------------------------------");
+                Console.WriteLine($"Printing from each process:");
+            }
+            Communicator.Barrier();
+            var builder2 = new StringBuilder();
+            builder2.Append($"Process {OwnRank} - subdomain IDs: ");
+            foreach (int s in GetSubdomainIdsOfProcess(OwnRank))
+            {
+                builder2.Append(s + " ");
+            }
+            Console.WriteLine(builder2);
+        }
     }
 }

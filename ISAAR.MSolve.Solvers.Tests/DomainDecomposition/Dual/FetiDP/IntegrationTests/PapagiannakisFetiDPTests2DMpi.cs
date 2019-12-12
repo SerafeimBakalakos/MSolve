@@ -20,6 +20,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
 using ISAAR.MSolve.Solvers.Logging;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Utilities;
+using ISAAR.MSolve.Solvers.Tests.Utilities;
 using MPI;
 using Xunit;
 
@@ -39,15 +40,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         public static void Run(int numProcesses, double stiffnessRatio, Precond precond, Residual convergence, int iterExpected, 
             MatrixFormat format)
         {
-            if (numProcesses != 8) throw new MpiProcessesException("Number of MPI processes must belong to [2, 8]");
-            int master = 0;
-            //int[] processesToSubdomains = { 0, 1, 2, 3, 4, 5, 6, 7 };
-            int[][] processesToSubdomains = 
-            {
-                new int[] { 0 }, new int[] { 1 }, new int[] { 2 }, new int[] { 3 },
-                new int[] {4 }, new int[] { 5 }, new int[] { 6 }, new int[] { 7 }
-            };
-            var procs = new ProcessDistribution(Communicator.world, master, processesToSubdomains);
+            ProcessDistribution procs = MpiProcessDistributionUtilities.DefineProcesses(numProcesses, 8);
 
             double pcgConvergenceTol = 1E-5;
             IVectorView directDisplacements = null;
