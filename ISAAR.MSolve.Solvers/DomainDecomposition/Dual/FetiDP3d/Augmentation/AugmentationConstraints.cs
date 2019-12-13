@@ -12,24 +12,22 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 {
     public class AugmentationConstraints : IAugmentationConstraints
     {
-        private readonly IDofType[] dofsPerNode;
         private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
-        private readonly IMidsideNodesSelection midsideNodesSelection;
         private readonly IModel model;
 
         private Dictionary<ISubdomain, Matrix> matricesBa = new Dictionary<ISubdomain, Matrix>();
         private Dictionary<ISubdomain, Matrix> matricesQ1 = new Dictionary<ISubdomain, Matrix>();
 
-        public AugmentationConstraints(IModel model, IMidsideNodesSelection midsideNodesSelection, IDofType[] dofsPerNode,
+        public AugmentationConstraints(IModel model, IMidsideNodesSelection midsideNodesSelection,
             ILagrangeMultipliersEnumerator lagrangesEnumerator)
         {
             this.model = model;
-            this.midsideNodesSelection = midsideNodesSelection;
-            this.dofsPerNode = dofsPerNode;
+            this.MidsideNodesSelection = midsideNodesSelection;
             this.lagrangesEnumerator = lagrangesEnumerator;
         }
 
         public Matrix MatrixGlobalQr { get; private set; }
+        public IMidsideNodesSelection MidsideNodesSelection { get; }
 
         public int NumGlobalAugmentationConstraints { get; private set; }
 
@@ -47,7 +45,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 
         private void CalcGlobalMatrixQr(DofTable augmentedOrdering)
         {
-            NumGlobalAugmentationConstraints = dofsPerNode.Length * midsideNodesSelection.MidsideNodesGlobal.Count;
+            NumGlobalAugmentationConstraints = MidsideNodesSelection.DofsPerNode.Length * MidsideNodesSelection.MidsideNodesGlobal.Count;
             MatrixGlobalQr = Matrix.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers, NumGlobalAugmentationConstraints);
             for (int i = 0; i < lagrangesEnumerator.NumLagrangeMultipliers; ++i)
             {
@@ -61,13 +59,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
         {
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                HashSet<INode> midsideNodes = midsideNodesSelection.GetMidsideNodesOfSubdomain(subdomain);
-                int numSubdomainAugmentedConstraints = midsideNodes.Count * dofsPerNode.Length;
+                HashSet<INode> midsideNodes = MidsideNodesSelection.GetMidsideNodesOfSubdomain(subdomain);
+                int numSubdomainAugmentedConstraints = midsideNodes.Count * MidsideNodesSelection.DofsPerNode.Length;
                 var Ba = Matrix.CreateZero(numSubdomainAugmentedConstraints, NumGlobalAugmentationConstraints);
                 int subdomainIdx = 0;
                 foreach (INode node in midsideNodes)
                 {
-                    foreach (IDofType dof in dofsPerNode)
+                    foreach (IDofType dof in MidsideNodesSelection.DofsPerNode)
                     {
                         int globalIdx = augmentedOrdering[node, dof];
                         Ba[subdomainIdx, globalIdx] = 1;
@@ -90,11 +88,21 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
         {
             var ordering = new DofTable();
             int idx = 0;
-            foreach (INode node in midsideNodesSelection.MidsideNodesGlobal)
+            foreach (INode node in MidsideNodesSelection.MidsideNodesGlobal)
             {
-                foreach (IDofType dof in dofsPerNode) ordering[node, dof] = idx++;
+                foreach (IDofType dof in MidsideNodesSelection.DofsPerNode) ordering[node, dof] = idx++;
             }
             return ordering;
         }
+
+        public class Factory : IAugmentationConstraintsFactory
+        {
+            public IAugmentationConstraints CreateAugmentationConstraints(IModel model, IMidsideNodesSelection midsideNodesSelection,
+                ILagrangeMultipliersEnumerator lagrangesEnumerator)
+            {
+                return new AugmentationConstraints(model, midsideNodesSelection, lagrangesEnumerator);
+            }
+        }
     }
+
 }

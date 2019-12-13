@@ -93,10 +93,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             LagrangeMultipliersEnumeratorSerial lagrangesEnumerator)
         {
             Dictionary<ISubdomain, HashSet<INode>> midsideNodes = ModelCreator.DefineMidsideNodesAll(model);
-            IMidsideNodesSelection midsideNodesSelection = new UsedDefinedMidsideNodes(midsideNodes);
-            IDofType[] dofsPerNode = { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ };
+            IMidsideNodesSelection midsideNodesSelection = new UserDefinedMidsideNodes(midsideNodes,
+                new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ });
+            
             IAugmentationConstraints augmentationConstraints =
-                    new AugmentationConstraints(model, midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
+                    new AugmentationConstraints(model, midsideNodesSelection, lagrangesEnumerator);
             augmentationConstraints.CalcAugmentationMappingMatrices();
             return augmentationConstraints;
         }
@@ -105,10 +106,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             LagrangeMultipliersEnumeratorSerial lagrangesEnumerator)
         {
             Dictionary<ISubdomain, HashSet<INode>> midsideNodes = ModelCreator.DefineMidsideNodesAll(model);
-            IMidsideNodesSelection midsideNodesSelection = new UsedDefinedMidsideNodes(midsideNodes);
-            IDofType[] dofsPerNode = { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ };
+            IMidsideNodesSelection midsideNodesSelection = new UserDefinedMidsideNodes(midsideNodes,
+                new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ });
             IAugmentationConstraints augmentationConstraints =
-                    new AugmentationConstraintsRedundant(model, midsideNodesSelection, dofsPerNode, lagrangesEnumerator);
+                    new AugmentationConstraintsRedundant(model, midsideNodesSelection, lagrangesEnumerator);
             augmentationConstraints.CalcAugmentationMappingMatrices();
             return augmentationConstraints;
         }

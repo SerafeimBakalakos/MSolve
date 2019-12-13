@@ -15,6 +15,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
         /// </summary>
         Matrix MatrixGlobalQr { get; }
 
+        IMidsideNodesSelection MidsideNodesSelection { get; }
+
         /// <summary>
         /// The number of extra constraints for the 3D problem. E.g. in "A scalable dual–primal domain decomposition method, 
         /// Farhat et al, 2000" it is proposed to add 3 constraints (X,Y,Z) at the middle of each boundary edge between 
@@ -26,5 +28,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 
         Matrix GetMatrixBa(ISubdomain subdomain);
         Matrix GetMatrixQ1(ISubdomain subdomain);
+
+
     }
 }

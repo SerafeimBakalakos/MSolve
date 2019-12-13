@@ -14,21 +14,20 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 {
     public class AugmentationConstraintsRedundant : IAugmentationConstraints
     {
-        private readonly IDofType[] dofsPerNode;
         private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
-        private readonly IMidsideNodesSelection midsideNodesSelection;
         private readonly IModel model;
 
         public AugmentationConstraintsRedundant(IModel model, IMidsideNodesSelection midsideNodesSelection,
-            IDofType[] dofsPerNode, ILagrangeMultipliersEnumerator lagrangesEnumerator)
+            ILagrangeMultipliersEnumerator lagrangesEnumerator)
         {
             this.model = model;
-            this.midsideNodesSelection = midsideNodesSelection;
-            this.dofsPerNode = dofsPerNode;
+            this.MidsideNodesSelection = midsideNodesSelection;
             this.lagrangesEnumerator = lagrangesEnumerator;
         }
 
         public Matrix MatrixGlobalQr { get; private set; }
+
+        public IMidsideNodesSelection MidsideNodesSelection { get; }
 
         public int NumGlobalAugmentationConstraints { get; private set; }
 
@@ -43,9 +42,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             MatrixGlobalQr = Matrix.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers, NumGlobalAugmentationConstraints);
 
             int col = 0;
-            foreach (INode node in midsideNodesSelection.MidsideNodesGlobal)
+            foreach (INode node in MidsideNodesSelection.MidsideNodesGlobal)
             {
-                foreach (IDofType dof in dofsPerNode)
+                foreach (IDofType dof in MidsideNodesSelection.DofsPerNode)
                 {
                     foreach (int idx in augmentationLagranges[node, dof])
                     {
@@ -69,18 +68,18 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
         private Table<INode, IDofType, HashSet<int>> FindAugmentationLagranges()
         {
             var augmentationLagranges = new Table<INode, IDofType, HashSet<int>>();
-            foreach (INode node in midsideNodesSelection.MidsideNodesGlobal)
+            foreach (INode node in MidsideNodesSelection.MidsideNodesGlobal)
             {
-                foreach (IDofType dof in dofsPerNode) augmentationLagranges[node, dof] = new HashSet<int>();
+                foreach (IDofType dof in MidsideNodesSelection.DofsPerNode) augmentationLagranges[node, dof] = new HashSet<int>();
             }
 
-            var midsideNodes = new HashSet<INode>(midsideNodesSelection.MidsideNodesGlobal); // for faster look-ups. TODO: Use the table for look-ups
+            var midsideNodes = new HashSet<INode>(MidsideNodesSelection.MidsideNodesGlobal); // for faster look-ups. TODO: Use the table for look-ups
             for (int i = 0; i < lagrangesEnumerator.NumLagrangeMultipliers; ++i)
             {
                 LagrangeMultiplier lagr = lagrangesEnumerator.LagrangeMultipliers[i];
                 if (midsideNodes.Contains(lagr.Node))
                 {
-                    Debug.Assert(dofsPerNode.Contains(lagr.DofType));
+                    Debug.Assert(MidsideNodesSelection.DofsPerNode.Contains(lagr.DofType));
                     augmentationLagranges[lagr.Node, lagr.DofType].Add(i);
                 }
             }
@@ -108,5 +107,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
         //    }
         //    return augmentationLagranges;
         //}
+
+        public class Factory : IAugmentationConstraintsFactory
+        {
+            public IAugmentationConstraints CreateAugmentationConstraints(IModel model, IMidsideNodesSelection midsideNodesSelection,
+                ILagrangeMultipliersEnumerator lagrangesEnumerator)
+            {
+                return new AugmentationConstraintsRedundant(model, midsideNodesSelection, lagrangesEnumerator);                               
+            }
+        }
+
     }
 }
