@@ -52,7 +52,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             
             Vector globalDr = Example4x4x4Quads.ExpectedGlobalMatrices.VectorDr;
 
-            var interfaceSolver = new FetiDP3dInterfaceProblemSolverSerial(model, new PcgSettings(), augmentationConstraints);
+            var interfaceSolver = new FetiDP3dInterfaceProblemSolverSerial(model, new PcgSettings() { ConvergenceTolerance = 1E-9 }, augmentationConstraints);
             MethodInfo method = interfaceSolver.GetType().GetMethod("CalcInterfaceProblemRhs",
                 BindingFlags.NonPublic | BindingFlags.Instance); // reflection for the private method
             Vector pcgRhs = (Vector)method.Invoke(interfaceSolver, new object[] { matrixManager, flexibility, globalDr });
