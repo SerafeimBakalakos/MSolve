@@ -75,7 +75,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             ProcessDistribution procs = MpiProcessDistributionUtilities.DefineProcesses(numProcesses, 4);
 
             // Prepare solver
-            var model = new ModelMpiCentralized(procs, Example4x4QuadsHomogeneous.CreateModel);
+            //var model = new ModelMpiCentralized(procs, Example4x4QuadsHomogeneous.CreateModel);
+            var model = new ModelMpiRedundant(procs, Example4x4QuadsHomogeneous.CreateModel);
             model.ConnectDataStructures();
             model.ScatterSubdomains();
             ICornerNodeSelection cornerNodes = Example4x4QuadsHomogeneous.DefineCornerNodeSelectionMpi(procs, model);
