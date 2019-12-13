@@ -26,7 +26,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
-            Vector lagranges = Example4x4x4Quads.ExpectedGlobalMatrices.SolutionLagrangeMultipliersSimple;
+            Vector lagranges = Example4x4x4Quads.ExpectedSolutions.SolutionLagrangesSimple();
 
             var displacementsCalculator = new FetiDP3dFreeDofDisplacementsCalculatorSerial(model, dofSeparator, lagrangesEnumerator, augmentationConstraints, matrixManager); 
 
@@ -34,8 +34,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 BindingFlags.NonPublic | BindingFlags.Instance); // reflection for the private method
             Vector ucTilde = (Vector)method.Invoke(displacementsCalculator, new object[] { flexibility, lagranges });
 
-            double tol = 1E-12;
-            //Assert.True(Example4x4QuadsHomogeneous.SolutionCornerDisplacements.Equals(uc, tol));
+            double tol = 1E-4;
+            Assert.True(Example4x4x4Quads.ExpectedSolutions.ucTilde().Equals(ucTilde, tol));
+
         }
 
         [Fact]
@@ -47,7 +48,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
-            Vector lagranges = Example4x4x4Quads.ExpectedGlobalMatrices.SolutionLagrangeMultipliersSimple;
+            Vector lagranges = Example4x4x4Quads.ExpectedSolutions.SolutionLagrangesSimple();
 
             var displacementsCalculator = new FetiDP3dFreeDofDisplacementsCalculatorSerial(model, dofSeparator, lagrangesEnumerator, augmentationConstraints, matrixManager);
             displacementsCalculator.CalculateSubdomainDisplacements(lagranges, flexibility);
@@ -55,9 +56,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                double tol = 1E-7;
+                double tol = 1E-4;
                 IVectorView uf = matrixManager.GetFetiDPSubdomainMatrixManager(sub).LinearSystem.Solution;
-                //Assert.True(Example4x4QuadsHomogeneous.GetSolutionFreeDisplacements(sub.ID).Equals(uf, tol));
+                Assert.True(Example4x4x4Quads.ExpectedSolutions.uFree(sub.ID).Equals(uf, tol));
             }
             
         }

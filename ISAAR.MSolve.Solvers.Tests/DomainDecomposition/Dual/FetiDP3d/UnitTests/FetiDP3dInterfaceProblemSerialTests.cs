@@ -83,7 +83,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 new SolverLoggerSerial("Test method"));
 
             double tol = 1E-8;
-            Vector lagrangesExpected = Example4x4x4Quads.ExpectedGlobalMatrices.SolutionLagrangeMultipliersSimple;
+            Vector lagrangesExpected = Example4x4x4Quads.ExpectedSolutions.SolutionLagrangesSimple();
             Assert.True(lagrangesExpected.Equals(lagranges, tol));
         }
     }
