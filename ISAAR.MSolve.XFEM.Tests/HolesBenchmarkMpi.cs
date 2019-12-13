@@ -144,7 +144,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// <summary>
         /// Before accessing it, make sure <see cref="InitializeModel"/> has been called.
         /// </summary>
-        public XModelMpiCentralized Model { get; private set; }
+        public IXModelMpi Model { get; private set; }
 
         public string Name { get { return "Twin Holes benchmark"; } }
 

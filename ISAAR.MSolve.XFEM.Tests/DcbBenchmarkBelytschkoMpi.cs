@@ -130,7 +130,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// <summary>
         /// Before accessing it, make sure <see cref="InitializeModel"/> has been called.
         /// </summary>
-        public XModelMpiCentralized Model { get; private set; }
+        public IXModelMpi Model { get; private set; }
 
         public string Name { get { return "Fillet benchmark"; } }
 
@@ -207,7 +207,6 @@ namespace ISAAR.MSolve.XFEM.Tests
             private readonly int numSubdomainsX;
             private readonly int numSubdomainsY;
             private readonly ProcessDistribution procs;
-
 
             public Builder(ProcessDistribution procs, int numElementsY, int numSubdomainsX, int numSubdomainsY)
             {

@@ -29,7 +29,7 @@ namespace ISAAR.MSolve.FEM.Entities
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();//TODOMaria: maybe it's useless in model class
 
-        public IDofSerializer DofSerializer { get; } = new StandardDofSerializer();
+        public IDofSerializer DofSerializer { get; set; } = new StandardDofSerializer();
 
         public Dictionary<int, Element> ElementsDictionary { get; } = new Dictionary<int, Element>();
 

@@ -31,7 +31,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
 
                 // Actual model
                 DcbBenchmarkBelytschkoMpi actualBenchmark = CreateActualModel(procs);
-                XModelMpiCentralized actualModel = actualBenchmark.Model;
+                IXModelMpi actualModel = actualBenchmark.Model;
                 actualModel.ConnectDataStructures();
                 actualModel.ScatterSubdomains();
                 TrackingExteriorCrackLsmMpi actualCrack = actualBenchmark.Crack;
@@ -64,7 +64,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
                 expectedModel.ConnectDataStructures();
 
                 // Actual model
-                XModelMpiCentralized actualModel = CreateActualModel(procs).Model;
+                IXModelMpi actualModel = CreateActualModel(procs).Model;
                 actualModel.ConnectDataStructures();
                 actualModel.ScatterSubdomains();
 

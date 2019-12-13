@@ -13,6 +13,6 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry
 {
     public interface ICrackDescriptionMpi : ICrackDescription
     {
-        void ScatterCrackData(XModelMpiCentralized model);
+        void ScatterCrackData(IXModelMpi model);
     }
 }

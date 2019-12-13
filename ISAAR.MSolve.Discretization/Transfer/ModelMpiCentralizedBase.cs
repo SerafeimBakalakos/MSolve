@@ -49,7 +49,11 @@ namespace ISAAR.MSolve.Discretization.Transfer
             }
         }
 
-        public IDofSerializer DofSerializer => model.DofSerializer;
+        public IDofSerializer DofSerializer
+        {
+            get => model.DofSerializer;
+            set => model.DofSerializer = value;
+        }
 
         public IGlobalFreeDofOrdering GlobalDofOrdering
         {

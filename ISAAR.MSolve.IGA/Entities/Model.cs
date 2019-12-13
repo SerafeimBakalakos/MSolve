@@ -32,7 +32,11 @@ namespace ISAAR.MSolve.IGA.Entities
 
 		public Dictionary<int, Cluster> Clusters { get; } = new Dictionary<int, Cluster>();
 
-        public IDofSerializer DofSerializer => throw new NotImplementedException();
+        public IDofSerializer DofSerializer
+        {
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
+        }
 
         public Dictionary<int, Element> ElementsDictionary => elementsDictionary;
 

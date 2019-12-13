@@ -15,7 +15,7 @@ using ISAAR.MSolve.XFEM.Transfer;
 //      with what. 
 namespace ISAAR.MSolve.XFEM.Entities
 {
-    public class XModelMpiCentralized : ModelMpiCentralizedBase<XModel>
+    public class XModelMpiCentralized : ModelMpiCentralizedBase<XModel>, IXModelMpi
     {
         private const int subdomainDataTag = 0;
 

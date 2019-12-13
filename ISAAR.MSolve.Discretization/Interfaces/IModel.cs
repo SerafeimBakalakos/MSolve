@@ -12,7 +12,7 @@ namespace ISAAR.MSolve.Discretization.Interfaces
     {
         Table<INode, IDofType, double> Constraints { get; }
 
-        IDofSerializer DofSerializer { get; }
+        IDofSerializer DofSerializer { get; set; }
 
         IGlobalFreeDofOrdering GlobalDofOrdering { get; set; } //TODO: this should not be managed by the model. Update after 6 months: yeap, see the mess in collocation
         IList<IMassAccelerationHistoryLoad> MassAccelerationHistoryLoads { get; }
