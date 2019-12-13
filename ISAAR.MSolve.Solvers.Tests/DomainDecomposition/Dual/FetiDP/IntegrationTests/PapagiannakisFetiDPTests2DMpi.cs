@@ -77,7 +77,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             MatrixFormat format)
         {
             // Model
-            var model = new ModelMpi(procs, () => PapagiannakisFetiDPTests2DSerial.CreateModel(stiffnessRatio));
+            var model = new ModelMpiCentralized(procs, () => PapagiannakisFetiDPTests2DSerial.CreateModel(stiffnessRatio));
             model.ConnectDataStructures();
             model.ScatterSubdomains();
 

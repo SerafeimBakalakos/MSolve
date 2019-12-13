@@ -208,7 +208,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             embeddedCrack_master.Propagate(totalFreeDisplacements);
         }
 
-        public void ScatterCrackData(XModelMpi model)
+        public void ScatterCrackData(XModelMpiCentralized model)
         {
             ScatterLevelSetData(model);
             ScatterEnrichmentData(model);
@@ -232,7 +232,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
         }
 
         private static (SingleCrackLsm, TipCoordinateSystem) DeserializeLevelSetData(double[] levelSetData, int subdomainID, 
-            XModelMpi model)
+            XModelMpiCentralized model)
         {
             // Crack tip
             CartesianPoint crackTip = new CartesianPoint(levelSetData[0], levelSetData[1], levelSetData[2]);
@@ -255,7 +255,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
         }
 
         private static void EnrichNodesAndElements(int[] bodyNodes, int[] tipNodes, int[] bodyElements, int[] tipElements,
-            int subdomainID, XModelMpi model, CrackBodyEnrichment2D bodyEnrichment, CrackTipEnrichments2D tipEnrichments)
+            int subdomainID, XModelMpiCentralized model, CrackBodyEnrichment2D bodyEnrichment, CrackTipEnrichments2D tipEnrichments)
         {
             // Clear existing enrichments
             XSubdomain subdomain = model.GetXSubdomain(subdomainID);
@@ -278,7 +278,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
         }
 
         private static (int[] bodyNodes, int[] tipNodes, int[] bodyElements, int[] tipElements) SerializeEnrichmentData_master(
-            int subdomainID, XModelMpi model, CrackBodyEnrichment2D bodyEnrichment, CrackTipEnrichments2D tipEnrichments)
+            int subdomainID, XModelMpiCentralized model, CrackBodyEnrichment2D bodyEnrichment, CrackTipEnrichments2D tipEnrichments)
         {
             XSubdomain subdomain = model.GetXSubdomain(subdomainID);
 
@@ -306,7 +306,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
         }
 
         private static double[] SerializeLevelSetData_master(SingleCrackLsm levelSets, TipCoordinateSystem tipSystem, 
-            int subdomainID, XModelMpi model)
+            int subdomainID, XModelMpiCentralized model)
         {
             // Serialize level set data
             XSubdomain subdomain = model.GetXSubdomain(subdomainID);
@@ -330,7 +330,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             return levelSetData;
         }
 
-        private void ScatterEnrichmentData(XModelMpi model)
+        private void ScatterEnrichmentData(XModelMpiCentralized model)
         {
             if (procs.IsMasterProcess)
             {
@@ -360,7 +360,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
             }
         }
 
-        private void ScatterLevelSetData(XModelMpi model)
+        private void ScatterLevelSetData(XModelMpiCentralized model)
         {
             if (procs.IsMasterProcess)
             {

@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
 
                 // Actual model
                 HolesBenchmarkMpi actualBenchmark = CreateActualModel(procs);
-                XModelMpi actualModel = actualBenchmark.Model;
+                XModelMpiCentralized actualModel = actualBenchmark.Model;
                 actualModel.ConnectDataStructures();
                 actualModel.ScatterSubdomains();
                 //Console.WriteLine($"Process {procs.OwnRank}: Scattering lsm data");
@@ -74,7 +74,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
                 expectedModel.ConnectDataStructures();
 
                 // Actual model
-                XModelMpi actualModel = CreateActualModel(procs).Model;
+                XModelMpiCentralized actualModel = CreateActualModel(procs).Model;
                 actualModel.ConnectDataStructures();
                 actualModel.ScatterSubdomains();
 

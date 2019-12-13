@@ -30,7 +30,7 @@ namespace ISAAR.MSolve.SamplesConsole.Parallel
                 var procs = new ProcessDistribution(Communicator.world, master, processesToSubdomains);
 
                 // Create the model in master process
-                var model = new ModelMpi(procs, Quad4PlateTest.CreateModel);
+                var model = new ModelMpiCentralized(procs, Quad4PlateTest.CreateModel);
                 model.ConnectDataStructures();
 
                 // Scatter subdomain data to each process

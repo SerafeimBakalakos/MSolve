@@ -15,7 +15,7 @@ using ISAAR.MSolve.XFEM.Transfer;
 //      with what. 
 namespace ISAAR.MSolve.XFEM.Entities
 {
-    public class XModelMpi : ModelMpiBase<XModel>
+    public class XModelMpiCentralized : ModelMpiCentralizedBase<XModel>
     {
         private const int subdomainDataTag = 0;
 
@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.XFEM.Entities
         //      subdomain.
         private readonly IXFiniteElementFactory elementFactory;
 
-        public XModelMpi(ProcessDistribution processDistribution, Func<XModel> createModel,
+        public XModelMpiCentralized(ProcessDistribution processDistribution, Func<XModel> createModel,
             IXFiniteElementFactory elementFactory) : base(processDistribution)
         {
             this.elementFactory = elementFactory;

@@ -144,7 +144,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// <summary>
         /// Before accessing it, make sure <see cref="InitializeModel"/> has been called.
         /// </summary>
-        public XModelMpi Model { get; private set; }
+        public XModelMpiCentralized Model { get; private set; }
 
         public string Name { get { return "Twin Holes benchmark"; } }
 
@@ -302,7 +302,7 @@ namespace ISAAR.MSolve.XFEM.Tests
                 PartitionMesh(numSubdomains, model_master, mesh_master);
             }
 
-            Model = new XModelMpi(procs, () => model_master, elementFactory);
+            Model = new XModelMpiCentralized(procs, () => model_master, elementFactory);
         }
 
         private void InitializeCrack()

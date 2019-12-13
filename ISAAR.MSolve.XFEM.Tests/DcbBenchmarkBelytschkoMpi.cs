@@ -130,7 +130,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// <summary>
         /// Before accessing it, make sure <see cref="InitializeModel"/> has been called.
         /// </summary>
-        public XModelMpi Model { get; private set; }
+        public XModelMpiCentralized Model { get; private set; }
 
         public string Name { get { return "Fillet benchmark"; } }
 
@@ -167,7 +167,7 @@ namespace ISAAR.MSolve.XFEM.Tests
                 (model_master, mesh_master) = builder.BuildModel();
             }
 
-            Model = new XModelMpi(procs, () => model_master, ElementFactory);
+            Model = new XModelMpiCentralized(procs, () => model_master, ElementFactory);
         }
 
         public void InitializeCrack()

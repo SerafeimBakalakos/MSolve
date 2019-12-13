@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
         private readonly ICrackDescriptionMpi crack;
         private readonly double fractureToughness;
         private readonly int maxIterations;
-        private readonly XModelMpi model;
+        private readonly XModelMpiCentralized model;
         private readonly TipAdaptivePartitioner partitioner; //TODO: Refactor its injection and usage
         private readonly ProcessDistribution procs;
         private readonly bool reanalysis = true;
@@ -46,7 +46,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
         private HashSet<ISubdomain> newTipEnrichedSubdomains_master;
         private CrackPropagationTermination termination;
 
-        public QuasiStaticCrackPropagationAnalyzerMpi(ProcessDistribution processDistribution, XModelMpi model, ISolverMpi solver,
+        public QuasiStaticCrackPropagationAnalyzerMpi(ProcessDistribution processDistribution, XModelMpiCentralized model, ISolverMpi solver,
             /*IStaticProvider problem,*/ ICrackDescriptionMpi crack, double fractureToughness, int maxIterations, 
             TipAdaptivePartitioner partitioner = null)
         {

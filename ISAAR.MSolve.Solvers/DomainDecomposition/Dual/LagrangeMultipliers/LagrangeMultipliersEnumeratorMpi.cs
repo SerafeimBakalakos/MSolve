@@ -70,14 +70,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
                 ISubdomain subdomain = model.GetSubdomain(s);
                 subdomainDofOrderings[s] = getSubdomainDofOrdering(subdomain);
             }
-            #region debug
-            procs.PrintProcessDistribution();
-            foreach (int s in subdomainDofOrderings.Keys)
-            {
-                DofTable ordering = subdomainDofOrderings[s];
-                Console.WriteLine($"Process {procs.OwnRank} - Subdomain {s}: num remainder dofs = {ordering.EntryCount}");
-            }
-            #endregion
             if (procs.IsMasterProcess)
             {
                 subdomainBooleanMatrices = CalcSubdomainBooleanMatrices(lagrangeMultipliers_master, subdomainDofOrderings);

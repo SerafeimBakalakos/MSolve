@@ -8,9 +8,9 @@ using ISAAR.MSolve.LinearAlgebra.Distributed.Transfer;
 
 namespace ISAAR.MSolve.FEM.Entities
 {
-    public class ModelMpi : ModelMpiBase<Model>
+    public class ModelMpiCentralized : ModelMpiCentralizedBase<Model>
     {
-        public ModelMpi(ProcessDistribution processDistribution, Func<Model> createModel) : 
+        public ModelMpiCentralized(ProcessDistribution processDistribution, Func<Model> createModel) : 
             base(processDistribution)
         {
             if (processDistribution.IsMasterProcess) this.model = createModel();

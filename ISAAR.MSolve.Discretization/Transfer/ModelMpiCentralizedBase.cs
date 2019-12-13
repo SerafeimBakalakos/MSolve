@@ -19,14 +19,14 @@ using ISAAR.MSolve.LinearAlgebra.Distributed;
 //      is considered, it will be nice to let ModelMpi handle the communication before and after updating model fields.
 namespace ISAAR.MSolve.Discretization.Transfer
 {
-    public abstract class ModelMpiBase<TModel> : IModelMpi
+    public abstract class ModelMpiCentralizedBase<TModel> : IModelMpi
         where TModel : IModel
     {
         protected readonly Dictionary<int, Cluster> clusters = new Dictionary<int, Cluster>();
         protected readonly ProcessDistribution procs;
         protected TModel model; // This is set in the concrete class's contructor for master and after scattering the subdomains for the other processes.
 
-        protected ModelMpiBase(ProcessDistribution processDistribution)
+        protected ModelMpiCentralizedBase(ProcessDistribution processDistribution)
         {
             this.procs = processDistribution;
         }

@@ -76,7 +76,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
             //var writer = new FullMatrixWriter();
 
             // Create the model in master process
-            var model = new ModelMpi(procs, Example4x4QuadsHomogeneous.CreateModel);
+            var model = new ModelMpiCentralized(procs, Example4x4QuadsHomogeneous.CreateModel);
             model.ConnectDataStructures();
 
             // Scatter subdomain data to each process

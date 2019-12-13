@@ -156,7 +156,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry
             multiCrack_master.Propagate(totalFreeDisplacements);
         }
 
-        public void ScatterCrackData(XModelMpi model)
+        public void ScatterCrackData(XModelMpiCentralized model)
         {
             foreach (TrackingExteriorCrackLsmMpi crack in singleCracks) crack.ScatterCrackData(model);
         }
