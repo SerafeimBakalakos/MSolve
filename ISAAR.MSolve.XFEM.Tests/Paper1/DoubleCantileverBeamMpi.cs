@@ -75,7 +75,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             benchmark.Partitioner = new TipAdaptivePartitioner(benchmark.Crack);
             Func<ISubdomain, HashSet<INode>> getInitialCorners = sub => new HashSet<INode>(
                     CornerNodeUtilities.FindCornersOfRectangle2D(sub).Where(node => node.Constraints.Count == 0));
-            var cornerNodeSelection = new CrackedFetiDPCornerNodesMpi(procs, benchmark.Model, benchmark.Crack, getInitialCorners);
+            var cornerNodeSelection = new CrackedFetiDPCornerNodesMpiCentralized(procs, benchmark.Model, benchmark.Crack, 
+                getInitialCorners);
             //var reordering = new OrderingAmdCSparseNet();  // This is slower than natural ordering
             IReorderingAlgorithm reordering = null;
             var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(reordering);

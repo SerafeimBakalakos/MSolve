@@ -29,6 +29,20 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
         private const string subdomainPlotDirectory = @"C:\Users\Serafeim\Desktop\Paper1\DCB\Plots\Subdomains";
         private const string solverLogPath = @"C:\Users\Serafeim\Desktop\Paper1\DCB\solver_log.txt";
 
+        public static void RunTest()
+        {
+            int numElementsY = 15;
+            int numSubdomainsY = 3;
+
+            // Feti-DP serial
+            int numSubdomainsX = 3 * numSubdomainsY;
+            bool reanalysis = false;
+            bool plotSubdomains = true;
+            bool plotLSM = false;
+            SolverFetiDPSerial(CreateBenchmark(numElementsY, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM),
+                    plotSubdomains, reanalysis);
+        }
+
         public static void RunVariousMeshes()
         {
             // (numElementsY, dofs): (40, 10025), (75, 34664), (100, 61009), (125, 95258), (130, 102711), (200, 241900), 

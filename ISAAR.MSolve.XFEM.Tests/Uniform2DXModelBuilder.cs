@@ -67,7 +67,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
         /// </summary>
         public double[,] YoungModuliOfSubdomains { get; set; } = null;
 
-        public (XModel model, BidirectionalMesh2D<XNode, XContinuumElement2D> mesh) BuildModel()
+        public XModel BuildModel()
         {
             // Generate global mesh
             double dx = DomainLengthX / NumTotalElementsX;
@@ -167,8 +167,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
                 foreach (XNode node in nodes) model.NodalLoads.Add(new NodalLoad(node, dof, load));
             }
 
-
-            return (model, mesh);
+            model.Mesh = mesh;
+            return model;
         }
 
         /// <summary>

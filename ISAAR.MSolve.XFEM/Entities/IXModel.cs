@@ -10,6 +10,8 @@ namespace ISAAR.MSolve.XFEM.Entities
     {
         IDomain2DBoundary Boundary { get; }
 
+        XModel RawModel { get; }
+
         XSubdomain GetXSubdomain(int subdomainID);
 
         void ScatterSubdomains(HashSet<int> modifiedSubdomains);

@@ -45,6 +45,8 @@ namespace ISAAR.MSolve.XFEM.Entities
             set => model.DofSerializer = value;
         }
 
+        public XModel RawModel => model;
+
         public XSubdomain GetXSubdomain(int subdomainID)
         {
             procs.CheckProcessMatchesSubdomainUnlessMaster(subdomainID);

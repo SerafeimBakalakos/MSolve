@@ -63,8 +63,6 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 
         private readonly double tipEnrichmentRadius = 0.0;
 
-        private BidirectionalMesh2D<XNode, XContinuumElement2D> mesh;
-
         public FourPointBendingBeamBenchmark(int numElementsX, int numElementsY, int numSubdomainsX, int numSubdomainsY, 
             double growthLength, double tipEnrichmentRadius, double jIntegralRadiusOverElementSize, 
             int maxIterations, double heavisideTol, string plotDirectoryLsm, string plotDirectorySubdomains)
@@ -90,7 +88,6 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
         public double FractureToughness => double.MaxValue;
 
         public int MaxIterations { get; }
-        public IMesh2D<XNode, XContinuumElement2D> Mesh => mesh;
 
         /// <summary>
         /// Before accessing it, make sure <see cref="InitializeModel"/> has been called.
@@ -120,7 +117,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             builder.PoissonRatio = v;
             builder.Thickness = thickness;
 
-            (Model, mesh) = builder.BuildModel();
+            Model = builder.BuildModel();
 
             // Boundary conditions
             double meshTol = 1E-8;
@@ -164,7 +161,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
         public void InitializeCrack()
         {
             var globalHomogeneousMaterial = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, E, v);
-            IPropagator propagator = new Propagator(mesh, jIntegralRadiusOverElementSize,
+            IPropagator propagator = new Propagator(Model.Mesh, jIntegralRadiusOverElementSize,
                 new HomogeneousMaterialAuxiliaryStates(globalHomogeneousMaterial),
                 new HomogeneousSIFCalculator(globalHomogeneousMaterial),
                 new MaximumCircumferentialTensileStressCriterion(), new ConstantIncrement2D(growthLength));
@@ -173,7 +170,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 
             var lsmCrack = new TrackingExteriorCrackLsm(propagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol),
                 new SignFunction2D());
-            lsmCrack.Mesh = mesh;
+            lsmCrack.Mesh = Model.Mesh;
 
             // Logging         
             if (plotDirectoryLsm != null)

@@ -79,7 +79,6 @@ namespace ISAAR.MSolve.XFEM.Tests
         private readonly double tipEnrichmentRadius = 0.0;
 
         private TrackingExteriorCrackLsm crack;
-        private BidirectionalMesh2D<XNode, XContinuumElement2D> mesh;
 
         /// <summary>
         /// 
@@ -115,7 +114,6 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// boundary or if the fracture toughness is exceeded.
         /// </summary>
         public int MaxIterations { get; }
-        public IMesh2D<XNode, XContinuumElement2D> Mesh => mesh;
 
         /// <summary>
         /// Before accessing it, make sure <see cref="InitializeModel"/> has been called.
@@ -145,13 +143,13 @@ namespace ISAAR.MSolve.XFEM.Tests
             builder.DistributeLoadAtNodes(Uniform2DXModelBuilder.BoundaryRegion.UpperLeftCorner, StructuralDof.TranslationY, load);
             builder.DistributeLoadAtNodes(Uniform2DXModelBuilder.BoundaryRegion.LowerLeftCorner, StructuralDof.TranslationY, -load);
 
-            (Model, mesh) = builder.BuildModel();
+            Model = builder.BuildModel();
         }
 
         public void InitializeCrack()
         {
             var globalHomogeneousMaterial = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, E, v);
-            IPropagator propagator = new Propagator(mesh, jIntegralRadiusOverElementSize,
+            IPropagator propagator = new Propagator(Model.Mesh, jIntegralRadiusOverElementSize,
                 new HomogeneousMaterialAuxiliaryStates(globalHomogeneousMaterial),
                 new HomogeneousSIFCalculator(globalHomogeneousMaterial),
                 new MaximumCircumferentialTensileStressCriterion(), new ConstantIncrement2D(growthLength));
@@ -164,7 +162,7 @@ namespace ISAAR.MSolve.XFEM.Tests
 
             var lsmCrack = new TrackingExteriorCrackLsm(propagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol), 
                 new SignFunction2D());
-            lsmCrack.Mesh = mesh;
+            lsmCrack.Mesh = Model.Mesh;
 
             // Logging         
             if (lsmPlotDirectory != null)

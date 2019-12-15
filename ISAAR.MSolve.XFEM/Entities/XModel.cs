@@ -37,6 +37,8 @@ namespace ISAAR.MSolve.XFEM.Entities
 
         public IList<IMassAccelerationHistoryLoad> MassAccelerationHistoryLoads => throw new NotImplementedException();
 
+        public BidirectionalMesh2D<XNode, XContinuumElement2D> Mesh { get; set; }
+
         public Dictionary<int, XNode> Nodes { get; } = new Dictionary<int, XNode>();
 
         public int NumElements => Elements.Count;

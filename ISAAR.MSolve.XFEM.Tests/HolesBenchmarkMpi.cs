@@ -302,7 +302,8 @@ namespace ISAAR.MSolve.XFEM.Tests
                 PartitionMesh(numSubdomains, model_master, mesh_master);
             }
 
-            Model = new XModelMpiCentralized(procs, () => model_master, elementFactory);
+            //Model = new XModelMpiCentralized(procs, () => model_master, elementFactory);
+            Model = new XModelMpiRedundant(procs, () => model_master);
         }
 
         private void InitializeCrack()

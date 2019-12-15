@@ -78,9 +78,6 @@ namespace ISAAR.MSolve.XFEM.Tests
 
         private readonly ProcessDistribution procs;
 
-        private BidirectionalMesh2D<XNode, XContinuumElement2D> mesh_master;
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -125,7 +122,6 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// boundary or if the fracture toughness is exceeded.
         /// </summary>
         public int MaxIterations { get; }
-        public IMesh2D<XNode, XContinuumElement2D> Mesh => mesh_master;
 
         /// <summary>
         /// Before accessing it, make sure <see cref="InitializeModel"/> has been called.
@@ -146,8 +142,7 @@ namespace ISAAR.MSolve.XFEM.Tests
 
         public void CreateModel()
         {
-            XModel model_master = null;
-            if (procs.IsMasterProcess)
+            Func<XModel> createModel = () =>
             {
                 var builder = new Uniform2DXModelBuilder();
                 builder.DomainLengthX = L;
@@ -164,10 +159,11 @@ namespace ISAAR.MSolve.XFEM.Tests
                 builder.DistributeLoadAtNodes(Uniform2DXModelBuilder.BoundaryRegion.UpperLeftCorner, StructuralDof.TranslationY, load);
                 builder.DistributeLoadAtNodes(Uniform2DXModelBuilder.BoundaryRegion.LowerLeftCorner, StructuralDof.TranslationY, -load);
 
-                (model_master, mesh_master) = builder.BuildModel();
-            }
+                return builder.BuildModel();
+            };
 
-            Model = new XModelMpiCentralized(procs, () => model_master, ElementFactory);
+            //Model = new XModelMpiCentralized(procs, createModel, ElementFactory);
+            Model = new XModelMpiRedundant(procs, createModel);
         }
 
         public void InitializeCrack()
@@ -175,8 +171,10 @@ namespace ISAAR.MSolve.XFEM.Tests
             TrackingExteriorCrackLsm lsmCrack = null;
             if (procs.IsMasterProcess)
             {
+                var model = Model.RawModel;
+                var mesh = Model.RawModel.Mesh;
                 var globalHomogeneousMaterial = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, E, v);
-                IPropagator propagator = new Propagator(mesh_master, jIntegralRadiusOverElementSize,
+                IPropagator propagator = new Propagator(Model.RawModel.Mesh, jIntegralRadiusOverElementSize,
                     new HomogeneousMaterialAuxiliaryStates(globalHomogeneousMaterial),
                     new HomogeneousSIFCalculator(globalHomogeneousMaterial),
                     new MaximumCircumferentialTensileStressCriterion(), new ConstantIncrement2D(growthLength));
@@ -189,7 +187,7 @@ namespace ISAAR.MSolve.XFEM.Tests
 
                 lsmCrack = new TrackingExteriorCrackLsm(propagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol), 
                     new SignFunction2D());
-                lsmCrack.Mesh = mesh_master;
+                lsmCrack.Mesh = Model.RawModel.Mesh;
                 
 
                 // Mesh geometry interaction
