@@ -11,6 +11,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x4x4Quads
 {
@@ -103,6 +104,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x
             Debug.Assert(subdomain.ID >= 0 && subdomain.ID < 8);
             return new HashSet<INode>(new INode[] { subdomain.GetNode(63), });
         }
+
+        public static UserDefinedMidsideNodes DefineMidsideNodeSelectionSerial(IModel model)
+            => new UserDefinedMidsideNodes(DefineMidsideNodesAll(model), new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ } );
 
         public static Dictionary<ISubdomain, HashSet<INode>> DefineMidsideNodesAll(IModel model)
         {
