@@ -4,7 +4,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 namespace ISAAR.MSolve.XFEM.CrackGeometry
 {
     // TODO: this only works for cracks with a single tip
-    interface IExteriorCrack: ISingleCrack
+    public interface IExteriorCrack: ISingleCrack
     {
         IReadOnlyList<CartesianPoint> CrackPath { get; }
 

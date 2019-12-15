@@ -148,8 +148,8 @@ namespace ISAAR.MSolve.XFEM.Tests
 
         public string Name { get { return "Twin Holes benchmark"; } }
 
-        public TrackingExteriorCrackLsmMpi LeftCrack => (TrackingExteriorCrackLsmMpi)(Crack.SingleCracks[0]);
-        public TrackingExteriorCrackLsmMpi RightCrack => (TrackingExteriorCrackLsmMpi)(Crack.SingleCracks[1]);
+        public TrackingExteriorCrackLsmMpiCentralized LeftCrack => (TrackingExteriorCrackLsmMpiCentralized)(Crack.SingleCracks[0]);
+        public TrackingExteriorCrackLsmMpiCentralized RightCrack => (TrackingExteriorCrackLsmMpiCentralized)(Crack.SingleCracks[1]);
 
         public TipAdaptivePartitioner Partitioner { get; set; } // Refactor its injection
 

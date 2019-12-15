@@ -34,7 +34,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
                 IXModelMpi actualModel = actualBenchmark.Model;
                 actualModel.ConnectDataStructures();
                 actualModel.ScatterSubdomains();
-                TrackingExteriorCrackLsmMpi actualCrack = actualBenchmark.Crack;
+                var actualCrack = (TrackingExteriorCrackLsmMpiCentralized)actualBenchmark.Crack;
                 //Console.WriteLine($"Process {procs.OwnRank}: Scattering lsm data");
                 actualCrack.ScatterCrackData(actualModel);
 

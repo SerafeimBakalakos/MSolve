@@ -11,7 +11,7 @@ using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
 //TODO: decide on consistent collections, indexes/keys and naming
 namespace ISAAR.MSolve.XFEM.CrackGeometry
 {
-    public interface ICrackDescriptionMpi : ICrackDescription
+    public interface ICrackDescriptionMpi : ICrackDescription, IExteriorCrack
     {
         void ScatterCrackData(IXModelMpi model);
     }

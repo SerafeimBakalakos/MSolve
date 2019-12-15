@@ -90,7 +90,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                     Debug.WriteLine($"Process {procs.OwnRank}: Crack propagation step {analysisStep}");
                     Console.WriteLine($"Process {procs.OwnRank}: Crack propagation step {analysisStep}. Tip ({crack.CrackTips[0].X}, {crack.CrackTips[0].Y})");
 
-                    // Apply the enrichments due to the update crack
+                    // Apply the enrichments due to the updated crack
                     crack.UpdateEnrichments();
                 }
 

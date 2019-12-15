@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
     /// <summary>
     /// Warning: may misclassify elements as tip elements, causing gross errors.
     /// </summary>
-    public class TrackingExteriorCrackLsmMpi : IExteriorCrack, ICrackDescriptionMpi
+    public class TrackingExteriorCrackLsmMpiCentralized : ICrackDescriptionMpi
     {
         private const int levelSetDataTag = 0;
         private const int enrichmentDataTag = 1;
@@ -33,12 +33,12 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
         private readonly TrackingExteriorCrackLsm embeddedCrack_master;
         private readonly ProcessDistribution procs;
 
-        public TrackingExteriorCrackLsmMpi(ProcessDistribution procs, TrackingExteriorCrackLsm embeddedCrack_master)
+        public TrackingExteriorCrackLsmMpiCentralized(ProcessDistribution procs, Func<TrackingExteriorCrackLsm> createCrack)
         {
             this.procs = procs;
-            this.embeddedCrack_master = embeddedCrack_master;
             if (procs.IsMasterProcess)
             {
+                this.embeddedCrack_master = createCrack();
                 this.CrackBodyEnrichment = embeddedCrack_master.CrackBodyEnrichment;
                 this.CrackTipEnrichments = embeddedCrack_master.CrackTipEnrichments;
             }

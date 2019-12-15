@@ -18,6 +18,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition;
 using ISAAR.MSolve.XFEM.Analyzers;
+using ISAAR.MSolve.XFEM.CrackGeometry;
 using ISAAR.MSolve.XFEM.CrackGeometry.CrackTip;
 using ISAAR.MSolve.XFEM.CrackGeometry.HeavisideSingularityResolving;
 using ISAAR.MSolve.XFEM.CrackGeometry.Implicit;
@@ -112,7 +113,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// <summary>
         /// The crack geometry description. Before accessing it, make sure <see cref="InitializeModel"/> has been called.
         /// </summary>
-        public TrackingExteriorCrackLsmMpi Crack { get; private set; }
+        public ICrackDescriptionMpi Crack { get; private set; }
 
         public double FractureToughness => fractureToughness;
 
@@ -168,9 +169,10 @@ namespace ISAAR.MSolve.XFEM.Tests
 
         public void InitializeCrack()
         {
-            TrackingExteriorCrackLsm lsmCrack = null;
-            if (procs.IsMasterProcess)
+            Func<TrackingExteriorCrackLsm> createCrack = () =>
             {
+                TrackingExteriorCrackLsm lsmCrack = null;
+
                 var model = Model.RawModel;
                 var mesh = Model.RawModel.Mesh;
                 var globalHomogeneousMaterial = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, E, v);
@@ -185,17 +187,20 @@ namespace ISAAR.MSolve.XFEM.Tests
                 initialCrack.UpdateGeometry(-dTheta, da);
                 //var crackTip = new CartesianPoint(a + da * Math.Cos(dTheta), h/2 - da * Math.Sin(dTheta));
 
-                lsmCrack = new TrackingExteriorCrackLsm(propagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol), 
+                lsmCrack = new TrackingExteriorCrackLsm(propagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol),
                     new SignFunction2D());
                 lsmCrack.Mesh = Model.RawModel.Mesh;
-                
+
 
                 // Mesh geometry interaction
                 lsmCrack.InitializeGeometry(initialCrack);
                 //lsmCrack.UpdateGeometry(-dTheta, da);
-            }
 
-            this.Crack = new TrackingExteriorCrackLsmMpi(procs, lsmCrack);
+                return lsmCrack;
+            };
+
+            //this.Crack = new TrackingExteriorCrackLsmMpiCentralized(procs, createCrack);
+            this.Crack = new TrackingExteriorCrackLsmMpiRedundant(procs, createCrack);
             Model.DofSerializer = new EnrichedDofSerializer(this.Crack);
         }
 

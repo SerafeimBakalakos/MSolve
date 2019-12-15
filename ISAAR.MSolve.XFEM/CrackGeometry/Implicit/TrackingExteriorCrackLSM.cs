@@ -273,11 +273,13 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
 
         public SortedSet<CartesianPoint> FindTriangleVertices(XContinuumElement2D element)
             => LevelSets.FindTriangleVertices(element);
-        
+
+        public (double growthAngle, double growthLength) FindPropagationSegment(Dictionary<int, Vector> totalFreeDisplacements)
+            => propagator.Propagate(totalFreeDisplacements, crackTip, tipSystem, tipElements);
+
         public void Propagate(Dictionary<int, Vector> totalFreeDisplacements)
         {
-            (double growthAngle, double growthLength) = propagator.Propagate(totalFreeDisplacements,
-                crackTip, tipSystem, tipElements);
+            (double growthAngle, double growthLength) = FindPropagationSegment(totalFreeDisplacements);
             UpdateGeometry(growthAngle, growthLength);
         }
 

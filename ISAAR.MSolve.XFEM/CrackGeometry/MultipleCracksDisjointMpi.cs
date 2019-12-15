@@ -17,15 +17,15 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry
     {
         private readonly ProcessDistribution procs;
         private readonly MultipleCracksDisjoint multiCrack_master;
-        private readonly List<TrackingExteriorCrackLsmMpi> singleCracks;
+        private readonly List<TrackingExteriorCrackLsmMpiCentralized> singleCracks;
 
         public MultipleCracksDisjointMpi(ProcessDistribution procs, IReadOnlyList<TrackingExteriorCrackLsm> singleCracks)
         {
             this.procs = procs;
-            this.singleCracks = new List<TrackingExteriorCrackLsmMpi>();
+            this.singleCracks = new List<TrackingExteriorCrackLsmMpiCentralized>();
             foreach (TrackingExteriorCrackLsm crack in singleCracks)
             {
-                this.singleCracks.Add(new TrackingExteriorCrackLsmMpi(procs, crack));
+                this.singleCracks.Add(new TrackingExteriorCrackLsmMpiCentralized(procs, () => crack));
             }
             if (procs.IsMasterProcess) this.multiCrack_master = new MultipleCracksDisjoint(singleCracks);
         }
@@ -158,7 +158,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry
 
         public void ScatterCrackData(IXModelMpi model)
         {
-            foreach (TrackingExteriorCrackLsmMpi crack in singleCracks) crack.ScatterCrackData(model);
+            foreach (TrackingExteriorCrackLsmMpiCentralized crack in singleCracks) crack.ScatterCrackData(model);
         }
 
         public void UpdateEnrichments()
