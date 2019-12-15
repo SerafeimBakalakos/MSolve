@@ -26,10 +26,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
         private readonly string msgHeader;
         private readonly ProcessDistribution procs;
         private readonly Dictionary<ISubdomain, FetiDPSubdomainDofSeparator> subdomainDofs;
+        private readonly Dictionary<ISubdomain, DofTable> subdomainCornerDofOrderings_master = new Dictionary<ISubdomain, DofTable>();
 
         // These are defined per subdomain and are needed both in the corresponding process and in master.
         private Dictionary<ISubdomain, UnsignedBooleanMatrix> subdomainCornerBooleanMatrices_master;
-        private Dictionary<ISubdomain, DofTable> subdomainCornerDofOrderings_master = new Dictionary<ISubdomain, DofTable>();
 
         public FetiDPDofSeparatorMpi(ProcessDistribution processDistribution, IModel model,
             ICornerNodeSelection cornerNodeSelection)
@@ -236,7 +236,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
                 getPackedDataLength, packData, unpackData, activeSubdomains);
 
             // Store the received data in master
-            if (procs.IsMasterProcess) subdomainCornerDofOrderings_master = allOrderings.ChangeKey(model);
+            //if (procs.IsMasterProcess) subdomainCornerDofOrderings_master = allOrderings.ChangeKey(model);
+            if (procs.IsMasterProcess)
+            {
+                foreach (var idOrderingPair in allOrderings)
+                {
+                    ISubdomain subdomain = model.GetSubdomain(idOrderingPair.Key);
+                    subdomainCornerDofOrderings_master[subdomain] = idOrderingPair.Value;
+                }
+            }
         }
 
         /// <summary>
