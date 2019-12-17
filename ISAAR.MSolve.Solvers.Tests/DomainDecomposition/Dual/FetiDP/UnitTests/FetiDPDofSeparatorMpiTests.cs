@@ -67,7 +67,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
         internal static (ProcessDistribution, IModel, FetiDPDofSeparatorMpi) CreateModelAndDofSeparator(int numProcesses)
         {
-            ProcessDistribution procs = MpiProcessDistributionUtilities.DefineProcesses(numProcesses, 4);
+            var procs = ProcessDistribution.CreateDistribution(numProcesses, 4);
 
             // Output
             string outputDirectory = @"C:\Users\Serafeim\Desktop\MPI\Tests";

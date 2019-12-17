@@ -18,6 +18,7 @@ using ISAAR.MSolve.XFEM.CrackGeometry;
 using ISAAR.MSolve.XFEM.Entities;
 using ISAAR.MSolve.XFEM.Solvers;
 using MPI;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Transfer;
 
 // TODO: fix a bug that happens when the crack has almost reached the boundary, is inside but no tip can be found
 namespace ISAAR.MSolve.XFEM.Analyzers
@@ -26,10 +27,8 @@ namespace ISAAR.MSolve.XFEM.Analyzers
     /// Implements crack propagation under static loading with linear material behavior. Based on Linear Elastic Fracture 
     /// Mechanics. Appropriate for brittle materials or fatigue crack propagation analysis. For now, it only works with XFEM.
     /// </summary>
-    public class QuasiStaticCrackPropagationAnalyzerMpi //: IAnalyzer
+    public class QuasiStaticCrackPropagationAnalyzerMpiRedundnat //: IAnalyzer
     {
-        private const int displacementsTag = 0;
-
         private readonly ICrackDescriptionMpi crack;
         private readonly double fractureToughness;
         private readonly int maxIterations;
@@ -43,10 +42,10 @@ namespace ISAAR.MSolve.XFEM.Analyzers
         private readonly DirichletEquivalentLoadsAssembler loadsAssembler; 
 
         private readonly ISolverMpi solver;
-        private HashSet<ISubdomain> newTipEnrichedSubdomains_master;
+        private HashSet<ISubdomain> newTipEnrichedSubdomains;
         private CrackPropagationTermination termination;
 
-        public QuasiStaticCrackPropagationAnalyzerMpi(ProcessDistribution processDistribution, IXModelMpi model, 
+        public QuasiStaticCrackPropagationAnalyzerMpiRedundnat(ProcessDistribution processDistribution, IXModelMpi model, 
             ISolverMpi solver, /*IStaticProvider problem,*/ ICrackDescriptionMpi crack, double fractureToughness, 
             int maxIterations, TipAdaptivePartitioner partitioner = null)
         {
@@ -71,7 +70,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
         {
             // The order in which the next initializations happen is very important.
             if (isFirstAnalysis) model.ConnectDataStructures();
-            model.ScatterSubdomains();
+            //model.ScatterSubdomains(); //This is not needed, since each process stores the whole model
 
             //solver.Initialize(); //TODO: not sure about this one.
         }
@@ -85,29 +84,36 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             int analysisStep;
             for (analysisStep = 0; analysisStep < maxIterations; ++analysisStep)
             {
+                procs.Communicator.Barrier();
                 if (procs.IsMasterProcess)
                 {
                     Debug.WriteLine($"Process {procs.OwnRank}: Crack propagation step {analysisStep}");
                     Console.WriteLine($"Process {procs.OwnRank}: Crack propagation step {analysisStep}. Tip ({crack.CrackTips[0].X}, {crack.CrackTips[0].Y})");
-
-                    // Apply the enrichments due to the updated crack
-                    crack.UpdateEnrichments();
                 }
 
+                // Apply the enrichments due to the updated crack
+                //Console.WriteLine($"Process {procs.OwnRank}: Update enrichment data");
+                crack.UpdateEnrichments();
+
                 // Update the subdomains due to the new enrichments and possible repartition the mesh
+                //Console.WriteLine($"Process {procs.OwnRank}: Update mesh partition");
                 UpdateSubdomains();
 
-                // Scatter the crack and enrichment data to other processes
-                //Console.WriteLine($"Process {procs.OwnRank}: Scattering crack data");
-                crack.ScatterCrackData(model);
+                //TODO: This is not needed since each process stores and updates the whole crack.
+                //// Scatter the crack and enrichment data to other processes
+                ////Console.WriteLine($"Process {procs.OwnRank}: Scattering crack data");
+                //crack.ScatterCrackData(model); 
 
                 // Order and count dofs
                 //Console.WriteLine($"Process {procs.OwnRank}: Ordering dofs and crack data");
                 solver.OrderDofs(false);
-                ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
-                ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
-                linearSystem.Reset(); // Necessary to define the linear system's size 
-                linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
+                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+                {
+                    ISubdomain subdomain = model.GetSubdomain(s);
+                    ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
+                    linearSystem.Reset(); // Necessary to define the linear system's size 
+                    linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
+                }
 
                 // Create the stiffness matrix and then the forces vector
                 //Console.WriteLine($"Process {procs.OwnRank}: Calculating matrix and rhs");
@@ -116,9 +122,14 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 //PrintKff(procs, linearSystem);
                 model.ApplyLoads();
                 LoadingUtilities.ApplyNodalLoadsMpi(procs, model, solver);
-                linearSystem.RhsVector = linearSystem.Subdomain.Forces;
-                loadsAssembler.ApplyEquivalentNodalLoads(subdomain, linearSystem.RhsVector);
-
+                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+                {
+                    ISubdomain subdomain = model.GetSubdomain(s);
+                    ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
+                    linearSystem.RhsVector = linearSystem.Subdomain.Forces;
+                    loadsAssembler.ApplyEquivalentNodalLoads(subdomain, linearSystem.RhsVector);
+                }
+                
                 // Plot domain decomposition data, if necessary
                 if (procs.IsMasterProcess)
                 {
@@ -137,16 +148,14 @@ namespace ISAAR.MSolve.XFEM.Analyzers
 
                 // Let the crack propagate
                 //Console.WriteLine($"Process {procs.OwnRank}: Propagating the crack.");
-                Dictionary<int, Vector> freeDisplacements = GatherDisplacementsToMaster(linearSystem);
+                Dictionary<int, Vector> freeDisplacements = GatherDisplacementsToMaster();
                 GatherSubdomainFreeDofOrderingsToMaster();
-                if (procs.IsMasterProcess) crack.Propagate(freeDisplacements);
+                crack.Propagate(freeDisplacements);
 
                 // Check convergence 
                 //Console.WriteLine($"Process {procs.OwnRank}: Checking convergence.");
-                bool mustTerminate = false;
-                if (procs.IsMasterProcess) mustTerminate = MustTerminate_master(analysisStep);
-                procs.Communicator.Broadcast(ref mustTerminate, procs.MasterProcess);
-                //procs.Communicator.Broadcast(ref termination, procs.MasterProcess); //TODO: This needs serialization of the enum and might not be necessary
+                bool mustTerminate = MustTerminate(analysisStep);
+                if (mustTerminate) throw new Exception("Early termination");
             }
             termination = CrackPropagationTermination.RequiredIterationsWereCompleted;
         }
@@ -171,12 +180,12 @@ namespace ISAAR.MSolve.XFEM.Analyzers
         }
 
         // TODO: Abstract this and add Tanaka_1974 approach
-        private double CalculateEquivalentSIF_master(double sifMode1, double sifMode2)
+        private double CalculateEquivalentSIF(double sifMode1, double sifMode2)
         {
             return Math.Sqrt(sifMode1 * sifMode1 + sifMode2 * sifMode2);
         }
 
-        private HashSet<ISubdomain> FindSubdomainsWithNewHeavisideEnrichedNodes_master()
+        private HashSet<ISubdomain> FindSubdomainsWithNewHeavisideEnrichedNodes()
         {
             var newHeavisideEnrichedSubdomains = new HashSet<ISubdomain>();
             foreach (ISet<XNode> heavisideNodes in crack.CrackBodyNodesNew.Values)
@@ -189,7 +198,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             return newHeavisideEnrichedSubdomains;
         }
 
-        private HashSet<ISubdomain> FindSubdomainsWithNewTipEnrichedNodes_master()
+        private HashSet<ISubdomain> FindSubdomainsWithNewTipEnrichedNodes()
         {
             var newTipEnrichedSubdomains = new HashSet<ISubdomain>();
             foreach (ISet<XNode> tipNodes in crack.CrackTipNodesNew.Values)
@@ -202,34 +211,22 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             return newTipEnrichedSubdomains;
         }
 
-        private Dictionary<int, Vector> GatherDisplacementsToMaster(ILinearSystemMpi linearSystem)
+        private Dictionary<int, Vector> GatherDisplacementsToMaster()
         {
-            Dictionary<int, Vector> freeDisplacements = null;
-            if (procs.IsMasterProcess)
+            var transferrer = new TransferrerPerSubdomain(procs);
+            var processUf = new Dictionary<int, Vector>();
+            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
             {
-                freeDisplacements = new Dictionary<int, Vector>();
-                for (int p = 0; p < procs.Communicator.Size; ++p)
-                {
-                    if (p == procs.MasterProcess) freeDisplacements[linearSystem.Subdomain.ID] = (Vector)(linearSystem.Solution);
-                    else
-                    {
-                        double[] u = MpiUtilities.ReceiveArray<double>(procs.Communicator, p, displacementsTag);
-                        freeDisplacements[procs.GetSubdomainIdOfProcess(p)] = Vector.CreateFromArray(u);
-                    }
-                }
+                ISubdomain subdomain = model.GetSubdomain(s);
+                processUf[s] = (Vector)solver.GetLinearSystem(subdomain).Solution;
             }
-            else
-            {
-                MpiUtilities.SendArray<double>(procs.Communicator, linearSystem.Solution.CopyToArray(),
-                    procs.MasterProcess, displacementsTag);
-            }
-            return freeDisplacements;
+            return transferrer.GatherFromAllSubdomains(processUf);
         }
 
         private void GatherSubdomainFreeDofOrderingsToMaster() //TODO: This should not be necessary
         {
             var globalDofOrdering = (GlobalFreeDofOrderingMpi)model.GlobalDofOrdering;
-            globalDofOrdering.GatherSubdomainDofOrderings();
+            //globalDofOrdering.GatherSubdomainDofOrderings(); // This should already have been called, during calculating the normalization of redisual in PCG.
             if (procs.IsMasterProcess)
             {
                 foreach (ISubdomain subdomain in model.EnumerateSubdomains())
@@ -239,13 +236,22 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             }
         }
 
+        private bool MustTerminate(int analysisStep)
+        {
+            bool mustTerminate = false;
+            if (procs.IsMasterProcess) mustTerminate = MustTerminate_master(analysisStep);
+            procs.Communicator.Broadcast(ref mustTerminate, procs.MasterProcess);
+            //procs.Communicator.Broadcast(ref termination, procs.MasterProcess); //TODO: This needs serialization of the enum and might not be necessary
+            return mustTerminate;
+        }
+
         private bool MustTerminate_master(int analysisStep)
         {
             // Check convergence 
             //TODO: Perhaps this should be done by the crack geometry or the Propagator itself and handled via exceptions 
             foreach (var tipPropagator in crack.CrackTipPropagators)
             {
-                double sifEffective = CalculateEquivalentSIF_master(tipPropagator.Value.Logger.SIFsMode1[analysisStep],
+                double sifEffective = CalculateEquivalentSIF(tipPropagator.Value.Logger.SIFsMode1[analysisStep],
                     tipPropagator.Value.Logger.SIFsMode2[analysisStep]);
                 //Console.WriteLine("Keff = " + sifEffective);
                 if (sifEffective >= fractureToughness)
@@ -262,34 +268,17 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             return false;
         }
 
+        /// <summary>
+        /// Update the mesh partitioning and identify unmodified subdomains to avoid fully processing them again.
+        /// </summary>
+        /// <param name="repartitionedSubdomains"></param>
         private void UpdateSubdomains()
         {
-            // Update the mesh partitioning and identify unmodified subdomains to avoid fully processing them again.
-            HashSet<ISubdomain> repartitionedSubdomains_master = null;
-            if (procs.IsMasterProcess) UpdateSubdomains_master(out repartitionedSubdomains_master);
-
-            // Possibly update subdomains in other processes
-            bool repartitioning = false;
-            if (procs.IsMasterProcess) repartitioning = repartitionedSubdomains_master != null;
-            procs.Communicator.Broadcast(ref repartitioning, procs.MasterProcess);
-            if (repartitioning)
-            {
-                HashSet<int> repartitionedIDs = null;
-                if (procs.IsMasterProcess) repartitionedIDs = new HashSet<int>(repartitionedSubdomains_master.Select(sub => sub.ID));
-                model.ScatterSubdomains(repartitionedIDs);
-            }
-
-            // Notify processes with subdomains that have modified connectivity or stiffness
-            model.ScatterSubdomainsState();
-        }
-
-        private void UpdateSubdomains_master(out HashSet<ISubdomain> repartitionedSubdomains) //TODO: If elements are moved to other subdomains, those subdomains need to be scattered again.
-        {
-            repartitionedSubdomains = null;
+            HashSet<ISubdomain> repartitionedSubdomains = null;
 
             if (model.NumSubdomains == 1) throw new InvalidOperationException("There must be >1 subdomains in a MPI environment");
 
-            if (newTipEnrichedSubdomains_master == null) 
+            if (newTipEnrichedSubdomains == null) 
             {
                 // First analysis step: All subdomains must be fully processed.
                 if (partitioner != null) repartitionedSubdomains = partitioner.UpdateSubdomains();
@@ -300,7 +289,11 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 }
 
                 // Prepare for the next analysis step
-                newTipEnrichedSubdomains_master = FindSubdomainsWithNewTipEnrichedNodes_master();
+                newTipEnrichedSubdomains = FindSubdomainsWithNewTipEnrichedNodes();
+
+                #region debug
+                //PrintSubdomainSubset(newTipEnrichedSubdomains, "tip enriched");
+                #endregion
             }
             else
             {
@@ -310,6 +303,9 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 {
                     repartitionedSubdomains = partitioner.UpdateSubdomains();
                     modifiedSubdomains.UnionWith(repartitionedSubdomains);
+                    #region debug
+                    if (repartitionedSubdomains.Count != 0) Console.WriteLine($"Process {procs.OwnRank}: mesh was repartitiοned");
+                    #endregion
                 }
 
                 if (reanalysis)
@@ -323,10 +319,10 @@ namespace ISAAR.MSolve.XFEM.Analyzers
 
                     // The modified subdomains are the ones containing nodes enriched with tip or Heaviside functions during the  
                     // current analysis step. Also the ones that had tip enriched nodes in the previous step.
-                    modifiedSubdomains.UnionWith(newTipEnrichedSubdomains_master);
-                    newTipEnrichedSubdomains_master = FindSubdomainsWithNewTipEnrichedNodes_master(); // Prepare for the next analysis step
-                    modifiedSubdomains.UnionWith(newTipEnrichedSubdomains_master);
-                    HashSet<ISubdomain> newHeavisideSubdomains = FindSubdomainsWithNewHeavisideEnrichedNodes_master();
+                    modifiedSubdomains.UnionWith(newTipEnrichedSubdomains);
+                    newTipEnrichedSubdomains = FindSubdomainsWithNewTipEnrichedNodes(); // Prepare for the next analysis step
+                    modifiedSubdomains.UnionWith(newTipEnrichedSubdomains);
+                    HashSet<ISubdomain> newHeavisideSubdomains = FindSubdomainsWithNewHeavisideEnrichedNodes();
                     modifiedSubdomains.UnionWith(newHeavisideSubdomains);
 
                     foreach (ISubdomain subdomain in modifiedSubdomains)
@@ -334,8 +330,24 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                         subdomain.ConnectivityModified = true;
                         subdomain.StiffnessModified = true;
                     }
+
+                    #region debug
+                    ////PrintSubdomainSubset(newTipEnrichedSubdomains, "new tip enriched");
+                    //MpiUtilities.DoInTurn(procs.Communicator, () => PrintSubdomainSubset(modifiedSubdomains, "modified"));
+                    #endregion
                 }
             }
         }
+
+
+        #region debug
+        private void PrintSubdomainSubset(IEnumerable<ISubdomain> subdomains, string name)
+        {
+            var msg = new System.Text.StringBuilder($"Process {procs.OwnRank}: {name} subdomains = ");
+            foreach (ISubdomain sub in subdomains) msg.Append(sub.ID + " ");
+            Console.WriteLine(msg);
+        }
+        #endregion
+
     }
 }

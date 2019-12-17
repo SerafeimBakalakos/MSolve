@@ -72,7 +72,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 
         private static (ProcessDistribution, IModel, FetiDPSolverMpi) CreateModelAndSolver(int numProcesses, MatrixFormat format)
         {
-            ProcessDistribution procs = MpiProcessDistributionUtilities.DefineProcesses(numProcesses, 4);
+            var procs = ProcessDistribution.CreateDistribution(numProcesses, 4);
 
             // Prepare solver
             //var model = new ModelMpiCentralized(procs, Example4x4QuadsHomogeneous.CreateModel);

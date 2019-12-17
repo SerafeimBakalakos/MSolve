@@ -31,6 +31,11 @@ namespace ISAAR.MSolve.XFEM.Solvers
             base.UpdateSubdomainsCorners(model.EnumerateSubdomains());
             base.GatherGlobalCornerNodes();
             isFirstAnalysis = false;
+
+            #region debug
+            //string path = @"C:\Users\Serafeim\Desktop\MPI\Tests\corner_nodes_serial.txt";
+            //foreach (ISubdomain sub in model.EnumerateSubdomains()) WriteCornerNodes(sub, path, true); 
+            #endregion
         }
     }
 }

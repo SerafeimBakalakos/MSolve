@@ -61,5 +61,23 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.DofSeparation
             // The following are sorted in increasing order of boundary dof indices
             return (internalDofs.ToArray(), boundaryDofs.Keys.ToArray(), boundaryDofs.Values.ToArray());
         }
+
+        /// <summary>
+        /// For debugging purposes.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="separatedDofs"></param>
+        public static void WriteSeparation(Dictionary<string, int[]> separatedDofs, string path, bool append)
+        {
+            using (var writer = new System.IO.StreamWriter(path, append))
+            {
+                foreach (string category in separatedDofs.Keys)
+                {
+                    writer.Write(category + ": ");
+                    foreach (int dof in separatedDofs[category]) writer.Write(dof + " ");
+                    writer.WriteLine();
+                }
+            }
+        }
     }
 }

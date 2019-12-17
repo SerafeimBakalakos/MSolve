@@ -16,14 +16,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
     public class HomogeneousStiffnessDistributionMpi : IStiffnessDistribution
     {
         private readonly IFetiDPDofSeparator dofSeparator;
+
+        /// <summary>
+        /// Each process stores only the ones corresponding to their subdomains. Master may store all of them.
+        /// </summary>
+        private readonly Dictionary<int, double[]> inverseBoundaryDofMultiplicities;
+
         private readonly IHomogeneousDistributionLoadScaling loadScaling;
         private readonly IModel model;
         private readonly ProcessDistribution procs;
-
-        /// <summary>
-        /// Each process stores only the ones corresponding to their subdomains. Master stores all of them.
-        /// </summary>
-        private Dictionary<int, double[]> inverseBoundaryDofMultiplicities;
 
         public HomogeneousStiffnessDistributionMpi(ProcessDistribution processDistribution, IModel model,
             IFetiDPDofSeparator dofSeparator, IHomogeneousDistributionLoadScaling loadScaling)
@@ -32,6 +33,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             this.model = model;
             this.dofSeparator = dofSeparator;
             this.loadScaling = loadScaling;
+            this.inverseBoundaryDofMultiplicities = new Dictionary<int, double[]>();
         }
 
         public double[] CalcBoundaryDofCoefficients(ISubdomain subdomain)
@@ -63,16 +65,19 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
                 (s, inverse, direct, offsetDirect) => Invert(inverse, direct, offsetDirect);
             UnpackSubdomainDataFromArray<double[], int> unpackData =
                 (s, direct, start, end) => Invert(direct, start, end);
-            this.inverseBoundaryDofMultiplicities = transferrer.GatherFromSomeSubdomainsPacked(
+            var allData = transferrer.GatherFromSomeSubdomainsPacked(
                 this.inverseBoundaryDofMultiplicities, getPackedDataLength, packData, unpackData, activeSubdomains);
+            if (procs.IsMasterProcess)
+            {
+                foreach (var pair in allData) this.inverseBoundaryDofMultiplicities[pair.Key] = pair.Value;
+            }
         }
 
         public double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load) => loadScaling.ScaleNodalLoad(subdomain, load);
 
         public void Update() 
         {
-            // Calculate and store the inverse boundary dof multiplicities of each subdomain in this process
-            inverseBoundaryDofMultiplicities = new Dictionary<int, double[]>();
+            // Calculate and store the inverse boundary dof multiplicities of each modified subdomain in this process
             foreach (ISubdomain subdomain in procs.GetSubdomainsOfProcess(model).Values)
             {
                 if (subdomain.ConnectivityModified) //TODO: Is this what I should check?

@@ -83,6 +83,10 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 
         public static void RunVariousSubdomains()
         {
+            // SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS 
+            //Make sure it performs reanalysis. I think that the dof separation is performed, even in unmodified subdomains
+            // SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS 
+            
             int numElementsY = 600;
             int[] numSubdomainsY = { 3, 5, 9, 15, 25 };
             bool reanalysis = true;

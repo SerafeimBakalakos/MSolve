@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         public static void Run(int numProcesses, double stiffnessRatio, Precond precond, Residual convergence, int iterExpected, 
             MatrixFormat format)
         {
-            ProcessDistribution procs = MpiProcessDistributionUtilities.DefineProcesses(numProcesses, 8);
+            var procs = ProcessDistribution.CreateDistribution(numProcesses, 8);
 
             double pcgConvergenceTol = 1E-5;
             IVectorView directDisplacements = null;

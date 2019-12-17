@@ -36,17 +36,17 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 
         public static void Run(string[] args)
         {
+            // SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS 
+            // Find out why it gives slightly different results depending on the number of processes.
+            // SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS 
+
+            int numProcesses = int.Parse(args[0]);
             using (new MPI.Environment(ref args))
             {
                 int numSubdomainsY = 3;
                 int numSubdomainsX = 3 * numSubdomainsY;
 
-                int master = 0;
-                //int[] processesToSubdomains = Enumerable.Range(0, numSubdomainsY * numSubdomainsX).ToArray();
-                int[][] processesToSubdomains = new int[numSubdomainsY * numSubdomainsX][];
-                for (int p = 0; p < numSubdomainsY * numSubdomainsX; ++p) processesToSubdomains[p] = new int[] { p };
-                var procs = new ProcessDistribution(Communicator.world, master, processesToSubdomains);
-
+                var procs = ProcessDistribution.CreateDistribution(numProcesses, numSubdomainsX * numSubdomainsY);
                 DcbBenchmarkBelytschkoMpi benchmark = CreateBenchmark(procs, numElementsY, numSubdomainsX, numSubdomainsY,
                     tipEnrichementRadius);
                 ISolverMpi solver = DefineSolver(procs, benchmark);
@@ -96,7 +96,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
         {
             TipAdaptivePartitioner partitioner = null;
             partitioner = new TipAdaptivePartitioner(benchmark.Crack);
-            var analyzer = new QuasiStaticCrackPropagationAnalyzerMpi(procs, benchmark.Model, solver, benchmark.Crack,
+            //var analyzer = new QuasiStaticCrackPropagationAnalyzerMpiCentralized(procs, benchmark.Model, solver, benchmark.Crack,
+            //    benchmark.FractureToughness, benchmark.MaxIterations, partitioner);
+            var analyzer = new QuasiStaticCrackPropagationAnalyzerMpiRedundnat(procs, benchmark.Model, solver, benchmark.Crack,
                 benchmark.FractureToughness, benchmark.MaxIterations, partitioner);
 
             analyzer.Initialize();

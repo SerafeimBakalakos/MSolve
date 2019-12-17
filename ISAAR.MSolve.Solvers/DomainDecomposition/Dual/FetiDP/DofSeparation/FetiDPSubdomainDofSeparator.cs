@@ -102,6 +102,16 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             InternalDofIndices = internalDofIndices;
             BoundaryDofIndices = boundaryDofIndices;
             BoundaryDofs = boundaryDofConnectivities;
+
+            #region debug
+            //var dofs = new Dictionary<string, int[]>();
+            //dofs["corner dof"] = CornerDofIndices;
+            //dofs["remainder dof"] = RemainderDofIndices;
+            //dofs["boundary dof"] = BoundaryDofIndices;
+            //dofs["internal dof"] = InternalDofIndices;
+            //string path = @"C:\Users\Serafeim\Desktop\MPI\Tests\dofs_subdomain" + Subdomain.ID + ".txt";
+            //DofSeparationUtilities.WriteSeparation(dofs, path, true);
+            #endregion
         }
 
         internal void SeparateCornerRemainderDofs(HashSet<INode> cornerNodes)

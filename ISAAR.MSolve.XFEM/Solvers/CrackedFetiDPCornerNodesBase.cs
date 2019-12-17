@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Geometry.Coordinates;
@@ -36,6 +37,17 @@ namespace ISAAR.MSolve.XFEM.Solvers
         public abstract HashSet<INode> GetCornerNodesOfSubdomain(ISubdomain subdomain);
 
         public abstract void Update();
+
+        public void WriteCornerNodes(ISubdomain subdomain, string path, bool append)
+        {
+            using (var writer = new System.IO.StreamWriter(path, append))
+            {
+                int[] cornerNodes = cornerNodesOfSubdomains[subdomain].Select(n => n.ID).OrderBy(n => n).ToArray();
+                writer.Write($"Corner nodes of subdomain {subdomain.ID}: ");
+                foreach (int n in cornerNodes) writer.Write(n + " ");
+                writer.WriteLine();
+            }
+        }
 
         protected void GatherGlobalCornerNodes()
         {

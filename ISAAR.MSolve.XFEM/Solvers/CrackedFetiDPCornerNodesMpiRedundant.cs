@@ -12,8 +12,8 @@ using ISAAR.MSolve.XFEM.CrackGeometry;
 namespace ISAAR.MSolve.XFEM.Solvers
 {
     /// <summary>
-    /// Assumes all model data are stored in all processes. Each process will only deal with the corner nodes of its 
-    /// corresponding subdomains. Master process will deal with all suubdomain and global data.
+    /// Assumes all model data are stored in all processes. Each process will deal with the corner nodes of all subdomains. 
+    /// Master process will also deal with global corner nodes.
     /// </summary>
     public class CrackedFetiDPCornerNodesMpiRedundant: CrackedFetiDPCornerNodesBase
     {
@@ -70,7 +70,11 @@ namespace ISAAR.MSolve.XFEM.Solvers
             else
             {
                 int[] subdomainIDs = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
-                IEnumerable<ISubdomain> subdomainsToUpdate = subdomainIDs.Select(s => model.GetSubdomain(s));
+                
+                //TODO: unfortunately this does not work, due to accessing subdomains of boundary nodes.
+                //IEnumerable<ISubdomain> subdomainsToUpdate = subdomainIDs.Select(s => model.GetSubdomain(s));
+                IEnumerable<ISubdomain> subdomainsToUpdate = model.EnumerateSubdomains();
+
                 base.UpdateSubdomainsCorners(subdomainsToUpdate);
             }
             isFirstAnalysis = false;
@@ -81,10 +85,13 @@ namespace ISAAR.MSolve.XFEM.Solvers
         {
             MpiUtilities.DoInTurn(procs.Communicator, () =>
             {
-                int s = procs.OwnSubdomainID;
-                Console.Write($"Process {procs.OwnRank}: Corner nodes of subdomain {s}: ");
-                foreach (INode node in cornerNodesOfSubdomains[model.GetSubdomain(s)]) Console.Write(node.ID + " ");
-                Console.WriteLine();
+                //string path = @"C:\Users\Serafeim\Desktop\MPI\Tests\corner_nodes_process" + procs.OwnRank + ".txt";
+                string path = @"C:\Users\Serafeim\Desktop\MPI\Tests\corner_nodes_parallel.txt";
+                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+                {
+                    ISubdomain sub = model.GetSubdomain(s);
+                    WriteCornerNodes(sub, path, true);
+                }
             });
         }
     }
