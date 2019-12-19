@@ -26,31 +26,31 @@ using MPI;
 
 namespace ISAAR.MSolve.XFEM.Tests.Paper1
 {
-    public class DoubleCantileverBeamMpi
+    public class DoubleCantileverBeamRunnerMpi
     {
         private const int numElementsY = 15;
-        private const double tipEnrichementRadius = 0.0;
-        //private const string crackPlotDirectory = @"C:\Users\Serafeim\Desktop\COMPDYN2019\DCB\Plots\LSM";
-        //private const string subdomainPlotDirectory = @"C:\Users\Serafeim\Desktop\COMPDYN2019\DCB\Plots\Subdomains";
-        private const string solverLogPath = @"C:\Users\Serafeim\Desktop\COMPDYN2019\DCB\solver_log.txt";
+        private const double tipEnrichmentRadius = 0.0;
+        private const string solverLogPath = @"C:\Users\Serafeim\Desktop\Paper1\DCB\solver_log.txt";
 
-        public static void Run(string[] args)
+        public static void RunTest(string[] args)
         {
             // SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS 
             // Find out why it gives slightly different results depending on the number of processes.
             // SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS SOS 
 
+            int numSubdomainsY = 3;
+            bool reanalysis = true;
+
             int numProcesses = int.Parse(args[0]);
             using (new MPI.Environment(ref args))
             {
-                int numSubdomainsY = 3;
                 int numSubdomainsX = 3 * numSubdomainsY;
 
                 var procs = ProcessDistribution.CreateDistribution(numProcesses, numSubdomainsX * numSubdomainsY);
                 DcbBenchmarkBelytschkoMpi benchmark = CreateBenchmark(procs, numElementsY, numSubdomainsX, numSubdomainsY,
-                    tipEnrichementRadius);
+                    tipEnrichmentRadius);
                 ISolverMpi solver = DefineSolver(procs, benchmark);
-                RunCrackPropagationAnalysis(procs, benchmark, solver);
+                RunCrackPropagationAnalysis(procs, benchmark, solver, reanalysis);
             }
         }
 
@@ -92,30 +92,30 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
         }
 
         private static void RunCrackPropagationAnalysis(ProcessDistribution procs, DcbBenchmarkBelytschkoMpi benchmark,
-            ISolverMpi solver)
+            ISolverMpi solver, bool reanalysis)
         {
             TipAdaptivePartitioner partitioner = null;
             partitioner = new TipAdaptivePartitioner(benchmark.Crack);
             //var analyzer = new QuasiStaticCrackPropagationAnalyzerMpiCentralized(procs, benchmark.Model, solver, benchmark.Crack,
             //    benchmark.FractureToughness, benchmark.MaxIterations, partitioner);
             var analyzer = new QuasiStaticCrackPropagationAnalyzerMpiRedundnat(procs, benchmark.Model, solver, benchmark.Crack,
-                benchmark.FractureToughness, benchmark.MaxIterations, partitioner);
+                benchmark.FractureToughness, benchmark.MaxIterations, reanalysis, partitioner);
 
             analyzer.Initialize();
             analyzer.Analyze();
 
             if (procs.IsMasterProcess)
             {
+                solver.Logger.WriteToFile(solverLogPath, $"{solver.Name}_log", true);
+                solver.Logger.WriteAggregatesToFile(solverLogPath, $"{solver.Name}_log", true);
+
                 // Write crack path
                 Console.WriteLine("Crack path:");
-                foreach (var point in benchmark.Crack.CrackPath)
+                foreach (var point in benchmark.Crack.SingleCracks[0].CrackPath)
                 {
                     Console.WriteLine($"{point.X} {point.Y}");
                 }
                 Console.WriteLine();
-
-                solver.Logger.WriteToFile(solverLogPath, $"{solver.Name}_log", true);
-                solver.Logger.WriteAggregatesToFile(solverLogPath, $"{solver.Name}_log", true);
             }
         }
     }

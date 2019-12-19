@@ -39,7 +39,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             bool reanalysis = false;
             bool plotSubdomains = true;
             bool plotLSM = false;
-            SolverFetiDPSerial(CreateBenchmark(numElementsY, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM),
+            SolveFetiDPSerial(CreateBenchmark(numElementsY, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM),
                     plotSubdomains, reanalysis);
         }
 
@@ -65,7 +65,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             bool plotSubdomains = true;
             foreach (int nely in numElementsY)
             {
-                SolverFetiDPSerial(CreateBenchmark(nely, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM),
+                SolveFetiDPSerial(CreateBenchmark(nely, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM),
                     plotSubdomains, reanalysis);
             }
 
@@ -94,7 +94,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             bool plotSubdomains = false;
             foreach (int nsuby in numSubdomainsY)
             {
-                SolverFetiDPSerial(CreateBenchmark(numElementsY, 3 * nsuby, nsuby, tipEnrichementRadius, plotLSM),
+                SolveFetiDPSerial(CreateBenchmark(numElementsY, 3 * nsuby, nsuby, tipEnrichementRadius, plotLSM),
                   plotSubdomains, reanalysis);
             }
         }
@@ -185,7 +185,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             solver.Logger.WriteAggregatesToFile(solverLogPath, $"{solver.Name}_log", true);
         }
 
-        private static void SolverFetiDPSerial(DcbBenchmarkBelytschko benchmark, bool plotSubdomains, bool reanalysis)
+        private static void SolveFetiDPSerial(DcbBenchmarkBelytschko benchmark, bool plotSubdomains, bool reanalysis)
         {
             // Choose corner nodes
             //Dictionary<ISubdomain, HashSet<INode>> initialCorners = FindCornerNodesFromRectangleCorners(benchmark.Model);
@@ -197,12 +197,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
                 sub.EnumerateNodes().Where(n => (n.Multiplicity > 2) || benchmark.NodeIsOnBoundary(n)).
                 Where(node => node.Constraints.Count == 0));
             var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Model, benchmark.Crack, getInitialCorners);
-
-
-            // Define solver
             benchmark.Model.ConnectDataStructures();
 
-            
+            // Define solver
             //var reordering = new OrderingAmdCSparseNet();  // This is slower than natural ordering
             IReorderingAlgorithm reordering = null;
             var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(reordering);

@@ -35,7 +35,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
         private readonly IXModelMpi model;
         private readonly TipAdaptivePartitioner partitioner; //TODO: Refactor its injection and usage
         private readonly ProcessDistribution procs;
-        private readonly bool reanalysis = true;
+        private readonly bool reanalysis;
 
         //private readonly IStaticProvider problem; //TODO: refactor and use this instead
         private readonly ElementStructuralStiffnessProvider problem = new ElementStructuralStiffnessProvider();
@@ -47,7 +47,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
 
         public QuasiStaticCrackPropagationAnalyzerMpiRedundnat(ProcessDistribution processDistribution, IXModelMpi model, 
             ISolverMpi solver, /*IStaticProvider problem,*/ ICrackDescriptionMpi crack, double fractureToughness, 
-            int maxIterations, TipAdaptivePartitioner partitioner = null)
+            int maxIterations, bool reanalysis = true, TipAdaptivePartitioner partitioner = null)
         {
             this.procs = processDistribution;
             this.model = model;
@@ -56,6 +56,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
             this.crack = crack;
             this.fractureToughness = fractureToughness;
             this.maxIterations = maxIterations;
+            this.reanalysis = reanalysis;
             this.partitioner = partitioner;
 
             //TODO: Refactor problem structural and remove the next
@@ -290,10 +291,6 @@ namespace ISAAR.MSolve.XFEM.Analyzers
 
                 // Prepare for the next analysis step
                 newTipEnrichedSubdomains = FindSubdomainsWithNewTipEnrichedNodes();
-
-                #region debug
-                //PrintSubdomainSubset(newTipEnrichedSubdomains, "tip enriched");
-                #endregion
             }
             else
             {
@@ -303,9 +300,6 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 {
                     repartitionedSubdomains = partitioner.UpdateSubdomains();
                     modifiedSubdomains.UnionWith(repartitionedSubdomains);
-                    #region debug
-                    if (repartitionedSubdomains.Count != 0) Console.WriteLine($"Process {procs.OwnRank}: mesh was repartitiοned");
-                    #endregion
                 }
 
                 if (reanalysis)
@@ -330,24 +324,21 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                         subdomain.ConnectivityModified = true;
                         subdomain.StiffnessModified = true;
                     }
-
-                    #region debug
-                    ////PrintSubdomainSubset(newTipEnrichedSubdomains, "new tip enriched");
-                    //MpiUtilities.DoInTurn(procs.Communicator, () => PrintSubdomainSubset(modifiedSubdomains, "modified"));
-                    #endregion
                 }
             }
         }
 
 
-        #region debug
+        /// <summary>
+        /// For debugging purposes
+        /// </summary>
+        /// <param name="subdomains"></param>
+        /// <param name="name"></param>
         private void PrintSubdomainSubset(IEnumerable<ISubdomain> subdomains, string name)
         {
             var msg = new System.Text.StringBuilder($"Process {procs.OwnRank}: {name} subdomains = ");
             foreach (ISubdomain sub in subdomains) msg.Append(sub.ID + " ");
             Console.WriteLine(msg);
         }
-        #endregion
-
     }
 }

@@ -106,7 +106,6 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// radius is larger than the length of the crack segments.
         /// </summary>
         private readonly double jIntegralRadiusOverElementSize;
-        private  BidirectionalMesh2D<XNode, XContinuumElement2D> mesh_master;
         private readonly string meshPath;
         private readonly ProcessDistribution procs;
         private readonly double tipEnrichmentRadius;
@@ -131,7 +130,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// <summary>
         /// The crack geometry description
         /// </summary>
-        public MultipleCracksDisjointMpiCentralized Crack { get; private set; }
+        public ICrackDescriptionMpi Crack { get; private set; }
 
         public double FractureToughness => fractureToughness;
 
@@ -148,8 +147,8 @@ namespace ISAAR.MSolve.XFEM.Tests
 
         public string Name { get { return "Twin Holes benchmark"; } }
 
-        public TrackingExteriorCrackLsmMpiCentralized LeftCrack => (TrackingExteriorCrackLsmMpiCentralized)(Crack.SingleCracks[0]);
-        public TrackingExteriorCrackLsmMpiCentralized RightCrack => (TrackingExteriorCrackLsmMpiCentralized)(Crack.SingleCracks[1]);
+        public ISingleCrack LeftCrack => Crack.SingleCracks[0];
+        public ISingleCrack RightCrack => Crack.SingleCracks[1];
 
         public TipAdaptivePartitioner Partitioner { get; set; } // Refactor its injection
 
@@ -264,11 +263,10 @@ namespace ISAAR.MSolve.XFEM.Tests
                 new RectangularSubgridIntegration2D<XContinuumElement2D>(8, 4);
             var elementFactory = new XContinuumElement2DFactory(integration, jIntegration, material);
 
-            XModel model_master = null;
-            if (procs.IsMasterProcess)
+            Func<XModel> createModel = () =>
             {
-                model_master = new XModel();
-                model_master.Subdomains.Add(subdomainID, new XSubdomain(subdomainID));
+                var model = new XModel();
+                model.Subdomains.Add(subdomainID, new XSubdomain(subdomainID));
 
                 // Mesh generation
                 var reader = new GmshReader<XNode>(meshPath);
@@ -276,71 +274,83 @@ namespace ISAAR.MSolve.XFEM.Tests
                     (id, x, y, z) => new XNode(id, x, y, z));
 
                 // Nodes
-                foreach (XNode node in nodes) model_master.Nodes.Add(node.ID, node);
+                foreach (XNode node in nodes) model.Nodes.Add(node.ID, node);
 
                 // Elements
                 var cells = new XContinuumElement2D[elementConnectivities.Count];
                 for (int e = 0; e < cells.Length; ++e)
                 {
-                    XContinuumElement2D element = 
+                    XContinuumElement2D element =
                         elementFactory.CreateElement(e, CellType.Quad4, elementConnectivities[e].Vertices);
                     cells[e] = element;
-                    model_master.Elements.Add(e, element);
-                    model_master.Subdomains[subdomainID].Elements.Add(e, model_master.Elements[e]);
+                    model.Elements.Add(e, element);
+                    model.Subdomains[subdomainID].Elements.Add(e, model.Elements[e]);
                 }
 
                 // Mesh usable for crack-mesh interaction
                 var boundary = new HolesBoundary();
-                model_master.Boundary = boundary;
-                mesh_master = 
-                    new BidirectionalMesh2D<XNode, XContinuumElement2D>(model_master.Nodes.Values.ToArray(), cells, boundary);
+                model.Boundary = boundary;
+                model.Mesh =
+                    new BidirectionalMesh2D<XNode, XContinuumElement2D>(model.Nodes.Values.ToArray(), cells, boundary);
 
                 // Apply boundary conditions
-                ApplyBoundaryConditions(model_master);
+                ApplyBoundaryConditions(model);
 
                 // Partition into subdomain
-                PartitionMesh(numSubdomains, model_master, mesh_master);
-            }
+                PartitionMesh(numSubdomains, model, model.Mesh);
 
-            //Model = new XModelMpiCentralized(procs, () => model_master, elementFactory);
-            Model = new XModelMpiRedundant(procs, () => model_master);
+                return model;
+            };
+
+            //Model = new XModelMpiCentralized(procs, createModel, elementFactory);
+            Model = new XModelMpiRedundant(procs, createModel);
         }
 
         private void InitializeCrack()
         {
-            TrackingExteriorCrackLsm leftCrack = null, rightCrack = null;
-
-            if (procs.IsMasterProcess)
+            var createSingleCracks = new Func<TrackingExteriorCrackLsm>[2];
+            createSingleCracks[0] = () =>
             {
                 // Left crack
-                IPropagator leftPropagator = new Propagator(mesh_master, jIntegralRadiusOverElementSize,
+                IPropagator leftPropagator = new Propagator(Model.RawModel.Mesh, jIntegralRadiusOverElementSize,
                 new HomogeneousMaterialAuxiliaryStates(globalHomogeneousMaterial),
                 new HomogeneousSIFCalculator(globalHomogeneousMaterial),
                 new MaximumCircumferentialTensileStressCriterion(), new ConstantIncrement2D(growthLength));
 
                 var initialLeftCrack = new PolyLine2D(new CartesianPoint(leftCrackMouthX, leftCrackMouthY),
                     new CartesianPoint(leftCrackTipX, leftCrackTipY));
-                leftCrack = new TrackingExteriorCrackLsm(leftPropagator, tipEnrichmentRadius,
+                TrackingExteriorCrackLsm leftCrack = new TrackingExteriorCrackLsm(leftPropagator, tipEnrichmentRadius,
                     new RelativeAreaResolver(heavisideTol), new SignFunction2D());
-                leftCrack.Mesh = mesh_master;
+                leftCrack.Mesh = Model.RawModel.Mesh;
                 leftCrack.InitializeGeometry(initialLeftCrack);
 
+                return leftCrack;
+            };
+
+            createSingleCracks[1] = () =>
+            { 
                 // Right crack
-                IPropagator rightPropagator = new Propagator(mesh_master, jIntegralRadiusOverElementSize,
+                IPropagator rightPropagator = new Propagator(Model.RawModel.Mesh, jIntegralRadiusOverElementSize,
                     new HomogeneousMaterialAuxiliaryStates(globalHomogeneousMaterial),
                     new HomogeneousSIFCalculator(globalHomogeneousMaterial),
                     new MaximumCircumferentialTensileStressCriterion(), new ConstantIncrement2D(growthLength));
 
                 var initialRightCrack = new PolyLine2D(new CartesianPoint(rightCrackMouthX, rightCrackMouthY),
                     new CartesianPoint(rightCrackTipX, rightCrackTipY));
-                rightCrack = new TrackingExteriorCrackLsm(rightPropagator, tipEnrichmentRadius,
+                TrackingExteriorCrackLsm rightCrack = new TrackingExteriorCrackLsm(rightPropagator, tipEnrichmentRadius,
                     new RelativeAreaResolver(heavisideTol), new SignFunction2D());
-                rightCrack.Mesh = mesh_master;
+                rightCrack.Mesh = Model.RawModel.Mesh;
                 rightCrack.InitializeGeometry(initialRightCrack);
-            }
 
-            // Container for both cracks
-            Crack = new MultipleCracksDisjointMpiCentralized(procs, new TrackingExteriorCrackLsm[] { leftCrack, rightCrack });
+                return rightCrack;
+            };
+
+            var singleCracks = new TrackingExteriorCrackLsm[2];
+            singleCracks[0] = createSingleCracks[0]();
+            singleCracks[1] = createSingleCracks[1]();
+
+            //this.Crack = new MultipleCracksDisjointMpiCentralized(procs, singleCracks);
+            this.Crack = new MultipleCracksDisjointMpiRedundant(procs, singleCracks);
             Model.DofSerializer = new EnrichedDofSerializer(this.Crack);
         }
 

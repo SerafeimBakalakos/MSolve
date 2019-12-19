@@ -71,6 +71,8 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Explicit
 
         public IReadOnlyDictionary<CartesianPoint, IPropagator> CrackTipPropagators => throw new NotImplementedException();
 
+        public IReadOnlyList<CartesianPoint> CrackPath => Vertices;
+
         private TipCoordinateSystem tipSystem;
         private List<XContinuumElement2D> tipElements;
 

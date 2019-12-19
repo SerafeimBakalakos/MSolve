@@ -32,33 +32,38 @@ using static ISAAR.MSolve.XFEM.Tests.COMPDYN2019.Utilities;
 
 namespace ISAAR.MSolve.XFEM.Tests.Paper1
 {
-    public class Holes
+    public class HolesRunner
     {
-        //private const string meshPath = @"C:\Users\Serafeim\Desktop\COMPDYN2019\Holes\Mesh\holes.msh";
-        //private const string meshPath = @"C:\Users\Serafeim\Desktop\COMPDYN2019\Holes\Mesh\holes_4442.msh";
-        private const string meshPath = @"C:\Users\Serafeim\Desktop\COMPDYN2019\Holes\Mesh\holes_8000.msh";
-        //private const string meshPath = @"C:\Users\Serafeim\Desktop\COMPDYN2019\Holes\Mesh\holes_13738.msh";
-        ////private const string meshPath = @"C:\Users\Serafeim\Desktop\COMPDYN2019\Holes\Mesh\holes_22666.msh";
-        //private const string meshPath = @"C:\Users\Serafeim\Desktop\COMPDYN2019\Holes\Mesh\holes_29052.msh";
-        //private const string meshPath = @"C:\Users\Serafeim\Desktop\COMPDYN2019\Holes\Mesh\holes_60000.msh";
-        //private const string meshPath = @"C:\Users\Serafeim\Desktop\COMPDYN2019\Holes\Mesh\holes_100000.msh";
-        ////private const string meshPath = @"C:\Users\Serafeim\Desktop\COMPDYN2019\Holes\Mesh\holes_189740.msh";
-        ////private const string meshPath = @"C:\Users\Serafeim\Desktop\COMPDYN2019\Holes\Mesh\holes_357324.msh";
-        private const string leftCrackPlotDirectory = @"C:\Users\Serafeim\Desktop\COMPDYN2019\Holes\Plots\Left";
-        private const string rightCrackPlotDirectory = @"C:\Users\Serafeim\Desktop\COMPDYN2019\Holes\Plots\Right";
-        private const string subdomainPlotDirectory = @"C:\Users\Serafeim\Desktop\COMPDYN2019\Holes\Plots\Subdomains";
-        private const string solverLogPath = @"C:\Users\Serafeim\Desktop\COMPDYN2019\Holes\solver_log.txt";
+        //private const string meshPath = @"C:\Users\Serafeim\Desktop\Paper1\Holes\Mesh\holes.msh";
+        //private const string meshPath = @"C:\Users\Serafeim\Desktop\Paper1\Holes\Mesh\holes_4442.msh";
+        private const string meshPath = @"C:\Users\Serafeim\Desktop\Paper1\Holes\Mesh\holes_8000.msh";
+        //private const string meshPath = @"C:\Users\Serafeim\Desktop\Paper1\Holes\Mesh\holes_13738.msh";
+        ////private const string meshPath = @"C:\Users\Serafeim\Desktop\Paper1\Holes\Mesh\holes_22666.msh";
+        //private const string meshPath = @"C:\Users\Serafeim\Desktop\Paper1\Holes\Mesh\holes_29052.msh";
+        //private const string meshPath = @"C:\Users\Serafeim\Desktop\Paper1\Holes\Mesh\holes_60000.msh";
+        //private const string meshPath = @"C:\Users\Serafeim\Desktop\Paper1\Holes\Mesh\holes_100000.msh";
+        ////private const string meshPath = @"C:\Users\Serafeim\Desktop\Paper1\Holes\Mesh\holes_189740.msh";
+        ////private const string meshPath = @"C:\Users\Serafeim\Desktop\Paper1\Holes\Mesh\holes_357324.msh";
+        private const string leftCrackPlotDirectory = @"C:\Users\Serafeim\Desktop\Paper1\Holes\Plots\Left";
+        private const string rightCrackPlotDirectory = @"C:\Users\Serafeim\Desktop\Paper1\Holes\Plots\Right";
+        private const string subdomainPlotDirectory = @"C:\Users\Serafeim\Desktop\Paper1\Holes\Plots\Subdomains";
+        private const string solverLogPath = @"C:\Users\Serafeim\Desktop\Paper1\Holes\solver_log.txt";
 
-        public static void Run()
+        public static void RunTest()
         {
-            HolesBenchmark benchmarkSub1;
+            bool plotLSM = false;
+            bool plotSubdomains = false;
+            bool reanalysis = true;
+
+
+            //HolesBenchmark benchmarkSub1;
             HolesBenchmark benchmarkSub10;
-            HolesBenchmark benchmarkSub15;
+            //HolesBenchmark benchmarkSub15;
 
             // FETI-DP 10 subdomains
-            benchmarkSub10 = CreateMultiSubdomainBenchmark(10);
-            ISolverMpi solverFetiDP = DefineSolver(benchmarkSub10, SolverType.FetiDP);
-            RunCrackPropagationAnalysis(benchmarkSub10, solverFetiDP);
+            benchmarkSub10 = CreateMultiSubdomainBenchmark(10, plotLSM);
+            ISolverMpi solverFetiDP = DefineSolver(benchmarkSub10);
+            RunCrackPropagationAnalysis(benchmarkSub10, solverFetiDP, plotSubdomains, reanalysis);
             //PlotSubdomains(benchmarkSub10, solverFetiDP);
             //Console.WriteLine("Uncracked analysis, 10 subdomains, FETI-DP : norm2(globalU) = " +
             //    RunUncrackedAnalysis(benchmarkSub10.Model, solverFetiDP));
@@ -73,14 +78,16 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 
             Console.Write("\nEnd");
         }
-        private static HolesBenchmark CreateSingleSubdomainBenchmark()
+        private static HolesBenchmark CreateSingleSubdomainBenchmark(bool plotLSM)
         {
             double growthLength = 1.0; // mm. Must be sufficiently larger than the element size.
 
             var builder = new HolesBenchmark.Builder(meshPath, growthLength);
-            builder.LeftLsmPlotDirectory = leftCrackPlotDirectory;
-            builder.RightLsmPlotDirectory = rightCrackPlotDirectory;
-            builder.SubdomainPlotDirectory = subdomainPlotDirectory;
+            if (plotLSM)
+            {
+                builder.LeftLsmPlotDirectory = leftCrackPlotDirectory;
+                builder.RightLsmPlotDirectory = rightCrackPlotDirectory;
+            }
 
             builder.HeavisideEnrichmentTolerance = 0.12;
 
@@ -102,7 +109,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             return benchmark;
         }
 
-        private static HolesBenchmark CreateMultiSubdomainBenchmark(int numSubdomains)
+        private static HolesBenchmark CreateMultiSubdomainBenchmark(int numSubdomains, bool plotLSM)
         {
             // Define subdomain boundaries
             double tol = 1E-13;
@@ -339,7 +346,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             }
 
             // Create the model, crack & mesh with only 1 subdomain
-            HolesBenchmark benchmark = CreateSingleSubdomainBenchmark();
+            HolesBenchmark benchmark = CreateSingleSubdomainBenchmark(plotLSM);
 
             // Partition mesh into subdomains
             var regionsGeneral = new Dictionary<int, IRegion2D>();
@@ -361,46 +368,43 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             return benchmark;
         }
 
-        private static ISolverMpi DefineSolver(HolesBenchmark benchmark, SolverType solverType)
+        private static ISolverMpi DefineSolver(HolesBenchmark benchmark)
         {
-            if (solverType == SolverType.FetiDP)
+            benchmark.Partitioner = new TipAdaptivePartitioner(benchmark.Crack);
+            //Dictionary<ISubdomain, HashSet<INode>> cornerNodes = null;
+            Func<ISubdomain, HashSet<INode>> getCornerNodes = null;
+
+            if (benchmark.Model.Subdomains.Count == 10 || benchmark.Model.Subdomains.Count == 15)
             {
-                //benchmark.Partitioner = new TipAdaptivePartitioner(benchmark.Crack);
-                //Dictionary<ISubdomain, HashSet<INode>> cornerNodes = null;
-                Func<ISubdomain, HashSet<INode>> getCornerNodes = null;
-
-                if (benchmark.Model.Subdomains.Count == 10 || benchmark.Model.Subdomains.Count == 15)
-                {
-                    //cornerNodes = FindCornerNodesFromCrosspoints2D(benchmark.Model);
-                    getCornerNodes = (sub) => new HashSet<INode>(sub.EnumerateNodes().Where(node => node.Multiplicity > 2));
-                }
-                else
-                {
-                    throw new NotImplementedException();
-                }
-
-                // Must also specify corner nodes
-                var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Model, benchmark.Crack, getCornerNodes);
-                var reordering = new OrderingAmdCSparseNet();
-                var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(reordering);
-                var builder = new FetiDPSolverSerial.Builder(fetiMatrices);
-                //builder.Preconditioning = new LumpedPreconditioning();
-                //builder.Preconditioning = new DiagonalDirichletPreconditioning();
-                builder.Preconditioning = new DirichletPreconditioning();
-                builder.ProblemIsHomogeneous = true;
-                builder.PcgSettings = new PcgSettings() { ConvergenceTolerance = 1E-7 };
-                return builder.Build(benchmark.Model, cornerNodeSelection);
+                //cornerNodes = FindCornerNodesFromCrosspoints2D(benchmark.Model);
+                getCornerNodes = (sub) => new HashSet<INode>(sub.EnumerateNodes().Where(node => node.Multiplicity > 2));
             }
-            else throw new ArgumentException("Invalid solver choice.");
+            else
+            {
+                throw new NotImplementedException();
+            }
+
+            // Must also specify corner nodes
+            var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Model, benchmark.Crack, getCornerNodes);
+            var reordering = new OrderingAmdCSparseNet();
+            var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(reordering);
+            var builder = new FetiDPSolverSerial.Builder(fetiMatrices);
+            //builder.Preconditioning = new LumpedPreconditioning();
+            //builder.Preconditioning = new DiagonalDirichletPreconditioning();
+            builder.Preconditioning = new DirichletPreconditioning();
+            builder.ProblemIsHomogeneous = true;
+            builder.PcgSettings = new PcgSettings() { ConvergenceTolerance = 1E-7 };
+            return builder.Build(benchmark.Model, cornerNodeSelection);
         }
 
-        private static void RunCrackPropagationAnalysis(HolesBenchmark benchmark, ISolverMpi solver)
+        private static void RunCrackPropagationAnalysis(HolesBenchmark benchmark, ISolverMpi solver, 
+            bool plotSubdomains, bool reanalysis)
         {
             var analyzer = new QuasiStaticCrackPropagationAnalyzerSerial(benchmark.Model, solver, benchmark.Crack,
-                benchmark.FractureToughness, benchmark.MaxIterations, true, benchmark.Partitioner);
+                benchmark.FractureToughness, benchmark.MaxIterations, reanalysis, benchmark.Partitioner);
 
             // Subdomain plots
-            if (subdomainPlotDirectory != null)
+            if (plotSubdomains)
             {
                 if (solver is FetiDPSolverSerial fetiDP)
                 {

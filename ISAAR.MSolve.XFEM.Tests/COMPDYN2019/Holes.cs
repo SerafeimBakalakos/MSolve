@@ -360,7 +360,6 @@ namespace ISAAR.MSolve.XFEM.Tests.COMPDYN2019
             var builder = new HolesBenchmark.Builder(meshPath, growthLength);
             builder.LeftLsmPlotDirectory = leftCrackPlotDirectory;
             builder.RightLsmPlotDirectory = rightCrackPlotDirectory;
-            builder.SubdomainPlotDirectory = subdomainPlotDirectory;
 
             builder.HeavisideEnrichmentTolerance = 0.12;
 

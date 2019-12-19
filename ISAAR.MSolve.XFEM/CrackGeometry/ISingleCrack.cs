@@ -18,6 +18,8 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry
         CrackBodyEnrichment2D CrackBodyEnrichment { get; }
         CrackTipEnrichments2D CrackTipEnrichments { get; }
 
+        IReadOnlyList<CartesianPoint> CrackPath { get; }
+
         IHeavisideSingularityResolver SingularityResolver { get; }
 
         double SignedDistanceOf(XNode node);

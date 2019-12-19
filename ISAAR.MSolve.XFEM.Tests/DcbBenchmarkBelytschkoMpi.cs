@@ -171,8 +171,6 @@ namespace ISAAR.MSolve.XFEM.Tests
         {
             Func<TrackingExteriorCrackLsm> createCrack = () =>
             {
-                TrackingExteriorCrackLsm lsmCrack = null;
-
                 var model = Model.RawModel;
                 var mesh = Model.RawModel.Mesh;
                 var globalHomogeneousMaterial = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, E, v);
@@ -187,10 +185,9 @@ namespace ISAAR.MSolve.XFEM.Tests
                 initialCrack.UpdateGeometry(-dTheta, da);
                 //var crackTip = new CartesianPoint(a + da * Math.Cos(dTheta), h/2 - da * Math.Sin(dTheta));
 
-                lsmCrack = new TrackingExteriorCrackLsm(propagator, tipEnrichmentRadius, new RelativeAreaResolver(heavisideTol),
-                    new SignFunction2D());
+                TrackingExteriorCrackLsm lsmCrack = new TrackingExteriorCrackLsm(propagator, tipEnrichmentRadius, 
+                    new RelativeAreaResolver(heavisideTol), new SignFunction2D());
                 lsmCrack.Mesh = Model.RawModel.Mesh;
-
 
                 // Mesh geometry interaction
                 lsmCrack.InitializeGeometry(initialCrack);

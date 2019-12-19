@@ -50,8 +50,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
                 SingleCrackLsm expectedRightLsm = expectedBenchmark.RightCrack.LevelSets;
 
                 XSubdomain actualSubdomain = actualModel.GetXSubdomain(procs.OwnSubdomainID);
-                SingleCrackLsm actualLeftLsm = actualBenchmark.LeftCrack.LevelSets;
-                SingleCrackLsm actualRightLsm = actualBenchmark.RightCrack.LevelSets;
+                SingleCrackLsm actualLeftLsm = ((TrackingExteriorCrackLsmMpiCentralized)actualBenchmark.LeftCrack).LevelSets;
+                SingleCrackLsm actualRightLsm = ((TrackingExteriorCrackLsmMpiCentralized)actualBenchmark.RightCrack).LevelSets;
 
                 EnrichmentComparions.CheckSameLevelSets(expectedLeftLsm, expectedSubdomain, actualLeftLsm, actualSubdomain);
                 EnrichmentComparions.CheckSameLevelSets(expectedRightLsm, expectedSubdomain, actualRightLsm, actualSubdomain);

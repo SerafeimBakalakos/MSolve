@@ -110,7 +110,6 @@ namespace ISAAR.MSolve.XFEM.Tests
         private readonly string meshPath;
         private readonly string leftLsmPlotDirectory;
         private readonly string rightLsmPlotDirectory;
-        private readonly string subdomainPlotDirectory;
         private readonly string leftPropagationPath;
         private readonly string rightPropagationPath;
         private readonly bool writePropagation;
@@ -121,7 +120,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// </summary>
         /// <param name="growthLength">The length by which the crack grows in each iteration.</param>
         private HolesBenchmark(string meshPath, double growthLength, BoundaryConditions bc, double jIntegralRadiusOverElementSize,
-             double tipEnrichmentRadius, string leftLsmPlotDirectory, string rightLsmPlotDirectory, string subdomainPlotDirectory,
+             double tipEnrichmentRadius, string leftLsmPlotDirectory, string rightLsmPlotDirectory,
              string leftPropagationPath, string rightPropagationPath, bool writePropagation,
              int maxIterations, double heavisideTol)
         {
@@ -132,7 +131,6 @@ namespace ISAAR.MSolve.XFEM.Tests
             this.tipEnrichmentRadius = tipEnrichmentRadius;
             this.leftLsmPlotDirectory = leftLsmPlotDirectory;
             this.rightLsmPlotDirectory = rightLsmPlotDirectory;
-            this.subdomainPlotDirectory = subdomainPlotDirectory;
             this.leftPropagationPath = leftPropagationPath;
             this.rightPropagationPath = rightPropagationPath;
             this.writePropagation = writePropagation;
@@ -730,8 +728,6 @@ namespace ISAAR.MSolve.XFEM.Tests
             /// </summary>
             public string RightLsmPlotDirectory { get; set; } = null;
 
-            public string SubdomainPlotDirectory { get; set; } = null;
-
             /// <summary>
             /// The maximum number of crack propagation steps. The analysis may stop earlier if the crack has reached the domain 
             /// boundary or if the fracture toughness is exceeded.
@@ -752,8 +748,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             public HolesBenchmark BuildBenchmark()
             {
                 return new HolesBenchmark(meshPath, growthLength, BC, JintegralRadiusOverElementSize, TipEnrichmentRadius,
-                    LeftLsmPlotDirectory, RightLsmPlotDirectory, SubdomainPlotDirectory,
-                    LeftPropagationPath, RightPropagationPath, WritePropagation,
+                    LeftLsmPlotDirectory, RightLsmPlotDirectory, LeftPropagationPath, RightPropagationPath, WritePropagation,
                     MaxIterations, HeavisideEnrichmentTolerance);
             }
         }
