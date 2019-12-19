@@ -131,7 +131,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// <summary>
         /// The crack geometry description
         /// </summary>
-        public MultipleCracksDisjointMpi Crack { get; private set; }
+        public MultipleCracksDisjointMpiCentralized Crack { get; private set; }
 
         public double FractureToughness => fractureToughness;
 
@@ -340,7 +340,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             }
 
             // Container for both cracks
-            Crack = new MultipleCracksDisjointMpi(procs, new TrackingExteriorCrackLsm[] { leftCrack, rightCrack });
+            Crack = new MultipleCracksDisjointMpiCentralized(procs, new TrackingExteriorCrackLsm[] { leftCrack, rightCrack });
             Model.DofSerializer = new EnrichedDofSerializer(this.Crack);
         }
 

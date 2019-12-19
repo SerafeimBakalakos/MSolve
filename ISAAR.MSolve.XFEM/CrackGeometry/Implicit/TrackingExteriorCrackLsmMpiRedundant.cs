@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
     /// <summary>
     /// All model and level set data exist in all processes.
     /// </summary>
-    public class TrackingExteriorCrackLsmMpiRedundant : ICrackDescriptionMpi
+    public class TrackingExteriorCrackLsmMpiRedundant : ICrackDescriptionMpi, IExteriorCrack
     {
         private readonly TrackingExteriorCrackLsm embeddedCrack;
         private readonly ProcessDistribution procs;

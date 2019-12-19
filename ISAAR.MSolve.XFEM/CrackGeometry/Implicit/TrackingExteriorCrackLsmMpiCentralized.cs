@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
     /// <summary>
     /// Warning: may misclassify elements as tip elements, causing gross errors.
     /// </summary>
-    public class TrackingExteriorCrackLsmMpiCentralized : ICrackDescriptionMpi
+    public class TrackingExteriorCrackLsmMpiCentralized : ICrackDescriptionMpi, IExteriorCrack
     {
         private const int levelSetDataTag = 0;
         private const int enrichmentDataTag = 1;

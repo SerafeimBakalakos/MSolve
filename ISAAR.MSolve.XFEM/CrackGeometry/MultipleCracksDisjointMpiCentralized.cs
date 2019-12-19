@@ -13,13 +13,13 @@ using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
 //TODO: replace the boilerplate code with one or more (or generic) Union() private methods
 namespace ISAAR.MSolve.XFEM.CrackGeometry
 {
-    public class MultipleCracksDisjointMpi : ICrackDescription
+    public class MultipleCracksDisjointMpiCentralized : ICrackDescriptionMpi
     {
         private readonly ProcessDistribution procs;
         private readonly MultipleCracksDisjoint multiCrack_master;
         private readonly List<TrackingExteriorCrackLsmMpiCentralized> singleCracks;
 
-        public MultipleCracksDisjointMpi(ProcessDistribution procs, IReadOnlyList<TrackingExteriorCrackLsm> singleCracks)
+        public MultipleCracksDisjointMpiCentralized(ProcessDistribution procs, IReadOnlyList<TrackingExteriorCrackLsm> singleCracks)
         {
             this.procs = procs;
             this.singleCracks = new List<TrackingExteriorCrackLsmMpiCentralized>();
