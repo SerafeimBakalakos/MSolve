@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
@@ -31,6 +32,10 @@ namespace ISAAR.MSolve.Logging.DomainDecomposition
             writer.WriteBoundaryNodes($"{plotDirectoryPath}\\boundary_nodes_{analysisStep}.vtk", model);
             writer.WriteSpecialNodes($"{plotDirectoryPath}\\corner_nodes_{analysisStep}.vtk", "corner_nodes", 
                 cornerNodeSelection.GlobalCornerNodes);
+
+            INode[] constrainedNodes = model.EnumerateNodes().Where(node => node.Constraints.Count > 0).ToArray();
+            writer.WriteSpecialNodes($"{plotDirectoryPath}\\constrained_nodes_{analysisStep}.vtk", "constrained_nodes",
+                constrainedNodes);
 
             ++analysisStep;
         }

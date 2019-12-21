@@ -1,0 +1,255 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using ISAAR.MSolve.Discretization;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
+using ISAAR.MSolve.Discretization.Mesh;
+using ISAAR.MSolve.Discretization.Mesh.Generation;
+using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
+using ISAAR.MSolve.FEM.Elements;
+using ISAAR.MSolve.FEM.Entities;
+using ISAAR.MSolve.Materials;
+
+namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
+{
+    public class Uniform3DModelBuilder
+    {
+        public enum BoundaryRegion
+        {
+            MinX, MinY, MinZ, MaxX, MaxY, MaxZ, 
+            MinXMinYMinZ, MinXMinYMaxZ, MinXMaxYMinZ, MinXMaxYMaxZ, MaxXMinYMinZ, MaxXMinYMaxZ, MaxXMaxYMinZ, MaxXMaxYMaxZ
+            //TODO: also the lines MinXMinY, MaxXMinZ, etc
+        }
+
+        private const double minX = 0.0, minY = 0.0;
+        private List<(BoundaryRegion region, IDofType dof, double displacement)> prescribedDisplacements;
+        private List<(BoundaryRegion region, IDofType dof, double load)> prescribedLoads;
+
+        public Uniform3DModelBuilder()
+        {
+            prescribedDisplacements = new List<(BoundaryRegion region, IDofType dof, double displacement)>();
+            prescribedLoads = new List<(BoundaryRegion region, IDofType dof, double load)>();
+        }
+
+        public double DomainLengthX { get; set; } = 1.0;
+        public double DomainLengthY { get; set; } = 1.0;
+        public double DomainLengthZ { get; set; } = 1.0;
+        public int NumSubdomainsX { get; set; } = 1;
+        public int NumSubdomainsY { get; set; } = 1;
+        public int NumSubdomainsZ { get; set; } = 1;
+        public int NumTotalElementsX { get; set; } = 1;
+        public int NumTotalElementsY { get; set; } = 1;
+        public int NumTotalElementsZ { get; set; } = 1;
+
+        public double YoungModulus { get; set; } = 1.0;
+
+        /// <summary>
+        /// Layout: left to right, then bottom to top. Example for 3x2 subdomains:
+        /// ----------------  
+        /// | E3 | E4 | E5 |
+        /// ----------------
+        /// | E0 | E1 | E2 |
+        /// ----------------
+        /// <see cref="YoungModuliOfSubdomains"/> = {{ E0, E1, E2 },{ E3, E4, E5 }}
+        /// </summary>
+        public double[,,] YoungModuliOfSubdomains { get; set; } = null;
+
+        public Model BuildModel()
+        {
+            // Generate global mesh
+            double dx = DomainLengthX / NumTotalElementsX;
+            double dy = DomainLengthY / NumTotalElementsY;
+            double dz = DomainLengthZ / NumTotalElementsZ;
+            double meshTolerance = 1E-10 * Math.Min(dx, dy);
+            var meshGenerator = new UniformMeshGenerator3D<Node>(0, 0, 0, DomainLengthX, DomainLengthY, DomainLengthZ,
+                NumTotalElementsX, NumTotalElementsY, NumTotalElementsZ);
+            (IReadOnlyList<Node> vertices, IReadOnlyList<CellConnectivity<Node>> cells) = 
+                meshGenerator.CreateMesh((id, x, y, z) => new Node(id: id, x: x, y:  y, z: z ));
+
+            // Define subdomain boundaries
+            int numTotalSubdomains = NumSubdomainsX * NumSubdomainsY * NumSubdomainsZ;
+            var boundaries = new Brick[numTotalSubdomains];
+            double subdomainLengthX = DomainLengthX / NumSubdomainsX;
+            double subdomainLengthY = DomainLengthY / NumSubdomainsY;
+            double subdomainLengthZ = DomainLengthZ / NumSubdomainsZ;
+            for (int k = 0; k < NumSubdomainsZ; ++k)
+            {
+                double minZ = k * subdomainLengthZ;
+                double maxZ = (k + 1) * subdomainLengthZ;
+                for (int j = 0; j < NumSubdomainsY; ++j)
+                {
+                    double minY = j * subdomainLengthY;
+                    double maxY = (j + 1) * subdomainLengthY;
+                    for (int i = 0; i < NumSubdomainsX; ++i)
+                    {
+                        double minX = i * subdomainLengthX;
+                        double maxX = (i + 1) * subdomainLengthX;
+                        boundaries[k * NumSubdomainsX * NumSubdomainsY + j * NumSubdomainsX + i] = 
+                            new Brick(minX, minY, minZ, maxX, maxY, maxZ);
+                    }
+                }
+            }
+
+            // Materials
+            var youngModuli = new double[numTotalSubdomains];
+            if (YoungModuliOfSubdomains == null)
+            {
+                for (int s = 0; s < numTotalSubdomains; ++s) youngModuli[s] = YoungModulus;
+            }
+            else
+            {
+                throw new NotImplementedException();
+                //Debug.Assert(YoungModuliOfSubdomains.GetLength(0) == NumSubdomainsY
+                //    && YoungModuliOfSubdomains.GetLength(1) == NumSubdomainsX, "Materials do not match the subdomain layout");
+                //for (int j = 0; j < NumSubdomainsY; ++j)
+                //{
+                //    for (int i = 0; i < NumSubdomainsX; ++i)
+                //    {
+                //        youngModuli[j * NumSubdomainsX + i] = YoungModuliOfSubdomains[j, i];
+                //    }
+                //}
+            }
+            var dynamicProperties = new DynamicMaterial(1.0, 0.0, 0.0);
+            ElasticMaterial3D[] materials = youngModuli.Select(
+                E => new ElasticMaterial3D() { YoungModulus = E, PoissonRatio = 0.3 }).ToArray();
+
+            // Define model, subdomains, nodes
+            var model = new Model();
+            for (int s = 0; s < numTotalSubdomains; ++s) model.SubdomainsDictionary.Add(s, new Subdomain(s));
+            for (int n = 0; n < vertices.Count; ++n) model.NodesDictionary.Add(n, vertices[n]);
+
+            // Elements
+            ContinuumElement3DFactory[] elementFactories = materials.Select(
+                material => new ContinuumElement3DFactory(material, dynamicProperties)).ToArray();
+            for (int e = 0; e < cells.Count; ++e)
+            {
+                int NumSubdomainsContainingThis = 0;
+                for (int s = 0; s < numTotalSubdomains; ++s)
+                {
+                    if (boundaries[s].Contains(cells[e], meshTolerance))
+                    {
+                        ++NumSubdomainsContainingThis;
+
+                        // Create the element
+                        ContinuumElement3D element = elementFactories[s].CreateElement(cells[e].CellType, cells[e].Vertices);
+                        var elementWrapper = new Element() { ID = e, ElementType = element };
+                        foreach (Node node in element.Nodes) elementWrapper.AddNode(node);
+                        if (model.ElementsDictionary.ContainsKey(e))
+                        {
+                            throw new Exception($"Element {e} belongs to more than one subdomains.");
+                        }
+                        model.ElementsDictionary.Add(e, elementWrapper);
+                        model.SubdomainsDictionary[s].Elements.Add(elementWrapper.ID, elementWrapper);
+                    }
+                }
+                Debug.Assert(NumSubdomainsContainingThis == 1);
+            }
+
+            // Apply prescribed displacements
+            foreach ((BoundaryRegion region, IDofType dof, double displacement) in prescribedDisplacements)
+            {
+                Node[] nodes = FindBoundaryNodes(region, model, meshTolerance);
+                foreach (Node node in nodes) node.Constraints.Add(new Constraint() { DOF = dof, Amount = displacement });
+            }
+
+            // Apply prescribed loads
+            foreach ((BoundaryRegion region, IDofType dof, double totalLoad) in prescribedLoads)
+            {
+                Node[] nodes = FindBoundaryNodes(region, model, meshTolerance);
+                double load = totalLoad / nodes.Length;
+                foreach (Node node in nodes) model.Loads.Add(new Load() { Node = node, DOF = dof, Amount = load });
+            }
+
+            return model;
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="load">Will be distributed evenly.</param>
+        public void DistributeLoadAtNodes(BoundaryRegion region, IDofType dof, double load)
+            => prescribedLoads.Add((region, dof, load));
+
+        public void PrescribeDisplacement(BoundaryRegion region, IDofType dof, double displacement)
+            => prescribedDisplacements.Add((region, dof, displacement));
+
+        private Node[] FindBoundaryNodes(BoundaryRegion region, Model model, double tol)
+        {
+            double minX = 0.0, minY = 0.0, minZ = 0.0, maxX = DomainLengthX, maxY = DomainLengthY, maxZ = DomainLengthZ; // for brevity
+
+            IEnumerable<Node> nodes;
+            if (region == BoundaryRegion.MinX) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.X - minX) <= tol);
+            else if (region == BoundaryRegion.MinY) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.Y - minY) <= tol);
+            else if (region == BoundaryRegion.MinZ) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.Z - minZ) <= tol);
+            else if (region == BoundaryRegion.MaxX) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.X - maxX) <= tol);
+            else if (region == BoundaryRegion.MaxY) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.Y - maxY) <= tol);
+            else if (region == BoundaryRegion.MaxZ) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.Z - maxZ) <= tol);
+            else if (region == BoundaryRegion.MinXMinYMinZ)
+            {
+                nodes = model.NodesDictionary.Values.Where(node => 
+                    (Math.Abs(node.X - minX) <= tol) && (Math.Abs(node.Y - minY) <= tol) && (Math.Abs(node.Z - minZ) <= tol));
+            }
+            else if (region == BoundaryRegion.MinXMinYMaxZ)
+            {
+                nodes = model.NodesDictionary.Values.Where(node =>
+                    (Math.Abs(node.X - minX) <= tol) && (Math.Abs(node.Y - minY) <= tol) && (Math.Abs(node.Z - maxZ) <= tol));
+            }
+            else if (region == BoundaryRegion.MinXMaxYMinZ)
+            {
+                nodes = model.NodesDictionary.Values.Where(node =>
+                    (Math.Abs(node.X - minX) <= tol) && (Math.Abs(node.Y - maxY) <= tol) && (Math.Abs(node.Z - minZ) <= tol));
+            }
+            else if (region == BoundaryRegion.MinXMaxYMaxZ)
+            {
+                nodes = model.NodesDictionary.Values.Where(node =>
+                    (Math.Abs(node.X - minX) <= tol) && (Math.Abs(node.Y - maxY) <= tol) && (Math.Abs(node.Z - maxZ) <= tol));
+            }
+            else if (region == BoundaryRegion.MaxXMinYMinZ)
+            {
+                nodes = model.NodesDictionary.Values.Where(node =>
+                    (Math.Abs(node.X - maxX) <= tol) && (Math.Abs(node.Y - minY) <= tol) && (Math.Abs(node.Z - minZ) <= tol));
+            }
+            else if (region == BoundaryRegion.MaxXMinYMaxZ)
+            {
+                nodes = model.NodesDictionary.Values.Where(node =>
+                    (Math.Abs(node.X - maxX) <= tol) && (Math.Abs(node.Y - minY) <= tol) && (Math.Abs(node.Z - maxZ) <= tol));
+            }
+            else if (region == BoundaryRegion.MaxXMaxYMinZ)
+            {
+                nodes = model.NodesDictionary.Values.Where(node =>
+                    (Math.Abs(node.X - maxX) <= tol) && (Math.Abs(node.Y - maxY) <= tol) && (Math.Abs(node.Z - minZ) <= tol));
+            }
+            else if (region == BoundaryRegion.MaxXMaxYMaxZ)
+            {
+                nodes = model.NodesDictionary.Values.Where(node =>
+                    (Math.Abs(node.X - maxX) <= tol) && (Math.Abs(node.Y - maxY) <= tol) && (Math.Abs(node.Z - maxZ) <= tol));
+            }
+            else throw new Exception("Should not have reached this code");
+
+            return nodes.ToArray();
+        }
+
+        private class Brick
+        {
+            private readonly double minX, minY, minZ, maxX, maxY, maxZ;
+
+            internal Brick(double minX, double minY, double minZ, double maxX, double maxY, double maxZ)
+            {
+                this.minX = minX;
+                this.minY = minY;
+                this.minZ = minZ;
+                this.maxX = maxX;
+                this.maxY = maxY;
+                this.maxZ = maxZ;
+            }
+
+            public bool Contains(CellConnectivity<Node> cell, double tol)
+            {
+                return cell.Vertices.All(node =>
+                     (node.X >= minX - tol) && (node.X <= maxX + tol) 
+                     && (node.Y >= minY - tol) && (node.Y <= maxY + tol)
+                     && (node.Z >= minZ - tol) && (node.Z <= maxZ + tol));
+            }
+        }
+    }
+}

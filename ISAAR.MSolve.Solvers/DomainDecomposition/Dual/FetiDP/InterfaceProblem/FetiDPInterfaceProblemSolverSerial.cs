@@ -4,6 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Iterative;
 using ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
@@ -41,6 +42,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             Vector pcgRhs = CalcInterfaceProblemRhs(matrixManager, flexibility, globalDr);
             var lagranges = Vector.CreateZero(systemOrder);
 
+            //#region debug only
+            //int nL = lagranges.Length;
+            ////Matrix FIrr = MultiplyWithIdentity(nL, nL, flexibility.MultiplyGlobalFIrr);
+            ////LinearAlgebra.Triangulation.CholeskyFull FIrrFactorized = FIrr.FactorCholesky(false);
+
+            //Matrix pcgMatrixExplicit = MultiplyWithIdentity(nL, nL, pcgMatrix.Multiply);
+            //LinearAlgebra.Triangulation.CholeskyFull pcgMatrixFactorized = pcgMatrixExplicit.FactorCholesky(false);
+            //#endregion
+
             // Solve the interface problem using PCG algorithm
             var pcgBuilder = new PcgAlgorithm.Builder();
             pcgBuilder.MaxIterationsProvider = pcgSettings.MaxIterationsProvider;
@@ -76,5 +86,22 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             }
             return globalDr;
         }
+
+        //#region debug only
+
+        //public static Matrix MultiplyWithIdentity(int numRows, int numCols, Action<Vector, Vector> matrixVectorMultiplication)
+        //{
+        //    var result = Matrix.CreateZero(numRows, numCols);
+        //    for (int j = 0; j < numCols; ++j)
+        //    {
+        //        var lhs = Vector.CreateZero(numCols);
+        //        lhs[j] = 1.0;
+        //        var rhs = Vector.CreateZero(numRows);
+        //        matrixVectorMultiplication(lhs, rhs);
+        //        result.SetSubcolumn(j, rhs);
+        //    }
+        //    return result;
+        //}
+        //#endregion
     }
 }
