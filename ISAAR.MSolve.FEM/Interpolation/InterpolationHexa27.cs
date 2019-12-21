@@ -16,7 +16,7 @@ namespace ISAAR.MSolve.FEM.Interpolation
 	{
 		private static readonly InterpolationHexa27 uniqueInstance = new InterpolationHexa27();
 
-		private InterpolationHexa27() : base(27)
+		private InterpolationHexa27() : base(Discretization.Mesh.CellType.Hexa27, 27)
 		{
 			NodalNaturalCoordinates = new NaturalPoint[]
 			{

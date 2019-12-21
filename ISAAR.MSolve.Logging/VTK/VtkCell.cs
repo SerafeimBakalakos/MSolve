@@ -39,7 +39,9 @@ namespace ISAAR.MSolve.Logging.VTK
                                             //    /  \
                                             //   5    4
                                             //  /       \
-                { CellType.Tri6, 22 }       // 0 -- 3 -- 1
+                { CellType.Tri6, 22 },      // 0 -- 3 -- 1
+
+                { CellType.Hexa8, 12 }
             };
 
         public static IReadOnlyDictionary<CellType, int> CellTypeCodes => cellTypeCodes;

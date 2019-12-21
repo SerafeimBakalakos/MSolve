@@ -16,7 +16,7 @@ namespace ISAAR.MSolve.FEM.Interpolation
     {
 		private static readonly InterpolationWedge6 uniqueInstance= new InterpolationWedge6();
 
-	    private InterpolationWedge6() : base(6)
+	    private InterpolationWedge6() : base(Discretization.Mesh.CellType.Wedge6, 6)
 	    {
 		    NodalNaturalCoordinates = new NaturalPoint[]
 		    {

@@ -16,7 +16,7 @@ namespace ISAAR.MSolve.FEM.Interpolation
     {
 		private static readonly InterpolationPyra13 uniqueInstance=new InterpolationPyra13();
 
-	    private InterpolationPyra13() : base(13)
+	    private InterpolationPyra13() : base(Discretization.Mesh.CellType.Pyra13, 13)
 	    {
 		    NodalNaturalCoordinates = new NaturalPoint[]
 		    {
