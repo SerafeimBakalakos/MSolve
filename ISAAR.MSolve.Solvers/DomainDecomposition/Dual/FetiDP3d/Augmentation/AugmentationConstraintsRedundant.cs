@@ -7,6 +7,7 @@ using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 //TODO: This creates larger coarse problems and more MPI communication per PCG iteration. However the PCG iterations are fewer!!!
@@ -25,7 +26,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             this.lagrangesEnumerator = lagrangesEnumerator;
         }
 
-        public Matrix MatrixGlobalQr { get; private set; }
+        public UnsignedBooleanMatrix MatrixGlobalQr { get; private set; }
 
         public IMidsideNodesSelection MidsideNodesSelection { get; }
 
@@ -39,7 +40,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             {
                 NumGlobalAugmentationConstraints += val.Count;
             }
-            MatrixGlobalQr = Matrix.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers, NumGlobalAugmentationConstraints);
+            MatrixGlobalQr = 
+                new UnsignedBooleanMatrix(lagrangesEnumerator.NumLagrangeMultipliers, NumGlobalAugmentationConstraints);
 
             int col = 0;
             foreach (INode node in MidsideNodesSelection.MidsideNodesGlobal)
@@ -48,19 +50,19 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
                 {
                     foreach (int idx in augmentationLagranges[node, dof])
                     {
-                        MatrixGlobalQr[idx, col] = 1.0;
+                        MatrixGlobalQr.AddEntry(idx, col);
                         ++col;
                     }
                 }
             }
         }
 
-        public Matrix GetMatrixBa(ISubdomain subdomain)
+        public UnsignedBooleanMatrix GetMatrixBa(ISubdomain subdomain)
         {
             throw new NotImplementedException();
         }
 
-        public Matrix GetMatrixQ1(ISubdomain subdomain)
+        public Matrix GetMatrixR1(ISubdomain subdomain)
         {
             throw new NotImplementedException();
         }

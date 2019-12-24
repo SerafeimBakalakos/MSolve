@@ -114,6 +114,20 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
         }
 
         /// <summary>
+        /// Initializes a new instance of <see cref="Matrix"/> by copying the entries of <paramref name="matrix"/>.
+        /// </summary>
+        /// <param name="matrix">The original matrix that will be copied.</param>
+        public static Matrix CreateFromMatrix(IIndexable2D matrix)
+        {
+            var clone = Matrix.CreateZero(matrix.NumRows, matrix.NumColumns);
+            for (int j = 0; j < matrix.NumColumns; ++j)
+            {
+                for (int i = 0; i < matrix.NumRows; ++i) clone[i, j] = matrix[i, j];
+            }
+            return clone;
+        }
+
+        /// <summary>
         /// Initializes a new instance of <see cref="Matrix"/> that is equal to the identity matrix, namely a square matrix with 
         /// non-diagonal entries being equal to 0 and diagonal entries being equal to 1.
         /// </summary>

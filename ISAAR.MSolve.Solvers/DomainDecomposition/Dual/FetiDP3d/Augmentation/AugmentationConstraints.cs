@@ -6,6 +6,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
@@ -15,8 +16,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
         private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
         private readonly IModel model;
 
-        private Dictionary<ISubdomain, Matrix> matricesBa = new Dictionary<ISubdomain, Matrix>();
-        private Dictionary<ISubdomain, Matrix> matricesQ1 = new Dictionary<ISubdomain, Matrix>();
+        private Dictionary<ISubdomain, UnsignedBooleanMatrix> matricesBa = new Dictionary<ISubdomain, UnsignedBooleanMatrix>();
+        private Dictionary<ISubdomain, Matrix> matricesR1 = new Dictionary<ISubdomain, Matrix>();
 
         public AugmentationConstraints(IModel model, IMidsideNodesSelection midsideNodesSelection,
             ILagrangeMultipliersEnumerator lagrangesEnumerator)
@@ -26,7 +27,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             this.lagrangesEnumerator = lagrangesEnumerator;
         }
 
-        public Matrix MatrixGlobalQr { get; private set; }
+        public UnsignedBooleanMatrix MatrixGlobalQr { get; private set; }
         public IMidsideNodesSelection MidsideNodesSelection { get; }
 
         public int NumGlobalAugmentationConstraints { get; private set; }
@@ -36,22 +37,24 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             DofTable augmentedOrdering = OrderAugmentationConstraints();
             CalcGlobalMatrixQr(augmentedOrdering);
             CalcMatricesBa(augmentedOrdering);
-            CalcMatricesQ1();
+            CalcMatricesR1();
         }
 
-        public Matrix GetMatrixBa(ISubdomain subdomain) => matricesBa[subdomain];
+        public UnsignedBooleanMatrix GetMatrixBa(ISubdomain subdomain) => matricesBa[subdomain];
 
-        public Matrix GetMatrixQ1(ISubdomain subdomain) => matricesQ1[subdomain];
+        public Matrix GetMatrixR1(ISubdomain subdomain) => matricesR1[subdomain];
 
         private void CalcGlobalMatrixQr(DofTable augmentedOrdering)
         {
-            NumGlobalAugmentationConstraints = MidsideNodesSelection.DofsPerNode.Length * MidsideNodesSelection.MidsideNodesGlobal.Count;
-            MatrixGlobalQr = Matrix.CreateZero(lagrangesEnumerator.NumLagrangeMultipliers, NumGlobalAugmentationConstraints);
+            NumGlobalAugmentationConstraints = 
+                MidsideNodesSelection.DofsPerNode.Length * MidsideNodesSelection.MidsideNodesGlobal.Count;
+            MatrixGlobalQr = 
+                new UnsignedBooleanMatrix(lagrangesEnumerator.NumLagrangeMultipliers, NumGlobalAugmentationConstraints);
             for (int i = 0; i < lagrangesEnumerator.NumLagrangeMultipliers; ++i)
             {
                 LagrangeMultiplier lagr = lagrangesEnumerator.LagrangeMultipliers[i];
                 bool isMidside = augmentedOrdering.TryGetValue(lagr.Node, lagr.DofType, out int augmentedIdx);
-                if (isMidside) MatrixGlobalQr[i, augmentedIdx] = 1;
+                if (isMidside) MatrixGlobalQr.AddEntry(i, augmentedIdx);
             }
         }
 
@@ -61,14 +64,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             {
                 HashSet<INode> midsideNodes = MidsideNodesSelection.GetMidsideNodesOfSubdomain(subdomain);
                 int numSubdomainAugmentedConstraints = midsideNodes.Count * MidsideNodesSelection.DofsPerNode.Length;
-                var Ba = Matrix.CreateZero(numSubdomainAugmentedConstraints, NumGlobalAugmentationConstraints);
+                var Ba = new UnsignedBooleanMatrix(numSubdomainAugmentedConstraints, NumGlobalAugmentationConstraints);
                 int subdomainIdx = 0;
                 foreach (INode node in midsideNodes)
                 {
                     foreach (IDofType dof in MidsideNodesSelection.DofsPerNode)
                     {
                         int globalIdx = augmentedOrdering[node, dof];
-                        Ba[subdomainIdx, globalIdx] = 1;
+                        Ba.AddEntry(subdomainIdx, globalIdx);
                         ++subdomainIdx;
                     }
                 }
@@ -76,11 +79,16 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             }
         }
 
-        private void CalcMatricesQ1()
+        private void CalcMatricesR1()
         {
+            // Q1[s] = Qr * Ba[s]^T
+            // R1[s] = Br[s]^T * Q1[s] 
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                matricesQ1[subdomain] =  matricesBa[subdomain].MultiplyLeft(MatrixGlobalQr, true, false);
+                SignedBooleanMatrixColMajor Br = lagrangesEnumerator.GetBooleanMatrix(subdomain);
+                int[] columnsOfQrToKeep = matricesBa[subdomain].GetRowsToColumnsMap();
+                Matrix Q1 = Matrix.CreateFromMatrix(MatrixGlobalQr.GetColumns(columnsOfQrToKeep));
+                matricesR1[subdomain] = Br.MultiplyRight(Q1, true);
             }
         }
 

@@ -66,26 +66,21 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
             IAugmentationConstraints augmentationConstraints = CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
 
-            Matrix Q = augmentationConstraints.MatrixGlobalQr;
-            Matrix expectedQ = augmentationConstraints.MatrixGlobalQr;
+            //Matrix expectedQ = augmentationConstraints.MatrixGlobalQr;
+            Matrix expectedQ = ExpectedConnectivityData.MatrixQrSimple;
 
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                Matrix Q1 = augmentationConstraints.GetMatrixQ1(subdomain);
-                Matrix Ba = augmentationConstraints.GetMatrixBa(subdomain);
+                Matrix R1 = augmentationConstraints.GetMatrixR1(subdomain);
+                UnsignedBooleanMatrix Ba = augmentationConstraints.GetMatrixBa(subdomain);
+                Matrix computedBrTransposeTimesQr = R1 * Matrix.CreateFromMatrix(Ba);
 
-                SignedBooleanMatrixColMajor Br = lagrangesEnumerator.GetBooleanMatrix(subdomain);
                 Matrix expectedBr = ExpectedConnectivityData.GetMatrixBr(subdomain.ID);
-
-
-                Matrix R1 = Br.MultiplyRight(Q1, true);
-
-                Matrix expected = expectedBr.MultiplyRight(expectedQ, true);
-                Matrix computed = R1 * Ba;
+                Matrix expectedBrTransposeTimesQr = expectedBr.MultiplyRight(expectedQ, true);
 
                 // Check
                 double tolerance = 1E-13;
-                Assert.True(expected.Equals(computed, tolerance));
+                Assert.True(expectedBrTransposeTimesQr.Equals(computedBrTransposeTimesQr, tolerance));
             }
         }
 

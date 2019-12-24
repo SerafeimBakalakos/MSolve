@@ -30,7 +30,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
         {
             this.NumRows = numRows;
             this.NumColumns = numColumns;
-            this.data = new Dictionary<int, HashSet<int>>();
+            this.data = new Dictionary<int, HashSet<int>>(numRows);
         }
 
         /// <summary>
@@ -102,12 +102,42 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
         }
 
         /// <summary>
+        /// WARNING: this only works if this matrix has the following properties:
+        /// 1) Each row of this matrix must have at most one 1 and all other 0,
+        /// </summary>
+        public UnsignedBooleanMatrix GetColumns(int[] colsToKeep)
+        {
+            //TODO: This would be more efficient if the matrix was column major
+            var originalToSubmatrixColumns = new Dictionary<int, int>();
+            for (int j = 0; j < colsToKeep.Length; ++j) originalToSubmatrixColumns[colsToKeep[j]] = j;
+
+            var clone = new UnsignedBooleanMatrix(this.NumRows, colsToKeep.Length);
+            foreach (var rowColumnsPair in data)
+            {
+                int row = rowColumnsPair.Key;
+                HashSet<int> columnsOfRow = rowColumnsPair.Value;
+                Debug.Assert(columnsOfRow.Count == 1, "This method only works if there is at most one '1' per row");
+                int col = columnsOfRow.First();
+                bool keepThisCol = originalToSubmatrixColumns.TryGetValue(col, out int subCol);
+                if (keepThisCol)
+                {
+                    var cloneColumn = new HashSet<int>();
+                    cloneColumn.Add(subCol);
+                    clone.data.Add(row, cloneColumn);
+                }
+            }
+            
+            return clone;
+        }
+
+        /// <summary>
         /// WARNING: this only works if this matrix is a mapping matrix L used in FETI solvers, meaning :
         /// 1) There are more columns than rows.
         /// 2) Each row of this matrix must have exactly one 1 and all other 0,
         /// 3) Each column must have at most one 1. It is possible that a column is completely 0.
         /// </summary>
         //TODO: This should be the actual way this matrix is stored. The dictionaries should be for building it only.
+        //TODO: Perhaps rename this as GetNonZerosColumnIndices()
         public int[] GetRowsToColumnsMap()
         {
             var map = new int[NumRows];
@@ -215,10 +245,12 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             //TODO: I think that it will pay off to transpose an all integer CSR matrix and store both. Especially in the case 
             //     of subdomain boolean matrices, that little extra memory should not be of concern.
             Preconditions.CheckMultiplicationDimensions(this.NumRows, other.NumRows);
-            var result = new double[this.NumColumns * other.NumRows];
-            for (int j = 0; j < other.NumColumns; ++j)
+            int numRowsResult = this.NumColumns;
+            int numColsResult = other.NumColumns;
+            var result = new double[numRowsResult * numColsResult];
+            for (int j = 0; j < numColsResult; ++j)
             {
-                int offset = j * this.NumRows;
+                int offset = j * numRowsResult;
                 // Transpose it conceptually and multiply with the vector on the right. 
                 foreach (var wholeRow in data)
                 {
@@ -228,7 +260,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
                     }
                 }
             }
-            return Matrix.CreateFromArray(result, this.NumColumns, other.NumColumns, false);
+            return Matrix.CreateFromArray(result, numRowsResult, numColsResult, false);
         }
 
         private Matrix MultiplyRightUntransposed(Matrix other)

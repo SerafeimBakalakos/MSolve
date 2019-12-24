@@ -48,7 +48,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 
             // The error is provided in the reference solution the, but it is almost impossible for two different codes run on 
             // different machines to achieve the exact same accuracy.
-            Assert.Equal(0.0, normalizedError, 6);
+            Assert.Equal(0.0, normalizedError, 5);
         }
 
         internal static Model CreateModel(double stiffnessRatio)
