@@ -6,33 +6,32 @@ using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Commons;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
-//TODO: Rename to UnsignedBooleanMatrixRowMajor
 namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
 {
     /// <summary>
     /// Sparse matrix with the non-zero entries being 1. Its main use is in domain decomposition solvers. 
-    /// The internal data structures that store the non-zero entries are row major.
+    /// The internal data structures that store the non-zero entries are column major.
     /// Authors: Serafeim Bakalakos
     /// </summary>
     [Serializable]
-    public class UnsignedBooleanMatrix : IIndexable2D, IMappingMatrix
+    public class UnsignedBooleanMatrixColMajor : IIndexable2D, IMappingMatrix
     {
         /// <summary>
-        /// Non-zero entries: (row, columns). The key of the Dictionary is the row index, while the HashSet contains column 
+        /// Non-zero entries: (row, columns). The key of the Dictionary is the column index, while the HashSet contains row 
         /// indices of non-zero entries.
         /// </summary>
         private readonly Dictionary<int, HashSet<int>> data;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="UnsignedBooleanMatrix"/> with the provided dimensions.
+        /// Initializes a new instance of <see cref="UnsignedBooleanMatrixColMajor"/> with the provided dimensions.
         /// </summary>
         /// <param name="numRows">The number of rows of the new matrix.</param>
         /// <param name="numColumns">The number of columns of the new matrix. </param>
-        public UnsignedBooleanMatrix(int numRows, int numColumns)
+        public UnsignedBooleanMatrixColMajor(int numRows, int numColumns)
         {
             this.NumRows = numRows;
             this.NumColumns = numColumns;
-            this.data = new Dictionary<int, HashSet<int>>(numRows);
+            this.data = new Dictionary<int, HashSet<int>>(numColumns);
         }
 
         /// <summary>
@@ -65,36 +64,37 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
         {
             get
             {
-                if (data.TryGetValue(rowIdx, out HashSet<int> colIndices))
+                if (data.TryGetValue(colIdx, out HashSet<int> rowIndices))
                 {
-                    if (colIndices.Contains(colIdx)) return 1;
+                    if (rowIndices.Contains(rowIdx)) return 1;
                 }
                 return 0;
             }
         }
 
         /// <summary>
-        /// Sets the entry with indices (<paramref name="rowIdx"/>, <paramref name="colIdx"/>) to 1.
+        /// Sets the entry with indices (<paramref name="colIdx"/>, <paramref name="rowIdx"/>) to 1.
         /// </summary>
-        /// <param name="rowIdx">
-        /// The row index of the entry to set. Constraints: 
-        /// 0 &lt;= <paramref name="rowIdx"/> &lt; <see cref="NumRows"/>.
+        /// /// <param name="rowIdx">
+        /// The column index of the entry to set. Constraints: 
+        /// 0 &lt;= <paramref name="rowIdx"/> &lt; <see cref="NumColumns"/>.
         /// </param>
         /// <param name="colIdx">
-        /// The column index of the entry to set. Constraints: 
-        /// 0 &lt;= <paramref name="colIdx"/> &lt; <see cref="NumColumns"/>.
+        /// The row index of the entry to set. Constraints: 
+        /// 0 &lt;= <paramref name="colIdx"/> &lt; <see cref="NumRows"/>.
         /// </param>
         public void AddEntry(int rowIdx, int colIdx)
         {
-            if (data.TryGetValue(rowIdx, out HashSet<int> colIndices))
+            if (data.TryGetValue(colIdx, out HashSet<int> rowIndices))
             {
-                colIndices.Add(colIdx);
+                rowIndices.Add(rowIdx);
             }
             else
             {
-                colIndices = new HashSet<int>();
-                data[rowIdx] = colIndices;
-                colIndices.Add(colIdx);
+                rowIndices = new HashSet<int>();
+                data[colIdx] = rowIndices;
+                rowIndices.Add(rowIdx);
+
             }
         }
 
@@ -103,32 +103,25 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             return DenseStrategies.AreEqual(this, other, tolerance);
         }
 
-        /// <summary>
-        /// WARNING: this only works if this matrix has the following properties:
-        /// 1) Each row of this matrix must have at most one 1 and all other 0,
-        /// </summary>
-        public UnsignedBooleanMatrix GetColumns(int[] colsToKeep)
+        public UnsignedBooleanMatrixColMajor GetColumns(int[] colsToKeep, bool deepCopy)
         {
-            //TODO: This would be more efficient if the matrix was column major
-            var originalToSubmatrixColumns = new Dictionary<int, int>();
-            for (int j = 0; j < colsToKeep.Length; ++j) originalToSubmatrixColumns[colsToKeep[j]] = j;
-
-            var clone = new UnsignedBooleanMatrix(this.NumRows, colsToKeep.Length);
-            foreach (var rowColumnsPair in data)
+            var clone = new UnsignedBooleanMatrixColMajor(this.NumRows, colsToKeep.Length);
+            if (deepCopy)
             {
-                int row = rowColumnsPair.Key;
-                HashSet<int> columnsOfRow = rowColumnsPair.Value;
-                Debug.Assert(columnsOfRow.Count == 1, "This method only works if there is at most one '1' per row");
-                int col = columnsOfRow.First();
-                bool keepThisCol = originalToSubmatrixColumns.TryGetValue(col, out int subCol);
-                if (keepThisCol)
+                for (int j = 0; j < colsToKeep.Length; ++j)
                 {
                     var cloneColumn = new HashSet<int>();
-                    cloneColumn.Add(subCol);
-                    clone.data.Add(row, cloneColumn);
+                    foreach (int row in this.data[colsToKeep[j]]) cloneColumn.Add(row);
+                    clone.data[j] = cloneColumn;
                 }
             }
-            
+            else
+            {
+                for (int j = 0; j < colsToKeep.Length; ++j)
+                {
+                    clone.data[j] = this.data[colsToKeep[j]];
+                }
+            }
             return clone;
         }
 
@@ -142,13 +135,15 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
         //TODO: Perhaps rename this as GetNonZerosColumnIndices()
         public int[] GetRowsToColumnsMap()
         {
-            var map = new int[NumRows];
-            for (int i = 0; i < NumRows; ++i)
+            int[] nonZeroRows = data.Keys.ToArray();
+            foreach (var wholeCol in data)
             {
-                Debug.Assert(data[i].Count == 1);
-                map[i] = data[i].First();
+                Debug.Assert(wholeCol.Value.Count == 1);
+                int col = wholeCol.Key;
+                int row = wholeCol.Value.First();
+                nonZeroRows[row] = col;
             }
-            return map;
+            return nonZeroRows;
         }
 
         public Vector Multiply(Vector vector, bool transposeThis = false)
@@ -159,23 +154,25 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
 
         public Matrix MultiplyLeft(IMatrixView other)
         {
-
             Preconditions.CheckMultiplicationDimensions(other, this);
             int numRowsResult = other.NumRows;
             int numColsResult = this.NumColumns;
-            var result = Matrix.CreateZero(numRowsResult, numColsResult);
-            foreach (var wholeRow in data)
+            var result = new double[numRowsResult * numColsResult];
+            foreach (var wholeCol in data)
             {
-                int k = wholeRow.Key;
-                foreach (int j in wholeRow.Value)
+                int j = wholeCol.Key;
+                int offset = j * numRowsResult;
+                for (int i = 0; i < numRowsResult; ++i)
                 {
-                    for (int i = 0; i < numRowsResult; ++i)
+                    double sum = 0.0;
+                    foreach (int k in wholeCol.Value)
                     {
-                        result[i, j] += other[i, k];
+                        sum += other[i, k];
                     }
+                    result[offset + i] = sum;
                 }
             }
-            return result;
+            return Matrix.CreateFromArray(result, numRowsResult, numColsResult, false);
         }
 
         public Matrix MultiplyRight(Matrix other, bool transposeThis = false)
@@ -201,14 +198,14 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             // of matrix "result" (global).
             Preconditions.CheckMultiplicationDimensions(other.NumColumns, this.NumRows);
             var result = Matrix.CreateZero(this.NumColumns, this.NumColumns);
+            int[] otherToResultMap = GetRowsToColumnsMap();
+
             for (int otherCol = 0; otherCol < other.NumColumns; ++otherCol)
             {
-                Debug.Assert(data[otherCol].Count == 1);
-                int resultCol = data[otherCol].First();
+                int resultCol = otherToResultMap[otherCol];
                 for (int otherRow = 0; otherRow < other.NumRows; ++otherRow)
                 {
-                    Debug.Assert(data[otherRow].Count == 1);
-                    int resultRow = data[otherRow].First();
+                    int resultRow = otherToResultMap[otherRow];
                     result[resultRow, resultCol] = other[otherRow, otherCol];
                 }
             }
@@ -222,13 +219,14 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             Preconditions.CheckMultiplicationDimensions(NumRows, vector.Length);
             var result = new double[NumColumns];
             // Transpose it conceptually and multiply with the vector on the right. 
-            foreach (var wholeRow in data)
+            foreach (var wholeCol in data)
             {
-                double scalar = vector[wholeRow.Key];
-                foreach (int col in wholeRow.Value)
+                double sum = 0.0;
+                foreach (int row in wholeCol.Value)
                 {
-                    result[col] += scalar;
+                    sum += vector[row];
                 }
+                result[wholeCol.Key] = sum;
             }
             return Vector.CreateFromArray(result, false);
         }
@@ -237,14 +235,13 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
         {
             Preconditions.CheckMultiplicationDimensions(NumColumns, vector.Length);
             var result = new double[NumRows];
-            foreach (var wholeRow in data)
+            foreach (var wholeCol in data)
             {
-                double sum = 0.0;
-                foreach (int col in wholeRow.Value)
+                double scalar = vector[wholeCol.Key];
+                foreach (int row in wholeCol.Value)
                 {
-                    sum += vector[col];
+                    result[row] += scalar;
                 }
-                result[wholeRow.Key] = sum;
             }
             return Vector.CreateFromArray(result, false);
         }
@@ -261,13 +258,14 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             {
                 int offset = j * numRowsResult;
                 // Transpose it conceptually and multiply with the vector on the right. 
-                foreach (var wholeRow in data)
+                foreach (var wholeCol in data)
                 {
-                    double scalar = other[wholeRow.Key, j];
-                    foreach (int col in wholeRow.Value)
+                    double sum = 0.0;
+                    foreach (int row in wholeCol.Value)
                     {
-                        result[offset + col] += scalar;
+                        sum += other[row, j];
                     }
+                    result[offset + wholeCol.Key] = sum;
                 }
             }
             return Matrix.CreateFromArray(result, numRowsResult, numColsResult, false);
@@ -282,17 +280,16 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             for (int j = 0; j < numColsResult; ++j)
             {
                 int offset = j * numRowsResult;
-                foreach (var wholeRow in data)
+                foreach (var wholeCol in data)
                 {
-                    double sum = 0.0;
-                    foreach (int col in wholeRow.Value)
+                    double scalar = other[wholeCol.Key, j];
+                    foreach (int row in wholeCol.Value)
                     {
-                        sum += other[col, j];
+                        result[offset + row] += scalar;
                     }
-                    result[offset + wholeRow.Key] = sum;
                 }
             }
-            return Matrix.CreateFromArray(result, numRowsResult, numColsResult, false);
+            return Matrix.CreateFromArray(result, numRowsResult, other.NumColumns, false);
         }
     }
 }
