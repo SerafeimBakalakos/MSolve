@@ -36,6 +36,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             public int NumColumns => Bpbr.NumColumns;
             public int NumRows => Bpbr.NumRows;
 
+            public Matrix CopyToFullMatrix() => Bpbr;
+
             public Vector Multiply(Vector vector, bool transposeThis = false) => Bpbr.Multiply(vector, transposeThis);
 
             public Matrix MultiplyRight(Matrix other, bool transposeThis = false) => Bpbr.MultiplyRight(other, transposeThis);

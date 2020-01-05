@@ -8,6 +8,7 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 //TODO: This creates larger coarse problems and more MPI communication per PCG iteration. However the PCG iterations are fewer!!!
@@ -26,7 +27,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             this.lagrangesEnumerator = lagrangesEnumerator;
         }
 
-        public UnsignedBooleanMatrix MatrixGlobalQr { get; private set; }
+        public IMappingMatrix MatrixGlobalQr { get; private set; }
 
         public IMidsideNodesSelection MidsideNodesSelection { get; }
 
@@ -40,9 +41,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             {
                 NumGlobalAugmentationConstraints += val.Count;
             }
-            MatrixGlobalQr = 
-                new UnsignedBooleanMatrix(lagrangesEnumerator.NumLagrangeMultipliers, NumGlobalAugmentationConstraints);
 
+            var Qr = new UnsignedBooleanMatrix(lagrangesEnumerator.NumLagrangeMultipliers, NumGlobalAugmentationConstraints);
             int col = 0;
             foreach (INode node in MidsideNodesSelection.MidsideNodesGlobal)
             {
@@ -50,19 +50,21 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
                 {
                     foreach (int idx in augmentationLagranges[node, dof])
                     {
-                        MatrixGlobalQr.AddEntry(idx, col);
+                        Qr.AddEntry(idx, col);
                         ++col;
                     }
                 }
             }
+
+            MatrixGlobalQr = Qr;
         }
 
-        public UnsignedBooleanMatrix GetMatrixBa(ISubdomain subdomain)
+        public UnsignedBooleanMatrixColMajor GetMatrixBa(ISubdomain subdomain)
         {
             throw new NotImplementedException();
         }
 
-        public Matrix GetMatrixR1(ISubdomain subdomain)
+        public IMappingMatrix GetMatrixR1(ISubdomain subdomain)
         {
             throw new NotImplementedException();
         }
@@ -112,7 +114,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 
         public class Factory : IAugmentationConstraintsFactory
         {
-            public IAugmentationConstraints CreateAugmentationConstraints(IModel model, IMidsideNodesSelection midsideNodesSelection,
+            public IAugmentationConstraints CreateAugmentationConstraints(IModel model, 
+                IMidsideNodesSelection midsideNodesSelection, IFetiDPDofSeparator dofSeparator,
                 ILagrangeMultipliersEnumerator lagrangesEnumerator)
             {
                 return new AugmentationConstraintsRedundant(model, midsideNodesSelection, lagrangesEnumerator);                               

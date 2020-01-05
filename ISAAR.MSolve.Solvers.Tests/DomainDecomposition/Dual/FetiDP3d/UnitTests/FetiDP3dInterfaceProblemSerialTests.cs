@@ -46,7 +46,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
                 FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
             IAugmentationConstraints augmentationConstraints = 
-                FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
+                FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
             
@@ -67,7 +67,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
                 FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
             IAugmentationConstraints augmentationConstraints =
-                FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
+                FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
             IFetiPreconditioner preconditioner = new MockPreconditioner(); //TODO: Also mock the preconditioner in 2D FETI-DP

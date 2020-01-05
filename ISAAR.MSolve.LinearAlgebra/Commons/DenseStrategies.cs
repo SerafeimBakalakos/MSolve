@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 //TODO: use default interface implementations instead of this, when they become available.
@@ -81,6 +82,11 @@ namespace ISAAR.MSolve.LinearAlgebra.Commons
                 }
             }
             return Matrix.CreateFromArray(result, m, n, false);
+        }
+
+        public static Matrix CopyToFullMatrix(IMappingMatrix matrix)
+        {
+            return matrix.MultiplyRight(Matrix.CreateIdentity(matrix.NumColumns));
         }
 
         public static Vector DoEntrywise(IVectorView vector1, IVectorView vector2,

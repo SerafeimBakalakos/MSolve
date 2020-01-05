@@ -62,15 +62,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements
             IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(subdomain);
             UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
             SignedBooleanMatrixColMajor Br = lagrangesEnumerator.GetBooleanMatrix(subdomain);
-            UnsignedBooleanMatrix Ba = augmentationConstraints.GetMatrixBa(subdomain);
-            Matrix R1 = augmentationConstraints.GetMatrixR1(subdomain);
+            IMappingMatrix Ba = augmentationConstraints.GetMatrixBa(subdomain);
+            IMappingMatrix R1 = augmentationConstraints.GetMatrixR1(subdomain);
 
             // ur[s] = inv(Krr[s]) * (fr[s] - Br[s]^T * lambda - Krc[s] * Bc[s] * uc - Br[s]^T * Qr * mi) <=>
             // ur[s] = inv(Krr[s]) * (fr[s] - Br[s]^T * lambda - Krc[s] * Bc[s] * uc - R1[s] * Ba[s] * mi)
             Vector rhs = subdomainMatrices.Fr.Copy();
             rhs.SubtractIntoThis(Br.Multiply(lagranges, true));
             rhs.SubtractIntoThis(subdomainMatrices.MultiplyKrcTimes(Bc.Multiply(uc)));
-            rhs.SubtractIntoThis(R1 * (Ba.Multiply(mi)));
+            rhs.SubtractIntoThis(R1.Multiply(Ba.Multiply(mi)));
             Vector ur = subdomainMatrices.MultiplyInverseKrrTimes(rhs);
 
             // uf[s] = union(ur[s], ubc[s])

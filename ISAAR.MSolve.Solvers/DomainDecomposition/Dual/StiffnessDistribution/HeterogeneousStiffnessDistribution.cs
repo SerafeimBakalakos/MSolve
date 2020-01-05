@@ -190,6 +190,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
                 return matricesBpb;
             }
 
+            public Matrix CopyToFullMatrix() => LinearAlgebra.Commons.DenseStrategies.CopyToFullMatrix(this);
+
             public Vector Multiply(Vector vector, bool transposeThis = false)
                 => explicitBpb.Multiply(vector, transposeThis);
 
@@ -251,6 +253,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
                 return matricesBpb;
             }
 
+            public Matrix CopyToFullMatrix() => LinearAlgebra.Commons.DenseStrategies.CopyToFullMatrix(this);
+            
             public Vector Multiply(Vector vector, bool transposeThis = false)
             {
                 //TODO: Perhaps I can reuse the temporary vectors to reduce allocations/deallocations.

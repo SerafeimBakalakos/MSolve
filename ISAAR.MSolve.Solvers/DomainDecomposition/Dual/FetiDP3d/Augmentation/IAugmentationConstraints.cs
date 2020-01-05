@@ -14,7 +14,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
         /// Qr is a (nL x na) matrix where nL is the number of global lagrange multipliers and na is 
         /// <see cref="NumGlobalAugmentationConstraints"/>.
         /// </summary>
-        UnsignedBooleanMatrix MatrixGlobalQr { get; }
+        IMappingMatrix MatrixGlobalQr { get; }
 
         IMidsideNodesSelection MidsideNodesSelection { get; }
 
@@ -27,8 +27,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 
         void CalcAugmentationMappingMatrices();
 
-        UnsignedBooleanMatrix GetMatrixBa(ISubdomain subdomain);
+        /// <summary>
+        /// The augmented constraints of the subdomain are in the same order as the nodes in 
+        /// <see cref="IMidsideNodesSelection.GetMidsideNodesOfSubdomain(ISubdomain)"/> of <see cref="MidsideNodesSelection"/>.
+        /// </summary>
+        /// <param name="subdomain"></param>
+        /// <returns></returns>
+        UnsignedBooleanMatrixColMajor GetMatrixBa(ISubdomain subdomain); //TODO: This should be an interface instead. Hard to define interface though.
 
-        Matrix GetMatrixR1(ISubdomain subdomain);
+        IMappingMatrix GetMatrixR1(ISubdomain subdomain);
     }
 }

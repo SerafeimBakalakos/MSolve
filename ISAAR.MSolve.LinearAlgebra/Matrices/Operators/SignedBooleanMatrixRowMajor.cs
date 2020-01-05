@@ -120,6 +120,8 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
         /// </summary>
         public double[,] CopyToArray2D() => DenseStrategies.CopyToArray2D(this);
 
+        public Matrix CopyToFullMatrix() => CopyToFullMatrix(false);
+
         /// <summary>
         /// Initializes a new <see cref="Matrix"/> instance by copying the entries of this <see cref="SignedBooleanMatrixRowMajor"/>.
         /// </summary>

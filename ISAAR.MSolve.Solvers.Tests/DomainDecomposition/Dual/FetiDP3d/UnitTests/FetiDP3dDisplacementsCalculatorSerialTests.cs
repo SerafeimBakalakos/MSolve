@@ -23,12 +23,13 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
                 FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
             IAugmentationConstraints augmentationConstraints =
-                FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
+                FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
             Vector lagranges = Example4x4x4Quads.ExpectedSolutions.SolutionLagrangesSimple();
 
-            var displacementsCalculator = new FetiDP3dFreeDofDisplacementsCalculatorSerial(model, dofSeparator, lagrangesEnumerator, augmentationConstraints, matrixManager); 
+            var displacementsCalculator = new FetiDP3dFreeDofDisplacementsCalculatorSerial(model, dofSeparator, 
+                lagrangesEnumerator, augmentationConstraints, matrixManager); 
 
             MethodInfo method = displacementsCalculator.GetType().GetMethod("CalcCornerDisplacementsAndAugmentedLagranges",
                 BindingFlags.NonPublic | BindingFlags.Instance); // reflection for the private method
@@ -45,7 +46,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
                 FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
             IAugmentationConstraints augmentationConstraints =
-                FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
+                FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             IFetiDPFlexibilityMatrix flexibility = new MockFlexibilityMatrix();
             Vector lagranges = Example4x4x4Quads.ExpectedSolutions.SolutionLagrangesSimple();

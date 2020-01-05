@@ -74,11 +74,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             this.dofOrderer = new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
             this.dofSeparator = new FetiDPDofSeparatorSerial(model, cornerNodeSelection);
             this.lagrangesEnumerator = new LagrangeMultipliersEnumeratorSerial(model, crosspointStrategy, dofSeparator);
-            this.augmentationConstraints = augmentationConstraintsFactory.CreateAugmentationConstraints(model, midsideNodesSelection,
-                lagrangesEnumerator);
+            this.augmentationConstraints = augmentationConstraintsFactory.CreateAugmentationConstraints(model, 
+                midsideNodesSelection, dofSeparator, lagrangesEnumerator);
 
             // Matrix managers and linear systems
-            this.matrixManager = new FetiDP3dMatrixManagerSerial(model, this.dofSeparator,lagrangesEnumerator,augmentationConstraints,matrixManagerFactory);
+            this.matrixManager = new FetiDP3dMatrixManagerSerial(model, this.dofSeparator, lagrangesEnumerator, 
+                augmentationConstraints ,matrixManagerFactory);
             //TODO: This will call HandleMatrixWillBeSet() once for each subdomain. For now I will clear the data when 
             //      BuildMatrices() is called. Redesign this.
             //matrixManager.LinearSystem.MatrixObservers.Add(this); 

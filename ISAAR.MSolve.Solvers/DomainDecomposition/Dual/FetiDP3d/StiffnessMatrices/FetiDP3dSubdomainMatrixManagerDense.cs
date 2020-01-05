@@ -148,8 +148,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             // KaaStar[s] = - Qr^T * Br[s] * inv(Krr[s]) * Br[s]^T * Qr <=>
             // KaaStar[s] = Ba[s]^T * (- R1[s]^T * inv(Krr[s]) * R1[s]) * Ba[s]
             // where Ba[s] is taken into account during assembly of the global coarse problem matrix
-            Matrix R1 = augmentationConstraints.GetMatrixR1(subdomain);
-            _KaaStar = R1.MultiplyRight(inverseKrr.SolveLinearSystems(R1), true); //TODO: This should be a method in boolean matrices
+            IMappingMatrix R1 = augmentationConstraints.GetMatrixR1(subdomain);
+            Matrix fullR1 = R1.CopyToFullMatrix(); //TODO: There must be a more efficient way to do this
+            _KaaStar = R1.MultiplyRight(inverseKrr.SolveLinearSystems(fullR1), true); //TODO: This should be a method in boolean matrices
             _KaaStar.ScaleIntoThis(-1);
 
             // Bottom left

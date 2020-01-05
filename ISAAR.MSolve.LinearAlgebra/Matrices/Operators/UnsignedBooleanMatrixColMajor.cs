@@ -98,12 +98,19 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             }
         }
 
+        public Matrix CopyToFullMatrix() => DenseStrategies.CopyToFullMatrix((IMappingMatrix)this); //TODO: Optimize this
+
         public bool Equals(IIndexable2D other, double tolerance = 1E-13)
         {
             return DenseStrategies.AreEqual(this, other, tolerance);
         }
 
-        public UnsignedBooleanMatrixColMajor GetColumns(int[] colsToKeep, bool deepCopy)
+        public HashSet<int> GetNonZeroRowsOfColumn(int col) //TODO: This exposes internal data structures, which is risky
+        {
+            return data[col];
+        }
+
+        public UnsignedBooleanMatrixColMajor GetColumns(int[] colsToKeep, bool deepCopy) //TODO: This exposes internal data structures, which is risky
         {
             var clone = new UnsignedBooleanMatrixColMajor(this.NumRows, colsToKeep.Length);
             if (deepCopy)

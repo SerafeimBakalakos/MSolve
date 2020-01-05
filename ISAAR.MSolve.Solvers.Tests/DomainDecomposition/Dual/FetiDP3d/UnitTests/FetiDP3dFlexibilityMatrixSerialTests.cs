@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
                 FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
             IAugmentationConstraints augmentationConstraints =
-                FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
+                FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
 
             // Setup matrix manager
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);

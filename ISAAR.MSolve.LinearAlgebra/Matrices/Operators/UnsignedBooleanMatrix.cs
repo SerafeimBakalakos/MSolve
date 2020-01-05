@@ -98,6 +98,8 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             }
         }
 
+        public Matrix CopyToFullMatrix() => DenseStrategies.CopyToFullMatrix((IMappingMatrix)this); //TODO: Optimize this
+
         public bool Equals(IIndexable2D other, double tolerance = 1E-13)
         {
             return DenseStrategies.AreEqual(this, other, tolerance);

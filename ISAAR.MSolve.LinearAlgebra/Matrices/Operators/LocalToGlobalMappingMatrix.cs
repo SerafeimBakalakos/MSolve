@@ -26,6 +26,16 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
 
         public int NumRows { get; }
 
+        public Matrix CopyToFullMatrix()
+        {
+            var result = new double[NumRows * NumColumns];
+            for (int j = 0; j < NumColumns; ++j)
+            {
+                result[j * NumRows + rowIndices[j]] = values[j];
+            }
+            return Matrix.CreateFromArray(result, NumRows, NumColumns, false);
+        }
+
         public Vector Multiply(Vector vector, bool transposeThis = false)
         {
             if (transposeThis) return MultiplyVectorTransposed(vector);

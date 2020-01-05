@@ -51,7 +51,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.FlexibilityMatr
 
             SignedBooleanMatrixColMajor Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
             UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
-            UnsignedBooleanMatrix Qr = augmentationConstraints.MatrixGlobalQr;
+            IMappingMatrix Qr = augmentationConstraints.MatrixGlobalQr;
 
             // Krc[s] * (Bc[s] * xc)
             Vector xc = vector.GetSubvector(0, dofSeparator.NumGlobalCornerDofs);
@@ -81,7 +81,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.FlexibilityMatr
 
             SignedBooleanMatrixColMajor Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
             UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
-            UnsignedBooleanMatrix Qr = augmentationConstraints.MatrixGlobalQr;
+            IMappingMatrix Qr = augmentationConstraints.MatrixGlobalQr;
 
             Vector Br_invKrr_x = Br.Multiply(vector, true);
             Br_invKrr_x = matrixManager.MultiplyInverseKrrTimes(Br_invKrr_x);

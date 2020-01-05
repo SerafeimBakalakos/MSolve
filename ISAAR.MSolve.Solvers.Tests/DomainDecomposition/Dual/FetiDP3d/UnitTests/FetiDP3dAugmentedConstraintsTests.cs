@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             Matrix QrExpected;
             if (constraints == ConstraintsSelection.Simple)
             {
-                augmentationConstraints = CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
+                augmentationConstraints = CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
                 numAugmentationConstraints = ExpectedConnectivityData.NumGlobalAugmentationConstraintsSimple;
                 QrExpected = ExpectedConnectivityData.MatrixQrSimple;
             }
@@ -55,7 +55,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             // Check
             Assert.Equal(numAugmentationConstraints, augmentationConstraints.NumGlobalAugmentationConstraints);
             double tolerance = 1E-13;
-            Assert.True(QrExpected.Equals(augmentationConstraints.MatrixGlobalQr, tolerance));
+            IMappingMatrix Qr = augmentationConstraints.MatrixGlobalQr;
+            Matrix explicitQr = Qr.MultiplyRight(Matrix.CreateIdentity(Qr.NumColumns));
+            Assert.True(QrExpected.Equals(explicitQr, tolerance));
         }
 
         [Fact]
@@ -64,16 +66,19 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
                 FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
 
-            IAugmentationConstraints augmentationConstraints = CalcAugmentationConstraintsSimple(model, lagrangesEnumerator);
+            IAugmentationConstraints augmentationConstraints = 
+                CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
 
             //Matrix expectedQ = augmentationConstraints.MatrixGlobalQr;
             Matrix expectedQ = ExpectedConnectivityData.MatrixQrSimple;
 
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                Matrix R1 = augmentationConstraints.GetMatrixR1(subdomain);
-                UnsignedBooleanMatrix Ba = augmentationConstraints.GetMatrixBa(subdomain);
-                Matrix computedBrTransposeTimesQr = R1 * Matrix.CreateFromMatrix(Ba);
+                Matrix R1 = augmentationConstraints.GetMatrixR1(subdomain).CopyToFullMatrix();
+                IMappingMatrix Ba = augmentationConstraints.GetMatrixBa(subdomain);
+                Matrix explicitBa = Ba.MultiplyRight(Matrix.CreateIdentity(Ba.NumColumns));
+
+                Matrix computedBrTransposeTimesQr = R1 * Matrix.CreateFromMatrix(explicitBa);
 
                 Matrix expectedBr = ExpectedConnectivityData.GetMatrixBr(subdomain.ID);
                 Matrix expectedBrTransposeTimesQr = expectedBr.MultiplyRight(expectedQ, true);
@@ -84,7 +89,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             }
         }
 
-        internal static IAugmentationConstraints CalcAugmentationConstraintsSimple(IModel model, 
+        internal static IAugmentationConstraints CalcAugmentationConstraintsSimple(IModel model, IFetiDPDofSeparator dofSeparator,
             LagrangeMultipliersEnumeratorSerial lagrangesEnumerator)
         {
             Dictionary<ISubdomain, HashSet<INode>> midsideNodes = ModelCreator.DefineMidsideNodesAll(model);
@@ -92,7 +97,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ });
             
             IAugmentationConstraints augmentationConstraints =
-                    new AugmentationConstraints(model, midsideNodesSelection, lagrangesEnumerator);
+                    new AugmentationConstraints(model, midsideNodesSelection, dofSeparator, lagrangesEnumerator);
             augmentationConstraints.CalcAugmentationMappingMatrices();
             return augmentationConstraints;
         }
