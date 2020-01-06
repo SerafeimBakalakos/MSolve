@@ -73,11 +73,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
                 (IMatrixView KccStar, IMatrixView KacStar, IMatrixView KaaStar) = matrices[subdomain];
 
                 UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
-                UnsignedBooleanMatrixColMajor Ba = augmentationConstraints.GetMatrixBa(subdomain);
+                GlobalToLocalBooleanMatrix Ba = augmentationConstraints.GetMatrixBa(subdomain);
 
                 globalKccStar.AddIntoThis(Bc.ThisTransposeTimesOtherTimesThis(KccStar));
                 globalKacStar.AddIntoThis(Ba.MultiplyRight(Bc.MultiplyLeft(KacStar), true));
-                globalKaaStar.AddIntoThis(Ba.ThisTransposeTimesOtherTimesThis(KaaStar));
+                globalKaaStar.AddIntoThis(Ba.MultiplyThisTransposeTimesOtherTimesThis(KaaStar));
             }
 
             // KccTilde = [Kcc, Kac'; Kac Kaa];

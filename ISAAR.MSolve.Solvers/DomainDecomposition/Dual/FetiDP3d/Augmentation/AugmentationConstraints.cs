@@ -18,8 +18,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
         private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
         private readonly IModel model;
 
-        private Dictionary<ISubdomain, UnsignedBooleanMatrixColMajor> matricesBa = 
-            new Dictionary<ISubdomain, UnsignedBooleanMatrixColMajor>();
+        private Dictionary<ISubdomain, GlobalToLocalBooleanMatrix> matricesBa = 
+            new Dictionary<ISubdomain, GlobalToLocalBooleanMatrix>();
         private Dictionary<ISubdomain, LocalToGlobalMappingMatrix> matricesR1 = 
             new Dictionary<ISubdomain, LocalToGlobalMappingMatrix>();
         private UnsignedBooleanMatrixColMajor matrixQr;
@@ -46,7 +46,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             CalcMatricesR1();
         }
 
-        public UnsignedBooleanMatrixColMajor GetMatrixBa(ISubdomain subdomain) => matricesBa[subdomain];
+        public GlobalToLocalBooleanMatrix GetMatrixBa(ISubdomain subdomain) => matricesBa[subdomain];
 
         public IMappingMatrix GetMatrixR1(ISubdomain subdomain) => matricesR1[subdomain];
 
@@ -71,18 +71,19 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             {
                 HashSet<INode> midsideNodes = MidsideNodesSelection.GetMidsideNodesOfSubdomain(subdomain);
                 int numSubdomainAugmentedConstraints = midsideNodes.Count * MidsideNodesSelection.DofsPerNode.Length;
-                var Ba = new UnsignedBooleanMatrixColMajor(numSubdomainAugmentedConstraints, NumGlobalAugmentationConstraints);
+                var subdomainToGlobalAugmentedConstraints = new int[numSubdomainAugmentedConstraints];
                 int subdomainIdx = 0;
                 foreach (INode node in midsideNodes)
                 {
                     foreach (IDofType dof in MidsideNodesSelection.DofsPerNode)
                     {
                         int globalIdx = augmentedOrdering[node, dof];
-                        Ba.AddEntry(subdomainIdx, globalIdx);
+                        subdomainToGlobalAugmentedConstraints[subdomainIdx] = globalIdx;
                         ++subdomainIdx;
                     }
                 }
-                matricesBa[subdomain] = Ba;
+                matricesBa[subdomain] = 
+                    new GlobalToLocalBooleanMatrix(NumGlobalAugmentationConstraints, subdomainToGlobalAugmentedConstraints);
             }
         }
 
@@ -95,7 +96,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
                 // Optimized sparse matrix multiplication for these 2 matrices (only in this case): The dot product of a column 
                 // of Br and a column of Q1 will be nonzero, only if they both refer to the same midisde dof.
                 SignedBooleanMatrixColMajor Br = lagrangesEnumerator.GetBooleanMatrix(subdomain);
-                UnsignedBooleanMatrixColMajor Ba = matricesBa[subdomain];
+                GlobalToLocalBooleanMatrix Ba = matricesBa[subdomain];
                 
                 // Find the columns of Br that correspond to the same dofs as columns of Q1. 
                 // This must be done in the same order as they were created in Ba. 

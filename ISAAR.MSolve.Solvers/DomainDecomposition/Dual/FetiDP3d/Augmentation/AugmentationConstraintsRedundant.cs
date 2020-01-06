@@ -59,7 +59,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             MatrixGlobalQr = Qr;
         }
 
-        public UnsignedBooleanMatrixColMajor GetMatrixBa(ISubdomain subdomain)
+        public GlobalToLocalBooleanMatrix GetMatrixBa(ISubdomain subdomain)
         {
             throw new NotImplementedException();
         }

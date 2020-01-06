@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
         /// </summary>
         /// <param name="subdomain"></param>
         /// <returns></returns>
-        UnsignedBooleanMatrixColMajor GetMatrixBa(ISubdomain subdomain); //TODO: This should be an interface instead. Hard to define interface though.
+        GlobalToLocalBooleanMatrix GetMatrixBa(ISubdomain subdomain); //TODO: This should be an interface instead. Hard to define interface though.
 
         IMappingMatrix GetMatrixR1(ISubdomain subdomain);
     }
