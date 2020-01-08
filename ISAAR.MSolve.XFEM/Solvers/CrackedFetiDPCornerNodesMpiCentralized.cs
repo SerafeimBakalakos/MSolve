@@ -80,7 +80,8 @@ namespace ISAAR.MSolve.XFEM.Solvers
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
                     if (p == procs.MasterProcess) continue;
-                    ISubdomain subdomain = model.GetSubdomain(procs.GetSubdomainIdOfProcess(p));
+                    int s = procs.GetSubdomainIDsOfProcess(p).First();
+                    ISubdomain subdomain = model.GetSubdomain(s);
                     if (subdomain.ConnectivityModified)
                     {
                         HashSet<INode> cornerNodes = cornerNodesOfSubdomains[subdomain];
@@ -91,7 +92,8 @@ namespace ISAAR.MSolve.XFEM.Solvers
             }
             else
             {
-                ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
+                int[] subdomainIds = procs.GetSubdomainIDsOfProcess(procs.OwnRank);
+                ISubdomain subdomain = model.GetSubdomain(subdomainIds.First());
                 // Receive the corner nodes from master, if they are modified.
                 if (subdomain.ConnectivityModified)
                 {
@@ -107,7 +109,7 @@ namespace ISAAR.MSolve.XFEM.Solvers
         {
             MpiUtilities.DoInTurn(procs.Communicator, () =>
             {
-                int s = procs.OwnSubdomainID;
+                int s = procs.GetSubdomainIDsOfProcess(procs.OwnRank).First();
                 Console.Write($"Process {procs.OwnRank}: Corner nodes of subdomain {s}: ");
                 foreach (INode node in cornerNodesOfSubdomains[model.GetSubdomain(s)]) Console.Write(node.ID + " ");
                 Console.WriteLine();

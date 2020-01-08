@@ -211,7 +211,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
 
             // Prepare data in each process
             Dictionary<int, T> processData = new Dictionary<int, T>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 if (gatherAll || activeSubdomains.IsActive(s)) processData[s] = createSubdomainData(s);
             }
@@ -224,7 +224,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
             {
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                    foreach (int s in procs.GetSubdomainIDsOfProcess(p))
                     {
                         if (gatherAll || activeSubdomains.IsActive(s))
                         {

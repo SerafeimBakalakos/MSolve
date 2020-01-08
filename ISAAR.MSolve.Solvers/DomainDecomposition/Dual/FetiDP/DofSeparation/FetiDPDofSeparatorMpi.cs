@@ -39,7 +39,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             this.cornerNodeSelection = cornerNodeSelection;
 
             subdomainDofs = new Dictionary<ISubdomain, FetiDPSubdomainDofSeparator>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 subdomainDofs[subdomain] = new FetiDPSubdomainDofSeparator(subdomain);
@@ -142,7 +142,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 
         public void ReorderInternalDofs(IFetiDPSeparatedDofReordering reordering)
         {
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 if (subdomain.ConnectivityModified)
@@ -165,7 +165,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             }
 
             // Subdomain dofs
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 if (subdomain.ConnectivityModified)
@@ -219,7 +219,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             
             // Prepare data in each process
             var processOrderings = new Dictionary<int, DofTable>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 processOrderings[s] = subdomainDofs[subdomain].CornerDofOrdering;
@@ -263,7 +263,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
             Dictionary<int, UnsignedBooleanMatrix> processMatricesBc = transferrer.ScatterToAllSubdomains(allMatricesBc);
 
             // Store them in other processes
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 var temp = subdomainDofs[subdomain];

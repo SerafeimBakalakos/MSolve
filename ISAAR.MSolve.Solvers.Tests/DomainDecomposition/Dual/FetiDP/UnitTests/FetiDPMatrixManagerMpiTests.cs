@@ -55,7 +55,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
 
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain sub = model.GetSubdomain(s);
 
@@ -95,7 +95,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
 
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain sub = model.GetSubdomain(s);
 
@@ -133,7 +133,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
 
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain sub = model.GetSubdomain(s);
 
@@ -164,7 +164,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
 
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain sub = model.GetSubdomain(s);
 
@@ -185,7 +185,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         {
             var matrixManager = new FetiDPMatrixManagerMpi(procs, model, dofSeparator, matricesFactory);
 
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain sub = model.GetSubdomain(s);
                 // Input 

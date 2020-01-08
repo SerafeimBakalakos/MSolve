@@ -52,7 +52,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
             this.globalFreeDofs_master = globalFreeDofs;
 
             this.subdomainDofOrderings = new Dictionary<int, ISubdomainFreeDofOrdering>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 subdomainDofOrderings[subdomain.ID] = subdomain.FreeDofOrdering;
@@ -145,7 +145,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
 
             // Prepare data in each process
             var processOrderings = new Dictionary<int, DofTable>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 processOrderings[s] = subdomainDofOrderings[s].FreeDofs;
             }
@@ -167,7 +167,7 @@ namespace ISAAR.MSolve.Discretization.FreedomDegrees
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
                     if (p == procs.OwnRank) continue;
-                    foreach (int sub in procs.GetSubdomainIdsOfProcess(p))
+                    foreach (int sub in procs.GetSubdomainIDsOfProcess(p))
                     {
                         DofTable ordering = allOrderings[sub];
                         subdomainDofOrderings[sub] = new SubdomainFreeDofOrderingCaching(ordering.EntryCount, ordering);

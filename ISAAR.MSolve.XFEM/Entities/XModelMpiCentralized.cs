@@ -31,7 +31,7 @@ namespace ISAAR.MSolve.XFEM.Entities
             else
             {
                 this.model = new XModel();
-                foreach (int s in processDistribution.GetSubdomainIdsOfProcess(processDistribution.OwnRank))
+                foreach (int s in processDistribution.GetSubdomainIDsOfProcess(processDistribution.OwnRank))
                 {
                     this.model.Subdomains[s] = new XSubdomain(s);
                 }

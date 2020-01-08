@@ -29,7 +29,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             this.model = model;
 
             this.matrixManagerSubdomains = new Dictionary<int, IFetiDPSubdomainMatrixManager>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 this.matrixManagerSubdomains[s] = matrixManagerFactory.CreateSubdomainMatrixManager(subdomain, dofSeparator);
@@ -55,7 +55,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         {
             // Calculate the subdomain FcStar in each process
             var processVectors = new Dictionary<int, Vector>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s] -> delegated to the SubdomainMatrixManager
                 // globalFcStar = sum_over_s(Lc[s]^T * fcStar[s]) -> delegated to the GlobalMatrixManager
@@ -82,7 +82,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         {
             // Calculate the subdomain KccStar in each process
             var processMatrices = new Dictionary<int, IMatrixView>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s] -> delegated to the SubdomainMatrixManager
                 // globalKccStar = sum_over_s(Lc[s]^T * KccStar[s] * Lc[s]) -> delegated to the GlobalMatrixManager 

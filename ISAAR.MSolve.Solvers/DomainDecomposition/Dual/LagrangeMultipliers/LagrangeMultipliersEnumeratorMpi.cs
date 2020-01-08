@@ -65,7 +65,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
             //ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
             //DofTable subdomainDofOrdering = getSubdomainDofOrdering(subdomain);
             var subdomainDofOrderings = new Dictionary<int, DofTable>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 subdomainDofOrderings[s] = getSubdomainDofOrdering(subdomain);

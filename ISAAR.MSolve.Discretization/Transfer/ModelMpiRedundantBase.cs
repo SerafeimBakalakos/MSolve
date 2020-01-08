@@ -58,7 +58,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
         public void ApplyLoads()
         {
             //model.ApplyLoads(); //TODO: This does not work in MPI environment.
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 subdomain.Forces.Clear();
@@ -73,7 +73,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
             for (int p = 0; p < procs.Communicator.Size; ++p)
             {
                 var cluster = new Cluster(p);
-                foreach (int s in procs.GetSubdomainIdsOfProcess(p)) cluster.Subdomains.Add(model.GetSubdomain(s));
+                foreach (int s in procs.GetSubdomainIDsOfProcess(p)) cluster.Subdomains.Add(model.GetSubdomain(s));
                 Clusters[p] = cluster;
             }
         }

@@ -69,7 +69,7 @@ namespace ISAAR.MSolve.XFEM.Solvers
             }
             else
             {
-                int[] subdomainIDs = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+                int[] subdomainIDs = procs.GetSubdomainIDsOfProcess(procs.OwnRank);
                 
                 //TODO: unfortunately this does not work, due to accessing subdomains of boundary nodes.
                 //IEnumerable<ISubdomain> subdomainsToUpdate = subdomainIDs.Select(s => model.GetSubdomain(s));
@@ -87,7 +87,7 @@ namespace ISAAR.MSolve.XFEM.Solvers
             {
                 //string path = @"C:\Users\Serafeim\Desktop\MPI\Tests\corner_nodes_process" + procs.OwnRank + ".txt";
                 string path = @"C:\Users\Serafeim\Desktop\MPI\Tests\corner_nodes_parallel.txt";
-                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+                foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
                 {
                     ISubdomain sub = model.GetSubdomain(s);
                     WriteCornerNodes(sub, path, true);

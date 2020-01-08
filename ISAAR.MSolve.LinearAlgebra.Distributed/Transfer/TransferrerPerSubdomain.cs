@@ -56,14 +56,14 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
                 {
                     if (p == procs.MasterProcess) // Just copy the references
                     {
-                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        foreach (int s in procs.GetSubdomainIDsOfProcess(p))
                         {
                             if (activeSubdomains.IsActive(s)) allSubdomainsData[s] = processSubdomainsData[s];
                         }
                     }
                     else
                     {
-                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        foreach (int s in procs.GetSubdomainIDsOfProcess(p))
                         {
                             if (activeSubdomains.IsActive(s))
                             {
@@ -77,7 +77,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
             else
             {
                 // Send the data of each subdomain to master
-                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+                foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
                 {
                     if (activeSubdomains.IsActive(s))
                     {
@@ -100,14 +100,14 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
                 {
                     if (p == procs.MasterProcess) // Just copy the references
                     {
-                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        foreach (int s in procs.GetSubdomainIDsOfProcess(p))
                         {
                             if (activeSubdomains.IsActive(s)) allSubdomainsData[s] = processSubdomainsData[s]; 
                         }
                     }
                     else
                     {
-                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        foreach (int s in procs.GetSubdomainIDsOfProcess(p))
                         {
                             if (activeSubdomains.IsActive(s))
                             {
@@ -123,7 +123,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
             {
                 // At first pack all subdomain data of this process, so that master process doe not have to wait inbetween
                 //TODO: For the first process, master must wait longer this way. Use asynchronous sends or another thread instead.
-                int[] processSubdomains = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+                int[] processSubdomains = procs.GetSubdomainIDsOfProcess(procs.OwnRank);
                 var processDataPacked = new Dictionary<int, TPacked>(processSubdomains.Length);
                 foreach (int s in processSubdomains)
                 {
@@ -161,14 +161,14 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
                 {
                     if (p == procs.MasterProcess) // Just copy the references
                     {
-                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        foreach (int s in procs.GetSubdomainIDsOfProcess(p))
                         {
                             if (activeSubdomains.IsActive(s)) allSubdomainsData[s] = processSubdomainsData[s];
                         }
                     }
                     else
                     {
-                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        foreach (int s in procs.GetSubdomainIDsOfProcess(p))
                         {
                             if (activeSubdomains.IsActive(s))
                             {
@@ -184,7 +184,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
             {
                 // At first pack all subdomain data of this process, so that master process doe not have to wait inbetween
                 //TODO: For the first process, master must wait longer this way. Use asynchronous sends or another thread instead.
-                int[] processSubdomains = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+                int[] processSubdomains = procs.GetSubdomainIDsOfProcess(procs.OwnRank);
                 var processDataPacked = new Dictionary<int, TPacked[]>(processSubdomains.Length);
                 foreach (int s in processSubdomains)
                 {
@@ -254,7 +254,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
         public Dictionary<int, T[]> ScatterToSomeSubdomains<T>(Dictionary<int, T[]> allSubdomainsData_master,
             ActiveSubdomains activeSubdomains)
         {
-            int[] processSubdomains = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+            int[] processSubdomains = procs.GetSubdomainIDsOfProcess(procs.OwnRank);
             var processData = new Dictionary<int, T[]>(processSubdomains.Length);
 
             // Pack send the subdomain data to the corresponding process, one subdomain at a time
@@ -271,7 +271,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
                     }
                     else
                     {
-                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        foreach (int s in procs.GetSubdomainIDsOfProcess(p))
                         {
                             if (activeSubdomains.IsActive(s))
                             {
@@ -301,7 +301,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
             PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData, 
             ActiveSubdomains activeSubdomains)
         {
-            int[] processSubdomains = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+            int[] processSubdomains = procs.GetSubdomainIDsOfProcess(procs.OwnRank);
             var processData = new Dictionary<int, TRaw>(processSubdomains.Length);
 
             // Pack and send the subdomain data to the corresponding process, one subdomain at a time
@@ -318,7 +318,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
                     }
                     else
                     {
-                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        foreach (int s in procs.GetSubdomainIDsOfProcess(p))
                         {
                             if (activeSubdomains.IsActive(s))
                             {
@@ -359,7 +359,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
             GetArrayLengthOfPackedData<TRaw> getPackedDataLength, PackSubdomainDataIntoArray<TRaw, TPacked> packData, 
             UnpackSubdomainDataFromArray<TRaw, TPacked> unpackData, ActiveSubdomains activeSubdomains)
         {
-            int[] processSubdomains = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+            int[] processSubdomains = procs.GetSubdomainIDsOfProcess(procs.OwnRank);
             var processData = new Dictionary<int, TRaw>(processSubdomains.Length);
 
             // Pack and send the subdomain data to the corresponding process, one subdomain at a time
@@ -376,7 +376,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
                     }
                     else
                     {
-                        foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                        foreach (int s in procs.GetSubdomainIDsOfProcess(p))
                         {
                             if (activeSubdomains.IsActive(s))
                             {

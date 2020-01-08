@@ -54,7 +54,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
 
             double tol = 1E-7;
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 IVectorView uf = matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).LinearSystem.Solution;

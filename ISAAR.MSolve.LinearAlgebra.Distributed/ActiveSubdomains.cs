@@ -17,12 +17,12 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed
             {
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    foreach (int s in procs.GetSubdomainIdsOfProcess(p)) areActive[s] = querySubdomainActivation(s);
+                    foreach (int s in procs.GetSubdomainIDsOfProcess(p)) areActive[s] = querySubdomainActivation(s);
                 }
             }
             else
             {
-                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank)) areActive[s] = querySubdomainActivation(s);
+                foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank)) areActive[s] = querySubdomainActivation(s);
             }
         }
 

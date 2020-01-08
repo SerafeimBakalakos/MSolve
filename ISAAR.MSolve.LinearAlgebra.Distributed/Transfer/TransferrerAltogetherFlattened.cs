@@ -36,7 +36,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
             PackSubdomainData<TRaw, TPacked> packData, UnpackSubdomainData<TRaw, TPacked> unpackData)
         {
             // Pack the subdomain data in each process
-            int[] processSubdomains = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+            int[] processSubdomains = procs.GetSubdomainIDsOfProcess(procs.OwnRank);
             var processDataPacked = new TPacked[processSubdomains.Length];
             for (int s = 0; s < processSubdomains.Length; ++s)
             {
@@ -58,7 +58,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
                 allData = new Dictionary<int, TRaw>();
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    foreach (int sub in procs.GetSubdomainIdsOfProcess(p))
+                    foreach (int sub in procs.GetSubdomainIDsOfProcess(p))
                     {
                         TPacked packed = allDataPacked[offset];
                         allData[sub] = unpackData(sub, packed);
@@ -78,7 +78,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
             // Determine the size of each subdomain's array in each process
             var processArraySizes = new Dictionary<int, int>();
             int processArraySizeTotal = 0;
-            int[] processSubdomains = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+            int[] processSubdomains = procs.GetSubdomainIDsOfProcess(procs.OwnRank);
             foreach (int sub in processSubdomains)
             {
                 TRaw rawData = processSubdomainsData[sub];
@@ -96,7 +96,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
                 processTotalPackedSizes = new int[procs.Communicator.Size];
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    foreach (int sub in procs.GetSubdomainIdsOfProcess(p))
+                    foreach (int sub in procs.GetSubdomainIDsOfProcess(p))
                     {
                         int size = allPackedSizes[sub];
                         processTotalPackedSizes[p] += size;
@@ -127,7 +127,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
                 allData = new Dictionary<int, TRaw>();
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    foreach (int sub in procs.GetSubdomainIdsOfProcess(p))
+                    foreach (int sub in procs.GetSubdomainIDsOfProcess(p))
                     {
                         int end = start + allPackedSizes[sub];
                         allData[sub] = unpackData(sub, allDataPacked, start, end);
@@ -193,7 +193,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
                 int offset = 0;
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    foreach (int sub in procs.GetSubdomainIdsOfProcess(p))
+                    foreach (int sub in procs.GetSubdomainIDsOfProcess(p))
                     {
                         TPacked packed = packData(sub, allSubdomainsData_master[sub]);
                         allDataPacked[offset++] = packed;
@@ -207,7 +207,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
                 allDataPacked, numSubdomainsPerProcess, procs.MasterProcess);
 
             // Unpack the subdomain data of this process. In master only copy the references
-            int[] subdomainsOfProcess = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+            int[] subdomainsOfProcess = procs.GetSubdomainIDsOfProcess(procs.OwnRank);
             Dictionary<int, TRaw> processData = new Dictionary<int, TRaw>(subdomainsOfProcess.Length);
             if (procs.IsMasterProcess)
             {
@@ -239,7 +239,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
                 allPackedSizes = new Dictionary<int, int>();
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    foreach (int sub in procs.GetSubdomainIdsOfProcess(p))
+                    foreach (int sub in procs.GetSubdomainIDsOfProcess(p))
                     {
                         TRaw rawData = allSubdomainsData_master[sub];
                         int packedSize = getPackedDataLength(sub, rawData);
@@ -265,7 +265,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
                 int offset = 0;
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    foreach (int sub in procs.GetSubdomainIdsOfProcess(p))
+                    foreach (int sub in procs.GetSubdomainIDsOfProcess(p))
                     {
                         TRaw rawData = allSubdomainsData_master[sub];
                         packData(sub, rawData, allDataPacked, offset);
@@ -281,7 +281,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Transfer
                 allDataPacked, processTotalPackedSizes, procs.MasterProcess);
 
             // Unpack the subdomain data of this process. In master only copy the references
-            int[] subdomainsOfProcess = procs.GetSubdomainIdsOfProcess(procs.OwnRank);
+            int[] subdomainsOfProcess = procs.GetSubdomainIDsOfProcess(procs.OwnRank);
             Dictionary<int, TRaw> processData = new Dictionary<int, TRaw>(subdomainsOfProcess.Length);
             if (procs.IsMasterProcess)
             {

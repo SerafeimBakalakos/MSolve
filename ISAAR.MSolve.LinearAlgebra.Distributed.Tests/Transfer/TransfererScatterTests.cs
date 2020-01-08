@@ -216,7 +216,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
                 allData_master = new Dictionary<int, T>();
                 for (int p = 0; p < procs.Communicator.Size; ++p)
                 {
-                    foreach (int s in procs.GetSubdomainIdsOfProcess(p))
+                    foreach (int s in procs.GetSubdomainIDsOfProcess(p))
                     {
                         if (scatterAll || activeSubdomains.IsActive(s)) allData_master[s] = createSubdomainData(s);
                     }
@@ -227,7 +227,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
             Dictionary<int, T> processData = scatterSubdomainData(transferrer, allData_master, activeSubdomains);
 
             // Check the received data in each process other than master
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 if (scatterAll || activeSubdomains.IsActive(s))
                 {

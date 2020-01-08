@@ -66,7 +66,7 @@ namespace ISAAR.MSolve.Analyzers
 
         private void AddEquivalentNodalLoadsToRHS()
         {
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 var rhs = solver.GetLinearSystem(subdomain).RhsVector;
@@ -81,7 +81,7 @@ namespace ISAAR.MSolve.Analyzers
 
         private void StoreLogResults(DateTime start, DateTime end)
         {
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 foreach (IAnalyzerLog log in Logs) log.StoreResults(start, end, solver.GetLinearSystem(subdomain).Solution);

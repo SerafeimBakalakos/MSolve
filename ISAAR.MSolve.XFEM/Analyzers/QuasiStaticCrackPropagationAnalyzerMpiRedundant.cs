@@ -108,7 +108,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 // Order and count dofs
                 //Console.WriteLine($"Process {procs.OwnRank}: Ordering dofs and crack data");
                 solver.OrderDofs(false);
-                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+                foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
                 {
                     ISubdomain subdomain = model.GetSubdomain(s);
                     ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
@@ -123,7 +123,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 //PrintKff(procs, linearSystem);
                 model.ApplyLoads();
                 LoadingUtilities.ApplyNodalLoadsMpi(procs, model, solver);
-                foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+                foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
                 {
                     ISubdomain subdomain = model.GetSubdomain(s);
                     ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
@@ -216,7 +216,7 @@ namespace ISAAR.MSolve.XFEM.Analyzers
         {
             var transferrer = new TransferrerPerSubdomain(procs);
             var processUf = new Dictionary<int, Vector>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 processUf[s] = (Vector)solver.GetLinearSystem(subdomain).Solution;

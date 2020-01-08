@@ -104,7 +104,8 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                 // Order and count dofs
                 //Console.WriteLine($"Process {procs.OwnRank}: Ordering dofs and crack data");
                 solver.OrderDofs(false);
-                ISubdomain subdomain = model.GetSubdomain(procs.OwnSubdomainID);
+                int[] subdomainIds = procs.GetSubdomainIDsOfProcess(procs.OwnRank);
+                ISubdomain subdomain = model.GetSubdomain(subdomainIds.First());
                 ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
                 linearSystem.Reset(); // Necessary to define the linear system's size 
                 linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
@@ -214,7 +215,8 @@ namespace ISAAR.MSolve.XFEM.Analyzers
                     else
                     {
                         double[] u = MpiUtilities.ReceiveArray<double>(procs.Communicator, p, displacementsTag);
-                        freeDisplacements[procs.GetSubdomainIdOfProcess(p)] = Vector.CreateFromArray(u);
+                        int s = procs.GetSubdomainIDsOfProcess(p).First();
+                        freeDisplacements[s] = Vector.CreateFromArray(u);
                     }
                 }
             }

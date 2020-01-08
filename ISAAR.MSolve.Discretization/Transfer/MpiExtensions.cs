@@ -30,7 +30,7 @@ namespace ISAAR.MSolve.Discretization.Transfer
         public static Dictionary<int, ISubdomain> GetSubdomainsOfProcess(this ProcessDistribution procs, IModel model)
         {
             var processSubdomains = new Dictionary<int, ISubdomain>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank)) processSubdomains[s] = model.GetSubdomain(s);
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank)) processSubdomains[s] = model.GetSubdomain(s);
             return processSubdomains;
         }
     }

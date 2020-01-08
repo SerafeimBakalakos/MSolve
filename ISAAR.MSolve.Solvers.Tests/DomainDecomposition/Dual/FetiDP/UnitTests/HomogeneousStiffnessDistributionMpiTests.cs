@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
                 new FetiDPHomogeneousDistributionLoadScaling(dofSeparator));
             stiffnessDistribution.Update();
 
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 // Calculate Bpbr matrix
                 ISubdomain subdomain = model.GetSubdomain(s);

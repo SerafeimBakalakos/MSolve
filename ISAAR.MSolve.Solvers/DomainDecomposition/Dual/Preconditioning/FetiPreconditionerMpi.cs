@@ -32,7 +32,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
 
             this.matricesBpb = new Dictionary<int, IMappingMatrix>();
             this.matrixManagers = new Dictionary<int, IFetiSubdomainMatrixManager>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 this.matricesBpb[s] = PreconditioningUtilities.CalcBoundaryPreconditioningBooleanMatrix(
@@ -47,7 +47,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
             var transferrer = new VectorTransferrer(procs);
             transferrer.BroadcastVector(ref rhs, lagrangesEnumerator.NumLagrangeMultipliers);
             var subdomainContributions = new List<Vector>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 subdomainContributions.Add(preconditioning.PreconditionSubdomainVector(rhs, matrixManagers[s], matricesBpb[s]));
             }
@@ -59,7 +59,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
             var transferrer = new MatrixTransferrer(procs);
             transferrer.BroadcastMatrix(ref rhs); //TODO: Perhaps the dimensions are already known and we can avoid broadcasting them too.
             var subdomainContributions = new List<Matrix>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 subdomainContributions.Add(preconditioning.PreconditionSubdomainMatrix(rhs, matrixManagers[s], matricesBpb[s]));
             }

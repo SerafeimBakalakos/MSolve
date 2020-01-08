@@ -51,7 +51,7 @@ namespace ISAAR.MSolve.Analyzers
 
         public void Initialize(bool isFirstAnalysis = true)
         {
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);

@@ -45,11 +45,12 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
 
                 // Check that everything is in its correct subdomain and has the correct state.
                 //Console.WriteLine($"Process {procs.OwnRank}: Checking lsm data for subdomain {procs.OwnSubdomainID}");
-                XSubdomain expectedSubdomain = expectedModel.Subdomains[procs.OwnSubdomainID];
+                int s = procs.GetSubdomainIDsOfProcess(procs.OwnRank).First();
+                XSubdomain expectedSubdomain = expectedModel.Subdomains[s];
                 SingleCrackLsm expectedLeftLsm = expectedBenchmark.LeftCrack.LevelSets;
                 SingleCrackLsm expectedRightLsm = expectedBenchmark.RightCrack.LevelSets;
 
-                XSubdomain actualSubdomain = actualModel.GetXSubdomain(procs.OwnSubdomainID);
+                XSubdomain actualSubdomain = actualModel.GetXSubdomain(s);
                 SingleCrackLsm actualLeftLsm = ((TrackingExteriorCrackLsmMpiCentralized)actualBenchmark.LeftCrack).LevelSets;
                 SingleCrackLsm actualRightLsm = ((TrackingExteriorCrackLsmMpiCentralized)actualBenchmark.RightCrack).LevelSets;
 
@@ -79,8 +80,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Transfer
                 actualModel.ScatterSubdomains();
 
                 // Check that all entities are in the correct subdomains and have the correct state.
-                XSubdomain actualSubdomain = actualModel.GetXSubdomain(procs.OwnSubdomainID);
-                XSubdomain expectedSubdomain = expectedModel.Subdomains[procs.OwnSubdomainID];
+                int s = procs.GetSubdomainIDsOfProcess(procs.OwnRank).First();
+                XSubdomain actualSubdomain = actualModel.GetXSubdomain(s);
+                XSubdomain expectedSubdomain = expectedModel.Subdomains[s];
                 SubdomainComparisons.CheckSameNodes(expectedSubdomain, actualSubdomain);
                 SubdomainComparisons.CheckSameElements(expectedSubdomain, actualSubdomain);
                 SubdomainComparisons.CheckSameNodalLoads(expectedSubdomain, actualSubdomain);

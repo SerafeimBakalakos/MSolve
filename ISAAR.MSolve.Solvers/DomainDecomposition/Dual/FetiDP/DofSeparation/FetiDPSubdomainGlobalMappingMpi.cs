@@ -61,7 +61,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation
 
             // Prepare the subdomain vectors of each process
             var processVectors = new Dictionary<int, Vector>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank)) //ERROR: For master this means that only its own subdomains are processes.
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank)) //ERROR: For master this means that only its own subdomains are processes.
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 processVectors[s] = getSubdomainVector(subdomain);

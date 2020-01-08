@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements
             Vector uc = CalcCornerDisplacements(flexibility, lagranges); 
             
             procs.Communicator.BroadcastVector(ref uc, dofSeparator.NumGlobalCornerDofs, procs.MasterProcess);
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 FreeDofDisplacementsCalculatorUtilities.CalcAndStoreFreeDisplacements(subdomain, dofSeparator, matrixManager,

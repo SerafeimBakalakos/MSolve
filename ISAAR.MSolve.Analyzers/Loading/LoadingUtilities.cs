@@ -38,7 +38,7 @@ namespace ISAAR.MSolve.Analyzers.Loading
         public static void ApplyNodalLoadsMpi(ProcessDistribution processDistribution, IModel model, ISolverMpi solver)
         {
             var loadAssembler = new MultiSubdomainNodalLoadAssembler(solver.NodalLoadDistributor);
-            foreach (int s in processDistribution.GetSubdomainIdsOfProcess(processDistribution.OwnRank))
+            foreach (int s in processDistribution.GetSubdomainIDsOfProcess(processDistribution.OwnRank))
             {
                 ISubdomain subdomain = model.GetSubdomain(s);
                 loadAssembler.ApplyEquivalentNodalLoads(subdomain, subdomain.Forces);

@@ -59,7 +59,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
             // Prepare vectors in each process
             ProcessDistribution procs = DetermineProcesses(numProcesses, subdomainDistribution);
             var processVectors = new Dictionary<int, Vector>();
-            foreach (int s in procs.GetSubdomainIdsOfProcess(procs.OwnRank))
+            foreach (int s in procs.GetSubdomainIDsOfProcess(procs.OwnRank))
             {
                 processVectors[s] = GetSubdomainVector(s);
             }
@@ -85,7 +85,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
         {
             // Prepare vectors in each process to be lazily computed
             ProcessDistribution procs = DetermineProcesses(numProcesses, subdomainDistribution);
-            IEnumerable<Vector> processVectors = procs.GetSubdomainIdsOfProcess(procs.OwnRank).Select(s => GetSubdomainVector(s));
+            IEnumerable<Vector> processVectors = procs.GetSubdomainIDsOfProcess(procs.OwnRank).Select(s => GetSubdomainVector(s));
 
             // Sum the individual vectors
             var transferrer = new VectorTransferrer(procs);
@@ -111,7 +111,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Tests.Tranfer
             double sum = 0.0;
             for (int p = 0; p < procs.Communicator.Size; ++p)
             {
-                foreach (int s in procs.GetSubdomainIdsOfProcess(p)) sum += s;
+                foreach (int s in procs.GetSubdomainIDsOfProcess(p)) sum += s;
             }
             return Vector.CreateWithValue(vectorLength, sum);
         }
