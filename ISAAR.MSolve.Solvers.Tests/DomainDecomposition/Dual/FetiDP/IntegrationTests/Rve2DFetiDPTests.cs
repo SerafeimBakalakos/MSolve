@@ -17,6 +17,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
 using ISAAR.MSolve.Solvers.LinearSystems;
@@ -28,22 +29,25 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
     public static class Rve2DFetiDPTests
     {
         public enum Precond { Dirichlet, DirichletDiagonal, Lumped }
+        public enum Crosspoints { Minimum, FullyRedundant }
 
         private const double domainLengthX = 3.0, domainLengthY = 1.5;
         private const int singleSubdomainID = 0;
-
         
         [Theory]
         // Homogeneous problem
-        [InlineData(1.0, Precond.Dirichlet)]
-        //[InlineData(1.0, Precond.DirichletDiagonal)]
-        //[InlineData(1.0, Precond.Lumped)]
-        public static void Run(double stiffnessRatio, Precond precond)
+        [InlineData(1.0, Precond.Dirichlet, Crosspoints.FullyRedundant)]
+        [InlineData(1.0, Precond.DirichletDiagonal, Crosspoints.FullyRedundant)]
+        [InlineData(1.0, Precond.Lumped, Crosspoints.FullyRedundant)]
+        [InlineData(1.0, Precond.Dirichlet, Crosspoints.Minimum)]
+        [InlineData(1.0, Precond.DirichletDiagonal, Crosspoints.Minimum)]
+        [InlineData(1.0, Precond.Lumped, Crosspoints.Minimum)]
+        public static void Run(double stiffnessRatio, Precond precond, Crosspoints crosspoints)
         {
             double pcgConvergenceTol = 1E-5;
             IVectorView directDisplacements = SolveModelWithoutSubdomains(stiffnessRatio);
             (IVectorView ddDisplacements, ISolverLogger logger) =
-                SolveModelWithSubdomains(stiffnessRatio, precond, pcgConvergenceTol);
+                SolveModelWithSubdomains(stiffnessRatio, precond, crosspoints, pcgConvergenceTol);
             double normalizedError = directDisplacements.Subtract(ddDisplacements).Norm2() / directDisplacements.Norm2();
 
             // The error is provided in the reference solution the, but it is almost impossible for two different codes run on 
@@ -127,7 +131,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         }
 
         private static (IVectorView globalDisplacements, ISolverLogger logger) SolveModelWithSubdomains(double stiffnessRatio,
-            Precond precond, double pcgConvergenceTolerance)
+            Precond precond, Crosspoints crosspoints, double pcgConvergenceTolerance)
         {
             // Model
             Model multiSubdomainModel = CreateModel(stiffnessRatio);
@@ -162,6 +166,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             if (precond == Precond.Lumped) solverBuilder.Preconditioning = new LumpedPreconditioning();
             else if (precond == Precond.Dirichlet) solverBuilder.Preconditioning = new DirichletPreconditioning();
             else solverBuilder.Preconditioning = new DiagonalDirichletPreconditioning();
+
+            // Crosspoint strategy
+            if (crosspoints == Crosspoints.FullyRedundant) solverBuilder.CrosspointStrategy = new FullyRedundantConstraints();
+            else if (crosspoints == Crosspoints.Minimum) solverBuilder.CrosspointStrategy = new MinimumConstraints();
+            else throw new ArgumentException();
 
             // Specify PCG settings
             solverBuilder.PcgSettings = new PcgSettings() { ConvergenceTolerance = pcgConvergenceTolerance };

@@ -37,7 +37,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
     {
         internal const string name = "FETI-DP Solver"; // for error messages and logging
         private readonly IAugmentationConstraints augmentationConstraints;
-        private readonly ICrosspointStrategy crosspointStrategy = new FullyRedundantConstraints();
         private readonly IFreeDofDisplacementsCalculator displacementsCalculator;
         private readonly DofOrderer dofOrderer;
         private readonly FetiDPDofSeparatorSerial dofSeparator;
@@ -59,7 +58,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
 
         public FetiDP3dSolverSerial(IModel model, ICornerNodeSelection cornerNodeSelection, IMidsideNodesSelection midsideNodesSelection, IAugmentationConstraintsFactory augmentationConstraintsFactory,
             IFetiDP3dMatrixManagerFactory matrixManagerFactory, IFetiPreconditioningOperations preconditioning,
-            PcgSettings pcgSettings, bool problemIsHomogeneous)
+            ICrosspointStrategy crosspointStrategy, PcgSettings pcgSettings, bool problemIsHomogeneous)
         {
             this.msgHeader = $"{this.GetType().Name}: ";
 
@@ -308,7 +307,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             }
 
             public IAugmentationConstraintsFactory AugmentationConstraintsFactory { get; set; } = new AugmentationConstraints.Factory();
-                
+            
+            public ICrosspointStrategy CrosspointStrategy { get; set; } = new FullyRedundantConstraints();
+
             public IDofOrderer DofOrderer { get; set; } =
                 new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
 
@@ -321,7 +322,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             public FetiDP3dSolverSerial Build(IModel model, ICornerNodeSelection cornerNodeSelection,
                 IMidsideNodesSelection midsideNodesSelection)
             {
-                return new FetiDP3dSolverSerial(model, cornerNodeSelection, midsideNodesSelection, AugmentationConstraintsFactory, matrixManagerFactory, Preconditioning,
+                return new FetiDP3dSolverSerial(model, cornerNodeSelection, midsideNodesSelection, 
+                    AugmentationConstraintsFactory, matrixManagerFactory, Preconditioning, CrosspointStrategy,
                     PcgSettings, ProblemIsHomogeneous);
             }
         }

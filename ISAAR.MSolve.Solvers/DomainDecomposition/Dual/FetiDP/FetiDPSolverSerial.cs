@@ -33,7 +33,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     public class FetiDPSolverSerial : ISolverMpi
     {
         internal const string name = "FETI-DP Solver"; // for error messages and logging
-        private readonly ICrosspointStrategy crosspointStrategy = new FullyRedundantConstraints();
         private readonly IFreeDofDisplacementsCalculator displacementsCalculator;
         private readonly DofOrderer dofOrderer;
         private readonly FetiDPDofSeparatorSerial dofSeparator;
@@ -55,7 +54,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         public FetiDPSolverSerial(IModel model, ICornerNodeSelection cornerNodeSelection,
             IFetiDPMatrixManagerFactory matrixManagerFactory, IFetiPreconditioningOperations preconditioning,
-            PcgSettings pcgSettings, bool problemIsHomogeneous)
+            ICrosspointStrategy crosspointStrategy, PcgSettings pcgSettings, bool problemIsHomogeneous)
         {
             this.msgHeader = $"{this.GetType().Name}: ";
 
@@ -293,6 +292,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             {
                 this.matrixManagerFactory = matrixManagerFactory;
             }
+            public ICrosspointStrategy CrosspointStrategy { get; set; } = new FullyRedundantConstraints();
 
             public IDofOrderer DofOrderer { get; set; } =
                 new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
@@ -306,7 +306,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             public FetiDPSolverSerial Build(IModel model, ICornerNodeSelection cornerNodeSelection)
             {
                 return new FetiDPSolverSerial(model, cornerNodeSelection, matrixManagerFactory, Preconditioning,
-                    PcgSettings, ProblemIsHomogeneous);
+                    CrosspointStrategy, PcgSettings, ProblemIsHomogeneous);
             }
         }
     }
