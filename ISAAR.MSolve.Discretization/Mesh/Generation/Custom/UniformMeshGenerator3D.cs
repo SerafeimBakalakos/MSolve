@@ -85,12 +85,12 @@ namespace ISAAR.MSolve.Discretization.Mesh.Generation.Custom
                         {
                             firstVertex,                                                    // (-1, -1, -1)
                             firstVertex + 1,                                                // ( 1, -1, -1)
-                            firstVertex + verticesPerY + 1,                                 // ( 1,  1, -1)
-                            firstVertex + verticesPerY,                                     // (-1,  1, -1)
+                            firstVertex + verticesPerX + 1,                                 // ( 1,  1, -1)
+                            firstVertex + verticesPerX,                                     // (-1,  1, -1)
                             firstVertex + verticesPerX * verticesPerY,                      // (-1, -1,  1)
                             firstVertex + verticesPerX * verticesPerY + 1,                  // ( 1, -1,  1)
-                            firstVertex + verticesPerX * verticesPerY + verticesPerY + 1,   // ( 1,  1,  1)
-                            firstVertex + verticesPerX * verticesPerY + verticesPerY        // (-1,  1,  1)
+                            firstVertex + verticesPerX * verticesPerY + verticesPerX + 1,   // ( 1,  1,  1)
+                            firstVertex + verticesPerX * verticesPerY + verticesPerX        // (-1,  1,  1)
                         };
                         cells[cell] = new CellConnectivity<TNode>(CellType.Hexa8, 
                             verticesOfCell.Select(idx => allVertices[idx]).ToArray()); // row major
