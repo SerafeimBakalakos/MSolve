@@ -11,11 +11,12 @@ namespace ISAAR.MSolve.XFEM.Tests
         public static void Main(string[] args)
         {
             //Paper1.DoubleCantileverBeamRunner.RunTest();
-            //Paper1.DoubleCantileverBeamRunner.RunVariousMeshes();
+            Paper1.DoubleCantileverBeamRunner.RunVariousMeshes();
+            //Paper1.DoubleCantileverBeamRunner.RunVariousSubdomains();
             //Paper1.DoubleCantileverBeamRunnerMpi.RunTest(args);
 
             //Paper1.HolesRunner.RunTest();
-            Paper1.HolesRunnerMpi.RunTest(args);
+            //Paper1.HolesRunnerMpi.RunTest(args);
 
 
 

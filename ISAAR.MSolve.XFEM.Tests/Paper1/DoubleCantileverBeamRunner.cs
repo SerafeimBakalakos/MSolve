@@ -36,11 +36,13 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 
             // Feti-DP serial
             int numSubdomainsX = 3 * numSubdomainsY;
+            bool suiteSparse = false;
             bool reanalysis = false;
             bool plotSubdomains = true;
             bool plotLSM = false;
-            SolveFetiDPSerial(CreateBenchmark(numElementsY, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM),
-                    plotSubdomains, reanalysis);
+            var benchmark = CreateBenchmark(numElementsY, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM, 
+                DcbBenchmarkBelytschko.PropagatorType.Standard);
+            SolveFetiDPSerial(benchmark, suiteSparse, plotSubdomains, reanalysis);
         }
 
         public static void RunVariousMeshes()
@@ -48,34 +50,30 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             // (numElementsY, dofs): (40, 10025), (75, 34664), (100, 61009), (125, 95258), (130, 102711), (200, 241900), 
             // (250, 377498), (300, 542590), (400, 963700) 
             //  (410, 1012128), (500, 1.5E6), (585, 2059800), (600, 2.165E6), (1000, 6.5E6)
-            int[] numElementsY = { 75/*, 125, 250, 400, 600*/ };
+            int[] numElementsY = { 250/*75, 125, 250, 400, 600*/ };
 
             // Direct
             bool suiteSparse = true;
-            bool plotLSM = true;
-            //foreach (int nely in numElementsY)
-            //{
-            //    SolveDirect(CreateBenchmark(nely, 1, 1, tipEnrichementRadius, plotLSM), suiteSparse);
-            //}
+            bool plotLSM = false;
+            foreach (int nely in numElementsY)
+            {
+                var benchmark = CreateBenchmark(nely, 1, 1, tipEnrichementRadius, plotLSM,
+                    DcbBenchmarkBelytschko.PropagatorType.Standard);
+                SolveDirect(benchmark, suiteSparse);
+            }
 
             // Feti-DP serial
             int numSubdomainsY = 25;
             int numSubdomainsX = 3 * numSubdomainsY;
             bool reanalysis = false;
-            bool plotSubdomains = true;
+            bool plotSubdomains = false;
             foreach (int nely in numElementsY)
             {
-                SolveFetiDPSerial(CreateBenchmark(nely, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM),
-                    plotSubdomains, reanalysis);
+                //LibrarySettings.LinearAlgebraProviders = LinearAlgebraProviderChoice.MKL;
+                //var benchmark = CreateBenchmark(nely, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM,
+                //    DcbBenchmarkBelytschko.PropagatorType.FixedConstantLength);
+                //SolveFetiDPSerial(benchmark, suiteSparse, plotSubdomains, reanalysis);
             }
-
-            // Feti-DP serial reanalysis
-            //reanalysis = true;
-            //foreach (int nely in numElementsY)
-            //{
-            //    SolverFetiDPSerial(CreateBenchmark(nely, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM), 
-            //        false, reanalysis);
-            //}
 
             Console.Write("\nEnd");
 
@@ -90,12 +88,14 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             int numElementsY = 600;
             int[] numSubdomainsY = { 3, 5, 9, 15, 25 };
             bool reanalysis = true;
+            bool suiteSparse = true;
             bool plotLSM = false;
             bool plotSubdomains = false;
             foreach (int nsuby in numSubdomainsY)
             {
-                SolveFetiDPSerial(CreateBenchmark(numElementsY, 3 * nsuby, nsuby, tipEnrichementRadius, plotLSM),
-                  plotSubdomains, reanalysis);
+                var benchmark = CreateBenchmark(numElementsY, 3 * nsuby, nsuby, tipEnrichementRadius, plotLSM,
+                    DcbBenchmarkBelytschko.PropagatorType.FixedConstantLength);
+                SolveFetiDPSerial(benchmark, suiteSparse, plotSubdomains, reanalysis);
             }
         }
 
@@ -110,7 +110,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
         }
 
         private static DcbBenchmarkBelytschko CreateBenchmark(int numElementsY, int numSubdomainsX, int numSubdomainsY, 
-            double tipEnrichmentRadius, bool plotLSM)
+            double tipEnrichmentRadius, bool plotLSM, DcbBenchmarkBelytschko.PropagatorType propagatorType)
         {
             var builder = new DcbBenchmarkBelytschko.Builder(numElementsY, numSubdomainsX, numSubdomainsY);
             builder.LsmPlotDirectory = plotLSM ? crackPlotDirectory : null;
@@ -123,6 +123,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             // J-integral contour is containes the previous crack tip. Thus the J-integral radius must be sufficiently smaller
             // than the crack growth length.
             builder.JintegralRadiusOverElementSize = 2.0;
+            builder.PropagatorType = propagatorType;
 
             DcbBenchmarkBelytschko benchmark = builder.BuildBenchmark();
             benchmark.InitializeModel();
@@ -170,7 +171,6 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
                 // Skyline solver
                 var builder = new SkylineSolver.Builder();
                 solver = builder.BuildSolver(benchmark.Model);
-
             }
 
             // Run analysis
@@ -181,11 +181,15 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 
             // Output
             WriteCrackPath(benchmark);
-            solver.Logger.WriteToFile(solverLogPath, $"{solver.Name}_log", true);
+            benchmark.PrintPropagationLogger();
+            //solver.Logger.WriteToFile(solverLogPath, $"{solver.Name}_log", true);
             solver.Logger.WriteAggregatesToFile(solverLogPath, $"{solver.Name}_log", true);
+
+            LibrarySettings.LinearAlgebraProviders = LinearAlgebraProviderChoice.Managed;
         }
 
-        private static void SolveFetiDPSerial(DcbBenchmarkBelytschko benchmark, bool plotSubdomains, bool reanalysis)
+        private static void SolveFetiDPSerial(DcbBenchmarkBelytschko benchmark, bool suiteSparse,
+            bool plotSubdomains, bool reanalysis)
         {
             // Choose corner nodes
             //Dictionary<ISubdomain, HashSet<INode>> initialCorners = FindCornerNodesFromRectangleCorners(benchmark.Model);
@@ -199,10 +203,23 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             var cornerNodeSelection = new CrackedFetiDPCornerNodesSerial(benchmark.Model, benchmark.Crack, getInitialCorners);
             benchmark.Model.ConnectDataStructures();
 
+            // Define linear algebra used by solver
+            IFetiDPMatrixManagerFactory fetiMatrices;
+            if (suiteSparse)
+            {
+                LibrarySettings.LinearAlgebraProviders = LinearAlgebraProviderChoice.MKL;
+                IReorderingAlgorithm reordering = null;
+                reordering = new OrderingAmdSuiteSparse();  // TODO: Is this a good choice?
+                fetiMatrices = new FetiDPMatrixManagerFactorySuitesparse(reordering);
+            }
+            else // Skyline
+            {
+                IReorderingAlgorithm reordering = null;
+                //reordering = new OrderingAmdCSparseNet();  // This is slower than natural ordering
+                fetiMatrices = new FetiDPMatrixManagerFactorySkyline(reordering);
+            }
+
             // Define solver
-            //var reordering = new OrderingAmdCSparseNet();  // This is slower than natural ordering
-            IReorderingAlgorithm reordering = null;
-            var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(reordering);
             var builder = new FetiDPSolverSerial.Builder(fetiMatrices);
             //builder.Preconditioning = new LumpedPreconditioning();
             //builder.Preconditioning = new DiagonalDirichletPreconditioning();
@@ -228,41 +245,43 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
 
             // Output
             WriteCrackPath(benchmark);
-            solver.Logger.WriteToFile(solverLogPath, $"{solver.Name}_log", true);
+            //solver.Logger.WriteToFile(solverLogPath, $"{solver.Name}_log", true);
             solver.Logger.WriteAggregatesToFile(solverLogPath, $"{solver.Name}_log", true);
+
+            LibrarySettings.LinearAlgebraProviders = LinearAlgebraProviderChoice.Managed;
         }
 
-    //private static void RunCrackPropagationAnalysis(DcbBenchmarkBelytschko benchmark, ISolverMpi solver)
-    //    {
-    //        TipAdaptivePartitioner partitioner = null;
-    //        partitioner = new TipAdaptivePartitioner(benchmark.Crack);
-    //        var analyzer = new QuasiStaticCrackPropagationAnalyzerSerial(benchmark.Model, solver, benchmark.Crack, 
-    //            benchmark.FractureToughness, benchmark.MaxIterations, partitioner);
+        //private static void RunCrackPropagationAnalysis(DcbBenchmarkBelytschko benchmark, ISolverMpi solver)
+        //    {
+        //        TipAdaptivePartitioner partitioner = null;
+        //        partitioner = new TipAdaptivePartitioner(benchmark.Crack);
+        //        var analyzer = new QuasiStaticCrackPropagationAnalyzerSerial(benchmark.Model, solver, benchmark.Crack, 
+        //            benchmark.FractureToughness, benchmark.MaxIterations, partitioner);
 
-    //        // Subdomain plots
-    //        if (subdomainPlotDirectory != null)
-    //        {
-    //            if (solver is FetiDPSolverSerial fetiDP)
-    //            {
-    //                analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(fetiDP.CornerNodes, subdomainPlotDirectory, true);
-    //            }
-    //            else analyzer.DDLogger = new DomainDecompositionLogger(subdomainPlotDirectory);
-    //        }
+        //        // Subdomain plots
+        //        if (subdomainPlotDirectory != null)
+        //        {
+        //            if (solver is FetiDPSolverSerial fetiDP)
+        //            {
+        //                analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(fetiDP.CornerNodes, subdomainPlotDirectory, true);
+        //            }
+        //            else analyzer.DDLogger = new DomainDecompositionLogger(subdomainPlotDirectory);
+        //        }
 
-    //        analyzer.Initialize();
-    //        analyzer.Analyze();
+        //        analyzer.Initialize();
+        //        analyzer.Analyze();
 
-    //        // Write crack path
-    //        Console.WriteLine("Crack path:");
-    //        foreach (var point in benchmark.Crack.CrackPath)
-    //        {
-    //            Console.WriteLine($"{point.X} {point.Y}");
-    //        }
-    //        Console.WriteLine();
+        //        // Write crack path
+        //        Console.WriteLine("Crack path:");
+        //        foreach (var point in benchmark.Crack.CrackPath)
+        //        {
+        //            Console.WriteLine($"{point.X} {point.Y}");
+        //        }
+        //        Console.WriteLine();
 
-    //        solver.Logger.WriteToFile(solverLogPath, $"{solver.Name}_log", true);
-    //        solver.Logger.WriteAggregatesToFile(solverLogPath, $"{solver.Name}_log", true);
-    //    }
+        //        solver.Logger.WriteToFile(solverLogPath, $"{solver.Name}_log", true);
+        //        solver.Logger.WriteAggregatesToFile(solverLogPath, $"{solver.Name}_log", true);
+        //    }
 
         private static void WriteCrackPath(DcbBenchmarkBelytschko benchmark)
         {

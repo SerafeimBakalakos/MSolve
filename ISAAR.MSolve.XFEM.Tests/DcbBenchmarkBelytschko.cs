@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using ISAAR.MSolve.Discretization;
@@ -38,6 +39,13 @@ namespace ISAAR.MSolve.XFEM.Tests
 {
     public class DcbBenchmarkBelytschko //: IBenchmark
     {
+        public enum PropagatorType
+        {
+            Standard, // Calculates the propagation data using J-integral
+            FixedConstantLength, // Uses fixed propagation data obtained by an earlier analysis. Growth length = 0.3.
+            FixedParisLaw // Uses fixed propagation data obtained by an earlier analysis. Growth length was determined by Paris law.
+        }
+
         #region constants
         ///// <summary>
         ///// The material used for the J-integral computation. It msut be stored separately from individual element materials.
@@ -76,6 +84,11 @@ namespace ISAAR.MSolve.XFEM.Tests
         private readonly int numSubdomainsX;
         private readonly int numSubdomainsY;
 
+        /// <summary>
+        /// 0 for the actual propagator, 1 for fixed propagator with constant growth length, 2 for fixed propagator with 
+        /// Paris law growth length.
+        /// </summary>
+        private readonly PropagatorType propagatorType;
         private readonly double tipEnrichmentRadius = 0.0;
 
         private TrackingExteriorCrackLsm crack;
@@ -86,7 +99,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         /// <param name="growthLength">The length by which the crack grows in each iteration.</param>
         public DcbBenchmarkBelytschko(int numElementsY, int numSubdomainsX, int numSubdomainsY, double growthLength, 
             double tipEnrichmentRadius, double jIntegralRadiusOverElementSize, int maxIterations, double heavisideTol,
-            string lsmPlotDirectory)
+            string lsmPlotDirectory, PropagatorType propagatorType)
         {
             this.numElementsY = numElementsY;
             this.numSubdomainsX = numSubdomainsX;
@@ -97,6 +110,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             this.lsmPlotDirectory = lsmPlotDirectory;
             this.MaxIterations = maxIterations;
             this.heavisideTol = heavisideTol;
+            this.propagatorType = propagatorType;
         }
 
         /// <summary>
@@ -149,10 +163,62 @@ namespace ISAAR.MSolve.XFEM.Tests
         public void InitializeCrack()
         {
             var globalHomogeneousMaterial = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(0, E, v);
-            IPropagator propagator = new Propagator(Model.Mesh, jIntegralRadiusOverElementSize,
-                new HomogeneousMaterialAuxiliaryStates(globalHomogeneousMaterial),
-                new HomogeneousSIFCalculator(globalHomogeneousMaterial),
-                new MaximumCircumferentialTensileStressCriterion(), new ConstantIncrement2D(growthLength));
+            IPropagator propagator;
+            if (propagatorType == PropagatorType.Standard)
+            {
+                propagator = new Propagator(Model.Mesh, jIntegralRadiusOverElementSize,
+                    new HomogeneousMaterialAuxiliaryStates(globalHomogeneousMaterial),
+                    new HomogeneousSIFCalculator(globalHomogeneousMaterial),
+                    new MaximumCircumferentialTensileStressCriterion(), new ConstantIncrement2D(growthLength));
+            }
+            else if (propagatorType == PropagatorType.FixedConstantLength)
+            {
+                Debug.Assert(growthLength == 0.3);
+                double[] growthAngles = 
+                {
+                    -0.0311190263005246,
+                    -0.073585235948899,
+                    -0.128214305959422,
+                    -0.197123263064651,
+                    -0.258889574558178,
+                    -0.264957488864897,
+                    -0.198769553144488,
+                    -0.129884071347221
+                };
+                double[] growthLengths = 
+                { 
+                    0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3
+                };
+                double[] sifsMode1 = 
+                {
+                    1433.12359899268,
+                    1511.69783315612,
+                    1617.55828744903,
+                    1781.52464076419,
+                    2093.18047596673,
+                    2729.70644290519,
+                    3989.86723051068,
+                    6392.64356131652
+                };
+                double[] sifsMode2 =
+                {
+                    22.3113099637035,
+                    55.7956288493048,
+                    104.702305206624,
+                    179.674365148896,
+                    282.032913414359,
+                    377.153649617101,
+                    405.914609568657,
+                    419.282490062095
+                };
+                propagator = new FixedPropagator(growthAngles, growthLengths, sifsMode1, sifsMode2);
+            }
+            else if (propagatorType == PropagatorType.FixedParisLaw)
+            {
+                throw new NotImplementedException();
+            }
+            else throw new ArgumentException();
+
 
             CrackMouth = new CartesianPoint(0.0, h/2);
             var crackKink = new CartesianPoint(a, h / 2);
@@ -195,6 +261,15 @@ namespace ISAAR.MSolve.XFEM.Tests
             if (Math.Abs(node.Y) <= meshTolerance) return true;
             if (Math.Abs(node.Y - h) <= meshTolerance) return true;
             return false;
+        }
+
+        public void PrintPropagationLogger()
+        {
+            PropagationLogger logger = Crack.CrackTipPropagators.Values.First().Logger;
+            for (int i = 0; i < logger.GrowthAngles.Count; ++i)
+            {
+                logger.PrintAnalysisStep(i);
+            }
         }
 
         public class Builder //: IBenchmarkBuilder
@@ -245,10 +320,17 @@ namespace ISAAR.MSolve.XFEM.Tests
 
             public double TipEnrichmentRadius { get; set; } = 0.0;
 
+            /// <summary>
+            /// 0 for the actual propagator, 1 for fixed propagator with constant growth length, 2 for fixed propagator with 
+            /// Paris law growth length.
+            /// </summary>
+            public PropagatorType PropagatorType { get; set; } = PropagatorType.Standard;
+
             public DcbBenchmarkBelytschko BuildBenchmark()
             {
                 return new DcbBenchmarkBelytschko(numElementsY, numSubdomainsX, numSubdomainsY, GrowthLength, TipEnrichmentRadius, 
-                    JintegralRadiusOverElementSize, MaxIterations, HeavisideEnrichmentTolerance, LsmPlotDirectory);
+                    JintegralRadiusOverElementSize, MaxIterations, HeavisideEnrichmentTolerance, LsmPlotDirectory, 
+                    PropagatorType);
             }
         }
     }

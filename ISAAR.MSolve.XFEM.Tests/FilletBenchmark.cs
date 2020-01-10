@@ -275,7 +275,7 @@ namespace ISAAR.MSolve.XFEM.Tests
         private void InitializeCrack()
         {
             IPropagator propagator;
-            if (!writePropagation) propagator = new FixedPropagator(propagationPath, null);
+            if (!writePropagation) propagator = new FixedPropagatorOLD(propagationPath, null);
             else
             {
                 propagator = new Propagator(mesh, jIntegralRadiusOverElementSize,

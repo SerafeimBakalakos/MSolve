@@ -607,7 +607,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             // Left crack
             // Propagator
             IPropagator leftPropagator;
-            if (!writePropagation) leftPropagator = new FixedPropagator(leftPropagationPath, null);
+            if (!writePropagation) leftPropagator = new FixedPropagatorOLD(leftPropagationPath, null);
             else
             {
                 leftPropagator = new Propagator(Mesh, jIntegralRadiusOverElementSize,
@@ -636,7 +636,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             // Right crack
             // Propagator
             IPropagator rightPropagator;
-            if (!writePropagation) rightPropagator = new FixedPropagator(rightPropagationPath, null);
+            if (!writePropagation) rightPropagator = new FixedPropagatorOLD(rightPropagationPath, null);
             else
             {
                 rightPropagator = new Propagator(Mesh, jIntegralRadiusOverElementSize,

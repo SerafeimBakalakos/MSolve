@@ -129,7 +129,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             => diagonalOnly ? inverseKiiDiagonal * vector : inverseKii.SolveLinearSystem(vector);
 
         protected override Matrix MultiplyInverseKiiTimesImpl(Matrix matrix, bool diagonalOnly)
-            => diagonalOnly? inverseKiiDiagonal * matrix : inverseKii.SolveLinearSystems(matrix);
+            => diagonalOnly ? inverseKiiDiagonal * matrix : inverseKii.SolveLinearSystems(matrix);
 
         protected override Vector MultiplyInverseKrrTimesImpl(Vector vector) => inverseKrr.SolveLinearSystem(vector);
 
