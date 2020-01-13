@@ -287,8 +287,10 @@ namespace ISAAR.MSolve.XFEM.Tests
             var crackMouth = new CartesianPoint(webLeft, crackHeight);
             var crackTip = new CartesianPoint(webLeft + crackLength, crackHeight);
             var initialCrack = new PolyLine2D(crackMouth, crackTip);
+            IHeavisideSingularityResolver singularityResolver = new RelativeAreaResolver(heavisideTol);
+            //IHeavisideSingularityResolver singularityResolver = new ExactSingularityResolver();
             var lsmCrack = 
-                new TrackingExteriorCrackLsm(propagator, 0.0, new RelativeAreaResolver(heavisideTol), new SignFunction2D());
+                new TrackingExteriorCrackLsm(propagator, 0.0, singularityResolver, new SignFunction2D());
             lsmCrack.Mesh = mesh;
 
             // Logging         

@@ -50,7 +50,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             // (numElementsY, dofs): (40, 10025), (75, 34664), (100, 61009), (125, 95258), (130, 102711), (200, 241900), 
             // (250, 377498), (300, 542590), (400, 963700) 
             //  (410, 1012128), (500, 1.5E6), (585, 2059800), (600, 2.165E6), (1000, 6.5E6)
-            int[] numElementsY = { 250/*75, 125, 250, 400, 600*/ };
+            int[] numElementsY = { 400/*75, 125, 250, 400, 600*/ };
 
             // Direct
             bool suiteSparse = true;
@@ -70,9 +70,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             foreach (int nely in numElementsY)
             {
                 //LibrarySettings.LinearAlgebraProviders = LinearAlgebraProviderChoice.MKL;
-                //var benchmark = CreateBenchmark(nely, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM,
-                //    DcbBenchmarkBelytschko.PropagatorType.FixedConstantLength);
-                //SolveFetiDPSerial(benchmark, suiteSparse, plotSubdomains, reanalysis);
+                var benchmark = CreateBenchmark(nely, numSubdomainsX, numSubdomainsY, tipEnrichementRadius, plotLSM,
+                    DcbBenchmarkBelytschko.PropagatorType.Standard);
+                SolveFetiDPSerial(benchmark, suiteSparse, plotSubdomains, reanalysis);
             }
 
             Console.Write("\nEnd");

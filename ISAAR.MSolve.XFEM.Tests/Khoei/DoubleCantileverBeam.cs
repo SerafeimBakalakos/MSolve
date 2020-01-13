@@ -190,7 +190,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Khoei
             var propagator = new Propagator(mesh, jIntegralRadiusRatio, new HomogeneousMaterialAuxiliaryStates(material),
                 new HomogeneousSIFCalculator(material), new MaximumCircumferentialTensileStressCriterion(),
                 new ConstantIncrement2D(1.5 * jIntegralRadiusRatio * elementSize));
-            var crack = new TrackingExteriorCrackLsm(propagator, 0.0, new RelativeAreaResolver(1E-4), 
+            //IHeavisideSingularityResolver singularityResolver = new RelativeAreaResolver(1E-4);
+            IHeavisideSingularityResolver singularityResolver = new ExactSingularityResolver();
+            var crack = new TrackingExteriorCrackLsm(propagator, 0.0, singularityResolver, 
                 new SignFunctionOpposite2D());
             crack.Mesh = mesh;
 
