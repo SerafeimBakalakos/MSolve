@@ -4,6 +4,7 @@ using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Distributed.Tests;
 using ISAAR.MSolve.LinearAlgebra.Tests.Utilities;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.IntegrationTests;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Performance;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Utilities;
 using ISAAR.MSolve.Solvers.Tests.Utilities;
@@ -15,11 +16,13 @@ namespace ISAAR.MSolve.Solvers.Tests
     {
         public static void Main(string[] args)
         {
-            var suite = new MpiTestSuite();
-            RegisterFetiDP2dUnitTests(args, suite);
-            RegisterFetiDP2dIntegrationTests(args, suite);
-            RegisterFetiDP2dPapagiannakisTests(args, suite);
-            suite.RunTests(args);
+            ProfileFetiDPCantileverBeam2D.Run();
+
+            //var suite = new MpiTestSuite();
+            //RegisterFetiDP2dUnitTests(args, suite);
+            //RegisterFetiDP2dIntegrationTests(args, suite);
+            //RegisterFetiDP2dPapagiannakisTests(args, suite);
+            //suite.RunTests(args);
         }
 
         private static void RegisterFetiDP2dUnitTests(string[] args, MpiTestSuite suite)
