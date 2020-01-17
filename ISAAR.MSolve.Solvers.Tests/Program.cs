@@ -14,7 +14,7 @@ namespace ISAAR.MSolve.Solvers.Tests
     {
         public static void Main(string[] args)
         {
-            var suite = new MpiTestSuite();
+            //var suite = new MpiTestSuite();
 
             //suite.AddFact(FetiDPDofSeparatorMpiTests.TestDofSeparation, typeof(FetiDPDofSeparatorMpiTests).Name, "TestDofSeparation");
             //suite.AddFact(FetiDPDofSeparatorMpiTests.TestCornerBooleanMatrices, typeof(FetiDPDofSeparatorMpiTests).Name, "TestCornerBooleanMatrices");
@@ -51,12 +51,12 @@ namespace ISAAR.MSolve.Solvers.Tests
             //suite.AddFact(FetiDPSolverMpiTests.TestSolutionGlobalDisplacements, typeof(FetiDPSolverMpiTests).Name, "TestSolutionGlobalDisplacements");
 
             // Homogeneous problem
-            suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.Dirichlet, Residual.Approximate, 11);
-            suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.DirichletDiagonal, Residual.Approximate, 14);
-            suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.Lumped, Residual.Approximate, 18);
+            //suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.Dirichlet, Residual.Approximate, 11);
+            //suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.DirichletDiagonal, Residual.Approximate, 14);
+            //suite.AddTheory(PapagiannakisFetiDPTests2DMpi.Run, typeof(PapagiannakisFetiDPTests2DMpi).Name, "Run", 1.0, Precond.Lumped, Residual.Approximate, 18);
 
 
-            suite.RunTests(args);
+            //suite.RunTests(args);
         }
     }
 }

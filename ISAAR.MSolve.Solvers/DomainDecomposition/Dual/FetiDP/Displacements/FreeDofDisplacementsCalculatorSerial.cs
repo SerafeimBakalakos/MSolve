@@ -41,7 +41,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements
             // uc = inv(KccStar) * (fcStar + FIrc^T * lagranges)
             Vector temp = flexibility.MultiplyGlobalFIrcTransposed(lagranges);
 
-
             temp.AddIntoThis(matrixManager.CoarseProblemRhs);
             return matrixManager.MultiplyInverseCoarseProblemMatrix(temp);
         }

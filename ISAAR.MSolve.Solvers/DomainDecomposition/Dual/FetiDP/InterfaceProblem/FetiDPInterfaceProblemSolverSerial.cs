@@ -44,99 +44,131 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
             #region debug
             int nL = lagranges.Length;
+            int nC = matrixManager.CoarseProblemRhs.Length;
             var writer = new LinearAlgebra.Output.FullMatrixWriter();
 
             string pathRhs = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\rhs.txt";
-            new LinearAlgebra.Output.FullVectorWriter().WriteToFile(pcgRhs, pathRhs);
-
+            //new LinearAlgebra.Output.FullVectorWriter().WriteToFile(pcgRhs, pathRhs);
             //LinearAlgebra.LibrarySettings.LinearAlgebraProviders = LinearAlgebra.LinearAlgebraProviderChoice.MKL;
+
+            // Process FIrr
             Matrix FIrr = MultiplyWithIdentity(nL, nL, flexibility.MultiplyGlobalFIrr);
+            FIrr = 0.5 * (FIrr + FIrr.Transpose());
+            SkylineMatrix skyFIrr = SkylineMatrix.CreateFromMatrix(FIrr);
             string pathFIrr = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\FIrr.txt";
-            writer.WriteToFile(FIrr, pathFIrr);
-            double detFIrr = FIrr.CalcDeterminant();
+            //writer.WriteToFile(FIrr, pathFIrr);
             (Matrix rrefFIrr, List<int> independentColsFIrr) = FIrr.ReducedRowEchelonForm();
-            //LinearAlgebra.Triangulation.CholeskyFull FIrrFactorized = FIrr.FactorCholesky(false);
 
-            Matrix pcgMatrixExplicit = MultiplyWithIdentity(nL, nL, pcgMatrix.Multiply);
-            pcgMatrixExplicit = 0.5 * (pcgMatrixExplicit + pcgMatrixExplicit.Transpose());
-            double detPcgMatrix = pcgMatrixExplicit.CalcDeterminant();
-            string pathPcgMatrix = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\pcg_matrix.txt";
-            writer.WriteToFile(pcgMatrixExplicit, pathPcgMatrix);
-            (Matrix rref, List<int> independentCols) = pcgMatrixExplicit.ReducedRowEchelonForm();
-            //LinearAlgebra.Triangulation.CholeskyFull pcgMatrixFactorized = pcgMatrixExplicit.FactorCholesky(false);
-
+            bool isFIrrInvertible = false;
+            double detFIrr = double.NaN;
             try
             {
-
-                #endregion
-
-                // Solve the interface problem using PCG algorithm
-                var pcgBuilder = new PcgAlgorithm.Builder();
-                pcgBuilder.MaxIterationsProvider = pcgSettings.MaxIterationsProvider;
-                pcgBuilder.ResidualTolerance = pcgSettings.ConvergenceTolerance;
-                pcgBuilder.Convergence = pcgSettings.ConvergenceStrategyFactory.CreateConvergenceStrategy(globalForcesNorm);
-                PcgAlgorithm pcg = pcgBuilder.Build(); //TODO: perhaps use the pcg from the previous analysis if it has reorthogonalization.
-                IterativeStatistics stats = pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, true,
-                    () => Vector.CreateZero(systemOrder));
-
-                // Log statistics about PCG execution
-                FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
-                logger.LogIterativeAlgorithm(stats.NumIterationsRequired, stats.ResidualNormRatioEstimation);
-
-
-                #region debug
+                detFIrr = FIrr.CalcDeterminant();
+                isFIrrInvertible = true;
             }
-            catch(Exception)
-            { }
-            lagranges.Clear();
+            catch (Exception) { }
+
+
+            bool isFIrrPosDef = false;
+            try
+            {
+                double tol = 1E-50;
+                var FIrrFactorized = skyFIrr.FactorCholesky(false, tol);
+                isFIrrPosDef = true;
+            }
+            catch (Exception) { }
+
+
+            // Process PCG matrix
+            Matrix pcgMatrixExplicit = MultiplyWithIdentity(nL, nL, pcgMatrix.Multiply);
+            pcgMatrixExplicit = 0.5 * (pcgMatrixExplicit + pcgMatrixExplicit.Transpose());
+            SkylineMatrix skyPcgMatrix = SkylineMatrix.CreateFromMatrix(pcgMatrixExplicit);
+            string pathPcgMatrix = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\pcg_matrix.txt";
+            //writer.WriteToFile(pcgMatrixExplicit, pathPcgMatrix);
+            (Matrix rref, List<int> independentCols) = pcgMatrixExplicit.ReducedRowEchelonForm();
+
+            bool isPcgMatrixInvertible = false;
+            double detPcgMatrix = double.NaN;
+            try
+            {
+                detPcgMatrix = pcgMatrixExplicit.CalcDeterminant();
+                isPcgMatrixInvertible = true;
+            }
+            catch (Exception) { }
+            
+            bool isPcgMatrixPosDef = false;
+            try
+            {
+                double tol = 1E-50;
+                var pcgMatrixFactorized = skyPcgMatrix.FactorCholesky(false, tol);
+                isPcgMatrixPosDef = true;
+            }
+            catch (Exception) { }
+            #endregion
+
+            // Solve the interface problem using PCG algorithm
+            var pcgBuilder = new PcgAlgorithm.Builder();
+            pcgBuilder.MaxIterationsProvider = pcgSettings.MaxIterationsProvider;
+            pcgBuilder.ResidualTolerance = pcgSettings.ConvergenceTolerance;
+            pcgBuilder.Convergence = pcgSettings.ConvergenceStrategyFactory.CreateConvergenceStrategy(globalForcesNorm);
+            PcgAlgorithm pcg = pcgBuilder.Build(); //TODO: perhaps use the pcg from the previous analysis if it has reorthogonalization.
+            IterativeStatistics stats = pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, true,
+                () => Vector.CreateZero(systemOrder));
+
+            // Log statistics about PCG execution
+            FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
+            logger.LogIterativeAlgorithm(stats.NumIterationsRequired, stats.ResidualNormRatioEstimation);
+
+            #region debug
+            int nIter = stats.NumIterationsRequired;
+            //lagranges.Clear();
             //pcgMatrixExplicit.FactorLU(false).SolveLinearSystem(pcgRhs, lagranges);
 
-            lagranges.CopyFrom(Vector.CreateFromArray(new double[]
-            {
-                858.748624916974         ,
-                6658.05367012006         ,
-                -399.428687085375        ,
-                -1528.25388011689        ,
-                402.170912423947         ,
-                2314.52006639940         ,
-                2683.20368198754         ,
-                -7135.53137052282        ,
-                9070.92235542399         ,
-                13842.1970399118         ,
-                -1880.99413465743        ,
-                9678.93855793406         ,
-                10338.3227678329         ,
-                -13002.0488673263        ,
-                1097.57708574923         ,
-                -694.660779359481        ,
-                -1383.21562923371        ,
-                -1406.01641958617        ,
-                -38.0786491313622        ,
-                12921.4673094043         ,
-                -706.978302882614        ,
-                87.3749802470211         ,
-                711.175939111619         ,
-                715.385199534560         ,
-                -337.480062433103        ,
-                -195.752169307628        ,
-                -1954.92214461590        ,
-                327.439313633485         ,
-                154.553555829834         ,
-                -9968.34410353963        ,
-                -2777.05981113129        ,
-                1948.71378858320         ,
-                -11498.8174290606        ,
-                -2976.07581401165        ,
-                -21796.2688097026        ,
-                -1629.01296236435        ,
-                -481.032488066478        ,
-                1078.15667667778         ,
-                1116.63563428259         ,
-                -215.797909226251        ,
-                22156.3180836796         ,
-1.72080596009070e-12
-        }));
-
+            //            lagranges.CopyFrom(Vector.CreateFromArray(new double[]
+            //            {
+            //                858.748624916974         ,
+            //                6658.05367012006         ,
+            //                -399.428687085375        ,
+            //                -1528.25388011689        ,
+            //                402.170912423947         ,
+            //                2314.52006639940         ,
+            //                2683.20368198754         ,
+            //                -7135.53137052282        ,
+            //                9070.92235542399         ,
+            //                13842.1970399118         ,
+            //                -1880.99413465743        ,
+            //                9678.93855793406         ,
+            //                10338.3227678329         ,
+            //                -13002.0488673263        ,
+            //                1097.57708574923         ,
+            //                -694.660779359481        ,
+            //                -1383.21562923371        ,
+            //                -1406.01641958617        ,
+            //                -38.0786491313622        ,
+            //                12921.4673094043         ,
+            //                -706.978302882614        ,
+            //                87.3749802470211         ,
+            //                711.175939111619         ,
+            //                715.385199534560         ,
+            //                -337.480062433103        ,
+            //                -195.752169307628        ,
+            //                -1954.92214461590        ,
+            //                327.439313633485         ,
+            //                154.553555829834         ,
+            //                -9968.34410353963        ,
+            //                -2777.05981113129        ,
+            //                1948.71378858320         ,
+            //                -11498.8174290606        ,
+            //                -2976.07581401165        ,
+            //                -21796.2688097026        ,
+            //                -1629.01296236435        ,
+            //                -481.032488066478        ,
+            //                1078.15667667778         ,
+            //                1116.63563428259         ,
+            //                -215.797909226251        ,
+            //                22156.3180836796         ,
+            //1.72080596009070e-12
+            //        }));
             #endregion
             return lagranges;
         }

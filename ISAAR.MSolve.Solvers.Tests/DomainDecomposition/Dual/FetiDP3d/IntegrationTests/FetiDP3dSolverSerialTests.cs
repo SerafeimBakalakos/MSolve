@@ -4,6 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Analyzers.Loading;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
+using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
@@ -20,17 +21,25 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
 {
     public static class FetiDP3dSolverSerialTests
     {
-        //[Fact]
-        //public static void TestSolutionGlobalDisplacements()
-        //{
-        //    (IModel model, FetiDP3dSolverSerial solver) = CreateModelAndSolver();
-        //    RunAnalysis(model, solver);
-        //    Vector globalU = solver.GatherGlobalDisplacements();
+        [Fact]
+        public static void TestSolutionGlobalDisplacements()
+        {
+            (IModel model, FetiDP3dSolverSerial solver) = CreateModelAndSolver();
+            RunAnalysis(model, solver);
+            Vector globalU = solver.GatherGlobalDisplacements();
 
-        //    // Check solution
-        //    double tol = 1E-8;
-        //    Assert.True(Example4x4x4Quads.SolutionGlobalDisplacements.Equals(globalU, tol));
-        //}
+            Model modelDirect = Example4x4x4Quads.ModelCreator.CreateModel();
+            CreateSingleSubdomainModel(modelDirect);
+            IVectorView globalUDirect = SolveDirect(modelDirect);
+
+            // Check solution
+            double normalizedError = globalUDirect.Subtract(globalU).Norm2() / globalUDirect.Norm2();
+            Assert.Equal(0.0, normalizedError, 5);
+
+            //// Check solution
+            //double tol = 1E-8;
+            //Assert.True(Example4x4x4Quads.SolutionGlobalDisplacements.Equals(globalU, tol));
+        }
 
         [Fact]
         public static void TestSolutionSubdomainDisplacements()
@@ -77,6 +86,34 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
             FetiDP3dSolverSerial solver = solverBuilder.Build(model, cornerNodes,midsideNodesSelection);
 
             return (model, solver);
+        }
+
+        private static IVectorView SolveDirect(IModel model)
+        {
+            // Solver
+            Direct.SkylineSolver solver = (new Direct.SkylineSolver.Builder()).BuildSolver(model);
+
+            // Structural problem provider
+            var provider = new Problems.ProblemStructural(model, solver);
+
+            // Linear static analysis
+            var childAnalyzer = new Analyzers.LinearAnalyzer(model, solver, provider);
+            var parentAnalyzer = new Analyzers.StaticAnalyzer(model, solver, provider, childAnalyzer);
+
+            // Run the analysis
+            parentAnalyzer.Initialize();
+            parentAnalyzer.Solve();
+
+            return solver.LinearSystems[0].Solution;
+        }
+
+        private static void CreateSingleSubdomainModel(Model model)
+        {
+            // Replace the existing subdomains with a single one 
+            model.SubdomainsDictionary.Clear();
+            var subdomain = new Subdomain(0);
+            model.SubdomainsDictionary.Add(0, subdomain);
+            foreach (Element element in model.ElementsDictionary.Values) subdomain.Elements.Add(element.ID, element);
         }
     }
 }

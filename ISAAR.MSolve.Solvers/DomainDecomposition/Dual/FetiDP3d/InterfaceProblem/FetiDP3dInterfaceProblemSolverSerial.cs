@@ -57,16 +57,66 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
             #region debug
             int nL = lagranges.Length;
-            Matrix FIrr = MultiplyWithIdentity(nL, nL, flexibility.MultiplyGlobalFIrr);
-            (Matrix rrefFIrr, List<int> independentColsFIrr) = FIrr.ReducedRowEchelonForm();
-            LinearAlgebra.Triangulation.CholeskyFull FIrrFactorized = FIrr.FactorCholesky(false);
-
-            Matrix pcgMatrixExplicit = MultiplyWithIdentity(nL, nL, pcgMatrix.Multiply);
+            int nC = matrixManager.CoarseProblemRhs.Length;
             var writer = new LinearAlgebra.Output.FullMatrixWriter();
-            string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\pcg_matrix.txt";
-            writer.WriteToFile(pcgMatrixExplicit, path);
+
+            string pathRhs = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\rhs.txt";
+            //new LinearAlgebra.Output.FullVectorWriter().WriteToFile(pcgRhs, pathRhs);
+            //LinearAlgebra.LibrarySettings.LinearAlgebraProviders = LinearAlgebra.LinearAlgebraProviderChoice.MKL;
+
+            // Process FIrr
+            Matrix FIrr = MultiplyWithIdentity(nL, nL, flexibility.MultiplyGlobalFIrr);
+            FIrr = 0.5 * (FIrr + FIrr.Transpose());
+            SkylineMatrix skyFIrr = SkylineMatrix.CreateFromMatrix(FIrr);
+            string pathFIrr = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\FIrr.txt";
+            //writer.WriteToFile(FIrr, pathFIrr);
+            (Matrix rrefFIrr, List<int> independentColsFIrr) = FIrr.ReducedRowEchelonForm();
+
+            bool isFIrrInvertible = false;
+            double detFIrr = double.NaN;
+            try
+            {
+                detFIrr = FIrr.CalcDeterminant();
+                isFIrrInvertible = true;
+            }
+            catch (Exception) { }
+
+
+            bool isFIrrPosDef = false;
+            try
+            {
+                double tol = 1E-50;
+                var FIrrFactorized = skyFIrr.FactorCholesky(false, tol);
+                isFIrrPosDef = true;
+            }
+            catch (Exception) { }
+
+
+            // Process PCG matrix
+            Matrix pcgMatrixExplicit = MultiplyWithIdentity(nL, nL, pcgMatrix.Multiply);
+            pcgMatrixExplicit = 0.5 * (pcgMatrixExplicit + pcgMatrixExplicit.Transpose());
+            SkylineMatrix skyPcgMatrix = SkylineMatrix.CreateFromMatrix(pcgMatrixExplicit);
+            string pathPcgMatrix = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\pcg_matrix.txt";
+            //writer.WriteToFile(pcgMatrixExplicit, pathPcgMatrix);
             (Matrix rref, List<int> independentCols) = pcgMatrixExplicit.ReducedRowEchelonForm();
-            LinearAlgebra.Triangulation.CholeskyFull pcgMatrixFactorized = pcgMatrixExplicit.FactorCholesky(false);
+
+            bool isPcgMatrixInvertible = false;
+            double detPcgMatrix = double.NaN;
+            try
+            {
+                detPcgMatrix = pcgMatrixExplicit.CalcDeterminant();
+                isPcgMatrixInvertible = true;
+            }
+            catch (Exception) { }
+
+            bool isPcgMatrixPosDef = false;
+            try
+            {
+                double tol = 1E-50;
+                var pcgMatrixFactorized = skyPcgMatrix.FactorCholesky(false, tol);
+                isPcgMatrixPosDef = true;
+            }
+            catch (Exception) { }
             #endregion
 
             // Solve the interface problem using PCG algorithm
@@ -82,6 +132,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
             logger.LogIterativeAlgorithm(stats.NumIterationsRequired, stats.ResidualNormRatioEstimation);
 
+            #region debug
+            int nIter = stats.NumIterationsRequired;
+            #endregion
             return lagranges;
         }
 
