@@ -121,56 +121,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
             #region debug
             int nIter = stats.NumIterationsRequired;
-            //lagranges.Clear();
-            //pcgMatrixExplicit.FactorLU(false).SolveLinearSystem(pcgRhs, lagranges);
 
-            //            lagranges.CopyFrom(Vector.CreateFromArray(new double[]
-            //            {
-            //                858.748624916974         ,
-            //                6658.05367012006         ,
-            //                -399.428687085375        ,
-            //                -1528.25388011689        ,
-            //                402.170912423947         ,
-            //                2314.52006639940         ,
-            //                2683.20368198754         ,
-            //                -7135.53137052282        ,
-            //                9070.92235542399         ,
-            //                13842.1970399118         ,
-            //                -1880.99413465743        ,
-            //                9678.93855793406         ,
-            //                10338.3227678329         ,
-            //                -13002.0488673263        ,
-            //                1097.57708574923         ,
-            //                -694.660779359481        ,
-            //                -1383.21562923371        ,
-            //                -1406.01641958617        ,
-            //                -38.0786491313622        ,
-            //                12921.4673094043         ,
-            //                -706.978302882614        ,
-            //                87.3749802470211         ,
-            //                711.175939111619         ,
-            //                715.385199534560         ,
-            //                -337.480062433103        ,
-            //                -195.752169307628        ,
-            //                -1954.92214461590        ,
-            //                327.439313633485         ,
-            //                154.553555829834         ,
-            //                -9968.34410353963        ,
-            //                -2777.05981113129        ,
-            //                1948.71378858320         ,
-            //                -11498.8174290606        ,
-            //                -2976.07581401165        ,
-            //                -21796.2688097026        ,
-            //                -1629.01296236435        ,
-            //                -481.032488066478        ,
-            //                1078.15667667778         ,
-            //                1116.63563428259         ,
-            //                -215.797909226251        ,
-            //                22156.3180836796         ,
-            //1.72080596009070e-12
-            //        }));
+            // Lagranges from LU
+            var lagrangesDirect = Vector.CreateZero(nL);
+            pcgMatrixExplicit.FactorLU(false).SolveLinearSystem(pcgRhs, lagrangesDirect);
+            double errorLagranges = (lagranges - lagrangesDirect).Norm2() / lagrangesDirect.Norm2();
+
+            return lagrangesDirect;
             #endregion
-            return lagranges;
+            //return lagranges;
         }
 
         private Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility,

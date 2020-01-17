@@ -34,20 +34,35 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
     public static class Cantilever3DFetiDPTests
     {
         private const string plotPath = @"C:\Users\Serafeim\Desktop\FETI-DP\Plots";
+        private const double meshTol = 1E-6;
 
         private const int singleSubdomainID = 0;
 
         public enum Crosspoints { Minimum, FullyRedundant }
-        public enum Corners { C4848, C0404, C2626, C0426, C1526 }
-        public enum Augmented { None, Nodes21 }
-
+        public enum Corners 
+        {
+            Case0, Case1, Case2, Case3,
+            C0426, C0404, C1526
+        }
+        public enum Augmentation { None, Case0, Case1 }
+        public enum Mesh { e4x2x1, e4x4x2 }
 
         [Theory]
-        [InlineData(Corners.C4848, Crosspoints.Minimum, Augmented.None)]
-        [InlineData(Corners.C2626, Crosspoints.Minimum, Augmented.None)]
-        [InlineData(Corners.C2626, Crosspoints.FullyRedundant, Augmented.None)]
-        [InlineData(Corners.C2626, Crosspoints.Minimum, Augmented.Nodes21)]
-        [InlineData(Corners.C2626, Crosspoints.FullyRedundant, Augmented.Nodes21)]
+        //[InlineData(Mesh.e4x2x1, Corners.Case0, Crosspoints.Minimum, Augmentation.None)]
+        //[InlineData(Mesh.e4x2x1, Corners.Case1, Crosspoints.Minimum, Augmentation.None)]
+        //[InlineData(Mesh.e4x2x1, Corners.Case1, Crosspoints.FullyRedundant, Augmentation.None)]
+        //[InlineData(Mesh.e4x2x1, Corners.Case1, Crosspoints.Minimum, Augmentation.Case0)]
+        //[InlineData(Mesh.e4x2x1, Corners.Case1, Crosspoints.FullyRedundant, Augmentation.Case0)]
+
+        [InlineData(Mesh.e4x4x2, Corners.Case2, Crosspoints.Minimum, Augmentation.None)]
+        [InlineData(Mesh.e4x4x2, Corners.Case2, Crosspoints.FullyRedundant, Augmentation.None)]
+        [InlineData(Mesh.e4x4x2, Corners.Case2, Crosspoints.Minimum, Augmentation.Case1)]
+        [InlineData(Mesh.e4x4x2, Corners.Case2, Crosspoints.FullyRedundant, Augmentation.Case1)]
+        [InlineData(Mesh.e4x4x2, Corners.Case3, Crosspoints.Minimum, Augmentation.None)]
+        [InlineData(Mesh.e4x4x2, Corners.Case3, Crosspoints.FullyRedundant, Augmentation.None)]
+        [InlineData(Mesh.e4x4x2, Corners.Case3, Crosspoints.Minimum, Augmentation.Case1)]
+        [InlineData(Mesh.e4x4x2, Corners.Case3, Crosspoints.FullyRedundant, Augmentation.Case1)]
+
         //[InlineData(Corners.C1526, Crosspoints.Minimum, Augmented.None)]
         //[InlineData(Corners.C1526, Crosspoints.FullyRedundant, Augmented.None)]
         // Each subdomain must have at least 1 corner node. Otherwise some matrices degenerate
@@ -55,12 +70,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         //[InlineData(Corners.C0426, Crosspoints.FullyRedundant, Augmented.None)]
         //[InlineData(Corners.C0404, Crosspoints.Minimum)]
         //[InlineData(Corners.C0404, Crosspoints.FullyRedundant)]
-        public static void Run(Corners corners, Crosspoints crosspoints, Augmented augmented)
+        public static void Run(Mesh mesh, Corners corners, Crosspoints crosspoints, Augmentation augmentation)
         {
             double pcgConvergenceTol = 1E-5;
-            IVectorView directDisplacements = SolveModelWithoutSubdomains();
+            IVectorView directDisplacements = SolveModelWithoutSubdomains(CreateModel(mesh));
             (IVectorView ddDisplacements, ISolverLogger logger) =
-                SolveModelWithSubdomains(corners, crosspoints, augmented, pcgConvergenceTol);
+                SolveModelWithSubdomains(CreateModel(mesh), corners, crosspoints, augmentation, pcgConvergenceTol);
             double normalizedError = directDisplacements.Subtract(ddDisplacements).Norm2() / directDisplacements.Norm2();
 
             // The error is provided in the reference solution the, but it is almost impossible for two different codes run on 
@@ -69,9 +84,17 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             //Assert.True(directDisplacements.Equals(ddDisplacements, 1E-5));
         }
 
-        internal static Model CreateModel()
+        internal static Model CreateModel(Mesh mesh)
         {
-            // Subdomains:
+            int numElementsX = -1, numElementsY = -1, numElementsZ = -1;
+            if (mesh == Mesh.e4x2x1)
+            {
+                numElementsX = 4; numElementsY = 2; numElementsZ = 1;
+            }
+            else if (mesh == Mesh.e4x4x2)
+            {
+                numElementsX = 4; numElementsY = 4; numElementsZ = 2;
+            }
 
             double E0 = 2.1E7;
             //double E1 = stiffnessRatio * E0;
@@ -83,9 +106,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             builder.NumSubdomainsX = 2;
             builder.NumSubdomainsY = 2;
             builder.NumSubdomainsZ = 1;
-            builder.NumTotalElementsX = 4;
-            builder.NumTotalElementsY = 2;
-            builder.NumTotalElementsZ = 1;
+            builder.NumTotalElementsX = numElementsX;
+            builder.NumTotalElementsY = numElementsY;
+            builder.NumTotalElementsZ = numElementsZ;
             builder.YoungModulus = E0;
             //builder.YoungModuliOfSubdomains = new double[,] { { E1, E0, E0, E0 }, { E1, E0, E0, E0 } };
 
@@ -97,9 +120,13 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             return builder.BuildModel();
         }
 
-        internal static IVectorView SolveModelWithoutSubdomains()
+        internal static IVectorView SolveModelWithoutSubdomains(Model model)
         {
-            Model model = CreateSingleSubdomainModel();
+            // Replace the existing subdomains with a single one 
+            model.SubdomainsDictionary.Clear();
+            var subdomain = new Subdomain(singleSubdomainID);
+            model.SubdomainsDictionary.Add(singleSubdomainID, subdomain);
+            foreach (Element element in model.ElementsDictionary.Values) subdomain.Elements.Add(element.ID, element);
 
             // Solver
             SkylineSolver solver = (new SkylineSolver.Builder()).BuildSolver(model);
@@ -118,27 +145,15 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             return solver.LinearSystems[singleSubdomainID].Solution;
         }
 
-        private static Model CreateSingleSubdomainModel()
-        {
-            // Replace the existing subdomains with a single one 
-            Model model = CreateModel();
-            model.SubdomainsDictionary.Clear();
-            var subdomain = new Subdomain(singleSubdomainID);
-            model.SubdomainsDictionary.Add(singleSubdomainID, subdomain);
-            foreach (Element element in model.ElementsDictionary.Values) subdomain.Elements.Add(element.ID, element);
-            return model;
-        }
-
-        private static (IVectorView globalDisplacements, ISolverLogger logger) SolveModelWithSubdomains(
-            Corners corners, Crosspoints crosspoints, Augmented augmented, double pcgConvergenceTolerance)
+        private static (IVectorView globalDisplacements, ISolverLogger logger) SolveModelWithSubdomains(Model model,
+            Corners corners, Crosspoints crosspoints, Augmentation augmentation, double pcgConvergenceTolerance)
         {
             // Model
-            Model model = CreateModel();
             model.ConnectDataStructures();
 
             // Corner, midside nodes
             ICornerNodeSelection cornerNodeSelection = DefineCornerNodes(model, corners);
-            IMidsideNodesSelection midsideNodes = DefineMidsideNodes(model, augmented);
+            IMidsideNodesSelection midsideNodes = DefineMidsideNodes(model, augmentation);
 
             // Crosspoint strategy
             ICrosspointStrategy crosspointStrategy = null;
@@ -158,7 +173,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             };
 
             // Solver
-            if (augmented == Augmented.None)
+            if (augmentation == Augmentation.None)
             {
                 var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(new OrderingAmdSuiteSparse());
                 var solverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);
@@ -175,7 +190,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
                 Vector globalDisplacements = fetiSolver.GatherGlobalDisplacements();
                 return (globalDisplacements, fetiSolver.Logger);
             }
-            else if (augmented == Augmented.Nodes21)
+            else
             {
 
                 var fetiMatrices = new FetiDP3dMatrixManagerFactoryDense();
@@ -193,111 +208,88 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
                 Vector globalDisplacements = fetiSolver.GatherGlobalDisplacements();
                 return (globalDisplacements, fetiSolver.Logger);
             }
-            else throw new ArgumentException();
         }
 
         private static ICornerNodeSelection DefineCornerNodes(Model model, Corners corners)
         {
-            // Important nodes
-            double meshTol = 1E-6;
-            Node n200 = FindNode(2, 0, 0, model, meshTol);
-            Node n210 = FindNode(2, 1, 0, model, meshTol);
-            Node n220 = FindNode(2, 2, 0, model, meshTol);
-            Node n201 = FindNode(2, 0, 1, model, meshTol);
-            Node n211 = FindNode(2, 1, 1, model, meshTol);
-            Node n221 = FindNode(2, 2, 1, model, meshTol);
-            IEnumerable<Node> nodes2 = FindNodesWithX(2, model, meshTol);
+            // Select corner nodes
+            var cornerNodes = new HashSet<Node>();
+            if (corners == Corners.Case0)
+            {
+                cornerNodes.UnionWith(FindNodesWithX(4, model));
+                cornerNodes.UnionWith(FindNodesWithX(2, model));
+            }
+            else if (corners == Corners.Case1)
+            {
+                cornerNodes.UnionWith(FindNodesWithX(4, model));
+                cornerNodes.Add(FindNode(2, 0, 0, model));
+                cornerNodes.Add(FindNode(2, 2, 0, model));
+                cornerNodes.Add(FindNode(2, 0, 1, model));
+                cornerNodes.Add(FindNode(2, 2, 1, model));
+            }
+            else if (corners == Corners.Case2)
+            {
+                cornerNodes.Add(FindNode(2, 1, 0, model));
+                cornerNodes.Add(FindNode(2, 1, 1, model));
+                cornerNodes.Add(FindNode(4, 1, 1, model));
+            }
+            else if (corners == Corners.Case3)
+            {
+                cornerNodes.Add(FindNode(2, 1, 0, model));
+                cornerNodes.Add(FindNode(2, 1, 1, model));
+                cornerNodes.Add(FindNode(4, 1, 1, model));
+                cornerNodes.Add(FindNode(2, 0, 1, model));
+                cornerNodes.Add(FindNode(2, 2, 1, model));
+            }
+            else if (corners == Corners.C0404)
+            {
+                cornerNodes.UnionWith(FindNodesWithX(4, model));
+            }
+            else if (corners == Corners.C0426)
+            {
+                cornerNodes.UnionWith(FindNodesWithX(4, model));
+                cornerNodes.Add(FindNode(2, 2, 0, model));
+                cornerNodes.Add(FindNode(2, 2, 1, model));
+            }
+            else if (corners == Corners.C1526)
+            {
+                cornerNodes.UnionWith(FindNodesWithX(4, model));
+                cornerNodes.Add(FindNode(2, 2, 0, model));
+                cornerNodes.Add(FindNode(2, 0, 1, model));
+                cornerNodes.Add(FindNode(2, 2, 1, model));
+            }
+            else throw new ArgumentException();
 
-            Node n400 = FindNode(4, 0, 0, model, meshTol);
-            Node n410 = FindNode(4, 1, 0, model, meshTol);
-            Node n420 = FindNode(4, 2, 0, model, meshTol);
-            Node n401 = FindNode(4, 0, 1, model, meshTol);
-            Node n411 = FindNode(4, 1, 1, model, meshTol);
-            Node n421 = FindNode(4, 2, 1, model, meshTol);
-            IEnumerable<Node> nodes4 = FindNodesWithX(4, model, meshTol);
-
-            // Corner nodes
             var cornerNodesOfEachSubdomain = new Dictionary<ISubdomain, HashSet<INode>>();
             foreach (Subdomain subdomain in model.SubdomainsDictionary.Values)
             {
                 cornerNodesOfEachSubdomain[subdomain] = new HashSet<INode>();
             }
-            if (corners == Corners.C4848)
+            foreach (Node node in cornerNodes)
             {
-                foreach (Node node in nodes4.Union(nodes2))
+                foreach (Subdomain subdomain in node.SubdomainsDictionary.Values)
                 {
-                    foreach (Subdomain subdomain in node.SubdomainsDictionary.Values)
-                    {
-                        cornerNodesOfEachSubdomain[subdomain].Add(node);
-                    }
+                    cornerNodesOfEachSubdomain[subdomain].Add(node);
                 }
             }
-            else if (corners == Corners.C0404)
-            {
-                foreach (Node node in nodes4)
-                {
-                    foreach (Subdomain subdomain in node.SubdomainsDictionary.Values)
-                    {
-                        cornerNodesOfEachSubdomain[subdomain].Add(node);
-                    }
-                }
-            }
-            else if (corners == Corners.C2626)
-            {
-                var extraCorners = new Node[] { n200, n201, n220, n221 };
-                foreach (Node node in nodes4.Union(extraCorners))
-                {
-                    foreach (Subdomain subdomain in node.SubdomainsDictionary.Values)
-                    {
-                        cornerNodesOfEachSubdomain[subdomain].Add(node);
-                    }
-                }
-            }
-            else if (corners == Corners.C0426)
-            {
-                var extraCorners = new Node[] { n220, n221 };
-                foreach (Node node in nodes4.Union(extraCorners))
-                {
-                    foreach (Subdomain subdomain in node.SubdomainsDictionary.Values)
-                    {
-                        cornerNodesOfEachSubdomain[subdomain].Add(node);
-                    }
-                }
-            }
-            else if (corners == Corners.C1526)
-            {
-                var extraCorners = new Node[] { n201, n220, n221 };
-                foreach (Node node in nodes4.Union(extraCorners))
-                {
-                    foreach (Subdomain subdomain in node.SubdomainsDictionary.Values)
-                    {
-                        cornerNodesOfEachSubdomain[subdomain].Add(node);
-                    }
-                }
-            }
-            else throw new ArgumentException();
             return new UsedDefinedCornerNodes(cornerNodesOfEachSubdomain);
         }
 
-        private static IMidsideNodesSelection DefineMidsideNodes(Model model, Augmented augmented)
+        private static IMidsideNodesSelection DefineMidsideNodes(Model model, Augmentation augmentation)
         {
-            // Important nodes
-            double meshTol = 1E-6;
-            Node n200 = FindNode(2, 0, 0, model, meshTol);
-            Node n210 = FindNode(2, 1, 0, model, meshTol);
-            Node n220 = FindNode(2, 2, 0, model, meshTol);
-            Node n201 = FindNode(2, 0, 1, model, meshTol);
-            Node n211 = FindNode(2, 1, 1, model, meshTol);
-            Node n221 = FindNode(2, 2, 1, model, meshTol);
-            IEnumerable<Node> nodes2 = FindNodesWithX(2, model, meshTol);
-
-            Node n400 = FindNode(4, 0, 0, model, meshTol);
-            Node n410 = FindNode(4, 1, 0, model, meshTol);
-            Node n420 = FindNode(4, 2, 0, model, meshTol);
-            Node n401 = FindNode(4, 0, 1, model, meshTol);
-            Node n411 = FindNode(4, 1, 1, model, meshTol);
-            Node n421 = FindNode(4, 2, 1, model, meshTol);
-            IEnumerable<Node> nodes4 = FindNodesWithX(4, model, meshTol);
+            // Select midside nodes
+            var midsideNodes = new HashSet<Node>();
+            if (augmentation == Augmentation.None) return null;
+            else if (augmentation == Augmentation.Case0)
+            {
+                midsideNodes.Add(FindNode(2, 1, 0, model));
+                midsideNodes.Add(FindNode(2, 1, 1, model));
+            }
+            else if (augmentation == Augmentation.Case1)
+            {
+                midsideNodes.Add(FindNode(2, 1, 0.5, model));
+            }
+            else throw new ArgumentException();
 
             // Midside nodes
             var midsideNodesOfEachSubdomain = new Dictionary<ISubdomain, HashSet<INode>>();
@@ -305,32 +297,26 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             {
                 midsideNodesOfEachSubdomain[subdomain] = new HashSet<INode>();
             }
-            if (augmented == Augmented.None) return null;
-            else if (augmented == Augmented.Nodes21)
+            foreach (Node node in midsideNodes)
             {
-                var midsideNodes = new Node[] { n210, n211 };
-                foreach (Node node in midsideNodes)
+                foreach (Subdomain subdomain in node.SubdomainsDictionary.Values)
                 {
-                    foreach (Subdomain subdomain in node.SubdomainsDictionary.Values)
-                    {
-                        midsideNodesOfEachSubdomain[subdomain].Add(node);
-                    }
+                    midsideNodesOfEachSubdomain[subdomain].Add(node);
                 }
             }
-            else throw new ArgumentException();
             return new UserDefinedMidsideNodes(midsideNodesOfEachSubdomain,
                 new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ });
         }
 
-        private static Node FindNode(double x, double y, double z, Model model, double tol)
+        private static Node FindNode(double x, double y, double z, Model model)
         {
-            return model.NodesDictionary.Values.Where(
-                n => (Math.Abs(n.X - x) <= tol) && (Math.Abs(n.Y - y) <= tol) && (Math.Abs(n.Z - z) <= tol)).First();
+            return model.NodesDictionary.Values.Where(n => 
+                (Math.Abs(n.X - x) <= meshTol) && (Math.Abs(n.Y - y) <= meshTol) && (Math.Abs(n.Z - z) <= meshTol)).First();
         }
 
-        private static IEnumerable<Node> FindNodesWithX(double x, Model model, double tol)
+        private static IEnumerable<Node> FindNodesWithX(double x, Model model)
         {
-            return model.NodesDictionary.Values.Where(n => (Math.Abs(n.X - x) <= tol));
+            return model.NodesDictionary.Values.Where(n => (Math.Abs(n.X - x) <= meshTol));
         }
 
         private static void RunAnalysis(IModel model, ISolverMpi solver)
