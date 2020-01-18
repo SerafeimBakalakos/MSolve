@@ -9,6 +9,7 @@ using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
 using ISAAR.MSolve.FEM.Elements;
 using ISAAR.MSolve.FEM.Entities;
+using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Materials;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
@@ -18,7 +19,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
         public enum BoundaryRegion
         {
             MinX, MinY, MinZ, MaxX, MaxY, MaxZ, 
-            MinXMinYMinZ, MinXMinYMaxZ, MinXMaxYMinZ, MinXMaxYMaxZ, MaxXMinYMinZ, MaxXMinYMaxZ, MaxXMaxYMinZ, MaxXMaxYMaxZ
+            MinXMinYMinZ, MinXMinYMaxZ, MinXMaxYMinZ, MinXMaxYMaxZ, MaxXMinYMinZ, MaxXMinYMaxZ, MaxXMaxYMinZ, MaxXMaxYMaxZ,
+            Centroid
             //TODO: also the lines MinXMinY, MaxXMinZ, etc
         }
 
@@ -223,6 +225,17 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
             {
                 nodes = model.NodesDictionary.Values.Where(node =>
                     (Math.Abs(node.X - maxX) <= tol) && (Math.Abs(node.Y - maxY) <= tol) && (Math.Abs(node.Z - maxZ) <= tol));
+            }
+            else if (region == BoundaryRegion.Centroid)
+            {
+                double centerX = 0.5 * (minX + maxX);
+                double centerY = 0.5 * (minY + maxY);
+                double centerZ = 0.5 * (minZ + maxZ);
+                var centroid = new CartesianPoint(centerX, centerY, centerZ);
+
+                // LINQ note: if you call Min() on a sequence of tuples, then the tuple that has minimum Item1 will be returned
+                Node centroidNode = model.NodesDictionary.Values.Select(n => (n.CalculateDistanceFrom(centroid), n)).Min().Item2;
+                nodes = new Node[] { centroidNode };
             }
             else throw new Exception("Should not have reached this code");
 

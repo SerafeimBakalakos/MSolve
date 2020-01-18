@@ -191,8 +191,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             // Logging
             IDomainDecompositionLogger ddLogger = null;
             bool shuffleSubdomainColors = false;
-            if (plotSubdomains) ddLogger = new DomainDecompositionLoggerFetiDP(cornerNodeSelection,
-                subdomainPlotDirectory, shuffleSubdomainColors);
+            if (plotSubdomains) ddLogger = new DomainDecompositionLoggerFetiDP(subdomainPlotDirectory, cornerNodeSelection,
+                null, shuffleSubdomainColors);
 
             // Run analysis
             TipAdaptivePartitioner partitioner = null;

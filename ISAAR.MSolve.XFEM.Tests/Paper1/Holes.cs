@@ -404,7 +404,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             {
                 if (solver is FetiDPSolverSerial fetiDP)
                 {
-                    analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(fetiDP.CornerNodes, subdomainPlotDirectory);
+                    analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(subdomainPlotDirectory, fetiDP.CornerNodes);
                 }
                 else analyzer.DDLogger = new DomainDecompositionLogger(subdomainPlotDirectory);
             }

@@ -96,8 +96,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             builder.PcgSettings = new PcgSettings() { ConvergenceTolerance = 1E-7 };
             FetiDPSolverSerial solver = builder.Build(benchmark.Model, cornerNodeSelection);
             IDomainDecompositionLogger ddLogger = null;
-            if (subdomainPlotDirectory != null) ddLogger = new DomainDecompositionLoggerFetiDP(cornerNodeSelection,
-                subdomainPlotDirectory, true);
+            if (subdomainPlotDirectory != null) ddLogger = new DomainDecompositionLoggerFetiDP(subdomainPlotDirectory, 
+                cornerNodeSelection, null, true);
 
             var analyzer = new QuasiStaticCrackPropagationAnalyzerSerial(benchmark.Model, solver, benchmark.Crack,
                 benchmark.FractureToughness, benchmark.MaxIterations, true, partitioner);

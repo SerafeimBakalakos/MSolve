@@ -157,7 +157,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             {
                 if (solver is FetiDPSolverOLD fetiDP)
                 {
-                    analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(fetiDP.CornerNodeSelection, subdomainPlotDirectory);
+                    analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(subdomainPlotDirectory, fetiDP.CornerNodeSelection);
                 }
                 else analyzer.DDLogger = new DomainDecompositionLogger(subdomainPlotDirectory);
             }

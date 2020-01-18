@@ -153,8 +153,8 @@ namespace ISAAR.MSolve.XFEM.Tests.COMPDYN2019
             {
                 if (solver is FetiDPSolverOLD fetiDP)
                 {
-                    analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(fetiDP.CornerNodeSelection, 
-                        subdomainPlotDirectory, true);
+                    analyzer.DDLogger = new DomainDecompositionLoggerFetiDP(subdomainPlotDirectory, fetiDP.CornerNodeSelection, 
+                        null, true);
                 }
                 else analyzer.DDLogger = new DomainDecompositionLogger(subdomainPlotDirectory);
             }
