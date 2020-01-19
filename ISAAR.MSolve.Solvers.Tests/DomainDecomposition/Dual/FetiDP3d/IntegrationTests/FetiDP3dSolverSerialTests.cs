@@ -26,14 +26,14 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
         {
             (IModel model, FetiDP3dSolverSerial solver) = CreateModelAndSolver();
             RunAnalysis(model, solver);
-            Vector globalU = solver.GatherGlobalDisplacements();
+            Vector globalUFeti = solver.GatherGlobalDisplacements();
 
             Model modelDirect = Example4x4x4Quads.ModelCreator.CreateModel();
-            CreateSingleSubdomainModel(modelDirect);
+            Utilities.RemoveSubdomains(modelDirect);
             IVectorView globalUDirect = SolveDirect(modelDirect);
 
             // Check solution
-            double normalizedError = globalUDirect.Subtract(globalU).Norm2() / globalUDirect.Norm2();
+            double normalizedError = globalUDirect.Subtract(globalUFeti).Norm2() / globalUDirect.Norm2();
             Assert.Equal(0.0, normalizedError, 5);
 
             //// Check solution
@@ -53,6 +53,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
                 double tol = 1E-3;
                 IVectorView ufComputed = solver.GetLinearSystem(subdomain).Solution;
                 Vector ufExpected = Example4x4x4Quads.ExpectedSolutions.uFree(subdomain.ID);
+
+                double error = ufExpected.Subtract(ufComputed).Norm2() / ufExpected.Norm2();
+                //Assert.Equal(0.0, 5);
+
                 Assert.True(ufExpected.Equals(ufComputed, tol));
             }
         }
@@ -105,15 +109,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
             parentAnalyzer.Solve();
 
             return solver.LinearSystems[0].Solution;
-        }
-
-        private static void CreateSingleSubdomainModel(Model model)
-        {
-            // Replace the existing subdomains with a single one 
-            model.SubdomainsDictionary.Clear();
-            var subdomain = new Subdomain(0);
-            model.SubdomainsDictionary.Add(0, subdomain);
-            foreach (Element element in model.ElementsDictionary.Values) subdomain.Elements.Add(element.ID, element);
         }
     }
 }

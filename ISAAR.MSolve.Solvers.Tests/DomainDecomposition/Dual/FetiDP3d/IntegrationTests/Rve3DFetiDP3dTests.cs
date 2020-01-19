@@ -6,6 +6,7 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Logging.DomainDecomposition;
@@ -31,25 +32,37 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
         public enum Mesh { e4s2, e8s2 }
 
         [Theory]
+
         //[InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.None)]
         //[InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
         //[InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.None)]
         //[InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.Midpoints)]
+        [InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.None)]
+        [InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
+        [InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
+        [InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
         //[InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.None)]
         //[InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
         //[InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.None)]
         //[InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.Midpoints)]
-        [InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.None)]
-        [InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
-        [InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
-        [InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
+        //[InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.None)]
+        //[InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
+        //[InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
+        //[InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
         public static void Run(Mesh mesh, BoundaryConditions bc, Crosspoints crosspoints, Augmentation augmentation)
         {
-            double pcgConvergenceTol = 1E-5;
-            IVectorView directDisplacements = Utilities.AnalyzeSingleSubdomainModel(CreateModel(mesh, bc));
-            (IVectorView ddDisplacements, ISolverLogger logger) =
+            double pcgConvergenceTol = 1E-10;
+            (IMatrixView Kff, IVectorView Ff, IVectorView directDisplacements) = 
+                Utilities.AnalyzeSingleSubdomainModel(CreateModel(mesh, bc));
+            (IVectorView fetiDisplacements, ISolverLogger logger) =
                 SolveModelWithSubdomains(CreateModel(mesh, bc), crosspoints, augmentation, pcgConvergenceTol);
-            double normalizedError = directDisplacements.Subtract(ddDisplacements).Norm2() / directDisplacements.Norm2();
+            double normalizedError = directDisplacements.Subtract(fetiDisplacements).Norm2() / directDisplacements.Norm2();
+
+
+            #region debug
+            double resDirect = Ff.Subtract(Kff.Multiply(directDisplacements)).Norm2();
+            double resFeti = Ff.Subtract(Kff.Multiply(fetiDisplacements)).Norm2();
+            #endregion
 
             // The error is provided in the reference solution the, but it is almost impossible for two different codes run on 
             // different machines to achieve the exact same accuracy.
@@ -58,15 +71,18 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
 
         internal static Model CreateModel(Mesh mesh, BoundaryConditions bc)
         {
-            double E0 = 2.1E0;
-            double totalLoad = -10000;
+            double E0 = 3.5/*2.1E0*/;
+            double v = 0.4/*0.3*/;
+            double totalLoad = 1/*-10000*/;
+            double L = 100.0/*8.0*/;
 
             var builder = new Uniform3DModelBuilder();
-            builder.DomainLengthX = 8.0;
-            builder.DomainLengthY = 8.0;
-            builder.DomainLengthZ = 8.0;
+            builder.DomainLengthX = L;
+            builder.DomainLengthY = L;
+            builder.DomainLengthZ = L;
             builder.YoungModulus = E0;
             //builder.YoungModuliOfSubdomains = new double[,] { { E1, E0, E0, E0 }, { E1, E0, E0, E0 } };
+            builder.PoissonRatio = 0.4;
 
             if (mesh == Mesh.e4s2)
             {
@@ -77,7 +93,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
                 builder.NumSubdomainsY = 2;
                 builder.NumSubdomainsZ = 2;
             }
-            if (mesh == Mesh.e8s2)
+            else if (mesh == Mesh.e8s2)
             {
                 builder.NumTotalElementsX = 8;
                 builder.NumTotalElementsY = 8;

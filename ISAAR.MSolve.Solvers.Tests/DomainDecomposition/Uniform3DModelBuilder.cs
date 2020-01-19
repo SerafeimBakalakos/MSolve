@@ -44,6 +44,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
         public int NumTotalElementsY { get; set; } = 1;
         public int NumTotalElementsZ { get; set; } = 1;
 
+        public double PoissonRatio { get; set; } = 1.3;
         public double YoungModulus { get; set; } = 1.0;
 
         /// <summary>
@@ -114,7 +115,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
             }
             var dynamicProperties = new DynamicMaterial(1.0, 0.0, 0.0);
             ElasticMaterial3D[] materials = youngModuli.Select(
-                E => new ElasticMaterial3D() { YoungModulus = E, PoissonRatio = 0.3 }).ToArray();
+                E => new ElasticMaterial3D() { YoungModulus = E, PoissonRatio = this.PoissonRatio }).ToArray();
 
             // Define model, subdomains, nodes
             var model = new Model();

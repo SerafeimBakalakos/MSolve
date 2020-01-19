@@ -6,6 +6,7 @@ using ISAAR.MSolve.Analyzers.Loading;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
 using ISAAR.MSolve.FEM.Entities;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
@@ -32,13 +33,15 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual
             solver.Solve();
         }
 
-        internal static IVectorView AnalyzeSingleSubdomainModel(Model model)
+        internal static (IMatrixView matrix, IVectorView rhs, IVectorView sol) AnalyzeSingleSubdomainModel(Model model)
         {
             int singleSubdomainID = 0;
             Utilities.RemoveSubdomains(model, singleSubdomainID);
 
             // Solver
-            SkylineSolver solver = (new SkylineSolver.Builder()).BuildSolver(model);
+            var solverBuilder = new SkylineSolver.Builder();
+            SkylineSolver solver = solverBuilder.BuildSolver(model);
+            solver.PreventFromOverwrittingSystemMatrices();
 
             // Structural problem provider
             var provider = new ProblemStructural(model, solver);
@@ -51,10 +54,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual
             parentAnalyzer.Initialize();
             parentAnalyzer.Solve();
 
-            return solver.LinearSystems[singleSubdomainID].Solution;
+            ILinearSystem sys = solver.LinearSystems[singleSubdomainID];
+            return  (sys.Matrix, sys.RhsVector, sys.Solution);
         }
 
-        internal static void RemoveSubdomains(Model model, int singleSubdomainID)
+        internal static void RemoveSubdomains(Model model, int singleSubdomainID = 0)
         {
             // Replace the existing subdomains with a single one 
             model.SubdomainsDictionary.Clear();
