@@ -24,7 +24,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
             //TODO: also the lines MinXMinY, MaxXMinZ, etc
         }
 
-        private const double minX = 0.0, minY = 0.0;
         private List<(BoundaryRegion region, IDofType dof, double displacement)> prescribedDisplacements;
         private List<(BoundaryRegion region, IDofType dof, double load)> prescribedLoads;
 
@@ -34,9 +33,13 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
             prescribedLoads = new List<(BoundaryRegion region, IDofType dof, double load)>();
         }
 
-        public double DomainLengthX { get; set; } = 1.0;
-        public double DomainLengthY { get; set; } = 1.0;
-        public double DomainLengthZ { get; set; } = 1.0;
+        public double MaxX { get; set; } = 1.0;
+        public double MaxY { get; set; } = 1.0;
+        public double MaxZ { get; set; } = 1.0;
+        public double MinX { get; set; } = 0.0;
+        public double MinY { get; set; } = 0.0;
+        public double MinZ { get; set; } = 0.0;
+
         public int NumSubdomainsX { get; set; } = 1;
         public int NumSubdomainsY { get; set; } = 1;
         public int NumSubdomainsZ { get; set; } = 1;
@@ -61,11 +64,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
         public Model BuildModel()
         {
             // Generate global mesh
-            double dx = DomainLengthX / NumTotalElementsX;
-            double dy = DomainLengthY / NumTotalElementsY;
-            double dz = DomainLengthZ / NumTotalElementsZ;
+            double dx = (MaxX - MinX) / NumTotalElementsX;
+            double dy = (MaxY - MinY) / NumTotalElementsY;
+            double dz = (MaxZ - MinZ) / NumTotalElementsZ;
             double meshTolerance = 1E-10 * Math.Min(dx, dy);
-            var meshGenerator = new UniformMeshGenerator3D<Node>(0, 0, 0, DomainLengthX, DomainLengthY, DomainLengthZ,
+            var meshGenerator = new UniformMeshGenerator3D<Node>(MinX, MinY, MinZ, MaxX, MaxY, MaxZ,
                 NumTotalElementsX, NumTotalElementsY, NumTotalElementsZ);
             (IReadOnlyList<Node> vertices, IReadOnlyList<CellConnectivity<Node>> cells) = 
                 meshGenerator.CreateMesh((id, x, y, z) => new Node(id: id, x: x, y:  y, z: z ));
@@ -73,21 +76,21 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
             // Define subdomain boundaries
             int numTotalSubdomains = NumSubdomainsX * NumSubdomainsY * NumSubdomainsZ;
             var boundaries = new Brick[numTotalSubdomains];
-            double subdomainLengthX = DomainLengthX / NumSubdomainsX;
-            double subdomainLengthY = DomainLengthY / NumSubdomainsY;
-            double subdomainLengthZ = DomainLengthZ / NumSubdomainsZ;
+            double subdomainLengthX = (MaxX - MinX) / NumSubdomainsX;
+            double subdomainLengthY = (MaxY - MinY) / NumSubdomainsY;
+            double subdomainLengthZ = (MaxZ - MinZ) / NumSubdomainsZ;
             for (int k = 0; k < NumSubdomainsZ; ++k)
             {
-                double minZ = k * subdomainLengthZ;
-                double maxZ = (k + 1) * subdomainLengthZ;
+                double minZ = MinZ + k * subdomainLengthZ;
+                double maxZ = MinZ + (k + 1) * subdomainLengthZ;
                 for (int j = 0; j < NumSubdomainsY; ++j)
                 {
-                    double minY = j * subdomainLengthY;
-                    double maxY = (j + 1) * subdomainLengthY;
+                    double minY = MinY + j * subdomainLengthY;
+                    double maxY = MinY + (j + 1) * subdomainLengthY;
                     for (int i = 0; i < NumSubdomainsX; ++i)
                     {
-                        double minX = i * subdomainLengthX;
-                        double maxX = (i + 1) * subdomainLengthX;
+                        double minX = MinX + i * subdomainLengthX;
+                        double maxX = MinX + (i + 1) * subdomainLengthX;
                         boundaries[k * NumSubdomainsX * NumSubdomainsY + j * NumSubdomainsX + i] = 
                             new Brick(minX, minY, minZ, maxX, maxY, maxZ);
                     }
@@ -178,60 +181,58 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
 
         private Node[] FindBoundaryNodes(BoundaryRegion region, Model model, double tol)
         {
-            double minX = 0.0, minY = 0.0, minZ = 0.0, maxX = DomainLengthX, maxY = DomainLengthY, maxZ = DomainLengthZ; // for brevity
-
             IEnumerable<Node> nodes;
-            if (region == BoundaryRegion.MinX) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.X - minX) <= tol);
-            else if (region == BoundaryRegion.MinY) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.Y - minY) <= tol);
-            else if (region == BoundaryRegion.MinZ) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.Z - minZ) <= tol);
-            else if (region == BoundaryRegion.MaxX) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.X - maxX) <= tol);
-            else if (region == BoundaryRegion.MaxY) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.Y - maxY) <= tol);
-            else if (region == BoundaryRegion.MaxZ) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.Z - maxZ) <= tol);
+            if (region == BoundaryRegion.MinX) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.X - MinX) <= tol);
+            else if (region == BoundaryRegion.MinY) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.Y - MinY) <= tol);
+            else if (region == BoundaryRegion.MinZ) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.Z - MinZ) <= tol);
+            else if (region == BoundaryRegion.MaxX) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.X - MaxX) <= tol);
+            else if (region == BoundaryRegion.MaxY) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.Y - MaxY) <= tol);
+            else if (region == BoundaryRegion.MaxZ) nodes = model.NodesDictionary.Values.Where(node => Math.Abs(node.Z - MaxZ) <= tol);
             else if (region == BoundaryRegion.MinXMinYMinZ)
             {
                 nodes = model.NodesDictionary.Values.Where(node => 
-                    (Math.Abs(node.X - minX) <= tol) && (Math.Abs(node.Y - minY) <= tol) && (Math.Abs(node.Z - minZ) <= tol));
+                    (Math.Abs(node.X - MinX) <= tol) && (Math.Abs(node.Y - MinY) <= tol) && (Math.Abs(node.Z - MinZ) <= tol));
             }
             else if (region == BoundaryRegion.MinXMinYMaxZ)
             {
                 nodes = model.NodesDictionary.Values.Where(node =>
-                    (Math.Abs(node.X - minX) <= tol) && (Math.Abs(node.Y - minY) <= tol) && (Math.Abs(node.Z - maxZ) <= tol));
+                    (Math.Abs(node.X - MinX) <= tol) && (Math.Abs(node.Y - MinY) <= tol) && (Math.Abs(node.Z - MaxZ) <= tol));
             }
             else if (region == BoundaryRegion.MinXMaxYMinZ)
             {
                 nodes = model.NodesDictionary.Values.Where(node =>
-                    (Math.Abs(node.X - minX) <= tol) && (Math.Abs(node.Y - maxY) <= tol) && (Math.Abs(node.Z - minZ) <= tol));
+                    (Math.Abs(node.X - MinX) <= tol) && (Math.Abs(node.Y - MaxY) <= tol) && (Math.Abs(node.Z - MinZ) <= tol));
             }
             else if (region == BoundaryRegion.MinXMaxYMaxZ)
             {
                 nodes = model.NodesDictionary.Values.Where(node =>
-                    (Math.Abs(node.X - minX) <= tol) && (Math.Abs(node.Y - maxY) <= tol) && (Math.Abs(node.Z - maxZ) <= tol));
+                    (Math.Abs(node.X - MinX) <= tol) && (Math.Abs(node.Y - MaxY) <= tol) && (Math.Abs(node.Z - MaxZ) <= tol));
             }
             else if (region == BoundaryRegion.MaxXMinYMinZ)
             {
                 nodes = model.NodesDictionary.Values.Where(node =>
-                    (Math.Abs(node.X - maxX) <= tol) && (Math.Abs(node.Y - minY) <= tol) && (Math.Abs(node.Z - minZ) <= tol));
+                    (Math.Abs(node.X - MaxX) <= tol) && (Math.Abs(node.Y - MinY) <= tol) && (Math.Abs(node.Z - MinZ) <= tol));
             }
             else if (region == BoundaryRegion.MaxXMinYMaxZ)
             {
                 nodes = model.NodesDictionary.Values.Where(node =>
-                    (Math.Abs(node.X - maxX) <= tol) && (Math.Abs(node.Y - minY) <= tol) && (Math.Abs(node.Z - maxZ) <= tol));
+                    (Math.Abs(node.X - MaxX) <= tol) && (Math.Abs(node.Y - MinY) <= tol) && (Math.Abs(node.Z - MaxZ) <= tol));
             }
             else if (region == BoundaryRegion.MaxXMaxYMinZ)
             {
                 nodes = model.NodesDictionary.Values.Where(node =>
-                    (Math.Abs(node.X - maxX) <= tol) && (Math.Abs(node.Y - maxY) <= tol) && (Math.Abs(node.Z - minZ) <= tol));
+                    (Math.Abs(node.X - MaxX) <= tol) && (Math.Abs(node.Y - MaxY) <= tol) && (Math.Abs(node.Z - MinZ) <= tol));
             }
             else if (region == BoundaryRegion.MaxXMaxYMaxZ)
             {
                 nodes = model.NodesDictionary.Values.Where(node =>
-                    (Math.Abs(node.X - maxX) <= tol) && (Math.Abs(node.Y - maxY) <= tol) && (Math.Abs(node.Z - maxZ) <= tol));
+                    (Math.Abs(node.X - MaxX) <= tol) && (Math.Abs(node.Y - MaxY) <= tol) && (Math.Abs(node.Z - MaxZ) <= tol));
             }
             else if (region == BoundaryRegion.Centroid)
             {
-                double centerX = 0.5 * (minX + maxX);
-                double centerY = 0.5 * (minY + maxY);
-                double centerZ = 0.5 * (minZ + maxZ);
+                double centerX = 0.5 * (MinX + MaxX);
+                double centerY = 0.5 * (MinY + MaxY);
+                double centerZ = 0.5 * (MinZ + MaxZ);
                 var centroid = new CartesianPoint(centerX, centerY, centerZ);
 
                 // LINQ note: if you call Min() on a sequence of tuples, then the tuple that has minimum Item1 will be returned

@@ -33,15 +33,27 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual
             solver.Solve();
         }
 
-        internal static (IMatrixView matrix, IVectorView rhs, IVectorView sol) AnalyzeSingleSubdomainModel(Model model)
+        internal static (IMatrixView matrix, IVectorView rhs, IVectorView sol) AnalyzeSingleSubdomainModel(Model model, 
+            bool suiteSparse)
         {
             int singleSubdomainID = 0;
             Utilities.RemoveSubdomains(model, singleSubdomainID);
 
             // Solver
-            var solverBuilder = new SkylineSolver.Builder();
-            SkylineSolver solver = solverBuilder.BuildSolver(model);
-            solver.PreventFromOverwrittingSystemMatrices();
+            ISolver solver = null;
+            if (suiteSparse)
+            {
+                var solverBuilder = new SuiteSparseSolver.Builder();
+                solver = solverBuilder.BuildSolver(model);
+                solver.PreventFromOverwrittingSystemMatrices();
+            }
+            else
+            {
+                var solverBuilder = new SkylineSolver.Builder();
+                solver = solverBuilder.BuildSolver(model);
+                solver.PreventFromOverwrittingSystemMatrices();
+            }
+            
 
             // Structural problem provider
             var provider = new ProblemStructural(model, solver);

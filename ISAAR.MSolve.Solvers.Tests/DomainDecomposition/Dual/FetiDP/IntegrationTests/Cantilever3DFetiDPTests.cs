@@ -100,9 +100,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             //double E1 = stiffnessRatio * E0;
 
             var builder = new Uniform3DModelBuilder();
-            builder.DomainLengthX = 4.0;
-            builder.DomainLengthY = 2.0;
-            builder.DomainLengthZ = 1.0;
+            builder.MaxX = 4.0;
+            builder.MaxY = 2.0;
+            builder.MaxZ = 1.0;
             builder.NumSubdomainsX = 2;
             builder.NumSubdomainsY = 2;
             builder.NumSubdomainsZ = 1;

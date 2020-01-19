@@ -29,7 +29,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
         public enum Augmentation { None, Midpoints }
         public enum BoundaryConditions { Cantilever, RVE }
         public enum Crosspoints { Minimum, FullyRedundant }
-        public enum Mesh { e4s2, e8s2 }
+        public enum Mesh { e4s2, e8s2, e16s4 }
 
         [Theory]
 
@@ -37,10 +37,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
         //[InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
         //[InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.None)]
         //[InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.Midpoints)]
-        [InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.None)]
+        //[InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.None)]
         [InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
-        [InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
-        [InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
+        //[InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
+        //[InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
         //[InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.None)]
         //[InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
         //[InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.None)]
@@ -49,11 +49,16 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
         //[InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
         //[InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
         //[InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
+        //[InlineData(Mesh.e16s4, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.None)]
+        //[InlineData(Mesh.e16s4, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
+        //[InlineData(Mesh.e16s4, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
+        //[InlineData(Mesh.e16s4, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
         public static void Run(Mesh mesh, BoundaryConditions bc, Crosspoints crosspoints, Augmentation augmentation)
         {
+            bool suiteSparse = false;
             double pcgConvergenceTol = 1E-10;
-            (IMatrixView Kff, IVectorView Ff, IVectorView directDisplacements) = 
-                Utilities.AnalyzeSingleSubdomainModel(CreateModel(mesh, bc));
+            (IMatrixView Kff, IVectorView Ff, IVectorView directDisplacements) =
+                Utilities.AnalyzeSingleSubdomainModel(CreateModel(mesh, bc), suiteSparse);
             (IVectorView fetiDisplacements, ISolverLogger logger) =
                 SolveModelWithSubdomains(CreateModel(mesh, bc), crosspoints, augmentation, pcgConvergenceTol);
             double normalizedError = directDisplacements.Subtract(fetiDisplacements).Norm2() / directDisplacements.Norm2();
@@ -74,12 +79,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
             double E0 = 3.5/*2.1E0*/;
             double v = 0.4/*0.3*/;
             double totalLoad = 1/*-10000*/;
-            double L = 100.0/*8.0*/;
 
             var builder = new Uniform3DModelBuilder();
-            builder.DomainLengthX = L;
-            builder.DomainLengthY = L;
-            builder.DomainLengthZ = L;
             builder.YoungModulus = E0;
             //builder.YoungModuliOfSubdomains = new double[,] { { E1, E0, E0, E0 }, { E1, E0, E0, E0 } };
             builder.PoissonRatio = 0.4;
@@ -102,11 +103,25 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
                 builder.NumSubdomainsY = 2;
                 builder.NumSubdomainsZ = 2;
             }
+            else if (mesh == Mesh.e16s4)
+            {
+                builder.NumTotalElementsX = 16;
+                builder.NumTotalElementsY = 16;
+                builder.NumTotalElementsZ = 16;
+                builder.NumSubdomainsX = 4;
+                builder.NumSubdomainsY = 4;
+                builder.NumSubdomainsZ = 4;
+            }
             else throw new ArgumentException();
             
 
             if (bc == BoundaryConditions.Cantilever)
             {
+                double L = 90.0/*8.0*/;
+                builder.MaxX = L;
+                builder.MaxY = L;
+                builder.MaxZ = L;
+
                 builder.PrescribeDisplacement(Uniform3DModelBuilder.BoundaryRegion.MinX, StructuralDof.TranslationX, 0.0);
                 builder.PrescribeDisplacement(Uniform3DModelBuilder.BoundaryRegion.MinX, StructuralDof.TranslationY, 0.0);
                 builder.PrescribeDisplacement(Uniform3DModelBuilder.BoundaryRegion.MinX, StructuralDof.TranslationZ, 0.0);
@@ -115,6 +130,15 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
             }
             else if (bc == BoundaryConditions.RVE)
             {
+                double L = 90.0;
+                builder.MinX = -0.5 * L;
+                builder.MinY = -0.5 * L;
+                builder.MinZ = -0.5 * L;
+                builder.MaxX = 0.5 * L;
+                builder.MaxY = 0.5 * L;
+                builder.MaxZ = 0.5 * L;
+
+
                 #region minimum BCs
                 //builder.PrescribeDisplacement(Uniform3DModelBuilder.BoundaryRegion.MinXMinYMinZ, StructuralDof.TranslationX, 0.0);
                 //builder.PrescribeDisplacement(Uniform3DModelBuilder.BoundaryRegion.MinXMinYMinZ, StructuralDof.TranslationY, 0.0);
@@ -157,7 +181,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
                 builder.PrescribeDisplacement(Uniform3DModelBuilder.BoundaryRegion.MaxZ, StructuralDof.TranslationZ, 0.0);
 
 
-                builder.DistributeLoadAtNodes(Uniform3DModelBuilder.BoundaryRegion.Centroid, StructuralDof.TranslationY, totalLoad);
+                builder.DistributeLoadAtNodes(Uniform3DModelBuilder.BoundaryRegion.Centroid, StructuralDof.TranslationZ, totalLoad);
                 #endregion
             }
             else throw new ArgumentException();
@@ -174,6 +198,23 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
             ICornerNodeSelection cornerNodeSelection = DefineCornerNodes(model);
             IMidsideNodesSelection midsideNodesSelection = DefineMidsideNodes(model);
 
+            #region debug
+            var model2 = Example4x4x4Quads.ModelCreator.CreateModel();
+            model2.ConnectDataStructures();
+            ICornerNodeSelection cornerNodeSelection2 = Example4x4x4Quads.ModelCreator.DefineCornerNodeSelectionSerial(model2);
+            IMidsideNodesSelection midsideNodesSelection2 = Example4x4x4Quads.ModelCreator.DefineMidsideNodeSelectionSerial(model2);
+
+            // Check nodes
+            //IEnumerable<Node> nodesOLD = model2.NodesDictionary.Values.OrderBy(n => n.ID);
+            //for (int i = 0; i < model.NumNodes; ++i)
+            //{
+            //    Node nodeNew = model.NodesDictionary[i];
+            //    Node nodeOld = model2.NodesDictionary[i+1];
+            //    Debug.Assert(nodeNew.X == nodeOld.X && nodeNew.Y == nodeOld.Y && nodeNew.Z == nodeOld.Z);
+            //}
+
+            #endregion
+
             // Plot for debugging
             string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Plots";
             var logger = new DomainDecompositionLoggerFetiDP(path, cornerNodeSelection, midsideNodesSelection, true);
@@ -186,10 +227,14 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
             else throw new ArgumentException();
 
             // Specify PCG settings
+            //var pcgSettings = new PcgSettings()
+            //{
+            //    ConvergenceTolerance = pcgConvergenceTolerance,
+            //    MaxIterationsProvider = new FixedMaxIterationsProvider(100)
+            //};
             var pcgSettings = new PcgSettings()
             {
-                ConvergenceTolerance = pcgConvergenceTolerance,
-                MaxIterationsProvider = new FixedMaxIterationsProvider(100)
+                MaxIterationsProvider = new FixedMaxIterationsProvider(6)
             };
 
             // Solver

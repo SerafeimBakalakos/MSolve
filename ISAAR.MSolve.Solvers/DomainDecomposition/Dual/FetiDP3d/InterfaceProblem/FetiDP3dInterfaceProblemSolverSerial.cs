@@ -146,9 +146,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             Vector resPcg = pcgRhs - pcgMatrixExplicit * lagranges;
             double normResPcg = resPcg.Norm2();
 
-            return lagrangesDirect;
+            //return lagrangesDirect;
             #endregion
-            //return lagranges;
+            return lagranges;
         }
 
         private Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility, 

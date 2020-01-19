@@ -186,6 +186,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             Kcc = linearSystem.Matrix.GetSubmatrixFull(cornerDofs, cornerDofs);
             Krc = linearSystem.Matrix.GetSubmatrixFull(remainderDofs, cornerDofs);
             Krr = linearSystem.Matrix.GetSubmatrixFull(remainderDofs, remainderDofs);
+
+            #region debug
+            var writer = new LinearAlgebra.Output.FullMatrixWriter();
+            string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\Krr0.txt";
+            writer.WriteToFile(Krr, path);
+            #endregion
         }
 
         public void ExtractKbb()
