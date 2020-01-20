@@ -29,30 +29,37 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
         public enum Augmentation { None, Midpoints }
         public enum BoundaryConditions { Cantilever, RVE }
         public enum Crosspoints { Minimum, FullyRedundant }
-        public enum Mesh { e4s2, e8s2, e16s4 }
+        public enum Mesh { e4s2, e8s2, e9s3, e16s4, e32s8 }
 
         [Theory]
-
-        //[InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.None)]
-        //[InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
-        //[InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.None)]
-        //[InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.Midpoints)]
-        //[InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.None)]
+        [InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.None)]
+        [InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
+        [InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.None)]
+        [InlineData(Mesh.e4s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.Midpoints)]
+        [InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.None)]
         [InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
-        //[InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
-        //[InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
-        //[InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.None)]
-        //[InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
-        //[InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.None)]
-        //[InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.Midpoints)]
-        //[InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.None)]
-        //[InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
-        //[InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
-        //[InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
-        //[InlineData(Mesh.e16s4, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.None)]
-        //[InlineData(Mesh.e16s4, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
-        //[InlineData(Mesh.e16s4, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
-        //[InlineData(Mesh.e16s4, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
+        [InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
+        [InlineData(Mesh.e4s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
+        [InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.None)]
+        [InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
+        [InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.None)]
+        [InlineData(Mesh.e8s2, BoundaryConditions.Cantilever, Crosspoints.Minimum, Augmentation.Midpoints)]
+        [InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.None)]
+        [InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
+        [InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
+        [InlineData(Mesh.e8s2, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
+        [InlineData(Mesh.e9s3, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.None)]
+        [InlineData(Mesh.e9s3, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
+        [InlineData(Mesh.e9s3, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
+        [InlineData(Mesh.e9s3, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
+        [InlineData(Mesh.e16s4, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.None)]
+        [InlineData(Mesh.e16s4, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
+        [InlineData(Mesh.e16s4, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
+        [InlineData(Mesh.e16s4, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
+        [InlineData(Mesh.e32s8, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.None)]
+        [InlineData(Mesh.e32s8, BoundaryConditions.RVE, Crosspoints.FullyRedundant, Augmentation.Midpoints)]
+        [InlineData(Mesh.e32s8, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.None)]
+        [InlineData(Mesh.e32s8, BoundaryConditions.RVE, Crosspoints.Minimum, Augmentation.Midpoints)]
         public static void Run(Mesh mesh, BoundaryConditions bc, Crosspoints crosspoints, Augmentation augmentation)
         {
             bool suiteSparse = false;
@@ -103,6 +110,15 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
                 builder.NumSubdomainsY = 2;
                 builder.NumSubdomainsZ = 2;
             }
+            else if (mesh == Mesh.e9s3)
+            {
+                builder.NumTotalElementsX = 9;
+                builder.NumTotalElementsY = 9;
+                builder.NumTotalElementsZ = 9;
+                builder.NumSubdomainsX = 3;
+                builder.NumSubdomainsY = 3;
+                builder.NumSubdomainsZ = 3;
+            }
             else if (mesh == Mesh.e16s4)
             {
                 builder.NumTotalElementsX = 16;
@@ -111,6 +127,15 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
                 builder.NumSubdomainsX = 4;
                 builder.NumSubdomainsY = 4;
                 builder.NumSubdomainsZ = 4;
+            }
+            else if (mesh == Mesh.e32s8)
+            {
+                builder.NumTotalElementsX = 32;
+                builder.NumTotalElementsY = 32;
+                builder.NumTotalElementsZ = 32;
+                builder.NumSubdomainsX = 8;
+                builder.NumSubdomainsY = 8;
+                builder.NumSubdomainsZ = 8;
             }
             else throw new ArgumentException();
             
@@ -199,10 +224,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
             IMidsideNodesSelection midsideNodesSelection = DefineMidsideNodes(model);
 
             #region debug
-            var model2 = Example4x4x4Quads.ModelCreator.CreateModel();
-            model2.ConnectDataStructures();
-            ICornerNodeSelection cornerNodeSelection2 = Example4x4x4Quads.ModelCreator.DefineCornerNodeSelectionSerial(model2);
-            IMidsideNodesSelection midsideNodesSelection2 = Example4x4x4Quads.ModelCreator.DefineMidsideNodeSelectionSerial(model2);
+            //var model2 = Example4x4x4Quads.ModelCreator.CreateModel();
+            //model2.ConnectDataStructures();
+            //ICornerNodeSelection cornerNodeSelection2 = Example4x4x4Quads.ModelCreator.DefineCornerNodeSelectionSerial(model2);
+            //IMidsideNodesSelection midsideNodesSelection2 = Example4x4x4Quads.ModelCreator.DefineMidsideNodeSelectionSerial(model2);
 
             // Check nodes
             //IEnumerable<Node> nodesOLD = model2.NodesDictionary.Values.OrderBy(n => n.ID);
@@ -227,14 +252,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
             else throw new ArgumentException();
 
             // Specify PCG settings
-            //var pcgSettings = new PcgSettings()
-            //{
-            //    ConvergenceTolerance = pcgConvergenceTolerance,
-            //    MaxIterationsProvider = new FixedMaxIterationsProvider(100)
-            //};
             var pcgSettings = new PcgSettings()
             {
-                MaxIterationsProvider = new FixedMaxIterationsProvider(6)
+                ConvergenceTolerance = pcgConvergenceTolerance,
+                MaxIterationsProvider = new FixedMaxIterationsProvider(10000)
             };
 
             // Solver
@@ -257,6 +278,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
             }
             else
             {
+                //LinearAlgebra.LibrarySettings.LinearAlgebraProviders = LinearAlgebra.LinearAlgebraProviderChoice.MKL;
                 var fetiMatrices = new FetiDP3dMatrixManagerFactoryDense();
                 var solverBuilder = new FetiDP3dSolverSerial.Builder(fetiMatrices);
                 solverBuilder.ProblemIsHomogeneous = true;
