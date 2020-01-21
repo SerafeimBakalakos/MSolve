@@ -28,6 +28,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Performance
 
         private const double domainLengthX = 3.0, domainLengthY = 1.5;
         private const int numElementsX = 400, numElementsY = 200;
+        private const int numSubdomainsX = 4, numSubdomainsY = 2;
 
         [Fact]
         public static void Run()
@@ -60,8 +61,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Performance
             var builder = new Uniform2DModelBuilder();
             builder.DomainLengthX = domainLengthX;
             builder.DomainLengthY = domainLengthY;
-            builder.NumSubdomainsX = 4;
-            builder.NumSubdomainsY = 2;
+            builder.NumSubdomainsX = numSubdomainsX;
+            builder.NumSubdomainsY = numSubdomainsY;
             builder.NumTotalElementsX = numElementsX;
             builder.NumTotalElementsY = numElementsY;
             builder.YoungModuliOfSubdomains = new double[,] { { E1, E0, E0, E0 }, { E1, E0, E0, E0 } };
@@ -70,23 +71,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Performance
             builder.DistributeLoadAtNodes(Uniform2DModelBuilder.BoundaryRegion.RightSide, StructuralDof.TranslationY, 100.0);
 
             return builder.BuildModel();
-        }
-
-        private static void RunAnalysis(IModel model, ISolverMpi solver)
-        {
-            // Run the analysis
-            solver.OrderDofs(false);
-            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-            {
-                ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
-                linearSystem.Reset(); // Necessary to define the linear system's size 
-                linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
-                linearSystem.RhsVector = linearSystem.Subdomain.Forces;
-            }
-            solver.BuildGlobalMatrix(new ElementStructuralStiffnessProvider());
-            model.ApplyLoads();
-            LoadingUtilities.ApplyNodalLoads(model, solver);
-            solver.Solve();
         }
 
         private static (IVectorView globalDisplacements, ISolverLogger logger) SolveModelWithSubdomains(Model model,

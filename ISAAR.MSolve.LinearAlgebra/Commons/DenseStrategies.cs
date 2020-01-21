@@ -37,7 +37,10 @@ namespace ISAAR.MSolve.LinearAlgebra.Commons
             {
                 for (int i = 0; i < matrix1.NumRows; ++i)
                 {
-                    if (!comparer.AreEqual(matrix1[i, j], matrix2[i, j])) return false;
+                    if (!comparer.AreEqual(matrix1[i, j], matrix2[i, j]))
+                    {
+                        return false;
+                    }
                 }
             }
             return true;

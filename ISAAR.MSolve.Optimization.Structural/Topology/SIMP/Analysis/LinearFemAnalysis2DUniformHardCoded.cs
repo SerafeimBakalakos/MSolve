@@ -74,7 +74,7 @@ namespace ISAAR.MSolve.Optimization.Structural.Topology.SIMP.Analysis
             globalDisplacements = new Vector[numLoadCases];
 
             // Solve linear system
-            DokSymmetric Kf = K.GetSubmatrixSymmetricDok(freeDofs);
+            DokSymmetric Kf = K.GetSubmatrixSymmetricDokNaive(freeDofs);
             var factor = CholeskyCSparseNet.Factorize(Kf.BuildSymmetricCscMatrix(true));
             for (int c = 0; c < numLoadCases; ++c)
             {

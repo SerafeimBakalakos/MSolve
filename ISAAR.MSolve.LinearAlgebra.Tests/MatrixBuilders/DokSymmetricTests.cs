@@ -73,17 +73,37 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             int[] rowIndices = indicesPerm;
             var colIndices = new int[] { 90, 10, 20, 60, 40, 50, 0, 70, 80, 30 };
 
-            DokColMajor subMatrixCsc = matrixDok.GetSubmatrixDokColMajor(indices, indices);
+            DokColMajor subMatrixCsc0 = matrixDok.GetSubmatrixDokColMajorNaive(indices, indices);
+            DokColMajor subMatrixCsc1 = matrixDok.GetSubmatrixDokColMajor(indices, indices);
             Matrix subMatrixExpected = matrixFull.GetSubmatrix(indices, indices);
-            Assert.True(subMatrixExpected.Equals(subMatrixCsc));
+            #region debug
+            var writer = new LinearAlgebra.Output.FullMatrixWriter();
+            string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Optim\matrix.txt";
+            writer.WriteToFile(matrixDok, path, false);
+            writer.WriteToFile(subMatrixExpected, path, true);
+            writer.WriteToFile(subMatrixCsc1, path, true);
+            #endregion
+            Assert.True(subMatrixExpected.Equals(subMatrixCsc0));
+            Assert.True(subMatrixExpected.Equals(subMatrixCsc1));
 
-            DokColMajor subMatrixPermCsc = matrixDok.GetSubmatrixDokColMajor(indicesPerm, indicesPerm);
+            DokColMajor subMatrixPermCsc0 = matrixDok.GetSubmatrixDokColMajorNaive(indicesPerm, indicesPerm);
+            DokColMajor subMatrixPermCsc1 = matrixDok.GetSubmatrixDokColMajor(indicesPerm, indicesPerm);
             Matrix subMatrixPermExpected = matrixFull.GetSubmatrix(indicesPerm, indicesPerm);
-            Assert.True(subMatrixPermExpected.Equals(subMatrixPermCsc));
+            Assert.True(subMatrixPermExpected.Equals(subMatrixPermCsc0));
+            Assert.True(subMatrixPermExpected.Equals(subMatrixPermCsc1));
 
-            DokColMajor subMatrixRectCsc = matrixDok.GetSubmatrixDokColMajor(rowIndices, colIndices);
+            DokColMajor subMatrixRectCsc0 = matrixDok.GetSubmatrixDokColMajorNaive(rowIndices, colIndices);
+            DokColMajor subMatrixRectCsc1 = matrixDok.GetSubmatrixDokColMajor(rowIndices, colIndices);
             Matrix subMatrixRectExpected = matrixFull.GetSubmatrix(rowIndices, colIndices);
-            Assert.True(subMatrixRectExpected.Equals(subMatrixRectCsc));
+            #region debug
+            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+            //string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Optim\matrix.txt";
+            //writer.WriteToFile(matrixDok, path, false);
+            //writer.WriteToFile(subMatrixRectExpected, path, true);
+            //writer.WriteToFile(subMatrixRectCsc1, path, true);
+            #endregion
+            Assert.True(subMatrixRectExpected.Equals(subMatrixRectCsc0));
+            Assert.True(subMatrixRectExpected.Equals(subMatrixRectCsc1));
         }
 
         [Fact]
@@ -125,14 +145,18 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             var indices = new int[] { 0, 2, 4, 6, 12, 24, 32, 50, 64, 80 };
             var indicesPerm = new int[] { 32, 80, 64, 0, 12, 24, 6, 50, 4, 2 };
 
-            DokSymmetric subMatrixDok = matrixDok.GetSubmatrixSymmetricDok(indices);
+            DokSymmetric subMatrixDok0 = matrixDok.GetSubmatrixSymmetricDokNaive(indices);
+            DokSymmetric subMatrixDok1 = matrixDok.GetSubmatrixSymmetricDok(indices);
             //writer.WriteToFile(subMatrixSym, outputPath, true);
             Matrix subMatrixExpected = matrixFull.GetSubmatrix(indices, indices);
-            Assert.True(subMatrixExpected.Equals(subMatrixDok));
+            Assert.True(subMatrixExpected.Equals(subMatrixDok0));
+            Assert.True(subMatrixExpected.Equals(subMatrixDok1));
 
-            DokSymmetric subMatrixPermDok = matrixDok.GetSubmatrixSymmetricDok(indicesPerm);
+            DokSymmetric subMatrixPermDok0 = matrixDok.GetSubmatrixSymmetricDokNaive(indicesPerm);
+            DokSymmetric subMatrixPermDok1 = matrixDok.GetSubmatrixSymmetricDok(indicesPerm);
             Matrix subMatrixPermExpected = matrixFull.GetSubmatrix(indicesPerm, indicesPerm);
-            Assert.True(subMatrixPermExpected.Equals(subMatrixPermDok));
+            Assert.True(subMatrixPermExpected.Equals(subMatrixPermDok0));
+            Assert.True(subMatrixPermExpected.Equals(subMatrixPermDok1));
 
             DokSymmetric matrix2 = CreateDok(new double[,]
             {
@@ -151,8 +175,38 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
                 {  0,  0, 5 }
             });
 
-            DokSymmetric submatrixComputed2 = matrix2.GetSubmatrixSymmetricDok(rowsToKeep2);
-            comparer.AssertEqual(submatrixExpected2, submatrixComputed2);
+            DokSymmetric submatrixComputed2_0 = matrix2.GetSubmatrixSymmetricDokNaive(rowsToKeep2);
+            DokSymmetric submatrixComputed2_1 = matrix2.GetSubmatrixSymmetricDok(rowsToKeep2);
+            comparer.AssertEqual(submatrixExpected2, submatrixComputed2_0);
+            comparer.AssertEqual(submatrixExpected2, submatrixComputed2_1);
+        }
+
+        [Fact]
+        private static void TestGetSubmatrixSymmetricFull()
+        {
+            //// These are useful for debugging
+            //string outputPath = @"C:\Users\Serafeim\Desktop\output.txt";
+            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+
+            var array2D = MultiDiagonalMatrices.CreateSymmetric(100, new int[] { 2, 4, 8, 16, 32, 64 });
+            var matrixFull = Matrix.CreateFromArray(array2D);
+            var matrixDok = DokSymmetric.CreateFromArray2D(array2D);
+
+            var indices = new int[] { 0, 2, 4, 6, 12, 24, 32, 50, 64, 80 };
+            var indicesPerm = new int[] { 32, 80, 64, 0, 12, 24, 6, 50, 4, 2 };
+
+            Matrix subMatrixFull0 = matrixDok.GetSubmatrixSymmetricFullNaive(indices);
+            Matrix subMatrixFull1 = matrixDok.GetSubmatrixSymmetricFull(indices);
+            //writer.WriteToFile(subMatrixSym, outputPath, true);
+            Matrix subMatrixExpected = matrixFull.GetSubmatrix(indices, indices);
+            Assert.True(subMatrixExpected.Equals(subMatrixFull0));
+            Assert.True(subMatrixExpected.Equals(subMatrixFull1));
+
+            Matrix subMatrixPermFull0 = matrixDok.GetSubmatrixSymmetricFullNaive(indicesPerm);
+            Matrix subMatrixPermFull1 = matrixDok.GetSubmatrixSymmetricFull(indicesPerm);
+            Matrix subMatrixPermExpected = matrixFull.GetSubmatrix(indicesPerm, indicesPerm);
+            Assert.True(subMatrixPermExpected.Equals(subMatrixPermFull0));
+            Assert.True(subMatrixPermExpected.Equals(subMatrixPermFull1));
         }
 
         [Fact]
@@ -169,14 +223,18 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             var indices = new int[] { 0, 2, 4, 6, 12, 24, 32, 50, 64, 80 };
             var indicesPerm = new int[] { 32, 80, 64, 0, 12, 24, 6, 50, 4, 2 };
 
-            SymmetricMatrix subMatrixPck = matrixDok.GetSubmatrixSymmetricPacked(indices);
+            SymmetricMatrix subMatrixPck0 = matrixDok.GetSubmatrixSymmetricPackedNaive(indices);
+            SymmetricMatrix subMatrixPck1 = matrixDok.GetSubmatrixSymmetricPacked(indices);
             //writer.WriteToFile(subMatrixSym, outputPath, true);
             Matrix subMatrixExpected = matrixFull.GetSubmatrix(indices, indices);
-            Assert.True(subMatrixExpected.Equals(subMatrixPck));
+            Assert.True(subMatrixExpected.Equals(subMatrixPck0));
+            Assert.True(subMatrixExpected.Equals(subMatrixPck1));
 
-            SymmetricMatrix subMatrixPermPck = matrixDok.GetSubmatrixSymmetricPacked(indicesPerm);
+            SymmetricMatrix subMatrixPermPck0 = matrixDok.GetSubmatrixSymmetricPackedNaive(indicesPerm);
+            SymmetricMatrix subMatrixPermPck1 = matrixDok.GetSubmatrixSymmetricPacked(indicesPerm);
             Matrix subMatrixPermExpected = matrixFull.GetSubmatrix(indicesPerm, indicesPerm);
-            Assert.True(subMatrixPermExpected.Equals(subMatrixPermPck));
+            Assert.True(subMatrixPermExpected.Equals(subMatrixPermPck0));
+            Assert.True(subMatrixPermExpected.Equals(subMatrixPermPck1));
         }
 
         [Fact]
@@ -193,14 +251,18 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             var indices = new int[] { 0, 2, 4, 6, 12, 24, 32, 50, 64, 80 };
             var indicesPerm = new int[] { 32, 80, 64, 0, 12, 24, 6, 50, 4, 2 };
 
-            SparsityPatternSymmetric subMatrixPattern = matrixDok.GetSubmatrixSymmetricPattern(indices);
+            SparsityPatternSymmetric subMatrixPattern0 = matrixDok.GetSubmatrixSymmetricPatternNaive(indices);
+            SparsityPatternSymmetric subMatrixPattern1 = matrixDok.GetSubmatrixSymmetricPattern(indices);
             var subMatrixExpected = SparsityPatternSymmetric.CreateFromDense(matrixFull.GetSubmatrix(indices, indices));
-            Assert.True(subMatrixExpected.Equals(subMatrixPattern));
+            Assert.True(subMatrixExpected.Equals(subMatrixPattern0));
+            Assert.True(subMatrixExpected.Equals(subMatrixPattern1));
 
-            SparsityPatternSymmetric subMatrixPermPattern = matrixDok.GetSubmatrixSymmetricPattern(indicesPerm);
+            SparsityPatternSymmetric subMatrixPermPattern0 = matrixDok.GetSubmatrixSymmetricPatternNaive(indicesPerm);
+            SparsityPatternSymmetric subMatrixPermPattern1 = matrixDok.GetSubmatrixSymmetricPattern(indicesPerm);
             var subMatrixPermExpected = 
                 SparsityPatternSymmetric.CreateFromDense(matrixFull.GetSubmatrix(indicesPerm, indicesPerm));
-            Assert.True(subMatrixPermExpected.Equals(subMatrixPermPattern));
+            Assert.True(subMatrixPermExpected.Equals(subMatrixPermPattern0));
+            Assert.True(subMatrixPermExpected.Equals(subMatrixPermPattern1));
         }
 
         [Fact]

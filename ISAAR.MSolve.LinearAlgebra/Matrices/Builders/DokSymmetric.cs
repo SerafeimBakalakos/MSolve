@@ -700,6 +700,87 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
         {
             int numSubRows = rowsToKeep.Length;
             int numSubCols = colsToKeep.Length;
+            var thisToSubRows = new Dictionary<int, int>();
+            var thisToSubCols = new Dictionary<int, int>();
+            var subMatrix = new Dictionary<int, double>[numSubCols];
+            for (int i = 0; i < numSubRows; ++i) thisToSubRows[rowsToKeep[i]] = i;
+            for (int j = 0; j < numSubCols; ++j)
+            {
+                thisToSubCols[colsToKeep[j]] = j;
+                subMatrix[j] = new Dictionary<int, double>();
+            }
+
+            // Unfortunately, since the resulting submatrix is not symmetric. Thus, the following case can occur: 
+            // Suppose the client requests row i and column j, but not column i, with i > j. Then entry (i, j) will be not be 
+            // accessed during iterating column j. Therefore it is necessary to iterate column i (and every other one in general)
+            //  as well, even if the client did not request it. 
+            for (int thisJ = 0; thisJ < NumColumns; ++thisJ)
+            {
+                Dictionary<int, double> thisColumn = this.columns[thisJ];
+                bool keepCol = thisToSubCols.TryGetValue(thisJ, out int subJ);
+                bool keepColTrans = thisToSubRows.TryGetValue(thisJ, out int subITrans);
+
+                foreach (KeyValuePair<int, double> rowVal in thisColumn)
+                {
+                    int thisI = rowVal.Key;
+                    double val = rowVal.Value;
+                    bool keepRow = thisToSubRows.TryGetValue(thisI, out int subI);
+                    bool keepRowTrans = thisToSubCols.TryGetValue(thisI, out int subJTrans);
+                    if (keepRow && keepCol)
+                    {
+                        //Debug.Assert(subJ >= subI); //TODO: Not sure about this
+                        subMatrix[subJ][subI] = val;
+                    }
+                    if (keepRowTrans && keepColTrans)
+                    {
+                        //Debug.Assert(subJTrans <= subITrans); //TODO: Not sure about this
+                        subMatrix[subJTrans][subITrans] = val;
+                    }
+                }
+
+
+                //if (keepCol)
+                //{
+                //    Dictionary<int, double> subColumn = subMatrix[subJ];
+                //    foreach (KeyValuePair<int, double> rowVal in thisColumn)
+                //    {
+                //        int thisI = rowVal.Key;
+                //        bool keep = thisToSubRows.TryGetValue(thisI, out int subI);
+                //        if (keep)
+                //        {
+                //            if (subI <= subJ) subColumn[subI] = rowVal.Value;
+                //            else subMatrix[subI][subJ] = rowVal.Value;
+                //        }
+                //    }
+                //}
+                //else
+                //{
+                //    int transpI = thisJ;
+                //    bool keepTranspΙ = thisToSubRows.TryGetValue(transpI, out int subI);
+                //    if (keepTranspΙ)
+                //    {
+                //        foreach (KeyValuePair<int, double> rowVal in thisColumn)
+                //        {
+                //            int transpJ = rowVal.Key;
+                //            bool keepTranspJ = thisToSubCols.TryGetValue(transpJ, out subJ);
+                //            if (keepTranspJ)
+                //            {
+                //                subMatrix[subJ][subI] = rowVal.Value;
+                //            }
+                //        }
+                //    }
+                //}
+            }
+            return new DokColMajor(numSubRows, numSubCols, subMatrix);
+        }
+
+        /// <summary>
+        /// Unoptimized version of <see cref="GetSubmatrixDokColMajor(int[], int[])"/>
+        /// </summary>
+        public DokColMajor GetSubmatrixDokColMajorNaive(int[] rowsToKeep, int[] colsToKeep)
+        {
+            int numSubRows = rowsToKeep.Length;
+            int numSubCols = colsToKeep.Length;
             var subMatrix = new Dictionary<int, double>[numSubCols];
             for (int subJ = 0; subJ < numSubCols; ++subJ)
             {
@@ -774,6 +855,40 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
         /// </param>
         public DokSymmetric GetSubmatrixSymmetricDok(int[] rowsColsToKeep)
         {
+            var thisToSub = new Dictionary<int, int>();
+            int subOrder = rowsColsToKeep.Length;
+            for (int j = 0; j < subOrder; ++j) thisToSub[rowsColsToKeep[j]] = j;
+
+            //TODO: Perhaps I should not hardcode the implementation details of DOK column major format here.
+            //      Then again DOKs exist to convert to other formats.
+            var subMatrix = DokSymmetric.CreateEmpty(subOrder);
+            for (int subJ = 0; subJ < subOrder; ++subJ)
+            {
+                int thisJ = rowsColsToKeep[subJ];
+
+                // In general the indices are expected to be sorted, thus col >= row and it makes sense to only read this once.
+                Dictionary<int, double> thisColumn = this.columns[thisJ];
+                Dictionary<int, double> subColumn = subMatrix.columns[subJ];
+
+                foreach (KeyValuePair<int, double> rowVal in thisColumn)
+                {
+                    int thisI = rowVal.Key;
+                    bool keep = thisToSub.TryGetValue(thisI, out int subI);
+                    if (keep)
+                    {
+                        if (subI <= subJ) subColumn[subI] = rowVal.Value;
+                        else subMatrix.columns[subI][subJ] = rowVal.Value;
+                    }
+                }
+            }
+            return subMatrix;
+        }
+
+        /// <summary>
+        /// Unoptimized version of <see cref="GetSubmatrixSymmetricDok(int[])"/>
+        /// </summary>
+        public DokSymmetric GetSubmatrixSymmetricDokNaive(int[] rowsColsToKeep)
+        {
             //TODO: Perhaps I should not hardcode the implementation details of DOK column major format here.
             //      Then again DOKs exist to convert to other formats.
             int subOrder = rowsColsToKeep.Length;
@@ -817,7 +932,42 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
         /// </param>
         public Matrix GetSubmatrixSymmetricFull(int[] rowsColsToKeep)
         {
-            //TODO: Perhaps I should not hardcode the implementation details of upper triangular packed format here.
+            var thisToSub = new Dictionary<int, int>();
+            int subOrder = rowsColsToKeep.Length;
+            for (int j = 0; j < subOrder; ++j) thisToSub[rowsColsToKeep[j]] = j;
+
+            //TODO: Perhaps I should not hardcode the implementation details of full col-major format here.
+            //      Then again DOKs exist to convert to other formats.
+            var subMatrix = new double[subOrder * subOrder];
+            for (int subJ = 0; subJ < subOrder; ++subJ)
+            {
+                int thisJ = rowsColsToKeep[subJ];
+
+                // In general the indices are expected to be sorted, thus col >= row and it makes sense to only read this once.
+                Dictionary<int, double> thisColumn = this.columns[thisJ];
+                int subOffset = subJ * subOrder;
+
+                foreach (KeyValuePair<int, double> rowVal in thisColumn)
+                {
+                    int thisI = rowVal.Key;
+                    bool keep = thisToSub.TryGetValue(thisI, out int subI);
+                    if (keep)
+                    {
+                        double val = rowVal.Value;
+                        subMatrix[subOffset + subI] = val;
+                        subMatrix[subI * subOrder + subJ] = val;
+                    }
+                }
+            }
+            return Matrix.CreateFromArray(subMatrix, subOrder, subOrder, false);
+        }
+
+        /// <summary>
+        /// Unoptimized version of <see cref="GetSubmatrixSymmetricFull(int[])"/>
+        /// </summary>
+        public Matrix GetSubmatrixSymmetricFullNaive(int[] rowsColsToKeep)
+        {
+            //TODO: Perhaps I should not hardcode the implementation details of full col-major format here.
             //      Then again DOKs exist to convert to other formats.
             int subOrder = rowsColsToKeep.Length;
             var subMatrix = new double[subOrder * subOrder];
@@ -866,6 +1016,40 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
         /// submatrix will be {{ this[1,1], this[1,0] }, { this[0,1], this[0,0] }}
         /// </param>
         public SymmetricMatrix GetSubmatrixSymmetricPacked(int[] rowsColsToKeep)
+        {
+            var thisToSub = new Dictionary<int, int>();
+            int subOrder = rowsColsToKeep.Length;
+            for (int j = 0; j < subOrder; ++j) thisToSub[rowsColsToKeep[j]] = j;
+
+            //TODO: Perhaps I should not hardcode the implementation details of upper triangular packed format here.
+            //      Then again DOKs exist to convert to other formats.
+            var subMatrix = new double[((subOrder + 1) * subOrder) / 2];
+            for (int subJ = 0; subJ < subOrder; ++subJ)
+            {
+                int thisJ = rowsColsToKeep[subJ];
+
+                // In general the indices are expected to be sorted, thus col >= row and it makes sense to only read this once.
+                Dictionary<int, double> thisColumn = this.columns[thisJ];
+                int subOffset = (subJ * (subJ + 1)) / 2;
+
+                foreach (KeyValuePair<int, double> rowVal in thisColumn)
+                {
+                    int thisI = rowVal.Key;
+                    bool keep = thisToSub.TryGetValue(thisI, out int subI);
+                    if (keep)
+                    {
+                        if (subI <= subJ) subMatrix[subOffset + subI] = rowVal.Value;
+                        else subMatrix[(subI * (subI + 1)) / 2 + subJ] = rowVal.Value;
+                    }
+                }
+            }
+            return SymmetricMatrix.CreateFromPackedColumnMajorArray(subMatrix, subOrder, DefiniteProperty.Unknown, false);
+        }
+
+        /// <summary>
+        /// Unoptimized version of <see cref="GetSubmatrixSymmetricPacked(int[])"/>
+        /// </summary>
+        public SymmetricMatrix GetSubmatrixSymmetricPackedNaive(int[] rowsColsToKeep)
         {
             //TODO: Perhaps I should not hardcode the implementation details of upper triangular packed format here.
             //      Then again DOKs exist to convert to other formats.
@@ -917,6 +1101,44 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
         {
             //TODO: Perhaps I should not hardcode the implementation details of DOK column major format here.
             //      Then again DOKs exist to convert to other formats.
+            var thisToSub = new Dictionary<int, int>();
+            int subOrder = rowsColsToKeep.Length;
+            var subMatrix = new HashSet<int>[subOrder];
+            for (int j = 0; j < subOrder; ++j)
+            {
+                thisToSub[rowsColsToKeep[j]] = j;
+                subMatrix[j] = new HashSet<int>();
+            }
+            
+            for (int subJ = 0; subJ < subOrder; ++subJ)
+            {
+                int thisJ = rowsColsToKeep[subJ];
+
+                // In general the indices are expected to be sorted, thus col >= row and it makes sense to only read this once.
+                Dictionary<int, double> thisColumn = this.columns[thisJ];
+                HashSet<int> subColumn = subMatrix[subJ];
+
+                foreach (KeyValuePair<int, double> rowVal in thisColumn)
+                {
+                    int thisI = rowVal.Key;
+                    bool keep = thisToSub.TryGetValue(thisI, out int subI);
+                    if (keep)
+                    {
+                        if (subI <= subJ) subColumn.Add(subI);
+                        else subMatrix[subI].Add(subJ);
+                    }
+                }
+            }
+            return new SparsityPatternSymmetric(subOrder, subMatrix);
+        }
+
+        /// <summary>
+        /// Unoptimized version of <see cref="GetSubmatrixSymmetricPattern(int[])"/>
+        /// </summary>
+        public SparsityPatternSymmetric GetSubmatrixSymmetricPatternNaive(int[] rowsColsToKeep)
+        {
+            //TODO: Perhaps I should not hardcode the implementation details of DOK column major format here.
+            //      Then again DOKs exist to convert to other formats.
             int subOrder = rowsColsToKeep.Length;
             var subMatrix = new HashSet<int>[subOrder];
             for (int subJ = 0; subJ < subOrder; ++subJ)
@@ -958,7 +1180,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
         /// submatrix will be {{ this[1,1], this[1,0] }, { this[0,1], this[0,0] }}
         /// </param>
         public SkylineMatrix GetSubmatrixSymmetricSkyline(int[] rowsColsToKeep)
-            => GetSubmatrixSymmetricDok(rowsColsToKeep).BuildSkylineMatrix(); //TODO: implement this explicitly and do optimizations
+            => GetSubmatrixSymmetricDokNaive(rowsColsToKeep).BuildSkylineMatrix(); //TODO: implement this explicitly and do optimizations
 
         /// <summary>
         /// Sets the column with index <paramref name="colIdx"/> to be equal to the provided <paramref name="newColumn"/>.
