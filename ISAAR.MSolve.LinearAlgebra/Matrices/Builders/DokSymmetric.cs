@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -716,11 +717,10 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
             //  as well, even if the client did not request it. 
             for (int thisJ = 0; thisJ < NumColumns; ++thisJ)
             {
-                Dictionary<int, double> thisColumn = this.columns[thisJ];
                 bool keepCol = thisToSubCols.TryGetValue(thisJ, out int subJ);
                 bool keepColTrans = thisToSubRows.TryGetValue(thisJ, out int subITrans);
 
-                foreach (KeyValuePair<int, double> rowVal in thisColumn)
+                foreach (KeyValuePair<int, double> rowVal in this.columns[thisJ])
                 {
                     int thisI = rowVal.Key;
                     double val = rowVal.Value;
@@ -737,39 +737,6 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
                         subMatrix[subJTrans][subITrans] = val;
                     }
                 }
-
-
-                //if (keepCol)
-                //{
-                //    Dictionary<int, double> subColumn = subMatrix[subJ];
-                //    foreach (KeyValuePair<int, double> rowVal in thisColumn)
-                //    {
-                //        int thisI = rowVal.Key;
-                //        bool keep = thisToSubRows.TryGetValue(thisI, out int subI);
-                //        if (keep)
-                //        {
-                //            if (subI <= subJ) subColumn[subI] = rowVal.Value;
-                //            else subMatrix[subI][subJ] = rowVal.Value;
-                //        }
-                //    }
-                //}
-                //else
-                //{
-                //    int transpI = thisJ;
-                //    bool keepTranspΙ = thisToSubRows.TryGetValue(transpI, out int subI);
-                //    if (keepTranspΙ)
-                //    {
-                //        foreach (KeyValuePair<int, double> rowVal in thisColumn)
-                //        {
-                //            int transpJ = rowVal.Key;
-                //            bool keepTranspJ = thisToSubCols.TryGetValue(transpJ, out subJ);
-                //            if (keepTranspJ)
-                //            {
-                //                subMatrix[subJ][subI] = rowVal.Value;
-                //            }
-                //        }
-                //    }
-                //}
             }
             return new DokColMajor(numSubRows, numSubCols, subMatrix);
         }
@@ -867,10 +834,9 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
                 int thisJ = rowsColsToKeep[subJ];
 
                 // In general the indices are expected to be sorted, thus col >= row and it makes sense to only read this once.
-                Dictionary<int, double> thisColumn = this.columns[thisJ];
                 Dictionary<int, double> subColumn = subMatrix.columns[subJ];
 
-                foreach (KeyValuePair<int, double> rowVal in thisColumn)
+                foreach (KeyValuePair<int, double> rowVal in this.columns[thisJ])
                 {
                     int thisI = rowVal.Key;
                     bool keep = thisToSub.TryGetValue(thisI, out int subI);
@@ -942,12 +908,9 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
             for (int subJ = 0; subJ < subOrder; ++subJ)
             {
                 int thisJ = rowsColsToKeep[subJ];
-
-                // In general the indices are expected to be sorted, thus col >= row and it makes sense to only read this once.
-                Dictionary<int, double> thisColumn = this.columns[thisJ];
                 int subOffset = subJ * subOrder;
 
-                foreach (KeyValuePair<int, double> rowVal in thisColumn)
+                foreach (KeyValuePair<int, double> rowVal in this.columns[thisJ])
                 {
                     int thisI = rowVal.Key;
                     bool keep = thisToSub.TryGetValue(thisI, out int subI);
@@ -1265,6 +1228,100 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
                 bool structuralZero = !columns[d].ContainsKey(d);
                 if (structuralZero) columns[d][d] = 1.0;
             }
+        }
+
+        /// <summary>
+        /// Divide the whole matrix A = [A00 A10^T ; A10 A11] into these 3 submatrices. The rows/columns are divided by 
+        /// <paramref name="group0"/> and <paramref name="group1"/>, which need not be consecutive.
+        /// </summary>
+        /// <param name="group0">
+        /// The first group of rows/columns. The rows/columns of the submatrices will be in the same order as
+        /// <paramref name="group0"/>. The union of <paramref name="group0"/> and <paramref name="group1"/> must be all the 
+        /// rows/columns of the whole matrix.
+        /// </param>
+        /// <param name="group1">
+        /// The second group of rows/columns. The rows/columns of the submatrices will be in the same order as
+        /// <paramref name="group0"/>. The union of <paramref name="group0"/> and <paramref name="group1"/> must be all the 
+        /// rows/columns of the whole matrix.
+        /// </param>
+        public (SymmetricMatrix A00, DokColMajor A10, DokSymmetric A11) Split_Packed_DokColMajor_DokSymmetric(
+            int[] group0, int[] group1)
+        {
+            // Initialize mappings and submatrices
+            int numGroup0 = group0.Length;
+            int numGroup1 = group1.Length;
+            var A00Packed = new double[((numGroup0 + 1) * numGroup0) / 2];
+            var A10Columns = new Dictionary<int, double>[numGroup0];
+            var A11 = DokSymmetric.CreateEmpty(numGroup1);
+            var thisToSubGroup0 = new Dictionary<int, int>();
+            var thisToSubGroup1 = new Dictionary<int, int>();
+            for (int i0 = 0; i0 < numGroup0; ++i0)
+            {
+                thisToSubGroup0[group0[i0]] = i0;
+                A10Columns[i0] = new Dictionary<int, double>();
+            }
+            for (int i1 = 0; i1 < numGroup1; ++i1)
+            {
+                thisToSubGroup1[group1[i1]] = i1;
+            }
+
+            // Iterate each entry of the current matrix and add it to the corresponding submatrix
+            for (int thisJ = 0; thisJ < NumColumns; ++thisJ)
+            {
+                int subJ0, subJ1 = -1;
+                int offsetA00 = -1;
+                bool jIs0 = thisToSubGroup0.TryGetValue(thisJ, out subJ0);
+                if (jIs0) offsetA00 = (subJ0 * (subJ0 + 1)) / 2;
+                else
+                {
+                    subJ0 = -1; // Let's make sure using this will end up throwing an exception.
+                    subJ1 = thisToSubGroup1[thisJ];
+                }
+
+                foreach (KeyValuePair<int, double> rowVal in this.columns[thisJ])
+                {
+                    int thisI = rowVal.Key;
+                    double val = rowVal.Value;
+
+                    #region debug
+                    if (Math.Abs(val - 6.854545E+001) <= 1E-4)
+                    {
+                        Console.WriteLine();
+                    }
+                    #endregion
+
+                    int subI0, subI1 = -1;
+                    bool iIs0 = thisToSubGroup0.TryGetValue(thisI, out subI0);
+                    if (!iIs0)
+                    {
+                        subI0 = -1; // Let's make sure using this will end up throwing an exception.
+                        subI1 = thisToSubGroup1[thisI];
+                    }
+
+                    if (jIs0 && iIs0)
+                    {
+                        if (subI0 <= subJ0) A00Packed[offsetA00 + subI0] = val;
+                        else A00Packed[(subI0 * (subI0 + 1)) / 2 + subJ0] = val;
+                    }
+                    else if (jIs0 && !iIs0)
+                    {
+                        A10Columns[subJ0][subI1] = val;
+                    }
+                    else if (!jIs0 && iIs0) // Take the transpose
+                    {
+                        A10Columns[subI0][subJ1] = val;
+                    }
+                    else
+                    {
+                        if (subI1 <= subJ1) A11.columns[subJ1][subI1] = val;
+                        else A11.columns[subI1][subJ1] = val;
+                    }
+                }
+            }
+
+            var finalA00 = SymmetricMatrix.CreateFromPackedColumnMajorArray(A00Packed, numGroup0, DefiniteProperty.Unknown, false);
+            var finalA10 = new DokColMajor(numGroup1, numGroup0, A10Columns);
+            return (finalA00, finalA10, A11);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

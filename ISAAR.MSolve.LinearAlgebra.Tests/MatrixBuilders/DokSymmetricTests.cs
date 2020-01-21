@@ -1,4 +1,7 @@
-﻿using ISAAR.MSolve.LinearAlgebra.Matrices;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.Tests.TestData;
@@ -14,6 +17,25 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
     public static class DokSymmetricTests
     {
         private static readonly MatrixComparer comparer = new MatrixComparer(1E-13);
+
+        private static int[] IndicesSet0 => new int[] { 0, 2, 4, 6, 12, 24, 32, 50, 64, 80 };
+        private static int[] IndicesSet0Perm => new int[] { 32, 80, 64, 0, 12, 24, 6, 50, 4, 2 };
+        private static int[] IndicesSet1 => new int[] { 4, 2, 5 };
+
+        private static int[] IndicesSet2 => new int[] { 90, 10, 20, 60, 40, 50, 0, 70, 80, 30 };
+
+        private static double[,] Matrix0 => MultiDiagonalMatrices.CreateSymmetric(100, new int[] { 2, 4, 8, 16, 32, 64 });
+
+        private static double[,] Matrix1 => new double[,]
+        {
+            {  0,  0, 20,  0,  0,  0 },
+            {  0,  1,  0, 31,  0,  0 },
+            { 20,  0,  2,  0, 42,  0 },
+            {  0, 31,  0,  3,  0, 53 },
+            {  0,  0, 42,  0,  4,  0 },
+            {  0,  0,  0, 53,  0,  5 }
+        };
+        
 
         private static DokSymmetric CreateDok(double[,] symmMatrix)
         {
@@ -64,14 +86,14 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             //string outputPath = @"C:\Users\Serafeim\Desktop\output.txt";
             //var writer = new LinearAlgebra.Output.FullMatrixWriter();
 
-            var array2D = MultiDiagonalMatrices.CreateSymmetric(100, new int[] { 2, 4, 8, 16, 32, 64 });
+            var array2D = Matrix0;
             var matrixFull = Matrix.CreateFromArray(array2D);
             var matrixDok = DokSymmetric.CreateFromArray2D(array2D);
 
-            var indices = new int[] { 0, 2, 4, 6, 12, 24, 32, 50, 64, 80 };
-            var indicesPerm = new int[] { 32, 80, 64, 0, 12, 24, 6, 50, 4, 2 };
+            int[] indices = IndicesSet0;
+            int[] indicesPerm = IndicesSet0Perm;
             int[] rowIndices = indicesPerm;
-            var colIndices = new int[] { 90, 10, 20, 60, 40, 50, 0, 70, 80, 30 };
+            var colIndices = IndicesSet2;
 
             DokColMajor subMatrixCsc0 = matrixDok.GetSubmatrixDokColMajorNaive(indices, indices);
             DokColMajor subMatrixCsc1 = matrixDok.GetSubmatrixDokColMajor(indices, indices);
@@ -113,14 +135,13 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             //string outputPath = @"C:\Users\Serafeim\Desktop\output.txt";
             //var writer = new LinearAlgebra.Output.FullMatrixWriter();
 
-            var array2D = MultiDiagonalMatrices.CreateSymmetric(100, new int[] { 2, 4, 8, 16, 32, 64 });
+            var array2D = Matrix0;
             var matrixFull = Matrix.CreateFromArray(array2D);
             var matrixDok = DokSymmetric.CreateFromArray2D(array2D);
-
-            var indices = new int[] { 0, 2, 4, 6, 12, 24, 32, 50, 64, 80 };
-            var indicesPerm = new int[] { 32, 80, 64, 0, 12, 24, 6, 50, 4, 2 };
+            int[] indices = IndicesSet0;
+            int[] indicesPerm = IndicesSet0Perm;
             int[] rowIndices = indicesPerm;
-            var colIndices = new int[] { 90, 10, 20, 60, 40, 50, 0, 70, 80, 30 };
+            var colIndices = IndicesSet2;
 
             Matrix subMatrixFull = matrixDok.GetSubmatrixFull(indices, indices);
             Matrix subMatrixExpected = matrixFull.GetSubmatrix(indices, indices);
@@ -138,12 +159,12 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
         [Fact]
         private static void TestGetSubmatrixDok()
         {
-            var array2D = MultiDiagonalMatrices.CreateSymmetric(100, new int[] { 2, 4, 8, 16, 32, 64 });
+            var array2D = Matrix0;
             var matrixFull = Matrix.CreateFromArray(array2D);
             var matrixDok = DokSymmetric.CreateFromArray2D(array2D);
 
-            var indices = new int[] { 0, 2, 4, 6, 12, 24, 32, 50, 64, 80 };
-            var indicesPerm = new int[] { 32, 80, 64, 0, 12, 24, 6, 50, 4, 2 };
+            int[] indices = IndicesSet0;
+            int[] indicesPerm = IndicesSet0Perm;
 
             DokSymmetric subMatrixDok0 = matrixDok.GetSubmatrixSymmetricDokNaive(indices);
             DokSymmetric subMatrixDok1 = matrixDok.GetSubmatrixSymmetricDok(indices);
@@ -188,12 +209,12 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             //string outputPath = @"C:\Users\Serafeim\Desktop\output.txt";
             //var writer = new LinearAlgebra.Output.FullMatrixWriter();
 
-            var array2D = MultiDiagonalMatrices.CreateSymmetric(100, new int[] { 2, 4, 8, 16, 32, 64 });
+            var array2D = Matrix0;
             var matrixFull = Matrix.CreateFromArray(array2D);
             var matrixDok = DokSymmetric.CreateFromArray2D(array2D);
 
-            var indices = new int[] { 0, 2, 4, 6, 12, 24, 32, 50, 64, 80 };
-            var indicesPerm = new int[] { 32, 80, 64, 0, 12, 24, 6, 50, 4, 2 };
+            int[] indices = IndicesSet0;
+            int[] indicesPerm = IndicesSet0Perm;
 
             Matrix subMatrixFull0 = matrixDok.GetSubmatrixSymmetricFullNaive(indices);
             Matrix subMatrixFull1 = matrixDok.GetSubmatrixSymmetricFull(indices);
@@ -216,12 +237,12 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             //string outputPath = @"C:\Users\Serafeim\Desktop\output.txt";
             //var writer = new LinearAlgebra.Output.FullMatrixWriter();
 
-            var array2D = MultiDiagonalMatrices.CreateSymmetric(100, new int[] { 2, 4, 8, 16, 32, 64 });
+            var array2D = Matrix0;
             var matrixFull = Matrix.CreateFromArray(array2D);
             var matrixDok = DokSymmetric.CreateFromArray2D(array2D);
 
-            var indices = new int[] { 0, 2, 4, 6, 12, 24, 32, 50, 64, 80 };
-            var indicesPerm = new int[] { 32, 80, 64, 0, 12, 24, 6, 50, 4, 2 };
+            int[] indices = IndicesSet0;
+            int[] indicesPerm = IndicesSet0Perm;
 
             SymmetricMatrix subMatrixPck0 = matrixDok.GetSubmatrixSymmetricPackedNaive(indices);
             SymmetricMatrix subMatrixPck1 = matrixDok.GetSubmatrixSymmetricPacked(indices);
@@ -244,12 +265,12 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             //string outputPath = @"C:\Users\Serafeim\Desktop\output.txt";
             //var writer = new LinearAlgebra.Output.FullMatrixWriter();
 
-            var array2D = MultiDiagonalMatrices.CreateSymmetric(100, new int[] { 2, 4, 8, 16, 32, 64 });
+            var array2D = Matrix0;
             var matrixFull = Matrix.CreateFromArray(array2D);
             var matrixDok = DokSymmetric.CreateFromArray2D(array2D);
 
-            var indices = new int[] { 0, 2, 4, 6, 12, 24, 32, 50, 64, 80 };
-            var indicesPerm = new int[] { 32, 80, 64, 0, 12, 24, 6, 50, 4, 2 };
+            int[] indices = IndicesSet0;
+            int[] indicesPerm = IndicesSet0Perm;
 
             SparsityPatternSymmetric subMatrixPattern0 = matrixDok.GetSubmatrixSymmetricPatternNaive(indices);
             SparsityPatternSymmetric subMatrixPattern1 = matrixDok.GetSubmatrixSymmetricPattern(indices);
@@ -272,12 +293,12 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             //string outputPath = @"C:\Users\Serafeim\Desktop\output.txt";
             //var writer = new LinearAlgebra.Output.FullMatrixWriter();
 
-            var array2D = MultiDiagonalMatrices.CreateSymmetric(100, new int[] { 2, 4, 8, 16, 32, 64 });
+            var array2D = Matrix0;
             var matrixFull = Matrix.CreateFromArray(array2D);
             var matrixDok = DokSymmetric.CreateFromArray2D(array2D);
 
-            var indices = new int[] { 0, 2, 4, 6, 12, 24, 32, 50, 64, 80 };
-            var indicesPerm = new int[] { 32, 80, 64, 0, 12, 24, 6, 50, 4, 2 };
+            int[] indices = IndicesSet0;
+            int[] indicesPerm = IndicesSet0Perm;
 
             SkylineMatrix subMatrixSky = matrixDok.GetSubmatrixSymmetricSkyline(indices);
             //writer.WriteToFile(subMatrixSym, outputPath, true);
@@ -287,6 +308,52 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             SkylineMatrix subMatrixPermSky = matrixDok.GetSubmatrixSymmetricSkyline(indicesPerm);
             Matrix subMatrixPermExpected = matrixFull.GetSubmatrix(indicesPerm, indicesPerm);
             Assert.True(subMatrixPermExpected.Equals(subMatrixPermSky));
+        }
+
+        [Fact] //TODO: Convert this to Theory
+        private static void TestSplit_Packed_DokColMajor_DokSymmetric()
+        {
+            var tries = new List<(double[,] matrix, int[] group0)>();
+            tries.Add((Matrix0, IndicesSet0));
+            tries.Add((Matrix0, IndicesSet0Perm));
+            tries.Add((Matrix0, IndicesSet2));
+            tries.Add((Matrix1, IndicesSet1));
+
+            foreach ((double[,] matrixA, int[] group0) in tries)
+            {
+                var fullA = Matrix.CreateFromArray(matrixA);
+                var dokA = DokSymmetric.CreateFromArray2D(matrixA);
+
+                IEnumerable<int> allIndices = Enumerable.Range(0, fullA.NumColumns);
+                int[] group1 = allIndices.Except(group0).ToArray();
+
+                Matrix expectedA00 = fullA.GetSubmatrix(group0, group0);
+                Matrix expectedA10 = fullA.GetSubmatrix(group1, group0);
+                Matrix expectedA11 = fullA.GetSubmatrix(group1, group1);
+                (SymmetricMatrix A00, DokColMajor A10, DokSymmetric A11) =
+                    dokA.Split_Packed_DokColMajor_DokSymmetric(group0, group1);
+                #region debug
+                //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+                //string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Optim\matrix.txt";
+                //writer.WriteToFile(fullA, path, false);
+                //writer.WriteToFile(expectedA00, path, true);
+                //writer.WriteToFile(A00, path, true);
+                #endregion
+                comparer.AssertEqual(expectedA00, A00);
+                comparer.AssertEqual(expectedA10, A10);
+                comparer.AssertEqual(expectedA11, A11);
+
+
+                Matrix expectedB00 = fullA.GetSubmatrix(group1, group1);
+                Matrix expectedB10 = fullA.GetSubmatrix(group0, group1);
+                Matrix expectedB11 = fullA.GetSubmatrix(group0, group0);
+                (SymmetricMatrix B00, DokColMajor B10, DokSymmetric B11) =
+                    dokA.Split_Packed_DokColMajor_DokSymmetric(group1, group0);
+
+                comparer.AssertEqual(expectedB00, B00);
+                comparer.AssertEqual(expectedB10, B10);
+                comparer.AssertEqual(expectedB11, B11);
+            }
         }
 
         [Fact]
