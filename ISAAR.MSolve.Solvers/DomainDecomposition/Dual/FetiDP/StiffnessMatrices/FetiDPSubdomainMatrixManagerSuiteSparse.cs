@@ -112,9 +112,18 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             => Kib = Krr.GetSubmatrixDokColMajor(DofsInternal, DofsBoundary).BuildCscMatrix(true);
         protected override void ExtractCornerRemainderSubmatricesImpl()
         {
-            Kcc = linearSystem.Matrix.GetSubmatrixSymmetricPacked(DofsCorner);
-            Krc = linearSystem.Matrix.GetSubmatrixDokColMajor(DofsRemainder, DofsCorner).BuildCscMatrix(true);
-            Krr = linearSystem.Matrix.GetSubmatrixSymmetricDok(DofsRemainder);
+            DokColMajor KrcDok;
+            (Kcc, KrcDok, Krr) = linearSystem.Matrix.Split_Packed_DokColMajor_DokSymmetric(DofsCorner, DofsRemainder);
+            Krc = KrcDok.BuildCscMatrix(true);
+
+            #region debug
+            //var KccOLD = linearSystem.Matrix.GetSubmatrixSymmetricPacked(DofsCorner);
+            //var KrcOLD = linearSystem.Matrix.GetSubmatrixDokColMajor(DofsRemainder, DofsCorner).BuildCscMatrix(true);
+            //var KrrOLD = linearSystem.Matrix.GetSubmatrixSymmetricDok(DofsRemainder);
+            //System.Diagnostics.Debug.Assert(KccOLD.Equals(Kcc));
+            //System.Diagnostics.Debug.Assert(KrcOLD.Equals(Krc));
+            //System.Diagnostics.Debug.Assert(KrrOLD.Equals(Krr));
+            #endregion
         }
 
         public override void HandleDofOrderingWillBeModified() => assembler.HandleDofOrderingWillBeModified();
