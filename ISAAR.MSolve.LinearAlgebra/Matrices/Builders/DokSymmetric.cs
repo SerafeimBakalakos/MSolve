@@ -1233,6 +1233,174 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
         }
 
         /// <summary>
+        /// Divide the whole matrix A = [A00 A10^T ; A10 A11] into the submatrices A00 and A10. The rows/columns are divided by 
+        /// <paramref name="group0"/> and <paramref name="group1"/>, which need not be consecutive.
+        /// </summary>
+        /// <param name="group0">
+        /// The first group of rows/columns. The rows/columns of the submatrices will be in the same order as
+        /// <paramref name="group0"/>. The union of <paramref name="group0"/> and <paramref name="group1"/> must be all the 
+        /// rows/columns of the whole matrix.
+        /// </param>
+        /// <param name="group1">
+        /// The second group of rows/columns. The rows/columns of the submatrices will be in the same order as
+        /// <paramref name="group0"/>. The union of <paramref name="group0"/> and <paramref name="group1"/> must be all the 
+        /// rows/columns of the whole matrix.
+        /// </param>
+        public (Matrix A00, DokColMajor A10) Split_Full_DokColMajor(int[] group0, int[] group1)
+        {
+            // Initialize mappings and submatrices
+            int numGroup0 = group0.Length;
+            int numGroup1 = group1.Length;
+            var A00Full = new double[numGroup0 * numGroup0];
+            var A10Columns = new Dictionary<int, double>[numGroup0];
+            var thisToSubGroup0 = new Dictionary<int, int>();
+            var thisToSubGroup1 = new Dictionary<int, int>();
+            for (int i0 = 0; i0 < numGroup0; ++i0)
+            {
+                thisToSubGroup0[group0[i0]] = i0;
+                A10Columns[i0] = new Dictionary<int, double>();
+            }
+            for (int i1 = 0; i1 < numGroup1; ++i1)
+            {
+                thisToSubGroup1[group1[i1]] = i1;
+            }
+
+            // Iterate each entry of the current matrix and add it to the corresponding submatrix
+            for (int thisJ = 0; thisJ < NumColumns; ++thisJ)
+            {
+                int subJ1 = -1;
+                int offsetA00 = -1;
+                bool jIs0 = thisToSubGroup0.TryGetValue(thisJ, out int subJ0);
+                if (jIs0) offsetA00 = subJ0 * numGroup0;
+                else
+                {
+                    subJ0 = -1; // Let's make sure using this will end up throwing an exception.
+                    subJ1 = thisToSubGroup1[thisJ];
+                }
+
+                foreach (KeyValuePair<int, double> rowVal in this.columns[thisJ])
+                {
+                    int thisI = rowVal.Key;
+                    double val = rowVal.Value;
+
+                    int subI0, subI1 = -1;
+                    bool iIs0 = thisToSubGroup0.TryGetValue(thisI, out subI0);
+                    if (!iIs0)
+                    {
+                        subI0 = -1; // Let's make sure using this will end up throwing an exception.
+                        subI1 = thisToSubGroup1[thisI];
+                    }
+
+                    if (jIs0 && iIs0)
+                    {
+                        A00Full[offsetA00 + subI0] = val;
+                        A00Full[subI0 * numGroup0 + subJ0] = val;
+                    }
+                    else if (jIs0 && !iIs0)
+                    {
+                        A10Columns[subJ0][subI1] = val;
+                    }
+                    else if (!jIs0 && iIs0) // Take the transpose
+                    {
+                        A10Columns[subI0][subJ1] = val;
+                    }
+                }
+            }
+
+            var finalA00 = Matrix.CreateFromArray(A00Full, numGroup0, numGroup0, false);
+            var finalA10 = new DokColMajor(numGroup1, numGroup0, A10Columns);
+            return (finalA00, finalA10);
+        }
+
+
+        /// <summary>
+        /// Divide the whole matrix A = [A00 A10^T ; A10 A11] into these 3 submatrices. The rows/columns are divided by 
+        /// <paramref name="group0"/> and <paramref name="group1"/>, which need not be consecutive.
+        /// </summary>
+        /// <param name="group0">
+        /// The first group of rows/columns. The rows/columns of the submatrices will be in the same order as
+        /// <paramref name="group0"/>. The union of <paramref name="group0"/> and <paramref name="group1"/> must be all the 
+        /// rows/columns of the whole matrix.
+        /// </param>
+        /// <param name="group1">
+        /// The second group of rows/columns. The rows/columns of the submatrices will be in the same order as
+        /// <paramref name="group0"/>. The union of <paramref name="group0"/> and <paramref name="group1"/> must be all the 
+        /// rows/columns of the whole matrix.
+        /// </param>
+        public (Matrix A00, DokColMajor A10, DokSymmetric A11) Split_Full_DokColMajor_DokSymmetric(
+            int[] group0, int[] group1)
+        {
+            // Initialize mappings and submatrices
+            int numGroup0 = group0.Length;
+            int numGroup1 = group1.Length;
+            var A00Full = new double[numGroup0 * numGroup0];
+            var A10Columns = new Dictionary<int, double>[numGroup0];
+            var A11 = DokSymmetric.CreateEmpty(numGroup1);
+            var thisToSubGroup0 = new Dictionary<int, int>();
+            var thisToSubGroup1 = new Dictionary<int, int>();
+            for (int i0 = 0; i0 < numGroup0; ++i0)
+            {
+                thisToSubGroup0[group0[i0]] = i0;
+                A10Columns[i0] = new Dictionary<int, double>();
+            }
+            for (int i1 = 0; i1 < numGroup1; ++i1)
+            {
+                thisToSubGroup1[group1[i1]] = i1;
+            }
+
+            // Iterate each entry of the current matrix and add it to the corresponding submatrix
+            for (int thisJ = 0; thisJ < NumColumns; ++thisJ)
+            {
+                int subJ0, subJ1 = -1;
+                int offsetA00 = -1;
+                bool jIs0 = thisToSubGroup0.TryGetValue(thisJ, out subJ0);
+                if (jIs0) offsetA00 = subJ0 * numGroup0;
+                else
+                {
+                    subJ0 = -1; // Let's make sure using this will end up throwing an exception.
+                    subJ1 = thisToSubGroup1[thisJ];
+                }
+
+                foreach (KeyValuePair<int, double> rowVal in this.columns[thisJ])
+                {
+                    int thisI = rowVal.Key;
+                    double val = rowVal.Value;
+
+                    int subI0, subI1 = -1;
+                    bool iIs0 = thisToSubGroup0.TryGetValue(thisI, out subI0);
+                    if (!iIs0)
+                    {
+                        subI0 = -1; // Let's make sure using this will end up throwing an exception.
+                        subI1 = thisToSubGroup1[thisI];
+                    }
+
+                    if (jIs0 && iIs0)
+                    {
+                        A00Full[offsetA00 + subI0] = val;
+                        A00Full[subI0 * numGroup0 + subJ0] = val;
+                    }
+                    else if (jIs0 && !iIs0)
+                    {
+                        A10Columns[subJ0][subI1] = val;
+                    }
+                    else if (!jIs0 && iIs0) // Take the transpose
+                    {
+                        A10Columns[subI0][subJ1] = val;
+                    }
+                    else
+                    {
+                        if (subI1 <= subJ1) A11.columns[subJ1][subI1] = val;
+                        else A11.columns[subI1][subJ1] = val;
+                    }
+                }
+            }
+
+            var finalA00 = Matrix.CreateFromArray(A00Full, numGroup0, numGroup0, false);
+            var finalA10 = new DokColMajor(numGroup1, numGroup0, A10Columns);
+            return (finalA00, finalA10, A11);
+        }
+
+        /// <summary>
         /// Divide the whole matrix A = [A00 A10^T ; A10 A11] into these 3 submatrices. The rows/columns are divided by 
         /// <paramref name="group0"/> and <paramref name="group1"/>, which need not be consecutive.
         /// </summary>
@@ -1284,13 +1452,6 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
                 {
                     int thisI = rowVal.Key;
                     double val = rowVal.Value;
-
-                    #region debug
-                    if (Math.Abs(val - 6.854545E+001) <= 1E-4)
-                    {
-                        Console.WriteLine();
-                    }
-                    #endregion
 
                     int subI0, subI1 = -1;
                     bool iIs0 = thisToSubGroup0.TryGetValue(thisI, out subI0);

@@ -113,14 +113,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         protected override void ExtractBoundaryInternalSubmatricesAndInvertKiiImpl(bool diagonalKii)
         {
-            int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);
-            int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
-
-            Kbb = Krr.GetSubmatrixSymmetricFull(boundaryDofs);
-            Kib = Krr.GetSubmatrixDokColMajor(internalDofs, boundaryDofs).BuildCscMatrix(true);
-
             if (diagonalKii)
             {
+                DokColMajor KibDok;
+                (Kbb, KibDok) = Krr.Split_Full_DokColMajor(DofsBoundary, DofsInternal);
+
+                Kib = KibDok.BuildCscMatrix(true);
+                KibDok = null; // free this memory for GC
+
+                int[] internalDofs = DofsInternal;
                 var diagonal = new double[internalDofs.Length];
                 for (int i = 0; i < diagonal.Length; ++i)
                 {
@@ -133,10 +134,45 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             }
             else
             {
-                SymmetricCscMatrix Kii = Krr.GetSubmatrixSymmetricDok(internalDofs).BuildSymmetricCscMatrix(true);
+                DokColMajor KibDok;
+                DokSymmetric KiiDok;
+                (Kbb, KibDok, KiiDok) = Krr.Split_Full_DokColMajor_DokSymmetric(DofsBoundary, DofsInternal);
+
+                Kib = KibDok.BuildCscMatrix(true);
+                KibDok = null; // free this memory for GC
+
+                SymmetricCscMatrix Kii = KiiDok.BuildSymmetricCscMatrix(true);
+                KiiDok = null; // free this memory for GC
                 if (inverseKii != null) inverseKii.Dispose();
                 inverseKii = CholeskySuiteSparse.Factorize(Kii, true);
             }
+
+            #region old code. Weirdly, dottrace shows this to be faster, even though the intended improvement of the new code is indeed faster than its old counterpart.
+            //int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);
+            //int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
+
+            //Kbb = Krr.GetSubmatrixSymmetricFull(boundaryDofs);
+            //Kib = Krr.GetSubmatrixDokColMajor(internalDofs, boundaryDofs).BuildCscMatrix(true);
+
+            //if (diagonalKii)
+            //{
+            //    var diagonal = new double[internalDofs.Length];
+            //    for (int i = 0; i < diagonal.Length; ++i)
+            //    {
+            //        int idx = internalDofs[i];
+            //        diagonal[i] = 1.0 / Krr[idx, idx];
+            //        //diagonal[i] = Krr[idx, idx];
+            //    }
+            //    inverseKiiDiagonal = DiagonalMatrix.CreateFromArray(diagonal, false);
+            //    //inverseKiiDiagonal.Invert();
+            //}
+            //else
+            //{
+            //    SymmetricCscMatrix Kii = Krr.GetSubmatrixSymmetricDok(internalDofs).BuildSymmetricCscMatrix(true);
+            //    if (inverseKii != null) inverseKii.Dispose();
+            //    inverseKii = CholeskySuiteSparse.Factorize(Kii, true);
+            //}
+            #endregion
         }
 
         protected override void ExtractCornerRemainderSubmatricesImpl()

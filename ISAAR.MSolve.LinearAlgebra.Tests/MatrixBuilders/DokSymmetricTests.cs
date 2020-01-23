@@ -99,11 +99,11 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             DokColMajor subMatrixCsc1 = matrixDok.GetSubmatrixDokColMajor(indices, indices);
             Matrix subMatrixExpected = matrixFull.GetSubmatrix(indices, indices);
             #region debug
-            var writer = new LinearAlgebra.Output.FullMatrixWriter();
-            string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Optim\matrix.txt";
-            writer.WriteToFile(matrixDok, path, false);
-            writer.WriteToFile(subMatrixExpected, path, true);
-            writer.WriteToFile(subMatrixCsc1, path, true);
+            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+            //string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Optim\matrix.txt";
+            //writer.WriteToFile(matrixDok, path, false);
+            //writer.WriteToFile(subMatrixExpected, path, true);
+            //writer.WriteToFile(subMatrixCsc1, path, true);
             #endregion
             Assert.True(subMatrixExpected.Equals(subMatrixCsc0));
             Assert.True(subMatrixExpected.Equals(subMatrixCsc1));
@@ -308,6 +308,91 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             SkylineMatrix subMatrixPermSky = matrixDok.GetSubmatrixSymmetricSkyline(indicesPerm);
             Matrix subMatrixPermExpected = matrixFull.GetSubmatrix(indicesPerm, indicesPerm);
             Assert.True(subMatrixPermExpected.Equals(subMatrixPermSky));
+        }
+
+        [Fact] //TODO: Convert this to Theory
+        private static void TestSplit_Full_DokColMajor()
+        {
+            var tries = new List<(double[,] matrix, int[] group0)>();
+            tries.Add((Matrix0, IndicesSet0));
+            tries.Add((Matrix0, IndicesSet0Perm));
+            tries.Add((Matrix0, IndicesSet2));
+            tries.Add((Matrix1, IndicesSet1));
+
+            foreach ((double[,] matrixA, int[] group0) in tries)
+            {
+                var fullA = Matrix.CreateFromArray(matrixA);
+                var dokA = DokSymmetric.CreateFromArray2D(matrixA);
+
+                IEnumerable<int> allIndices = Enumerable.Range(0, fullA.NumColumns);
+                int[] group1 = allIndices.Except(group0).ToArray();
+
+                Matrix expectedA00 = fullA.GetSubmatrix(group0, group0);
+                Matrix expectedA10 = fullA.GetSubmatrix(group1, group0);
+                (Matrix A00, DokColMajor A10) = dokA.Split_Full_DokColMajor(group0, group1);
+                #region debug
+                //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+                //string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Optim\matrix.txt";
+                //writer.WriteToFile(fullA, path, false);
+                //writer.WriteToFile(expectedA00, path, true);
+                //writer.WriteToFile(A00, path, true);
+                #endregion
+                comparer.AssertEqual(expectedA00, A00);
+                comparer.AssertEqual(expectedA10, A10);
+
+
+                Matrix expectedB00 = fullA.GetSubmatrix(group1, group1);
+                Matrix expectedB10 = fullA.GetSubmatrix(group0, group1);
+                (Matrix B00, DokColMajor B10) = dokA.Split_Full_DokColMajor(group1, group0);
+
+                comparer.AssertEqual(expectedB00, B00);
+                comparer.AssertEqual(expectedB10, B10);
+            }
+        }
+        [Fact] //TODO: Convert this to Theory
+        private static void TestSplit_Full_DokColMajor_DokSymmetric()
+        {
+            var tries = new List<(double[,] matrix, int[] group0)>();
+            tries.Add((Matrix0, IndicesSet0));
+            tries.Add((Matrix0, IndicesSet0Perm));
+            tries.Add((Matrix0, IndicesSet2));
+            tries.Add((Matrix1, IndicesSet1));
+
+            foreach ((double[,] matrixA, int[] group0) in tries)
+            {
+                var fullA = Matrix.CreateFromArray(matrixA);
+                var dokA = DokSymmetric.CreateFromArray2D(matrixA);
+
+                IEnumerable<int> allIndices = Enumerable.Range(0, fullA.NumColumns);
+                int[] group1 = allIndices.Except(group0).ToArray();
+
+                Matrix expectedA00 = fullA.GetSubmatrix(group0, group0);
+                Matrix expectedA10 = fullA.GetSubmatrix(group1, group0);
+                Matrix expectedA11 = fullA.GetSubmatrix(group1, group1);
+                (Matrix A00, DokColMajor A10, DokSymmetric A11) =
+                    dokA.Split_Full_DokColMajor_DokSymmetric(group0, group1);
+                #region debug
+                //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+                //string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Optim\matrix.txt";
+                //writer.WriteToFile(fullA, path, false);
+                //writer.WriteToFile(expectedA00, path, true);
+                //writer.WriteToFile(A00, path, true);
+                #endregion
+                comparer.AssertEqual(expectedA00, A00);
+                comparer.AssertEqual(expectedA10, A10);
+                comparer.AssertEqual(expectedA11, A11);
+
+
+                Matrix expectedB00 = fullA.GetSubmatrix(group1, group1);
+                Matrix expectedB10 = fullA.GetSubmatrix(group0, group1);
+                Matrix expectedB11 = fullA.GetSubmatrix(group0, group0);
+                (Matrix B00, DokColMajor B10, DokSymmetric B11) =
+                    dokA.Split_Full_DokColMajor_DokSymmetric(group1, group0);
+
+                comparer.AssertEqual(expectedB00, B00);
+                comparer.AssertEqual(expectedB10, B10);
+                comparer.AssertEqual(expectedB11, B11);
+            }
         }
 
         [Fact] //TODO: Convert this to Theory
