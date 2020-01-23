@@ -467,7 +467,9 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
             if (sortRowsOfEachCol)
             {
                 for (int j = 0; j < order; ++j)
-                { //TODO: perhaps passing the dictionarirs to new SortedDictionary() is faster than LINQ
+                {
+                    //TODO: perhaps passing the dictionaries to new SortedDictionary() is faster than LINQ
+                    //TODO: a better idea is to copy each pair to the rowIndices, values arrays and then sorting them inplace!
                     foreach (var rowVal in columns[j].OrderBy(pair => pair.Key)) 
                     {
                         rowIndices[counter] = rowVal.Key;

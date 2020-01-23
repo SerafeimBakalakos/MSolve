@@ -20,9 +20,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
             {
                 Debug.WriteLine($"{this.GetType().Name}:"
                     + $" Extracting boundary/internal submatrices of subdomain {subdomain.ID} for preconditioning");
-                matrixManager.ExtractKbb();
-                matrixManager.ExtractKbiKib();
-                matrixManager.CalcInverseKii(true);
+                matrixManager.ExtractBoundaryInternalSubmatricesAndInvertKii(true);
+                //matrixManager.ExtractKbb();
+                //matrixManager.ExtractKbiKib();
+                //matrixManager.CalcInverseKii(true);
             }
         }
 

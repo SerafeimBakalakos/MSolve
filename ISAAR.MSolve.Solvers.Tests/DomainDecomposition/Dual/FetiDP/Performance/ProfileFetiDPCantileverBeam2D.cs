@@ -27,10 +27,9 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Performance
         public enum MatrixFormat { Dense, Skyline, SuiteSparse }
 
         private const double domainLengthX = 3.0, domainLengthY = 1.5;
-        private const int numElementsX = 400, numElementsY = 200;
-        private const int numSubdomainsX = 4, numSubdomainsY = 2;
+        private const int numElementsX = 600, numElementsY = 300;
+        private const int numSubdomainsX = 6, numSubdomainsY = 3;
 
-        [Fact]
         public static void Run()
         {
             double stiffnessRatio = 1.0;
@@ -40,6 +39,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Performance
             Model model = CreateModel(stiffnessRatio);
             (IVectorView ddDisplacements, ISolverLogger logger) = 
                 SolveModelWithSubdomains(model, precond, pcgConvergenceTol, format, stiffnessRatio == 1.0);
+            Console.WriteLine(model.GlobalDofOrdering.NumGlobalFreeDofs);
         }
 
         private static Model CreateModel(double stiffnessRatio)
@@ -56,7 +56,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Performance
             // /|
 
             double E0 = 2.1E7;
-            double E1 = stiffnessRatio * E0;
+            //double E1 = stiffnessRatio * E0;
 
             var builder = new Uniform2DModelBuilder();
             builder.DomainLengthX = domainLengthX;
@@ -65,7 +65,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Performance
             builder.NumSubdomainsY = numSubdomainsY;
             builder.NumTotalElementsX = numElementsX;
             builder.NumTotalElementsY = numElementsY;
-            builder.YoungModuliOfSubdomains = new double[,] { { E1, E0, E0, E0 }, { E1, E0, E0, E0 } };
+            builder.YoungModulus = E0;
+            //builder.YoungModuliOfSubdomains = new double[,] { { E1, E0, E0, E0 }, { E1, E0, E0, E0 } };
             builder.PrescribeDisplacement(Uniform2DModelBuilder.BoundaryRegion.LeftSide, StructuralDof.TranslationX, 0.0);
             builder.PrescribeDisplacement(Uniform2DModelBuilder.BoundaryRegion.LeftSide, StructuralDof.TranslationY, 0.0);
             builder.DistributeLoadAtNodes(Uniform2DModelBuilder.BoundaryRegion.RightSide, StructuralDof.TranslationY, 100.0);

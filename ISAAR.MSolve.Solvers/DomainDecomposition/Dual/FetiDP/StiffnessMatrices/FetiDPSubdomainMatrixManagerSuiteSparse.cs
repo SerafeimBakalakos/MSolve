@@ -62,28 +62,28 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             IEnumerable<IElement> elements, IElementMatrixProvider matrixProvider)
             => throw new NotImplementedException();
 
-        protected override void CalcInverseKiiImpl(bool diagonalOnly)
-        {
-            int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
-            if (diagonalOnly)
-            {
-                var diagonal = new double[internalDofs.Length];
-                for (int i = 0; i < diagonal.Length; ++i)
-                {
-                    int idx = internalDofs[i];
-                    diagonal[i] = 1.0 / Krr[idx, idx];
-                    //diagonal[i] = Krr[idx, idx];
-                }
-                inverseKiiDiagonal = DiagonalMatrix.CreateFromArray(diagonal, false);
-                //inverseKiiDiagonal.Invert();
-            }
-            else
-            {
-                SymmetricCscMatrix Kii = Krr.GetSubmatrixSymmetricDok(internalDofs).BuildSymmetricCscMatrix(true);
-                if (inverseKii != null) inverseKii.Dispose();
-                inverseKii = CholeskySuiteSparse.Factorize(Kii, true);
-            }
-        }
+        //protected override void CalcInverseKiiImpl(bool diagonalOnly)
+        //{
+        //    int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
+        //    if (diagonalOnly)
+        //    {
+        //        var diagonal = new double[internalDofs.Length];
+        //        for (int i = 0; i < diagonal.Length; ++i)
+        //        {
+        //            int idx = internalDofs[i];
+        //            diagonal[i] = 1.0 / Krr[idx, idx];
+        //            //diagonal[i] = Krr[idx, idx];
+        //        }
+        //        inverseKiiDiagonal = DiagonalMatrix.CreateFromArray(diagonal, false);
+        //        //inverseKiiDiagonal.Invert();
+        //    }
+        //    else
+        //    {
+        //        SymmetricCscMatrix Kii = Krr.GetSubmatrixSymmetricDok(internalDofs).BuildSymmetricCscMatrix(true);
+        //        if (inverseKii != null) inverseKii.Dispose();
+        //        inverseKii = CholeskySuiteSparse.Factorize(Kii, true);
+        //    }
+        //}
 
         protected override void ClearMatricesImpl()
         {
@@ -108,8 +108,37 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         }
 
         protected override void ExtractKbbImpl() => Kbb = Krr.GetSubmatrixSymmetricFull(DofsBoundary);
-        protected override void ExtractKbiKibImpl() 
-            => Kib = Krr.GetSubmatrixDokColMajor(DofsInternal, DofsBoundary).BuildCscMatrix(true);
+        //protected override void ExtractKbiKibImpl() 
+        //    => Kib = Krr.GetSubmatrixDokColMajor(DofsInternal, DofsBoundary).BuildCscMatrix(true);
+
+        protected override void ExtractBoundaryInternalSubmatricesAndInvertKiiImpl(bool diagonalKii)
+        {
+            int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);
+            int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
+
+            Kbb = Krr.GetSubmatrixSymmetricFull(boundaryDofs);
+            Kib = Krr.GetSubmatrixDokColMajor(internalDofs, boundaryDofs).BuildCscMatrix(true);
+
+            if (diagonalKii)
+            {
+                var diagonal = new double[internalDofs.Length];
+                for (int i = 0; i < diagonal.Length; ++i)
+                {
+                    int idx = internalDofs[i];
+                    diagonal[i] = 1.0 / Krr[idx, idx];
+                    //diagonal[i] = Krr[idx, idx];
+                }
+                inverseKiiDiagonal = DiagonalMatrix.CreateFromArray(diagonal, false);
+                //inverseKiiDiagonal.Invert();
+            }
+            else
+            {
+                SymmetricCscMatrix Kii = Krr.GetSubmatrixSymmetricDok(internalDofs).BuildSymmetricCscMatrix(true);
+                if (inverseKii != null) inverseKii.Dispose();
+                inverseKii = CholeskySuiteSparse.Factorize(Kii, true);
+            }
+        }
+
         protected override void ExtractCornerRemainderSubmatricesImpl()
         {
             DokColMajor KrcDok;

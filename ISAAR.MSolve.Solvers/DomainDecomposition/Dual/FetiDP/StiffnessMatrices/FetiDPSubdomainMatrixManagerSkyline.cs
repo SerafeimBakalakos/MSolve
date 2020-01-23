@@ -59,27 +59,27 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             IEnumerable<IElement> elements, IElementMatrixProvider matrixProvider)
             => assembler.BuildGlobalSubmatrices(freeDofOrdering, constrainedDofOrdering, elements, matrixProvider);
 
-        protected override void CalcInverseKiiImpl(bool diagonalOnly)
-        {
-            int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
-            if (diagonalOnly)
-            {
-                var diagonal = new double[internalDofs.Length];
-                for (int i = 0; i < diagonal.Length; ++i)
-                {
-                    int idx = internalDofs[i];
-                    diagonal[i] = 1.0 / Krr[idx, idx];
-                    //diagonal[i] = Krr[idx, idx];
-                }
-                inverseKiiDiagonal = DiagonalMatrix.CreateFromArray(diagonal, false);
-                //inverseKiiDiagonal.Invert();
-            }
-            else
-            {
-                SkylineMatrix Kii = Krr.GetSubmatrixSymmetricSkyline(internalDofs);
-                inverseKii = Kii.FactorLdl(true);
-            }
-        }
+        //protected override void CalcInverseKiiImpl(bool diagonalOnly)
+        //{
+        //    int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
+        //    if (diagonalOnly)
+        //    {
+        //        var diagonal = new double[internalDofs.Length];
+        //        for (int i = 0; i < diagonal.Length; ++i)
+        //        {
+        //            int idx = internalDofs[i];
+        //            diagonal[i] = 1.0 / Krr[idx, idx];
+        //            //diagonal[i] = Krr[idx, idx];
+        //        }
+        //        inverseKiiDiagonal = DiagonalMatrix.CreateFromArray(diagonal, false);
+        //        //inverseKiiDiagonal.Invert();
+        //    }
+        //    else
+        //    {
+        //        SkylineMatrix Kii = Krr.GetSubmatrixSymmetricSkyline(internalDofs);
+        //        inverseKii = Kii.FactorLdl(true);
+        //    }
+        //}
 
         protected override void ClearMatricesImpl()
         {
@@ -102,7 +102,35 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         }
 
         protected override void ExtractKbbImpl() => Kbb = Krr.GetSubmatrixSymmetricFull(DofsBoundary);
-        protected override void ExtractKbiKibImpl() => Kib = Krr.GetSubmatrixCsc(DofsInternal, DofsBoundary);
+        //protected override void ExtractKbiKibImpl() => Kib = Krr.GetSubmatrixCsc(DofsInternal, DofsBoundary);
+
+        protected override void ExtractBoundaryInternalSubmatricesAndInvertKiiImpl(bool diagonalKii)
+        {
+            int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);
+            int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
+
+            Kbb = Krr.GetSubmatrixSymmetricFull(boundaryDofs);
+            Kib = Krr.GetSubmatrixCsc(internalDofs, boundaryDofs);
+
+            if (diagonalKii)
+            {
+                var diagonal = new double[internalDofs.Length];
+                for (int i = 0; i < diagonal.Length; ++i)
+                {
+                    int idx = internalDofs[i];
+                    diagonal[i] = 1.0 / Krr[idx, idx];
+                    //diagonal[i] = Krr[idx, idx];
+                }
+                inverseKiiDiagonal = DiagonalMatrix.CreateFromArray(diagonal, false);
+                //inverseKiiDiagonal.Invert();
+            }
+            else
+            {
+                SkylineMatrix Kii = Krr.GetSubmatrixSymmetricSkyline(internalDofs);
+                inverseKii = Kii.FactorLdl(true);
+            }
+        }
+
         protected override void ExtractCornerRemainderSubmatricesImpl()
         {
             Kcc = linearSystem.Matrix.GetSubmatrixSymmetricPacked(DofsCorner);

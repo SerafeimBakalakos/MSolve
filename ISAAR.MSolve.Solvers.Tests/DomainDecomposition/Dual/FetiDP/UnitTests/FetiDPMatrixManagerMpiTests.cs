@@ -65,9 +65,10 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 
                 // Calculate the matrices to test
                 subdomainMatrices.ExtractCornerRemainderSubmatrices();
-                subdomainMatrices.ExtractKbb();
-                subdomainMatrices.ExtractKbiKib();
-                subdomainMatrices.CalcInverseKii(false);
+                subdomainMatrices.ExtractBoundaryInternalSubmatricesAndInvertKii(false);
+                //subdomainMatrices.ExtractKbb();
+                //subdomainMatrices.ExtractKbiKib();
+                //subdomainMatrices.CalcInverseKii(false);
 
                 // Create explicit matrices from the matrix manager
                 int numBoundaryDofs = dofSeparator.GetBoundaryDofIndices(sub).Length;
