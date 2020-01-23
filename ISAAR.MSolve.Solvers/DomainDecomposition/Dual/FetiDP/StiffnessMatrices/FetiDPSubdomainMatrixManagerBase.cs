@@ -27,7 +27,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         private Vector fr;
         private Vector fcStar;
 
-        //private bool areKbiKibExtracted;
         private bool areKbiKibKiiExtracted;
         private bool areKccKcrKrcKrrExtracted;
         private bool areKccKcrKrcKrrCondensed;
@@ -111,17 +110,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering,
             IEnumerable<IElement> elements, IElementMatrixProvider matrixProvider);
 
-        //public void CalcInverseKii(bool diagonalOnly)
-        //{
-        //    CheckKrrAvailability();
-        //    CalcInverseKiiImpl(diagonalOnly);
-        //    isKiiOrItsDiagonalInverted = true;
-        //}
-        //protected abstract void CalcInverseKiiImpl(bool diagonalOnly);
-
         public void ClearMatrices()
         {
-            //areKbiKibExtracted = false;
             areKbiKibKiiExtracted = false;
             areKccKcrKrcKrrExtracted = false;
             areKccKcrKrcKrrCondensed = false;
@@ -193,14 +183,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         }
         protected abstract void ExtractKbbImpl();
 
-        //public void ExtractKbiKib()
-        //{
-        //    CheckKrrAvailability();
-        //    ExtractKbiKibImpl();
-        //    areKbiKibExtracted = true;
-        //}
-        //protected abstract void ExtractKbiKibImpl();
-
         public abstract void HandleDofOrderingWillBeModified();
 
         public void InvertKrr(bool inPlace)
@@ -249,7 +231,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         public Vector MultiplyKbiTimes(Vector vector)
         {
-            //CheckKbiKibExtraction();
             CheckKbiKibKiiExtraction();
             return MultiplyKbiTimesImpl(vector);
         }
@@ -257,7 +238,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         public Matrix MultiplyKbiTimes(Matrix matrix)
         {
-            //CheckKbiKibExtraction();
             CheckKbiKibKiiExtraction();
             return MultiplyKbiTimesImpl(matrix);
         }
@@ -279,7 +259,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         public Vector MultiplyKibTimes(Vector vector)
         {
-            //CheckKbiKibExtraction();
             CheckKbiKibKiiExtraction();
             return MultiplyKibTimesImpl(vector);
         }
@@ -287,7 +266,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         public Matrix MultiplyKibTimes(Matrix matrix)
         {
-            //CheckKbiKibExtraction();
             CheckKbiKibKiiExtraction();
             return MultiplyKibTimesImpl(matrix);
         }
@@ -335,15 +313,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         private void CheckKbiKibKiiExtraction()
         {
             if (!areKbiKibKiiExtracted) throw new InvalidOperationException(
-                   "The boundary-remainder and internal-remainder submatrices (Kbb, Kbi, Kib, Kii) must be calculated first");
+                   "The boundary-remainder and internal-remainder submatrices (Kbi, Kib, Kii) must be calculated first");
         }
-
-        //[Conditional("DEBUG")]
-        //private void CheckKbiKibExtraction()
-        //{
-        //    if (!areKbiKibExtracted) throw new InvalidOperationException(
-        //           "The boundary-remainder and internal-remainder submatrices (Kbi, Kib) must be calculated first");
-        //}
 
         [Conditional("DEBUG")]
         private void CheckKccKcrKrcKrrExtraction()

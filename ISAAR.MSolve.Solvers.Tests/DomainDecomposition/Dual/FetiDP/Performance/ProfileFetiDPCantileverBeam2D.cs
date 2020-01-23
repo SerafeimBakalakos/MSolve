@@ -6,6 +6,7 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
 using ISAAR.MSolve.FEM.Entities;
+using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP;
@@ -29,17 +30,24 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Performance
         private const double domainLengthX = 3.0, domainLengthY = 1.5;
         private const int numElementsX = 600, numElementsY = 300;
         private const int numSubdomainsX = 6, numSubdomainsY = 3;
+        private const int numPcgIterations = 300;
 
         public static void Run()
         {
             double stiffnessRatio = 1.0;
             Precond precond = Precond.Dirichlet;
             MatrixFormat format = MatrixFormat.SuiteSparse;
-            double pcgConvergenceTol = 1E-5;
+
+            //TODO: For some reason this does not work with elements 600x300, subdomains 6x3, suitesparse, Dirichelt
+            //LinearAlgebra.LibrarySettings.LinearAlgebraProviders = LinearAlgebra.LinearAlgebraProviderChoice.MKL;
+
             Model model = CreateModel(stiffnessRatio);
             (IVectorView ddDisplacements, ISolverLogger logger) = 
-                SolveModelWithSubdomains(model, precond, pcgConvergenceTol, format, stiffnessRatio == 1.0);
+                SolveModelWithSubdomains(model, precond, format, stiffnessRatio == 1.0);
             Console.WriteLine(model.GlobalDofOrdering.NumGlobalFreeDofs);
+
+            string path = @"C:\Users\Serafeim\Desktop\Profiling\logger.txt";
+            logger.WriteToFile(path, "FETI-DP solver", true);
         }
 
         private static Model CreateModel(double stiffnessRatio)
@@ -75,7 +83,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Performance
         }
 
         private static (IVectorView globalDisplacements, ISolverLogger logger) SolveModelWithSubdomains(Model model,
-            Precond precond, double pcgConvergenceTolerance, MatrixFormat format, bool homogeneous)
+            Precond precond, MatrixFormat format, bool homogeneous)
         {
             // Model
             model.ConnectDataStructures();
@@ -135,7 +143,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Performance
             //if (residualIsExact) exactResidualConvergence.InterfaceProblemSolver = interfaceProblemSolver;
 
             // Specify PCG settings
-            solverBuilder.PcgSettings = new PcgSettings() { ConvergenceTolerance = pcgConvergenceTolerance };
+            //solverBuilder.PcgSettings = new PcgSettings() { ConvergenceTolerance = 1E-5 };
+            solverBuilder.PcgSettings = new PcgSettings()
+            {
+                ConvergenceTolerance = 1E-100,
+                MaxIterationsProvider = new FixedMaxIterationsProvider(numPcgIterations)
+            };
 
             FetiDPSolverSerial fetiSolver = solverBuilder.Build(model, cornerNodeSelection);
             //if (residualIsExact) exactResidualConvergence.FetiSolver = fetiSolver;

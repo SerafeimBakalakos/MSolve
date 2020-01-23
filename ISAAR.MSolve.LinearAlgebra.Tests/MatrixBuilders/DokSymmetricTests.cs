@@ -98,13 +98,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             DokColMajor subMatrixCsc0 = matrixDok.GetSubmatrixDokColMajorNaive(indices, indices);
             DokColMajor subMatrixCsc1 = matrixDok.GetSubmatrixDokColMajor(indices, indices);
             Matrix subMatrixExpected = matrixFull.GetSubmatrix(indices, indices);
-            #region debug
-            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
-            //string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Optim\matrix.txt";
-            //writer.WriteToFile(matrixDok, path, false);
-            //writer.WriteToFile(subMatrixExpected, path, true);
-            //writer.WriteToFile(subMatrixCsc1, path, true);
-            #endregion
+            
             Assert.True(subMatrixExpected.Equals(subMatrixCsc0));
             Assert.True(subMatrixExpected.Equals(subMatrixCsc1));
 
@@ -117,13 +111,6 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
             DokColMajor subMatrixRectCsc0 = matrixDok.GetSubmatrixDokColMajorNaive(rowIndices, colIndices);
             DokColMajor subMatrixRectCsc1 = matrixDok.GetSubmatrixDokColMajor(rowIndices, colIndices);
             Matrix subMatrixRectExpected = matrixFull.GetSubmatrix(rowIndices, colIndices);
-            #region debug
-            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
-            //string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Optim\matrix.txt";
-            //writer.WriteToFile(matrixDok, path, false);
-            //writer.WriteToFile(subMatrixRectExpected, path, true);
-            //writer.WriteToFile(subMatrixRectCsc1, path, true);
-            #endregion
             Assert.True(subMatrixRectExpected.Equals(subMatrixRectCsc0));
             Assert.True(subMatrixRectExpected.Equals(subMatrixRectCsc1));
         }
@@ -330,13 +317,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
                 Matrix expectedA00 = fullA.GetSubmatrix(group0, group0);
                 Matrix expectedA10 = fullA.GetSubmatrix(group1, group0);
                 (Matrix A00, DokColMajor A10) = dokA.Split_Full_DokColMajor(group0, group1);
-                #region debug
-                //var writer = new LinearAlgebra.Output.FullMatrixWriter();
-                //string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Optim\matrix.txt";
-                //writer.WriteToFile(fullA, path, false);
-                //writer.WriteToFile(expectedA00, path, true);
-                //writer.WriteToFile(A00, path, true);
-                #endregion
+
                 comparer.AssertEqual(expectedA00, A00);
                 comparer.AssertEqual(expectedA10, A10);
 
@@ -371,13 +352,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
                 Matrix expectedA11 = fullA.GetSubmatrix(group1, group1);
                 (Matrix A00, DokColMajor A10, DokSymmetric A11) =
                     dokA.Split_Full_DokColMajor_DokSymmetric(group0, group1);
-                #region debug
-                //var writer = new LinearAlgebra.Output.FullMatrixWriter();
-                //string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Optim\matrix.txt";
-                //writer.WriteToFile(fullA, path, false);
-                //writer.WriteToFile(expectedA00, path, true);
-                //writer.WriteToFile(A00, path, true);
-                #endregion
+
                 comparer.AssertEqual(expectedA00, A00);
                 comparer.AssertEqual(expectedA10, A10);
                 comparer.AssertEqual(expectedA11, A11);
@@ -417,13 +392,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.MatrixBuilders
                 Matrix expectedA11 = fullA.GetSubmatrix(group1, group1);
                 (SymmetricMatrix A00, DokColMajor A10, DokSymmetric A11) =
                     dokA.Split_Packed_DokColMajor_DokSymmetric(group0, group1);
-                #region debug
-                //var writer = new LinearAlgebra.Output.FullMatrixWriter();
-                //string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Optim\matrix.txt";
-                //writer.WriteToFile(fullA, path, false);
-                //writer.WriteToFile(expectedA00, path, true);
-                //writer.WriteToFile(A00, path, true);
-                #endregion
+                
                 comparer.AssertEqual(expectedA00, A00);
                 comparer.AssertEqual(expectedA10, A10);
                 comparer.AssertEqual(expectedA11, A11);

@@ -56,28 +56,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             IEnumerable<IElement> elements, IElementMatrixProvider matrixProvider)
             => assembler.BuildGlobalSubmatrices(freeDofOrdering, constrainedDofOrdering, elements, matrixProvider);
 
-        //protected override void CalcInverseKiiImpl(bool diagonalOnly)
-        //{
-        //    int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
-        //    if (diagonalOnly)
-        //    {
-        //        var diagonal = new double[internalDofs.Length];
-        //        for (int i = 0; i < diagonal.Length; ++i)
-        //        {
-        //            int idx = internalDofs[i];
-        //            diagonal[i] = 1.0 / Krr[idx, idx];
-        //            //diagonal[i] = Krr[idx, idx];
-        //        }
-        //        inverseKiiDiagonal = DiagonalMatrix.CreateFromArray(diagonal, false);
-        //        //inverseKiiDiagonal.Invert();
-        //    }
-        //    else
-        //    {
-        //        inverseKii = Krr.GetSubmatrix(internalDofs, internalDofs);
-        //        inverseKii.InvertInPlace();
-        //    }
-        //}
-
         protected override void ClearMatricesImpl()
         {
             inverseKii = null;
@@ -99,7 +77,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         }
 
         protected override void ExtractKbbImpl() => Kbb = Krr.GetSubmatrix(DofsBoundary, DofsBoundary);
-        //protected override void ExtractKbiKibImpl() => Kbi = Krr.GetSubmatrix(DofsBoundary, DofsInternal);
 
         protected override void ExtractBoundaryInternalSubmatricesAndInvertKiiImpl(bool diagonalKii)
         {

@@ -98,7 +98,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
 
             public void BuildFreeDofsMatrix(ISubdomainFreeDofOrdering dofOrdering, IElementMatrixProvider matrixProvider) { }
 
-            //public void CalcInverseKii(bool diagonalOnly) { }
             public void ClearMatrices() { }
             public void ClearRhsVectors() { }
             public void CondenseMatricesStatically() { }
@@ -109,7 +108,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
             public void ExtractCornerRemainderRhsSubvectors() { }
             public void ExtractCornerRemainderSubmatrices() { }
             public void ExtractKbb() { }
-            //public void ExtractKbiKib() { }
             public void HandleDofOrderingWillBeModified() { }
             public void InvertKrr(bool inPlace) { }
 

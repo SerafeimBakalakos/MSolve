@@ -51,7 +51,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
                 () => Vector.CreateZero(systemOrder));
 
             // Log statistics about PCG execution
-            FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
+            //FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
             logger.LogIterativeAlgorithm(stats.NumIterationsRequired, stats.ResidualNormRatioEstimation);
 
             return lagranges;

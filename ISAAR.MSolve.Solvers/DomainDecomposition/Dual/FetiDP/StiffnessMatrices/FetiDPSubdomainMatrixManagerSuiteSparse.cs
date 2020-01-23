@@ -62,29 +62,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             IEnumerable<IElement> elements, IElementMatrixProvider matrixProvider)
             => throw new NotImplementedException();
 
-        //protected override void CalcInverseKiiImpl(bool diagonalOnly)
-        //{
-        //    int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
-        //    if (diagonalOnly)
-        //    {
-        //        var diagonal = new double[internalDofs.Length];
-        //        for (int i = 0; i < diagonal.Length; ++i)
-        //        {
-        //            int idx = internalDofs[i];
-        //            diagonal[i] = 1.0 / Krr[idx, idx];
-        //            //diagonal[i] = Krr[idx, idx];
-        //        }
-        //        inverseKiiDiagonal = DiagonalMatrix.CreateFromArray(diagonal, false);
-        //        //inverseKiiDiagonal.Invert();
-        //    }
-        //    else
-        //    {
-        //        SymmetricCscMatrix Kii = Krr.GetSubmatrixSymmetricDok(internalDofs).BuildSymmetricCscMatrix(true);
-        //        if (inverseKii != null) inverseKii.Dispose();
-        //        inverseKii = CholeskySuiteSparse.Factorize(Kii, true);
-        //    }
-        //}
-
         protected override void ClearMatricesImpl()
         {
             if (inverseKii != null) inverseKii.Dispose();
@@ -108,8 +85,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         }
 
         protected override void ExtractKbbImpl() => Kbb = Krr.GetSubmatrixSymmetricFull(DofsBoundary);
-        //protected override void ExtractKbiKibImpl() 
-        //    => Kib = Krr.GetSubmatrixDokColMajor(DofsInternal, DofsBoundary).BuildCscMatrix(true);
 
         protected override void ExtractBoundaryInternalSubmatricesAndInvertKiiImpl(bool diagonalKii)
         {
@@ -180,15 +155,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             DokColMajor KrcDok;
             (Kcc, KrcDok, Krr) = linearSystem.Matrix.Split_Packed_DokColMajor_DokSymmetric(DofsCorner, DofsRemainder);
             Krc = KrcDok.BuildCscMatrix(true);
-
-            #region debug
-            //var KccOLD = linearSystem.Matrix.GetSubmatrixSymmetricPacked(DofsCorner);
-            //var KrcOLD = linearSystem.Matrix.GetSubmatrixDokColMajor(DofsRemainder, DofsCorner).BuildCscMatrix(true);
-            //var KrrOLD = linearSystem.Matrix.GetSubmatrixSymmetricDok(DofsRemainder);
-            //System.Diagnostics.Debug.Assert(KccOLD.Equals(Kcc));
-            //System.Diagnostics.Debug.Assert(KrcOLD.Equals(Krc));
-            //System.Diagnostics.Debug.Assert(KrrOLD.Equals(Krr));
-            #endregion
         }
 
         public override void HandleDofOrderingWillBeModified() => assembler.HandleDofOrderingWillBeModified();

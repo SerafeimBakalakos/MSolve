@@ -21,15 +21,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual
             ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering,
             IEnumerable<IElement> elements, IElementMatrixProvider matrixProvider);
 
-        //void CalcInverseKii(bool diagonalOnly);
-
         void ClearMatrices();
 
         void ExtractBoundaryInternalSubmatricesAndInvertKii(bool diagonalKii);
 
         void ExtractKbb();
-        //void ExtractKbiKib();
-
         void HandleDofOrderingWillBeModified();
 
         Vector MultiplyInverseKiiTimes(Vector vector, bool diagonalOnly);
