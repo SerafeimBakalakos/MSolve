@@ -85,7 +85,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Curves.Explicit.Line
                 if (element.StandardInterpolation.NodalNaturalCoordinates.Contains(p0)
                     && element.StandardInterpolation.NodalNaturalCoordinates.Contains(p1))
                 {
-                    triangleVertices.Add(new NaturalPoint(05 * (p0.Xi + p1.Xi), 0.5 * (p0.Eta + p1.Eta)));
+                    triangleVertices.Add(new NaturalPoint(0.5 * (p0.Xi + p1.Xi), 0.5 * (p0.Eta + p1.Eta)));
                 }
             }
 
@@ -115,7 +115,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Curves.Explicit.Line
             }
 
             // Make sure the segment is not tangent to the element
-            if (!IsElementOnTheSameSide(localNodeCoordinates)) throw new NotImplementedException(); //TODO: implement this case
+            //if (!IsElementOnTheSameSide(localNodeCoordinates)) throw new NotImplementedException(); //TODO: implement this case
 
             var intersectionsNatural = new List<NaturalPoint>();
             var intersectionsLocalX = new List<double>(); // Since they are intersections: localY = 0
@@ -330,7 +330,7 @@ namespace ISAAR.MSolve.XFEM.Thermal.Curves.Explicit.Line
 
 
             if (minY * maxY > 0.0) return true; // Not intersected by the segment or its extension
-            else if ((minX > Length) || (maxX > 0)) return true; // Intersected the segment's extension
+            else if ((minX > Length) || (maxX < 0)) return true; // Intersected the segment's extension
             else return false;
         }
 
