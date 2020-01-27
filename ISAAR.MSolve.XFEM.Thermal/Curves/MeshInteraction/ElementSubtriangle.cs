@@ -4,11 +4,11 @@ using System.Diagnostics;
 using System.Linq;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Thermal.Elements;
-using ISAAR.MSolve.XFEM.Thermal.Entities;
+using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
+using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
 
 //TODO: Perhaps it should also store it sign, store Gauss points and interpolate/extrapolate
-namespace ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Curves.MeshInteraction
 {
     public class ElementSubtriangle
     {

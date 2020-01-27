@@ -63,7 +63,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ISAAR.MSolve.XFEM", "ISAAR.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ISAAR.MSolve.XFEM.Tests", "ISAAR.MSolve.XFEM.Tests\ISAAR.MSolve.XFEM.Tests.csproj", "{1DED65B8-03C8-447A-9766-F23C1223623D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISAAR.MSolve.XFEM.Thermal", "ISAAR.MSolve.XFEM.Thermal\ISAAR.MSolve.XFEM.Thermal.csproj", "{9A289DA6-978E-425D-9AE0-1D26B3C0F628}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ISAAR.MSolve.XFEM.ThermalOLD", "ISAAR.MSolve.XFEM.Thermal\ISAAR.MSolve.XFEM.ThermalOLD.csproj", "{9A289DA6-978E-425D-9AE0-1D26B3C0F628}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISAAR.MSolve.XFEM.Multiphase", "ISAAR.MSolve.XFEM.Multiphase\ISAAR.MSolve.XFEM.Multiphase.csproj", "{4BC407BF-154F-4723-B480-38199E3EC378}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -399,6 +401,18 @@ Global
 		{9A289DA6-978E-425D-9AE0-1D26B3C0F628}.Release|x64.Build.0 = Release|Any CPU
 		{9A289DA6-978E-425D-9AE0-1D26B3C0F628}.Release|x86.ActiveCfg = Release|Any CPU
 		{9A289DA6-978E-425D-9AE0-1D26B3C0F628}.Release|x86.Build.0 = Release|Any CPU
+		{4BC407BF-154F-4723-B480-38199E3EC378}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BC407BF-154F-4723-B480-38199E3EC378}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BC407BF-154F-4723-B480-38199E3EC378}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4BC407BF-154F-4723-B480-38199E3EC378}.Debug|x64.Build.0 = Debug|Any CPU
+		{4BC407BF-154F-4723-B480-38199E3EC378}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4BC407BF-154F-4723-B480-38199E3EC378}.Debug|x86.Build.0 = Debug|Any CPU
+		{4BC407BF-154F-4723-B480-38199E3EC378}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BC407BF-154F-4723-B480-38199E3EC378}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BC407BF-154F-4723-B480-38199E3EC378}.Release|x64.ActiveCfg = Release|Any CPU
+		{4BC407BF-154F-4723-B480-38199E3EC378}.Release|x64.Build.0 = Release|Any CPU
+		{4BC407BF-154F-4723-B480-38199E3EC378}.Release|x86.ActiveCfg = Release|Any CPU
+		{4BC407BF-154F-4723-B480-38199E3EC378}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

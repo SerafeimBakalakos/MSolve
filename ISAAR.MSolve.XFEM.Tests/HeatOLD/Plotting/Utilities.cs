@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.Curves;
-using ISAAR.MSolve.XFEM.Thermal.Output.Fields;
-using ISAAR.MSolve.XFEM.Thermal.Output.Writers;
+using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
+using ISAAR.MSolve.XFEM.ThermalOLD.Curves;
+using ISAAR.MSolve.XFEM.ThermalOLD.Output.Fields;
+using ISAAR.MSolve.XFEM.ThermalOLD.Output.Writers;
 
-namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
+namespace ISAAR.MSolve.XFEM.Tests.HeatOLD.Plotting
 {
     internal static class Utilities
     {

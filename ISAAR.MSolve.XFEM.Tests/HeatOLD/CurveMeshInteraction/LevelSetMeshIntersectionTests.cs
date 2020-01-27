@@ -5,15 +5,15 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
-using ISAAR.MSolve.XFEM.Thermal.Elements;
-using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
+using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
+using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
+using ISAAR.MSolve.XFEM.ThermalOLD.Curves.MeshInteraction;
 using Xunit;
-using ISAAR.MSolve.XFEM.Thermal.Curves.LevelSetMethod;
+using ISAAR.MSolve.XFEM.ThermalOLD.Curves.LevelSetMethod;
 
 //TODO: Plot the intersections is a private constant is set to a non null path.
 //TODO: Standarize ploting intersections (e.g. intersection points, intersection segment, tangent points, tangent segment).
-namespace ISAAR.MSolve.XFEM.Tests.HEAT.CurveMeshInteraction
+namespace ISAAR.MSolve.XFEM.Tests.HeatOLD.CurveMeshInteraction
 {
     public static class LevelSetMeshIntersectionTests
     {

@@ -4,7 +4,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Logging.VTK;
 
-namespace ISAAR.MSolve.XFEM.Thermal.Output.Mesh
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Output.Mesh
 {
     public class ContinuousOutputMesh<TNode> : IOutputMesh<TNode> where TNode : INode
     {

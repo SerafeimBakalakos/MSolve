@@ -2,7 +2,7 @@
 using ISAAR.MSolve.Logging.VTK;
 
 //TODO: Perhaps I should use IDs for vertices, cells and avoid any generics.
-namespace ISAAR.MSolve.XFEM.Thermal.Output.Mesh
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Output.Mesh
 {
     /// <summary>
     /// Stores vertices and cells used for output (so far visualization). Also defines associations between the vertices

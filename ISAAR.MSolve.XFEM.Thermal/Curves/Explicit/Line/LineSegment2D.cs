@@ -8,13 +8,13 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
-using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
-using ISAAR.MSolve.XFEM.Thermal.Elements;
-using ISAAR.MSolve.XFEM.Thermal.Entities;
+using ISAAR.MSolve.XFEM.ThermalOLD.Curves.MeshInteraction;
+using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
+using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
 using static ISAAR.MSolve.Geometry.Shapes.LineSegment2D;
 
 //TODO: Remove diplivations between this and Geometry.Shapes.DirectedSegment2D
-namespace ISAAR.MSolve.XFEM.Thermal.Curves.Explicit.Line
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Curves.Explicit.Line
 {
     public class LineSegment2D : ICurve2D
     {

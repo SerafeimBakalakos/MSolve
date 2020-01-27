@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.XFEM.Thermal.Enrichments.Functions;
+using ISAAR.MSolve.XFEM.ThermalOLD.Enrichments.Functions;
 
-namespace ISAAR.MSolve.XFEM.Thermal.Entities
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Entities
 {
     public class EnrichedDof: IDofType
     {

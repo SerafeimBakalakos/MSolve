@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using ISAAR.MSolve.Logging.VTK;
-using ISAAR.MSolve.XFEM.Thermal.Output.Mesh;
+using ISAAR.MSolve.XFEM.ThermalOLD.Output.Mesh;
 
-namespace ISAAR.MSolve.XFEM.Thermal.Output.Writers
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Output.Writers
 {
     public class VtkFileWriter : IDisposable
     {

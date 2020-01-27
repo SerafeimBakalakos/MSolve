@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
 
-namespace ISAAR.MSolve.XFEM.Thermal.Entities
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Entities
 {
     public class PhaseJunction
     {

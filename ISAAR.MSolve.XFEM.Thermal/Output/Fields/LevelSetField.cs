@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.Curves;
-using ISAAR.MSolve.XFEM.Thermal.Output.Mesh;
+using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
+using ISAAR.MSolve.XFEM.ThermalOLD.Curves;
+using ISAAR.MSolve.XFEM.ThermalOLD.Output.Mesh;
 
-namespace ISAAR.MSolve.XFEM.Thermal.Output.Fields
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Output.Fields
 {
     public class LevelSetField
     {

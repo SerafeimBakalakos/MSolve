@@ -14,40 +14,37 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
-using ISAAR.MSolve.XFEM.Thermal.Elements;
-using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.Integration;
-using ISAAR.MSolve.XFEM.Thermal.Curves;
-using ISAAR.MSolve.XFEM.Thermal.MaterialInterface;
-using ISAAR.MSolve.XFEM.Thermal.Materials;
-using ISAAR.MSolve.XFEM.Thermal.Output.Enrichments;
-using ISAAR.MSolve.XFEM.Thermal.Output.Fields;
-using ISAAR.MSolve.XFEM.Thermal.Output.Mesh;
-using ISAAR.MSolve.XFEM.Thermal.Output.Writers;
-using ISAAR.MSolve.XFEM.Thermal.Curves.LevelSetMethod;
+using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
+using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
+using ISAAR.MSolve.XFEM.ThermalOLD.Integration;
+using ISAAR.MSolve.XFEM.ThermalOLD.Curves;
+using ISAAR.MSolve.XFEM.ThermalOLD.MaterialInterface;
+using ISAAR.MSolve.XFEM.ThermalOLD.Materials;
+using ISAAR.MSolve.XFEM.ThermalOLD.Output.Fields;
+using ISAAR.MSolve.XFEM.ThermalOLD.Output.Mesh;
+using ISAAR.MSolve.XFEM.ThermalOLD.Output.Writers;
+using ISAAR.MSolve.XFEM.ThermalOLD.Curves.LevelSetMethod;
 
-namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
+namespace ISAAR.MSolve.XFEM.Tests.HeatOLD.Plotting
 {
-    public static class ThermalInclusionMultisplitBalls2D
+    public static class ThermalInclusionMultipleBalls2D
     {
-        private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls";
-        private const string pathHeatFlux = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls\heat_flux.vtk";
-        private const string pathMesh = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls\conforming_mesh.vtk";
-        private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\MultisplitBalls\temperature.vtk";
+        private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\MultipleBalls";
+        private const string pathHeatFlux = @"C:\Users\Serafeim\Desktop\HEAT\MultipleBalls\heat_flux.vtk";
+        private const string pathMesh = @"C:\Users\Serafeim\Desktop\HEAT\MultipleBalls\conforming_mesh.vtk";
+        private const string pathTemperature = @"C:\Users\Serafeim\Desktop\HEAT\MultipleBalls\temperature.vtk";
 
         private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0;
         private const double thickness = 1.0;
-
-        // There are 2 or more inclusions in the same element
-        private const int numElementsX = 15, numElementsY = 15;
-        private const int numBallsX = 2, numBallsY = 1;
-        private const double ballRadius = 0.3;
+        private const int numElementsX = 100, numElementsY = 100;
+        private const int numBallsX = 5, numBallsY = 5;
+        private const double ballRadius = 0.1;
 
         private const double zeroLevelSetTolerance = 1E-6;
         private const int subdomainID = 0;
 
-        private const double conductivityMatrix = 1E0, conductivityInclusion = 1E4;
-        private const double interfaceConductivityLeft = 1E0, interfaceConductivityRight = 1E0;
+        private const double conductivityMatrix = 1.0, conductivityInclusion = 10000;
+        private const double interfaceResistance = 1E-10;
 
         public static void PlotLevelSets()
         {
@@ -55,7 +52,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             (XModel model, GeometricModel2D geometricModel) = CreateModel(numElementsX, numElementsY);
             InitializeLSM(model, geometricModel);
 
-            // Plot original mesh and level sets
+            // Plot mesh and level sets
             Utilities.PlotInclusionLevelSets(outputDirectory, "level_set", model, geometricModel);
         }
 
@@ -93,10 +90,6 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 
             // Plot original mesh and level sets
             Utilities.PlotInclusionLevelSets(outputDirectory, "level_set", model, geometricModel);
-
-            // Plot enrichments
-            var enrichmentPlotter = new EnrichmentPlotter(model, geometricModel, outputDirectory);
-            enrichmentPlotter.PlotEnrichedNodes();
 
             // Plot conforming mesh and temperature field
             using (var writer = new VtkFileWriter(pathTemperature))
@@ -137,7 +130,6 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
                 IVectorView solution = solver.LinearSystems[subdomainID].Solution;
                 writer.WriteScalarField("temperature", mesh, temperatureField.CalcValuesAtVertices(solution));
                 writer.WriteVector2DField("heat_flux", mesh, fluxField.CalcValuesAtVertices(solution));
-
             }
         }
 
@@ -148,13 +140,12 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 
 
             // Materials
-            double thickness = 1.0;
             double density = 1.0;
             double specificHeat = 1.0;
-            var interfaceLSM = new GeometricModel2D(thickness);
+            var geometricModel = new GeometricModel2D(thickness);
             var materialPos = new ThermalMaterial(density, specificHeat, conductivityMatrix);
             var materialNeg = new ThermalMaterial(density, specificHeat, conductivityInclusion);
-            var materialField = new ThermalMultiMaterialField2D(materialPos, materialNeg, interfaceLSM);
+            var materialField = new ThermalMultiMaterialField2D(materialPos, materialNeg, geometricModel);
 
             // Mesh generation
             var meshGen = new UniformMeshGenerator2D<XNode>(xMin, yMin, xMax, yMax, numElementsX, numElementsY);
@@ -180,7 +171,7 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
             ApplyBoundaryConditions(model);
 
             model.ConnectDataStructures();
-            return (model, interfaceLSM);
+            return (model, geometricModel);
         }
 
         private static void ApplyBoundaryConditions(XModel model)
@@ -204,12 +195,11 @@ namespace ISAAR.MSolve.XFEM.Tests.HEAT.Plotting
 
         private static void ApplyEnrichments(XModel model, GeometricModel2D geometricModel)
         {
-            int numCurves = geometricModel.SingleCurves.Count;
-            var interfaceResistances = new double[numCurves];
-            interfaceResistances[0] = 1 / interfaceConductivityLeft;
-            interfaceResistances[1] = 1 / interfaceConductivityRight;
-            var materialInterface = new MultiMaterialInterfaceEnricher(geometricModel, model.Elements.Select(e => (XThermalElement2D)e),
-                interfaceResistances);
+            var interfaceResistances = new double[numBallsX * numBallsY];
+            for (int b = 0; b < numBallsX * numBallsY; ++b) interfaceResistances[b] = interfaceResistance;
+
+            var materialInterface = new MultiMaterialInterfaceEnricher(geometricModel, 
+                model.Elements.Select(e => (XThermalElement2D)e), interfaceResistances);
             materialInterface.ApplyEnrichments();
         }
 

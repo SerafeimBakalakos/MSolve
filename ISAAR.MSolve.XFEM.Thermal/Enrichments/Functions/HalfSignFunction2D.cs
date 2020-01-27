@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Functions
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Enrichments.Functions
 {
     public class HalfSignFunction2D : IEnrichmentFunction
     {

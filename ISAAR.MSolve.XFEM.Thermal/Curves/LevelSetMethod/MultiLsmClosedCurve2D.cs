@@ -6,12 +6,12 @@ using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.Geometry.Triangulation;
-using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
-using ISAAR.MSolve.XFEM.Thermal.Elements;
-using ISAAR.MSolve.XFEM.Thermal.Entities;
+using ISAAR.MSolve.XFEM.ThermalOLD.Curves.MeshInteraction;
+using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
+using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
 
 //TODO: Delete this class
-namespace ISAAR.MSolve.XFEM.Thermal.Curves.LevelSetMethod
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Curves.LevelSetMethod
 {
     public class MultiLsmClosedCurve2D : ICurve2D
     {

@@ -2,11 +2,11 @@
 using System.Linq;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Triangulation;
-using ISAAR.MSolve.XFEM.Thermal.Elements;
-using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
-using ISAAR.MSolve.XFEM.Thermal.Curves;
+using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
+using ISAAR.MSolve.XFEM.ThermalOLD.Curves.MeshInteraction;
+using ISAAR.MSolve.XFEM.ThermalOLD.Curves;
 
-namespace ISAAR.MSolve.XFEM.Thermal.Entities
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Entities
 {
     public class GeometricModel2D
     {

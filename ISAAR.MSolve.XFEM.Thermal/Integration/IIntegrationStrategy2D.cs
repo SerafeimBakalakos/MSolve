@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Integration;
 
-namespace ISAAR.MSolve.XFEM.Thermal.Integration
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Integration
 {
     // Not sure if generics are needed. I could just have different interfaces for different element types. 
     // It would make sense if some of the actual integration strategy implementations would work for many element types.

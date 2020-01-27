@@ -1,4 +1,4 @@
-﻿namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Functions
+﻿namespace ISAAR.MSolve.XFEM.ThermalOLD.Enrichments.Functions
 {
     public interface IStepFunctionFunction : IEnrichmentFunction
     {

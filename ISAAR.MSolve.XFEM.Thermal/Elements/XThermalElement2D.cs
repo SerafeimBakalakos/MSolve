@@ -14,14 +14,14 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.Thermal.Enrichments;
-using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.Integration;
-using ISAAR.MSolve.XFEM.Thermal.Curves.MeshInteraction;
-using ISAAR.MSolve.XFEM.Thermal.Materials;
+using ISAAR.MSolve.XFEM.ThermalOLD.Enrichments;
+using ISAAR.MSolve.XFEM.ThermalOLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
+using ISAAR.MSolve.XFEM.ThermalOLD.Integration;
+using ISAAR.MSolve.XFEM.ThermalOLD.Curves.MeshInteraction;
+using ISAAR.MSolve.XFEM.ThermalOLD.Materials;
 
-namespace ISAAR.MSolve.XFEM.Thermal.Elements
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Elements
 {
     public class XThermalElement2D : IXFiniteElement 
     {

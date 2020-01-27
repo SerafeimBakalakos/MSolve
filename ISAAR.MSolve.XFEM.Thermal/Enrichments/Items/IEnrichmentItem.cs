@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Thermal.Elements;
-using ISAAR.MSolve.XFEM.Thermal.Entities;
+using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
+using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
 
-namespace ISAAR.MSolve.XFEM.Thermal.Enrichments.Items
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Enrichments.Items
 {
     // Connects the geometry, model and enrichment function entities.
     // TODO: At this point it does most of the work in 1 class. Appropriate decomposition is needed.

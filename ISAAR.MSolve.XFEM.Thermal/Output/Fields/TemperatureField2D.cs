@@ -6,12 +6,12 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Logging.VTK;
-using ISAAR.MSolve.XFEM.Thermal.Elements;
-using ISAAR.MSolve.XFEM.Thermal.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.Output.Mesh;
+using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
+using ISAAR.MSolve.XFEM.ThermalOLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
+using ISAAR.MSolve.XFEM.ThermalOLD.Output.Mesh;
 
-namespace ISAAR.MSolve.XFEM.Thermal.Output.Fields
+namespace ISAAR.MSolve.XFEM.ThermalOLD.Output.Fields
 {
     public class TemperatureField2D
     {

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using ISAAR.MSolve.XFEM.Thermal.Entities;
-using ISAAR.MSolve.XFEM.Thermal.Curves;
+using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
+using ISAAR.MSolve.XFEM.ThermalOLD.Curves;
 
-namespace ISAAR.MSolve.XFEM.Thermal.MaterialInterface.SingularityResolving
+namespace ISAAR.MSolve.XFEM.ThermalOLD.MaterialInterface.SingularityResolving
 {
     public interface IHeavisideSingularityResolver
     {
