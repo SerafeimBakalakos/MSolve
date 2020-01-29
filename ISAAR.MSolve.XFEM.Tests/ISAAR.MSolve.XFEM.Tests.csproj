@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ISAAR.MSolve.LinearAlgebra\ISAAR.MSolve.LinearAlgebra.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.Problems\ISAAR.MSolve.Problems.csproj" />
+    <ProjectReference Include="..\ISAAR.MSolve.XFEM.Multiphase\ISAAR.MSolve.XFEM.Multiphase.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.XFEM.Thermal\ISAAR.MSolve.XFEM.ThermalOLD.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.XFEM\ISAAR.MSolve.XFEM.csproj" />
   </ItemGroup>

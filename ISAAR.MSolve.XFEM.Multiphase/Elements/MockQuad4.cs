@@ -62,7 +62,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
 
         public IReadOnlyList<XNode> Nodes { get; }
 
-        public IIsoparametricInterpolation2D StandardInterpolation => throw new NotImplementedException();
+        public IIsoparametricInterpolation2D StandardInterpolation => InterpolationQuad4.UniqueInstance;
 
         public XSubdomain Subdomain { get; set; }
 
