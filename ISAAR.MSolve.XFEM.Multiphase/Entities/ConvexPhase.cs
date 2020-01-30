@@ -58,13 +58,6 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
             IEnumerable<IXFiniteElement> nearbyElements = FindNearbyElements();
             foreach (IXFiniteElement element in nearbyElements)
             {
-                #region debug
-                if (Math.Abs(element.Nodes[0].X - (0.82)) <= 1E-6 && Math.Abs(element.Nodes[0].Y - 0.18) <= 1E-6)
-                {
-                    Console.WriteLine();
-                }
-                #endregion
-
                 bool isInside = ContainsCompletely(element);
                 if (isInside)
                 {
@@ -76,6 +69,13 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
                     bool isIntersected = false;
                     foreach (PhaseBoundary boundary in Boundaries)
                     {
+                        // This boundary-element intersection may have already been calculated from the opposite phase. 
+                        if (element.PhaseIntersections.ContainsKey(boundary))
+                        {
+                            isIntersected = true;
+                            continue;
+                        }
+
                         CurveElementIntersection intersection = boundary.Segment.IntersectElement(element, meshTolerance);
                         if (intersection.RelativePosition == RelativePositionCurveElement.Intersection)
                         {

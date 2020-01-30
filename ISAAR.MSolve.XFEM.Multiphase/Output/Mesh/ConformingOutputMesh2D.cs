@@ -6,7 +6,7 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Logging.VTK;
 using ISAAR.MSolve.XFEM.Multiphase.Elements;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Curves.MeshInteraction;
+using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 
 //TODO: Needs tidying up.
 namespace ISAAR.MSolve.XFEM.Multiphase.Output.Mesh

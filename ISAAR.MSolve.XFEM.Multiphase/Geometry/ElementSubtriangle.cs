@@ -8,7 +8,7 @@ using ISAAR.MSolve.XFEM.Multiphase.Elements;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
 
 //TODO: Perhaps it should also store it sign, store Gauss points and interpolate/extrapolate
-namespace ISAAR.MSolve.XFEM.Multiphase.Curves.MeshInteraction
+namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
 {
     public class ElementSubtriangle
     {
