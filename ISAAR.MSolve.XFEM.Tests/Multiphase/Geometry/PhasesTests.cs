@@ -8,12 +8,17 @@ using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.XFEM.Multiphase.Elements;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 using ISAAR.MSolve.XFEM.Multiphase.Output;
+using ISAAR.MSolve.XFEM.Multiphase.Output.Mesh;
+using ISAAR.MSolve.XFEM.Multiphase.Output.Writers;
 
 namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
 {
     public static class PhasesTests
     {
+        private const string pathConformingMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\conforming_mesh.vtk";
+        private const string pathElementPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\element_phases.vtk";
         private const string pathNodalPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\nodal_phases.vtk";
         private const string pathPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\phases.vtk";
 
@@ -30,18 +35,30 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
         private const double conductivityMatrix = 1.0, conductivityInclusion = 1000.0;
         private const double interfaceResistance = 1E-2;
 
-        public static void PlotNodalPhases()
+        public static void PlotPhaseInteractions()
         {
             XModel physicalModel = CreatePhysicalModel();
             GeometricModel geometricModel = CreateGeometricModel(physicalModel);
-            var logger = new PhasePlotter(physicalModel, geometricModel, false);
-            logger.PlotPhases(pathPhases);
-            logger.PlotNodes(pathNodalPhases);
+            geometricModel.FindConformingMesh();
+
+            var plotter = new PhasePlotter(physicalModel, geometricModel, -10);
+            plotter.PlotPhases(pathPhases);
+            plotter.PlotNodes(pathNodalPhases);
+
+            var conformingMesh = new ConformingOutputMesh2D(geometricModel, physicalModel.Nodes, physicalModel.Elements);
+            plotter.PlotElements(pathElementPhases, conformingMesh);
+
+            //// Plot conforming mesh
+            //using (var writer = new VtkFileWriter(pathConformingMesh))
+            //{
+            //    writer.WriteMesh(conformingMesh);
+            //}
         }
 
         private static GeometricModel CreateGeometricModel(XModel physicalModel)
         {
             var geometricModel = new GeometricModel(physicalModel);
+            geometricModel.MeshTolerance = new UsedDefinedMeshTolerance(elementSize: (maxX - minX) / numElementsX);
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases.Add(defaultPhase);
             List<Rectangle2D> rectangles = ScatterDisjointCNTs();
@@ -62,6 +79,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
                 }
             }
             geometricModel.AssossiatePhasesNodes();
+            geometricModel.AssociatePhasesElements();
             return geometricModel;
         }
 
@@ -69,7 +87,6 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
         {
             var model = new XModel();
             model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
-
 
             // Materials
             double density = 1.0;

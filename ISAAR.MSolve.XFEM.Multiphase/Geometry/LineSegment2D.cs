@@ -140,6 +140,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
             else throw new NotImplementedException("Unpredicted case");
         }
 
+        public double SignedDistanceOf(CartesianPoint point) => -sina * point.X + cosa * point.Y + originLocalY;
         public double SignedDistanceOf(XNode node) => -sina * node.X + cosa * node.Y + originLocalY;
 
         public double SignedDistanceOf(IXFiniteElement element, double[] shapeFunctionsAtNaturalPoint)
@@ -327,9 +328,9 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
             foreach ((double r, double s) in localNodeCoordinates.Values)
             {
                 if (r < minR) minR = r;
-                else if (r > maxR) maxR = r;
+                if (r > maxR) maxR = r;
                 if (s < minS) minS = s;
-                else if (s > maxS) maxS = s;
+                if (s > maxS) maxS = s;
             }
 
             if (minS * maxS > 0.0) return true; // Not intersected by the segment or its extension

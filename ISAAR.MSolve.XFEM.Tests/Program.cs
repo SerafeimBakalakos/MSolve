@@ -10,7 +10,7 @@ namespace ISAAR.MSolve.XFEM.Tests
     {
         public static void Main(string[] args)
         {
-            PhasesTests.PlotNodalPhases();
+            PhasesTests.PlotPhaseInteractions();
 
 
             //ThermalInclusionBall2D.PlotLevelSets();

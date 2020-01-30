@@ -8,6 +8,7 @@ using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 
 namespace ISAAR.MSolve.XFEM.Multiphase.Elements
 {
@@ -73,6 +74,11 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
         public CellType CellType { get; }
 
         public IElementDofEnumerator DofEnumerator { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public Dictionary<PhaseBoundary, CurveElementIntersection> PhaseIntersections { get; } 
+            = new Dictionary<PhaseBoundary, CurveElementIntersection>();
+
+        public List<IPhase> Phases { get; } = new List<IPhase>(4);
 
         IReadOnlyList<INode> IElement.Nodes => Nodes;
 

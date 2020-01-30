@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.XFEM.Multiphase.Elements;
+using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 
 namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 {
@@ -19,14 +20,24 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
         /// For best performance, call it after all other phases.
         /// </summary>
         /// <param name="nodes"></param>
-        public void FindContainedNodes(IEnumerable<XNode> nodes)
+        public void InteractWithNodes(IEnumerable<XNode> nodes)
         {
-            ContainedNodes.Clear();
             foreach (XNode node in nodes)
             {
                 if (node.SurroundingPhase == null) node.SurroundingPhase = this;
             }
         }
 
+        /// <summary>
+        /// This must be called after all other phases have finished.
+        /// </summary>
+        /// <param name="elements"></param>
+        public void InteractWithElements(IEnumerable<IXFiniteElement> elements, IMeshTolerance meshTolerance)
+        {
+            foreach (IXFiniteElement element in elements)
+            {
+                if (element.Phases.Count == 0) element.Phases.Add(this);
+            }
+        }
     }
 }
