@@ -29,13 +29,11 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
         /// </summary>
         private readonly double[] normalVector;
 
-        private readonly CartesianPoint start, end;
-
         public LineSegment2D(CartesianPoint start, CartesianPoint end, double thickness)
         {
             this.Thickness = thickness;
-            this.start = start;
-            this.end = end;
+            this.Start = start;
+            this.End = end;
 
             double startX = start.X;
             double startY = start.Y;
@@ -52,9 +50,13 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
             normalVector = new double[] { -sina, cosa };
         }
 
+        public CartesianPoint End { get; }
+
         public double Length { get; }
 
         public double Thickness { get; }
+
+        public CartesianPoint Start { get; }
 
         public CurveElementIntersection IntersectElement(IXFiniteElement element, IMeshTolerance meshTolerance)
         {

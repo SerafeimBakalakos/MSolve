@@ -153,7 +153,6 @@ namespace ISAAR.MSolve.XFEM.Tests.HeatOLD.Plotting
             var model = new XModel();
             model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
 
-
             // Materials
             double density = 1.0;
             double specificHeat = 1.0;

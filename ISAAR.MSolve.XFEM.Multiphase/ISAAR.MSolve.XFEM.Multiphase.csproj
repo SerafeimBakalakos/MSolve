@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ISAAR.MSolve.FEM\ISAAR.MSolve.FEM.csproj" />
+    <ProjectReference Include="..\ISAAR.MSolve.Logging\ISAAR.MSolve.Logging.csproj" />
   </ItemGroup>
 
 </Project>

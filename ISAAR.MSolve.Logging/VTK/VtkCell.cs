@@ -13,6 +13,10 @@ namespace ISAAR.MSolve.Logging.VTK
         private static readonly IReadOnlyDictionary<CellType, int> cellTypeCodes = 
             new Dictionary<CellType, int>
             {
+                { CellType.Line, 3 },
+
+                { CellType.Polygon, 7 },
+
                                             // 3 ---- 2
                                             // |      |
                                             // |      |

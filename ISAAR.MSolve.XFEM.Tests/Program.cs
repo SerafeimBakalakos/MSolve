@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.XFEM.Tests.HeatOLD.Plotting;
+using ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry;
 
 namespace ISAAR.MSolve.XFEM.Tests
 {
@@ -9,6 +10,9 @@ namespace ISAAR.MSolve.XFEM.Tests
     {
         public static void Main(string[] args)
         {
+            PhasesTests.PlotNodalPhases();
+
+
             //ThermalInclusionBall2D.PlotLevelSets();
             //ThermalInclusionBall2D.PlotConformingMesh();
             //ThermalInclusionBall2D.PlotTemperature();
@@ -27,7 +31,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             //ThermalInclusionCNTsNottingham.PlotLevelSets();
             //ThermalInclusionCNTsNottingham.PlotConformingMesh();
             //ThermalInclusionCNTsNottingham.PlotTemperature();
-            ThermalInclusionCNTsNottingham.PlotTemperatureAndFlux();
+            //ThermalInclusionCNTsNottingham.PlotTemperatureAndFlux();
 
             //ThreewayJunction2D.PlotLevelSetsAndEnrichments();
         }

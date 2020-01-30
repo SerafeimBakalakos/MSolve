@@ -14,6 +14,8 @@ namespace ISAAR.MSolve.Discretization.Mesh
         // 0 ---- 1
         Line,
 
+        Polygon,
+
         // 3 ---- 2							
         // |      |                            
         // |      |                            
