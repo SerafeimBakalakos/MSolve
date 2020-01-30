@@ -43,14 +43,8 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 
         //public bool IsEnriched => EnrichmentItems.Count > 0;
 
-        //public new Dictionary<int, XSubdomain> SubdomainsDictionary { get; } = new Dictionary<int, XSubdomain>();
+        public IPhase SurroundingPhase { get; set; }
 
-        public void BuildXSubdomainDictionary()
-        {
-            foreach (IXFiniteElement element in ElementsDictionary.Values)
-            {
-                SubdomainsDictionary[element.Subdomain.ID] = element.Subdomain;
-            }
-        }
+        //public new Dictionary<int, XSubdomain> SubdomainsDictionary { get; } = new Dictionary<int, XSubdomain>();
     }
 }

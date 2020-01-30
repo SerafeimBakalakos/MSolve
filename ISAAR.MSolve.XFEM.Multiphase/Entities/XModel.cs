@@ -75,32 +75,33 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 
         private void BuildInterconnectionData()
         {
-            BuildSubdomainOfEachElement();
-
-            // Storing the elements of each node is done by the IMesh class, if necessary. TODO: Find out what problems this causes.
-            BuildElementDictionaryOfEachNode();
-
-            // TODO: Storing the subdomains of each node should be done by another class, if necessary.
-            foreach (XNode node in Nodes) node.BuildSubdomainDictionary();
-
-            foreach (XSubdomain subdomain in Subdomains.Values) subdomain.DefineNodesFromElements();
-        }
-
-        private void BuildElementDictionaryOfEachNode()
-        {
-            foreach (IXFiniteElement element in Elements)
-            {
-                foreach (XNode node in element.Nodes) node.ElementsDictionary[element.ID] = element;
-            }
-        }
-
-        private void BuildSubdomainOfEachElement()
-        {
+            // Associate each element with its subdomains
             foreach (XSubdomain subdomain in Subdomains.Values)
             {
                 foreach (IXFiniteElement element in subdomain.Elements) element.Subdomain = subdomain;
             }
+
+            // Associate each node with its elements
+            foreach (IXFiniteElement element in Elements)
+            {
+                foreach (XNode node in element.Nodes) node.ElementsDictionary[element.ID] = element;
+            }
+
+            // Associate each node with its subdomains
+            foreach (XNode node in Nodes)
+            {
+                foreach (IXFiniteElement element in node.ElementsDictionary.Values)
+                {
+                    node.SubdomainsDictionary[element.Subdomain.ID] = element.Subdomain;
+                }
+            }
+
+            // Associate each subdomain with its nodes
+            foreach (XSubdomain subdomain in Subdomains.Values) subdomain.DefineNodesFromElements();
         }
+
+
+        
 
         private void RemoveInactiveNodalLoads()
         {
