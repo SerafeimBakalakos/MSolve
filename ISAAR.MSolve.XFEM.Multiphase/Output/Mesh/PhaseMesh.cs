@@ -11,6 +11,30 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Output.Mesh
 {
     public class PhaseMesh<TNode> : IOutputMesh<TNode> where TNode : INode
     {
+        //public PhaseMesh(GeometricModel model)
+        //{
+        //    var vertices = new HashSet<VtkPoint>();
+        //    var cells = new HashSet<VtkCell>();
+        //    int vertexID = 0;
+        //    for (int i = 1; i < model.Phases.Count; ++i)
+        //    {
+        //        var phase = (ConvexPhase)(model.Phases[i]);
+        //        var polygonVertices = new List<VtkPoint>(phase.Boundaries.Count);
+        //        foreach (PhaseBoundary boundary in phase.Boundaries)
+        //        {
+        //            CartesianPoint point = boundary.Segment.Start;
+        //            var vertex = new VtkPoint(vertexID++, point.X, point.Y, point.Z);
+        //            polygonVertices.Add(vertex);
+        //            vertices.Add(vertex);
+        //        }
+        //        cells.Add(new VtkCell(CellType.Polygon, polygonVertices));
+        //    }
+        //    OutVertices = vertices;
+        //    NumOutVertices = vertices.Count;
+        //    OutCells = cells;
+        //    NumOutCells = cells.Count;
+        //}
+
         public PhaseMesh(GeometricModel model)
         {
             var vertices = new HashSet<VtkPoint>();
@@ -22,12 +46,16 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Output.Mesh
                 var polygonVertices = new List<VtkPoint>(phase.Boundaries.Count);
                 foreach (PhaseBoundary boundary in phase.Boundaries)
                 {
-                    CartesianPoint point = boundary.Segment.Start;
-                    var vertex = new VtkPoint(vertexID++, point.X, point.Y, point.Z);
-                    polygonVertices.Add(vertex);
-                    vertices.Add(vertex);
+                    CartesianPoint start = boundary.Segment.Start;
+                    var vertex0 = new VtkPoint(vertexID++, start.X, start.Y, start.Z);
+                    vertices.Add(vertex0);
+
+                    CartesianPoint end = boundary.Segment.End;
+                    var vertex1 = new VtkPoint(vertexID++, end.X, end.Y, end.Z);
+                    vertices.Add(vertex1);
+
+                    cells.Add(new VtkCell(CellType.Line, new VtkPoint[] { vertex0, vertex1 }));
                 }
-                cells.Add(new VtkCell(CellType.Polygon, polygonVertices));
             }
             OutVertices = vertices;
             NumOutVertices = vertices.Count;

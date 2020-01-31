@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             // ------------     /
             //
             IXFiniteElement element = CreateElement();
-            var curve = new LineSegment2D(new CartesianPoint(7, 2), new CartesianPoint(6, 0), 1.0);
+            var curve = new LineSegment2D(new CartesianPoint(7, 2), new CartesianPoint(6, 0));
 
             CurveElementIntersection intersection = curve.IntersectElement(element, meshTolerance);
             Assert.Equal(RelativePositionCurveElement.Disjoint, intersection.RelativePosition);
@@ -46,7 +46,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             //
 
             IXFiniteElement element = CreateElement();
-            var curve = new LineSegment2D(new CartesianPoint(4, 4), new CartesianPoint(3.5, 1.2), 1.0);
+            var curve = new LineSegment2D(new CartesianPoint(4, 4), new CartesianPoint(3.5, 1.2));
 
             CurveElementIntersection intersection = curve.IntersectElement(element, meshTolerance);
             Assert.Equal(RelativePositionCurveElement.Disjoint, intersection.RelativePosition);
@@ -67,7 +67,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             //
 
             IXFiniteElement element = CreateElement();
-            var curve = new LineSegment2D(new CartesianPoint(6, 2), new CartesianPoint(0, -1), 1.0);
+            var curve = new LineSegment2D(new CartesianPoint(6, 2), new CartesianPoint(0, -1));
 
             CurveElementIntersection intersection = curve.IntersectElement(element, meshTolerance);
             Assert.Equal(RelativePositionCurveElement.Intersection, intersection.RelativePosition);
@@ -97,7 +97,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             //
 
             IXFiniteElement element = CreateElement();
-            var curve = new LineSegment2D(new CartesianPoint(8, 2), new CartesianPoint(-4, -1), 1.0);
+            var curve = new LineSegment2D(new CartesianPoint(8, 2), new CartesianPoint(-4, -1));
 
             CurveElementIntersection intersection = curve.IntersectElement(element, meshTolerance);
             Assert.Equal(RelativePositionCurveElement.Intersection, intersection.RelativePosition);
@@ -126,7 +126,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             //
 
             IXFiniteElement element = CreateElement();
-            var curve = new LineSegment2D(new CartesianPoint(4, 2), new CartesianPoint(2.5, 0.5), 1.0);
+            var curve = new LineSegment2D(new CartesianPoint(4, 2), new CartesianPoint(2.5, 0.5));
 
             CurveElementIntersection intersection = curve.IntersectElement(element, meshTolerance);
             Assert.Equal(RelativePositionCurveElement.Intersection, intersection.RelativePosition);
@@ -157,7 +157,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             //
 
             IXFiniteElement element = CreateElement();
-            var curve = new LineSegment2D(new CartesianPoint(4, 2), new CartesianPoint(1, -1), 1.0);
+            var curve = new LineSegment2D(new CartesianPoint(4, 2), new CartesianPoint(1, -1));
 
             CurveElementIntersection intersection = curve.IntersectElement(element, meshTolerance);
             Assert.Equal(RelativePositionCurveElement.Intersection, intersection.RelativePosition);
@@ -188,7 +188,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             //
 
             IXFiniteElement element = CreateElement();
-            var curve = new LineSegment2D(new CartesianPoint(4, 2), new CartesianPoint(4, -1), 1.0);
+            var curve = new LineSegment2D(new CartesianPoint(4, 2), new CartesianPoint(4, -1));
 
 
             CurveElementIntersection intersection = curve.IntersectElement(element, meshTolerance);
@@ -218,7 +218,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             //
 
             IXFiniteElement element = CreateElement();
-            var curve = new LineSegment2D(new CartesianPoint(6, 0), new CartesianPoint(2, 2), 1.0);
+            var curve = new LineSegment2D(new CartesianPoint(6, 0), new CartesianPoint(2, 2));
 
             CurveElementIntersection intersection = curve.IntersectElement(element, meshTolerance);
             Assert.Equal(RelativePositionCurveElement.Tangent, intersection.RelativePosition);

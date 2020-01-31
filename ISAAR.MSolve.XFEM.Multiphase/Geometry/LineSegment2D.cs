@@ -29,9 +29,8 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
         /// </summary>
         private readonly double[] normalVector;
 
-        public LineSegment2D(CartesianPoint start, CartesianPoint end, double thickness)
+        public LineSegment2D(CartesianPoint start, CartesianPoint end)
         {
-            this.Thickness = thickness;
             this.Start = start;
             this.End = end;
 
@@ -53,8 +52,6 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
         public CartesianPoint End { get; }
 
         public double Length { get; }
-
-        public double Thickness { get; }
 
         public CartesianPoint Start { get; }
 
