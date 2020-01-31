@@ -10,8 +10,8 @@ namespace ISAAR.MSolve.XFEM.Tests
     {
         public static void Main(string[] args)
         {
-            //PhaseGeometryTests.PlotScatteredPhasesInteractions();
-            //PhaseGeometryTests.PlotTetrisPhasesInteractions();
+            PhaseGeometryTests.PlotScatteredPhasesInteractions();
+            PhaseGeometryTests.PlotTetrisPhasesInteractions();
             PhaseGeometryTests.PlotPercolationPhasesInteractions();
 
 

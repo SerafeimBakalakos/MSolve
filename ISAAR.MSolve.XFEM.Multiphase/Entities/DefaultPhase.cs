@@ -4,6 +4,8 @@ using System.Text;
 using ISAAR.MSolve.XFEM.Multiphase.Elements;
 using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 
+//TODO: Using a default phase messes up pretty much everything (avoiding it in collections, casts). Its geometry is too 
+//      different to treat it as other phases. It is imply it, than using an explit phase.
 namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 {
     public class DefaultPhase : IPhase

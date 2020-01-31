@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.XFEM.Multiphase.Elements;
-//using ISAAR.MSolve.XFEM.ThermalOLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM.Multiphase.Enrichment;
 
 namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 {
@@ -9,39 +9,29 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
     {
         public XNode(int id, double x, double y) : base(id, x, y)
         {
-            //this.EnrichmentItems = new Dictionary<IEnrichmentItem, double[]>();
         }
 
         public XNode(int id, double x, double y, double z) : base(id, x, y, z)
         {
-            //this.EnrichmentItems = new Dictionary<IEnrichmentItem, double[]>();
         }
 
         public new Dictionary<int, IXFiniteElement> ElementsDictionary { get; } = new Dictionary<int, IXFiniteElement>();
 
-        //public Dictionary<IEnrichmentItem, double[]> EnrichmentItems { get; }
+        public Dictionary<IEnrichment, double> Enrichments { get; } = new Dictionary<IEnrichment, double>();
 
-        //public int EnrichedDofsCount
-        //{
-        //    get
-        //    {
-        //        int count = 0;
-        //        foreach (IEnrichmentItem enrichment in EnrichmentItems.Keys) count += enrichment.Dofs.Count;
-        //        return count;
-        //    }
-        //}
+        public int EnrichedDofsCount => Enrichments.Count;
 
-        //public IReadOnlyList<EnrichedDof> EnrichedDofs
-        //{
-        //    get
-        //    {
-        //        var dofs = new List<EnrichedDof>();
-        //        foreach (IEnrichmentItem enrichment in EnrichmentItems.Keys) dofs.AddRange(enrichment.Dofs);
-        //        return dofs;
-        //    }
-        //}
+        public IReadOnlyList<EnrichedDof> EnrichedDofs
+        {
+            get
+            {
+                var dofs = new List<EnrichedDof>();
+                foreach (IEnrichment enrichment in Enrichments.Keys) dofs.Add(enrichment.Dof);
+                return dofs;
+            }
+        }
 
-        //public bool IsEnriched => EnrichmentItems.Count > 0;
+        public bool IsEnriched => Enrichments.Count > 0;
 
         public IPhase SurroundingPhase { get; set; }
 

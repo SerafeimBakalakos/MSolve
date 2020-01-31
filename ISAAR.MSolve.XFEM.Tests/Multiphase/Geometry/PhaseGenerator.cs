@@ -271,7 +271,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
 
         private CartesianPoint TranformSingle(double x, double y)
         {
-            double offsetX = 0.0555, offsetY = 0.0555, phi = Math.PI / 6.0;
+            double offsetX = 0.06, offsetY = 0.06, phi = Math.PI / 6.0;
 
             double r = Math.Sqrt(x * x + y * y);
             double theta = Math.Atan2(y, x);
