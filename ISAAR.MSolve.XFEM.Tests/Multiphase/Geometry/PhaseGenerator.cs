@@ -24,6 +24,140 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             this.numElementsPerAxis = numElementsPerAxis;
         }
 
+        public GeometricModel CreatePercolatedTetrisPhases(XModel physicalModel)
+        {
+            // Generate rectangles by rotating the following shapes
+            // 13----------14  15----------16   
+            //  |    (1)    |   |   (3)     |
+            //  5-------6---7---8---9--10--11------12
+            //          |    (2)    |   |    (4)    |
+            //  0       1-----------2   3-----------4
+            double rectLength = 0.7, rectHeight = rectLength / 5.0;
+            CartesianPoint P1  = TranformPerc(2 * rectLength / 3, 0.0);
+            CartesianPoint P2  = TranformPerc(5 * rectLength / 3, 0.0);
+            CartesianPoint P3  = TranformPerc(2 * rectLength, 0.0);
+            CartesianPoint P4  = TranformPerc(3 * rectLength, 0.0);
+            CartesianPoint P5  = TranformPerc(0.0, rectHeight);
+            CartesianPoint P6  = TranformPerc(2 * rectLength / 3, rectHeight);
+            CartesianPoint P7  = TranformPerc(1 * rectLength, rectHeight);
+            CartesianPoint P8  = TranformPerc(4 * rectLength / 3, rectHeight);
+            CartesianPoint P9  = TranformPerc(5 * rectLength / 3, rectHeight);
+            CartesianPoint P10 = TranformPerc(2 * rectLength, rectHeight);
+            CartesianPoint P11 = TranformPerc(7 * rectLength / 3, rectHeight);
+            CartesianPoint P12 = TranformPerc(3 * rectLength, rectHeight);
+            CartesianPoint P13 = TranformPerc(0.0, 2 * rectHeight);
+            CartesianPoint P14 = TranformPerc(1 * rectLength, 2 * rectHeight);
+            CartesianPoint P15 = TranformPerc(4 * rectLength / 3, 2 * rectHeight);
+            CartesianPoint P16 = TranformPerc(7 * rectLength / 3, 2 * rectHeight);
+
+            var phase0 = new DefaultPhase();
+            var phase1 = new ConvexPhase(1);
+            var phase2 = new ConvexPhase(2);
+            var phase3 = new ConvexPhase(3);
+            var phase4 = new ConvexPhase(4);
+
+            // Create boundaries and associate them with their phases
+            var L1_2 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P1, P2));
+            L1_2.PositivePhase = phase2;
+            L1_2.NegativePhase = phase0;
+            var L3_4 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P3, P4));
+            L3_4.PositivePhase = phase4;
+            L3_4.NegativePhase = phase0;
+            var L5_6 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P5, P6));
+            L5_6.PositivePhase = phase1;
+            L5_6.NegativePhase = phase0;
+            var L6_7 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P6, P7));
+            L6_7.PositivePhase = phase1;
+            L6_7.NegativePhase = phase2;
+            var L7_8 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P7, P8));
+            L7_8.PositivePhase = phase0;
+            L7_8.NegativePhase = phase2;
+            var L8_9 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P8, P9));
+            L8_9.PositivePhase = phase3;
+            L8_9.NegativePhase = phase2;
+            var L9_10 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P9, P10));
+            L9_10.PositivePhase = phase3;
+            L9_10.NegativePhase = phase0;
+            var L10_11 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P10, P11));
+            L10_11.PositivePhase = phase3;
+            L10_11.NegativePhase = phase4;
+            var L11_12 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P11, P12));
+            L11_12.PositivePhase = phase0;
+            L11_12.NegativePhase = phase4;
+            var L13_14 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P13, P14));
+            L13_14.PositivePhase = phase0;
+            L13_14.NegativePhase = phase1;
+            var L15_16 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P15, P16));
+            L15_16.PositivePhase = phase0;
+            L15_16.NegativePhase = phase3;
+
+            var L1_6 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P1, P6));
+            L1_6.PositivePhase = phase0;
+            L1_6.NegativePhase = phase2;
+            var L2_9 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P2, P9));
+            L2_9.PositivePhase = phase2;
+            L2_9.NegativePhase = phase0;
+            var L3_10 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P3, P10));
+            L3_10.PositivePhase = phase0;
+            L3_10.NegativePhase = phase4;
+            var L4_12 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P4, P12));
+            L4_12.PositivePhase = phase4;
+            L4_12.NegativePhase = phase0;
+            var L5_13 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P5, P13));
+            L5_13.PositivePhase = phase0;
+            L5_13.NegativePhase = phase1;
+            var L7_14 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P7, P14));
+            L7_14.PositivePhase = phase1;
+            L7_14.NegativePhase = phase0;
+            var L8_15 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P8, P15));
+            L8_15.PositivePhase = phase0;
+            L8_15.NegativePhase = phase3;
+            var L11_16 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P11, P16));
+            L11_16.PositivePhase = phase3;
+            L11_16.NegativePhase = phase0;
+
+            // Associate each phase with its boundaries
+            phase1.Boundaries.Add(L5_6);
+            phase1.Boundaries.Add(L6_7);
+            phase1.Boundaries.Add(L13_14);
+            phase1.Boundaries.Add(L5_13);
+            phase1.Boundaries.Add(L7_14);
+
+            phase2.Boundaries.Add(L1_2);
+            phase2.Boundaries.Add(L6_7);
+            phase2.Boundaries.Add(L7_8);
+            phase2.Boundaries.Add(L8_9);
+            phase2.Boundaries.Add(L1_6);
+            phase2.Boundaries.Add(L2_9);
+
+            phase3.Boundaries.Add(L8_9);
+            phase3.Boundaries.Add(L9_10);
+            phase3.Boundaries.Add(L10_11);
+            phase3.Boundaries.Add(L15_16);
+            phase3.Boundaries.Add(L8_15);
+            phase3.Boundaries.Add(L11_16);
+
+            phase4.Boundaries.Add(L3_4);
+            phase4.Boundaries.Add(L10_11);
+            phase4.Boundaries.Add(L11_12);
+            phase4.Boundaries.Add(L3_10);
+            phase4.Boundaries.Add(L4_12);
+
+            // Initialize model
+            var geometricModel = new GeometricModel(physicalModel);
+            double elementSize = (maxX - minX) / numElementsPerAxis;
+            geometricModel.MeshTolerance = new UsedDefinedMeshTolerance(elementSize);
+            geometricModel.Phases.Add(phase0);
+            geometricModel.Phases.Add(phase1);
+            geometricModel.Phases.Add(phase2);
+            geometricModel.Phases.Add(phase3);
+            geometricModel.Phases.Add(phase4);
+
+            geometricModel.AssossiatePhasesNodes();
+            geometricModel.AssociatePhasesElements();
+            return geometricModel;
+        }
+
         public GeometricModel CreateScatterRectangularPhases(XModel physicalModel)
         {
             // Generate rectangles
@@ -67,14 +201,14 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             //        A-----------B
             //
             double rectLength = 0.4, rectHeight = rectLength / 4.0;
-            CartesianPoint A = Tranform(0.5 * rectLength, 0.0);
-            CartesianPoint B = Tranform(1.5 * rectLength, 0.0);
-            CartesianPoint C = Tranform(0.0, rectHeight);
-            CartesianPoint D = Tranform(0.5 * rectLength, rectHeight);
-            CartesianPoint E = Tranform(rectLength, rectHeight);
-            CartesianPoint F = Tranform(1.5 * rectLength, rectHeight);
-            CartesianPoint G = Tranform(0.0, 2.0 * rectHeight);
-            CartesianPoint H = Tranform(rectLength, 2.0 * rectHeight);
+            CartesianPoint A = TranformSingle(0.5 * rectLength, 0.0);
+            CartesianPoint B = TranformSingle(1.5 * rectLength, 0.0);
+            CartesianPoint C = TranformSingle(0.0, rectHeight);
+            CartesianPoint D = TranformSingle(0.5 * rectLength, rectHeight);
+            CartesianPoint E = TranformSingle(rectLength, rectHeight);
+            CartesianPoint F = TranformSingle(1.5 * rectLength, rectHeight);
+            CartesianPoint G = TranformSingle(0.0, 2.0 * rectHeight);
+            CartesianPoint H = TranformSingle(rectLength, 2.0 * rectHeight);
 
             var phase0 = new DefaultPhase();
             var phase1 = new ConvexPhase(1);
@@ -135,9 +269,20 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             return geometricModel;
         }
 
-        private CartesianPoint Tranform(double x, double y)
+        private CartesianPoint TranformSingle(double x, double y)
         {
             double offsetX = 0.0555, offsetY = 0.0555, phi = Math.PI / 6.0;
+
+            double r = Math.Sqrt(x * x + y * y);
+            double theta = Math.Atan2(y, x);
+            double newX = offsetX + r * Math.Cos(phi + theta);
+            double newY = offsetY + r * Math.Sin(phi + theta);
+            return new CartesianPoint(newX, newY);
+        }
+
+        private CartesianPoint TranformPerc(double x, double y)
+        {
+            double offsetX = -1.055, offsetY = -0.0555, phi = 0.0;
 
             double r = Math.Sqrt(x * x + y * y);
             double theta = Math.Atan2(y, x);

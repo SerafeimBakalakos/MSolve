@@ -20,6 +20,16 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
         private const int numElementsX = 50, numElementsY = 50;
         private const int subdomainID = 0;
         private const double minX = -1.0, minY = -1.0, maxX = 1.0, maxY = 1.0;
+        private static readonly PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
+
+        public static void PlotPercolationPhasesInteractions()
+        {
+            string pathConformingMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\conforming_mesh.vtk";
+            string pathElementPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\element_phases.vtk";
+            string pathNodalPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\nodal_phases.vtk";
+            string pathPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\phases.vtk";
+            PlotPhasesInteractions(generator.CreatePercolatedTetrisPhases, pathElementPhases, pathNodalPhases, pathPhases);
+        }
 
         public static void PlotScatteredPhasesInteractions()
         {
@@ -27,18 +37,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             string pathElementPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\element_phases.vtk";
             string pathNodalPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\nodal_phases.vtk";
             string pathPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\phases.vtk";
-
-            XModel physicalModel = CreatePhysicalModel();
-            var generator = new PhaseGenerator(minX, maxX, numElementsX);
-            GeometricModel geometricModel = generator.CreateScatterRectangularPhases(physicalModel);
-            geometricModel.FindConformingMesh();
-
-            var plotter = new PhasePlotter(physicalModel, geometricModel, -10);
-            plotter.PlotPhases(pathPhases);
-            plotter.PlotNodes(pathNodalPhases);
-
-            var conformingMesh = new ConformingOutputMesh2D(geometricModel, physicalModel.Nodes, physicalModel.Elements);
-            plotter.PlotElements(pathElementPhases, conformingMesh);
+            PlotPhasesInteractions(generator.CreateScatterRectangularPhases, pathElementPhases, pathNodalPhases, pathPhases);
         }
 
         public static void PlotTetrisPhasesInteractions()
@@ -47,10 +46,14 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             string pathElementPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\element_phases.vtk";
             string pathNodalPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\nodal_phases.vtk";
             string pathPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\phases.vtk";
+            PlotPhasesInteractions(generator.CreateSingleTetrisPhases, pathElementPhases, pathNodalPhases, pathPhases);
+        }
 
+        private static void PlotPhasesInteractions(Func<XModel, GeometricModel> genPhases, 
+            string pathElementPhases, string pathNodalPhases, string pathPhases)
+        {
             XModel physicalModel = CreatePhysicalModel();
-            var generator = new PhaseGenerator(minX, maxX, numElementsX);
-            GeometricModel geometricModel = generator.CreateSingleTetrisPhases(physicalModel);
+            GeometricModel geometricModel = genPhases(physicalModel);
             geometricModel.FindConformingMesh();
 
             var plotter = new PhasePlotter(physicalModel, geometricModel, -10);
