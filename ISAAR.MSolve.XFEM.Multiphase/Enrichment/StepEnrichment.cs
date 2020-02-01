@@ -8,13 +8,21 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 {
     public class StepEnrichment : IEnrichment
     {
-        private readonly IPhase phase0, phase1;
+        private readonly IPhase minPhase, maxPhase;
 
         public StepEnrichment(int id, IPhase phase0, IPhase phase1)
         {
             this.ID = id;
-            this.phase0 = phase0;
-            this.phase1 = phase1;
+            if (phase0.ID < phase1.ID)
+            {
+                this.minPhase = phase0;
+                this.maxPhase = phase1;
+            }
+            else
+            {
+                this.minPhase = phase1;
+                this.maxPhase = phase0;
+            }
             this.Dof = new EnrichedDof(this, ThermalDof.Temperature);
         }
 
@@ -24,8 +32,9 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 
         public double EvaluateAt(XNode node)
         {
-            if (phase0.ContainedNodes.Contains(node)) return phase0.ID;
-            else return phase1.ID;
+            // Looking in the phase with max ID is more efficient, since the default phase has id=0 and would be slower to search. 
+            if (maxPhase.ContainedNodes.Contains(node)) return maxPhase.ID;
+            else return minPhase.ID;
         }
 
     }

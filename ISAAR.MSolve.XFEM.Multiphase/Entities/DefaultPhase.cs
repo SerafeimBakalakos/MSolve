@@ -18,6 +18,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 
         public HashSet<IXFiniteElement> ContainedElements { get; } = new HashSet<IXFiniteElement>();
 
+        public List<PhaseBoundary> Boundaries { get; } = new List<PhaseBoundary>();
+
+        public HashSet<IPhase> Neighbors { get; } = new HashSet<IPhase>();
+
         /// <summary>
         /// For best performance, call it after all other phases.
         /// </summary>

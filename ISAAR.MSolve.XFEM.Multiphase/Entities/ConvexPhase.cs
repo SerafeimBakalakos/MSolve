@@ -17,7 +17,6 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
             this.ID = id;
         }
 
-        public int ID { get; }
 
         public List<PhaseBoundary> Boundaries { get; } = new List<PhaseBoundary>(4);
 
@@ -25,7 +24,11 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 
         public HashSet<IXFiniteElement> ContainedElements { get; } = new HashSet<IXFiniteElement>();
 
+        public int ID { get; }
+
         public HashSet<IXFiniteElement> IntersectedElements { get; } = new HashSet<IXFiniteElement>();
+
+        public HashSet<IPhase> Neighbors { get; } = new HashSet<IPhase>();
 
         public bool Contains(CartesianPoint point)
         {

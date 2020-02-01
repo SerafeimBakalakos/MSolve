@@ -8,9 +8,11 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 {
     public interface IPhase
     {
-        int ID { get; }
+        List<PhaseBoundary> Boundaries { get; }
         HashSet<XNode> ContainedNodes { get; }
         HashSet<IXFiniteElement> ContainedElements { get; }
+        int ID { get; }
+        HashSet<IPhase> Neighbors { get; }
 
         void InteractWithElements(IEnumerable<IXFiniteElement> elements, IMeshTolerance meshTolerance);
         void InteractWithNodes(IEnumerable<XNode> nodes);

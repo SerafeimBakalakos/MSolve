@@ -6,30 +6,23 @@ using ISAAR.MSolve.XFEM.Multiphase.Entities;
 
 namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 {
-    public class Enricher
+    public class NodeEnricher
     {
         private readonly GeometricModel geometricModel;
 
-        public Enricher(GeometricModel geometricModel)
+        public NodeEnricher(GeometricModel geometricModel)
         {
             this.geometricModel = geometricModel;
         }
 
-        //TODO: Perhaps the boundary should store this data, instead of using a dictionary.
-        public Dictionary<PhaseBoundary, StepEnrichment> StepEnrichments { get; }
-            = new Dictionary<PhaseBoundary, StepEnrichment>();
-
-        public void DefineEnrichments()
+        public void DefineStepEnrichments()
         {
             // Keep track of identified interactions between phases, to avoid duplicate enrichments
-            var neighboringPhases = new Dictionary<IPhase, HashSet<IPhase>>();
+            var uniqueEnrichments = new Dictionary<int, StepEnrichment>[geometricModel.Phases.Count];
             #region default phase
             //foreach (IPhase phase in geometricModel.Phases)
             #endregion
-            for (int p = 1; p < geometricModel.Phases.Count; ++p)
-            {
-                neighboringPhases[geometricModel.Phases[p]] = new HashSet<IPhase>();
-            }
+            for (int p = 1; p < geometricModel.Phases.Count; ++p) uniqueEnrichments[p] = new Dictionary<int, StepEnrichment>();
 
             int id = 0;
             #region default phase
@@ -37,17 +30,34 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
             #endregion
             for (int p = 1; p < geometricModel.Phases.Count; ++p)
             {
-                var phase = (ConvexPhase)(geometricModel.Phases[p]);
-                foreach (PhaseBoundary boundary in phase.Boundaries)
+                foreach (PhaseBoundary boundary in geometricModel.Phases[p].Boundaries)
                 {
-                    IPhase otherPhase = (boundary.PositivePhase == this) ? boundary.NegativePhase : boundary.PositivePhase;
-                    // This interaction may have been found for another boundary or the other phase
-                    if (!neighboringPhases.ContainsKey(otherPhase)) 
+                    // It may have been processed when iterating the boundaries of the opposite phase.
+                    if (boundary.Enrichment != null) continue; 
+
+                    // Find min/max phase IDs to uniquely identify the interaction
+                    IPhase minPhase, maxPhase;
+                    if (boundary.PositivePhase.ID < boundary.NegativePhase.ID)
                     {
-                        neighboringPhases[phase].Add(otherPhase);
-                        neighboringPhases[otherPhase].Add(phase);
-                        StepEnrichments[boundary] = new StepEnrichment(id++, phase, otherPhase);
+                        minPhase = boundary.PositivePhase;
+                        maxPhase = boundary.NegativePhase;
                     }
+                    else
+                    {
+                        minPhase = boundary.NegativePhase;
+                        maxPhase = boundary.PositivePhase;
+                    }
+
+                    // Find the existing enrichment for this phase interaction or create a new one
+                    bool enrichmentsExists = 
+                        uniqueEnrichments[maxPhase.ID].TryGetValue(minPhase.ID, out StepEnrichment enrichment);
+                    if (!enrichmentsExists)
+                    {
+                        enrichment = new StepEnrichment(id++, minPhase, maxPhase);
+                        uniqueEnrichments[maxPhase.ID][minPhase.ID] = enrichment;
+                    }
+
+                    boundary.Enrichment = enrichment;
                 }
             }
         }
@@ -64,7 +74,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                 {
                     foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
                     {
-                        StepEnrichment enrichment = StepEnrichments[boundary];
+                        StepEnrichment enrichment = boundary.Enrichment;
                         foreach (XNode node in element.Nodes)
                         {
                             if (!node.Enrichments.ContainsKey(enrichment))

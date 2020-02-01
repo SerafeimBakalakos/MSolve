@@ -50,6 +50,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             CartesianPoint P15 = TranformPerc(4 * rectLength / 3, 2 * rectHeight);
             CartesianPoint P16 = TranformPerc(7 * rectLength / 3, 2 * rectHeight);
 
+            // Define phases
             var phase0 = new DefaultPhase();
             var phase1 = new ConvexPhase(1);
             var phase2 = new ConvexPhase(2);
@@ -57,91 +58,26 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             var phase4 = new ConvexPhase(4);
 
             // Create boundaries and associate them with their phases
-            var L1_2 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P1, P2));
-            L1_2.PositivePhase = phase2;
-            L1_2.NegativePhase = phase0;
-            var L3_4 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P3, P4));
-            L3_4.PositivePhase = phase4;
-            L3_4.NegativePhase = phase0;
-            var L5_6 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P5, P6));
-            L5_6.PositivePhase = phase1;
-            L5_6.NegativePhase = phase0;
-            var L6_7 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P6, P7));
-            L6_7.PositivePhase = phase1;
-            L6_7.NegativePhase = phase2;
-            var L7_8 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P7, P8));
-            L7_8.PositivePhase = phase0;
-            L7_8.NegativePhase = phase2;
-            var L8_9 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P8, P9));
-            L8_9.PositivePhase = phase3;
-            L8_9.NegativePhase = phase2;
-            var L9_10 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P9, P10));
-            L9_10.PositivePhase = phase3;
-            L9_10.NegativePhase = phase0;
-            var L10_11 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P10, P11));
-            L10_11.PositivePhase = phase3;
-            L10_11.NegativePhase = phase4;
-            var L11_12 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P11, P12));
-            L11_12.PositivePhase = phase0;
-            L11_12.NegativePhase = phase4;
-            var L13_14 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P13, P14));
-            L13_14.PositivePhase = phase0;
-            L13_14.NegativePhase = phase1;
-            var L15_16 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P15, P16));
-            L15_16.PositivePhase = phase0;
-            L15_16.NegativePhase = phase3;
+            var L1_2 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P1, P2), phase2, phase0);
+            var L3_4 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P3, P4), phase4, phase0);
+            var L5_6 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P5, P6), phase1, phase0);
+            var L6_7 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P6, P7), phase1, phase2);
+            var L7_8 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P7, P8), phase0, phase2);
+            var L8_9 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P8, P9), phase3, phase2);
+            var L9_10 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P9, P10), phase3, phase0);
+            var L10_11 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P10, P11), phase3, phase4);
+            var L11_12 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P11, P12), phase0, phase4);
+            var L13_14 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P13, P14), phase0, phase1);
+            var L15_16 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P15, P16), phase0, phase3);
 
-            var L1_6 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P1, P6));
-            L1_6.PositivePhase = phase0;
-            L1_6.NegativePhase = phase2;
-            var L2_9 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P2, P9));
-            L2_9.PositivePhase = phase2;
-            L2_9.NegativePhase = phase0;
-            var L3_10 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P3, P10));
-            L3_10.PositivePhase = phase0;
-            L3_10.NegativePhase = phase4;
-            var L4_12 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P4, P12));
-            L4_12.PositivePhase = phase4;
-            L4_12.NegativePhase = phase0;
-            var L5_13 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P5, P13));
-            L5_13.PositivePhase = phase0;
-            L5_13.NegativePhase = phase1;
-            var L7_14 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P7, P14));
-            L7_14.PositivePhase = phase1;
-            L7_14.NegativePhase = phase0;
-            var L8_15 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P8, P15));
-            L8_15.PositivePhase = phase0;
-            L8_15.NegativePhase = phase3;
-            var L11_16 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P11, P16));
-            L11_16.PositivePhase = phase3;
-            L11_16.NegativePhase = phase0;
-
-            // Associate each phase with its boundaries
-            phase1.Boundaries.Add(L5_6);
-            phase1.Boundaries.Add(L6_7);
-            phase1.Boundaries.Add(L13_14);
-            phase1.Boundaries.Add(L5_13);
-            phase1.Boundaries.Add(L7_14);
-
-            phase2.Boundaries.Add(L1_2);
-            phase2.Boundaries.Add(L6_7);
-            phase2.Boundaries.Add(L7_8);
-            phase2.Boundaries.Add(L8_9);
-            phase2.Boundaries.Add(L1_6);
-            phase2.Boundaries.Add(L2_9);
-
-            phase3.Boundaries.Add(L8_9);
-            phase3.Boundaries.Add(L9_10);
-            phase3.Boundaries.Add(L10_11);
-            phase3.Boundaries.Add(L15_16);
-            phase3.Boundaries.Add(L8_15);
-            phase3.Boundaries.Add(L11_16);
-
-            phase4.Boundaries.Add(L3_4);
-            phase4.Boundaries.Add(L10_11);
-            phase4.Boundaries.Add(L11_12);
-            phase4.Boundaries.Add(L3_10);
-            phase4.Boundaries.Add(L4_12);
+            var L1_6 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P1, P6), phase0, phase2);
+            var L2_9 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P2, P9), phase2, phase0);
+            var L3_10 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P3, P10), phase0, phase4);
+            var L4_12 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P4, P12), phase4, phase0);
+            var L5_13 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P5, P13), phase0, phase1);
+            var L7_14 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P7, P14), phase1, phase0);
+            var L8_15 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P8, P15), phase0, phase3);
+            var L11_16 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P11, P16), phase3, phase0);
 
             // Initialize model
             var geometricModel = new GeometricModel(physicalModel);
@@ -179,10 +115,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
                     CartesianPoint start = rect.Vertices[i];
                     CartesianPoint end = rect.Vertices[(i + 1) % 4];
                     var segment = new XFEM.Multiphase.Geometry.LineSegment2D(start, end);
-                    var boundary = new PhaseBoundary(segment);
-                    phase.Boundaries.Add(boundary);
-                    boundary.PositivePhase = phase; // The vertices are in anti-clockwise order
-                    boundary.NegativePhase = defaultPhase;
+
+                    // The vertices are in anti-clockwise order, therefore the positive phase is internal
+                    var boundary = new PhaseBoundary(segment, phase, defaultPhase);
                 }
             }
             geometricModel.AssossiatePhasesNodes();
@@ -210,51 +145,21 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             CartesianPoint G = TranformSingle(0.0, 2.0 * rectHeight);
             CartesianPoint H = TranformSingle(rectLength, 2.0 * rectHeight);
 
+            // Define phases
             var phase0 = new DefaultPhase();
             var phase1 = new ConvexPhase(1);
             var phase2 = new ConvexPhase(2);
 
             // Create boundaries and associate them with their phases
-            var AB = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(A, B));
-            AB.PositivePhase = phase1;
-            AB.NegativePhase = phase0;
-            var CD = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(C, D));
-            CD.PositivePhase = phase2;
-            CD.NegativePhase = phase0;
-            var DE = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(D, E));
-            DE.PositivePhase = phase2;
-            DE.NegativePhase = phase1;
-            var EF = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(E, F));
-            EF.PositivePhase = phase0;
-            EF.NegativePhase = phase1; 
-            var GH = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(G, H));
-            GH.PositivePhase = phase0;
-            GH.NegativePhase = phase2; 
-            var AD = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(A, D));
-            AD.PositivePhase = phase0;
-            AD.NegativePhase = phase1;
-            var BF = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(B, F));
-            BF.PositivePhase = phase1;
-            BF.NegativePhase = phase0;
-            var CG = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(C, G));
-            CG.PositivePhase = phase0;
-            CG.NegativePhase = phase2;
-            var EH = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(E, H));
-            EH.PositivePhase = phase2;
-            EH.NegativePhase = phase0;
-
-            // Associate each phase with its boundaries
-            phase1.Boundaries.Add(AB);
-            phase1.Boundaries.Add(DE);
-            phase1.Boundaries.Add(EF);
-            phase1.Boundaries.Add(AD);
-            phase1.Boundaries.Add(BF);
-
-            phase2.Boundaries.Add(CD);
-            phase2.Boundaries.Add(DE);
-            phase2.Boundaries.Add(GH);
-            phase2.Boundaries.Add(CG);
-            phase2.Boundaries.Add(EH);
+            var AB = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(A, B), phase1, phase0);
+            var CD = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(C, D), phase2, phase0);
+            var DE = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(D, E), phase2, phase1);
+            var EF = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(E, F), phase0, phase1);
+            var GH = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(G, H), phase0, phase2);
+            var AD = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(A, D), phase0, phase1);
+            var BF = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(B, F), phase1, phase0);
+            var CG = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(C, G), phase0, phase2);
+            var EH = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(E, H), phase2, phase0);
 
             // Initialize model
             var geometricModel = new GeometricModel(physicalModel);
