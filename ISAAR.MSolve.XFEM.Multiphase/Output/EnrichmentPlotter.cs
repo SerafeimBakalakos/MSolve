@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Logging.VTK;
@@ -19,32 +20,42 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Output.Enrichments
             this.elementSize = elementSize;
         }
 
+        public void PlotJunctionEnrichedNodes(string path)
+        {
+            PlotEnrichedNodesCategory(enr => enr is JunctionEnrichment, path, "junction_enriched_nodes");
+        }
+
         public void PlotStepEnrichedNodes(string path)
         {
-            var stepEnrichedNodes = new Dictionary<CartesianPoint, double>();
+            PlotEnrichedNodesCategory(enr => enr is StepEnrichment, path, "step_enriched_nodes");
+        }
+
+        private void PlotEnrichedNodesCategory(Func<IEnrichment, bool> predicate, string path, string categoryName)
+        {
+            var nodesToPlot = new Dictionary<CartesianPoint, double>();
             foreach (XNode node in physicalModel.Nodes)
             {
                 if (node.Enrichments.Count == 0) continue;
-                IEnrichment[] stepEnrichments = node.Enrichments.Keys.Where(enr => enr is StepEnrichment).ToArray();
-                if (stepEnrichments.Length == 1)
+                IEnrichment[] enrichments = node.Enrichments.Keys.Where(predicate).ToArray();
+                if (enrichments.Length == 1)
                 {
                     var point = new CartesianPoint(node.X, node.Y, node.Z);
-                    stepEnrichedNodes[point] = stepEnrichments[0].ID;
+                    nodesToPlot[point] = enrichments[0].ID;
                 }
                 else
                 {
-                    var nodeInstances = DuplicateNodeForBetterViewing(node, stepEnrichments.Length);
-                    for (int e = 0; e < stepEnrichments.Length; ++e)
+                    var nodeInstances = DuplicateNodeForBetterViewing(node, enrichments.Length);
+                    for (int e = 0; e < enrichments.Length; ++e)
                     {
                         CartesianPoint point = nodeInstances[e];
-                        stepEnrichedNodes[point] = stepEnrichments[e].ID;
+                        nodesToPlot[point] = enrichments[e].ID;
                     }
                 }
-                
+
             }
             using (var writer = new VtkPointWriter(path))
             {
-                writer.WriteScalarField("step_enriched_nodes", stepEnrichedNodes);
+                writer.WriteScalarField(categoryName, nodesToPlot);
             }
         }
 

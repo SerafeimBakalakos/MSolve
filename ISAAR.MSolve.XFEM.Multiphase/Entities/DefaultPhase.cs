@@ -30,7 +30,11 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
         {
             foreach (XNode node in nodes)
             {
-                if (node.SurroundingPhase == null) node.SurroundingPhase = this;
+                if (node.SurroundingPhase == null)
+                {
+                    ContainedNodes.Add(node);
+                    node.SurroundingPhase = this;
+                }
             }
         }
 
@@ -42,7 +46,11 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
         {
             foreach (IXFiniteElement element in elements)
             {
-                if (element.Phases.Count == 0) element.Phases.Add(this);
+                if (element.Phases.Count == 0)
+                {
+                    ContainedElements.Add(element);
+                    element.Phases.Add(this);
+                }
             }
         }
     }

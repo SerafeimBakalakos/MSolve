@@ -78,7 +78,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
         public Dictionary<PhaseBoundary, CurveElementIntersection> PhaseIntersections { get; } 
             = new Dictionary<PhaseBoundary, CurveElementIntersection>();
 
-        public List<IPhase> Phases { get; } = new List<IPhase>(4);
+        public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
 
         IReadOnlyList<INode> IElement.Nodes => Nodes;
 

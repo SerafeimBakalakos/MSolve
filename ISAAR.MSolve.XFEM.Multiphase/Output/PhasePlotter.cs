@@ -71,7 +71,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Output
             {
                 if (element.Phases.Count == 1)
                 {
-                    double phaseID = element.Phases[0].ID;
+                    double phaseID = element.Phases.First().ID;
                     if (phaseID == DefaultPhase.DefaultPhaseID) phaseID = colorForDefaultPhase;
                     VtkCell outCell = conformingMesh.GetOutCellsForOriginal(element).First();
                     for (int n = 0; n < element.Nodes.Count; ++n) field[outCell.Vertices[n]] = phaseID;

@@ -17,7 +17,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
 
         Dictionary<PhaseBoundary, CurveElementIntersection> PhaseIntersections { get; }
 
-        List<IPhase> Phases { get; }
+        HashSet<IPhase> Phases { get; }
 
         //TODO: Unify 2D and 3D interpolation classes and use that one.
         IIsoparametricInterpolation2D StandardInterpolation { get; }

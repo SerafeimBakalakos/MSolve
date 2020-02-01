@@ -34,6 +34,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             paths.nodalPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\nodal_phases.vtk";
             paths.elementPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\element_phases.vtk";
             paths.stepEnrichedNodes = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\step_enriched_nodes.vtk";
+            paths.junctionEnrichedNodes = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\junction_enriched_nodes.vtk";
             PlotPhasesInteractions(generator.CreatePercolatedTetrisPhases, paths);
         }
 
@@ -58,6 +59,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             paths.nodalPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\nodal_phases.vtk";
             paths.elementPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\element_phases.vtk";
             paths.stepEnrichedNodes = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\step_enriched_nodes.vtk";
+            paths.junctionEnrichedNodes = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\junction_enriched_nodes.vtk";
             PlotPhasesInteractions(generator.CreateSingleTetrisPhases, paths);
 
         }
@@ -88,11 +90,10 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
 
             // Enrichment
             var nodeEnricher = new NodeEnricher(geometricModel);
-            nodeEnricher.DefineStepEnrichments();
-            nodeEnricher.EnrichNodes();
-
+            nodeEnricher.ApplyEnrichments();
             var enrichmentPlotter = new EnrichmentPlotter(physicalModel, elementSize);
             enrichmentPlotter.PlotStepEnrichedNodes(paths.stepEnrichedNodes);
+            if (paths.junctionEnrichedNodes != null) enrichmentPlotter.PlotJunctionEnrichedNodes(paths.junctionEnrichedNodes);
         }
 
         private static XModel CreatePhysicalModel()
@@ -128,6 +129,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             public string nodalPhases;
             public string elementPhases;
             public string stepEnrichedNodes;
+            public string junctionEnrichedNodes;
         }
     }
 }
