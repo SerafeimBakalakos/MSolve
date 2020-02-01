@@ -9,6 +9,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
 using ISAAR.MSolve.XFEM.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM.Multiphase.Integration;
 
 namespace ISAAR.MSolve.XFEM.Multiphase.Elements
 {
@@ -79,6 +80,8 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
             = new Dictionary<PhaseBoundary, CurveElementIntersection>();
 
         public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
+
+        public IIntegrationStrategy IntegrationStrategy { get; set; }
 
         IReadOnlyList<INode> IElement.Nodes => Nodes;
 

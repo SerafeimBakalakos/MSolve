@@ -5,6 +5,7 @@ using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
 using ISAAR.MSolve.XFEM.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM.Multiphase.Integration;
 
 namespace ISAAR.MSolve.XFEM.Multiphase.Elements
 {
@@ -12,6 +13,8 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
     {
         IReadOnlyList<(XNode node1, XNode node2)> EdgeNodes { get; }
         IReadOnlyList<(NaturalPoint node1, NaturalPoint node2)> EdgesNodesNatural { get; }
+
+        IIntegrationStrategy IntegrationStrategy { get; }
 
         IReadOnlyList<XNode> Nodes { get; }
 
