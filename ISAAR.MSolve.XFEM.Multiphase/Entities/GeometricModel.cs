@@ -11,11 +11,8 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 {
     public class GeometricModel
     {
-        private readonly XModel physicalModel;
-
-        public GeometricModel(XModel physicalModel)
+        public GeometricModel()
         {
-            this.physicalModel = physicalModel;
         }
 
         public Dictionary<IXFiniteElement, IReadOnlyList<ElementSubtriangle>> ConformingMesh { get; private set; }
@@ -24,7 +21,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 
         public List<IPhase> Phases { get; } = new List<IPhase>();
 
-        public void AssociatePhasesElements()
+        public void AssociatePhasesElements(XModel physicalModel)
         {
             IPhase defaultPhase = Phases[0];
             for (int i = 1; i < Phases.Count; ++i)
@@ -34,7 +31,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
             defaultPhase.InteractWithElements(physicalModel.Elements, MeshTolerance);
         }
 
-        public void AssossiatePhasesNodes()
+        public void AssossiatePhasesNodes(XModel physicalModel)
         {
             IPhase defaultPhase = Phases[0];
             for (int i = 1; i < Phases.Count; ++i)
@@ -44,7 +41,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
             defaultPhase.InteractWithNodes(physicalModel.Nodes);
         }
 
-        public void FindConformingMesh() //TODO: Perhaps I need a dedicated class for this
+        public void FindConformingMesh(XModel physicalModel) //TODO: Perhaps I need a dedicated class for this
         {
             ConformingMesh = new Dictionary<IXFiniteElement, IReadOnlyList<ElementSubtriangle>>();
             var triangulator = new ConformingTriangulator();

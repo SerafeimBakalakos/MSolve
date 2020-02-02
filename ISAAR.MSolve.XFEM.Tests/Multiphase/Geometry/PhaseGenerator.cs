@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             this.numElementsPerAxis = numElementsPerAxis;
         }
 
-        public GeometricModel CreatePercolatedTetrisPhases(XModel physicalModel)
+        public GeometricModel CreatePercolatedTetrisPhases()
         {
             // Generate rectangles by rotating the following shapes
             // 13----------14  15----------16   
@@ -80,7 +80,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             var L11_16 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P11, P16), phase3, phase0);
 
             // Initialize model
-            var geometricModel = new GeometricModel(physicalModel);
+            var geometricModel = new GeometricModel();
             double elementSize = (maxX - minX) / numElementsPerAxis;
             geometricModel.MeshTolerance = new UsedDefinedMeshTolerance(elementSize);
             geometricModel.Phases.Add(phase0);
@@ -88,19 +88,17 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             geometricModel.Phases.Add(phase2);
             geometricModel.Phases.Add(phase3);
             geometricModel.Phases.Add(phase4);
-
-            geometricModel.AssossiatePhasesNodes();
-            geometricModel.AssociatePhasesElements();
+            
             return geometricModel;
         }
 
-        public GeometricModel CreateScatterRectangularPhases(XModel physicalModel)
+        public GeometricModel CreateScatterRectangularPhases()
         {
             // Generate rectangles
             List<Rectangle2D> rectangles = ScatterDisjointRects();
 
             // Create phases out of them
-            var geometricModel = new GeometricModel(physicalModel);
+            var geometricModel = new GeometricModel();
             double elementSize = (maxX - minX) / numElementsPerAxis;
             geometricModel.MeshTolerance = new UsedDefinedMeshTolerance(elementSize);
             var defaultPhase = new DefaultPhase();
@@ -120,12 +118,10 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
                     var boundary = new PhaseBoundary(segment, phase, defaultPhase);
                 }
             }
-            geometricModel.AssossiatePhasesNodes();
-            geometricModel.AssociatePhasesElements();
             return geometricModel;
         }
 
-        public GeometricModel CreateSingleTetrisPhases(XModel physicalModel)
+        public GeometricModel CreateSingleTetrisPhases()
         {
             // Generate rectangles by rotating the following shapes
             //
@@ -162,15 +158,13 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             var EH = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(E, H), phase2, phase0);
 
             // Initialize model
-            var geometricModel = new GeometricModel(physicalModel);
+            var geometricModel = new GeometricModel();
             double elementSize = (maxX - minX) / numElementsPerAxis;
             geometricModel.MeshTolerance = new UsedDefinedMeshTolerance(elementSize);
             geometricModel.Phases.Add(phase0);
             geometricModel.Phases.Add(phase1);
             geometricModel.Phases.Add(phase2);
 
-            geometricModel.AssossiatePhasesNodes();
-            geometricModel.AssociatePhasesElements();
             return geometricModel;
         }
 

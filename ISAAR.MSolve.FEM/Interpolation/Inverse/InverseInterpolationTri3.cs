@@ -8,7 +8,8 @@ namespace ISAAR.MSolve.FEM.Interpolation.Inverse
 {
     /// <summary>
     /// Inverse mapping of the isoparametric interpolation of a triangular finite element with 3 nodes. Since the original 
-    /// mapping is linear, there are analytic formulas.
+    /// mapping is linear, there are analytic formulas. WARNING: this assumes 
+    /// ShapeFunctions(xi, eta) => new double[]{ xi, eta, 1-xi-eta };
     /// Authors: Serafeim Bakalakos
     /// </summary>
     public class InverseInterpolationTri3 : IInverseInterpolation2D
@@ -24,13 +25,13 @@ namespace ISAAR.MSolve.FEM.Interpolation.Inverse
             y1 = nodes[0].Y;
             y2 = nodes[1].Y;
             y3 = nodes[2].Y;
-            det = (x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1);
+            det = (x1 - x3) * (y2 - y3) - (x2 - x3) * (y1 - y3);
         }
 
         public NaturalPoint TransformPointCartesianToNatural(CartesianPoint point)
         {
-            double detXi = (point.X - x1) * (y3 - y1) - (x3 - x1) * (point.Y - y1);
-            double detEta = (x2 - x1) * (point.Y - y1) - (point.X - x1) * (y2 - y1);
+            double detXi = (point.X - x3) * (y2 - y3) - (x2 - x3) * (point.Y - y3);
+            double detEta = (x1 - x3) * (point.Y - y3) - (point.X - x3) * (y1 - y3);
             return new NaturalPoint(detXi / det, detEta / det);
         }
     }

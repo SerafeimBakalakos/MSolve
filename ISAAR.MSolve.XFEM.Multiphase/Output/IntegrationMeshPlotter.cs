@@ -12,16 +12,18 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Output
 {
     public class IntegrationMeshPlotter
     {
+        private readonly GeometricModel geometricModel;
         private readonly XModel physicalModel;
 
-        public IntegrationMeshPlotter(XModel physicalModel)
+        public IntegrationMeshPlotter(XModel physicalModel, GeometricModel geometricModel)
         {
             this.physicalModel = physicalModel;
+            this.geometricModel = geometricModel;
         }
 
         public void PlotIntegrationMesh(string path)
         {
-            var integrationMesh = new IntegrationMesh2D(physicalModel);
+            var integrationMesh = new IntegrationMesh2D(physicalModel, geometricModel);
             using (var writer = new Writers.VtkFileWriter(path))
             {
                 writer.WriteMesh(integrationMesh);

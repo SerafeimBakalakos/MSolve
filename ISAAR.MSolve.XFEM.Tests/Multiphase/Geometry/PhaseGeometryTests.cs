@@ -26,8 +26,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
         private const double minX = -1.0, minY = -1.0, maxX = 1.0, maxY = 1.0;
         private const double elementSize = (maxX - minX) / numElementsX;
         private static readonly PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
-        private static readonly IIntegrationStrategy integrationStrategy = new SquareSubcellIntegration2D(
-            GaussLegendre2D.GetQuadratureWithOrder(2, 2), 4, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
+        private const bool integrationWithSubtriangles = true;
 
         public static void PlotPercolationPhasesInteractions()
         {
@@ -74,11 +73,14 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
 
         }
 
-        private static void PlotPhasesInteractions(Func<XModel, GeometricModel> genPhases, OutputPaths paths)
+        private static void PlotPhasesInteractions(Func<GeometricModel> genPhases, OutputPaths paths)
         {
-            XModel physicalModel = CreatePhysicalModel();
-            GeometricModel geometricModel = genPhases(physicalModel);
-            geometricModel.FindConformingMesh();
+            GeometricModel geometricModel = genPhases();
+            XModel physicalModel = CreatePhysicalModel(geometricModel);
+
+            geometricModel.AssossiatePhasesNodes(physicalModel);
+            geometricModel.AssociatePhasesElements(physicalModel);
+            geometricModel.FindConformingMesh(physicalModel);
 
             var feMesh = new ContinuousOutputMesh<XNode>(physicalModel.Nodes, physicalModel.Elements);
             using (var writer = new VtkFileWriter(paths.finiteElementMesh))
@@ -106,15 +108,15 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             if (paths.junctionEnrichedNodes != null) enrichmentPlotter.PlotJunctionEnrichedNodes(paths.junctionEnrichedNodes);
 
             // Integration
-            var integrationPlotter = new IntegrationMeshPlotter(physicalModel);
+            var integrationPlotter = new IntegrationMeshPlotter(physicalModel, geometricModel);
             integrationPlotter.PlotIntegrationMesh(paths.integrationMesh);
             integrationPlotter.PlotIntegrationPoints(paths.integrationPoints);
         }
 
-        private static XModel CreatePhysicalModel()
+        private static XModel CreatePhysicalModel(GeometricModel geometricModel)
         {
-            var model = new XModel();
-            model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
+            var physicalModel = new XModel();
+            physicalModel.Subdomains[subdomainID] = new XSubdomain(subdomainID);
 
             // Mesh generation
             var meshGen = new UniformMeshGenerator2D<XNode>(minX, minY, maxX, maxY, numElementsX, numElementsY);
@@ -122,19 +124,33 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
                 meshGen.CreateMesh((id, x, y, z) => new XNode(id, x, y));
 
             // Nodes
-            foreach (XNode node in nodes) model.Nodes.Add(node);
+            foreach (XNode node in nodes) physicalModel.Nodes.Add(node);
+
+            // Integration
+            IIntegrationStrategy integrationStrategy;
+            if (integrationWithSubtriangles)
+            {
+                integrationStrategy = new IntegrationWithConformingSubtriangles2D(
+                    GaussLegendre2D.GetQuadratureWithOrder(2, 2), geometricModel, 
+                    TriangleQuadratureSymmetricGaussian.Order2Points3);
+            }
+            else
+            {
+                integrationStrategy = new IntegrationWithNonConformingSubsquares2D(
+                    GaussLegendre2D.GetQuadratureWithOrder(2, 2), 8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
+            }
 
             // Elements
             for (int e = 0; e < cells.Count; ++e)
             {
                 var element = new MockQuad4(e, cells[e].Vertices);
                 element.IntegrationStrategy = integrationStrategy;
-                model.Elements.Add(element);
-                model.Subdomains[subdomainID].Elements.Add(element);
+                physicalModel.Elements.Add(element);
+                physicalModel.Subdomains[subdomainID].Elements.Add(element);
             }
 
-            model.ConnectDataStructures();
-            return model;
+            physicalModel.ConnectDataStructures();
+            return physicalModel;
         }
 
         private class OutputPaths

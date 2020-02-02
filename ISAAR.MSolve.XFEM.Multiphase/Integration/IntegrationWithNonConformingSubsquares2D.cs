@@ -2,13 +2,9 @@
 using System.Diagnostics;
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
-using ISAAR.MSolve.Discretization.Interfaces;
-using ISAAR.MSolve.Discretization.Mesh.Generation;
-using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
-using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
 
+//TODO: How do I identify standard/enriched elements? Using the phases or the nodal enrichments?
 namespace ISAAR.MSolve.XFEM.Multiphase.Integration
 {
     /// <summary>
@@ -16,37 +12,36 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Integration
     /// static manner. Should I put it with the standard quadratures?
     /// TODO: Ensure this is not used for anything other than Quadrilaterals.
     /// </summary>
-    public class SquareSubcellIntegration2D : IIntegrationStrategy
+    public class IntegrationWithNonConformingSubsquares2D : IIntegrationStrategy
     {
         private readonly GaussLegendre2D quadratureInSubcells;
-        private readonly int subcellsPerAxis;
-        private readonly GaussLegendre2D standardQuadrature;
+        private readonly IQuadrature2D standardQuadrature;
 
-        public SquareSubcellIntegration2D(GaussLegendre2D standardQuadrature) : 
+        public IntegrationWithNonConformingSubsquares2D(IQuadrature2D standardQuadrature) : 
             this(standardQuadrature, 4, GaussLegendre2D.GetQuadratureWithOrder(2,2))
         {
         }
 
-        public SquareSubcellIntegration2D(GaussLegendre2D standardQuadrature, 
+        public IntegrationWithNonConformingSubsquares2D(IQuadrature2D standardQuadrature, 
             int subcellsPerAxis, GaussLegendre2D quadratureInSubcells)
         {
             this.standardQuadrature = standardQuadrature;
-            this.subcellsPerAxis = subcellsPerAxis;
+            this.SubcellsPerAxis = subcellsPerAxis;
             this.quadratureInSubcells = quadratureInSubcells;
         }
+        public int SubcellsPerAxis { get; }
 
         public IReadOnlyList<GaussPoint> GenerateIntegrationPoints(IXFiniteElement element)
         {
             // Standard elements
-            Debug.Assert(element.Phases.Count > 0);
-            if (element.Phases.Count == 1) return standardQuadrature.IntegrationPoints;
+            if (UseStandardQuadrature(element)) return standardQuadrature.IntegrationPoints;
 
             // Enriched elements
             var points = new List<GaussPoint>();
-            double length = 2.0 / subcellsPerAxis;
-            for (int i = 0; i < subcellsPerAxis; ++i)
+            double length = 2.0 / SubcellsPerAxis;
+            for (int i = 0; i < SubcellsPerAxis; ++i)
             {
-                for (int j = 0; j < subcellsPerAxis; ++j)
+                for (int j = 0; j < SubcellsPerAxis; ++j)
                 {
                     // The borders of the subrectangle
                     double xiMin = -1.0 + length * i;
@@ -67,25 +62,11 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Integration
             return points;
         }
 
-        //TODO: Do not use XNode for this mesh
-        public (IReadOnlyList<XNode> vertices, IReadOnlyList<CellConnectivity<XNode>> cells) GenerateIntegrationMesh(
-            IXFiniteElement element)
+        private bool UseStandardQuadrature(IXFiniteElement element)
         {
-            // Standard elements
-            if (element.Phases.Count == 1)
-            {
-                var cell = new CellConnectivity<XNode>(((IElementType)element).CellType, element.Nodes);
-                return (element.Nodes, new CellConnectivity<XNode>[] { cell });
-            }
-
-            // Enriched elements
-            var meshGen = new UniformMeshGenerator2D<XNode>(-1, -1, 1, 1, subcellsPerAxis, subcellsPerAxis);
-            return meshGen.CreateMesh((id, x, y, z) =>
-            {
-                var natural = new NaturalPoint(x, y);
-                CartesianPoint cartesian = element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, natural);
-                return new XNode(int.MaxValue, cartesian.X, cartesian.Y);
-            });
+            Debug.Assert(element.Phases.Count > 0);
+            if (element.Phases.Count == 1) return true;
+            else return false;
         }
     }
 }
