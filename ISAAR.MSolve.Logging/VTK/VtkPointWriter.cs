@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Geometry.Coordinates;
 
@@ -23,6 +24,26 @@ namespace ISAAR.MSolve.Logging.VTK
         public void Dispose()
         {
             if (writer != null) writer.Dispose();
+        }
+
+        public void WritePoints(IEnumerable<CartesianPoint> points)
+        {
+            writer.WriteLine("DATASET UNSTRUCTURED_GRID");
+            writer.WriteLine($"POINTS {points.Count()} double");
+            foreach (CartesianPoint point in points)
+            {
+                writer.WriteLine($"{point.X} {point.Y} {point.Z}");
+            }
+        }
+
+        public void WritePoints(IEnumerable<VtkPoint> points)
+        {
+            writer.WriteLine("DATASET UNSTRUCTURED_GRID");
+            writer.WriteLine($"POINTS {points.Count()} double");
+            foreach (VtkPoint point in points)
+            {
+                writer.WriteLine($"{point.X} {point.Y} {point.Z}");
+            }
         }
 
         public void WriteScalarField(string fieldName, IReadOnlyDictionary<CartesianPoint, double> pointValues)

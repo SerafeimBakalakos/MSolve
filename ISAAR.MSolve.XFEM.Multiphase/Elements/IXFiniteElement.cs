@@ -14,7 +14,8 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
         IReadOnlyList<(XNode node1, XNode node2)> EdgeNodes { get; }
         IReadOnlyList<(NaturalPoint node1, NaturalPoint node2)> EdgesNodesNatural { get; }
 
-        IIntegrationStrategy IntegrationStrategy { get; }
+        IBoundaryIntegration BoundaryIntegration { get; }
+        IIntegrationStrategy VolumeIntegration { get; }
 
         IReadOnlyList<XNode> Nodes { get; }
 

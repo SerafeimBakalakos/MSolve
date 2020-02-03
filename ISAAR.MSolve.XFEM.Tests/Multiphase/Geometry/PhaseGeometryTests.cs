@@ -38,8 +38,11 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             paths.elementPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\element_phases.vtk";
             paths.stepEnrichedNodes = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\step_enriched_nodes.vtk";
             paths.junctionEnrichedNodes = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\junction_enriched_nodes.vtk";
-            paths.integrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\integration_points.vtk";
-            paths.integrationMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\integration_mesh.vtk";
+            paths.volumeIntegrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\volume_integration_points.vtk";
+            paths.volumeIntegrationMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\volume_integration_mesh.vtk";
+            paths.boundaryIntegrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\boundary_integration_points.vtk";
+            paths.boundaryIntegrationCells = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\boundary_integration_cells.vtk";
+            paths.boundaryIntegrationVertices = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\boundary_integration_vertices.vtk";
             PlotPhasesInteractions(generator.CreatePercolatedTetrisPhases, paths);
         }
 
@@ -52,8 +55,11 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             paths.nodalPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\nodal_phases.vtk";
             paths.elementPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\element_phases.vtk";
             paths.stepEnrichedNodes = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\step_enriched_nodes.vtk";
-            paths.integrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\integration_points.vtk";
-            paths.integrationMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\integration_mesh.vtk";
+            paths.volumeIntegrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\volume_integration_points.vtk";
+            paths.volumeIntegrationMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\volume_integration_mesh.vtk";
+            paths.boundaryIntegrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\boundary_integration_points.vtk";
+            paths.boundaryIntegrationCells = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\boundary_integration_cells.vtk";
+            paths.boundaryIntegrationVertices = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\boundary_integration_vertices.vtk";
             PlotPhasesInteractions(generator.CreateScatterRectangularPhases, paths);
         }
 
@@ -67,8 +73,11 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             paths.elementPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\element_phases.vtk";
             paths.stepEnrichedNodes = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\step_enriched_nodes.vtk";
             paths.junctionEnrichedNodes = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\junction_enriched_nodes.vtk";
-            paths.integrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\integration_points.vtk";
-            paths.integrationMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\integration_mesh.vtk";
+            paths.volumeIntegrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\volume_integration_points.vtk";
+            paths.volumeIntegrationMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\volume_integration_mesh.vtk";
+            paths.boundaryIntegrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\boundary_integration_points.vtk";
+            paths.boundaryIntegrationCells = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\boundary_integration_cells.vtk";
+            paths.boundaryIntegrationVertices = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\boundary_integration_vertices.vtk";
             PlotPhasesInteractions(generator.CreateSingleTetrisPhases, paths);
 
         }
@@ -109,8 +118,10 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
 
             // Integration
             var integrationPlotter = new IntegrationMeshPlotter(physicalModel, geometricModel);
-            integrationPlotter.PlotIntegrationMesh(paths.integrationMesh);
-            integrationPlotter.PlotIntegrationPoints(paths.integrationPoints);
+            integrationPlotter.PlotVolumeIntegrationMesh(paths.volumeIntegrationMesh);
+            integrationPlotter.PlotVolumeIntegrationPoints(paths.volumeIntegrationPoints);
+            integrationPlotter.PlotBoundaryIntegrationMesh(paths.boundaryIntegrationCells, paths.boundaryIntegrationVertices);
+            integrationPlotter.PlotBoundaryIntegrationPoints(paths.boundaryIntegrationPoints);
         }
 
         private static XModel CreatePhysicalModel(GeometricModel geometricModel)
@@ -127,24 +138,26 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             foreach (XNode node in nodes) physicalModel.Nodes.Add(node);
 
             // Integration
-            IIntegrationStrategy integrationStrategy;
+            IIntegrationStrategy volumeIntegration;
             if (integrationWithSubtriangles)
             {
-                integrationStrategy = new IntegrationWithConformingSubtriangles2D(
+                volumeIntegration = new IntegrationWithConformingSubtriangles2D(
                     GaussLegendre2D.GetQuadratureWithOrder(2, 2), geometricModel, 
                     TriangleQuadratureSymmetricGaussian.Order2Points3);
             }
             else
             {
-                integrationStrategy = new IntegrationWithNonConformingSubsquares2D(
+                volumeIntegration = new IntegrationWithNonConformingSubsquares2D(
                     GaussLegendre2D.GetQuadratureWithOrder(2, 2), 8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
             }
+            IBoundaryIntegration boundaryIntegration = new LinearBoundaryIntegration(GaussLegendre1D.GetQuadratureWithOrder(2));
 
             // Elements
             for (int e = 0; e < cells.Count; ++e)
             {
                 var element = new MockQuad4(e, cells[e].Vertices);
-                element.IntegrationStrategy = integrationStrategy;
+                element.VolumeIntegration = volumeIntegration;
+                element.BoundaryIntegration = boundaryIntegration;
                 physicalModel.Elements.Add(element);
                 physicalModel.Subdomains[subdomainID].Elements.Add(element);
             }
@@ -162,8 +175,11 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             public string elementPhases;
             public string stepEnrichedNodes;
             public string junctionEnrichedNodes;
-            public string integrationPoints;
-            public string integrationMesh;
+            public string volumeIntegrationPoints;
+            public string volumeIntegrationMesh;
+            public string boundaryIntegrationPoints;
+            public string boundaryIntegrationCells;
+            public string boundaryIntegrationVertices;
         }
     }
 }

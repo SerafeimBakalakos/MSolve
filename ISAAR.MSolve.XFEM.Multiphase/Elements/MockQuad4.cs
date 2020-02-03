@@ -81,7 +81,9 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
 
         public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
 
-        public IIntegrationStrategy IntegrationStrategy { get; set; }
+        public IIntegrationStrategy VolumeIntegration { get; set; }
+
+        public IBoundaryIntegration BoundaryIntegration { get; set; }
 
         IReadOnlyList<INode> IElement.Nodes => Nodes;
 

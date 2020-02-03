@@ -16,27 +16,24 @@ using ISAAR.MSolve.XFEM.Multiphase.Integration;
 
 namespace ISAAR.MSolve.XFEM.Multiphase.Output.Mesh
 {
-    public class IntegrationMesh2D : IOutputMesh<XNode>
+    public class VolumeIntegrationMesh2D : IOutputMesh<XNode>
     {
         private readonly List<VtkCell> outCells;
         private readonly List<VtkPoint> outVertices;
 
-        public IntegrationMesh2D(XModel physicalModel, GeometricModel geometricModel)
+        public VolumeIntegrationMesh2D(XModel physicalModel, GeometricModel geometricModel)
         {
-            this.OriginalVertices = null;
-            this.OriginalCells = null;
-
             this.outVertices = new List<VtkPoint>();
             this.outCells = new List<VtkCell>();
             int outVertexID = 0;
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
                 if (element.Phases.Count == 1) ProcessStandardElement(element, ref outVertexID);
-                else if (element.IntegrationStrategy is IntegrationWithNonConformingSubsquares2D)
+                else if (element.VolumeIntegration is IntegrationWithNonConformingSubsquares2D)
                 {
                     ProcessSubsquareElement(element, ref outVertexID);
                 }
-                else if (element.IntegrationStrategy is IntegrationWithConformingSubtriangles2D triangleIntegration)
+                else if (element.VolumeIntegration is IntegrationWithConformingSubtriangles2D triangleIntegration)
                 {
                     ProcessSubtriangleElement(geometricModel, element, ref outVertexID);
                 }
@@ -45,21 +42,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Output.Mesh
         }
 
         public int NumOutCells => outCells.Count;
-
         public int NumOutVertices => outVertices.Count;
-
-        public IEnumerable<ICell<XNode>> OriginalCells { get; }
-
-        /// <summary>
-        /// Same order as the corresponding one in <see cref="OutVertices"/>.
-        /// </summary>
-        public IEnumerable<XNode> OriginalVertices { get; }
-
+        public IEnumerable<ICell<XNode>> OriginalCells => throw new NotImplementedException();
+        public IEnumerable<XNode> OriginalVertices => throw new NotImplementedException();
         public IEnumerable<VtkCell> OutCells => outCells;
-
-        /// <summary>
-        /// Same order as the corresponding one in <see cref="OriginalVertices"/>.
-        /// </summary>
         public IEnumerable<VtkPoint> OutVertices => outVertices;
 
         private (IReadOnlyList<XNode> vertices, IReadOnlyList<CellConnectivity<XNode>> cells) GenerateSquareIntegrationMesh(
@@ -91,7 +77,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Output.Mesh
 
         private void ProcessSubsquareElement(IXFiniteElement element, ref int outVertexID)
         {
-            var squareIntegration = (IntegrationWithNonConformingSubsquares2D)(element.IntegrationStrategy);
+            var squareIntegration = (IntegrationWithNonConformingSubsquares2D)(element.VolumeIntegration);
             (IReadOnlyList<XNode> vertices, IReadOnlyList<CellConnectivity<XNode>> cells) =
                         GenerateSquareIntegrationMesh(element, squareIntegration.SubcellsPerAxis);
 
