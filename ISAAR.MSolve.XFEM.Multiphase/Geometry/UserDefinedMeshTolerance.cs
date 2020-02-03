@@ -5,11 +5,11 @@ using ISAAR.MSolve.XFEM.Multiphase.Elements;
 
 namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
 {
-    public class UsedDefinedMeshTolerance : IMeshTolerance
+    public class UserDefinedMeshTolerance : IMeshTolerance
     {
         private readonly double tolerance;
 
-        public UsedDefinedMeshTolerance(double elementSize, double coeff = 1E-8)
+        public UserDefinedMeshTolerance(double elementSize, double coeff = 1E-8)
         {
             this.tolerance = elementSize * coeff;
         }

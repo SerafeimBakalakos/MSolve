@@ -13,7 +13,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
 {
     public static class LinearSegmentMeshInteractionTests
     {
-        private static readonly IMeshTolerance meshTolerance = new UsedDefinedMeshTolerance(1.0, 1E-7);
+        private static readonly IMeshTolerance meshTolerance = new UserDefinedMeshTolerance(1.0, 1E-7);
 
         [Fact]
         public static void TestDisjointElement()

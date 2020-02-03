@@ -82,7 +82,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase
             // Initialize model
             var geometricModel = new GeometricModel();
             double elementSize = (maxX - minX) / numElementsPerAxis;
-            geometricModel.MeshTolerance = new UsedDefinedMeshTolerance(elementSize);
+            geometricModel.MeshTolerance = new UserDefinedMeshTolerance(elementSize);
             geometricModel.Phases.Add(phase0);
             geometricModel.Phases.Add(phase1);
             geometricModel.Phases.Add(phase2);
@@ -100,7 +100,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase
             // Create phases out of them
             var geometricModel = new GeometricModel();
             double elementSize = (maxX - minX) / numElementsPerAxis;
-            geometricModel.MeshTolerance = new UsedDefinedMeshTolerance(elementSize);
+            geometricModel.MeshTolerance = new UserDefinedMeshTolerance(elementSize);
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases.Add(defaultPhase);
             int phaseID = 1;
@@ -160,7 +160,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase
             // Initialize model
             var geometricModel = new GeometricModel();
             double elementSize = (maxX - minX) / numElementsPerAxis;
-            geometricModel.MeshTolerance = new UsedDefinedMeshTolerance(elementSize);
+            geometricModel.MeshTolerance = new UserDefinedMeshTolerance(elementSize);
             geometricModel.Phases.Add(phase0);
             geometricModel.Phases.Add(phase1);
             geometricModel.Phases.Add(phase2);
