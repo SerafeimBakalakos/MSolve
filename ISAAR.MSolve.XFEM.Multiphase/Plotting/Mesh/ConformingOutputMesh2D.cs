@@ -9,7 +9,7 @@ using ISAAR.MSolve.XFEM.Multiphase.Entities;
 using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 
 //TODO: Needs tidying up.
-namespace ISAAR.MSolve.XFEM.Multiphase.Output.Mesh
+namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
 {
     public class ConformingOutputMesh2D : IOutputMesh<XNode>
     {

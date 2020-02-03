@@ -12,14 +12,14 @@ using ISAAR.MSolve.XFEM.Multiphase.Enrichment;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
 using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 using ISAAR.MSolve.XFEM.Multiphase.Integration;
-using ISAAR.MSolve.XFEM.Multiphase.Output;
-using ISAAR.MSolve.XFEM.Multiphase.Output.Enrichments;
-using ISAAR.MSolve.XFEM.Multiphase.Output.Mesh;
-using ISAAR.MSolve.XFEM.Multiphase.Output.Writers;
+using ISAAR.MSolve.XFEM.Multiphase.Plotting;
+using ISAAR.MSolve.XFEM.Multiphase.Plotting.Enrichments;
+using ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh;
+using ISAAR.MSolve.XFEM.Multiphase.Plotting.Writers;
 
-namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
+namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
 {
-    public static class PhaseGeometryTests
+    public static class PhasePlots
     {
         private const int numElementsX = 50, numElementsY = 50;
         private const int subdomainID = 0;

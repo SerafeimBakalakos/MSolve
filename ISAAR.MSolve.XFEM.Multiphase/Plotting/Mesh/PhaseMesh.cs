@@ -7,7 +7,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Logging.VTK;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Output.Mesh
+namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
 {
     public class PhaseMesh<TNode> : IOutputMesh<TNode> where TNode : INode
     {

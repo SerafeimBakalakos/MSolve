@@ -9,7 +9,7 @@ using ISAAR.MSolve.XFEM.Multiphase.Elements;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
 using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Output.Mesh
+namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
 {
     public class BoundaryIntegrationMesh2D : IOutputMesh<XNode>
     {

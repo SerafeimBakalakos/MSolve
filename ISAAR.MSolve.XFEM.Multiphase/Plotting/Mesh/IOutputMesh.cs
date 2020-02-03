@@ -3,7 +3,7 @@ using ISAAR.MSolve.Logging.VTK;
 
 //TODO: Perhaps I should use IDs for vertices, cells and avoid any generics.
 //TODO: Remove generics
-namespace ISAAR.MSolve.XFEM.Multiphase.Output.Mesh
+namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
 {
     /// <summary>
     /// Stores vertices and cells used for output (so far visualization). Also defines associations between the vertices

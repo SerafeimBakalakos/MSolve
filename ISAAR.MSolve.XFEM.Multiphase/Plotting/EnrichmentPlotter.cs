@@ -7,7 +7,7 @@ using ISAAR.MSolve.XFEM.Multiphase.Enrichment;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
 
 //TODO: If a node has 2 step enrichments, then only 1 will be displayed. Perhaps slightly offset the multiple concidental points.
-namespace ISAAR.MSolve.XFEM.Multiphase.Output.Enrichments
+namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Enrichments
 {
     public class EnrichmentPlotter
     {

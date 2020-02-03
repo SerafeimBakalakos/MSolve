@@ -14,7 +14,7 @@ using ISAAR.MSolve.XFEM.Multiphase.Entities;
 using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 using ISAAR.MSolve.XFEM.Multiphase.Integration;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Output.Mesh
+namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
 {
     public class VolumeIntegrationMesh2D : IOutputMesh<XNode>
     {

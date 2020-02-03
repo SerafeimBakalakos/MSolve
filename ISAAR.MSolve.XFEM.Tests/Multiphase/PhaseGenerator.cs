@@ -6,7 +6,7 @@ using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
 using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 
-namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
+namespace ISAAR.MSolve.XFEM.Tests.Multiphase
 {
     public class PhaseGenerator
     {

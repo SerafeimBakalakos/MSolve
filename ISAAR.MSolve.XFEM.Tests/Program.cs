@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.XFEM.Tests.HeatOLD.Plotting;
-using ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting;
 
 namespace ISAAR.MSolve.XFEM.Tests
 {
@@ -10,9 +10,9 @@ namespace ISAAR.MSolve.XFEM.Tests
     {
         public static void Main(string[] args)
         {
-            PhaseGeometryTests.PlotScatteredPhasesInteractions();
-            PhaseGeometryTests.PlotTetrisPhasesInteractions();
-            PhaseGeometryTests.PlotPercolationPhasesInteractions();
+            PhasePlots.PlotScatteredPhasesInteractions();
+            PhasePlots.PlotTetrisPhasesInteractions();
+            PhasePlots.PlotPercolationPhasesInteractions();
 
 
             //ThermalInclusionBall2D.PlotLevelSets();
