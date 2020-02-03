@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Output;
+//using ISAAR.MSolve.LinearAlgebra.Vectors;
+using ISAAR.MSolve.LinearAlgebra.Output.Formatting;
+using ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses;
 
 namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
 {
@@ -19,10 +23,10 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
         {
             int[][] subdElementIds = new int[8][];
             for (int i1 = 0; i1 < 7; i1++)
-            {subdElementIds[i1] = new int[hexa1 * hexa2 * hexa3 / 8];}
+            { subdElementIds[i1] = new int[hexa1 * hexa2 * hexa3 / 8]; }
             subdElementIds[7] = new int[(hexa1 * hexa2 * hexa3 / 8) + 3 * elem1 * elem2];
 
-            int [] subdElementCounters = new int[8];
+            int[] subdElementCounters = new int[8];
 
             for (int h1 = 0; h1 < hexa1; h1++)
             {
@@ -33,9 +37,9 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
                         int ElementID = h1 + 1 + (h2 + 1 - 1) * hexa1 + (h3 + 1 - 1) * (hexa1) * hexa2; // h1+1 dioti h1 einai zero based
 
                         int s1; int s2; int s3;
-                        if (h1 <= 0.5 * hexa1-1) { s1 = 1; } else { s1 = 2; };
-                        if (h2 <= 0.5 * hexa2-1) { s2 = 1; } else { s2 = 2; };
-                        if (h3 <= 0.5 * hexa3-1) { s3 = 1; } else { s3 = 2; };
+                        if (h1 <= 0.5 * hexa1 - 1) { s1 = 1; } else { s1 = 2; };
+                        if (h2 <= 0.5 * hexa2 - 1) { s2 = 1; } else { s2 = 2; };
+                        if (h3 <= 0.5 * hexa3 - 1) { s3 = 1; } else { s3 = 2; };
 
                         int subdID = s1 + (s2 - 1) * 2 + (s3 - 1) * 4;
 
@@ -48,10 +52,10 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
                 }
             }
 
-            
+
             //int subdID = 8;
 
-            for (int ElementID = hexa1 * hexa2 * hexa3 + 1; ElementID < hexa1 * hexa2 * hexa3+ 3*(elem1*elem2)+1; ElementID++)
+            for (int ElementID = hexa1 * hexa2 * hexa3 + 1; ElementID < hexa1 * hexa2 * hexa3 + 3 * (elem1 * elem2) + 1; ElementID++)
             {
                 subdElementIds[7][subdElementCounters[7]] = ElementID;
                 subdElementCounters[7] += 1;
@@ -59,13 +63,13 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
             return subdElementIds;
         }
 
-        public static int[][] CalculateSubdElementIdsVerticalHexaOnly(int hexa1, int hexa2, int hexa3, int elem1, int elem2, Model model,int nSubdomains)
+        public static int[][] CalculateSubdElementIdsVerticalHexaOnly(int hexa1, int hexa2, int hexa3, int elem1, int elem2, Model model, int nSubdomains)
         {
             //int[][] subdElementIds = new int[8][];
             int[][] subdElementIds = new int[nSubdomains][];
             for (int i1 = 0; i1 < nSubdomains; i1++)
             { subdElementIds[i1] = new int[hexa1 * hexa2 * hexa3 / nSubdomains]; }
-           
+
 
 
             int[] subdElementCounters = new int[8];
@@ -107,6 +111,14 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
 
         public static void SeparateSubdomains(Model model, int[][] subdElementIds)
         {
+            foreach (Subdomain subdomain in model.Subdomains)
+            {
+                subdomain.Elements.Clear();
+            }
+            foreach (Subdomain subdomain in model.SubdomainsDictionary.Values)
+            {
+                subdomain.Elements.Clear();
+            }
             model.SubdomainsDictionary.Clear();
 
             for (int subdID = 0; subdID < subdElementIds.GetLength(0); subdID++)
@@ -115,13 +127,13 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
                 for (int i1 = 0; i1 < subdElementIds[subdID].GetLength(0); i1++)
                 {
                     int e = subdElementIds[subdID][i1];
-                    model.SubdomainsDictionary[subdID].Elements.Add(e, model.ElementsDictionary[e]);//.ElementsDictionary.Add(subdElementIds[subdID][i1], model.ElementsDictionary[subdElementIds[subdID][i1]]);
+                    model.SubdomainsDictionary[subdID].Elements.Add(e,model.ElementsDictionary[subdElementIds[subdID][i1]]);//.ElementsDictionary.Add(subdElementIds[subdID][i1], model.ElementsDictionary[subdElementIds[subdID][i1]]);
                 }
             }
 
         }
 
-        public static void PrintDictionary (Dictionary<int, Dictionary<IDofType, int>> globalNodalDOFsDictionary,int TotalDOFs, int subdomainID)
+        public static void PrintDictionary(Dictionary<int, Dictionary<IDofType, int>> globalNodalDOFsDictionary, int TotalDOFs, int subdomainID)
         {
             double[] globalDOFs = new double[TotalDOFs];
             int counter = 0;
@@ -132,7 +144,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
                 //Dictionary<DOFType, int> globalDOFTypes = new Dictionary<DOFType, int>(dofTypes.Count);
                 foreach (IDofType dofType in dofTypes.Keys)
                 {
-                    if (dofTypes[dofType]!=-1)
+                    if (dofTypes[dofType] != -1)
                     {
                         globalDOFs[counter] = dofTypes[dofType];
                         counter += 1;
@@ -176,7 +188,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
                         {
                             List<int> specificElementsIDs = new List<int>();
                             specificElementsIDs.Add(hostELement.ID);
-                            HostSubdomains.Add(hostELement.Subdomain.ID, specificElementsIDs);                            
+                            HostSubdomains.Add(hostELement.Subdomain.ID, specificElementsIDs);
                         }
                         //2
                         if (hexaConnectsShells.ContainsKey(hostELement.ID))
@@ -197,7 +209,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
                     { EmbeddedElementsHostSubdomainsAndSpecifcHexaElementsInThem.Add(element.ID, HostSubdomains); }
                 }
             }
-            return (EmbeddedElementsHostSubdomainsAndSpecifcHexaElementsInThem,hexaConnectsShells);
+            return (EmbeddedElementsHostSubdomainsAndSpecifcHexaElementsInThem, hexaConnectsShells);
         }
 
         public static Dictionary<int, Dictionary<int, IList<int>>> FindAmbiguousEmbeddedElementsSubdomains(Model model)
@@ -234,7 +246,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
             return EmbeddedElementsHostSubdomainsAndElements;
         }
 
-        public static Dictionary<int, List<int>> DetermineOnlyNeededCombinations( 
+        public static Dictionary<int, List<int>> DetermineOnlyNeededCombinations(
             Dictionary<int, Dictionary<int, IList<int>>> EmbeddedElementsHostSubdomainsAndSpecifcHexaElementsInThem,
             Dictionary<int, List<int>> hexaConnectsShells)
         {
@@ -252,7 +264,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
                 foreach (int ListID in connectedShellElementsLists.Keys)
                 {
                     bool isShellFoundInList = false;
-                    
+
                     foreach (int shellELement in hexaConnectsShells[hexaID])
                     {
                         if (connectedShellElementsLists[ListID].Contains(shellELement))
@@ -268,7 +280,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
                 }
 
                 int foundInListsNum = foundInLists.Count();
-                if (foundInListsNum==0)
+                if (foundInListsNum == 0)
                 {
                     List<int> newConnectedShellsList = new List<int>();
                     foreach (int shellELement in hexaConnectsShells[hexaID])
@@ -276,26 +288,26 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
                         newConnectedShellsList.Add(shellELement);
                     }
 
-                    connectedShellElementsLists.Add(connectedShellElementsLists.Count()+1, newConnectedShellsList);
+                    connectedShellElementsLists.Add(connectedShellElementsLists.Count() + 1, newConnectedShellsList);
                 }
-                if (foundInListsNum==1)
+                if (foundInListsNum == 1)
                 {
                     var updatedList = connectedShellElementsLists[foundInLists.ElementAt(0)];
                     foreach (int shellELement in hexaConnectsShells[hexaID])
                     {
-                        if(!updatedList.Contains(shellELement))
+                        if (!updatedList.Contains(shellELement))
                         { updatedList.Add(shellELement); }
 
                     }
                 }
-                if (foundInListsNum>1)
+                if (foundInListsNum > 1)
                 {
                     //lists[1] = lists[1].Union(lists[2]).ToList();
                     //lists.Remove(2);
 
-                    for (int i1=1; i1<foundInListsNum; i1++)
+                    for (int i1 = 1; i1 < foundInListsNum; i1++)
                     {
-                        connectedShellElementsLists[foundInLists.ElementAt(0)] = 
+                        connectedShellElementsLists[foundInLists.ElementAt(0)] =
                             connectedShellElementsLists[foundInLists.ElementAt(0)].Union(connectedShellElementsLists[foundInLists.ElementAt(i1)]).ToList();
                         //todo: concat can be used as well if it is known that there are not duplicates
                         connectedShellElementsLists.Remove(foundInLists.ElementAt(i1));
@@ -316,8 +328,8 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
         public static void CalculateCombinationSolution(List<int> connectedShellElementsLists, Dictionary<int, Dictionary<int, IList<int>>> EmbeddedElementsHostSubdomainsAndElements)
         {
             int solutionVectorSize = connectedShellElementsLists.Count();
-            int possibleSolutions = 1;            
-            foreach(int shellId in connectedShellElementsLists)
+            int possibleSolutions = 1;
+            foreach (int shellId in connectedShellElementsLists)
             {
                 possibleSolutions *= EmbeddedElementsHostSubdomainsAndElements[shellId].Count();
             }
@@ -343,7 +355,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
             int maxSubdElements = 0;
             foreach (var subdmNhexas in EmbeddedElementsHostSubdomainsAndElements.Values)
             {
-                foreach(var hexaList in subdmNhexas.Values)
+                foreach (var hexaList in subdmNhexas.Values)
                 {
 
                 }
@@ -690,6 +702,18 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
             return subdIdsAndElements;
         }
 
+        public static int[][] ConvertIntListToArray(Dictionary<int, List<int>> AssignedSubdomains, int totalSubdomains)
+        {
+            int[][] subdIdsAndElements = new int[totalSubdomains][]; //todo:revisit this
+
+            foreach (int subdID in AssignedSubdomains.Keys)
+            {
+                subdIdsAndElements[subdID] = AssignedSubdomains[subdID].ToArray();
+            }
+
+            return subdIdsAndElements;
+        }
+
         //public static void MakeModelDictionariesZeroBasedForDecomposer(Model model)
         //{
         //    model.SubdomainsDictionary[1].ID = 0;
@@ -899,11 +923,11 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
 
         public static int[][] DetermineHexaElementsSubdomainsFromModel(Model model)
         {
-            int[][] subdomainsAndHexas = new int[model.NumSubdomains][];
+            int[][] subdomainsAndHexas = new int[model.Subdomains.Count()][];
 
-            for (int subdomainId = 0; subdomainId < model.NumSubdomains; subdomainId++)
+            for (int subdomainId = 0; subdomainId < model.Subdomains.Count(); subdomainId++)
             {
-                var subdomain = model.SubdomainsDictionary[subdomainId]; //ZERo based model.subdomainsDictionary access == model.Subdomains access
+                var subdomain = model.Subdomains[subdomainId]; //ZERo based model.subdomainsDictionary access == model.Subdomains access
                 subdomainsAndHexas[subdomainId] = new int[subdomain.Elements.Count()];
                 int hexaPositionInArray = 0;
                 foreach (Element element in subdomain.Elements.Values)
@@ -1128,11 +1152,11 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
             Dictionary<int, List<int>> AssignedSubdomains =
                DdmCalculationsPartb.FindEmbeddedElementsSubdomainsCorrectedSimple(model, totalSubdomains);
 
-            int[][] subdCohElementIdsDirect = DdmCalculationsPartb.ConvertIntListToArray(AssignedSubdomains);
+            int[][] subdCohElementIdsDirect = DdmCalculationsPartb.ConvertIntListToArray(AssignedSubdomains, totalSubdomains);
             return subdCohElementIdsDirect;
         }
 
-        public static int[][] DetermineShellELementsSubdomains(Model model, int totalSubdomains, int[][] subdCohElementIds,
+                public static int[][] DetermineShellELementsSubdomains(Model model, int totalSubdomains, int[][] subdCohElementIds,
             int[] lowerCohesiveBound, int[] upperCohesiveBound, int[] grShElementssnumber)
         {
             List<int>[] subdShellElementIds = new List<int>[totalSubdomains];
@@ -1176,9 +1200,9 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
 
         public static void PrintSubdomainDataForPostPro(int[][] subdHexaIds, int[][] subdCohElementIds, int[][] subdShellElementIds, string generalPath)
         {
-            string hexaPath = generalPath + @"\subdomainHexas.txt";
-            string cohPath = generalPath + @"\subdomainCohesiveElements.txt";
-            string shellPath = generalPath + @"\subdomainShellElements.txt";
+            string hexaPath = generalPath + @"\subdomain_elements\subdomainHexas.txt";
+            string cohPath = generalPath + @"\subdomain_elements\subdomainCohesiveElements.txt";
+            string shellPath = generalPath + @"\subdomain_elements\subdomainShellElements.txt";
 
             #region hexa elements
             int hexaPrintLength = 0;
@@ -1294,11 +1318,209 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
 
         }
 
+        public static void PrintSubdomainDataForPostPro(int[][] subdHexaIds, int[][] subdNeedsHexaIds, int[][] subdCohElementIds, int[][] subdShellElementIds, string generalPath)
+        {
+            string hexaPath = generalPath + @"\subdomain_elements\subdomainHexas.txt";
+            string extraHexasPath = generalPath + @"\subdomain_elements\subdomainNeedsHexas.txt";
+            string cohPath = generalPath + @"\subdomain_elements\subdomainCohesiveElements.txt";
+            string shellPath = generalPath + @"\subdomain_elements\subdomainShellElements.txt";
+
+            #region hexa elements
+            int hexaPrintLength = 0;
+            for (int i1 = 0; i1 < subdHexaIds.Length; i1++)
+            {
+                if (subdHexaIds[i1] == null)
+                {
+                    hexaPrintLength += 1;
+                }
+                else
+                {
+                    hexaPrintLength += 1 + subdHexaIds[i1].Length;
+                }
+            }
+
+            var hexaPrint = new int[hexaPrintLength];
+            int hexaPrintCounter = 0;
+            for (int i1 = 0; i1 < subdHexaIds.Length; i1++)
+            {
+                if (subdHexaIds[i1] == null)
+                {
+                    hexaPrint[hexaPrintCounter] = 0;
+                    hexaPrintCounter += 1;
+                }
+                else
+                {
+                    hexaPrint[hexaPrintCounter] = subdHexaIds[i1].Length;
+                    hexaPrintCounter += 1;
+                    for (int i2 = 0; i2 < subdHexaIds[i1].Length; i2++)
+                    {
+                        hexaPrint[hexaPrintCounter] = subdHexaIds[i1][i2];
+                        hexaPrintCounter += 1;
+                    }
+                }
+            }
+            WriteToFileVector(hexaPrint, hexaPath);
+            #endregion
+
+            #region extra hexa elements
+            int extrahexaPrintLength = 0;
+            for (int i1 = 0; i1 < subdNeedsHexaIds.Length; i1++)
+            {
+                if (subdNeedsHexaIds[i1] == null)
+                {
+                    extrahexaPrintLength += 1;
+                }
+                else
+                {
+                    extrahexaPrintLength += 1 + subdNeedsHexaIds[i1].Length;
+                }
+            }
+
+            var extrahexaPrint = new int[extrahexaPrintLength];
+            int extrahexaPrintCounter = 0;
+            for (int i1 = 0; i1 < subdNeedsHexaIds.Length; i1++)
+            {
+                if (subdNeedsHexaIds[i1] == null)
+                {
+                    extrahexaPrint[extrahexaPrintCounter] = 0;
+                    extrahexaPrintCounter += 1;
+                }
+                else
+                {
+                    extrahexaPrint[extrahexaPrintCounter] = subdNeedsHexaIds[i1].Length;
+                    extrahexaPrintCounter += 1;
+                    for (int i2 = 0; i2 < subdNeedsHexaIds[i1].Length; i2++)
+                    {
+                        extrahexaPrint[extrahexaPrintCounter] = subdNeedsHexaIds[i1][i2];
+                        extrahexaPrintCounter += 1;
+                    }
+                }
+            }
+            WriteToFileVector(extrahexaPrint, extraHexasPath);
+            #endregion
+
+            #region cohesive elements
+            int cohePrintLength = 0;
+            for (int i1 = 0; i1 < subdCohElementIds.Length; i1++)
+            {
+                if (subdCohElementIds[i1] == null)
+                {
+                    cohePrintLength += 1;
+                }
+                else
+                {
+                    cohePrintLength += 1 + subdCohElementIds[i1].Length;
+                }
+            }
+
+            var cohePrint = new int[cohePrintLength];
+            int cohePrintCounter = 0;
+            for (int i1 = 0; i1 < subdCohElementIds.Length; i1++)
+            {
+                if (subdCohElementIds[i1] == null)
+                {
+                    cohePrint[cohePrintCounter] = 0;
+                    cohePrintCounter += 1;
+                }
+                else
+                {
+                    cohePrint[cohePrintCounter] = subdCohElementIds[i1].Length;
+                    cohePrintCounter += 1;
+                    for (int i2 = 0; i2 < subdCohElementIds[i1].Length; i2++)
+                    {
+                        cohePrint[cohePrintCounter] = subdCohElementIds[i1][i2];
+                        cohePrintCounter += 1;
+                    }
+                }
+            }
+            WriteToFileVector(cohePrint, cohPath);
+            #endregion
+
+            #region shell elements
+            int shellPrintLength = 0;
+            for (int i1 = 0; i1 < subdShellElementIds.Length; i1++)
+            {
+                if (subdShellElementIds[i1] == null)
+                {
+                    shellPrintLength += 1;
+                }
+                else
+                {
+                    shellPrintLength += 1 + subdShellElementIds[i1].Length;
+                }
+            }
+
+            var shellPrint = new int[shellPrintLength];
+            int shellPrintCounter = 0;
+            for (int i1 = 0; i1 < subdShellElementIds.Length; i1++)
+            {
+                if (subdShellElementIds[i1] == null)
+                {
+                    shellPrint[shellPrintCounter] = 0;
+                    shellPrintCounter += 1;
+                }
+                else
+                {
+                    shellPrint[shellPrintCounter] = subdShellElementIds[i1].Length;
+                    shellPrintCounter += 1;
+                    for (int i2 = 0; i2 < subdShellElementIds[i1].Length; i2++)
+                    {
+                        shellPrint[shellPrintCounter] = subdShellElementIds[i1][i2];
+                        shellPrintCounter += 1;
+                    }
+                }
+            }
+            WriteToFileVector(shellPrint, shellPath);
+            #endregion
+
+
+        }
+
+        public static void PrintSubdomainDataForPostPro2(Dictionary<int, int[]> subdBoundariesNodes, string generalPath, string fileAddedPath)
+        {
+            string boundNodesPath = generalPath + fileAddedPath;
+
+            #region boundary nodes 
+            int boundNodeLength = 0;
+            foreach (int subdBoundNodeID in subdBoundariesNodes.Keys)
+            {
+                int[] connectedsubdsIDs = subdBoundariesNodes[subdBoundNodeID];
+                int numSubdomains = connectedsubdsIDs.Length;
+                boundNodeLength += 1 + 1 + numSubdomains; // nodeID, endeixh gia to posa, subdomainIDS
+            }
+            var boundPrint = new int[boundNodeLength];
+            int boundPrintCounter = 0;
+            foreach (int subdBoundNodeID in subdBoundariesNodes.Keys)
+            {
+                boundPrint[boundPrintCounter] = subdBoundNodeID;
+                boundPrintCounter += 1;
+                int[] connectedsubdsIDs = subdBoundariesNodes[subdBoundNodeID];
+                int numSubdomains = connectedsubdsIDs.Length;
+                boundPrint[boundPrintCounter] = numSubdomains;
+                boundPrintCounter += 1;
+                for (int i2 = 0; i2 < connectedsubdsIDs.Length; i2++)
+                {
+                    boundPrint[boundPrintCounter] = connectedsubdsIDs[i2];
+                    boundPrintCounter += 1;
+                }
+            }
+
+            WriteToFileVector(boundPrint, boundNodesPath);
+            #endregion
+
+
+
+
+
+
+
+        }
+
         public static (int[], int[], int[]) GetSubdomainDataForPostPro(int[][] subdHexaIds, int[][] subdCohElementIds, int[][] subdShellElementIds, string generalPath)
         {
-            string hexaPath = generalPath + @"\subdomainHexas.txt";
-            string cohPath = generalPath + @"\subdomainCohesiveElements.txt";
-            string shellPath = generalPath + @"\subdomainShellElements.txt";
+            string hexaPath = generalPath + @"\subdomain_elements\subdomainHexas.txt";
+            string cohPath = generalPath + @"\subdomain_elements\subdomainCohesiveElements.txt";
+            string shellPath = generalPath + @"\subdomain_elements\subdomainShellElements.txt";
 
             #region hexa elements
             int hexaPrintLength = 0;
@@ -1426,6 +1648,202 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
             writer2.Flush();
 
         }
+
+        public static void WriteToFileVector(double[] array, string path2)
+        {
+            var writer2 = new StreamWriter(path2);
+            for (int i = 0; i < array.GetLength(0); ++i)
+            {
+                writer2.Write(array[i]);
+                writer2.Write(' ');
+                writer2.WriteLine(); // allagh seiras (dld grafei oti exei mesa h parenths=esh edw keno kai allazei seira)
+            }
+            writer2.Flush();
+
+        }
+
+        public static void WriteToFileVectorsWithCounter(double[][] array, string print_path, string file_name)
+        {
+            string print_path_gen2 = print_path + file_name;
+            //string print_path_gen2 = @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\Subdomain{0}GlobalDofs.txt";
+
+            for (int i1 = 0; i1 < array.Length + 0; i1++)
+            {
+                string extentionCounter = (i1 + 1).ToString();
+                string output_path = string.Format(print_path_gen2, extentionCounter);
+                var writer = new Array1DWriter(); // MatlabWriter();
+                //writer.WriteToFile(Vector.CreateFromArray(array[i1]), output_path, false);
+                writer.NumericFormat = new GeneralNumericFormat();
+                writer.ArrayFormat = Array1DFormat.PlainVertical;
+                writer.WriteToFile(array[i1], output_path, false);
+
+            }
+
+        }
+
+        public static void WriteToFileStringArray(string[] array, string path)
+        {
+            var writer = new StreamWriter(path);
+            for (int i = 0; i < array.GetLength(0); ++i)
+            {
+
+                writer.Write(array[i]);
+                //writer.Write(' ');
+
+                writer.WriteLine();
+            }
+            writer.Flush();
+        }
+
+        internal static Dictionary<ISubdomain, List<Node>> DetermineRveSubdomainsInnerNodesFromModel(Model model)
+        {
+            Dictionary<ISubdomain, List<Node>> RveSubdomainsInnerNodes = new Dictionary<ISubdomain, List<Node>>();
+
+            foreach (Node node in model.NodesDictionary.Values)
+            {
+                if (node.SubdomainsDictionary.Values.Count == 1)
+                {
+                    ISubdomain singleSubdomain = node.SubdomainsDictionary.ElementAt(0).Value;
+                    if (RveSubdomainsInnerNodes.Keys.Contains(singleSubdomain))
+                    {
+                        RveSubdomainsInnerNodes[singleSubdomain].Add(node);
+                    }
+                    else
+                    {
+                        List<Node> subdomainnodes = new List<Node>();
+                        subdomainnodes.Add(node);
+                        RveSubdomainsInnerNodes.Add(singleSubdomain, subdomainnodes);
+                    }
+                }
+
+            }
+
+            return RveSubdomainsInnerNodes;
+        }
+
+        internal static bool CheckSubdomainsEmbeddingHostNodes(Model model, Dictionary<ISubdomain, List<Node>> rveMatrixSubdomainInnerNodes)
+        {
+            bool isTrue = false;
+            foreach (Subdomain subdomain in model.Subdomains)
+            {
+                foreach (Node node in subdomain.Nodes.Values)
+                {
+                    foreach (ISubdomain adjacentSubdoiamin in rveMatrixSubdomainInnerNodes.Keys)
+                    {
+                        if ((!(subdomain.ID == adjacentSubdoiamin.ID)) && rveMatrixSubdomainInnerNodes[adjacentSubdoiamin].Contains(node))
+                        {
+                            isTrue = true;
+                        }
+                    }
+                }
+            }
+
+            return isTrue;
+        }
+
+        internal static int[][] ReassignHexas(int[][] subdHexaIds, Dictionary<int, List<int>> reassignedHexas, Dictionary<int, int> hexaOriginalSubdomains)
+        {
+            List<int>[] subdHexaIDsNew = new List<int>[subdHexaIds.Length];
+
+            for (int originalSubdId = 0; originalSubdId < subdHexaIds.Length; originalSubdId++)
+            {
+                for (int hexaThesi = 0; hexaThesi < subdHexaIds[originalSubdId].Length; hexaThesi++)
+                {
+                    int hexaID = subdHexaIds[originalSubdId][hexaThesi];
+
+                    if (!hexaOriginalSubdomains.Keys.Contains(hexaID))
+                    {
+                        if (!(subdHexaIDsNew[originalSubdId] == null))
+                        {
+                            subdHexaIDsNew[originalSubdId].Add(hexaID);
+                        }
+                        else
+                        {
+                            List<int> hexas = new List<int>() { hexaID };
+                            subdHexaIDsNew[originalSubdId] = hexas;
+                        }
+                    }
+                }
+            }
+
+            foreach (int newSubdId in reassignedHexas.Keys)
+            {
+                foreach (int reassignedHxaID in reassignedHexas[newSubdId])
+                {
+                    subdHexaIDsNew[newSubdId].Add(reassignedHxaID);
+                }
+            }
+
+            //change form
+            int[][] subdHexaIDsNewArrays = new int[subdHexaIDsNew.Length][];
+            for (int subdid = 0; subdid < subdHexaIds.Length; subdid++)
+            {
+                subdHexaIDsNewArrays[subdid] = subdHexaIDsNew[subdid].ToArray();
+            }
+
+            return subdHexaIDsNewArrays;
+        }
+
+        internal static (int[][] subdCohElementIds, Dictionary<int, List<int>> reassignedHexas, Dictionary<int, int> hexaOriginalSubdomains, Dictionary<int, List<int>> SubdomainNeedsHexas)
+            DetermineCoheiveELementsSubdomainsSimple_Alte4(Model model, int totalSubdomains, int[] lowerCohesiveBound, int[] upperCohesiveBound, int[] grShElementssnumber)
+        {
+            //changes: gia na exoume duplicate elements metaxu subdoamins
+            //TODO: delete reassigned hexas if it is not nesessary anymore
+            (Dictionary<int, List<int>> AssignedSubdomainsFirstLevelOfCohesive, Dictionary<int, List<int>> reassignedHexas, Dictionary<int, int> hexaOriginalSubdomains,
+                Dictionary<int, List<int>> SubdomainNeedsHexas) =
+               DdmCalculationsAlterna2.FindEmbeddedElementsSubdomainsCorrectedSimpleFirstLevel2(model, totalSubdomains,
+               lowerCohesiveBound, upperCohesiveBound, grShElementssnumber);
+
+            //EPOMENES 5 GRAMMES (anti twn 2 pou vriskontai pio katw) doulevoun me to DdmCalculationsAlterna2.FindEmbeddedElementsSubdomainsCorrectedSimpleFirstLevel2
+            //Dictionary<int, List<int>> AssignedSubdomains =
+            //    DdmCalculationsAlterna.FindEmbeddedElementsSubdomainsCorrectedSimpleSecondLevel(model, totalSubdomains,
+            //   lowerCohesiveBound, upperCohesiveBound, grShElementssnumber, AssignedSubdomainsFirstLevelOfCohesive);
+            //int[][] subdCohElementIdsDirect = DdmCalculationsPartb.ConvertIntListToArray(AssignedSubdomains, totalSubdomains);
+            //return (subdCohElementIdsDirect, reassignedHexas, hexaOriginalSubdomains,SubdomainNeedsHexas);
+
+            int[][] subdCohElementIdsDirect = DdmCalculationsPartb.ConvertIntListToArray(AssignedSubdomainsFirstLevelOfCohesive, totalSubdomains);
+            return (subdCohElementIdsDirect, reassignedHexas, hexaOriginalSubdomains, SubdomainNeedsHexas);
+        }
+
+
+        public static void printNodeData(Model model, List<List<int>> extraConstraintsNoeds, Dictionary<int, int[]> cornerNodesIdsAndSubdomains, string subdomainOutputPath, string extraNodespath, string cornerNodesPath)
+        {
+            string extraNodesFilePath = subdomainOutputPath + extraNodespath;
+            string cornerNodesFilePath = subdomainOutputPath + cornerNodesPath;
+
+            double[,] extranodesCoordinates = new double[extraConstraintsNoeds.Count(), 3];
+            for (int i1 = 0; i1 < extraConstraintsNoeds.Count(); i1++)
+            {
+                extranodesCoordinates[i1, 0] = model.NodesDictionary[extraConstraintsNoeds.ElementAt(i1).ElementAt(0)].X;
+                extranodesCoordinates[i1, 1] = model.NodesDictionary[extraConstraintsNoeds.ElementAt(i1).ElementAt(0)].Y;
+                extranodesCoordinates[i1, 2] = model.NodesDictionary[extraConstraintsNoeds.ElementAt(i1).ElementAt(0)].Z;
+            }
+
+            //double[,] extranodesCoordinates = new double[ExtraConstrIdAndTheirBRNodesTheseis.Count(), 3];
+            //for (int i1 = 0; i1 < ExtraConstrIdAndTheirBRNodesTheseis.Count(); i1++)
+            //{
+            //    extranodesCoordinates[i1, 0] = model.NodesDictionary[ExtraConstrIdAndTheirBRNodesTheseis.ElementAt(i1).Value[0]].X;
+            //    extranodesCoordinates[i1, 1] = model.NodesDictionary[ExtraConstrIdAndTheirBRNodesTheseis.ElementAt(i1).Value[0]].Y;
+            //    extranodesCoordinates[i1, 2] = model.NodesDictionary[ExtraConstrIdAndTheirBRNodesTheseis.ElementAt(i1).Value[0]].Z;
+            //}
+            double[,] cornerNodeCoordinates = new double[cornerNodesIdsAndSubdomains.Count(), 3];
+            for (int i1 = 0; i1 < cornerNodesIdsAndSubdomains.Count(); i1++)
+            {
+                cornerNodeCoordinates[i1, 0] = model.NodesDictionary[cornerNodesIdsAndSubdomains.ElementAt(i1).Key].X;
+                cornerNodeCoordinates[i1, 1] = model.NodesDictionary[cornerNodesIdsAndSubdomains.ElementAt(i1).Key].Y;
+                cornerNodeCoordinates[i1, 2] = model.NodesDictionary[cornerNodesIdsAndSubdomains.ElementAt(i1).Key].Z;
+            }
+
+            //var writer = new Array2DWriter();
+            //writer.WriteToFile(extranodesCoordinates, extraNodesFilePath, false);
+            //writer.WriteToFile(cornerNodeCoordinates, cornerNodesFilePath, false);
+
+            PrintUtilities.WriteToFile(extranodesCoordinates, extraNodesFilePath);
+            PrintUtilities.WriteToFile(cornerNodeCoordinates, cornerNodesFilePath);
+
+        }
+
+        
     }
 
 }

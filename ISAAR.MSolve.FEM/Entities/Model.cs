@@ -33,6 +33,10 @@ namespace ISAAR.MSolve.FEM.Entities
 
         public Dictionary<int, Element> ElementsDictionary { get; } = new Dictionary<int, Element>();
 
+        public IList<Element> Elements => ElementsDictionary.Values.ToList();
+
+        public IReadOnlyList<Subdomain> Subdomains => SubdomainsDictionary.Values.ToList();
+
         public IList<ElementMassAccelerationHistoryLoad> ElementMassAccelerationHistoryLoads { get; } 
             = new List<ElementMassAccelerationHistoryLoad>();
         public IList<ElementMassAccelerationLoad> ElementMassAccelerationLoads { get; } 
