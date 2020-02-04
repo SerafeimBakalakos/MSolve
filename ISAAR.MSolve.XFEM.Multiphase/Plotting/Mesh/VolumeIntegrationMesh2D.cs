@@ -102,7 +102,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
             Debug.Assert(element.StandardInterpolation == FEM.Interpolation.InterpolationQuad4.UniqueInstance
                     || element.StandardInterpolation == FEM.Interpolation.InterpolationTri3.UniqueInstance);
 
-            IReadOnlyList<ElementSubtriangle> subtriangles = geometricModel.ConformingMesh[element];
+            IReadOnlyList<ElementSubtriangle> subtriangles = geometricModel.GetConformingTriangulationOf(element);
             foreach (ElementSubtriangle triangle in subtriangles)
             {
                 CartesianPoint[] points = triangle.GetVerticesCartesian(element);

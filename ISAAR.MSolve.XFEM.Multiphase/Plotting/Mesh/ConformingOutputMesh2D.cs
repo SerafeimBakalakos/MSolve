@@ -36,10 +36,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
                 IXFiniteElement originalCell = originalCells[c];
                 original2OutCells[originalCell] = new HashSet<VtkCell>();
 
-                bool isIntersected = geometricModel.ConformingMesh.TryGetValue(originalCell, 
-                    out IReadOnlyList<ElementSubtriangle> subtriangles);
+                bool isIntersected = originalCell.Phases.Count > 1;
                 if (isIntersected)
                 {
+                    IReadOnlyList<ElementSubtriangle> subtriangles = geometricModel.GetConformingTriangulationOf(originalCell);
                     originalCells2Subtriangles[originalCell] = new HashSet<Subtriangle>();
                     foreach (ElementSubtriangle triangle in subtriangles)
                     {

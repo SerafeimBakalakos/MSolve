@@ -4,6 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.XFEM.Multiphase.Elements;
+using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 using static ISAAR.MSolve.XFEM.Tests.Multiphase.Integration.BenchmarkDomain;
 using static ISAAR.MSolve.XFEM.Tests.Multiphase.Integration.Utilities;
 
@@ -23,6 +24,13 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Integration
         {
             var element = new BenchmarkDomain(geometryType);
             return value * Utilities.CalcPolygonArea(element.Element.Nodes);
+        }
+
+        public CurveElementIntersection[] GetIntersectionSegments()
+        {
+            var intersection = new CurveElementIntersection(RelativePositionCurveElement.Intersection,
+                new NaturalPoint[] { new NaturalPoint(-1.0, -1.0), new NaturalPoint(+1.0, +1.0) });
+            return new CurveElementIntersection[] { intersection };
         }
 
         public bool IsInValidRegion(GaussPoint point) => true;
@@ -51,6 +59,13 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Integration
                 throw new NotImplementedException();
             }
             else throw new NotImplementedException();
+        }
+
+        public CurveElementIntersection[] GetIntersectionSegments()
+        {
+            var intersection = new CurveElementIntersection(RelativePositionCurveElement.Intersection,
+                new NaturalPoint[] { new NaturalPoint(-1.0, -1.0), new NaturalPoint(+1.0, +1.0) });
+            return new CurveElementIntersection[] { intersection };
         }
 
         public bool IsInValidRegion(GaussPoint point) => true;
@@ -104,6 +119,13 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Integration
                 return 4.0 * CalcPolygonArea(leftNodes) + 16.0 * CalcPolygonArea(rightNodes);
             }
             else throw new NotImplementedException();
+        }
+
+        public CurveElementIntersection[] GetIntersectionSegments()
+        {
+            var intersection = new CurveElementIntersection(RelativePositionCurveElement.Intersection,
+                new NaturalPoint[] { new NaturalPoint(0.0, -1.0), new NaturalPoint(0.0, +1.0) });
+            return new CurveElementIntersection[] { intersection };
         }
 
         public bool IsInValidRegion(GaussPoint point) => (point.Xi < 0.0) || (point.Xi > 0.0);
@@ -173,6 +195,21 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Integration
             else throw new NotImplementedException();
         }
 
+        public CurveElementIntersection[] GetIntersectionSegments()
+        {
+            var intersections = new CurveElementIntersection[4];
+
+            intersections[0] = new CurveElementIntersection(RelativePositionCurveElement.Intersection,
+                new NaturalPoint[] { new NaturalPoint(-0.5, -1.0), new NaturalPoint(-0.5, 0.0) });
+            intersections[1] = new CurveElementIntersection(RelativePositionCurveElement.Intersection,
+                new NaturalPoint[] { new NaturalPoint(-0.5, 0.0), new NaturalPoint(-0.5, 1.0) });
+            intersections[2] = new CurveElementIntersection(RelativePositionCurveElement.Intersection,
+                new NaturalPoint[] { new NaturalPoint(-1, 0.0), new NaturalPoint(-0.5, 0.0) });
+            intersections[3] = new CurveElementIntersection(RelativePositionCurveElement.Intersection,
+                new NaturalPoint[] { new NaturalPoint(-0.5, 0.0), new NaturalPoint(1.0, 0.0) });
+            return intersections;
+        }
+
         public bool IsInValidRegion(GaussPoint point) 
             => ((point.Xi < -0.5) || (point.Xi > -0.5)) && ((point.Eta < 0.0) || (point.Eta > 0.0));
     }
@@ -215,6 +252,13 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Integration
                 throw new NotImplementedException();
             }
             else throw new NotImplementedException();
+        }
+
+        public CurveElementIntersection[] GetIntersectionSegments()
+        {
+            var intersection = new CurveElementIntersection(RelativePositionCurveElement.Intersection,
+                new NaturalPoint[] { new NaturalPoint(-0.5, -1.0), new NaturalPoint(-0.5, +1.0) });
+            return new CurveElementIntersection[] { intersection };
         }
 
         public bool IsInValidRegion(GaussPoint point) => (point.Xi < -0.5) || (point.Xi > -0.5);

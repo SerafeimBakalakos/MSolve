@@ -13,15 +13,16 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Integration
 {
     public class IntegrationWithConformingSubtriangles2D: IIntegrationStrategy
     {
-        private readonly GeometricModel geometricModel;
         private readonly TriangleQuadratureSymmetricGaussian quadratureInSubcells;
         private readonly IQuadrature2D standardQuadrature;
+        private readonly Func<IXFiniteElement, IReadOnlyList<ElementSubtriangle>> triangulateElement;
 
-        public IntegrationWithConformingSubtriangles2D(IQuadrature2D standardQuadrature, GeometricModel geometricModel, 
-            TriangleQuadratureSymmetricGaussian quadratureInSubcells)
+        public IntegrationWithConformingSubtriangles2D(IQuadrature2D standardQuadrature, 
+            TriangleQuadratureSymmetricGaussian quadratureInSubcells,
+            Func<IXFiniteElement, IReadOnlyList<ElementSubtriangle>> triangulateElement)
         {
             this.standardQuadrature = standardQuadrature;
-            this.geometricModel = geometricModel;
+            this.triangulateElement = triangulateElement;
             this.quadratureInSubcells = quadratureInSubcells;
         }
 
@@ -34,7 +35,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Integration
             IReadOnlyList<ElementSubtriangle> subtriangles;
             try
             {
-                subtriangles = geometricModel.ConformingMesh[element];
+                subtriangles = triangulateElement(element);
             }
             catch (Exception)
             {

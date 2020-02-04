@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
@@ -15,7 +16,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
         {
         }
 
-        public Dictionary<IXFiniteElement, IReadOnlyList<ElementSubtriangle>> ConformingMesh { get; private set; }
+        private Dictionary<IXFiniteElement, IReadOnlyList<ElementSubtriangle>> ConformingMesh { get; set; }
 
         public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 
@@ -51,6 +52,12 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
                 ConformingMesh[element] = 
                     triangulator.FindConformingMesh(element, element.PhaseIntersections.Values, MeshTolerance);
             }
+        }
+
+        public IReadOnlyList<ElementSubtriangle> GetConformingTriangulationOf(IXFiniteElement element)
+        {
+            Debug.Assert(ConformingMesh != null);
+            return ConformingMesh[element];
         }
     }
 }

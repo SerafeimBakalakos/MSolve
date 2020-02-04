@@ -141,9 +141,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             IIntegrationStrategy volumeIntegration;
             if (integrationWithSubtriangles)
             {
-                volumeIntegration = new IntegrationWithConformingSubtriangles2D(
-                    GaussLegendre2D.GetQuadratureWithOrder(2, 2), geometricModel, 
-                    TriangleQuadratureSymmetricGaussian.Order2Points3);
+                volumeIntegration = new IntegrationWithConformingSubtriangles2D(GaussLegendre2D.GetQuadratureWithOrder(2, 2),
+                    TriangleQuadratureSymmetricGaussian.Order2Points3,
+                    element => geometricModel.GetConformingTriangulationOf(element));
             }
             else
             {
