@@ -664,7 +664,7 @@ namespace ISAAR.MSolve.MSAnalysis.SupportiveClasses
                 }
                 int originalSubdomainID = model.ElementsDictionary[hexaID].Subdomain.ID;
                 model.ElementsDictionary[hexaID] = e1;
-                model.SubdomainsDictionary[originalSubdomainID].Elements.Add(e1.ID,e1);
+                model.SubdomainsDictionary[originalSubdomainID].Elements[e1.ID]=e1;
 
                 //ADDITIONAL HEXAS
                 foreach (int subdomainID in hexaAndTheirSharingSubdomains[hexaID])

@@ -37,6 +37,9 @@ using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 //using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.SamplesConsole.SupportiveClasses;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
+using ISAAR.MSolve.LinearAlgebra.Reordering;
 
 namespace ISAAR.MSolve.SamplesConsole
 {
@@ -107,23 +110,30 @@ namespace ISAAR.MSolve.SamplesConsole
 
 
             #region setup solver problem and initialize
-            var interfaceSolverBuilder = new FetiDPInterfaceProblemSolver.Builder();
-            interfaceSolverBuilder.MaxIterationsProvider = new PercentageMaxIterationsProvider(1);
-            interfaceSolverBuilder.PcgConvergenceTolerance = 1E-10;
-            var fetiMatrices = new SkylineFetiDPSubdomainMatrixManager.Factory();
+            //Setup solver
+            var pcgSettings = new PcgSettings()
+            {
+                ConvergenceTolerance = 1E-5,
+                MaxIterationsProvider = new FixedMaxIterationsProvider(100)
+            };
+            var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(new OrderingAmdSuiteSparse());
             //var fetiMatrices = new SkylineFetiDPSubdomainMatrixManager.Factory();
             //var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
-            var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
-            var fetiSolverBuilder = new FetiDPSolverPrint.Builder(cornerNodeSelection, fetiMatrices);
-            fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
-            fetiSolverBuilder.ProblemIsHomogeneous = false;
-            fetiSolverBuilder.PreconditionerFactory = new DirichletPreconditioner.Factory();
-            FetiDPSolverPrint fetiSolver = fetiSolverBuilder.BuildSolver(model);
+
+            var cornerNodes_ = cornerNodes.Select(x => ((ISubdomain)model.SubdomainsDictionary[x.Key], x.Value)).ToDictionary(x => x.Item1, x => x.Value);
+
+            var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes_);
+            var fetiSolverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);
+            //fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
+            fetiSolverBuilder.ProblemIsHomogeneous = true; //TODO
+            fetiSolverBuilder.Preconditioning = new DirichletPreconditioning();
+            FetiDPSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection);
+            //FetiDPSolverPrint fetiSolver = fetiSolverBuilder.BuildSolver(model);
             
             // Run the analysis
-            var problem = new ProblemStructural(model, fetiSolver);
-            var linearAnalyzer = new LinearAnalyzer(model, fetiSolver, problem);
-            var staticAnalyzer = new StaticAnalyzer(model, fetiSolver, problem, linearAnalyzer);
+            var problem = new ProblemStructural(model, (ISolver)fetiSolver);
+            var linearAnalyzer = new LinearAnalyzer(model, (ISolver)fetiSolver, problem);
+            var staticAnalyzer = new StaticAnalyzer(model, (ISolver)fetiSolver, problem, linearAnalyzer);
             staticAnalyzer.Initialize();
             #endregion
 
@@ -136,7 +146,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 //var subdMatrix= provider.CalculateMatrix(subdomain);
 
                 string subdID = subdomain.ID.ToString();
-                var subdMatrix = fetiSolver.LinearSystems[subdomain.ID].Matrix; // subdomainMatrixes[subdomain.ID];
+                var subdMatrix = fetiSolver.GetLinearSystem(subdomain).Matrix; // subdomainMatrixes[subdomain.ID];
 
                 string counter_data = 1.ToString();
                 string print_path = string.Format(print_path_gen, subdID, counter_data);
@@ -297,8 +307,8 @@ namespace ISAAR.MSolve.SamplesConsole
 
             #region  Gather the global displacements
             var sudomainDisplacements = new Dictionary<int, IVectorView>();
-            foreach (var ls in fetiSolver.LinearSystems) sudomainDisplacements[ls.Key] = ls.Value.Solution;
-            Vector globalU = fetiSolver.GatherGlobalDisplacements(sudomainDisplacements);
+            foreach (var ls in model.Subdomains) sudomainDisplacements[ls.ID] = fetiSolver.GetLinearSystem(ls).Solution;
+            Vector globalU = fetiSolver.GatherGlobalDisplacements();// sudomainDisplacements);
 
             Node monitoredNode = model.NodesDictionary[rveBuilder.CornerNodesIds.ElementAt(0).Key];
             int globalDofId = model.GlobalDofOrdering.GlobalFreeDofs[monitoredNode, StructuralDof.TranslationZ];
@@ -539,7 +549,7 @@ namespace ISAAR.MSolve.SamplesConsole
             mpgp.Item1.L01 = scale_factor * mpgp.Item1.L01; mpgp.Item1.L02 = scale_factor * mpgp.Item1.L02; mpgp.Item1.L03 = scale_factor * mpgp.Item1.L03;
 
 
-            var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3D(1, false, mpgp,
+            var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGit(1, false, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
 
             //var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate(1, false);

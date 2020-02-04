@@ -9,6 +9,7 @@ using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Output;
 //using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.LinearAlgebra.Output.Formatting;
+using ISAAR.MSolve.MSAnalysis.SupportiveClasses;
 using ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses;
 
 namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses

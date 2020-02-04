@@ -23,6 +23,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ISAAR.MSolve.MSAnalysis.SupportiveClasses;
+using ISAAR.MSolve.LinearAlgebra.Reordering;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 
 namespace ISAAR.MSolve.MultiscaleAnalysis
 {
@@ -55,19 +57,27 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             if (decomposeModel)
             {
                 //Setup solver
-                var interfaceSolverBuilder = new FetiDPInterfaceProblemSolver.Builder();
-                interfaceSolverBuilder.MaxIterationsProvider = new PercentageMaxIterationsProvider(1);
-                interfaceSolverBuilder.PcgConvergenceTolerance = 1E-10;
-                var fetiMatrices = new SkylineFetiDPSubdomainMatrixManager.Factory();
+                var pcgSettings = new PcgSettings()
+                {
+                    ConvergenceTolerance = 1E-5,
+                    MaxIterationsProvider = new FixedMaxIterationsProvider(100)
+                };
+                //var interfaceSolverBuilder = new FetiDPInterfaceProblemSolver.Builder();
+                //interfaceSolverBuilder.MaxIterationsProvider = new PercentageMaxIterationsProvider(1);
+                //interfaceSolverBuilder.PcgConvergenceTolerance = 1E-10;
+                var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(new OrderingAmdSuiteSparse());
                 //var fetiMatrices = new SkylineFetiDPSubdomainMatrixManager.Factory();
                 //var fetiMatrices = new DenseFetiDPSubdomainMatrixManager.Factory();
-                var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes);
-                var fetiSolverBuilder = new FetiDPSolver.Builder(cornerNodeSelection, fetiMatrices);
-                fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
+
+                var cornerNodes_ = cornerNodes.Select(x => ((ISubdomain)model.SubdomainsDictionary[x.Key], x.Value)).ToDictionary(x=>x.Item1,x=>x.Value);
+
+                var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes_);
+                var fetiSolverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);
+                //fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
                 fetiSolverBuilder.ProblemIsHomogeneous = false;
-                fetiSolverBuilder.PreconditionerFactory = new DirichletPreconditioner.Factory();
-                FetiDPSolver fetiSolver = fetiSolverBuilder.BuildSolver(model);
-                return fetiSolver;
+                fetiSolverBuilder.Preconditioning = new DirichletPreconditioning();
+                FetiDPSolverSerial fetiSolver = fetiSolverBuilder.Build(model,cornerNodeSelection);
+                return (ISolver)fetiSolver;
             }
             else
             {

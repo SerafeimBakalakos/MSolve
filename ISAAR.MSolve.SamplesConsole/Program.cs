@@ -20,41 +20,13 @@ namespace ISAAR.MSolve.SamplesConsole
 
         static void Main(string[] args)
         {
-            //Console.WriteLine("Hello World");
-            //Parallel.DistributeModelExample.RunParallelHardcoded(args);
-            //Parallel.DistributeModelExample.RunParallelWithSolver(args);
-            //MpiTestSuite.StartTesting(args);
-            //MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Quads4x4HomogeneousTests.TestScalingMatricesMpi(args);
+            SeparateCodeCheckingClass5b_bNEW_debugGit.RunExample();
 
-            //SolveBuildingInNoSoilSmall();
-            //TrussExample.Run();
-            //FEM.Cantilever2D.Run();
-            //FEM.Cantilever2DPreprocessor.Run();
-            //FEM.WallWithOpenings.Run();
-            //SeparateCodeCheckingClass.Check06();
-            //SolveBuildingInNoSoilSmall();
-            //SolveBuildingInNoSoilSmallDynamic();
-            //SolveStochasticMaterialBeam2DWithBruteForceMonteCarlo();
-            //CNTExamples.CNT_4_4_DisplacementControl();
-            //CNTExamples.CNT_4_4_NewtonRaphson();
-            //Tests.FEM.Shell8andCohesiveNonLinear.RunTest();
-            //AppliedDisplacementExample.Run();
 
-            //Logging.PrintForceDisplacementCurve.CantileverBeam2DCorotationalLoadControl();
 
-            //SuiteSparseBenchmarks.MemoryConsumptionDebugging();
-            //SolverBenchmarks.SuiteSparseMemoryConsumptionDebugging();
-            //NRNLAnalyzerDevelopTest.SolveDisplLoadsExample();
-            //SeparateCodeCheckingClass4.Check05bStressIntegrationObje_Integration();
-            //SeparateCodeCheckingClass4.Check_Graphene_rve_Obje_Integration();
-            //IntegrationElasticCantileverBenchmark.RunExample();
-            //OneRveExample.Check_Graphene_rve_serial();
-            //BondSlipTest.CheckStressStrainBonSlipMaterial();
-            //OneRveExample.Check_Graphene_rve_parallel();
-            //LinearRves.CheckShellScaleTransitionsAndMicrostructure();
-            //SolveCantileverWithStochasticMaterial();
 
-            //MeshPartitioningExamples.PartitionMeshes();
+
+
 
         }
 

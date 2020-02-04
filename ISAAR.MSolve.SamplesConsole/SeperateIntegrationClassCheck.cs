@@ -34,7 +34,7 @@ using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses;
 using ISAAR.MSolve.Logging;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
-using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Matrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Materials.Interfaces;
 
@@ -66,10 +66,10 @@ namespace ISAAR.MSolve.SamplesConsole
             mpgp.Item1.L01 = scale_factor * mpgp.Item1.L01; mpgp.Item1.L02 = scale_factor * mpgp.Item1.L02; mpgp.Item1.L03 = scale_factor * mpgp.Item1.L03;
             
 
-            var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelopHSTAM(1, true, mpgp,
-            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-            IContinuumMaterial3DDefGrad microstructure2 = new MicrostructureDefGrad3D(rveBuilder, true, 1);
-            double[,] consMatrix2 = microstructure2.ConstitutiveMatrix.CopytoArray2D();
+            //var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelopHSTAM(1, true, mpgp,
+            //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            //IContinuumMaterial3DDefGrad microstructure2 = new MicrostructureDefGrad3D(rveBuilder, true, 1);
+            //double[,] consMatrix2 = microstructure2.ConstitutiveMatrix.CopytoArray2D();
 
 
         }
