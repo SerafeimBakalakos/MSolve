@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
+using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Interpolation;
@@ -10,6 +11,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
 using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 using ISAAR.MSolve.XFEM.Multiphase.Integration;
+using ISAAR.MSolve.XFEM.Multiphase.Materials;
 
 namespace ISAAR.MSolve.XFEM.Multiphase.Elements
 {
@@ -21,6 +23,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
             this.CellType = CellType.Quad4;
             this.Nodes = nodes;
         }
+
+        public CellType CellType { get; }
+
+        public IElementDofEnumerator DofEnumerator { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public IReadOnlyList<(XNode node1, XNode node2)> EdgeNodes
         {
@@ -62,31 +68,30 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
             }
         }
 
-        public IReadOnlyList<XNode> Nodes { get; }
-
-        public IIsoparametricInterpolation2D StandardInterpolation => InterpolationQuad4.UniqueInstance;
-
-        public XSubdomain Subdomain { get; set; }
+        public IElementType ElementType => throw new NotImplementedException();
 
         public int ID { get; set; }
 
-        public IElementType ElementType => throw new NotImplementedException();
+        public IIntegrationStrategy IntegrationVolume { get; set; }
 
-        public CellType CellType { get; }
+        public IBoundaryIntegration IntegrationBoundary { get; set; }
 
-        public IElementDofEnumerator DofEnumerator { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public IThermalMaterialField MaterialField { get; set; }
 
-        public Dictionary<PhaseBoundary, CurveElementIntersection> PhaseIntersections { get; } 
+        public IIsoparametricInterpolation2D InterpolationStandard => InterpolationQuad4.UniqueInstance;
+
+        public Dictionary<GaussPoint, ThermalInterfaceMaterial> MaterialsForBoundaryIntegration { get; private set; }
+        public Dictionary<GaussPoint, ThermalMaterial> MaterialsForVolumeIntegration { get; private set; }
+
+        public IReadOnlyList<XNode> Nodes { get; }
+        IReadOnlyList<INode> IElement.Nodes => Nodes;
+
+        public Dictionary<PhaseBoundary, CurveElementIntersection> PhaseIntersections { get; }
             = new Dictionary<PhaseBoundary, CurveElementIntersection>();
 
         public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
 
-        public IIntegrationStrategy VolumeIntegration { get; set; }
-
-        public IBoundaryIntegration BoundaryIntegration { get; set; }
-
-        IReadOnlyList<INode> IElement.Nodes => Nodes;
-
+        public XSubdomain Subdomain { get; set; }
         ISubdomain IElement.Subdomain => Subdomain;
 
         public IMatrix DampingMatrix(IElement element)
@@ -107,6 +112,32 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
         public IMatrix StiffnessMatrix(IElement element)
         {
             throw new NotImplementedException();
+        }
+
+        public void UpdateMaterials()
+        {
+            MaterialsForVolumeIntegration = new Dictionary<GaussPoint, ThermalMaterial>();
+            foreach (GaussPoint gp in IntegrationVolume.GenerateIntegrationPoints(this))
+            {
+                //TODO: Cache this. If possible cache it for all similar elements.
+                EvalInterpolation2D evalInterpolation = InterpolationStandard.EvaluateAllAt(Nodes, gp);
+                MaterialsForVolumeIntegration[gp] = MaterialField.FindMaterialAt(this, evalInterpolation);
+            }
+
+            MaterialsForBoundaryIntegration = new Dictionary<GaussPoint, ThermalInterfaceMaterial>();
+            foreach (var boundaryIntersectionPair in PhaseIntersections)
+            {
+                PhaseBoundary boundary = boundaryIntersectionPair.Key;
+
+                //TODO: perhaps I should have one for each Gauss point
+                ThermalInterfaceMaterial material = MaterialField.FindInterfaceMaterialAt(boundary); 
+
+                CurveElementIntersection intersection = boundaryIntersectionPair.Value;
+                foreach (GaussPoint gp in IntegrationBoundary.GenerateIntegrationPoints(this, intersection))
+                {
+                    MaterialsForBoundaryIntegration[gp] = material;
+                }
+            }
         }
     }
 }

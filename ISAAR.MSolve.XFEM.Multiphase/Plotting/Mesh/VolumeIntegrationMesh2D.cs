@@ -29,11 +29,11 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
                 if (element.Phases.Count == 1) ProcessStandardElement(element, ref outVertexID);
-                else if (element.VolumeIntegration is IntegrationWithNonConformingSubsquares2D)
+                else if (element.IntegrationVolume is IntegrationWithNonConformingSubsquares2D)
                 {
                     ProcessSubsquareElement(element, ref outVertexID);
                 }
-                else if (element.VolumeIntegration is IntegrationWithConformingSubtriangles2D triangleIntegration)
+                else if (element.IntegrationVolume is IntegrationWithConformingSubtriangles2D triangleIntegration)
                 {
                     ProcessSubtriangleElement(geometricModel, element, ref outVertexID);
                 }
@@ -55,7 +55,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
             return meshGen.CreateMesh((id, x, y, z) =>
             {
                 var natural = new NaturalPoint(x, y);
-                CartesianPoint cartesian = element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, natural);
+                CartesianPoint cartesian = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, natural);
                 return new XNode(int.MaxValue, cartesian.X, cartesian.Y);
             });
         }
@@ -77,7 +77,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
 
         private void ProcessSubsquareElement(IXFiniteElement element, ref int outVertexID)
         {
-            var squareIntegration = (IntegrationWithNonConformingSubsquares2D)(element.VolumeIntegration);
+            var squareIntegration = (IntegrationWithNonConformingSubsquares2D)(element.IntegrationVolume);
             (IReadOnlyList<XNode> vertices, IReadOnlyList<CellConnectivity<XNode>> cells) =
                         GenerateSquareIntegrationMesh(element, squareIntegration.SubcellsPerAxis);
 
@@ -99,8 +99,8 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
         private void ProcessSubtriangleElement(GeometricModel geometricModel, IXFiniteElement element, ref int outVertexID)
         {
             //TODO: The resulting triangle is Tri3 only for 1st order elements. Extend this.
-            Debug.Assert(element.StandardInterpolation == FEM.Interpolation.InterpolationQuad4.UniqueInstance
-                    || element.StandardInterpolation == FEM.Interpolation.InterpolationTri3.UniqueInstance);
+            Debug.Assert(element.InterpolationStandard == FEM.Interpolation.InterpolationQuad4.UniqueInstance
+                    || element.InterpolationStandard == FEM.Interpolation.InterpolationTri3.UniqueInstance);
 
             IReadOnlyList<ElementSubtriangle> subtriangles = geometricModel.GetConformingTriangulationOf(element);
             foreach (ElementSubtriangle triangle in subtriangles)

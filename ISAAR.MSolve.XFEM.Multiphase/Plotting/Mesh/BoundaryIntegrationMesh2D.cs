@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
                     {
                         NaturalPoint natural = intersection.IntersectionPoints[i];
                         CartesianPoint point = 
-                            element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, natural);
+                            element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, natural);
                         VtkPoint outVertex = new VtkPoint(outVertexID++, point.X, point.Y, point.Z);
                         vertices[i] = outVertex;
                         outVertices.Add(outVertex);

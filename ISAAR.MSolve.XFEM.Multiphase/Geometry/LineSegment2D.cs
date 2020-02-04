@@ -116,7 +116,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
                     (double r, double s) = localNodeCoordinates[element.Nodes[n]];
                     if (Math.Abs(s) < tol)
                     {
-                        nodesOnLine[r] = element.StandardInterpolation.NodalNaturalCoordinates[n];
+                        nodesOnLine[r] = element.InterpolationStandard.NodalNaturalCoordinates[n];
                     }
                 }
 
@@ -300,7 +300,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
                 (double r, double s) = localNodeCoordinates[element.Nodes[n]];
                 if (Math.Abs(s) < meshTol)
                 {
-                    P0 = element.StandardInterpolation.NodalNaturalCoordinates[n];
+                    P0 = element.InterpolationStandard.NodalNaturalCoordinates[n];
                     r0 = r;
                     break;
                 }

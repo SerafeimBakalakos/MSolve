@@ -43,8 +43,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Integration
             // Define segment along which we will integrate
             var naturalA = new NaturalPoint(-1, 0);
             var naturalB = new NaturalPoint(+1, 0);
-            CartesianPoint cartesianA = element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, naturalA);
-            CartesianPoint cartesianB = element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, naturalB);
+            CartesianPoint cartesianA = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, naturalA);
+            CartesianPoint cartesianB = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, naturalB);
             var intersection = new CurveElementIntersection(RelativePositionCurveElement.Intersection,
                 new NaturalPoint[] { naturalA, naturalB });
 

@@ -16,9 +16,9 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
             double tol = meshTolerance.CalcTolerance(element);
             var comparer = new Point2DComparerXMajor<NaturalPoint>(tol); //TODO: This should be avoided.
             var triangleVertices = new SortedSet<NaturalPoint>(comparer); //TODO: Better use a HashSet, which needs a hash function for points.
-            triangleVertices.UnionWith(element.StandardInterpolation.NodalNaturalCoordinates);
+            triangleVertices.UnionWith(element.InterpolationStandard.NodalNaturalCoordinates);
             var nodes = new SortedSet<NaturalPoint>(comparer);
-            nodes.UnionWith(element.StandardInterpolation.NodalNaturalCoordinates);
+            nodes.UnionWith(element.InterpolationStandard.NodalNaturalCoordinates);
 
             foreach (CurveElementIntersection intersection in intersections)
             {

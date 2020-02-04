@@ -51,7 +51,7 @@ namespace ISAAR.MSolve.Logging.VTK
             // Points
             writer.WriteLine("DATASET UNSTRUCTURED_GRID");
             writer.WriteLine($"POINTS {pointValues.Count} double");
-            foreach (var point in pointValues.Keys)
+            foreach (CartesianPoint point in pointValues.Keys)
             {
                 writer.WriteLine($"{point.X} {point.Y} {point.Z}");
             }
@@ -61,11 +61,35 @@ namespace ISAAR.MSolve.Logging.VTK
             writer.WriteLine($"POINT_DATA {pointValues.Count}");
             writer.WriteLine($"SCALARS {fieldName} double 1");
             writer.WriteLine("LOOKUP_TABLE default");
-            foreach (var value in pointValues.Values)
+            foreach (double value in pointValues.Values)
             {
                 writer.WriteLine(value);
             }
             writer.WriteLine();
+        }
+        public void WriteScalarFields(string[] fieldNames, IReadOnlyDictionary<CartesianPoint, double[]> pointValues)
+        {
+            // Points
+            writer.WriteLine("DATASET UNSTRUCTURED_GRID");
+            writer.WriteLine($"POINTS {pointValues.Count} double");
+            foreach (var point in pointValues.Keys)
+            {
+                writer.WriteLine($"{point.X} {point.Y} {point.Z}");
+            }
+
+            // Values
+            for (int i = 0; i < fieldNames.Length; ++i)
+            {
+                writer.Write("\n\n");
+                writer.WriteLine($"POINT_DATA {pointValues.Count}");
+                writer.WriteLine($"SCALARS {fieldNames[i]} double 1");
+                writer.WriteLine("LOOKUP_TABLE default");
+                foreach (double[] values in pointValues.Values)
+                {
+                    writer.WriteLine(values[i]);
+                }
+                writer.WriteLine();
+            }
         }
 
         //TODO: Avoid the duplication.

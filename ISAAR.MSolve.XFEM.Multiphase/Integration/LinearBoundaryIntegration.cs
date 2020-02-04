@@ -37,8 +37,8 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Integration
             NaturalPoint naturalB = intersection.IntersectionPoints[1];
 
             // Absolute determinant of Jacobian of mapping from auxiliary to cartesian system. Constant for all Gauss points.
-            CartesianPoint cartesianA = element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, naturalA);
-            CartesianPoint cartesianB = element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, naturalB);
+            CartesianPoint cartesianA = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, naturalA);
+            CartesianPoint cartesianB = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, naturalB);
             double detJ = Math.Abs(0.5 * cartesianA.CalculateDistanceFrom(cartesianB));
 
             int numIntegrationPoints = quadrature1D.IntegrationPoints.Count;

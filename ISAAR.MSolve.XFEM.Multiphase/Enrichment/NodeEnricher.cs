@@ -68,11 +68,18 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
         private int DefineStepEnrichments(int idStart)
         {
             // Keep track of identified interactions between phases, to avoid duplicate enrichments
-            var uniqueEnrichments = new Dictionary<int, StepEnrichment>[geometricModel.Phases.Count];
+            var uniqueEnrichments = new Dictionary<int, Dictionary<int, StepEnrichment>>();
+
+            //TODO: This would be faster, but only works for consecutive phase IDs starting from 0.
+            //var uniqueEnrichments = new Dictionary<int, StepEnrichment>[geometricModel.Phases.Count];
+
             #region default phase
             //foreach (IPhase phase in geometricModel.Phases)
             #endregion
-            for (int p = 1; p < geometricModel.Phases.Count; ++p) uniqueEnrichments[p] = new Dictionary<int, StepEnrichment>();
+            for (int p = 1; p < geometricModel.Phases.Count; ++p)
+            {
+                uniqueEnrichments[geometricModel.Phases[p].ID] = new Dictionary<int, StepEnrichment>();
+            }
 
             int id = idStart;
             #region default phase

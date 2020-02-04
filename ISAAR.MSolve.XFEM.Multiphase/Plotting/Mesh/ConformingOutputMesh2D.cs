@@ -49,8 +49,8 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
                         outVertices.AddRange(subvertices);
 
                         //TODO: The resulting triangle is Tri3 only for 1st order elements. Extend this.
-                        Debug.Assert(originalCell.StandardInterpolation == FEM.Interpolation.InterpolationQuad4.UniqueInstance
-                            || originalCell.StandardInterpolation == FEM.Interpolation.InterpolationTri3.UniqueInstance);
+                        Debug.Assert(originalCell.InterpolationStandard == FEM.Interpolation.InterpolationQuad4.UniqueInstance
+                            || originalCell.InterpolationStandard == FEM.Interpolation.InterpolationTri3.UniqueInstance);
                         var outCell = new VtkCell(CellType.Tri3, subvertices);
                         outCells.Add(outCell);
                         original2OutCells[originalCell].Add(outCell);

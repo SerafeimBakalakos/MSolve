@@ -30,7 +30,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
 
         public double CalcAreaCartesian(IXFiniteElement parentElement)
         {
-            IIsoparametricInterpolation2D interpolation = parentElement.StandardInterpolation;
+            IIsoparametricInterpolation2D interpolation = parentElement.InterpolationStandard;
             IReadOnlyList<XNode> nodes = parentElement.Nodes;
             if (interpolation == InterpolationQuad4.UniqueInstance || interpolation == InterpolationTri3.UniqueInstance)
             {
@@ -61,7 +61,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
 
         public CartesianPoint[] GetVerticesCartesian(IXFiniteElement parentElement)
         {
-            IIsoparametricInterpolation2D interpolation = parentElement.StandardInterpolation;
+            IIsoparametricInterpolation2D interpolation = parentElement.InterpolationStandard;
             IReadOnlyList<XNode> nodes = parentElement.Nodes;
             if (interpolation == InterpolationQuad4.UniqueInstance || interpolation == InterpolationTri3.UniqueInstance)
             {

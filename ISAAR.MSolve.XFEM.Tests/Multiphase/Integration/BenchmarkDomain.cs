@@ -74,7 +74,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Integration
             else if (geometryType == GeometryType.Quad)
             {
                 //TODO: Use an analytic formula
-                Matrix shapeDerivatives = Element.StandardInterpolation.EvaluateNaturalGradientsAt(point);
+                Matrix shapeDerivatives = Element.InterpolationStandard.EvaluateNaturalGradientsAt(point);
                 var jacobian = new IsoparametricJacobian2D(Element.Nodes, shapeDerivatives);
                 return jacobian.DirectDeterminant;
             }

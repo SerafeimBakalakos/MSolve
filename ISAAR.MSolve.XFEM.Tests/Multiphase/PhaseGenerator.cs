@@ -144,7 +144,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase
             // Define phases
             var phase0 = new DefaultPhase();
             var phase1 = new ConvexPhase(1);
-            var phase2 = new ConvexPhase(2);
+            var phase2 = new ConvexPhase(3);
 
             // Create boundaries and associate them with their phases
             var AB = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(A, B), phase1, phase0);

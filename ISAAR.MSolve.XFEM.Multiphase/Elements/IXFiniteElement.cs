@@ -14,8 +14,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
         IReadOnlyList<(XNode node1, XNode node2)> EdgeNodes { get; }
         IReadOnlyList<(NaturalPoint node1, NaturalPoint node2)> EdgesNodesNatural { get; }
 
-        IBoundaryIntegration BoundaryIntegration { get; }
-        IIntegrationStrategy VolumeIntegration { get; }
+        IBoundaryIntegration IntegrationBoundary { get; }
+        IIntegrationStrategy IntegrationVolume { get; }
+
+        IIsoparametricInterpolation2D InterpolationStandard { get; }
 
         IReadOnlyList<XNode> Nodes { get; }
 
@@ -24,8 +26,9 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
         HashSet<IPhase> Phases { get; }
 
         //TODO: Unify 2D and 3D interpolation classes and use that one.
-        IIsoparametricInterpolation2D StandardInterpolation { get; }
 
         XSubdomain Subdomain { get; set; }
+
+        void UpdateMaterials();
     }
 }

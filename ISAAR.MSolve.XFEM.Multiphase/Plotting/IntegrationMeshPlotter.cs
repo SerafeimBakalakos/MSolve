@@ -44,10 +44,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting
                 foreach (CurveElementIntersection intersection in element.PhaseIntersections.Values)
                 {
                     IReadOnlyList<GaussPoint> gaussPoints = 
-                        element.BoundaryIntegration.GenerateIntegrationPoints(element, intersection);
+                        element.IntegrationBoundary.GenerateIntegrationPoints(element, intersection);
                     foreach (GaussPoint gp in gaussPoints)
                     {
-                        CartesianPoint point = element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, gp);
+                        CartesianPoint point = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, gp);
                         integrationPoints.Add(point);
                     }
                 }
@@ -72,10 +72,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting
             var integrationPoints = new HashSet<CartesianPoint>();
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
-                IReadOnlyList<GaussPoint> elementGPs = element.VolumeIntegration.GenerateIntegrationPoints(element);
-                foreach (GaussPoint gp in element.VolumeIntegration.GenerateIntegrationPoints(element))
+                IReadOnlyList<GaussPoint> elementGPs = element.IntegrationVolume.GenerateIntegrationPoints(element);
+                foreach (GaussPoint gp in element.IntegrationVolume.GenerateIntegrationPoints(element))
                 {
-                    CartesianPoint point = element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, gp);
+                    CartesianPoint point = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, gp);
                     integrationPoints.Add(point);
                 }
             }

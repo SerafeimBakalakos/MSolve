@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Integration
     {
         public double Evaluate(GaussPoint point, IXFiniteElement element)
         {
-            CartesianPoint cartesian = element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, point);
+            CartesianPoint cartesian = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, point);
             return -3 + 2 * cartesian.X * cartesian.Y;
         }
 
@@ -218,7 +218,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Integration
     {
         public double Evaluate(GaussPoint point, IXFiniteElement element)
         {
-            CartesianPoint cartesian = element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, point);
+            CartesianPoint cartesian = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, point);
             double xi = point.Xi;
             double x = cartesian.X;
             double y = cartesian.Y;

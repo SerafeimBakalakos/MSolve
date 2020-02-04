@@ -74,7 +74,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             Assert.Equal(2, intersection.IntersectionPoints.Length);
 
             var intersectionPoints = intersection.IntersectionPoints.Select(
-                natural => element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, natural));
+                natural => element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, natural));
             CartesianPoint leftPoint = intersectionPoints.OrderBy(p => p.X).First();
             CartesianPoint rightPoint = intersectionPoints.OrderBy(p => p.X).Last();
             int precision = 10;
@@ -104,7 +104,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             Assert.Equal(2, intersection.IntersectionPoints.Length);
 
             var intersectionPoints = intersection.IntersectionPoints.Select(
-                natural => element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, natural));
+                natural => element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, natural));
             CartesianPoint leftPoint = intersectionPoints.OrderBy(p => p.X).First();
             CartesianPoint rightPoint = intersectionPoints.OrderBy(p => p.X).Last();
             int precision = 10;
@@ -133,7 +133,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             Assert.Equal(2, intersection.IntersectionPoints.Length);
 
             var intersectionPoints = intersection.IntersectionPoints.Select(
-                natural => element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, natural));
+                natural => element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, natural));
             CartesianPoint leftPoint = intersectionPoints.OrderBy(p => p.X).First();
             CartesianPoint rightPoint = intersectionPoints.OrderBy(p => p.X).Last();
             int precision = 10;
@@ -164,7 +164,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             Assert.Equal(2, intersection.IntersectionPoints.Length);
 
             var intersectionPoints = intersection.IntersectionPoints.Select(
-                natural => element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, natural));
+                natural => element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, natural));
             CartesianPoint leftPoint = intersectionPoints.OrderBy(p => p.X).First();
             CartesianPoint rightPoint = intersectionPoints.OrderBy(p => p.X).Last();
             int precision = 10;
@@ -196,7 +196,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             Assert.Equal(2, intersection.IntersectionPoints.Length);
 
             var intersectionPoints = intersection.IntersectionPoints.Select(
-                natural => element.StandardInterpolation.TransformNaturalToCartesian(element.Nodes, natural));
+                natural => element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, natural));
             CartesianPoint topNode = intersectionPoints.OrderBy(p => p.Y).Last();
             CartesianPoint bottomNode = intersectionPoints.OrderBy(p => p.Y).First();
             Assert.Equal(4.0, topNode.X);
@@ -224,7 +224,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
             Assert.Equal(RelativePositionCurveElement.Tangent, intersection.RelativePosition);
             Assert.Single(intersection.IntersectionPoints);
 
-            CartesianPoint P = element.StandardInterpolation.TransformNaturalToCartesian(
+            CartesianPoint P = element.InterpolationStandard.TransformNaturalToCartesian(
                 element.Nodes, intersection.IntersectionPoints[0]);
             Assert.Equal(4.0, P.X);
             Assert.Equal(1.0, P.Y);
