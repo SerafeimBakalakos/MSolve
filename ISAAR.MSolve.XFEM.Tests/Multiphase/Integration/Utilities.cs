@@ -12,6 +12,17 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Integration
     internal static class Utilities
     {
         internal static double CalcIntegral(IReadOnlyList<GaussPoint> gaussPoints,
+            IXFiniteElement element, IBenchmarkBoundaryFunction func)
+        {
+            double integral = 0;
+            foreach (GaussPoint gp in gaussPoints)
+            {
+                integral += func.Evaluate(gp, element) * gp.Weight;
+            }
+            return integral;
+        }
+
+        internal static double CalcIntegral(IReadOnlyList<GaussPoint> gaussPoints,
             BenchmarkDomain domain, IBenchmarkVolumeFunction func)
         {
             IXFiniteElement element = domain.Element;
