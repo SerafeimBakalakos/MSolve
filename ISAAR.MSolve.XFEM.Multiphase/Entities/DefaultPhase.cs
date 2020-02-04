@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.XFEM.Multiphase.Elements;
 using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 
@@ -52,6 +53,12 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
                     element.Phases.Add(this);
                 }
             }
+        }
+
+        public bool Contains(CartesianPoint point)
+        {
+            throw new InvalidOperationException(
+                "Call this method in every other valid phase. If none contains the point, then this phase does");
         }
     }
 }

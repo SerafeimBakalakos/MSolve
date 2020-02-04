@@ -31,8 +31,9 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 
         public int ID { get; }
 
-        public IReadOnlyList<IPhase> Phases => new IPhase[] { maxPhase, minPhase };
+        public double PhaseJumpCoefficient => maxPhase.ID - minPhase.ID;
 
+        public IReadOnlyList<IPhase> Phases => new IPhase[] { maxPhase, minPhase };
 
         public double EvaluateAt(XNode node)
         {
