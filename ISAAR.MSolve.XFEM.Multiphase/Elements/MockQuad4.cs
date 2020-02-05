@@ -13,6 +13,7 @@ using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 using ISAAR.MSolve.XFEM.Multiphase.Integration;
 using ISAAR.MSolve.XFEM.Multiphase.Materials;
 
+//TODO: delete
 namespace ISAAR.MSolve.XFEM.Multiphase.Elements
 {
     public class MockQuad4 : IXFiniteElement
@@ -104,17 +105,12 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
             throw new NotImplementedException();
         }
 
-        public IMatrix MassMatrix(IElement element)
+        public void IdentifyDofs()
         {
             throw new NotImplementedException();
         }
 
-        public IMatrix StiffnessMatrix(IElement element)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void UpdateMaterials()
+        public void IdentifyIntegrationPointsAndMaterials()
         {
             MaterialsForVolumeIntegration = new Dictionary<GaussPoint, ThermalMaterial>();
             foreach (GaussPoint gp in IntegrationVolume.GenerateIntegrationPoints(this))
@@ -130,7 +126,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
                 PhaseBoundary boundary = boundaryIntersectionPair.Key;
 
                 //TODO: perhaps I should have one for each Gauss point
-                ThermalInterfaceMaterial material = MaterialField.FindInterfaceMaterialAt(boundary); 
+                ThermalInterfaceMaterial material = MaterialField.FindInterfaceMaterialAt(boundary);
 
                 CurveElementIntersection intersection = boundaryIntersectionPair.Value;
                 foreach (GaussPoint gp in IntegrationBoundary.GenerateIntegrationPoints(this, intersection))
@@ -138,6 +134,16 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
                     MaterialsForBoundaryIntegration[gp] = material;
                 }
             }
+        }
+
+        public IMatrix MassMatrix(IElement element)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IMatrix StiffnessMatrix(IElement element)
+        {
+            throw new NotImplementedException();
         }
     }
 }

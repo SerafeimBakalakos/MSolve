@@ -39,6 +39,12 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Materials
             else return new ThermalInterfaceMaterial(inclusionInclusionInterfaceConductivity, jumpCoefficient);
         }
 
+        public ThermalMaterial FindMaterialAt(IPhase phase)
+        {
+            if (phase.ID == matrixPhaseID) return matrixMaterial.Clone();
+            else return inclusionMaterial.Clone();
+        }
+
         public ThermalMaterial FindMaterialAt(IXFiniteElement element, EvalInterpolation2D interpolationAtGaussPoint)
         {
             if (element.Phases.Count == 1)

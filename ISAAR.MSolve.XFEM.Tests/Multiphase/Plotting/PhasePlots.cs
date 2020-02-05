@@ -136,7 +136,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             integrationPlotter.PlotBoundaryIntegrationPoints(paths.boundaryIntegrationPoints);
 
             // Material
-            foreach (IXFiniteElement element in physicalModel.Elements) element.UpdateMaterials();
+            foreach (IXFiniteElement element in physicalModel.Elements) element.IdentifyIntegrationPointsAndMaterials();
             var materialPlotter = new MaterialPlotter(physicalModel);
             materialPlotter.PlotVolumeMaterials(paths.volumeIntegrationMaterials);
             materialPlotter.PlotBoundaryMaterials(paths.boundaryIntegrationMaterials);

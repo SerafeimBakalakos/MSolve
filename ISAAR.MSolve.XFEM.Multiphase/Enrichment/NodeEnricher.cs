@@ -51,7 +51,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                 {
                     if (element.Phases.Count <= 2) continue; // Not a junction element
 
-                    var newJunction = new JunctionEnrichment(id, element.Phases);
+                    var newJunction = new JunctionEnrichment(id, element.PhaseIntersections.Keys);
                     bool alreadyExists = junctionEnrichments.TryGetValue(newJunction, out JunctionEnrichment oldJunction);
                     if (!alreadyExists)
                     {
@@ -110,7 +110,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                         uniqueEnrichments[maxPhase.ID].TryGetValue(minPhase.ID, out StepEnrichment enrichment);
                     if (!enrichmentsExists)
                     {
-                        enrichment = new StepEnrichment(id++, minPhase, maxPhase);
+                        enrichment = new StepEnrichment(id++, boundary);
                         uniqueEnrichments[maxPhase.ID][minPhase.ID] = enrichment;
                     }
 

@@ -29,6 +29,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
 
         XSubdomain Subdomain { get; set; }
 
-        void UpdateMaterials();
+        void IdentifyDofs();
+        void IdentifyIntegrationPointsAndMaterials();
     }
 }
