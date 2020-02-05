@@ -16,6 +16,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
         public StepEnrichment(int id, PhaseBoundary phaseBoundary)
         {
             this.ID = id;
+            this.boundary = phaseBoundary;
             if (phaseBoundary.PositivePhase.ID < phaseBoundary.NegativePhase.ID)
             {
                 this.minPhase = phaseBoundary.PositivePhase;

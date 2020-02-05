@@ -16,6 +16,13 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 {
     public class XModel : IStructuralModel
     {
+        private bool areDataStructuresConnected;
+
+        public XModel()
+        {
+            areDataStructuresConnected = false;
+        }
+
         public IDomain2DBoundary Boundary { get; set; }
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();
@@ -57,9 +64,23 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 
         public void ConnectDataStructures()
         {
-            BuildInterconnectionData();
-            AssignConstraints();
-            RemoveInactiveNodalLoads();
+            if (!areDataStructuresConnected)
+            {
+                BuildInterconnectionData();
+                AssignConstraints();
+                RemoveInactiveNodalLoads();
+                areDataStructuresConnected = true;
+            }
+        }
+
+        public void UpdateDofs()
+        {
+            foreach (IXFiniteElement element in Elements) element.IdentifyDofs();
+        }
+
+        public void UpdateMaterials()
+        {
+            foreach (IXFiniteElement element in Elements) element.IdentifyIntegrationPointsAndMaterials();
         }
 
         private void AssignConstraints()
@@ -98,10 +119,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 
             // Associate each subdomain with its nodes
             foreach (XSubdomain subdomain in Subdomains.Values) subdomain.DefineNodesFromElements();
-        }
-
-
-        
+        }   
 
         private void RemoveInactiveNodalLoads()
         {

@@ -13,7 +13,7 @@ using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 using ISAAR.MSolve.XFEM.Multiphase.Integration;
 using ISAAR.MSolve.XFEM.Multiphase.Materials;
 
-//TODO: delete
+//TODO: delete this class
 namespace ISAAR.MSolve.XFEM.Multiphase.Elements
 {
     public class MockQuad4 : IXFiniteElement
@@ -142,6 +142,16 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
         }
 
         public IMatrix StiffnessMatrix(IElement element)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)> GetMaterialsForBoundaryIntegration()
+        {
+            throw new NotImplementedException();
+        }
+
+        public (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalMaterial>) GetMaterialsForVolumeIntegration()
         {
             throw new NotImplementedException();
         }

@@ -10,9 +10,9 @@ namespace ISAAR.MSolve.XFEM.Tests
     {
         public static void Main(string[] args)
         {
-            PhasePlots.PlotScatteredPhasesInteractions();
+            //PhasePlots.PlotScatteredPhasesInteractions();
             PhasePlots.PlotTetrisPhasesInteractions();
-            PhasePlots.PlotPercolationPhasesInteractions();
+            //PhasePlots.PlotPercolationPhasesInteractions();
 
 
             //ThermalInclusionBall2D.PlotLevelSets();

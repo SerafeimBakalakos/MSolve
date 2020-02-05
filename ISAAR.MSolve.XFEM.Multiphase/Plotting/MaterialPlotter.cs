@@ -23,15 +23,19 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting
             var materialPoints = new Dictionary<CartesianPoint, double>();
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
-                var castedElement = (MockQuad4)element;
-
-                foreach (var pointMaterialPair in castedElement.MaterialsForBoundaryIntegration)
+                Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)> allData =
+                    element.GetMaterialsForBoundaryIntegration();
+                foreach (var entry in element.GetMaterialsForBoundaryIntegration())
                 {
-                    GaussPoint gp = pointMaterialPair.Key;
-                    ThermalInterfaceMaterial material = pointMaterialPair.Value;
+                    PhaseBoundary boundary = entry.Key;
+                    (IReadOnlyList<GaussPoint> points, IReadOnlyList<ThermalInterfaceMaterial> materials) = entry.Value;
+                    for (int i = 0; i < points.Count; ++i)
+                    {
+                        GaussPoint gp = points[i];
+                        CartesianPoint point = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, gp);
+                        materialPoints[point] = materials[i].InterfaceConductivity;
 
-                    CartesianPoint point = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, gp);
-                    materialPoints[point] = material.InterfaceConductivity;
+                    }
                 }
             }
             using (var writer = new Logging.VTK.VtkPointWriter(path))
@@ -42,23 +46,26 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting
 
         public void PlotBoundaryPhaseJumpCoefficients(string path)
         {
-            var materialPoints = new Dictionary<CartesianPoint, double>();
+            var jumpCoeffs = new Dictionary<CartesianPoint, double>();
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
-                var castedElement = (MockQuad4)element;
-
-                foreach (var pointMaterialPair in castedElement.MaterialsForBoundaryIntegration)
+                Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)> allData =
+                    element.GetMaterialsForBoundaryIntegration();
+                foreach (var entry in element.GetMaterialsForBoundaryIntegration())
                 {
-                    GaussPoint gp = pointMaterialPair.Key;
-                    ThermalInterfaceMaterial material = pointMaterialPair.Value;
-
-                    CartesianPoint point = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, gp);
-                    materialPoints[point] = material.PhaseJumpCoefficient ;
+                    PhaseBoundary boundary = entry.Key;
+                    (IReadOnlyList<GaussPoint> points, IReadOnlyList<ThermalInterfaceMaterial> materials) = entry.Value;
+                    for (int i = 0; i < points.Count; ++i)
+                    {
+                        GaussPoint gp = points[i];
+                        CartesianPoint point = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, gp);
+                        jumpCoeffs[point] = boundary.Enrichment.PhaseJumpCoefficient;
+                    }
                 }
             }
             using (var writer = new Logging.VTK.VtkPointWriter(path))
             {
-                writer.WriteScalarField("phase_jump_coeffs", materialPoints);
+                writer.WriteScalarField("phase_jump_coeffs", jumpCoeffs);
             }
         }
 
@@ -67,12 +74,13 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting
             var materialPoints = new Dictionary<CartesianPoint, double>();
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
-                var castedElement = (MockQuad4)element;
+                (IReadOnlyList<GaussPoint> points, IReadOnlyList<ThermalMaterial> materials) = 
+                    element.GetMaterialsForVolumeIntegration();
 
-                foreach (var pointMaterialPair in castedElement.MaterialsForVolumeIntegration)
+                for (int i = 0; i < points.Count; ++i)
                 {
-                    GaussPoint gp = pointMaterialPair.Key;
-                    ThermalMaterial material = pointMaterialPair.Value;
+                    GaussPoint gp = points[i];
+                    ThermalMaterial material = materials[i];
 
                     CartesianPoint point = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, gp);
                     materialPoints[point] = material.ThermalConductivity;

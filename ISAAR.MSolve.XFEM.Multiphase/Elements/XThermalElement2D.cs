@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ISAAR.MSolve.Discretization;
-using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
@@ -172,6 +171,21 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
         public IMatrix DampingMatrix(IElement element) => throw new NotImplementedException();
 
         public IReadOnlyList<IReadOnlyList<IDofType>> GetElementDofTypes(IElement element) => allDofTypes;
+
+
+        public Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)> 
+            GetMaterialsForBoundaryIntegration()
+        {
+            var result = new Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)>();
+            foreach (PhaseBoundary boundary in gaussPointsBoundary.Keys)
+            {
+                result[boundary] = (gaussPointsBoundary[boundary], materialsAtGPsBoundary[boundary]);
+            }
+            return result;
+        }
+
+        public (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalMaterial>) GetMaterialsForVolumeIntegration()
+            => (gaussPointsVolume, materialsAtGPsVolume);
 
         public void IdentifyDofs()
         {
@@ -477,11 +491,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
             // gradT = [ T,x ] = [ sum(Ni,x) * Ti ] = [ ... Ni,x ... ] * [ ... ]
             //         [ T,y ]   [ sum(Ni,y) * Ti ]   [ ... Ni,y ... ]   [  Ti ]
             //                                                           [ ... ]
-            
+
             // The ones stored are [ N1,x N2,x N3,x ... ]. Therefore they need transposing
             //                     [ N1,y N2,y N3,y ... ]
-            //return evalInterpolation.ShapeGradientsCartesian.Transpose();
-            return evalInterpolation.ShapeGradientsCartesian;
+            return evalInterpolation.ShapeGradientsCartesian.Transpose();
         }
 
         /// <summary>
@@ -489,12 +502,16 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
         /// boundary. For example, if there are 2 boundaries and all 3 nodes of the element are enriched due to them, then the 6
         /// enriched dofs are [node1Boundary1, node1Boundary2, node2Boundary1, node2Boundary2, node3Boundary1, node3Boundary2].
         /// When integrating along boundary 1 we will compute N^T*N, where N(6x1) = [N1 0 N2 0 N3 0]. If we integrate along
-        /// boundary 2, then N(6x1) = [0 N1 0 N2 0 N3]. Therefore when integrating along a specific boundary, then for every 
-        /// enriched dof of each node i, we need to find if the enrichment was applied due to that boundary. If yes, the 
-        /// corresponding index of the total shape function array gets the value Ni. Otherwise it remains 0. The whole thing 
-        /// also takes care of rare cases where one or more nodes were not enriched like the rest, because their nodal support 
-        /// was almost entirely in one of the two regions.
-        /// /// </summary>
+        /// boundary 2, then N(6x1) = [0 N1 0 N2 0 N3]. 
+        /// 
+        /// Therefore when integrating along a specific boundary, then for every enriched dof of each node i, we need to find 
+        /// if the enrichment was applied due to that boundary. If yes, the corresponding index of the total shape function 
+        /// array gets the value Ni. Otherwise it remains 0. 
+        /// 
+        /// The whole thing also takes care of a) blending enrichments due to boundaries in other elements, 
+        /// b) rare cases where one or more nodes were not enriched like the rest, because their nodal support was almost 
+        /// entirely in one of the two regions.
+        /// </summary>
         private Vector CalculateEnrichedShapeFunctionVector(NaturalPoint gaussPoint, PhaseBoundary boundary)
         {
             //TODO: Optimize this: The mapping should be done once per enrichment ane reused for all Gauss points.
@@ -618,5 +635,6 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
             }
             return enrichedDofIndicesToNodeIndices;
         }
+
     }
 }
