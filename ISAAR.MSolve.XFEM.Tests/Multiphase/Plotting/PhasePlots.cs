@@ -11,6 +11,7 @@ using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
 using ISAAR.MSolve.XFEM.Multiphase.Elements;
@@ -21,6 +22,7 @@ using ISAAR.MSolve.XFEM.Multiphase.Integration;
 using ISAAR.MSolve.XFEM.Multiphase.Materials;
 using ISAAR.MSolve.XFEM.Multiphase.Plotting;
 using ISAAR.MSolve.XFEM.Multiphase.Plotting.Enrichments;
+using ISAAR.MSolve.XFEM.Multiphase.Plotting.Fields;
 using ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh;
 using ISAAR.MSolve.XFEM.Multiphase.Plotting.Writers;
 
@@ -35,8 +37,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
         private const double thickness = 1.0;
         private static readonly PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
         private const bool integrationWithSubtriangles = true;
-        private const double matrixConductivity = 1, inclusionConductivity = 4;
-        private const double matrixInclusionInterfaceConductivity = 2, inclusionInclusionInterfaceConductivity = 3;
+        private const double matrixConductivity = 1, inclusionConductivity = 10000/*4*/;
+        private const double matrixInclusionInterfaceConductivity = 10/*2*/, inclusionInclusionInterfaceConductivity = 10000/*3*/;
         private const double specialHeatCoeff = 1.0;
 
         public static void PlotPercolationPhasesInteractions()
@@ -57,6 +59,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             paths.volumeIntegrationMaterials = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\volume_integration_materials.vtk";
             paths.boundaryIntegrationMaterials = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\boundary_integration_materials.vtk";
             paths.boundaryIntegrationPhaseJumps = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\boundary_integration_phase_jumps.vtk";
+            paths.temperatureField = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\temperature_field.vtk";
+            paths.heatFluxField = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\heat_flux_field.vtk";
             PlotPhasesInteractions(generator.CreatePercolatedTetrisPhases, paths);
         }
 
@@ -77,6 +81,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             paths.volumeIntegrationMaterials = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\volume_integration_materials.vtk";
             paths.boundaryIntegrationMaterials = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\boundary_integration_materials.vtk";
             paths.boundaryIntegrationPhaseJumps = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\boundary_integration_phase_jumps.vtk";
+            paths.temperatureField = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\temperature_field.vtk";
+            paths.heatFluxField = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\heat_flux_field.vtk";
             PlotPhasesInteractions(generator.CreateScatterRectangularPhases, paths);
         }
 
@@ -98,6 +104,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             paths.volumeIntegrationMaterials = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\volume_integration_materials.vtk";
             paths.boundaryIntegrationMaterials = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\boundary_integration_materials.vtk";
             paths.boundaryIntegrationPhaseJumps = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\boundary_integration_phase_jumps.vtk";
+            paths.temperatureField = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\temperature_field.vtk";
+            paths.heatFluxField = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\heat_flux_field.vtk";
             PlotPhasesInteractions(generator.CreateSingleTetrisPhases, paths);
         }
 
@@ -143,7 +151,16 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             materialPlotter.PlotBoundaryMaterials(paths.boundaryIntegrationMaterials);
             materialPlotter.PlotBoundaryPhaseJumpCoefficients(paths.boundaryIntegrationPhaseJumps);
 
-            RunAnalysis(physicalModel);
+            // Analysis
+            IVectorView solution = RunAnalysis(physicalModel);
+
+            // Plot temperature
+            using (var writer = new VtkFileWriter(paths.temperatureField))
+            {
+                var temperatureField = new TemperatureField2D(physicalModel, conformingMesh);
+                writer.WriteMesh(conformingMesh);
+                writer.WriteScalarField("temperature", conformingMesh, temperatureField.CalcValuesAtVertices(solution));
+            }
         }
 
         private static XModel CreatePhysicalModel(GeometricModel geometricModel)
@@ -234,7 +251,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             physicalModel.UpdateMaterials();
         }
 
-        private static void RunAnalysis(XModel physicalModel)
+        private static IVectorView RunAnalysis(XModel physicalModel)
         {
             SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(physicalModel);
             var problem = new ProblemThermalSteadyState(physicalModel, solver);
@@ -243,6 +260,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
 
             staticAnalyzer.Initialize();
             staticAnalyzer.Solve();
+
+            return solver.LinearSystems[subdomainID].Solution;
         }
 
         private class OutputPaths
@@ -262,6 +281,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             public string volumeIntegrationMaterials;
             public string boundaryIntegrationMaterials;
             public string boundaryIntegrationPhaseJumps;
+            public string temperatureField;
+            public string heatFluxField;
+
         }
     }
 }
