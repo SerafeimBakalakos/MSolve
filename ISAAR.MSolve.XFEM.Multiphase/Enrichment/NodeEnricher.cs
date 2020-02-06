@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.XFEM.Multiphase.Elements;
+using ISAAR.MSolve.XFEM.Multiphase.Enrichment.SingularityResolution;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
 
 //TODO: Add heaviside singularity resolver
@@ -10,10 +11,12 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
     public class NodeEnricher
     {
         private readonly GeometricModel geometricModel;
+        private readonly ISingularityResolver singularityResolver;
 
-        public NodeEnricher(GeometricModel geometricModel)
+        public NodeEnricher(GeometricModel geometricModel, ISingularityResolver singularityResolver)
         {
             this.geometricModel = geometricModel;
+            this.singularityResolver = singularityResolver;
             this.JunctionElements = new Dictionary<IXFiniteElement, JunctionEnrichment>();
         }
 
@@ -110,7 +113,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                         uniqueEnrichments[maxPhase.ID].TryGetValue(minPhase.ID, out StepEnrichment enrichment);
                     if (!enrichmentsExists)
                     {
-                        enrichment = new StepEnrichment(id++, boundary);
+                        enrichment = new StepEnrichment(id++, boundary.PositivePhase, boundary.NegativePhase);
                         uniqueEnrichments[maxPhase.ID][minPhase.ID] = enrichment;
                     }
 
@@ -139,7 +142,8 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                 foreach (XNode node in element.Nodes) EnrichNode(node, junctionEnrichment);
             }
 
-            // Step enrichments
+            // Find nodes to potentially be enriched by step enrichments
+            var nodesPerStepEnrichment = new Dictionary<StepEnrichment, HashSet<XNode>>();
             #region default phase
             //foreach (IPhase phase in geometricModel.Phases)
             #endregion
@@ -150,15 +154,38 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                 {
                     foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
                     {
+                        // Find the nodes to potentially be enriched by this step enrichment 
                         StepEnrichment stepEnrichment = boundary.Enrichment;
+                        bool exists = nodesPerStepEnrichment.TryGetValue(stepEnrichment, out HashSet<XNode> nodesToEnrich);
+                        if (!exists)
+                        {
+                            nodesToEnrich = new HashSet<XNode>();
+                            nodesPerStepEnrichment[stepEnrichment] = nodesToEnrich;
+                        }
+
+                        // Only enrich a node if it does not have a corresponding junction enrichment
                         foreach (XNode node in element.Nodes)
                         {
-                            // Only enrich a node if it does not have a corresponding junction enrichment
-                            if (!HasCorrespondingJunction(node, stepEnrichment)) EnrichNode(node, stepEnrichment);
+                            if (!HasCorrespondingJunction(node, stepEnrichment)) nodesToEnrich.Add(node);
                         }
                     }
                 }
             }
+
+            // Enrich these nodes with the corresponding step enrichment
+            foreach (var enrichmentNodesPair in nodesPerStepEnrichment)
+            {
+                StepEnrichment stepEnrichment = enrichmentNodesPair.Key;
+                HashSet<XNode> nodesToEnrich = enrichmentNodesPair.Value;
+
+                // Some of these nodes may need to not be enriched after all, to avoid singularities in the global stiffness matrix
+                HashSet<XNode> rejectedNodes = singularityResolver.FindStepEnrichedNodesToRemove(nodesToEnrich, stepEnrichment);
+
+                // Enrich the rest of them
+                nodesToEnrich.ExceptWith(rejectedNodes);
+                foreach (XNode node in nodesToEnrich) EnrichNode(node, stepEnrichment);
+            }
+            
         }
         
 

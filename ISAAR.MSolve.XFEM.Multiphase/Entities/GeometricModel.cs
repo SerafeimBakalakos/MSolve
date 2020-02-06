@@ -54,6 +54,25 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
             }
         }
 
+        public static IPhase FindPhaseAt(CartesianPoint point, IXFiniteElement element)
+        {
+            IPhase defaultPhase = null;
+            foreach (IPhase phase in element.Phases)
+            {
+                // Avoid searching for the point in the default phase, since its shape is hihly irregular.
+                if (phase is DefaultPhase)
+                {
+                    defaultPhase = phase;
+                    continue;
+                }
+                else if (phase.Contains(point)) return phase;
+            }
+
+            // If the point is not contained in any other phases, it must be in the default phase 
+            Debug.Assert(defaultPhase != null, "The point does not belong to any phases");
+            return defaultPhase;
+        }
+
         public IReadOnlyList<ElementSubtriangle> GetConformingTriangulationOf(IXFiniteElement element)
         {
             Debug.Assert(ConformingMesh != null);

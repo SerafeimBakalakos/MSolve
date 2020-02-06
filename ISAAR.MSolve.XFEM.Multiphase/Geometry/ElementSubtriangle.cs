@@ -56,7 +56,32 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
                 xi += VerticesNatural[i].Xi;
                 eta += VerticesNatural[i].Eta;
             }
-            return new NaturalPoint(xi, eta);
+            return new NaturalPoint(xi / 3, eta / 3);
+        }
+
+        public (CartesianPoint centroid, double area) FindCentroidAndAreaCartesian(IXFiniteElement parentElement)
+        {
+            IIsoparametricInterpolation2D interpolation = parentElement.InterpolationStandard;
+            IReadOnlyList<XNode> nodes = parentElement.Nodes;
+            if (interpolation == InterpolationQuad4.UniqueInstance || interpolation == InterpolationTri3.UniqueInstance)
+            {
+                // The triangle edges will also be linear in Cartesian coordinate system, for Quad4 and Tri3 elements 
+                CartesianPoint v0 = interpolation.TransformNaturalToCartesian(nodes, VerticesNatural[0]);
+                CartesianPoint v1 = interpolation.TransformNaturalToCartesian(nodes, VerticesNatural[1]);
+                CartesianPoint v2 = interpolation.TransformNaturalToCartesian(nodes, VerticesNatural[2]);
+
+                double x = (v0.X + v1.X + v2.X) / 3.0;
+                double y = (v0.Y + v1.Y + v2.Y) / 3.0;
+                double area = 0.5 * Math.Abs(v0.X * (v1.Y - v2.Y) + v1.X * (v2.Y - v0.Y) + v2.X * (v0.Y - v1.Y));
+
+                return (new CartesianPoint(x, y), area);
+            }
+            else
+            {
+                //TODO: I need to write the equations. The Jacobian determinant comes into play, 
+                //      but at how many points should it be calculated?
+                throw new NotImplementedException();
+            }
         }
 
         public CartesianPoint[] GetVerticesCartesian(IXFiniteElement parentElement)

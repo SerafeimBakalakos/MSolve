@@ -47,20 +47,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 
         public IReadOnlyList<IPhase> Phases => descendingPhases;
 
-        public double EvaluateAt(XNode node)
-        {
-            // It is more efficient to avoid searching the default phase. This is why it is placed last (if present) as the else case.
-            int lastPhase = descendingPhases.Length - 1;
-            for (int p = 0; p < lastPhase; ++p)
-            {
-                IPhase phase = descendingPhases[p];
-                if (phase.ContainedNodes.Contains(node)) return phase.ID;
-            }
-
-            //TODO: Perhaps this should be checked in release configs as well
-            Debug.Assert(descendingPhases[lastPhase].ContainedNodes.Contains(node));
-            return descendingPhases[lastPhase].ID;
-        }
+        public double EvaluateAt(XNode node) => FindPhaseAt(node).ID;
 
         public double EvaluateAt(CartesianPoint point)
         {
@@ -75,6 +62,21 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
         }
 
         public double EvaluateAt(IPhase phaseAtPoint) => phaseAtPoint.ID;
+
+        public IPhase FindPhaseAt(XNode node)
+        {
+            // It is more efficient to avoid searching the default phase. This is why it is placed last (if present) as the else case.
+            int lastPhase = descendingPhases.Length - 1;
+            for (int p = 0; p < lastPhase; ++p)
+            {
+                IPhase phase = descendingPhases[p];
+                if (phase.ContainedNodes.Contains(node)) return phase;
+            }
+
+            //TODO: Perhaps this should be checked in release configs as well
+            Debug.Assert(descendingPhases[lastPhase].ContainedNodes.Contains(node));
+            return descendingPhases[lastPhase];
+        }
 
         public bool IsAppliedDueTo(PhaseBoundary phaseBoundary) => boundaries.Contains(phaseBoundary);
 

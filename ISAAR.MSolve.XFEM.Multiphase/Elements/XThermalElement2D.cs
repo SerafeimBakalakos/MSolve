@@ -241,7 +241,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
                 for (int i = 0; i < numPointsVolume; ++i)
                 {
                     CartesianPoint point = evalInterpolationsAtGPsVolume[i].TransformPointNaturalToGlobalCartesian();
-                    IPhase phase = FindPhaseAt(point);
+                    IPhase phase = GeometricModel.FindPhaseAt(point, this);
                     this.phasesAtGPsVolume[i] = phase;
                 }
             }
@@ -536,25 +536,6 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
                 }
             }
             return totalShapeFunctions;
-        }
-
-        private IPhase FindPhaseAt(CartesianPoint point)
-        {
-            IPhase defaultPhase = null;
-            foreach (IPhase phase in Phases)
-            {
-                // Avoid searching for the point in the default phase, since its shape is hihly irregular.
-                if (phase is DefaultPhase)
-                {
-                    defaultPhase = phase;
-                    continue;
-                }
-                else if (phase.Contains(point)) return phase;
-            }
-
-            // If the point is not contained in any other phases, it must be in the default phase 
-            Debug.Assert(defaultPhase != null, "The point does not belong to any phases");
-            return defaultPhase;
         }
 
         /// <summary>

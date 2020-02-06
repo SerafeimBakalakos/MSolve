@@ -16,6 +16,7 @@ using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
 using ISAAR.MSolve.XFEM.Multiphase.Elements;
 using ISAAR.MSolve.XFEM.Multiphase.Enrichment;
+using ISAAR.MSolve.XFEM.Multiphase.Enrichment.SingularityResolution;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
 using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 using ISAAR.MSolve.XFEM.Multiphase.Integration;
@@ -38,8 +39,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
         private static readonly PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
         private const bool integrationWithSubtriangles = true;
         private const double matrixConductivity = 1E0/*1*/, inclusionConductivity = 1E5/*4*/;
-        private const double matrixInclusionInterfaceConductivity = 0/*2*/, inclusionInclusionInterfaceConductivity = 0/*3*/;
+        private const double matrixInclusionInterfaceConductivity = 1E10/*2*/, inclusionInclusionInterfaceConductivity = 0/*3*/;
         private const double specialHeatCoeff = 1.0;
+        private const double singularityRelativeAreaTolerance = 1E-4;
 
         public static void PlotPercolationPhasesInteractions()
         {
@@ -212,7 +214,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             geometricModel.AssociatePhasesElements(physicalModel);
             geometricModel.FindConformingMesh(physicalModel);
 
-            var nodeEnricher = new NodeEnricher(geometricModel);
+            ISingularityResolver singularityResolver = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+            var nodeEnricher = new NodeEnricher(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
 
             physicalModel.UpdateDofs();
