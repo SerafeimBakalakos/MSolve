@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.XFEM.Tests.HeatOLD.Plotting;
+using ISAAR.MSolve.XFEM.Tests.Multiphase.Homogenization;
 using ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting;
 
 namespace ISAAR.MSolve.XFEM.Tests
@@ -10,8 +11,10 @@ namespace ISAAR.MSolve.XFEM.Tests
     {
         public static void Main(string[] args)
         {
+            HomogenizationExamples.RunHomogenizationAnalysis();
+
             //PhasePlots.PlotScatteredPhasesInteractions();
-            PhasePlots.PlotTetrisPhasesInteractions();
+            //PhasePlots.PlotTetrisPhasesInteractions();
             //PhasePlots.PlotPercolationPhasesInteractions();
 
 
