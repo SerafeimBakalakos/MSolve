@@ -1,0 +1,5 @@
+﻿1) Investigate why changing IDs (e.g 1000, 2000, 3000 instead of 1,2,3) also changes the result
+2) Implement the case where a boundary foes through the common edge of 2 elements
+3) Heat flux field should be calculated using the basis functions for points not on the boundary. For points on the boundary 
+	q=-c*[[T]] should be used. This is the same on both sides of the boundary.
+4) Plotting classes should be standardized. Right now there are Fields and Plotters which do the same thing.

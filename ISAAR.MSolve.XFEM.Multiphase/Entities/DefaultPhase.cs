@@ -13,7 +13,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
     {
         public const int DefaultPhaseID = 0;
 
-        public int ID { get; } = 0;
+        public int ID => DefaultPhaseID;
 
         public HashSet<XNode> ContainedNodes { get; } = new HashSet<XNode>();
 

@@ -37,75 +37,28 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
         private const double thickness = 1.0;
         private static readonly PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
         private const bool integrationWithSubtriangles = true;
-        private const double matrixConductivity = 1, inclusionConductivity = 10000/*4*/;
-        private const double matrixInclusionInterfaceConductivity = 10/*2*/, inclusionInclusionInterfaceConductivity = 10000/*3*/;
+        private const double matrixConductivity = 1E0/*1*/, inclusionConductivity = 1E5/*4*/;
+        private const double matrixInclusionInterfaceConductivity = 0/*2*/, inclusionInclusionInterfaceConductivity = 0/*3*/;
         private const double specialHeatCoeff = 1.0;
 
         public static void PlotPercolationPhasesInteractions()
         {
             var paths = new OutputPaths();
-            paths.finiteElementMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\fe_mesh.vtk";
-            paths.conformingMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\conforming_mesh.vtk";
-            paths.phasesGeometry = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\phases_geometry.vtk";
-            paths.nodalPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\nodal_phases.vtk";
-            paths.elementPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\element_phases.vtk";
-            paths.stepEnrichedNodes = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\step_enriched_nodes.vtk";
-            paths.junctionEnrichedNodes = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\junction_enriched_nodes.vtk";
-            paths.volumeIntegrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\volume_integration_points.vtk";
-            paths.volumeIntegrationMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\volume_integration_mesh.vtk";
-            paths.boundaryIntegrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\boundary_integration_points.vtk";
-            paths.boundaryIntegrationCells = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\boundary_integration_cells.vtk";
-            paths.boundaryIntegrationVertices = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\boundary_integration_vertices.vtk";
-            paths.volumeIntegrationMaterials = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\volume_integration_materials.vtk";
-            paths.boundaryIntegrationMaterials = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\boundary_integration_materials.vtk";
-            paths.boundaryIntegrationPhaseJumps = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\boundary_integration_phase_jumps.vtk";
-            paths.temperatureField = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\temperature_field.vtk";
-            paths.heatFluxField = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation\heat_flux_field.vtk";
+            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation");
             PlotPhasesInteractions(generator.CreatePercolatedTetrisPhases, paths);
         }
 
         public static void PlotScatteredPhasesInteractions()
         {
             var paths = new OutputPaths();
-            paths.finiteElementMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\fe_mesh.vtk";
-            paths.conformingMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\conforming_mesh.vtk";
-            paths.phasesGeometry = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\phases_geometry.vtk";
-            paths.nodalPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\nodal_phases.vtk";
-            paths.elementPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\element_phases.vtk";
-            paths.stepEnrichedNodes = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\step_enriched_nodes.vtk";
-            paths.volumeIntegrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\volume_integration_points.vtk";
-            paths.volumeIntegrationMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\volume_integration_mesh.vtk";
-            paths.boundaryIntegrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\boundary_integration_points.vtk";
-            paths.boundaryIntegrationCells = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\boundary_integration_cells.vtk";
-            paths.boundaryIntegrationVertices = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\boundary_integration_vertices.vtk";
-            paths.volumeIntegrationMaterials = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\volume_integration_materials.vtk";
-            paths.boundaryIntegrationMaterials = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\boundary_integration_materials.vtk";
-            paths.boundaryIntegrationPhaseJumps = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\boundary_integration_phase_jumps.vtk";
-            paths.temperatureField = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\temperature_field.vtk";
-            paths.heatFluxField = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered\heat_flux_field.vtk";
+            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered");
             PlotPhasesInteractions(generator.CreateScatterRectangularPhases, paths);
         }
 
         public static void PlotTetrisPhasesInteractions()
         {
             var paths = new OutputPaths();
-            paths.finiteElementMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\fe_mesh.vtk";
-            paths.conformingMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\conforming_mesh.vtk";
-            paths.phasesGeometry = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\phases_geometry.vtk";
-            paths.nodalPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\nodal_phases.vtk";
-            paths.elementPhases = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\element_phases.vtk";
-            paths.stepEnrichedNodes = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\step_enriched_nodes.vtk";
-            paths.junctionEnrichedNodes = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\junction_enriched_nodes.vtk";
-            paths.volumeIntegrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\volume_integration_points.vtk";
-            paths.volumeIntegrationMesh = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\volume_integration_mesh.vtk";
-            paths.boundaryIntegrationPoints = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\boundary_integration_points.vtk";
-            paths.boundaryIntegrationCells = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\boundary_integration_cells.vtk";
-            paths.boundaryIntegrationVertices = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\boundary_integration_vertices.vtk";
-            paths.volumeIntegrationMaterials = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\volume_integration_materials.vtk";
-            paths.boundaryIntegrationMaterials = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\boundary_integration_materials.vtk";
-            paths.boundaryIntegrationPhaseJumps = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\boundary_integration_phase_jumps.vtk";
-            paths.temperatureField = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\temperature_field.vtk";
-            paths.heatFluxField = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris\heat_flux_field.vtk";
+            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris");
             PlotPhasesInteractions(generator.CreateSingleTetrisPhases, paths);
         }
 
@@ -155,11 +108,26 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             IVectorView solution = RunAnalysis(physicalModel);
 
             // Plot temperature
+            using (var writer = new Logging.VTK.VtkPointWriter(paths.temperatureAtNodes))
+            {
+                var temperatureField = new TemperatureAtNodesField(physicalModel);
+                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
+            }
+            using (var writer = new Logging.VTK.VtkPointWriter(paths.temperatureAtGaussPoints))
+            {
+                var temperatureField = new TemperatureAtGaussPointsField(physicalModel);
+                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
+            }
             using (var writer = new VtkFileWriter(paths.temperatureField))
             {
                 var temperatureField = new TemperatureField2D(physicalModel, conformingMesh);
                 writer.WriteMesh(conformingMesh);
                 writer.WriteScalarField("temperature", conformingMesh, temperatureField.CalcValuesAtVertices(solution));
+            }
+            using (var writer = new Logging.VTK.VtkPointWriter(paths.heatFluxAtGaussPoints))
+            {
+                var fluxField = new HeatFluxAtGaussPointsField(physicalModel);
+                writer.WriteVector2DField("heat_flux", fluxField.CalcValuesAtVertices(solution));
             }
         }
 
@@ -195,7 +163,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             var matrixMaterial = new ThermalMaterial(matrixConductivity, specialHeatCoeff);
             var inclusionMaterial = new ThermalMaterial(inclusionConductivity, specialHeatCoeff);
             var materialField = new MatrixInclusionsMaterialField(matrixMaterial, inclusionMaterial,
-                matrixInclusionInterfaceConductivity, inclusionInclusionInterfaceConductivity, 0);
+                matrixInclusionInterfaceConductivity, inclusionInclusionInterfaceConductivity, DefaultPhase.DefaultPhaseID);
 
             // Elements
             var factory = new XThermalElement2DFactory(materialField, thickness, volumeIntegration, boundaryIntegration);
@@ -281,9 +249,38 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             public string volumeIntegrationMaterials;
             public string boundaryIntegrationMaterials;
             public string boundaryIntegrationPhaseJumps;
+            public string temperatureAtNodes;
+            public string temperatureAtGaussPoints;
             public string temperatureField;
+            public string heatFluxAtNodes;
+            public string heatFluxAtGaussPoints;
             public string heatFluxField;
 
+            public void FillAllForDirectory(string directory)
+            {
+                directory = directory.Trim('/') + "//";
+                this.finiteElementMesh = directory + "fe_mesh.vtk";
+                this.conformingMesh = directory + "conforming_mesh.vtk";
+                this.phasesGeometry = directory + "phases_geometry.vtk";
+                this.nodalPhases = directory + "nodal_phases.vtk";
+                this.elementPhases = directory + "element_phases.vtk";
+                this.stepEnrichedNodes = directory + "step_enriched_nodes.vtk";
+                this.junctionEnrichedNodes = directory + "junction_enriched_nodes.vtk";
+                this.volumeIntegrationPoints = directory + "volume_integration_points.vtk";
+                this.volumeIntegrationMesh = directory + "volume_integration_mesh.vtk";
+                this.boundaryIntegrationPoints = directory + "boundary_integration_points.vtk";
+                this.boundaryIntegrationCells = directory + "boundary_integration_cells.vtk";
+                this.boundaryIntegrationVertices = directory + "boundary_integration_vertices.vtk";
+                this.volumeIntegrationMaterials = directory + "volume_integration_materials.vtk";
+                this.boundaryIntegrationMaterials = directory + "boundary_integration_materials.vtk";
+                this.boundaryIntegrationPhaseJumps = directory + "boundary_integration_phase_jumps.vtk";
+                this.temperatureAtNodes = directory + "temperature_at_nodes.vtk";
+                this.temperatureAtGaussPoints = directory + "temperature_at_gauss_points.vtk";
+                this.temperatureField = directory + "temperature_field.vtk";
+                this.heatFluxAtNodes = directory + "heat_flux_at_nodes.vtk";
+                this.heatFluxAtGaussPoints = directory + "heat_flux_at_gauss_points.vtk";
+                this.heatFluxField = directory + "heat_flux_field.vtk";
+            }
         }
     }
 }

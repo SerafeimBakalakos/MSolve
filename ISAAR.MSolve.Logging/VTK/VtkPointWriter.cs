@@ -67,6 +67,7 @@ namespace ISAAR.MSolve.Logging.VTK
             }
             writer.WriteLine();
         }
+
         public void WriteScalarFields(string[] fieldNames, IReadOnlyDictionary<CartesianPoint, double[]> pointValues)
         {
             // Points
@@ -115,5 +116,25 @@ namespace ISAAR.MSolve.Logging.VTK
             writer.WriteLine();
         }
 
+        public void WriteVector2DField(string fieldName, IReadOnlyDictionary<CartesianPoint, double[]> pointVectors)
+        {
+            // Points
+            writer.WriteLine("DATASET UNSTRUCTURED_GRID");
+            writer.WriteLine($"POINTS {pointVectors.Count} double");
+            foreach (CartesianPoint point in pointVectors.Keys)
+            {
+                writer.WriteLine($"{point.X} {point.Y} {point.Z}");
+            }
+
+            // Values
+            writer.Write("\n\n");
+            writer.WriteLine($"POINT_DATA {pointVectors.Count}");
+            writer.WriteLine($"VECTORS {fieldName} double");
+            foreach (double[] vector in pointVectors.Values)
+            {
+                writer.WriteLine($"{vector[0]} {vector[1]} 0.0");
+            }
+            writer.WriteLine();
+        }
     }
 }

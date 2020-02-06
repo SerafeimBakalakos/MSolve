@@ -459,6 +459,9 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
                 foreach (var enrichmentValuePair in Nodes[nodeIdx].Enrichments)
                 {
                     IEnrichment enrichment = enrichmentValuePair.Key;
+                    Debug.Assert((enrichment is StepEnrichment) || (enrichment is JunctionEnrichment), 
+                        "Otherwise the derivative calculation is wrong");
+
                     double nodalPsi = enrichmentValuePair.Value;
 
                     // The enrichment function probably has been evaluated when processing a previous node. Avoid reevaluation.

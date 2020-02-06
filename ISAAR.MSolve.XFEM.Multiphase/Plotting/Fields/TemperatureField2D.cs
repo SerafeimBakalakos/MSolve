@@ -37,14 +37,14 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Fields
                 IEnumerable<ConformingOutputMesh2D.Subtriangle> subtriangles = outMesh.GetSubtrianglesForOriginal(element);
                 if (subtriangles.Count() == 0)
                 {
-                    double[] nodalTemperatures = ExtractNodalTemperaturesStandard(element, subdomain, systemSolution);
+                    double[] nodalTemperatures = Utilities.ExtractNodalTemperaturesStandard(element, subdomain, systemSolution);
                     Debug.Assert(outMesh.GetOutCellsForOriginal(element).Count() == 1);
                     VtkCell outCell = outMesh.GetOutCellsForOriginal(element).First();
                     for (int n = 0; n < element.Nodes.Count; ++n) outTemperatures[outCell.Vertices[n]] = nodalTemperatures[n];
                 }
                 else
                 {
-                    double[] nodalTemperatures = ExtractNodalTemperatures(element, subdomain, systemSolution);
+                    double[] nodalTemperatures = Utilities.ExtractNodalTemperatures(element, subdomain, systemSolution);
                     foreach (ConformingOutputMesh2D.Subtriangle subtriangle in subtriangles)
                     {
                         Debug.Assert(subtriangle.OutVertices.Count == 3); //TODO: Not sure what happens for 2nd order elements
@@ -122,38 +122,5 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Fields
             }
             return temperaturesAtVertices;
         }
-
-        private double[] ExtractNodalTemperatures(XThermalElement2D element, XSubdomain subdomain, IVectorView solution)
-        {
-            var nodalTemperatures = new List<double>(element.Nodes.Count);
-            IReadOnlyList<IReadOnlyList<IDofType>> nodalDofs = element.GetElementDofTypes(element);
-            for (int n = 0; n < element.Nodes.Count; ++n)
-            {
-                XNode node = element.Nodes[n];
-                foreach (IDofType dof in nodalDofs[n])
-                {
-                    bool isFreeDof = subdomain.FreeDofOrdering.FreeDofs.TryGetValue(node, dof, out int idx);
-                    if (isFreeDof) nodalTemperatures.Add(solution[idx]);
-                    else nodalTemperatures.Add(node.Constraints.Find(con => con.DOF == dof).Amount);
-                }
-            }
-            return nodalTemperatures.ToArray();
-        }
-
-        private double[] ExtractNodalTemperaturesStandard(IXFiniteElement element, XSubdomain subdomain, IVectorView solution)
-        {
-            //TODO: Could this be done using FreeDofOrdering.ExtractVectorElementFromSubdomain(...)? What about enriched dofs?
-            var nodalTemperatures = new double[element.Nodes.Count];
-            for (int n = 0; n < element.Nodes.Count; ++n)
-            {
-                XNode node = element.Nodes[n];
-                bool isFreeDof = subdomain.FreeDofOrdering.FreeDofs.TryGetValue(node, ThermalDof.Temperature, out int idx);
-                if (isFreeDof) nodalTemperatures[n] = solution[idx];
-                else nodalTemperatures[n] = node.Constraints.Find(con => con.DOF == ThermalDof.Temperature).Amount;
-            }
-            return nodalTemperatures;
-        }
-
-        
     }
 }
