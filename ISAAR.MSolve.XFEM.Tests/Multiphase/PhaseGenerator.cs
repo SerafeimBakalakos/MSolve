@@ -24,6 +24,76 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase
             this.numElementsPerAxis = numElementsPerAxis;
         }
 
+        public GeometricModel Create2Phases()
+        {
+            // -------------
+            // |     |     |
+            // |  0  |  1  |
+            // |     |     |
+            // |     |     |
+            // -------------
+
+            double boundaryX = 0.5 * (minX + maxX);
+            var start = new CartesianPoint(boundaryX, minY);
+            var end = new CartesianPoint(boundaryX, maxY);
+
+            // Define phases
+            var phase0 = new DefaultPhase();
+            var phase1 = new ConvexPhase(1);
+
+            // Create boundaries and associate them with their phases
+            var boundary = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(start, end), phase0, phase1);
+
+            // Initialize model
+            var geometricModel = new GeometricModel();
+            double elementSize = (maxX - minX) / numElementsPerAxis;
+            geometricModel.MeshTolerance = new UserDefinedMeshTolerance(elementSize);
+            geometricModel.Phases.Add(phase0);
+            geometricModel.Phases.Add(phase1);
+
+            return geometricModel;
+        }
+
+        public GeometricModel Create3Phases()
+        {
+            // ------C------
+            // |     |     |
+            // |     |  1  |
+            // |     |     |
+            // |  0  B-----D
+            // |     |     |
+            // |     |  2  |
+            // |     |     |
+            // ------A------
+
+            double middleX = 0.5 * (minX + maxX);
+            double middleY = 0.5 * (minY + maxY);
+            var A = new CartesianPoint(middleX, minY);
+            var B = new CartesianPoint(middleX, middleY);
+            var C = new CartesianPoint(middleX, maxY);
+            var D = new CartesianPoint(maxX, middleY);
+
+            // Define phases
+            var phase0 = new DefaultPhase();
+            var phase1 = new ConvexPhase(1);
+            var phase2 = new ConvexPhase(2);
+
+            // Create boundaries and associate them with their phases
+            var AB = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(A, B), phase0, phase2);
+            var BC = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(B, C), phase0, phase1);
+            var BD = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(B, D), phase1, phase2);
+
+            // Initialize model
+            var geometricModel = new GeometricModel();
+            double elementSize = (maxX - minX) / numElementsPerAxis;
+            geometricModel.MeshTolerance = new UserDefinedMeshTolerance(elementSize);
+            geometricModel.Phases.Add(phase0);
+            geometricModel.Phases.Add(phase1);
+            geometricModel.Phases.Add(phase2);
+
+            return geometricModel;
+        }
+
         public GeometricModel CreatePercolatedTetrisPhases()
         {
             // Generate rectangles by rotating the following shapes

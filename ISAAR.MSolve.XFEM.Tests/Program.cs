@@ -11,8 +11,10 @@ namespace ISAAR.MSolve.XFEM.Tests
     {
         public static void Main(string[] args)
         {
-            HomogenizationExamples.RunHomogenizationAnalysis();
+            //HomogenizationExamples.RunHomogenizationAnalysis();
 
+            PhasePlots.Plot2PhasesInteractions();
+            PhasePlots.Plot3PhasesInteractions();
             //PhasePlots.PlotScatteredPhasesInteractions();
             //PhasePlots.PlotTetrisPhasesInteractions();
             //PhasePlots.PlotPercolationPhasesInteractions();

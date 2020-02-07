@@ -28,7 +28,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
 {
     public static class PhasePlots
     {
-        private const int numElementsX = 50, numElementsY = 50;
+        private const int numElementsX = 5, numElementsY = 5;
         private const int subdomainID = 0;
         private const double minX = -1.0, minY = -1.0, maxX = 1.0, maxY = 1.0;
         private const double elementSize = (maxX - minX) / numElementsX;
@@ -40,11 +40,18 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
         private const double specialHeatCoeff = 1.0;
         private const double singularityRelativeAreaTolerance = 1E-4;
 
-        public static void PlotPercolationPhasesInteractions()
+        public static void Plot2PhasesInteractions()
         {
             var paths = new OutputPaths();
-            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation");
-            PlotPhasesInteractions(generator.CreatePercolatedTetrisPhases, paths);
+            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\TwoPhases");
+            PlotPhasesInteractions(generator.Create2Phases, paths);
+        }
+
+        public static void Plot3PhasesInteractions()
+        {
+            var paths = new OutputPaths();
+            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\ThreePhases");
+            PlotPhasesInteractions(generator.Create3Phases, paths);
         }
 
         public static void PlotScatteredPhasesInteractions()
