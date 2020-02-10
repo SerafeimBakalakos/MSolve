@@ -26,46 +26,99 @@ using ISAAR.MSolve.XFEM.Multiphase.Plotting.Writers;
 
 namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
 {
-    public static class PhasePlots
+    public static class BenchmarkTests
     {
-        private const int numElementsX = 50, numElementsY = 50;
         private const int subdomainID = 0;
         private const double minX = -1.0, minY = -1.0, maxX = 1.0, maxY = 1.0;
-        private const double elementSize = (maxX - minX) / numElementsX;
         private const double thickness = 1.0;
-        private static readonly PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
-        private const bool integrationWithSubtriangles = true;
-        private const double matrixConductivity = 1E0/*1*/, inclusionConductivity = 1E4/*4*/;
-        private const double matrixInclusionInterfaceConductivity = 0/*2*/, inclusionInclusionInterfaceConductivity = 0/*3*/;
         private const double specialHeatCoeff = 1.0;
-        private const double singularityRelativeAreaTolerance = 1E-1;
 
-        public static void PlotPercolationPhasesInteractions()
+        public static void Test2Phases()
         {
+            // Parameters
+            int numElementsX = 3, numElementsY = 3;
+            double elementSize = (maxX - minX) / numElementsX;
+            bool integrationWithSubtriangles = true;
+            double conductivity0 = 1E0, conductivity1 = 1E10;
+            double interface01Conductivity = 1E10;
+            double singularityRelativeAreaTolerance = 1E-4;
+            string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\TwoPhases";
+
+            // Geometry
+            PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
+            GeometricModel geometricModel = generator.Create2Phases();
+            IPhase phase0 = geometricModel.Phases[0];
+            IPhase phase1 = geometricModel.Phases[1];
+
+            // Materials
+            var material0 = new ThermalMaterial(conductivity0, specialHeatCoeff);
+            var material1 = new ThermalMaterial(conductivity1, specialHeatCoeff);
+            var materialField = new GeneralMultiphaseMaterial();
+            materialField.RegisterPhaseMaterial(phase0, material0);
+            materialField.RegisterPhaseMaterial(phase1, material1);
+            materialField.RegisterBoundaryMaterial(phase0, phase1, interface01Conductivity);
+
+            // FE Model
+            XModel physicalModel = CreatePhysicalModel(geometricModel, integrationWithSubtriangles, numElementsX, numElementsY, 
+                materialField);
+
+            // Analysis
+            PrepareForAnalysis(physicalModel, geometricModel, singularityRelativeAreaTolerance);
+            IVectorView solution = RunAnalysis(physicalModel);
+
+            //Plots
             var paths = new OutputPaths();
-            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation");
-            PlotPhasesInteractions(generator.CreatePercolatedTetrisPhases, paths);
+            paths.FillAllForDirectory(outputDirectory);
+            PlotPhasesInteractions(geometricModel, physicalModel, paths, elementSize, solution);
         }
 
-        public static void PlotScatteredPhasesInteractions()
+        public static void Test3Phases()
         {
+            // Parameters
+            int numElementsX = 3, numElementsY = 3;
+            double elementSize = (maxX - minX) / numElementsX;
+            bool integrationWithSubtriangles = true;
+            double conductivity0 = 1E2, conductivity1 = 1E2, conductivity2 = 1E8;
+            double interface01Conductivity = 0/*1E10*/, interface02Conductivity = 0/*1E10*/, interface12Conductivity = 0/*1E10*/;
+            double singularityRelativeAreaTolerance = 1E-4;
+            string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\ThreePhases";
+
+            // Geometry
+            PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
+            GeometricModel geometricModel = generator.Create3Phases();
+            IPhase phase0 = geometricModel.Phases[0];
+            IPhase phase1 = geometricModel.Phases[1];
+            IPhase phase2 = geometricModel.Phases[2];
+
+            // Materials
+            var material0 = new ThermalMaterial(conductivity0, specialHeatCoeff);
+            var material1 = new ThermalMaterial(conductivity1, specialHeatCoeff);
+            var material2 = new ThermalMaterial(conductivity2, specialHeatCoeff);
+            var materialField = new GeneralMultiphaseMaterial();
+            materialField.RegisterPhaseMaterial(phase0, material0);
+            materialField.RegisterPhaseMaterial(phase1, material1);
+            materialField.RegisterPhaseMaterial(phase2, material2);
+            materialField.RegisterBoundaryMaterial(phase0, phase1, interface01Conductivity);
+            materialField.RegisterBoundaryMaterial(phase0, phase2, interface02Conductivity);
+            materialField.RegisterBoundaryMaterial(phase1, phase2, interface12Conductivity);
+
+            // FE Model
+            XModel physicalModel = CreatePhysicalModel(geometricModel, integrationWithSubtriangles, numElementsX, numElementsY,
+                materialField);
+
+            // Analysis
+            PrepareForAnalysis(physicalModel, geometricModel, singularityRelativeAreaTolerance);
+            IVectorView solution = RunAnalysis(physicalModel);
+
+            //Plots
             var paths = new OutputPaths();
-            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered");
-            PlotPhasesInteractions(generator.CreateScatterRectangularPhases, paths);
+            paths.FillAllForDirectory(outputDirectory);
+            PlotPhasesInteractions(geometricModel, physicalModel, paths, elementSize, solution);
         }
 
-        public static void PlotTetrisPhasesInteractions()
+        private static void PlotPhasesInteractions(GeometricModel geometricModel, XModel physicalModel, OutputPaths paths, 
+            double elementSize, IVectorView solution)
         {
-            var paths = new OutputPaths();
-            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris");
-            PlotPhasesInteractions(generator.CreateSingleTetrisPhases, paths);
-        }
-
-        private static void PlotPhasesInteractions(Func<GeometricModel> genPhases, OutputPaths paths)
-        {
-            GeometricModel geometricModel = genPhases();
-            XModel physicalModel = CreatePhysicalModel(geometricModel);
-            PrepareForAnalysis(physicalModel, geometricModel);
             
             var feMesh = new ContinuousOutputMesh<XNode>(physicalModel.Nodes, physicalModel.Elements);
             using (var writer = new VtkFileWriter(paths.finiteElementMesh))
@@ -101,10 +154,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             var materialPlotter = new MaterialPlotter(physicalModel);
             materialPlotter.PlotVolumeMaterials(paths.volumeIntegrationMaterials);
             materialPlotter.PlotBoundaryMaterials(paths.boundaryIntegrationMaterials);
-            materialPlotter.PlotBoundaryPhaseJumpCoefficients(paths.boundaryIntegrationPhaseJumps);
-
-            // Analysis
-            IVectorView solution = RunAnalysis(physicalModel);
+            materialPlotter.PlotBoundaryPhaseJumpCoefficients(paths.boundaryIntegrationPhaseJumps);            
 
             // Plot temperature
             using (var writer = new Logging.VTK.VtkPointWriter(paths.temperatureAtNodes))
@@ -130,7 +180,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             }
         }
 
-        private static XModel CreatePhysicalModel(GeometricModel geometricModel)
+        private static XModel CreatePhysicalModel(GeometricModel geometricModel, bool integrationWithSubtriangles, 
+            int numElementsX, int numElementsY, IThermalMaterialField materialField)
         {
             var physicalModel = new XModel();
             physicalModel.Subdomains[subdomainID] = new XSubdomain(subdomainID);
@@ -154,15 +205,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             else
             {
                 volumeIntegration = new IntegrationWithNonConformingSubsquares2D(
-                    GaussLegendre2D.GetQuadratureWithOrder(2, 2), 8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
+                    GaussLegendre2D.GetQuadratureWithOrder(2, 2), 2, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
             }
-            IBoundaryIntegration boundaryIntegration = new LinearBoundaryIntegration(GaussLegendre1D.GetQuadratureWithOrder(3));
-
-            // Materials
-            var matrixMaterial = new ThermalMaterial(matrixConductivity, specialHeatCoeff);
-            var inclusionMaterial = new ThermalMaterial(inclusionConductivity, specialHeatCoeff);
-            var materialField = new MatrixInclusionsMaterialField(matrixMaterial, inclusionMaterial,
-                matrixInclusionInterfaceConductivity, inclusionInclusionInterfaceConductivity, DefaultPhase.DefaultPhaseID);
+            IBoundaryIntegration boundaryIntegration = new LinearBoundaryIntegration(GaussLegendre1D.GetQuadratureWithOrder(2));
 
             // Elements
             var factory = new XThermalElement2DFactory(materialField, thickness, volumeIntegration, boundaryIntegration);
@@ -190,7 +235,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
                 node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = +100 });
             }
 
-            // Right side: T = 100
+            // Right side: T = -100
             double maxX = physicalModel.Nodes.Select(n => n.X).Max();
             foreach (var node in physicalModel.Nodes.Where(n => Math.Abs(n.X - maxX) <= meshTol))
             {
@@ -203,7 +248,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             //internalNode.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.1 });
         }
 
-        private static void PrepareForAnalysis(XModel physicalModel, GeometricModel geometricModel)
+        private static void PrepareForAnalysis(XModel physicalModel, GeometricModel geometricModel, 
+            double singularityRelativeAreaTolerance)
         {
             physicalModel.ConnectDataStructures();
 
@@ -219,15 +265,30 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             physicalModel.UpdateMaterials();
         }
 
+        private static void EnrichCustom(XModel physicalModel, GeometricModel geometricModel)
+        {
+            List<XNode> nodes = physicalModel.Nodes;
+
+            var heaviside01 = new DauxHeavisideEnrichment(geometricModel.Phases[0]);
+            nodes[1].Enrichments;
+        }
+
         private static IVectorView RunAnalysis(XModel physicalModel)
         {
             SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(physicalModel);
+            solver.PreventFromOverwrittingSystemMatrices();
             var problem = new ProblemThermalSteadyState(physicalModel, solver);
             var linearAnalyzer = new LinearAnalyzer(physicalModel, solver, problem);
             var staticAnalyzer = new StaticAnalyzer(physicalModel, solver, problem, linearAnalyzer);
 
             staticAnalyzer.Initialize();
             staticAnalyzer.Solve();
+
+            #region debug
+            string path = @"C:\Users\Serafeim\Desktop\HEAT\debug\Kglob.txt";
+            var writer = new LinearAlgebra.Output.FullMatrixWriter();
+            writer.WriteToFile(solver.LinearSystems[0].Matrix, path);
+            #endregion
 
             return solver.LinearSystems[subdomainID].Solution;
         }

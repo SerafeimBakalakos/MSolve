@@ -39,7 +39,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase
 
             // Define phases
             var phase0 = new DefaultPhase();
-            var phase1 = new ConvexPhase(1);
+            var phase1 = new ConvexPhase(100000);
 
             // Create boundaries and associate them with their phases
             var boundary = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(start, end), phase0, phase1);
@@ -176,7 +176,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase
             int phaseID = 1;
             foreach (Rectangle2D rect in rectangles)
             {
-                var phase = new ConvexPhase(phaseID++);
+                var phase = new ConvexPhase((int)Math.Pow(phaseID, 3));
+                ++phaseID;
                 geometricModel.Phases.Add(phase);
                 for (int i = 0; i < 4; ++i)
                 {

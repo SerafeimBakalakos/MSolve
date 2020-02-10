@@ -279,17 +279,26 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
         public IMatrix StiffnessMatrix(IElement element)
         {
             Matrix Kss = BuildConductivityMatrixStandard();
-            if (numEnrichedDofs == 0) return Kss;
+            IMatrix Ktotal;
+            if (numEnrichedDofs == 0) Ktotal = Kss;
             else
             {
                 (Matrix Kee, Matrix Kse) = BuildConductivityMatricesEnriched();
-                if (PhaseIntersections.Count > 0)
-                {
-                    Matrix Kii = BuildConductivityMatrixBoundary();
-                    Kee.AddIntoThis(Kii);
-                }
-                return JoinStiffnesses(Kss, Kee, Kse);
+                #region debug
+                //if (PhaseIntersections.Count > 0)
+                //{
+                //    Matrix Kii = BuildConductivityMatrixBoundary();
+                //    Kee.AddIntoThis(Kii);
+                //}
+                #endregion
+                Ktotal = JoinStiffnesses(Kss, Kee, Kse);
             }
+            #region debug
+            string path = @"C:\Users\Serafeim\Desktop\HEAT\debug\" + $"K{element.ID}.txt";
+            var writer = new LinearAlgebra.Output.FullMatrixWriter();
+            writer.WriteToFile(Ktotal, path);
+            #endregion
+            return Ktotal;
         }
 
         private (Matrix Kee, Matrix Kse) BuildConductivityMatricesEnriched()
@@ -327,15 +336,15 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
             foreach (var boundaryGaussPointsPair in gaussPointsBoundary)
             {
                 PhaseBoundary boundary = boundaryGaussPointsPair.Key;
-                IReadOnlyCollection<GaussPoint> gaussPoints = boundaryGaussPointsPair.Value;
+                IReadOnlyList<GaussPoint> gaussPoints = boundaryGaussPointsPair.Value;
                 ThermalInterfaceMaterial[] materials = materialsAtGPsBoundary[boundary];
 
                 // Kii = sum(conductivity * jumpCoeff^2 * N^T * N * weight * thickness)
                 double phaseJumpCoeff = boundary.Enrichment.PhaseJumpCoefficient;
                 double commonCoeff = phaseJumpCoeff * phaseJumpCoeff * Thickness;
-                for (int i = 0; i < gaussPointsBoundary.Count; ++i)
+                for (int i = 0; i < gaussPoints.Count; ++i)
                 {
-                    GaussPoint gaussPoint = gaussPointsVolume[i];
+                    GaussPoint gaussPoint = gaussPoints[i];
                     double interfaceConductivity = materials[i].InterfaceConductivity;
                     double scale = commonCoeff * interfaceConductivity * gaussPoint.Weight;
 

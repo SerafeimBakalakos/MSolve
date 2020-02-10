@@ -34,43 +34,15 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Materials
             
             if ((phaseBoundary.PositivePhase.ID == matrixPhaseID) || (phaseBoundary.NegativePhase.ID == matrixPhaseID))
             {
-                return new ThermalInterfaceMaterial(matrixInclusionInterfaceConductivity, jumpCoefficient);
+                return new ThermalInterfaceMaterial(matrixInclusionInterfaceConductivity);
             }
-            else return new ThermalInterfaceMaterial(inclusionInclusionInterfaceConductivity, jumpCoefficient);
+            else return new ThermalInterfaceMaterial(inclusionInclusionInterfaceConductivity);
         }
 
         public ThermalMaterial FindMaterialAt(IPhase phase)
         {
             if (phase.ID == matrixPhaseID) return matrixMaterial.Clone();
             else return inclusionMaterial.Clone();
-        }
-
-        public ThermalMaterial FindMaterialAt(IXFiniteElement element, EvalInterpolation2D interpolationAtGaussPoint)
-        {
-            if (element.Phases.Count == 1)
-            {
-                if (element.Phases.First().ID == matrixPhaseID) return matrixMaterial.Clone();
-                else return inclusionMaterial.Clone();
-            }
-            else
-            {
-                CartesianPoint point = interpolationAtGaussPoint.TransformPointNaturalToGlobalCartesian();
-                bool hasMatrixPhase = false;
-                foreach (IPhase phase in element.Phases)
-                {
-                    // Avoid searching for the point in the default phase, since its shape is hihly irregular.
-                    if (phase.ID == matrixPhaseID)
-                    {
-                        hasMatrixPhase = true;
-                        continue;
-                    }
-                    else if (phase.Contains(point)) return inclusionMaterial.Clone();
-                }
-
-                // Instead choose it if the point is not contained in any other phases
-                Debug.Assert(hasMatrixPhase, "The point does not belong to any phases");
-                return matrixMaterial.Clone();
-            }
         }
     }
 }

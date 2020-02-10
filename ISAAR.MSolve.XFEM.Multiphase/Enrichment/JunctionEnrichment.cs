@@ -65,17 +65,18 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 
         public IPhase FindPhaseAt(XNode node)
         {
-            // It is more efficient to avoid searching the default phase. This is why it is placed last (if present) as the else case.
-            int lastPhase = descendingPhases.Length - 1;
-            for (int p = 0; p < lastPhase; ++p)
-            {
-                IPhase phase = descendingPhases[p];
-                if (phase.ContainedNodes.Contains(node)) return phase;
-            }
+            return node.SurroundingPhase;
+            //// It is more efficient to avoid searching the default phase. This is why it is placed last (if present) as the else case.
+            //int lastPhase = descendingPhases.Length - 1;
+            //for (int p = 0; p < lastPhase; ++p)
+            //{
+            //    IPhase phase = descendingPhases[p];
+            //    if (phase.ContainedNodes.Contains(node)) return phase;
+            //}
 
-            //TODO: Perhaps this should be checked in release configs as well
-            Debug.Assert(descendingPhases[lastPhase].ContainedNodes.Contains(node));
-            return descendingPhases[lastPhase];
+            ////TODO: Perhaps this should be checked in release configs as well
+            //Debug.Assert(descendingPhases[lastPhase].ContainedNodes.Contains(node));
+            //return descendingPhases[lastPhase];
         }
 
         public bool IsAppliedDueTo(PhaseBoundary phaseBoundary) => boundaries.Contains(phaseBoundary);

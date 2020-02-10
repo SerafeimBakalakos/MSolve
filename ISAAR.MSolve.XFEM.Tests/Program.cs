@@ -13,8 +13,9 @@ namespace ISAAR.MSolve.XFEM.Tests
         {
             //HomogenizationExamples.RunHomogenizationAnalysis();
 
-            PhasePlots.Plot2PhasesInteractions();
-            PhasePlots.Plot3PhasesInteractions();
+            //BenchmarkTests.Test2Phases();
+            BenchmarkTests.Test3Phases();
+
             //PhasePlots.PlotScatteredPhasesInteractions();
             //PhasePlots.PlotTetrisPhasesInteractions();
             //PhasePlots.PlotPercolationPhasesInteractions();

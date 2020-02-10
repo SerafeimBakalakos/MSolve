@@ -34,7 +34,6 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting
                         GaussPoint gp = points[i];
                         CartesianPoint point = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, gp);
                         materialPoints[point] = materials[i].InterfaceConductivity;
-
                     }
                 }
             }

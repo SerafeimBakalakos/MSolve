@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Integration;
@@ -117,7 +118,9 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
             {
                 //TODO: Cache this. If possible cache it for all similar elements.
                 EvalInterpolation2D evalInterpolation = InterpolationStandard.EvaluateAllAt(Nodes, gp);
-                MaterialsForVolumeIntegration[gp] = MaterialField.FindMaterialAt(this, evalInterpolation);
+                CartesianPoint point = evalInterpolation.TransformPointNaturalToGlobalCartesian();
+                IPhase phase = Phases.First(p => p.Contains(point));
+                MaterialsForVolumeIntegration[gp] = MaterialField.FindMaterialAt(phase);
             }
 
             MaterialsForBoundaryIntegration = new Dictionary<GaussPoint, ThermalInterfaceMaterial>();
