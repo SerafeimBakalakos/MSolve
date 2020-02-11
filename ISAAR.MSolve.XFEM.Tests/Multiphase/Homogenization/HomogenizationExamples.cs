@@ -31,8 +31,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Homogenization
         private const double elementSize = (maxX - minX) / numElementsX;
         private const double thickness = 1.0;
         private const bool integrationWithSubtriangles = true;
-        private const double matrixConductivity = 1E0, inclusionConductivity = 1E5;
-        private const double matrixInclusionInterfaceConductivity = 1E10, inclusionInclusionInterfaceConductivity = 0;
+        private const double matrixConductivity = 1E0, inclusionConductivity = 1E4;
+        private const double matrixInclusionInterfaceConductivity = 1E0, inclusionInclusionInterfaceConductivity = 1E10;
         private const double specialHeatCoeff = 1.0;
         private const double singularityRelativeAreaTolerance = 1E-4;
 
@@ -113,7 +113,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Homogenization
             geometricModel.FindConformingMesh(physicalModel);
 
             ISingularityResolver singularityResolver = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
-            var nodeEnricher = new NodeEnricher(geometricModel, singularityResolver);
+            //var nodeEnricher = new NodeEnricherOLD(geometricModel, singularityResolver);
+            var nodeEnricher = new NodeEnricher2Junctions(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
 
             physicalModel.UpdateDofs();

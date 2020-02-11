@@ -14,11 +14,11 @@ namespace ISAAR.MSolve.XFEM.Tests
             //HomogenizationExamples.RunHomogenizationAnalysis();
 
             //BenchmarkTests.Test2Phases();
-            ThreePhasesBenchmark.RunTest();
+            //ThreePhasesBenchmark.RunTest();
 
             //PhasePlots.PlotScatteredPhasesInteractions();
             //PhasePlots.PlotTetrisPhasesInteractions();
-            //PhasePlots.PlotPercolationPhasesInteractions();
+            PhasePlots.PlotPercolationPhasesInteractions();
 
 
             //ThermalInclusionBall2D.PlotLevelSets();

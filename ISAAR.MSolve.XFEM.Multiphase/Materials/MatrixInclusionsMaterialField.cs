@@ -30,8 +30,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Materials
         {
             // There is no guarantee that this jump will be due to step enrichment or junction enrichment. However the 
             // general assumption is that both enrichments have the same jump coefficient for the same boundary.
-            double jumpCoefficient = phaseBoundary.Enrichment.PhaseJumpCoefficient;
-            
+            #region delete
+            //double jumpCoefficient = phaseBoundary.StepEnrichment.PhaseJumpCoefficient;
+            #endregion
+
             if ((phaseBoundary.PositivePhase.ID == matrixPhaseID) || (phaseBoundary.NegativePhase.ID == matrixPhaseID))
             {
                 return new ThermalInterfaceMaterial(matrixInclusionInterfaceConductivity);

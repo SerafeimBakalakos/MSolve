@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment.SingularityResolution
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="stepNodes">They will not be altered.</param>
-        public HashSet<XNode> FindStepEnrichedNodesToRemove(IEnumerable<XNode> stepNodes, StepEnrichment enrichment)
+        public HashSet<XNode> FindStepEnrichedNodesToRemove(IEnumerable<XNode> stepNodes, StepEnrichmentOLD enrichment)
         {
             int phase1ID = enrichment.Phases[0].ID;
             int phase2ID = enrichment.Phases[1].ID;
@@ -84,7 +84,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment.SingularityResolution
 
         // TODO: I should really cache these somehow, so that they can be accessible from the crack object. They are used at various points.
         private (double totalArea1, double totalArea2) FindSignedAreasOfElement(IXFiniteElement element, 
-            StepEnrichment enrichment)
+            StepEnrichmentOLD enrichment)
         {
             IPhase phase1 = enrichment.Phases[0];
             IPhase phase2 = enrichment.Phases[1];

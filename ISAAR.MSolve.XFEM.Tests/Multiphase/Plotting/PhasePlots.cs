@@ -35,8 +35,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
         private const double thickness = 1.0;
         private static readonly PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
         private const bool integrationWithSubtriangles = true;
-        private const double matrixConductivity = 1E0/*1*/, inclusionConductivity = 1E4/*4*/;
-        private const double matrixInclusionInterfaceConductivity = 0/*2*/, inclusionInclusionInterfaceConductivity = 0/*3*/;
+        private const double matrixConductivity = 1E0/*1*/, inclusionConductivity = 1E4 /*4*/;
+        private const double matrixInclusionInterfaceConductivity = 1E1/*2*/, inclusionInclusionInterfaceConductivity = 1E3/*3*/;
         private const double specialHeatCoeff = 1.0;
         private const double singularityRelativeAreaTolerance = 1E-1;
 
@@ -101,7 +101,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             var materialPlotter = new MaterialPlotter(physicalModel);
             materialPlotter.PlotVolumeMaterials(paths.volumeIntegrationMaterials);
             materialPlotter.PlotBoundaryMaterials(paths.boundaryIntegrationMaterials);
-            materialPlotter.PlotBoundaryPhaseJumpCoefficients(paths.boundaryIntegrationPhaseJumps);
+            //materialPlotter.PlotBoundaryPhaseJumpCoefficients(paths.boundaryIntegrationPhaseJumps);
 
             // Analysis
             IVectorView solution = RunAnalysis(physicalModel);
@@ -196,11 +196,6 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             {
                 node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = -100 });
             }
-
-            // Node inside circle
-            //XNode internalNode = model.Nodes.Where(n => (Math.Abs(n.X + 0.4) <= meshTol) && (Math.Abs(n.Y) <= meshTol)).First();
-            //System.Diagnostics.Debug.Assert(internalNode != null);
-            //internalNode.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.1 });
         }
 
         private static void PrepareForAnalysis(XModel physicalModel, GeometricModel geometricModel)
@@ -212,7 +207,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             geometricModel.FindConformingMesh(physicalModel);
 
             ISingularityResolver singularityResolver = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
-            var nodeEnricher = new NodeEnricher(geometricModel, singularityResolver);
+            //var nodeEnricher = new NodeEnricherOLD(geometricModel, singularityResolver);
+            var nodeEnricher = new NodeEnricher2Junctions(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
 
             physicalModel.UpdateDofs();

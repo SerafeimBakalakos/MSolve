@@ -23,6 +23,8 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 
         public int ID { get; }
 
+        public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
+
         public double EvaluateAt(XNode node)
         {
             if (node.SurroundingPhase == phasePlus) return +1;

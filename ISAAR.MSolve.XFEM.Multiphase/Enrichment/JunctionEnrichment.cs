@@ -11,80 +11,88 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 {
     public class JunctionEnrichment : IEnrichment
     {
-        private readonly HashSet<PhaseBoundary> boundaries;
         private readonly IPhase[] descendingPhases;
+        private readonly int[] descendingPhaseCoeffs;
 
-        //TODO: delete
-        //public JunctionEnrichment(int id, IEnumerable<IPhase> phases)
-        //{
-        //    this.ID = id;
-        //    this.descendingPhases = phases.ToArray();
-        //    Array.Sort(descendingPhases, new PhaseComparer());
-        //    this.Dof = new EnrichedDof(this, ThermalDof.Temperature);
-        //}
-
-        public JunctionEnrichment(int id, IEnumerable<PhaseBoundary> phaseBoundaries)
+        public JunctionEnrichment(int id, PhaseBoundary boundary, IEnumerable<IPhase> allPhases)
         {
             this.ID = id;
-            this.boundaries = new HashSet<PhaseBoundary>(phaseBoundaries);
-
-            var phases = new HashSet<IPhase>();
-            foreach (PhaseBoundary boundary in phaseBoundaries)
-            {
-                phases.Add(boundary.PositivePhase);
-                phases.Add(boundary.NegativePhase);
-            }
-
-            this.descendingPhases = phases.ToArray();
-            Array.Sort(descendingPhases, new PhaseComparer());
-
             this.Dof = new EnrichedDof(this, ThermalDof.Temperature);
+
+            int numPhases = allPhases.Count();
+            this.descendingPhases = new IPhase[numPhases];
+            this.descendingPhaseCoeffs = new int[numPhases];
+            this.descendingPhases[0] = boundary.PositivePhase; 
+            this.descendingPhaseCoeffs[0] = +1;
+            this.descendingPhases[1] = boundary.NegativePhase;
+            this.descendingPhaseCoeffs[1] = -1;
+
+            int i = 2;
+            foreach (IPhase phase in allPhases)
+            {
+                if ((phase != boundary.PositivePhase) && (phase != boundary.NegativePhase))
+                {
+                    this.descendingPhases[i] = phase;
+                    this.descendingPhaseCoeffs[i] = 0;
+                    ++i;
+                }
+            }
+            Array.Sort(descendingPhases, descendingPhaseCoeffs, new PhaseComparer());
         }
 
         public EnrichedDof Dof { get; }
 
         public int ID { get; }
 
+        public PhaseBoundary Boundary { get; }
+
         public IReadOnlyList<IPhase> Phases => descendingPhases;
 
-        public double EvaluateAt(XNode node) => FindPhaseAt(node).ID;
+        public double EvaluateAt(XNode node)
+        {
+            for (int i = 0; i < descendingPhases.Length; ++i)
+            {
+                if (node.SurroundingPhase == descendingPhases[i]) return descendingPhaseCoeffs[i];
+            }
+            throw new ArgumentException();
+        }
 
         public double EvaluateAt(CartesianPoint point)
         {
-            // It is more efficient to avoid searching the default phase. This is why it is placed last (if present) as the else case.
-            int lastPhase = descendingPhases.Length - 1;
-            for (int p = 0; p < lastPhase; ++p)
+            for (int i = 0; i < descendingPhases.Length - 1; ++i)
             {
-                IPhase phase = descendingPhases[p];
-                if (phase.Contains(point)) return phase.ID;
+                if (descendingPhases[i].Contains(point)) return descendingPhaseCoeffs[i];
             }
-            return descendingPhases[lastPhase].ID;
+            return descendingPhaseCoeffs[descendingPhases.Length - 1];
         }
 
-        public double EvaluateAt(IPhase phaseAtPoint) => phaseAtPoint.ID;
-
-        public IPhase FindPhaseAt(XNode node)
+        public double EvaluateAt(IPhase phaseAtPoint)
         {
-            return node.SurroundingPhase;
-            //// It is more efficient to avoid searching the default phase. This is why it is placed last (if present) as the else case.
-            //int lastPhase = descendingPhases.Length - 1;
-            //for (int p = 0; p < lastPhase; ++p)
-            //{
-            //    IPhase phase = descendingPhases[p];
-            //    if (phase.ContainedNodes.Contains(node)) return phase;
-            //}
-
-            ////TODO: Perhaps this should be checked in release configs as well
-            //Debug.Assert(descendingPhases[lastPhase].ContainedNodes.Contains(node));
-            //return descendingPhases[lastPhase];
+            for (int i = 0; i < descendingPhases.Length; ++i)
+            {
+                if (phaseAtPoint == descendingPhases[i]) return descendingPhaseCoeffs[i];
+            }
+            throw new ArgumentException();
         }
 
         public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
         {
+            return FindPhaseCoeff(phaseBoundary.PositivePhase) - FindPhaseCoeff(phaseBoundary.NegativePhase);
+        }
+
+        public bool IsAppliedDueTo(PhaseBoundary phaseBoundary)
+        {
             throw new NotImplementedException();
         }
 
-        public bool IsAppliedDueTo(PhaseBoundary phaseBoundary) => boundaries.Contains(phaseBoundary);
+        private int FindPhaseCoeff(IPhase phase)
+        {
+            for (int i = 0; i < 3; ++i)
+            {
+                if (descendingPhases[i] == phase) return descendingPhaseCoeffs[i];
+            }
+            throw new ArgumentException();
+        }
 
         private class PhaseComparer : IComparer<IPhase>
         {

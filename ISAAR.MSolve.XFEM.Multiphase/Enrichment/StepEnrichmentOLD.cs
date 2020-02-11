@@ -8,11 +8,11 @@ using ISAAR.MSolve.XFEM.Multiphase.Entities;
 
 namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 {
-    public class StepEnrichment : IEnrichment
+    public class StepEnrichmentOLD : IEnrichment
     {
         private readonly IPhase minPhase, maxPhase;
 
-        public StepEnrichment(int id, IPhase phase1, IPhase phase2)
+        public StepEnrichmentOLD(int id, IPhase phase1, IPhase phase2)
         {
             this.ID = id;
             (this.minPhase, this.maxPhase) = FindMinMaxPhases(phase1, phase2);
@@ -27,42 +27,32 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 
         public IReadOnlyList<IPhase> Phases => new IPhase[] { maxPhase, minPhase };
 
-        public double EvaluateAt(XNode node) => EvaluateAt(node.SurroundingPhase);
+        public double EvaluateAt(XNode node) => FindPhaseAt(node).ID;
 
         public double EvaluateAt(CartesianPoint point)
         {
             // Looking in the phase with max ID is more efficient, since the default phase has id=0 and would be slower to search. 
-            if (maxPhase.Contains(point)) return +1;
-            else return -1;
+            if (maxPhase.Contains(point)) return maxPhase.ID;
+            else return minPhase.ID;
         }
 
-        public double EvaluateAt(IPhase phaseAtPoint)
+        public double EvaluateAt(IPhase phaseAtPoint) => phaseAtPoint.ID;
+
+        public IPhase FindPhaseAt(XNode node)
         {
-            if (phaseAtPoint == maxPhase) return +1;
-            else
-            {
-                Debug.Assert(phaseAtPoint == minPhase);
-                return -1;
-            }
+            return node.SurroundingPhase;
+            //// Looking in the phase with max ID is more efficient, since the default phase has id=0 and would be slower to search. 
+            //if (maxPhase.ContainedNodes.Contains(node)) return maxPhase;
+            //else
+            //{
+            //    //TODO: Perhaps this should be checked in release configs as well
+            //    Debug.Assert(minPhase.ContainedNodes.Contains(node));
+            //    return minPhase;
+            //}
         }
-
-        #region delete
-        //public IPhase FindPhaseAt(XNode node)
-        //{
-        //    return node.SurroundingPhase;
-        //    //// Looking in the phase with max ID is more efficient, since the default phase has id=0 and would be slower to search. 
-        //    //if (maxPhase.ContainedNodes.Contains(node)) return maxPhase;
-        //    //else
-        //    //{
-        //    //    //TODO: Perhaps this should be checked in release configs as well
-        //    //    Debug.Assert(minPhase.ContainedNodes.Contains(node));
-        //    //    return minPhase;
-        //    //}
-        //}
-        #endregion
 
         public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
-            => EvaluateAt(phaseBoundary.PositivePhase) - EvaluateAt(phaseBoundary.NegativePhase);
+            => Math.Abs(phaseBoundary.PositivePhase.ID - phaseBoundary.NegativePhase.ID);
 
         public bool IsAppliedDueTo(PhaseBoundary phaseBoundary)
         {
@@ -86,5 +76,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
             }
             return (minPhase, maxPhase);
         }
+
+        
     }
 }

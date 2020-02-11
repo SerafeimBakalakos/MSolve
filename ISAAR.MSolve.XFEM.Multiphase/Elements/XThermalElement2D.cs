@@ -330,6 +330,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
             return (Kee, Kse);
         }
 
+        #region delete
         //private Matrix BuildConductivityMatrixBoundaryOLD()
         //{
         //    var Kii = Matrix.CreateZero(numEnrichedDofs, numEnrichedDofs);
@@ -355,6 +356,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
         //    }
         //    return Kii;
         //}
+        #endregion
 
         private Matrix BuildConductivityMatrixBoundary()
         {
@@ -535,6 +537,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
             return evalInterpolation.ShapeGradientsCartesian.Transpose();
         }
 
+        #region delete
         ///// <summary>
         ///// The contour integral along a phase boundary is calculated for the enriched dofs that were applied due to that 
         ///// boundary. For example, if there are 2 boundaries and all 3 nodes of the element are enriched due to them, then the 6
@@ -572,6 +575,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
         //    }
         //    return totalShapeFunctions;
         //}
+        #endregion
 
         /// <summary>
         /// The contour integral along a phase boundary is calculated for the enriched dofs that were applied due to that 

@@ -28,6 +28,8 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 
         public int ID { get; }
 
+        public IReadOnlyList<IPhase> Phases => descendingPhases;
+
         public double EvaluateAt(XNode node)
         {
             if (node.SurroundingPhase == descendingPhases[0]) return descendingPhaseCoeffs[0];

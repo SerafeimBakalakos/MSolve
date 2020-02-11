@@ -43,30 +43,32 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting
             }
         }
 
-        public void PlotBoundaryPhaseJumpCoefficients(string path)
-        {
-            var jumpCoeffs = new Dictionary<CartesianPoint, double>();
-            foreach (IXFiniteElement element in physicalModel.Elements)
-            {
-                Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)> allData =
-                    element.GetMaterialsForBoundaryIntegration();
-                foreach (var entry in element.GetMaterialsForBoundaryIntegration())
-                {
-                    PhaseBoundary boundary = entry.Key;
-                    (IReadOnlyList<GaussPoint> points, IReadOnlyList<ThermalInterfaceMaterial> materials) = entry.Value;
-                    for (int i = 0; i < points.Count; ++i)
-                    {
-                        GaussPoint gp = points[i];
-                        CartesianPoint point = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, gp);
-                        jumpCoeffs[point] = boundary.Enrichment.PhaseJumpCoefficient;
-                    }
-                }
-            }
-            using (var writer = new Logging.VTK.VtkPointWriter(path))
-            {
-                writer.WriteScalarField("phase_jump_coeffs", jumpCoeffs);
-            }
-        }
+        #region obsolete
+        //public void PlotBoundaryPhaseJumpCoefficients(string path)
+        //{
+        //    var jumpCoeffs = new Dictionary<CartesianPoint, double>();
+        //    foreach (IXFiniteElement element in physicalModel.Elements)
+        //    {
+        //        Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)> allData =
+        //            element.GetMaterialsForBoundaryIntegration();
+        //        foreach (var entry in element.GetMaterialsForBoundaryIntegration())
+        //        {
+        //            PhaseBoundary boundary = entry.Key;
+        //            (IReadOnlyList<GaussPoint> points, IReadOnlyList<ThermalInterfaceMaterial> materials) = entry.Value;
+        //            for (int i = 0; i < points.Count; ++i)
+        //            {
+        //                GaussPoint gp = points[i];
+        //                CartesianPoint point = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, gp);
+        //                jumpCoeffs[point] = boundary.StepEnrichment.PhaseJumpCoefficient;
+        //            }
+        //        }
+        //    }
+        //    using (var writer = new Logging.VTK.VtkPointWriter(path))
+        //    {
+        //        writer.WriteScalarField("phase_jump_coeffs", jumpCoeffs);
+        //    }
+        //}
+        #endregion
 
         public void PlotVolumeMaterials(string path)
         {

@@ -20,7 +20,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
             negativePhase.Neighbors.Add(positivePhase);
         }
 
-        public StepEnrichment Enrichment { get; set; }
+        public IEnrichment StepEnrichment { get; set; }
 
         public IPhase NegativePhase { get; }
         public IPhase PositivePhase { get; }

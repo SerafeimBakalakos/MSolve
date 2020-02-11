@@ -1,26 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.XFEM.Multiphase.Elements;
 using ISAAR.MSolve.XFEM.Multiphase.Enrichment.SingularityResolution;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
 
 //TODO: Add heaviside singularity resolver
+//TODO: Remove casts
 namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 {
-    public class NodeEnricher
+    public class NodeEnricher2Junctions
     {
         private readonly GeometricModel geometricModel;
         private readonly ISingularityResolver singularityResolver;
 
-        public NodeEnricher(GeometricModel geometricModel, ISingularityResolver singularityResolver)
+        public NodeEnricher2Junctions(GeometricModel geometricModel, ISingularityResolver singularityResolver)
         {
             this.geometricModel = geometricModel;
             this.singularityResolver = singularityResolver;
-            this.JunctionElements = new Dictionary<IXFiniteElement, JunctionEnrichment>();
+            this.JunctionElements = new Dictionary<IXFiniteElement, HashSet<JunctionEnrichment>>();
         }
 
-        public Dictionary<IXFiniteElement, JunctionEnrichment> JunctionElements { get; }
+        public Dictionary<IXFiniteElement, HashSet<JunctionEnrichment>> JunctionElements { get; }
 
         public void ApplyEnrichments()
         {
@@ -36,12 +38,9 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
         private int DefineJunctionEnrichments(int idStart) 
         {
             // Keep track of the junctions to avoid duplicate ones.
-            //TODO: Perhaps the comparison should be done only when duplicate junctions are identified at the same node. 
-            //      This would avoid a ton of comparisons.
-            //TODO: This comparison results in using the same enrichment for multiple junction points, that are all between the 
-            //      same 3 (or more) phases, but at different coordinates. Is this a good thing or not?
-            var comparer = new JunctionComparer();
-            var junctionEnrichments = new SortedDictionary<JunctionEnrichment, JunctionEnrichment>(comparer);
+            //TODO: What happens if the same boundary is used for more than one junctions? E.g. the boundary is an almost closed 
+            //      curve, that has 2 ends, both of which need junctions.
+            var junctionEnrichments = new Dictionary<PhaseBoundary, JunctionEnrichment>();
 
             int id = idStart;
             #region default phase
@@ -52,17 +51,35 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                 var phase = (ConvexPhase)(geometricModel.Phases[p]);
                 foreach (IXFiniteElement element in phase.IntersectedElements)
                 {
+                    //TODO: Shouldn't the boundaries intersect?
                     if (element.Phases.Count <= 2) continue; // Not a junction element
+                    PhaseBoundary[] boundaries = element.PhaseIntersections.Keys.ToArray();
 
-                    var newJunction = new JunctionEnrichment(id, element.PhaseIntersections.Keys);
-                    bool alreadyExists = junctionEnrichments.TryGetValue(newJunction, out JunctionEnrichment oldJunction);
-                    if (!alreadyExists)
+                    // If there are n boundaries intersecting, then use n-1 junctions
+                    //TODO: Perhaps this is too simplistic. What happens if there are 3 phases, but their 2 boundaries do not 
+                    //      intersect? Should I use 2 step enrichments instead? Also what happens if in an element 3 boundaries
+                    //      intersect and 4th does not intersect?
+                    for (int i = 0; i < boundaries.Length - 1; ++i) 
                     {
-                        ++id;
-                        junctionEnrichments[newJunction] = newJunction;
-                        JunctionElements[element] = newJunction;
+                        PhaseBoundary boundary = boundaries[i];
+
+                        bool enrichmentExists = junctionEnrichments.TryGetValue(boundary, out JunctionEnrichment junction);
+                        if (!enrichmentExists)
+                        {
+                            ++id;
+                            junction = new JunctionEnrichment(id, boundary, element.Phases);
+                            junctionEnrichments[boundary] = junction;
+                        }
+
+                        bool elementExists = JunctionElements.TryGetValue(element, 
+                            out HashSet<JunctionEnrichment> elementJunctions);
+                        if (!elementExists)
+                        {
+                            elementJunctions = new HashSet<JunctionEnrichment>();
+                            JunctionElements[element] = elementJunctions;
+                        }
+                        elementJunctions.Add(junction);
                     }
-                    else JunctionElements[element] = oldJunction;
                 }
             }
             return id - idStart;
@@ -93,7 +110,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                 foreach (PhaseBoundary boundary in geometricModel.Phases[p].Boundaries)
                 {
                     // It may have been processed when iterating the boundaries of the opposite phase.
-                    if (boundary.Enrichment != null) continue; 
+                    if (boundary.StepEnrichment != null) continue; 
 
                     // Find min/max phase IDs to uniquely identify the interaction
                     IPhase minPhase, maxPhase;
@@ -117,7 +134,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                         uniqueEnrichments[maxPhase.ID][minPhase.ID] = enrichment;
                     }
 
-                    boundary.Enrichment = enrichment;
+                    boundary.StepEnrichment = enrichment;
                 }
             }
             return id - idStart;
@@ -138,12 +155,14 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
             foreach (var elementJunctionPair in JunctionElements)
             {
                 IXFiniteElement element = elementJunctionPair.Key;
-                JunctionEnrichment junctionEnrichment = elementJunctionPair.Value;
-                foreach (XNode node in element.Nodes) EnrichNode(node, junctionEnrichment);
+                foreach (JunctionEnrichment junctionEnrichment in elementJunctionPair.Value)
+                {
+                    foreach (XNode node in element.Nodes) EnrichNode(node, junctionEnrichment);
+                }
             }
 
             // Find nodes to potentially be enriched by step enrichments
-            var nodesPerStepEnrichment = new Dictionary<StepEnrichment, HashSet<XNode>>();
+            var nodesPerStepEnrichment = new Dictionary<IEnrichment, HashSet<XNode>>();
             #region default phase
             //foreach (IPhase phase in geometricModel.Phases)
             #endregion
@@ -155,7 +174,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                     foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
                     {
                         // Find the nodes to potentially be enriched by this step enrichment 
-                        StepEnrichment stepEnrichment = boundary.Enrichment;
+                        IEnrichment stepEnrichment = boundary.StepEnrichment;
                         bool exists = nodesPerStepEnrichment.TryGetValue(stepEnrichment, out HashSet<XNode> nodesToEnrich);
                         if (!exists)
                         {
@@ -175,21 +194,19 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
             // Enrich these nodes with the corresponding step enrichment
             foreach (var enrichmentNodesPair in nodesPerStepEnrichment)
             {
-                StepEnrichment stepEnrichment = enrichmentNodesPair.Key;
+                IEnrichment stepEnrichment = enrichmentNodesPair.Key;
                 HashSet<XNode> nodesToEnrich = enrichmentNodesPair.Value;
 
                 // Some of these nodes may need to not be enriched after all, to avoid singularities in the global stiffness matrix
-                HashSet<XNode> rejectedNodes = singularityResolver.FindStepEnrichedNodesToRemove(nodesToEnrich, stepEnrichment);
+                //HashSet<XNode> rejectedNodes = singularityResolver.FindStepEnrichedNodesToRemove(nodesToEnrich, stepEnrichment);
 
                 // Enrich the rest of them
-                nodesToEnrich.ExceptWith(rejectedNodes);
+                //nodesToEnrich.ExceptWith(rejectedNodes);
                 foreach (XNode node in nodesToEnrich) EnrichNode(node, stepEnrichment);
             }
-            
         }
-        
 
-        private bool HasCorrespondingJunction(XNode node, StepEnrichment stepEnrichment)
+        private bool HasCorrespondingJunction(XNode node, IEnrichment stepEnrichment)
         {
             foreach (IEnrichment enrichment in node.Enrichments.Keys)
             {
@@ -201,25 +218,6 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                 }
             }
             return false;
-        }
-
-        private class JunctionComparer : IComparer<JunctionEnrichment>
-        {
-            public int Compare(JunctionEnrichment x, JunctionEnrichment y)
-            {
-                int result = x.Phases.Count - y.Phases.Count;
-                if (result != 0) return result; // Junctions with fewer elements go first
-                
-                //TODO: Guarantee that the phases are ordered in descending order
-                for (int p = 0; p < x.Phases.Count; ++p)
-                {
-                    // As long as the i-th phase is the same, continue comparing.
-                    result = x.Phases[p].ID - y.Phases[p].ID;
-                    if (result != 0) return result; 
-                }
-
-                return 0; // At this point all phases are the same.
-            }
         }
     }
 }

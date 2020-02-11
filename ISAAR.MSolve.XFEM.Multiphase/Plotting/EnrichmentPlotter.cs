@@ -6,7 +6,6 @@ using ISAAR.MSolve.Logging.VTK;
 using ISAAR.MSolve.XFEM.Multiphase.Enrichment;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
 
-//TODO: If a node has 2 step enrichments, then only 1 will be displayed. Perhaps slightly offset the multiple concidental points.
 namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Enrichments
 {
     public class EnrichmentPlotter
@@ -22,12 +21,16 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Enrichments
 
         public void PlotJunctionEnrichedNodes(string path)
         {
-            PlotEnrichedNodesCategory(enr => enr is JunctionEnrichment, path, "junction_enriched_nodes");
+            PlotEnrichedNodesCategory(
+                enr => (enr is JunctionEnrichmentOLD) || (enr is DauxJunctionEnrichment) || (enr is JunctionEnrichment), 
+            path, "junction_enriched_nodes");
         }
 
         public void PlotStepEnrichedNodes(string path)
         {
-            PlotEnrichedNodesCategory(enr => enr is StepEnrichment, path, "step_enriched_nodes");
+            PlotEnrichedNodesCategory(
+                enr => (enr is StepEnrichmentOLD) || (enr is DauxHeavisideEnrichment) || (enr is StepEnrichment), 
+                path, "step_enriched_nodes");
         }
 
         private void PlotEnrichedNodesCategory(Func<IEnrichment, bool> predicate, string path, string categoryName)
