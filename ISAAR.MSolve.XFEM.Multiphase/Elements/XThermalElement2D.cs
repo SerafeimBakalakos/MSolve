@@ -294,9 +294,9 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
                 Ktotal = JoinStiffnesses(Kss, Kee, Kse);
             }
             #region debug
-            string path = @"C:\Users\Serafeim\Desktop\HEAT\debug\" + $"K{element.ID}.txt";
-            var writer = new LinearAlgebra.Output.FullMatrixWriter();
-            writer.WriteToFile(Ktotal, path);
+            //string path = @"C:\Users\Serafeim\Desktop\HEAT\debug\" + $"K{element.ID}.txt";
+            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+            //writer.WriteToFile(Ktotal, path);
             #endregion
             return Ktotal;
         }
@@ -468,8 +468,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
                 foreach (var enrichmentValuePair in Nodes[nodeIdx].Enrichments)
                 {
                     IEnrichment enrichment = enrichmentValuePair.Key;
-                    Debug.Assert((enrichment is StepEnrichment) || (enrichment is JunctionEnrichment), 
-                        "Otherwise the derivative calculation is wrong");
+                    #region debug
+                    //Debug.Assert((enrichment is StepEnrichment) || (enrichment is JunctionEnrichment), 
+                    //    "Otherwise the derivative calculation is wrong");
+                    #endregion
 
                     double nodalPsi = enrichmentValuePair.Value;
 

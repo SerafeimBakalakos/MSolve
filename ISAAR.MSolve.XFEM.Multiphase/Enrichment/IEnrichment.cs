@@ -19,6 +19,8 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 
         double EvaluateAt(IPhase phaseAtPoint);
 
+        //double GetJumpCoefficientBetween(IPhase phasePlus, IPhase phaseMinus);
+
         bool IsAppliedDueTo(PhaseBoundary phaseBoundary);
     }
 }

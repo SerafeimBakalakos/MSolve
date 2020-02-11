@@ -13,10 +13,9 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
     {
         public ConvexPhase(int id)
         {
-            if (id == DefaultPhase.DefaultPhaseID) throw new ArgumentException("Phase ID must be > 0");
+            //if (id == DefaultPhase.DefaultPhaseID) throw new ArgumentException("Phase ID must be > 0");
             this.ID = id;
         }
-
 
         public List<PhaseBoundary> Boundaries { get; } = new List<PhaseBoundary>(4);
 

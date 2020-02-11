@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 
         public double EvaluateAt(XNode node)
         {
-            if (node.SurroundingPhase == phasePlus.ContainedNodes) return +1;
+            if (node.SurroundingPhase == phasePlus) return +1;
             else return -1;
         }
 

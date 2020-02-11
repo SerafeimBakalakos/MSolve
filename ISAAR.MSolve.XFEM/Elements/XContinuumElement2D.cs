@@ -266,13 +266,6 @@ namespace ISAAR.MSolve.XFEM.Elements
         public Vector2 CalculateDisplacementField(NaturalPoint gaussPoint, EvalInterpolation2D evaluatedInterpolation,
             Vector standardNodalDisplacements, Vector enrichedNodalDisplacements)
         {
-            #region debug
-            double tol = 1e-6;
-            if ((Math.Abs(gaussPoint.Xi) <= tol) || (Math.Abs(gaussPoint.Eta) <= tol))
-            {
-                Console.WriteLine("Found an intersection point that isn't a node.");
-            }
-            #endregion
             var displacements = new double[2];
 
             // Standard contributions

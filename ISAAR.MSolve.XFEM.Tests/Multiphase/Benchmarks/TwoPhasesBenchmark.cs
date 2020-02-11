@@ -221,14 +221,6 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             physicalModel.UpdateMaterials();
         }
 
-        private static void EnrichCustom(XModel physicalModel, GeometricModel geometricModel)
-        {
-            List<XNode> nodes = physicalModel.Nodes;
-
-            var heaviside01 = new DauxHeavisideEnrichment(geometricModel.Phases[0]);
-            nodes[1].Enrichments;
-        }
-
         private static IVectorView RunAnalysis(XModel physicalModel)
         {
             SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(physicalModel);
@@ -241,9 +233,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             staticAnalyzer.Solve();
 
             #region debug
-            string path = @"C:\Users\Serafeim\Desktop\HEAT\debug\Kglob.txt";
-            var writer = new LinearAlgebra.Output.FullMatrixWriter();
-            writer.WriteToFile(solver.LinearSystems[0].Matrix, path);
+            //string path = @"C:\Users\Serafeim\Desktop\HEAT\debug\Kglob.txt";
+            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+            //writer.WriteToFile(solver.LinearSystems[0].Matrix, path);
             #endregion
 
             return solver.LinearSystems[subdomainID].Solution;

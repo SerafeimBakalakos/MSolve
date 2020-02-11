@@ -9,6 +9,7 @@ using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
+using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
@@ -16,6 +17,7 @@ using ISAAR.MSolve.XFEM.Multiphase.Elements;
 using ISAAR.MSolve.XFEM.Multiphase.Enrichment;
 using ISAAR.MSolve.XFEM.Multiphase.Enrichment.SingularityResolution;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM.Multiphase.Geometry;
 using ISAAR.MSolve.XFEM.Multiphase.Integration;
 using ISAAR.MSolve.XFEM.Multiphase.Materials;
 using ISAAR.MSolve.XFEM.Multiphase.Plotting;
@@ -33,7 +35,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
         private const double thickness = 1.0;
         private const double specialHeatCoeff = 1.0;
 
-        public static void Test3Phases()
+        public static void RunTest()
         {
             // Parameters
             int numElementsX = 3, numElementsY = 3;
@@ -45,8 +47,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\ThreePhases";
 
             // Geometry
-            PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
-            GeometricModel geometricModel = generator.Create3Phases();
+            GeometricModel geometricModel = CreatePhases(numElementsX);
             IPhase phase0 = geometricModel.Phases[0];
             IPhase phase1 = geometricModel.Phases[1];
             IPhase phase2 = geometricModel.Phases[2];
@@ -77,68 +78,71 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             PlotPhasesInteractions(geometricModel, physicalModel, paths, elementSize, solution);
         }
 
-        private static void PlotPhasesInteractions(GeometricModel geometricModel, XModel physicalModel, OutputPaths paths,
-            double elementSize, IVectorView solution)
+        private static void ApplyBoundaryConditions(XModel physicalModel)
         {
+            double meshTol = 1E-7;
 
-            var feMesh = new ContinuousOutputMesh<XNode>(physicalModel.Nodes, physicalModel.Elements);
-            using (var writer = new VtkFileWriter(paths.finiteElementMesh))
+            // Left side: T = +100
+            double minX = physicalModel.Nodes.Select(n => n.X).Min();
+            foreach (var node in physicalModel.Nodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
             {
-                writer.WriteMesh(feMesh);
+                double T = +100;
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = T });
             }
 
-            var phasePlotter = new PhasePlotter(physicalModel, geometricModel, -10);
-            phasePlotter.PlotPhases(paths.phasesGeometry);
-
-            var conformingMesh = new ConformingOutputMesh2D(geometricModel, physicalModel.Nodes, physicalModel.Elements);
-            using (var writer = new VtkFileWriter(paths.conformingMesh))
+            // Right side: T = -100
+            double maxX = physicalModel.Nodes.Select(n => n.X).Max();
+            foreach (var node in physicalModel.Nodes.Where(n => Math.Abs(n.X - maxX) <= meshTol))
             {
-                writer.WriteMesh(conformingMesh);
+                double T = node.Y < 0 ? 0.0 : -100;
+                //double T = -100;
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = T });
             }
 
-            phasePlotter.PlotNodes(paths.nodalPhases);
-            phasePlotter.PlotElements(paths.elementPhases, conformingMesh);
+            // Node inside circle
+            //XNode internalNode = model.Nodes.Where(n => (Math.Abs(n.X + 0.4) <= meshTol) && (Math.Abs(n.Y) <= meshTol)).First();
+            //System.Diagnostics.Debug.Assert(internalNode != null);
+            //internalNode.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.1 });
+        }
 
-            // Enrichment
-            var enrichmentPlotter = new EnrichmentPlotter(physicalModel, elementSize);
-            enrichmentPlotter.PlotStepEnrichedNodes(paths.stepEnrichedNodes);
-            if (paths.junctionEnrichedNodes != null) enrichmentPlotter.PlotJunctionEnrichedNodes(paths.junctionEnrichedNodes);
+        private static GeometricModel CreatePhases(int numElementsPerAxis)
+        {
+            // --------C--------
+            // |       |       |
+            // |       |   1   |
+            // |       |       |
+            // |   0   B-------D
+            // |       |       |
+            // |       |   2   |
+            // |       |       |
+            // --------A--------
 
-            // Integration
-            var integrationPlotter = new IntegrationMeshPlotter(physicalModel, geometricModel);
-            integrationPlotter.PlotVolumeIntegrationMesh(paths.volumeIntegrationMesh);
-            integrationPlotter.PlotVolumeIntegrationPoints(paths.volumeIntegrationPoints);
-            integrationPlotter.PlotBoundaryIntegrationMesh(paths.boundaryIntegrationCells, paths.boundaryIntegrationVertices);
-            integrationPlotter.PlotBoundaryIntegrationPoints(paths.boundaryIntegrationPoints);
+            double middleX = 0.5 * (minX + maxX);
+            double middleY = 0.5 * (minY + maxY);
+            var A = new CartesianPoint(middleX, minY);
+            var B = new CartesianPoint(middleX, middleY);
+            var C = new CartesianPoint(middleX, maxY);
+            var D = new CartesianPoint(maxX, middleY);
 
-            // Material
-            var materialPlotter = new MaterialPlotter(physicalModel);
-            materialPlotter.PlotVolumeMaterials(paths.volumeIntegrationMaterials);
-            materialPlotter.PlotBoundaryMaterials(paths.boundaryIntegrationMaterials);
-            materialPlotter.PlotBoundaryPhaseJumpCoefficients(paths.boundaryIntegrationPhaseJumps);
+            // Define phases
+            var phase0 = new ConvexPhase(0);
+            var phase1 = new ConvexPhase(1);
+            var phase2 = new ConvexPhase(2);
 
-            // Plot temperature
-            using (var writer = new Logging.VTK.VtkPointWriter(paths.temperatureAtNodes))
-            {
-                var temperatureField = new TemperatureAtNodesField(physicalModel);
-                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
-            }
-            using (var writer = new Logging.VTK.VtkPointWriter(paths.temperatureAtGaussPoints))
-            {
-                var temperatureField = new TemperatureAtGaussPointsField(physicalModel);
-                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
-            }
-            using (var writer = new VtkFileWriter(paths.temperatureField))
-            {
-                var temperatureField = new TemperatureField2D(physicalModel, conformingMesh);
-                writer.WriteMesh(conformingMesh);
-                writer.WriteScalarField("temperature", conformingMesh, temperatureField.CalcValuesAtVertices(solution));
-            }
-            using (var writer = new Logging.VTK.VtkPointWriter(paths.heatFluxAtGaussPoints))
-            {
-                var fluxField = new HeatFluxAtGaussPointsField(physicalModel);
-                writer.WriteVector2DField("heat_flux", fluxField.CalcValuesAtVertices(solution));
-            }
+            // Create boundaries and associate them with their phases
+            var AB = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(A, B), phase0, phase2);
+            var BC = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(B, C), phase0, phase1);
+            var BD = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(B, D), phase1, phase2);
+
+            // Initialize model
+            var geometricModel = new GeometricModel();
+            double elementSize = (maxX - minX) / numElementsPerAxis;
+            geometricModel.MeshTolerance = new UserDefinedMeshTolerance(elementSize);
+            geometricModel.Phases.Add(phase0);
+            geometricModel.Phases.Add(phase1);
+            geometricModel.Phases.Add(phase2);
+
+            return geometricModel;
         }
 
         private static XModel CreatePhysicalModel(GeometricModel geometricModel, bool integrationWithSubtriangles,
@@ -185,28 +189,118 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             return physicalModel;
         }
 
-        private static void ApplyBoundaryConditions(XModel physicalModel)
+        private static void EnrichCustom(XModel physicalModel, GeometricModel geometricModel)
         {
-            double meshTol = 1E-7;
+            // --------C--------
+            // |       |       |
+            // |       |   1   |
+            // |       |       |
+            // |   0   B-------D
+            // |       |       |
+            // |       |   2   |
+            // |       |       |
+            // --------A--------
 
-            // Left side: T = +100
-            double minX = physicalModel.Nodes.Select(n => n.X).Min();
-            foreach (var node in physicalModel.Nodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
+            IPhase phase0 = geometricModel.Phases[0];
+            IPhase phase1 = geometricModel.Phases[1];
+            IPhase phase2 = geometricModel.Phases[2];
+            var heavisideMain = new DauxHeavisideEnrichment(0, phase0);
+            var heavisideSecondary = new DauxHeavisideEnrichment(1, phase1);
+            var junctionSecondary = new DauxJunctionEnrichment(2, phase0, phase1, phase2);
+
+            List<XNode> nodes = physicalModel.Nodes;
+            var heavisideMainNodes = new HashSet<XNode>();
+            heavisideMainNodes.Add(nodes[1]);
+            heavisideMainNodes.Add(nodes[2]);
+            heavisideMainNodes.Add(nodes[5]);
+            heavisideMainNodes.Add(nodes[6]);
+            heavisideMainNodes.Add(nodes[9]);
+            heavisideMainNodes.Add(nodes[10]);
+            heavisideMainNodes.Add(nodes[13]);
+            heavisideMainNodes.Add(nodes[14]);
+            foreach (XNode node in heavisideMainNodes) node.Enrichments[heavisideMain] = heavisideMain.EvaluateAt(node);
+
+            var heavisideSecondaryNodes = new HashSet<XNode>();
+            heavisideSecondaryNodes.Add(nodes[7]);
+            heavisideSecondaryNodes.Add(nodes[11]);
+            foreach (XNode node in heavisideSecondaryNodes)
             {
-                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = +100 });
+                node.Enrichments[heavisideSecondary] = heavisideSecondary.EvaluateAt(node);
             }
 
-            // Right side: T = -100
-            double maxX = physicalModel.Nodes.Select(n => n.X).Max();
-            foreach (var node in physicalModel.Nodes.Where(n => Math.Abs(n.X - maxX) <= meshTol))
+            var junctionSecondaryNodes = new HashSet<XNode>();
+            junctionSecondaryNodes.Add(nodes[5]);
+            junctionSecondaryNodes.Add(nodes[6]);
+            junctionSecondaryNodes.Add(nodes[9]);
+            junctionSecondaryNodes.Add(nodes[10]);
+            foreach (XNode node in junctionSecondaryNodes)
             {
-                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = -100 });
+                node.Enrichments[junctionSecondary] = junctionSecondary.EvaluateAt(node);
+            }
+        }
+
+        private static void PlotPhasesInteractions(GeometricModel geometricModel, XModel physicalModel, OutputPaths paths,
+            double elementSize, IVectorView solution)
+        {
+
+            var feMesh = new ContinuousOutputMesh<XNode>(physicalModel.Nodes, physicalModel.Elements);
+            using (var writer = new VtkFileWriter(paths.finiteElementMesh))
+            {
+                writer.WriteMesh(feMesh);
             }
 
-            // Node inside circle
-            //XNode internalNode = model.Nodes.Where(n => (Math.Abs(n.X + 0.4) <= meshTol) && (Math.Abs(n.Y) <= meshTol)).First();
-            //System.Diagnostics.Debug.Assert(internalNode != null);
-            //internalNode.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.1 });
+            var phasePlotter = new PhasePlotter(physicalModel, geometricModel, -10);
+            phasePlotter.PlotPhases(paths.phasesGeometry);
+
+            var conformingMesh = new ConformingOutputMesh2D(geometricModel, physicalModel.Nodes, physicalModel.Elements);
+            using (var writer = new VtkFileWriter(paths.conformingMesh))
+            {
+                writer.WriteMesh(conformingMesh);
+            }
+
+            phasePlotter.PlotNodes(paths.nodalPhases);
+            phasePlotter.PlotElements(paths.elementPhases, conformingMesh);
+
+            // Enrichment
+            var enrichmentPlotter = new EnrichmentPlotter(physicalModel, elementSize);
+            enrichmentPlotter.PlotStepEnrichedNodes(paths.stepEnrichedNodes);
+            if (paths.junctionEnrichedNodes != null) enrichmentPlotter.PlotJunctionEnrichedNodes(paths.junctionEnrichedNodes);
+
+            // Integration
+            var integrationPlotter = new IntegrationMeshPlotter(physicalModel, geometricModel);
+            integrationPlotter.PlotVolumeIntegrationMesh(paths.volumeIntegrationMesh);
+            integrationPlotter.PlotVolumeIntegrationPoints(paths.volumeIntegrationPoints);
+            integrationPlotter.PlotBoundaryIntegrationMesh(paths.boundaryIntegrationCells, paths.boundaryIntegrationVertices);
+            integrationPlotter.PlotBoundaryIntegrationPoints(paths.boundaryIntegrationPoints);
+
+            // Material
+            var materialPlotter = new MaterialPlotter(physicalModel);
+            materialPlotter.PlotVolumeMaterials(paths.volumeIntegrationMaterials);
+            materialPlotter.PlotBoundaryMaterials(paths.boundaryIntegrationMaterials);
+            //materialPlotter.PlotBoundaryPhaseJumpCoefficients(paths.boundaryIntegrationPhaseJumps);
+
+            // Plot temperature
+            using (var writer = new Logging.VTK.VtkPointWriter(paths.temperatureAtNodes))
+            {
+                var temperatureField = new TemperatureAtNodesField(physicalModel);
+                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
+            }
+            using (var writer = new Logging.VTK.VtkPointWriter(paths.temperatureAtGaussPoints))
+            {
+                var temperatureField = new TemperatureAtGaussPointsField(physicalModel);
+                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
+            }
+            using (var writer = new VtkFileWriter(paths.temperatureField))
+            {
+                var temperatureField = new TemperatureField2D(physicalModel, conformingMesh);
+                writer.WriteMesh(conformingMesh);
+                writer.WriteScalarField("temperature", conformingMesh, temperatureField.CalcValuesAtVertices(solution));
+            }
+            using (var writer = new Logging.VTK.VtkPointWriter(paths.heatFluxAtGaussPoints))
+            {
+                var fluxField = new HeatFluxAtGaussPointsField(physicalModel);
+                writer.WriteVector2DField("heat_flux", fluxField.CalcValuesAtVertices(solution));
+            }
         }
 
         private static void PrepareForAnalysis(XModel physicalModel, GeometricModel geometricModel,
@@ -220,18 +314,11 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
 
             ISingularityResolver singularityResolver = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
             var nodeEnricher = new NodeEnricher(geometricModel, singularityResolver);
-            nodeEnricher.ApplyEnrichments();
+            //nodeEnricher.ApplyEnrichments();
+            EnrichCustom(physicalModel, geometricModel);
 
             physicalModel.UpdateDofs();
             physicalModel.UpdateMaterials();
-        }
-
-        private static void EnrichCustom(XModel physicalModel, GeometricModel geometricModel)
-        {
-            List<XNode> nodes = physicalModel.Nodes;
-
-            var heaviside01 = new DauxHeavisideEnrichment(geometricModel.Phases[0]);
-            nodes[1].Enrichments;
         }
 
         private static IVectorView RunAnalysis(XModel physicalModel)
@@ -246,9 +333,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             staticAnalyzer.Solve();
 
             #region debug
-            string path = @"C:\Users\Serafeim\Desktop\HEAT\debug\Kglob.txt";
-            var writer = new LinearAlgebra.Output.FullMatrixWriter();
-            writer.WriteToFile(solver.LinearSystems[0].Matrix, path);
+            //string path = @"C:\Users\Serafeim\Desktop\HEAT\debug\Kglob.txt";
+            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+            //writer.WriteToFile(solver.LinearSystems[0].Matrix, path);
             #endregion
 
             return solver.LinearSystems[subdomainID].Solution;
