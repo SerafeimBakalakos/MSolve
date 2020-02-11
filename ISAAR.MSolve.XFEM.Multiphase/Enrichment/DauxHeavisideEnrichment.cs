@@ -40,27 +40,16 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
             if (phaseAtPoint == phasePlus) return +1;
             else return -1;
         }
+        public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
+        {
+            if (phaseBoundary.PositivePhase == this.phasePlus) return +2;
+            else return -2;
+        }
 
         public bool IsAppliedDueTo(PhaseBoundary phaseBoundary)
         {
             if ((phaseBoundary.PositivePhase == this.phasePlus) || (phaseBoundary.NegativePhase == this.phasePlus)) return true;
             else return false;
-        }
-
-        private static (IPhase minPhase, IPhase maxPhase) FindMinMaxPhases(IPhase phase1, IPhase phase2)
-        {
-            IPhase minPhase, maxPhase;
-            if (phase1.ID < phase2.ID)
-            {
-                minPhase = phase1;
-                maxPhase = phase2;
-            }
-            else
-            {
-                minPhase = phase2;
-                maxPhase = phase1;
-            }
-            return (minPhase, maxPhase);
         }
     }
 }

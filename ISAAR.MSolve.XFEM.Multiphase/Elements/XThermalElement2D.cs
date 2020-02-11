@@ -285,11 +285,11 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
             {
                 (Matrix Kee, Matrix Kse) = BuildConductivityMatricesEnriched();
                 #region debug
-                //if (PhaseIntersections.Count > 0)
-                //{
-                //    Matrix Kii = BuildConductivityMatrixBoundary();
-                //    Kee.AddIntoThis(Kii);
-                //}
+                if (PhaseIntersections.Count > 0)
+                {
+                    Matrix Kii = BuildConductivityMatrixBoundary();
+                    Kee.AddIntoThis(Kii);
+                }
                 #endregion
                 Ktotal = JoinStiffnesses(Kss, Kee, Kse);
             }
@@ -330,6 +330,32 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
             return (Kee, Kse);
         }
 
+        //private Matrix BuildConductivityMatrixBoundaryOLD()
+        //{
+        //    var Kii = Matrix.CreateZero(numEnrichedDofs, numEnrichedDofs);
+        //    foreach (var boundaryGaussPointsPair in gaussPointsBoundary)
+        //    {
+        //        PhaseBoundary boundary = boundaryGaussPointsPair.Key;
+        //        IReadOnlyList<GaussPoint> gaussPoints = boundaryGaussPointsPair.Value;
+        //        ThermalInterfaceMaterial[] materials = materialsAtGPsBoundary[boundary];
+
+        //        // Kii = sum(conductivity * jumpCoeff^2 * N^T * N * weight * thickness)
+        //        double phaseJumpCoeff = boundary.Enrichment.PhaseJumpCoefficient;
+        //        double commonCoeff = phaseJumpCoeff * phaseJumpCoeff * Thickness;
+        //        for (int i = 0; i < gaussPoints.Count; ++i)
+        //        {
+        //            GaussPoint gaussPoint = gaussPoints[i];
+        //            double interfaceConductivity = materials[i].InterfaceConductivity;
+        //            double scale = commonCoeff * interfaceConductivity * gaussPoint.Weight;
+
+        //            Vector N = CalculateEnrichedShapeFunctionVector(gaussPoint, boundary);
+        //            Matrix NtN = N.TensorProduct(N);
+        //            Kii.AxpyIntoThis(NtN, scale);
+        //        }
+        //    }
+        //    return Kii;
+        //}
+
         private Matrix BuildConductivityMatrixBoundary()
         {
             var Kii = Matrix.CreateZero(numEnrichedDofs, numEnrichedDofs);
@@ -339,14 +365,12 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
                 IReadOnlyList<GaussPoint> gaussPoints = boundaryGaussPointsPair.Value;
                 ThermalInterfaceMaterial[] materials = materialsAtGPsBoundary[boundary];
 
-                // Kii = sum(conductivity * jumpCoeff^2 * N^T * N * weight * thickness)
-                double phaseJumpCoeff = boundary.Enrichment.PhaseJumpCoefficient;
-                double commonCoeff = phaseJumpCoeff * phaseJumpCoeff * Thickness;
+                // Kii = sum(conductivity * N^T * N * weight * thickness)
                 for (int i = 0; i < gaussPoints.Count; ++i)
                 {
                     GaussPoint gaussPoint = gaussPoints[i];
                     double interfaceConductivity = materials[i].InterfaceConductivity;
-                    double scale = commonCoeff * interfaceConductivity * gaussPoint.Weight;
+                    double scale = Thickness * interfaceConductivity * gaussPoint.Weight;
 
                     Vector N = CalculateEnrichedShapeFunctionVector(gaussPoint, boundary);
                     Matrix NtN = N.TensorProduct(N);
@@ -511,6 +535,44 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
             return evalInterpolation.ShapeGradientsCartesian.Transpose();
         }
 
+        ///// <summary>
+        ///// The contour integral along a phase boundary is calculated for the enriched dofs that were applied due to that 
+        ///// boundary. For example, if there are 2 boundaries and all 3 nodes of the element are enriched due to them, then the 6
+        ///// enriched dofs are [node1Boundary1, node1Boundary2, node2Boundary1, node2Boundary2, node3Boundary1, node3Boundary2].
+        ///// When integrating along boundary 1 we will compute N^T*N, where N(6x1) = [N1 0 N2 0 N3 0]. If we integrate along
+        ///// boundary 2, then N(6x1) = [0 N1 0 N2 0 N3]. 
+        ///// 
+        ///// Therefore when integrating along a specific boundary, then for every enriched dof of each node i, we need to find 
+        ///// if the enrichment was applied due to that boundary. If yes, the corresponding index of the total shape function 
+        ///// array gets the value Ni. Otherwise it remains 0. 
+        ///// 
+        ///// The whole thing also takes care of a) blending enrichments due to boundaries in other elements, 
+        ///// b) rare cases where one or more nodes were not enriched like the rest, because their nodal support was almost 
+        ///// entirely in one of the two regions.
+        ///// </summary>
+        //private Vector CalculateEnrichedShapeFunctionVectorOLD(NaturalPoint gaussPoint, PhaseBoundary boundary)
+        //{
+        //    //TODO: Optimize this: The mapping should be done once per enrichment ane reused for all Gauss points.
+        //    //      See an attempt at MapEnrichedDofIndicesToNodeIndices().
+
+        //    Vector totalShapeFunctions = Vector.CreateZero(numEnrichedDofs);
+        //    double[] N = InterpolationStandard.EvaluateFunctionsAt(gaussPoint);
+        //    int idx = 0;
+        //    for (int n = 0; n < Nodes.Count; ++n)
+        //    {
+        //        XNode node = Nodes[n];
+        //        //TODO: VERY FRAGILE CODE. This order of enrichments was used to determine the order of enriched dofs in 
+        //        //      another method. It works as of the time of writing, but this dependency must be removed. Perhaps use a 
+        //        //      DofTable.
+        //        foreach (IEnrichment enrichment in node.Enrichments.Keys) 
+        //        {
+        //            if (enrichment.IsAppliedDueTo(boundary)) totalShapeFunctions[idx] = N[n];
+        //            ++idx; // always move to the next index in the total shape function array
+        //        }
+        //    }
+        //    return totalShapeFunctions;
+        //}
+
         /// <summary>
         /// The contour integral along a phase boundary is calculated for the enriched dofs that were applied due to that 
         /// boundary. For example, if there are 2 boundaries and all 3 nodes of the element are enriched due to them, then the 6
@@ -540,9 +602,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
                 //TODO: VERY FRAGILE CODE. This order of enrichments was used to determine the order of enriched dofs in 
                 //      another method. It works as of the time of writing, but this dependency must be removed. Perhaps use a 
                 //      DofTable.
-                foreach (IEnrichment enrichment in node.Enrichments.Keys) 
+                foreach (IEnrichment enrichment in node.Enrichments.Keys)
                 {
-                    if (enrichment.IsAppliedDueTo(boundary)) totalShapeFunctions[idx] = N[n];
+                    double phaseJump = enrichment.GetJumpCoefficientBetween(boundary);
+                    totalShapeFunctions[idx] = phaseJump * N[n];
                     ++idx; // always move to the next index in the total shape function array
                 }
             }

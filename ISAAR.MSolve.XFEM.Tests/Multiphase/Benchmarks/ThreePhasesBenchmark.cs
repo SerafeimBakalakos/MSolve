@@ -41,8 +41,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             int numElementsX = 3, numElementsY = 3;
             double elementSize = (maxX - minX) / numElementsX;
             bool integrationWithSubtriangles = true;
-            double conductivity0 = 1E2, conductivity1 = 1E2, conductivity2 = 1E8;
-            double interface01Conductivity = 0/*1E10*/, interface02Conductivity = 0/*1E10*/, interface12Conductivity = 0/*1E10*/;
+            double conductivity0 = 1E2, conductivity1 = 1E3, conductivity2 = 1E3;
+            double interface01Conductivity = 1E10, interface02Conductivity = 1E10, interface12Conductivity = 1E10;
+            int numJunctions = 3;
             double singularityRelativeAreaTolerance = 1E-4;
             string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\ThreePhases";
 
@@ -69,7 +70,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
                 materialField);
 
             // Analysis
-            PrepareForAnalysis(physicalModel, geometricModel, singularityRelativeAreaTolerance);
+            PrepareForAnalysis(physicalModel, geometricModel, numJunctions, singularityRelativeAreaTolerance);
             IVectorView solution = RunAnalysis(physicalModel);
 
             //Plots
@@ -94,8 +95,8 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             double maxX = physicalModel.Nodes.Select(n => n.X).Max();
             foreach (var node in physicalModel.Nodes.Where(n => Math.Abs(n.X - maxX) <= meshTol))
             {
-                double T = node.Y < 0 ? 0.0 : -100;
-                //double T = -100;
+                //double T = node.Y < 0 ? 0.0 : -100;
+                double T = -100;
                 node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = T });
             }
 
@@ -189,7 +190,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             return physicalModel;
         }
 
-        private static void EnrichCustom(XModel physicalModel, GeometricModel geometricModel)
+        private static void EnrichDaux(XModel physicalModel, GeometricModel geometricModel)
         {
             // --------C--------
             // |       |       |
@@ -236,6 +237,104 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             foreach (XNode node in junctionSecondaryNodes)
             {
                 node.Enrichments[junctionSecondary] = junctionSecondary.EvaluateAt(node);
+            }
+        }
+
+        private static void Enrich2Junctions(XModel physicalModel, GeometricModel geometricModel)
+        {
+            // --------C--------
+            // |       |       |
+            // |       |   1   |
+            // |       |       |
+            // |   0   B-------D
+            // |       |       |
+            // |       |   2   |
+            // |       |       |
+            // --------A--------
+
+            IPhase phase0 = geometricModel.Phases[0];
+            IPhase phase1 = geometricModel.Phases[1];
+            IPhase phase2 = geometricModel.Phases[2];
+            var heavisideMain = new DauxHeavisideEnrichment(0, phase0);
+            var heavisideSecondary = new DauxHeavisideEnrichment(1, phase1);
+            var junction12 = new DauxJunctionEnrichment(2, phase0, phase1, phase2);
+            var junction01 = new DauxJunctionEnrichment(3, phase2, phase1, phase0);
+
+            List<XNode> nodes = physicalModel.Nodes;
+            var heavisideMainNodes = new HashSet<XNode>();
+            heavisideMainNodes.Add(nodes[1]);
+            heavisideMainNodes.Add(nodes[2]);
+            heavisideMainNodes.Add(nodes[13]);
+            heavisideMainNodes.Add(nodes[14]);
+            foreach (XNode node in heavisideMainNodes) node.Enrichments[heavisideMain] = heavisideMain.EvaluateAt(node);
+
+            var heavisideSecondaryNodes = new HashSet<XNode>();
+            heavisideSecondaryNodes.Add(nodes[7]);
+            heavisideSecondaryNodes.Add(nodes[11]);
+            foreach (XNode node in heavisideSecondaryNodes)
+            {
+                node.Enrichments[heavisideSecondary] = heavisideSecondary.EvaluateAt(node);
+            }
+
+            var junctionNodes = new HashSet<XNode>();
+            junctionNodes.Add(nodes[5]);
+            junctionNodes.Add(nodes[6]);
+            junctionNodes.Add(nodes[9]);
+            junctionNodes.Add(nodes[10]);
+            foreach (XNode node in junctionNodes)
+            {
+                node.Enrichments[junction12] = junction12.EvaluateAt(node);
+                node.Enrichments[junction01] = junction01.EvaluateAt(node);
+            }
+        }
+
+        private static void Enrich3Junctions(XModel physicalModel, GeometricModel geometricModel)
+        {
+            // --------C--------
+            // |       |       |
+            // |       |   1   |
+            // |       |       |
+            // |   0   B-------D
+            // |       |       |
+            // |       |   2   |
+            // |       |       |
+            // --------A--------
+
+            IPhase phase0 = geometricModel.Phases[0];
+            IPhase phase1 = geometricModel.Phases[1];
+            IPhase phase2 = geometricModel.Phases[2];
+            var heavisideMain = new DauxHeavisideEnrichment(0, phase0);
+            var heavisideSecondary = new DauxHeavisideEnrichment(1, phase1);
+            var junction12 = new DauxJunctionEnrichment(2, phase0, phase1, phase2);
+            var junction01 = new DauxJunctionEnrichment(3, phase2, phase1, phase0);
+            var junction02 = new DauxJunctionEnrichment(4, phase1, phase2, phase0);
+
+            List<XNode> nodes = physicalModel.Nodes;
+            var heavisideMainNodes = new HashSet<XNode>();
+            heavisideMainNodes.Add(nodes[1]);
+            heavisideMainNodes.Add(nodes[2]);
+            heavisideMainNodes.Add(nodes[13]);
+            heavisideMainNodes.Add(nodes[14]);
+            foreach (XNode node in heavisideMainNodes) node.Enrichments[heavisideMain] = heavisideMain.EvaluateAt(node);
+
+            var heavisideSecondaryNodes = new HashSet<XNode>();
+            heavisideSecondaryNodes.Add(nodes[7]);
+            heavisideSecondaryNodes.Add(nodes[11]);
+            foreach (XNode node in heavisideSecondaryNodes)
+            {
+                node.Enrichments[heavisideSecondary] = heavisideSecondary.EvaluateAt(node);
+            }
+
+            var junctionNodes = new HashSet<XNode>();
+            junctionNodes.Add(nodes[5]);
+            junctionNodes.Add(nodes[6]);
+            junctionNodes.Add(nodes[9]);
+            junctionNodes.Add(nodes[10]);
+            foreach (XNode node in junctionNodes)
+            {
+                node.Enrichments[junction12] = junction12.EvaluateAt(node);
+                node.Enrichments[junction01] = junction01.EvaluateAt(node);
+                node.Enrichments[junction02] = junction02.EvaluateAt(node);
             }
         }
 
@@ -303,7 +402,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             }
         }
 
-        private static void PrepareForAnalysis(XModel physicalModel, GeometricModel geometricModel,
+        private static void PrepareForAnalysis(XModel physicalModel, GeometricModel geometricModel, int numJunctions,
             double singularityRelativeAreaTolerance)
         {
             physicalModel.ConnectDataStructures();
@@ -315,7 +414,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             ISingularityResolver singularityResolver = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
             var nodeEnricher = new NodeEnricher(geometricModel, singularityResolver);
             //nodeEnricher.ApplyEnrichments();
-            EnrichCustom(physicalModel, geometricModel);
+            if (numJunctions == 1) EnrichDaux(physicalModel, geometricModel);
+            else if (numJunctions == 2) Enrich2Junctions(physicalModel, geometricModel);
+            else if (numJunctions == 1) Enrich3Junctions(physicalModel, geometricModel);
 
             physicalModel.UpdateDofs();
             physicalModel.UpdateMaterials();

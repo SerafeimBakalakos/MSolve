@@ -73,5 +73,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
             }
             return (minPhase, maxPhase);
         }
+
+        public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

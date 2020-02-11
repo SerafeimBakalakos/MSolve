@@ -79,6 +79,11 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
             //return descendingPhases[lastPhase];
         }
 
+        public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool IsAppliedDueTo(PhaseBoundary phaseBoundary) => boundaries.Contains(phaseBoundary);
 
         private class PhaseComparer : IComparer<IPhase>
