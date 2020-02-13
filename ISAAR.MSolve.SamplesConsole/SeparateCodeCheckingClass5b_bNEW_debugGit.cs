@@ -52,20 +52,21 @@ namespace ISAAR.MSolve.SamplesConsole
     {//check unpushed changes commit
 
         //prosthiki model.ConnectDataStructures entos rve gia na vrei to output node.Subdomains =/=0
-        public static (Model, double[], Vector) RunExample()
+        public static (Model, double[], Vector, bool) RunExample()
         {
             // EPILOGH RVE
-            int subdiscr1 = 4;// 4;// 6;
-            int discr1 = 2;// 3;//4;
-            // int discr2 dn xrhsimopoieitai
-            int discr3 = discr1 * subdiscr1;// 23;
-            int subdiscr1_shell = 6;//14;
-            int discr1_shell = 1;
-            int graphene_sheets_number =2; //periektikothta 0.525% 
+            int subdiscr1;//= 4;// 4;// 6;
+            int discr1;//= 2;// 3;//4;
 
-            double scale_factor = 1; //PROSOXH
+            int discr3;//= discr1 * subdiscr1;// 23;
+            int subdiscr1_shell;//= 6;//14;
+            int discr1_shell;// = 1;
+            int graphene_sheets_number;// =2; //periektikothta 0.525% 
+            double scale_factor;//= 1; //PROSOXH
 
             (subdiscr1, discr1, subdiscr1_shell, discr1_shell, graphene_sheets_number, scale_factor) = GetGrRveExampleDiscrDataFromFile(new CnstValues());
+            discr3 = discr1 * subdiscr1;
+
             //tvra ginontai scale input tou mpgp = getRe... methodou
             graphene_sheets_number = (int)Math.Floor(scale_factor * scale_factor * scale_factor * graphene_sheets_number);
             subdiscr1 = (int)Math.Floor(scale_factor * subdiscr1);
@@ -370,15 +371,18 @@ namespace ISAAR.MSolve.SamplesConsole
                 node_counter++;
             }
             //(new ISAAR.MSolve.LinearAlgebra.Output.Array1DWriter()).WriteToFile(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution.txt");
+            bool IsFetiDpSolver3d = false; 
             if (fetiSolver is FetiDP3dSolverSerial)
             {
                 DdmCalculationsGeneral.WriteToFileVector(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_fetiDP3D.txt");
                 DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_fetiDP3D.txt");
+                IsFetiDpSolver3d = true;
             }
             else
             {
                 DdmCalculationsGeneral.WriteToFileVector(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_fetiDP.txt");
                 DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_fetiDP.txt");
+                IsFetiDpSolver3d = true;
             }
             #endregion
 
@@ -424,14 +428,14 @@ namespace ISAAR.MSolve.SamplesConsole
             }
             #endregion
 
-            return (model, uc, globalU);
+            return (model, uc, globalU, IsFetiDpSolver3d);
 
         }
 
         private static (int subdiscr1, int discr1, int subdiscr1_shell, int discr1_shell, int graphene_sheets_number, double scale_factor)  GetGrRveExampleDiscrDataFromFile(CnstValues cnstValues)
         {
-            int[] discrData = ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.ReadIntVector(cnstValues + @"discretizationData" + ".txt");
-            double[] modelScaleFactor = MultiscaleAnalysis.SupportiveClasses.PrintUtilities.ReadVector(cnstValues + @"modelScalingFactor" + ".txt");
+            int[] discrData = ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.ReadIntVector(cnstValues.exampleDiscrInputPathGen + @"\subdiscr1_discr1_ subdiscr1_shell_discr1_shell_graphene_sheets_number" + ".txt");
+            double[] modelScaleFactor = MultiscaleAnalysis.SupportiveClasses.PrintUtilities.ReadVector(cnstValues.exampleDiscrInputPathGen + @"\modelScalingFactor" + ".txt");
 
             return (discrData[0], discrData[1], discrData[2], discrData[3], discrData[4], modelScaleFactor[0]);
         }

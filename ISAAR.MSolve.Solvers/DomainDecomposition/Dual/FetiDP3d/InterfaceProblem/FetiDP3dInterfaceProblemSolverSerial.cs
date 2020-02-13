@@ -136,6 +136,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
             logger.LogIterativeAlgorithm(stats.NumIterationsRequired, stats.ResidualNormRatioEstimation);
 
+
+
             #region debug
             int nIter = stats.NumIterationsRequired;
 
@@ -146,6 +148,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             string pathErrorLagranges = (new CnstValues()).solverPath + @"\a_errorLagranges_LU_iters_fetiDP3D.txt";
             new LinearAlgebra.Output.FullVectorWriter().WriteToFile(Vector.CreateFromArray(new double[] { errorLagranges, (double)nIter }), pathErrorLagranges);
 
+            if((new CnstValues()).printInterfaceSolutionStats) { PrintInterfaceSolverStats(nC, nL, nIter, errorLagranges,
+                isFIrrInvertible, isFIrrPosDef,isPcgMatrixInvertible, isPcgMatrixPosDef); }
+
             //Vector resDirect = pcgRhs - pcgMatrixExplicit * lagrangesDirect;
             //double normResDirect = resDirect.Norm2();
 
@@ -155,6 +160,26 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             //return lagrangesDirect;
             #endregion
             return lagranges;
+        }
+
+        private void PrintInterfaceSolverStats(int nC, int nL, int nIter, double errorLagranges, 
+            bool isFIrrInvertible, bool isFIrrPosDef, bool isPcgMatrixInvertible, bool isPcgMatrixPosDef)
+        {
+            string[] statsLines = new string[] { "nCornerDofs=" + nC.ToString() + ",",
+            "nLagranges=" + nL.ToString() + ",",
+            "pcgIterations=" + nIter.ToString() + ",",
+            "errorLagranges=" + errorLagranges.ToString() + ",",
+            "isFIrrInvertible=" + isFIrrInvertible.ToString() + ",",
+            "isFIrrPosDef=" + isFIrrInvertible.ToString() + ",",
+            "isPcgMatrixInvertible=" + isPcgMatrixInvertible.ToString() + ",",
+            "isPcgMatrixPosDef=" + isPcgMatrixPosDef.ToString() + ",",
+
+            };
+
+            var cnstVal = new CnstValues();
+            var statsOutputPath = cnstVal.interfaceSolverStatsPath + @"\interfaceSolver_FetiDP_3d_stats.txt";
+            cnstVal.WriteToFileStringArray(statsLines, statsOutputPath);
+
         }
 
         private Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility, 

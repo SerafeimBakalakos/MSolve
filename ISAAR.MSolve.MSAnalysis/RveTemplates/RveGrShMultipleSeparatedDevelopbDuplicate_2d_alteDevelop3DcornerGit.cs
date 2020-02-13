@@ -25,6 +25,7 @@ using System.Linq;
 using ISAAR.MSolve.MSAnalysis.SupportiveClasses;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 
 namespace ISAAR.MSolve.MultiscaleAnalysis
 {
@@ -176,10 +177,14 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             //if (path == 2) subdomainOutputPath_gen = @"C:\Users\turbo-x\Desktop\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\2d_alte\RVE_database\rve_no_{0}";
             var run_new_corner = false;
             if (run_new_corner)
-            { subdomainOutputPath_gen = @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\examples\example1\input_matlab"; }
+            { //subdomainOutputPath_gen = @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\examples\example3\input_matlab";
+                subdomainOutputPath_gen = (new CnstValues()).exampleOutputPathGen ;
+            }
             //{ subdomainOutputPath_gen = @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\REF2_10__000_renu_new_multiple_algorithms_check_develop_gia_fe2_3grsh_4182dofs_multiple2b_debug_corner\RVE_database\rve_no_{0}"; }
             else
-            { subdomainOutputPath_gen = @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\examples\example1\input_matlab"; }
+            { //subdomainOutputPath_gen = @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\examples\example3\input_matlab";
+                subdomainOutputPath_gen = (new CnstValues()).exampleOutputPathGen;
+            }
             //{ subdomainOutputPath_gen = @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\REF2_10__000_renu_new_multiple_algorithms_check_develop_gia_fe2_3grsh_4182dofs_multiple2b_debug_corner\RVE_database\rve_no_{0}"; }
             subdomainOutputPath = subdomainOutputPath_gen;
             if (path == 3) renumbering_vector_path = subdomainOutputPath_gen + @"\geometry_model\generated_ox_sunol_vecs\sunol_nodes_numbering.txt";
