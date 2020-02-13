@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
@@ -47,10 +48,27 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 
             SignedBooleanMatrixColMajor Br = lagrangeEnumerator.GetBooleanMatrix(subdomain);
             UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
+            //Matrix Br_explicit = Br.MultiplyRight(Matrix.CreateIdentity(Br.NumColumns));
+            // Bc_explicit = Bc.MultiplyRight(Matrix.CreateIdentity(Bc.NumColumns));
+            var writer = new LinearAlgebra.Output.FullMatrixWriter();
+            string pathBr = (new CnstValues()).debugString + @"\Inte_Test_Br_subd2.txt";
+            string pathBc = (new CnstValues()).debugString + @"\Inte_Test_Bc_subd2.txt";
+            //string pathBr = (new CnstValues()).debugString + @"\Main_Br_subd2.txt";
+            //string pathBc = (new CnstValues()).debugString + @"\Main_Test_Bc_subd2.txt";
+
+            //writer.WriteToFile(Br, pathBr);
+            //writer.WriteToFile(Bc, pathBc);
+
+            //Matrix Krc_explicit = MultiplyWithIdentity(Br.NumColumns, Bc.NumRows, (x, y) => y.CopyFrom(matrixManager.MultiplyKrcTimes(x)));
+            // Bc_explicit = Bc.MultiplyRight(Matrix.CreateIdentity(Bc.NumColumns));
+
+
             Vector temp = Bc.Multiply(vector);
             temp = matrixManager.MultiplyKrcTimes(temp);
             temp = matrixManager.MultiplyInverseKrrTimes(temp);
             return Br.Multiply(temp);
+
+
         }
 
         public Vector MultiplySubdomainFIrcTransposed(Vector lagranges)
@@ -101,5 +119,21 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
                 return this.cachedInvKrrTimesBrTimesLagranges;
             }
         }
+
+        #region debug 
+        public static Matrix MultiplyWithIdentity(int numRows, int numCols, Action<Vector, Vector> matrixVectorMultiplication)
+        {
+            var result = Matrix.CreateZero(numRows, numCols);
+            for (int j = 0; j < numCols; ++j)
+            {
+                var lhs = Vector.CreateZero(numCols);
+                lhs[j] = 1.0;
+                var rhs = Vector.CreateZero(numRows);
+                matrixVectorMultiplication(lhs, rhs);
+                result.SetSubcolumn(j, rhs);
+            }
+            return result;
+        }
+        #endregion
     }
 }

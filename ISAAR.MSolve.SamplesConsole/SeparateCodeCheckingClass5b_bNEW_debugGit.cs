@@ -40,6 +40,11 @@ using ISAAR.MSolve.SamplesConsole.SupportiveClasses;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
+using ISAAR.MSolve.Analyzers.Loading;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 namespace ISAAR.MSolve.SamplesConsole
 {
@@ -47,7 +52,7 @@ namespace ISAAR.MSolve.SamplesConsole
     {//check unpushed changes commit
 
         //prosthiki model.ConnectDataStructures entos rve gia na vrei to output node.Subdomains =/=0
-        public static (Model, double[]) RunExample()
+        public static (Model, double[], Vector) RunExample()
         {
             // EPILOGH RVE
             int subdiscr1 = 4;// 4;// 6;
@@ -59,6 +64,8 @@ namespace ISAAR.MSolve.SamplesConsole
             int graphene_sheets_number =2; //periektikothta 0.525% 
 
             double scale_factor = 1; //PROSOXH
+
+            (subdiscr1, discr1, subdiscr1_shell, discr1_shell, graphene_sheets_number, scale_factor) = GetGrRveExampleDiscrDataFromFile(new CnstValues());
             //tvra ginontai scale input tou mpgp = getRe... methodou
             graphene_sheets_number = (int)Math.Floor(scale_factor * scale_factor * scale_factor * graphene_sheets_number);
             subdiscr1 = (int)Math.Floor(scale_factor * subdiscr1);
@@ -103,8 +110,19 @@ namespace ISAAR.MSolve.SamplesConsole
             };
             model.Loads.Add(load1);
             var cornerNodesAndSubds = rveBuilder.CornerNodesIdAndsubdomains;
+            model.ConnectDataStructures();
 
             Dictionary<int, HashSet<INode>> cornerNodes = rveBuilder.cornerNodes;
+            Dictionary<ISubdomain, HashSet<INode>> extraConstrNodesofsubd = new Dictionary<ISubdomain, HashSet<INode>>();
+            foreach (Subdomain subd in model.Subdomains) extraConstrNodesofsubd.Add((ISubdomain)subd, new HashSet<INode>());
+            foreach(var extraConstrNodeList in rveBuilder.extraConstraintsNoeds)
+            {
+                int extraNodeId = extraConstrNodeList[0];
+                foreach (var subd in model.NodesDictionary[extraNodeId].SubdomainsDictionary.Values)
+                {
+                    extraConstrNodesofsubd[subd].Add(model.NodesDictionary[extraNodeId]);
+                }
+            }
             #endregion
 
 
@@ -113,8 +131,8 @@ namespace ISAAR.MSolve.SamplesConsole
             //Setup solver
             var pcgSettings = new PcgSettings()
             {
-                ConvergenceTolerance = 1E-5,
-                MaxIterationsProvider = new FixedMaxIterationsProvider(100)
+                ConvergenceTolerance = 1E-4,
+                MaxIterationsProvider = new FixedMaxIterationsProvider(1000)
             };
             var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(new OrderingAmdSuiteSparse());
             //var fetiMatrices = new SkylineFetiDPSubdomainMatrixManager.Factory();
@@ -123,18 +141,37 @@ namespace ISAAR.MSolve.SamplesConsole
             var cornerNodes_ = cornerNodes.Select(x => ((ISubdomain)model.SubdomainsDictionary[x.Key], x.Value)).ToDictionary(x => x.Item1, x => x.Value);
 
             var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes_);
-            var fetiSolverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);
+            var midSideNodeSelection = new UserDefinedMidsideNodes(extraConstrNodesofsubd, new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ });
+            
+            var fetiSolverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);  //A.3
+            //var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();   //A.3
+            //var fetiSolverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);  //A.3
+
             //fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
             fetiSolverBuilder.ProblemIsHomogeneous = true; //TODO
             fetiSolverBuilder.Preconditioning = new DirichletPreconditioning();
-            FetiDPSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection);
+            fetiSolverBuilder.PcgSettings = pcgSettings;
+
+            Crosspoints crosspoints = Crosspoints.FullyRedundant; //A.2
+            //Crosspoints crosspoints = Crosspoints.Minimum; //A.2
+
+            ICrosspointStrategy crosspointStrategy;
+            crosspointStrategy = new MinimumConstraints();
+            if (crosspoints == Crosspoints.FullyRedundant) crosspointStrategy = new FullyRedundantConstraints();
+            fetiSolverBuilder.CrosspointStrategy = crosspointStrategy;
+
+            FetiDPSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection); //A.1
+            //FetiDP3dSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection, midSideNodeSelection); //A.1
+
             //FetiDPSolverPrint fetiSolver = fetiSolverBuilder.BuildSolver(model);
-            
+            //model.ConnectDataStructures();
+
             // Run the analysis
-            var problem = new ProblemStructural(model, (ISolver)fetiSolver);
-            var linearAnalyzer = new LinearAnalyzer(model, (ISolver)fetiSolver, problem);
-            var staticAnalyzer = new StaticAnalyzer(model, (ISolver)fetiSolver, problem, linearAnalyzer);
-            staticAnalyzer.Initialize();
+            //var problem = new ProblemStructural(model, (ISolver)fetiSolver);
+            //var linearAnalyzer = new LinearAnalyzer(model, (ISolver)fetiSolver, problem);
+            //var staticAnalyzer = new StaticAnalyzer(model, (ISolver)fetiSolver, problem, linearAnalyzer);
+            //staticAnalyzer.Initialize();
+            RunAnalysis(model, fetiSolver); // apo to paradeigma ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.IntegrationTests.FetiDPSolverSerialTests.RunAnalysis()
             #endregion
 
 
@@ -302,7 +339,7 @@ namespace ISAAR.MSolve.SamplesConsole
             #endregion
             
 
-            staticAnalyzer.Solve();
+            //staticAnalyzer.Solve();
 
 
             #region  Gather the global displacements
@@ -333,12 +370,20 @@ namespace ISAAR.MSolve.SamplesConsole
                 node_counter++;
             }
             //(new ISAAR.MSolve.LinearAlgebra.Output.Array1DWriter()).WriteToFile(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution.txt");
-            DdmCalculationsGeneral.WriteToFileVector(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution.txt");
-            DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution.txt");
+            if (fetiSolver is FetiDP3dSolverSerial)
+            {
+                DdmCalculationsGeneral.WriteToFileVector(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_fetiDP3D.txt");
+                DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_fetiDP3D.txt");
+            }
+            else
+            {
+                DdmCalculationsGeneral.WriteToFileVector(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_fetiDP.txt");
+                DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_fetiDP.txt");
+            }
             #endregion
 
             #region  overwrite data model region
-            bool run_overwrite_data_region = true;
+            bool run_overwrite_data_region = false;
             bool print_hexa_model = false;
             if (run_overwrite_data_region)
             {
@@ -379,8 +424,33 @@ namespace ISAAR.MSolve.SamplesConsole
             }
             #endregion
 
-            return (model, uc);
+            return (model, uc, globalU);
 
+        }
+
+        private static (int subdiscr1, int discr1, int subdiscr1_shell, int discr1_shell, int graphene_sheets_number, double scale_factor)  GetGrRveExampleDiscrDataFromFile(CnstValues cnstValues)
+        {
+            int[] discrData = ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.ReadIntVector(cnstValues + @"discretizationData" + ".txt");
+            double[] modelScaleFactor = MultiscaleAnalysis.SupportiveClasses.PrintUtilities.ReadVector(cnstValues + @"modelScalingFactor" + ".txt");
+
+            return (discrData[0], discrData[1], discrData[2], discrData[3], discrData[4], modelScaleFactor[0]);
+        }
+
+        internal static void RunAnalysis(IModel model, ISolverMpi solver)
+        {
+            // Run the analysis
+            solver.OrderDofs(false);
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                linearSystem.Reset(); // Necessary to define the linear system's size 
+                linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
+                linearSystem.RhsVector = linearSystem.Subdomain.Forces;
+            }
+            solver.BuildGlobalMatrix(new ElementStructuralStiffnessProvider());
+            model.ApplyLoads();
+            LoadingUtilities.ApplyNodalLoads(model, solver);
+            solver.Solve();
         }
 
         private static Dictionary<int, int[]> OmmitZeros(Dictionary<int, int[]> extraConstrIdAndTheirBRNodesTheseis)
@@ -526,23 +596,23 @@ namespace ISAAR.MSolve.SamplesConsole
             return ExtraConstrIdAndTheirBRNodesTheseis;
         }
         //needs to be corrected rve_multiple -> b kai to path kai ta stoixeia diakritopoihshs pou einai afhmena exwterika (Genika elegxoume connectDataStructures kai defineAppropriateConstraintsForBoundaryNodes)
-        public static (Model, double[]) RunExampleSerial()
+        public static (Model, double[], Vector) RunExampleSerial()
         {
             // EPILOGH RVE
-            int subdiscr1 = 2;// 4;// 6;
+            int subdiscr1 = 4;// 4;// 6;
             int discr1 = 2;// 3;//4;
             // int discr2 dn xrhsimopoieitai
             int discr3 = discr1 * subdiscr1;// 23;
             int subdiscr1_shell = 6;//14;
             int discr1_shell = 1;
-            int graphene_sheets_number = 0; //periektikothta 0.525% 
+            int graphene_sheets_number = 2; //periektikothta 0.525% 
 
             double scale_factor = 1;
             //tvra ginontai scale input tou mpgp = getRe... methodou
             graphene_sheets_number = (int)Math.Floor(scale_factor * scale_factor * scale_factor * graphene_sheets_number);
             subdiscr1 = (int)Math.Floor(scale_factor * subdiscr1);
 
-
+            (subdiscr1, discr1, subdiscr1_shell, discr1_shell, graphene_sheets_number, scale_factor) = GetGrRveExampleDiscrDataFromFile(new CnstValues());
             Tuple<rveMatrixParameters, grapheneSheetParameters> mpgp = SeperateIntegrationClassCheck.GetReferenceKanonikhGewmetriaRveExampleParametersStiffCase(subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell);
             //mpgp.Item2.E_shell = 0.0000001;
             mpgp.Item1.L01 = scale_factor * 90; mpgp.Item1.L02 = scale_factor * 90; mpgp.Item1.L03 = scale_factor * 90;
@@ -662,6 +732,7 @@ namespace ISAAR.MSolve.SamplesConsole
             #endregion
 
             var globalU = solver.LinearSystems[1].Solution.CopyToArray();// fetiSolver.GatherGlobalDisplacements(sudomainDisplacements);
+            
             double[] uc = new double[3 * CornerNodesIds.Count()];
 
             int node_counter = 0;
@@ -679,8 +750,10 @@ namespace ISAAR.MSolve.SamplesConsole
                 }
                 node_counter++;
             }
+            DdmCalculationsGeneral.WriteToFileVector(globalU, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_Direct.txt");
+            DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_Direct.txt");
 
-            return (model, uc);
+            return (model, uc, Vector.CreateFromArray(globalU));
         }
 
         public static void printElementStiffnessAndData(Model model)
@@ -728,6 +801,8 @@ namespace ISAAR.MSolve.SamplesConsole
             }
             return array2;
         }
+
+        public enum Crosspoints { Minimum, FullyRedundant }
 
     }
 }

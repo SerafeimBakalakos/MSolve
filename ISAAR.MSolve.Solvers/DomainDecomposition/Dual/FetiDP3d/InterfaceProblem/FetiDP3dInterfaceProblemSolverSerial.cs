@@ -58,65 +58,69 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             #region debug
             int nL = lagranges.Length;
             int nC = matrixManager.CoarseProblemRhs.Length;
-            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+            var writer = new LinearAlgebra.Output.FullMatrixWriter();
 
-            //string pathRhs = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\rhs.txt";
-            ////new LinearAlgebra.Output.FullVectorWriter().WriteToFile(pcgRhs, pathRhs);
+            string pathRhs = (new CnstValues()).solverPath + @"\a_pcg_rhs_fetiDP3D.txt";
+            new LinearAlgebra.Output.FullVectorWriter().WriteToFile(pcgRhs, pathRhs);
             ////LinearAlgebra.LibrarySettings.LinearAlgebraProviders = LinearAlgebra.LinearAlgebraProviderChoice.MKL;
 
             //// Process FIrr
-            //Matrix FIrr = MultiplyWithIdentity(nL, nL, flexibility.MultiplyGlobalFIrr);
-            //FIrr = 0.5 * (FIrr + FIrr.Transpose());
-            //SkylineMatrix skyFIrr = SkylineMatrix.CreateFromMatrix(FIrr);
-            //string pathFIrr = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\FIrr.txt";
-            ////writer.WriteToFile(FIrr, pathFIrr);
+            Matrix FIrr = MultiplyWithIdentity(nL, nL, flexibility.MultiplyGlobalFIrr);
+            FIrr = 0.5 * (FIrr + FIrr.Transpose());
+            SkylineMatrix skyFIrr = SkylineMatrix.CreateFromMatrix(FIrr);
+            string pathFIrr = (new CnstValues()).solverPath + @"\a_FIrr_fetiDP3D.txt";
+            string pathFIrc = (new CnstValues()).solverPath + @"\a_FIrc_fetiDP3D.txt";
+            writer.WriteToFile(FIrr, pathFIrr);
+            Matrix FIrc = MultiplyWithIdentity(nL, nC, (x, y) => y.CopyFrom(flexibility.MultiplyGlobalFIrc(x)));
+            writer.WriteToFile(FIrr, pathFIrc);
+
             //(Matrix rrefFIrr, List<int> independentColsFIrr) = FIrr.ReducedRowEchelonForm();
 
-            //bool isFIrrInvertible = false;
-            //double detFIrr = double.NaN;
-            //try
-            //{
-            //    detFIrr = FIrr.CalcDeterminant();
-            //    isFIrrInvertible = true;
-            //}
-            //catch (Exception) { }
+            bool isFIrrInvertible = false;
+            double detFIrr = double.NaN;
+            try
+            {
+                detFIrr = FIrr.CalcDeterminant();
+                isFIrrInvertible = true;
+            }
+            catch (Exception) { }
 
 
-            //bool isFIrrPosDef = false;
-            //try
-            //{
-            //    double tol = 1E-50;
-            //    var FIrrFactorized = skyFIrr.FactorCholesky(false, tol);
-            //    isFIrrPosDef = true;
-            //}
-            //catch (Exception) { }
+            bool isFIrrPosDef = false;
+            try
+            {
+                double tol = 1E-50;
+                var FIrrFactorized = skyFIrr.FactorCholesky(false, tol);
+                isFIrrPosDef = true;
+            }
+            catch (Exception) { }
 
 
             //// Process PCG matrix
-            //Matrix pcgMatrixExplicit = MultiplyWithIdentity(nL, nL, pcgMatrix.Multiply);
-            //pcgMatrixExplicit = 0.5 * (pcgMatrixExplicit + pcgMatrixExplicit.Transpose());
-            //SkylineMatrix skyPcgMatrix = SkylineMatrix.CreateFromMatrix(pcgMatrixExplicit);
-            //string pathPcgMatrix = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\pcg_matrix.txt";
-            ////writer.WriteToFile(pcgMatrixExplicit, pathPcgMatrix);
+            Matrix pcgMatrixExplicit = MultiplyWithIdentity(nL, nL, pcgMatrix.Multiply);
+            pcgMatrixExplicit = 0.5 * (pcgMatrixExplicit + pcgMatrixExplicit.Transpose());
+            SkylineMatrix skyPcgMatrix = SkylineMatrix.CreateFromMatrix(pcgMatrixExplicit);
+            string pathPcgMatrix = (new CnstValues()).solverPath + @"\a_pcgMAT_fetiDP3D.txt";
+            writer.WriteToFile(pcgMatrixExplicit, pathPcgMatrix);
             //(Matrix rref, List<int> independentCols) = pcgMatrixExplicit.ReducedRowEchelonForm();
 
-            //bool isPcgMatrixInvertible = false;
-            //double detPcgMatrix = double.NaN;
-            //try
-            //{
-            //    detPcgMatrix = pcgMatrixExplicit.CalcDeterminant();
-            //    isPcgMatrixInvertible = true;
-            //}
-            //catch (Exception) { }
+            bool isPcgMatrixInvertible = false;
+            double detPcgMatrix = double.NaN;
+            try
+            {
+                detPcgMatrix = pcgMatrixExplicit.CalcDeterminant();
+                isPcgMatrixInvertible = true;
+            }
+            catch (Exception) { }
 
-            //bool isPcgMatrixPosDef = false;
-            //try
-            //{
-            //    double tol = 1E-50;
-            //    var pcgMatrixFactorized = skyPcgMatrix.FactorCholesky(false, tol);
-            //    isPcgMatrixPosDef = true;
-            //}
-            //catch (Exception) { }
+            bool isPcgMatrixPosDef = false;
+            try
+            {
+                double tol = 1E-50;
+                var pcgMatrixFactorized = skyPcgMatrix.FactorCholesky(false, tol);
+                isPcgMatrixPosDef = true;
+            }
+            catch (Exception) { }
             #endregion
 
             // Solve the interface problem using PCG algorithm
@@ -136,9 +140,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             int nIter = stats.NumIterationsRequired;
 
             // Lagranges from LU
-            //var lagrangesDirect = Vector.CreateZero(nL);
-            //pcgMatrixExplicit.FactorLU(false).SolveLinearSystem(pcgRhs, lagrangesDirect);
-            //double errorLagranges = (lagranges - lagrangesDirect).Norm2() / lagrangesDirect.Norm2();
+            var lagrangesDirect = Vector.CreateZero(nL);
+            pcgMatrixExplicit.FactorLU(false).SolveLinearSystem(pcgRhs, lagrangesDirect);
+            double errorLagranges = (lagranges - lagrangesDirect).Norm2() / lagrangesDirect.Norm2();
+            string pathErrorLagranges = (new CnstValues()).solverPath + @"\a_errorLagranges_LU_iters_fetiDP3D.txt";
+            new LinearAlgebra.Output.FullVectorWriter().WriteToFile(Vector.CreateFromArray(new double[] { errorLagranges, (double)nIter }), pathErrorLagranges);
 
             //Vector resDirect = pcgRhs - pcgMatrixExplicit * lagrangesDirect;
             //double normResDirect = resDirect.Norm2();

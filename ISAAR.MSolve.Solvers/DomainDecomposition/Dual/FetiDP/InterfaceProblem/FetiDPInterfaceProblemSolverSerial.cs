@@ -1,11 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using System.Text;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Iterative;
 using ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
@@ -45,65 +51,138 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             #region debug
             int nL = lagranges.Length;
             int nC = matrixManager.CoarseProblemRhs.Length;
-            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+            var writer = new LinearAlgebra.Output.FullMatrixWriter();
 
-            //string pathRhs = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\rhs.txt";
-            ////new LinearAlgebra.Output.FullVectorWriter().WriteToFile(pcgRhs, pathRhs);
+            string pathRhs = (new CnstValues()).solverPath+ @"\a_pcg_rhs_fetiDP.txt";
+            new LinearAlgebra.Output.FullVectorWriter().WriteToFile(pcgRhs, pathRhs);
             ////LinearAlgebra.LibrarySettings.LinearAlgebraProviders = LinearAlgebra.LinearAlgebraProviderChoice.MKL;
 
             //// Process FIrr
-            //Matrix FIrr = MultiplyWithIdentity(nL, nL, flexibility.MultiplyGlobalFIrr);
-            //FIrr = 0.5 * (FIrr + FIrr.Transpose());
-            //SkylineMatrix skyFIrr = SkylineMatrix.CreateFromMatrix(FIrr);
-            //string pathFIrr = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\FIrr.txt";
-            ////writer.WriteToFile(FIrr, pathFIrr);
+            Matrix FIrr = MultiplyWithIdentity(nL, nL, flexibility.MultiplyGlobalFIrr);
+            FIrr = 0.5 * (FIrr + FIrr.Transpose());
+            SkylineMatrix skyFIrr = SkylineMatrix.CreateFromMatrix(FIrr);
+            string pathFIrr = (new CnstValues()).solverPath + @"\a_FIrr_fetiDP.txt";
+            string pathFIrc = (new CnstValues()).solverPath + @"\a_FIrc_fetiDP.txt";
+            writer.WriteToFile(FIrr, pathFIrr);
+            Matrix FIrc = MultiplyWithIdentity(nL, nC, (x, y) => y.CopyFrom(flexibility.MultiplyGlobalFIrc(x)));
+            writer.WriteToFile(FIrr, pathFIrc);
+
             //(Matrix rrefFIrr, List<int> independentColsFIrr) = FIrr.ReducedRowEchelonForm();
 
-            //bool isFIrrInvertible = false;
-            //double detFIrr = double.NaN;
-            //try
-            //{
-            //    detFIrr = FIrr.CalcDeterminant();
-            //    isFIrrInvertible = true;
-            //}
-            //catch (Exception) { }
+            bool isFIrrInvertible = false;
+            double detFIrr = double.NaN;
+            try
+            {
+                detFIrr = FIrr.CalcDeterminant();
+                isFIrrInvertible = true;
+            }
+            catch (Exception) { }
 
 
-            //bool isFIrrPosDef = false;
-            //try
-            //{
-            //    double tol = 1E-50;
-            //    var FIrrFactorized = skyFIrr.FactorCholesky(false, tol);
-            //    isFIrrPosDef = true;
-            //}
-            //catch (Exception) { }
+            bool isFIrrPosDef = false;
+            try
+            {
+                double tol = 1E-50;
+                var FIrrFactorized = skyFIrr.FactorCholesky(false, tol);
+                isFIrrPosDef = true;
+            }
+            catch (Exception) { }
 
 
             //// Process PCG matrix
-            //Matrix pcgMatrixExplicit = MultiplyWithIdentity(nL, nL, pcgMatrix.Multiply);
-            //pcgMatrixExplicit = 0.5 * (pcgMatrixExplicit + pcgMatrixExplicit.Transpose());
-            //SkylineMatrix skyPcgMatrix = SkylineMatrix.CreateFromMatrix(pcgMatrixExplicit);
-            //string pathPcgMatrix = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\pcg_matrix.txt";
-            ////writer.WriteToFile(pcgMatrixExplicit, pathPcgMatrix);
+            Matrix pcgMatrixExplicit = MultiplyWithIdentity(nL, nL, pcgMatrix.Multiply);
+            pcgMatrixExplicit = 0.5 * (pcgMatrixExplicit + pcgMatrixExplicit.Transpose());
+            SkylineMatrix skyPcgMatrix = SkylineMatrix.CreateFromMatrix(pcgMatrixExplicit);
+            string pathPcgMatrix = (new CnstValues()).solverPath + @"\a_pcgMAT_fetiDP.txt";
+            writer.WriteToFile(pcgMatrixExplicit, pathPcgMatrix);
             //(Matrix rref, List<int> independentCols) = pcgMatrixExplicit.ReducedRowEchelonForm();
 
-            //bool isPcgMatrixInvertible = false;
-            //double detPcgMatrix = double.NaN;
-            //try
-            //{
-            //    detPcgMatrix = pcgMatrixExplicit.CalcDeterminant();
-            //    isPcgMatrixInvertible = true;
-            //}
-            //catch (Exception) { }
+            var nodeCoords = new double[3] { -22.5, -22.5, -22.5 };
+            int nodeId = ((Model)model).NodesDictionary.Values.Where(x => ((x.X1 == nodeCoords[0]) && (x.X2 == nodeCoords[1]) && (x.X3 == nodeCoords[2]))).ToList().ElementAt(0).ID;
+            int subdID = ((Model)model).NodesDictionary[nodeId].SubdomainsDictionary.ElementAt(0).Key;
+            var nodeCoords2 = new double[3] { 0, -22.5, -22.5 };
+            int nodeId2 = ((Model)model).NodesDictionary.Values.Where(x => ((x.X1 == nodeCoords2[0]) && (x.X2 == nodeCoords2[1]) && (x.X3 == nodeCoords2[2]))).ToList().ElementAt(0).ID;
+            var cornerNodeCoords = new double[3] { 0, 0, 0 };
+            int cornerNodeId = ((Model)model).NodesDictionary.Values.Where(x => ((x.X1 == cornerNodeCoords[0]) && (x.X2 == cornerNodeCoords[1]) && (x.X3 == cornerNodeCoords[2]))).ToList().ElementAt(0).ID;
+            var orddering= ((FetiDPDofSeparatorSerial)((LagrangeMultipliersEnumeratorSerial)lagrangesEnumerator).dofSeparator).GetCornerDofOrdering(model.GetSubdomain(subdID));
+            int corner_dof_x = orddering[model.GetNode(cornerNodeId), StructuralDof.TranslationX];
 
-            //bool isPcgMatrixPosDef = false;
-            //try
-            //{
-            //    double tol = 1E-50;
-            //    var pcgMatrixFactorized = skyPcgMatrix.FactorCholesky(false, tol);
-            //    isPcgMatrixPosDef = true;
-            //}
-            //catch (Exception) { }
+            int node2_x_lagrange_ID =0;// = lagrangesEnumerator. 
+            for (int i1 = 0; i1 < lagrangesEnumerator.LagrangeMultipliers.Count(); i1++)
+            {
+                int LagrangeNodeID = lagrangesEnumerator.LagrangeMultipliers[i1].Node.ID;
+                var LagrangeDoftype = lagrangesEnumerator.LagrangeMultipliers[i1].DofType;
+                if ((LagrangeNodeID== nodeId2) && (LagrangeDoftype==StructuralDof.TranslationX))
+                {
+                    node2_x_lagrange_ID = i1;
+                }
+            }
+
+            double node2_x_pcg_mat_value = pcgMatrixExplicit[node2_x_lagrange_ID, node2_x_lagrange_ID];
+            double node2_x_pcg_rhs_value = pcgRhs[node2_x_lagrange_ID];
+
+            var crossPointCoords = new double[3][] { new double[3] { -22.5, 0, 0 }, new double[3] { 0, -22.5, 0 }, new double[3] { 0, 0, -22.5 } };
+            int[] crossPointIds = crossPointCoords.Select(x => ((Model)model).NodesDictionary.Values.Where(y => ((y.X1 == x[0]) && y.X2 == x[1]) && (y.X3 == x[2])).ToList().ElementAt(0).ID).ToArray();
+            List<int> cross_point_lagranges_ID = new List<int>();
+            for (int i1 = 0; i1 < lagrangesEnumerator.LagrangeMultipliers.Count(); i1++)
+            {
+                int LagrangeNodeID = lagrangesEnumerator.LagrangeMultipliers[i1].Node.ID;
+                var LagrangeDoftype = lagrangesEnumerator.LagrangeMultipliers[i1].DofType;
+                if ((LagrangeNodeID == crossPointIds[0]) && (LagrangeDoftype == StructuralDof.TranslationX)) //TODO 2
+                {
+                    cross_point_lagranges_ID.Add(i1);
+                }
+            }
+            double[] crossPoint_x_pcg_mat_values = cross_point_lagranges_ID.Select(x => pcgMatrixExplicit[x, x]).ToArray();
+            double[] crossPoint_x_pcg_rhs_values = cross_point_lagranges_ID.Select(x => pcgRhs[x]).ToArray(); //DIAFORETIKO
+            double[] crossPoint_x_pcg_Dr_values = cross_point_lagranges_ID.Select(x => globalDr[x]).ToArray();
+
+            double[] crossPoint_x_Firr_mat_values = cross_point_lagranges_ID.Select(x => FIrr[x, x]).ToArray();
+            double[] crossPoint_x_node_2_x_Firr_mat_values = cross_point_lagranges_ID.Select(x => FIrr[x, node2_x_lagrange_ID]).ToArray();
+            double node_2_x_Firr_values = FIrr[node2_x_lagrange_ID, node2_x_lagrange_ID];
+            double[] crossPoint_x_Firc_rhs_values = cross_point_lagranges_ID.Select(x => FIrc[x, corner_dof_x]).ToArray();
+
+            /*// Use reflection to set the necessary matrices
+            var ch01 = matrixManager.GetFetiDPSubdomainMatrixManager(model.GetSubdomain(subdID));
+            FieldInfo fi;
+            fi = typeof(FetiDPSubdomainMatrixManagerSkyline).GetField("Krr", BindingFlags.NonPublic | BindingFlags.Instance);
+            SkylineMatrix Krr =(SkylineMatrix)(fi.GetValue(ch01));
+
+            fi = typeof(FetiDPSubdomainMatrixManagerSkyline).GetField("Krc", BindingFlags.NonPublic | BindingFlags.Instance);
+            CscMatrix Krc = (CscMatrix)(fi.GetValue(ch01));
+
+            var dofSeparator = ((FetiDPFlexibilityMatrixSerial)flexibility).dofSeparator;
+            DofTable subdRemainderDofs = dofSeparator.GetRemainderDofOrdering(model.GetSubdomain(subdID));
+            DofTable subdCornerDofs = dofSeparator.GetCornerDofOrdering(model.GetSubdomain(subdID));
+
+            int cornerNode_xdof_order = subdCornerDofs[model.GetNode(cornerNodeId), StructuralDof.TranslationX];
+            int node2_remainder_xdof_order = subdRemainderDofs[model.GetNode(nodeId2), StructuralDof.TranslationX];
+
+            double krc_value = Krc[node2_remainder_xdof_order, cornerNode_xdof_order];
+            double krr_value = Krr[node2_remainder_xdof_order, node2_remainder_xdof_order]; */
+
+
+            //double node2_x_Krr_value = 
+
+
+
+            bool isPcgMatrixInvertible = false;
+            double detPcgMatrix = double.NaN;
+            try
+            {
+                detPcgMatrix = pcgMatrixExplicit.CalcDeterminant();
+                isPcgMatrixInvertible = true;
+            }
+            catch (Exception) { }
+
+            bool isPcgMatrixPosDef = false;
+            try
+            {
+                double tol = 1E-50;
+                var pcgMatrixFactorized = skyPcgMatrix.FactorCholesky(false, tol);
+                isPcgMatrixPosDef = true;
+            }
+            catch (Exception) { }
             #endregion
 
             // Solve the interface problem using PCG algorithm
@@ -123,9 +202,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             int nIter = stats.NumIterationsRequired;
 
             //// Lagranges from LU
-            //var lagrangesDirect = Vector.CreateZero(nL);
-            //pcgMatrixExplicit.FactorLU(false).SolveLinearSystem(pcgRhs, lagrangesDirect);
-            //double errorLagranges = (lagranges - lagrangesDirect).Norm2() / lagrangesDirect.Norm2();
+            Debug.WriteLine($"PCG total Iterations number = {nIter}");
+            var lagrangesDirect = Vector.CreateZero(nL);
+            pcgMatrixExplicit.FactorLU(false).SolveLinearSystem(pcgRhs, lagrangesDirect);
+            double errorLagranges = (lagranges - lagrangesDirect).Norm2() / lagrangesDirect.Norm2();
+            string pathErrorLagranges = (new CnstValues()).solverPath + @"\a_errorLagranges_LU_iters_fetiDP.txt";
+            new LinearAlgebra.Output.FullVectorWriter().WriteToFile(Vector.CreateFromArray(new double[] { errorLagranges, (double)nIter }), pathErrorLagranges);
+
 
             //return lagrangesDirect;
             #endregion

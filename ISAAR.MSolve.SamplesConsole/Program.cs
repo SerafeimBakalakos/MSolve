@@ -11,6 +11,8 @@ using ISAAR.MSolve.Solvers.Tests.Utilities;
 using MGroup.Stochastic;
 using MGroup.Stochastic.Structural;
 using MGroup.Stochastic.Structural.Example;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
+using System.Linq;
 
 namespace ISAAR.MSolve.SamplesConsole
 {
@@ -20,9 +22,25 @@ namespace ISAAR.MSolve.SamplesConsole
 
         static void Main(string[] args)
         {
-            SeparateCodeCheckingClass5b_bNEW_debugGit.RunExample();
+            (Model model1, double[] uc1, Vector globalU1) = SeparateCodeCheckingClass5b_bNEW_debugGit.RunExample();
+            (Model model2, double[] uc2, Vector globalU2) =SeparateCodeCheckingClass5b_bNEW_debugGit.RunExampleSerial();
+            //var freeNodesIds = model1.NodesDictionary.Values.Where(x => x.Constraints.Count == 0).Select(x=>x.ID).ToList();
+            var freeNodesIds = model1.GlobalDofOrdering.GlobalFreeDofs.GetRows().Select(x => x.ID);
+            var glU1_2 = Vector.CreateZero(globalU1.Length);
+            foreach(int nodeID in freeNodesIds)
+            {
+                foreach(var dof in model2.GlobalDofOrdering.GlobalFreeDofs.GetDataOfRow(model2.GetNode(nodeID)).Keys)
+                {
+                    int model1Dof_order = model1.GlobalDofOrdering.GlobalFreeDofs[model1.GetNode(nodeID), dof];
+                    int model2Dof_order = model2.GlobalDofOrdering.GlobalFreeDofs[model2.GetNode(nodeID), dof];
 
+                    glU1_2[model1Dof_order] = globalU2[model2Dof_order];
+                }
+            }
+            var check = ((globalU1 - glU1_2).Norm2()) / (globalU1.Norm2());
+            var check2 = (globalU1 - glU1_2);
 
+            double maxErrValue = check2.CopyToArray().Max();
 
 
 
