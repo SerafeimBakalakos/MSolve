@@ -144,9 +144,9 @@ namespace ISAAR.MSolve.SamplesConsole
             var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes_);
             var midSideNodeSelection = new UserDefinedMidsideNodes(extraConstrNodesofsubd, new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ });
             
-            var fetiSolverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);  //A.3
-            //var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();   //A.3
-            //var fetiSolverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);  //A.3
+            //var fetiSolverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);  //A.3
+            var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();   //A.3
+            var fetiSolverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);  //A.3
 
             //fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
             fetiSolverBuilder.ProblemIsHomogeneous = true; //TODO
@@ -161,8 +161,8 @@ namespace ISAAR.MSolve.SamplesConsole
             if (crosspoints == Crosspoints.FullyRedundant) crosspointStrategy = new FullyRedundantConstraints();
             fetiSolverBuilder.CrosspointStrategy = crosspointStrategy;
 
-            FetiDPSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection); //A.1
-            //FetiDP3dSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection, midSideNodeSelection); //A.1
+            //FetiDPSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection); //A.1
+            FetiDP3dSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection, midSideNodeSelection); //A.1
 
             //FetiDPSolverPrint fetiSolver = fetiSolverBuilder.BuildSolver(model);
             //model.ConnectDataStructures();
