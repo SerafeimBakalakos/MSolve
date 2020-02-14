@@ -52,6 +52,8 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         public List<List<int>> extraConstraintsNoeds { get; set; }
 
         private bool decomposeModel;
+        public bool useInput = true;
+        
         public Dictionary<int, HashSet<INode>> cornerNodes;
         public ISolver GetAppropriateSolver(Model model)
         {
@@ -218,7 +220,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             #endregion
 
             #region model geometry
-            bool useInput = true;
+            //bool useInput = true;
             bool run_debug = false;
             double b1 = 10; double b2 = 10; double sigma_f = 0.2;
             if (run_debug)
@@ -1112,7 +1114,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
             //create random data for geom (origin:RVEkanoninkhsGewmetriasBuilder.Reference2RVEExample50_000withRenumberingwithInputFromMSOLVE() %637 apo input 4)
             sigma_f = 0.2; // apo to arxeio create_random_data_for_geom_programing_in_C tou fakelou tou parakatw rand data vec path
-            string rand_data_vec_path = @"C:\Users\acivi\Documents\notes_elegxoi_2\develop_random_geometry_Msolve\REF2_50_000_renu_new_multiple_algorithms_check_develop_copy_for_progr_random_direct_in_C\rand_data.txt";
+            string rand_data_vec_path = (new CnstValues()).rand_data_vec_path;
             savedRandomDataClass a = new savedRandomDataClass(PrintUtilities.ReadVector(rand_data_vec_path));
             Tuple<double[], double[], double[][]> RandomDataForGeomGiaSugkekrimenoRand;
 

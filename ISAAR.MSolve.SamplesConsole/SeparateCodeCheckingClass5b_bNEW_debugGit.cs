@@ -82,7 +82,7 @@ namespace ISAAR.MSolve.SamplesConsole
             //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGit(1, true, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-
+            rveBuilder.useInput = false;
             // EPILOGH RVE
             //var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicateDevelop(1, true); //edw ginetai develop h feti dp gia provlhmata 3d
             //var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicateLARGE(1, true);
@@ -603,15 +603,17 @@ namespace ISAAR.MSolve.SamplesConsole
         public static (Model, double[], Vector) RunExampleSerial()
         {
             // EPILOGH RVE
-            int subdiscr1 = 4;// 4;// 6;
-            int discr1 = 2;// 3;//4;
+            int subdiscr1; //= 4;// 4;// 6;
+            int discr1; //= 2;// 3;//4;
             // int discr2 dn xrhsimopoieitai
-            int discr3 = discr1 * subdiscr1;// 23;
-            int subdiscr1_shell = 6;//14;
-            int discr1_shell = 1;
-            int graphene_sheets_number = 2; //periektikothta 0.525% 
+            int discr3;// = discr1 * subdiscr1;// 23;
+            int subdiscr1_shell;// = 6;//14;
+            int discr1_shell;// = 1;
+            int graphene_sheets_number;// = 2; //periektikothta 0.525% 
+            double scale_factor;// = 1;
 
-            double scale_factor = 1;
+            (subdiscr1, discr1, subdiscr1_shell, discr1_shell, graphene_sheets_number, scale_factor) = GetGrRveExampleDiscrDataFromFile(new CnstValues());
+            discr3 = discr1 * subdiscr1;
             //tvra ginontai scale input tou mpgp = getRe... methodou
             graphene_sheets_number = (int)Math.Floor(scale_factor * scale_factor * scale_factor * graphene_sheets_number);
             subdiscr1 = (int)Math.Floor(scale_factor * subdiscr1);
@@ -625,6 +627,7 @@ namespace ISAAR.MSolve.SamplesConsole
 
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGit(1, false, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            rveBuilder.useInput = true;
 
             //var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate(1, false);
             //var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicateLARGE(1, false);
