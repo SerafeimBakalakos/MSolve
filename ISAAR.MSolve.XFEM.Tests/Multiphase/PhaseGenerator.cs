@@ -176,8 +176,11 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase
             int phaseID = 1;
             foreach (Rectangle2D rect in rectangles)
             {
-                var phase = new ConvexPhase((int)Math.Pow(phaseID, 3));
+                var phase = new ConvexPhase(phaseID);
                 ++phaseID;
+                #region debug
+                //if ((phaseID - 1 != 5) && (phaseID - 1 != 2)) continue;
+                #endregion
                 geometricModel.Phases.Add(phase);
                 for (int i = 0; i < 4; ++i)
                 {

@@ -29,16 +29,28 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
     public static class PhasePlots
     {
         private const int numElementsX = 50, numElementsY = 50;
+        //private const int numElementsX = 9, numElementsY = 14;
+        //private const int numElementsX = 18, numElementsY = 28;
+        //private const int numElementsX = 5, numElementsY = 4;
+        //private const int numElementsX = 10, numElementsY = 8;
+        //private const int numElementsX = 4, numElementsY = 3;
+        //private const int numElementsX = 8, numElementsY = 6;
+
         private const int subdomainID = 0;
         private const double minX = -1.0, minY = -1.0, maxX = 1.0, maxY = 1.0;
+        //private const double minX = 0.56, minY = -0.32, maxX = 0.92, maxY = 0.24;
+        //private const double minX = 0.6, minY = -0.24, maxX = 0.8, maxY = -0.08;
+        //private const double minX = 0.6, minY = -0.24, maxX = 0.76, maxY = -0.12;
+        //private const double minX = 0.6, minY = -0.24, maxX = 0.76, maxY = -0.16;
         private const double elementSize = (maxX - minX) / numElementsX;
         private const double thickness = 1.0;
         private static readonly PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
+        //private static readonly PhaseGenerator generator = new PhaseGenerator(-1, +1, 50);
         private const bool integrationWithSubtriangles = true;
         private const double matrixConductivity = 1E0/*1*/, inclusionConductivity = 1E4 /*4*/;
-        private const double matrixInclusionInterfaceConductivity = 1E1/*2*/, inclusionInclusionInterfaceConductivity = 1E3/*3*/;
+        private const double matrixInclusionInterfaceConductivity = 1E10/*2*/, inclusionInclusionInterfaceConductivity = 1E10/*3*/;
         private const double specialHeatCoeff = 1.0;
-        private const double singularityRelativeAreaTolerance = 1E-1;
+        private const double singularityRelativeAreaTolerance = 1E-8;
 
         public static void PlotPercolationPhasesInteractions()
         {

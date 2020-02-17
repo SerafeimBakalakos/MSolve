@@ -52,7 +52,15 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
         }
 
         public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
-            => Math.Abs(phaseBoundary.PositivePhase.ID - phaseBoundary.NegativePhase.ID);
+        {
+            (IPhase boundaryMinPhase, IPhase boundaryMaxPhase) =
+                FindMinMaxPhases(phaseBoundary.PositivePhase, phaseBoundary.NegativePhase);
+            if ((boundaryMinPhase == this.minPhase) && (boundaryMaxPhase == this.maxPhase))
+            {
+                return phaseBoundary.PositivePhase.ID - phaseBoundary.NegativePhase.ID;
+            }
+            else return 0.0;
+        }
 
         public bool IsAppliedDueTo(PhaseBoundary phaseBoundary)
         {

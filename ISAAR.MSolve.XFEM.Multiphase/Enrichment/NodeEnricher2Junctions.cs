@@ -53,6 +53,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                 {
                     //TODO: Shouldn't the boundaries intersect?
                     if (element.Phases.Count <= 2) continue; // Not a junction element
+                    else if (element.PhaseIntersections.Count <= 2) continue; // 3 or more phases, but the boundaries do not intersect
                     PhaseBoundary[] boundaries = element.PhaseIntersections.Keys.ToArray();
 
                     // If there are n boundaries intersecting, then use n-1 junctions

@@ -284,13 +284,16 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
             else
             {
                 (Matrix Kee, Matrix Kse) = BuildConductivityMatricesEnriched();
-                #region debug
                 if (PhaseIntersections.Count > 0)
                 {
                     Matrix Kii = BuildConductivityMatrixBoundary();
+                    #region debug
+                    //string pathΙ = @"C:\Users\Serafeim\Desktop\HEAT\debug\" + $"Kii{element.ID}.txt";
+                    //var writerΙ = new LinearAlgebra.Output.FullMatrixWriter();
+                    //writerΙ.WriteToFile(Kii, pathΙ);
+                    #endregion
                     Kee.AddIntoThis(Kii);
                 }
-                #endregion
                 Ktotal = JoinStiffnesses(Kss, Kee, Kse);
             }
             #region debug

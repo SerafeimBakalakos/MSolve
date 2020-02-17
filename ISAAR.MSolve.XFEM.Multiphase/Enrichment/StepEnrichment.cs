@@ -41,7 +41,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
             if (phaseAtPoint == maxPhase) return +1;
             else
             {
-                Debug.Assert(phaseAtPoint == minPhase);
+                #region debug
+                // Uncomment the next when done
+                #endregion
+                //Debug.Assert(phaseAtPoint == minPhase);
                 return -1;
             }
         }
@@ -62,7 +65,15 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
         #endregion
 
         public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
-            => EvaluateAt(phaseBoundary.PositivePhase) - EvaluateAt(phaseBoundary.NegativePhase);
+        {
+            (IPhase boundaryMinPhase, IPhase boundaryMaxPhase) =
+                FindMinMaxPhases(phaseBoundary.PositivePhase, phaseBoundary.NegativePhase);
+            if ((boundaryMinPhase == this.minPhase) && (boundaryMaxPhase == this.maxPhase))
+            {
+                return EvaluateAt(phaseBoundary.PositivePhase) - EvaluateAt(phaseBoundary.NegativePhase);
+            }
+            else return 0.0;
+        }
 
         public bool IsAppliedDueTo(PhaseBoundary phaseBoundary)
         {

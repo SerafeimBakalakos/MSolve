@@ -56,6 +56,9 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 
         public void InteractWithElements(IEnumerable<IXFiniteElement> elements, IMeshTolerance meshTolerance)
         {
+            //TODO: This does not necessarily provide correct results in coarse meshes. E.g. Scattered benchmark with 20x20 mesh
+
+
             // Only process the elements near the contained nodes. Of course not all of them will be completely inside the phase.
             IEnumerable<IXFiniteElement> nearbyElements = FindNearbyElements();
             foreach (IXFiniteElement element in nearbyElements)
