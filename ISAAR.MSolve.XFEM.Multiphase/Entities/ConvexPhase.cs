@@ -134,7 +134,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
             var nearbyElements = new HashSet<IXFiniteElement>();
 
             // All elements of the contained nodes. 
-            foreach (XNode node in ContainedNodes) nearbyElements.UnionWith(node.ElementsDictionary.Values);
+            foreach (XNode node in ContainedNodes)
+            {
+                nearbyElements.UnionWith(node.ElementsDictionary.Values);
+            }
 
             // However an element that is intersected by just the tip of a phase corner will not be included in the above.
             // We need another layer.

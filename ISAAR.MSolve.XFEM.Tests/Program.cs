@@ -13,6 +13,8 @@ namespace ISAAR.MSolve.XFEM.Tests
         {
             //HomogenizationExamples.RunHomogenizationAnalysis();
 
+            Multiphase.ExamplePhasesFromCsv.Run();
+
             //Multiphase.Singularity.Phases3Elements5.RunTest();
             //Multiphase.Singularity.AngledRectangle.RunTest();
             //Multiphase.Singularity.Phases2Elements3.RunTest();
@@ -21,8 +23,8 @@ namespace ISAAR.MSolve.XFEM.Tests
             //BenchmarkTests.Test2Phases();
             //ThreePhasesBenchmark.RunTest();
 
-            PhasePlots.PlotScatteredPhasesInteractions();
-            PhasePlots.PlotTetrisPhasesInteractions();
+            //PhasePlots.PlotScatteredPhasesInteractions();
+            //PhasePlots.PlotTetrisPhasesInteractions();
             //PhasePlots.PlotPercolationPhasesInteractions();
 
 

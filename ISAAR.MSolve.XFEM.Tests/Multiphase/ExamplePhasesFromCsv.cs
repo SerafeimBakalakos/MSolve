@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Analyzers;
+using ISAAR.MSolve.Analyzers.Multiscale;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
@@ -16,6 +18,7 @@ using ISAAR.MSolve.XFEM.Multiphase.Elements;
 using ISAAR.MSolve.XFEM.Multiphase.Enrichment;
 using ISAAR.MSolve.XFEM.Multiphase.Enrichment.SingularityResolution;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM.Multiphase.Input;
 using ISAAR.MSolve.XFEM.Multiphase.Integration;
 using ISAAR.MSolve.XFEM.Multiphase.Materials;
 using ISAAR.MSolve.XFEM.Multiphase.Plotting;
@@ -23,50 +26,39 @@ using ISAAR.MSolve.XFEM.Multiphase.Plotting.Enrichments;
 using ISAAR.MSolve.XFEM.Multiphase.Plotting.Fields;
 using ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh;
 using ISAAR.MSolve.XFEM.Multiphase.Plotting.Writers;
+using ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting;
 
-namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
+namespace ISAAR.MSolve.XFEM.Tests.Multiphase
 {
-    public static class PhasePlots
+    public static class ExamplePhasesFromCsv
     {
-        private const int numElementsX = 50, numElementsY = 50;
+        private const int numElementsX = 201, numElementsY = 201;
         private const int subdomainID = 0;
-        private const double minX = -1.0, minY = -1.0, maxX = 1.0, maxY = 1.0;
-        private const double elementSize = (maxX - minX) / numElementsX;
         private const double thickness = 1.0;
-        private static readonly PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
         private const bool integrationWithSubtriangles = true;
         private const double matrixConductivity = 1E0/*1*/, inclusionConductivity = 1E4 /*4*/;
-        private const double matrixInclusionInterfaceConductivity = 1E10/*2*/, inclusionInclusionInterfaceConductivity = 1E10/*3*/;
+        private const double matrixInclusionInterfaceConductivity = 1E2/*2*/, inclusionInclusionInterfaceConductivity = 1E3/*3*/;
         private const double specialHeatCoeff = 1.0;
         private const double singularityRelativeAreaTolerance = 1E-8;
+        private const string inputFile = @"C:\Users\Serafeim\Desktop\HEAT\Paper\InputCsv\boundaries.csv";
+        private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\InputCsv";
 
-        public static void PlotPercolationPhasesInteractions()
+        public static void Run()
         {
+            var phaseReader = new PhaseReader(true, 0);
+            GeometricModel geometricModel = phaseReader.ReadPhasesFromFile(inputFile);
+            double elementSize = (phaseReader.MaxX - phaseReader.MinX) / numElementsX;
+            XModel physicalModel = CreatePhysicalModel(geometricModel, 
+                phaseReader.MinX, phaseReader.MinY, phaseReader.MaxX, phaseReader.MaxY);
+
+            physicalModel.ConnectDataStructures();
+            geometricModel.AssossiatePhasesNodes(physicalModel);
+            geometricModel.AssociatePhasesElements(physicalModel);
+            geometricModel.FindConformingMesh(physicalModel);
+
+
             var paths = new OutputPaths();
-            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Percolation");
-            PlotPhasesInteractions(generator.CreatePercolatedTetrisPhases, paths);
-        }
-
-        public static void PlotScatteredPhasesInteractions()
-        {
-            var paths = new OutputPaths();
-            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Scattered");
-            PlotPhasesInteractions(generator.CreateScatterRectangularPhases, paths);
-        }
-
-        public static void PlotTetrisPhasesInteractions()
-        {
-            var paths = new OutputPaths();
-            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Tetris");
-            PlotPhasesInteractions(generator.CreateSingleTetrisPhases, paths);
-        }
-
-        private static void PlotPhasesInteractions(Func<GeometricModel> genPhases, OutputPaths paths)
-        {
-            GeometricModel geometricModel = genPhases();
-            XModel physicalModel = CreatePhysicalModel(geometricModel);
-            PrepareForAnalysis(physicalModel, geometricModel);
-            
+            paths.FillAllForDirectory(outputDirectory);
             var feMesh = new ContinuousOutputMesh<XNode>(physicalModel.Nodes, physicalModel.Elements);
             using (var writer = new VtkFileWriter(paths.finiteElementMesh))
             {
@@ -81,9 +73,15 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             {
                 writer.WriteMesh(conformingMesh);
             }
-
             phasePlotter.PlotNodes(paths.nodalPhases);
             phasePlotter.PlotElements(paths.elementPhases, conformingMesh);
+
+            ISingularityResolver singularityResolver = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+            //var nodeEnricher = new NodeEnricherOLD(geometricModel, singularityResolver);
+            var nodeEnricher = new NodeEnricher2Junctions(geometricModel, singularityResolver);
+            nodeEnricher.ApplyEnrichments();
+            physicalModel.UpdateDofs();
+            physicalModel.UpdateMaterials();
 
             // Enrichment
             var enrichmentPlotter = new EnrichmentPlotter(physicalModel, elementSize);
@@ -101,7 +99,6 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             var materialPlotter = new MaterialPlotter(physicalModel);
             materialPlotter.PlotVolumeMaterials(paths.volumeIntegrationMaterials);
             materialPlotter.PlotBoundaryMaterials(paths.boundaryIntegrationMaterials);
-            //materialPlotter.PlotBoundaryPhaseJumpCoefficients(paths.boundaryIntegrationPhaseJumps);
 
             // Analysis
             IVectorView solution = RunAnalysis(physicalModel);
@@ -128,9 +125,13 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
                 var fluxField = new HeatFluxAtGaussPointsField(physicalModel);
                 writer.WriteVector2DField("heat_flux", fluxField.CalcValuesAtVertices(solution));
             }
+
+            // Homogenization
+            //RunHomogenization(physicalModel, phaseReader.MinX, phaseReader.MinY, phaseReader.MaxX, phaseReader.MaxY);
         }
 
-        private static XModel CreatePhysicalModel(GeometricModel geometricModel)
+        private static XModel CreatePhysicalModel(GeometricModel geometricModel, 
+            double minX, double minY, double maxX, double maxY)
         {
             var physicalModel = new XModel();
             physicalModel.Subdomains[subdomainID] = new XSubdomain(subdomainID);
@@ -198,23 +199,6 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             }
         }
 
-        private static void PrepareForAnalysis(XModel physicalModel, GeometricModel geometricModel)
-        {
-            physicalModel.ConnectDataStructures();
-
-            geometricModel.AssossiatePhasesNodes(physicalModel);
-            geometricModel.AssociatePhasesElements(physicalModel);
-            geometricModel.FindConformingMesh(physicalModel);
-
-            ISingularityResolver singularityResolver = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
-            //var nodeEnricher = new NodeEnricherOLD(geometricModel, singularityResolver);
-            var nodeEnricher = new NodeEnricher2Junctions(geometricModel, singularityResolver);
-            nodeEnricher.ApplyEnrichments();
-
-            physicalModel.UpdateDofs();
-            physicalModel.UpdateMaterials();
-        }
-
         private static IVectorView RunAnalysis(XModel physicalModel)
         {
             SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(physicalModel);
@@ -226,6 +210,23 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             staticAnalyzer.Solve();
 
             return solver.LinearSystems[subdomainID].Solution;
+        }
+
+        private static void RunHomogenization(XModel physicalModel, double minX, double minY, double maxX, double maxY)
+        {
+            // Analysis
+            Vector2 temperatureGradient = Vector2.Create(200, 0);
+            var solver = (new SkylineSolver.Builder()).BuildSolver(physicalModel);
+            var provider = new ProblemThermalSteadyState(physicalModel, solver);
+            var rve = new ThermalSquareRve(physicalModel, Vector2.Create(minX, minY), Vector2.Create(maxX, maxY), thickness,
+                temperatureGradient);
+            var homogenization = new HomogenizationAnalyzer(physicalModel, solver, provider, rve);
+
+            homogenization.Initialize();
+            homogenization.Solve();
+
+            IMatrix conductivity = homogenization.EffectiveConstitutiveTensors[subdomainID];
+            Console.WriteLine($"C = [ {conductivity[0, 0]} {conductivity[0, 1]}; {conductivity[1, 0]} {conductivity[1, 1]} ]");
         }
     }
 }

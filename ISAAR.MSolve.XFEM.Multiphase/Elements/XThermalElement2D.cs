@@ -287,20 +287,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Elements
                 if (PhaseIntersections.Count > 0)
                 {
                     Matrix Kii = BuildConductivityMatrixBoundary();
-                    #region debug
-                    //string pathΙ = @"C:\Users\Serafeim\Desktop\HEAT\debug\" + $"Kii{element.ID}.txt";
-                    //var writerΙ = new LinearAlgebra.Output.FullMatrixWriter();
-                    //writerΙ.WriteToFile(Kii, pathΙ);
-                    #endregion
                     Kee.AddIntoThis(Kii);
                 }
                 Ktotal = JoinStiffnesses(Kss, Kee, Kse);
             }
-            #region debug
-            //string path = @"C:\Users\Serafeim\Desktop\HEAT\debug\" + $"K{element.ID}.txt";
-            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
-            //writer.WriteToFile(Ktotal, path);
-            #endregion
             return Ktotal;
         }
 

@@ -31,6 +31,22 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
             EnrichNodes();
         }
 
+        private static (IPhase minPhase, IPhase maxPhase) FindMinMaxPhases(IPhase phase1, IPhase phase2)
+        {
+            IPhase minPhase, maxPhase;
+            if (phase1.ID < phase2.ID)
+            {
+                minPhase = phase1;
+                maxPhase = phase2;
+            }
+            else
+            {
+                minPhase = phase2;
+                maxPhase = phase1;
+            }
+            return (minPhase, maxPhase);
+        }
+
         /// <summary>
         /// Assumes 0 or 1 junction per element
         /// </summary>
@@ -53,7 +69,26 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                 {
                     //TODO: Shouldn't the boundaries intersect?
                     if (element.Phases.Count <= 2) continue; // Not a junction element
-                    else if (element.PhaseIntersections.Count <= 2) continue; // 3 or more phases, but the boundaries do not intersect
+                    else
+                    {
+                        var uniquePhaseSeparators = new Dictionary<int, HashSet<int>>();
+                        foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
+                        {
+                            (IPhase minPhase, IPhase maxPhase) = FindMinMaxPhases(boundary.PositivePhase, boundary.NegativePhase);
+                            bool exists = uniquePhaseSeparators.TryGetValue(minPhase.ID, out HashSet<int> neighbors);
+                            if (!exists)
+                            {
+                                neighbors = new HashSet<int>();
+                                uniquePhaseSeparators[minPhase.ID] = neighbors;
+                            }
+                            neighbors.Add(maxPhase.ID);
+                        }
+
+                        int numUniqueSeparators = 0;
+                        foreach (HashSet<int> neighbors in uniquePhaseSeparators.Values) numUniqueSeparators += neighbors.Count;
+
+                        if (numUniqueSeparators <= 2) continue; // 3 or more phases, but the boundaries do not intersect
+                    }
                     PhaseBoundary[] boundaries = element.PhaseIntersections.Keys.ToArray();
 
                     // If there are n boundaries intersecting, then use n-1 junctions
@@ -206,6 +241,8 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                 foreach (XNode node in nodesToEnrich) EnrichNode(node, stepEnrichment);
             }
         }
+
+        
 
         private bool HasCorrespondingJunction(XNode node, IEnrichment stepEnrichment)
         {

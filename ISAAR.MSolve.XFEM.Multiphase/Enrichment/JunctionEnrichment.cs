@@ -18,6 +18,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
         {
             this.ID = id;
             this.Dof = new EnrichedDof(this, ThermalDof.Temperature);
+            this.Boundary = boundary;
 
             int numPhases = allPhases.Count();
             this.descendingPhases = new IPhase[numPhases];
