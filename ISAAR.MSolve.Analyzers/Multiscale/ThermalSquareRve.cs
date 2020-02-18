@@ -20,7 +20,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
     {
         private const int numDimensions = 2;
 
-        private readonly Vector2 macroscopicTemperatureGradient;
+        private readonly Vector2 macroscopicTemperatureGradient; //TODO: This does not affect the results
         private readonly IStructuralModel model;
         private readonly double xMin, yMin, xMax, yMax;
         private readonly double thickness;

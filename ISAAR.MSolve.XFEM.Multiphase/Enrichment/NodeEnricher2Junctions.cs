@@ -67,6 +67,10 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
                 var phase = (ConvexPhase)(geometricModel.Phases[p]);
                 foreach (IXFiniteElement element in phase.IntersectedElements)
                 {
+                    // This element has already been processed when looking at another phase
+                    if (JunctionElements.ContainsKey(element)) continue;
+
+                    // Check if the element contains a junction point
                     //TODO: Shouldn't the boundaries intersect?
                     if (element.Phases.Count <= 2) continue; // Not a junction element
                     else
@@ -89,31 +93,17 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 
                         if (numUniqueSeparators <= 2) continue; // 3 or more phases, but the boundaries do not intersect
                     }
-                    PhaseBoundary[] boundaries = element.PhaseIntersections.Keys.ToArray();
 
+                    // Create a new junction enrichment
                     // If there are n boundaries intersecting, then use n-1 junctions
-                    //TODO: Perhaps this is too simplistic. What happens if there are 3 phases, but their 2 boundaries do not 
-                    //      intersect? Should I use 2 step enrichments instead? Also what happens if in an element 3 boundaries
-                    //      intersect and 4th does not intersect?
+                    PhaseBoundary[] boundaries = element.PhaseIntersections.Keys.ToArray();
+                    var elementJunctions = new HashSet<JunctionEnrichment>();
+                    JunctionElements[element] = elementJunctions;
                     for (int i = 0; i < boundaries.Length - 1; ++i) 
                     {
                         PhaseBoundary boundary = boundaries[i];
-
-                        bool enrichmentExists = junctionEnrichments.TryGetValue(boundary, out JunctionEnrichment junction);
-                        if (!enrichmentExists)
-                        {
-                            ++id;
-                            junction = new JunctionEnrichment(id, boundary, element.Phases);
-                            junctionEnrichments[boundary] = junction;
-                        }
-
-                        bool elementExists = JunctionElements.TryGetValue(element, 
-                            out HashSet<JunctionEnrichment> elementJunctions);
-                        if (!elementExists)
-                        {
-                            elementJunctions = new HashSet<JunctionEnrichment>();
-                            JunctionElements[element] = elementJunctions;
-                        }
+                        var junction = new JunctionEnrichment(id, boundary, element.Phases);
+                        ++id;
                         elementJunctions.Add(junction);
                     }
                 }
