@@ -97,14 +97,15 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             
         }
 
-        public virtual (MicrostructureBvpNRNLAnalyzer, ProblemStructural,ElementStructuralStiffnessProvider) AnalyzeMicrostructure(Model model,  ISolver solver,
+        public virtual (MicrostructureBvpNRNLAnalyzer, ProblemStructural,ElementStructuralStiffnessProvider) AnalyzeMicrostructure(Model model,  ISolverMpi solver,
             int increments, int MaxIterations, int IterationsForMatrixRebuild, Dictionary<int, Dictionary<IDofType, double>> totalPrescribedBoundaryDisplacements,
             Dictionary<int, Dictionary<IDofType, double>> initialConvergedBoundaryDisplacements, Dictionary<int, Node> boundaryNodes, Dictionary<int, IVector> uInitialFreeDOFDisplacementsPerSubdomain)
         {
-            IReadOnlyDictionary<int, ILinearSystem> linearSystems = solver.LinearSystems; //V2.1
+            //IReadOnlyDictionary<int, ILinearSystem> linearSystems = solver.LinearSystems; //V2.1
 
             #region Creation of nessesary analyzers for NRNLAnalyzer
-            ProblemStructural provider = new ProblemStructural(model, solver);
+            //ProblemStructural provider = new ProblemStructural(model, solver); //TODOGer1: tha agnoithei o microBVPanalyzer apo afton thelei mono
+                                                                    // to rhsNorm tha to kanoume apo Vector kai to processinternal rhs opouo problemStructural den kanei tipota
 
             var subdomainUpdaters = new Dictionary<int, NonLinearSubdomainUpdaterWithInitialConditions>(1); //v2.2
             //var subdomainUpdaters = new NonLinearSubdomainUpdaterWithInitialConditions[totalSubdomains];
@@ -127,8 +128,8 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             #endregion
 
             #region Creation of Microstructure analyzer (NRNLdevelop temporarilly). 
-            MicrostructureBvpNRNLAnalyzer microAnalyzer = new MicrostructureBvpNRNLAnalyzer(model,solver, subdomainUpdaters, 
-                provider, increments,  uInitialFreeDOFDisplacementsPerSubdomain,
+            MicrostructureBvpNRNLAnalyzerSerial microAnalyzer = new MicrostructureBvpNRNLAnalyzerSerial(model,solver, subdomainUpdaters, 
+                /*provider,*/ increments,  uInitialFreeDOFDisplacementsPerSubdomain,
                 boundaryNodes, initialConvergedBoundaryDisplacements, totalPrescribedBoundaryDisplacements, equivalentContributionsAssemblers);
             microAnalyzer.SetMaxIterations = MaxIterations;
             microAnalyzer.SetIterationsForMatrixRebuild = IterationsForMatrixRebuild;

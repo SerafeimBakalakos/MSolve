@@ -31,9 +31,9 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         //int currentSubdomainID;
 
         public (Dictionary<int, double[][]>, Dictionary<int, double[][]>) UpdateSubdomainKffAndCalculateKfpDqAndKppDqpMultipleObje(Model model, IElementMatrixProvider elementProvider, IScaleTransitions scaleTransitions,
-            Dictionary<int, Node> boundaryNodes, Dictionary<int, Dictionary<int, Element>> boundaryElements,ISolver solver)
+            Dictionary<int, Node> boundaryNodes, Dictionary<int, Dictionary<int, Element>> boundaryElements,ISolverMpi solver)
         {
-            IReadOnlyDictionary<int, ILinearSystem> linearSystems = solver.LinearSystems; //v2.3
+            //IReadOnlyDictionary<int, ILinearSystem> linearSystems = solver.LinearSystems; //v2.3
 
             Dictionary<int, double[][]> KfpDqSubdomains = new Dictionary<int, double[][]>(model.SubdomainsDictionary.Count);
             Dictionary<int, double[][]> KppDqVectorsSubdomains = new Dictionary<int, double[][]>(model.SubdomainsDictionary.Count);
@@ -61,22 +61,25 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 #endregion
             }
 
-            var StiffnessProvider = new StiffnessProviderSimu(this);
-            Dictionary<int, IMatrix> subdomainKs = solver.BuildGlobalMatrices(StiffnessProvider);
+            var StiffnessProvider = new StiffnessProviderSimuSerial(this);
+            solver.BuildGlobalMatrix(StiffnessProvider);
 
             foreach (Subdomain subdomain in model.SubdomainsDictionary.Values)
             {
+                #region old comments
                 //dofOrdering = subdomain.FreeDofOrdering; //.1
                 //FreeDofs = subdomain.FreeDofOrdering.FreeDofs;//.1 nodalDOFsDictionary = subdomain.NodalDOFsDictionary;
                 //currentSubdomainID = subdomain.ID;
 
-                
+
 
 
                 //v2.4 var subdomainK= GlobalMatrixAssemblerSkyline.CalculateFreeFreeGlobalMatrix(subdomain, StiffnessProvider);                
+                #endregion
 
-                linearSystems[subdomain.ID].Matrix = subdomainKs[subdomain.ID];
+                //linearSystems[subdomain.ID].Matrix = subdomainKs[subdomain.ID];
                 //v2.5 linearSystems[subdomain.ID].Matrix = subdomainK;
+
 
                 KfpDqSubdomains.Add(subdomain.ID, KfpDqVectors[subdomain.ID]);
                 KppDqVectorsSubdomains.Add(subdomain.ID, KppDqVectors[subdomain.ID]);                

@@ -4,6 +4,7 @@ using System.Linq;
 using ISAAR.MSolve.Analyzers.Multiscale;
 using ISAAR.MSolve.Analyzers.NonLinear;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
 using ISAAR.MSolve.FEM;
 using ISAAR.MSolve.FEM.Entities;
@@ -124,17 +125,19 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
         public void UpdateMaterial(double[] DefGradVec)
         {
-            ISolver solver;
+            ISolverMpi solver;
             if (matrices_not_initialized)
             {
                 this.InitializeMatrices();
                 this.InitializeData();
-                solver = createSolver(model);
+                solver = createSolver(model); //TODOGer1: apla einai build se afth th fash p.x. FetiDpSolverSerialTests.cs %65
                 solver.OrderDofs(false);
-                foreach (ILinearSystem linearSystem in solver.LinearSystems.Values)
+                foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
+                    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
                     linearSystem.Reset(); //TODO find out if new structures cause any problems
                     linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
+                    linearSystem.RhsVector = linearSystem.Subdomain.Forces; //TODOGer1: pithanws thelei elegxo afto.
                 }
                 this.InitializeFreeAndPrescribedDofsInitialDisplacementVectors();
             }
@@ -142,8 +145,9 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             {
                 solver = createSolver(model);
                 solver.OrderDofs(false); //v2.1. TODO: Is this needed in this case?
-                foreach (ILinearSystem linearSystem in solver.LinearSystems.Values)
+                foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
+                    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
                     linearSystem.Reset();
                     linearSystem.RhsVector = linearSystem.Subdomain.Forces; //TODO MS 
                 }

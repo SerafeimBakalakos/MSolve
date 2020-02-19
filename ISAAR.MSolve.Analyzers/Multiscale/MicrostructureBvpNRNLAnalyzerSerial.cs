@@ -33,8 +33,8 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         private readonly double tolerance = 1e-3;
         private double rhsNorm;
         private INonLinearParentAnalyzer parentAnalyzer = null;
-        private readonly ISolver solver;
-        private readonly INonLinearProvider provider;
+        private readonly ISolverMpi solver;
+        //private readonly INonLinearProvider provider;
         private readonly Dictionary<int, IVector> rhs = new Dictionary<int, IVector>();//comment MS2:apothikevetai se afto h timh (externalLoads/increments) gia kathe subdomain kai apo ekei pernietai opou xreiasthei (p.x. subdomain.RHS)
         private readonly Dictionary<int, IVector> u = new Dictionary<int, IVector>();
         private readonly Dictionary<int, IVector> du = new Dictionary<int, IVector>();
@@ -47,8 +47,8 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         private readonly Dictionary<int, LinearAnalyzerLogFactory> logFactories = new Dictionary<int, LinearAnalyzerLogFactory>();
         private readonly Dictionary<int, IAnalyzerLog[]> logs = new Dictionary<int, IAnalyzerLog[]>();
 
-        public MicrostructureBvpNRNLAnalyzerSerial(IModel model, ISolver solver, Dictionary<int, NonLinearSubdomainUpdaterWithInitialConditions> subdomainUpdaters,
-            INonLinearProvider provider, int increments, Dictionary<int, IVector> uInitialFreeDOFDisplacementsPerSubdomain,
+        public MicrostructureBvpNRNLAnalyzerSerial(IModel model, ISolverMpi solver, Dictionary<int, NonLinearSubdomainUpdaterWithInitialConditions> subdomainUpdaters,
+            /*INonLinearProvider provider,*/ int increments, Dictionary<int, IVector> uInitialFreeDOFDisplacementsPerSubdomain,
             Dictionary<int, Node> boundaryNodes, Dictionary<int, Dictionary<IDofType, double>> initialConvergedBoundaryDisplacements, Dictionary<int, Dictionary<IDofType, double>> totalBoundaryDisplacements,
             Dictionary<int, EquivalentContributionsAssebler> equivalentContributionsAssemblers)//, ISubdomainGlobalMapping[] mappings)
         {
@@ -56,8 +56,8 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
             this.solver = solver;
             this.subdomainUpdaters = subdomainUpdaters;
             //this.mappings = mappings;
-            this.linearSystems = solver.LinearSystems;
-            this.provider = provider;
+            //this.linearSystems = solver.LinearSystems;
+            //this.provider = provider;
             this.increments = increments;
             //this.globalRhs = Vector.CreateZero(model.GlobalDofOrdering.NumGlobalFreeDofs); 
             this.u = uInitialFreeDOFDisplacementsPerSubdomain; //prosthiki MS, TODO:possibly check for compatibility elements format: u.Add(subdomain.ID, new Vector(subdomain.RHS.Length));

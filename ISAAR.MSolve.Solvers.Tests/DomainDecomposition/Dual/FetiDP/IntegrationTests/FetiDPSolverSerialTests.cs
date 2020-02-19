@@ -47,7 +47,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 
         internal static void RunAnalysis(IModel model, ISolverMpi solver)
         {
-            // Run the analysis
+            // Run the analysis //BMA
             solver.OrderDofs(false);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
