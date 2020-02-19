@@ -79,8 +79,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             _KccStar = SchurComplementCsc.CalcSchurComplementSymmetric(Kcc, Krc, inverseKrr);
         }
 
-        protected override void ExtractKbbImpl() => Kbb = Krr.GetSubmatrixSymmetricFull(DofsBoundary);
-
         protected override void ExtractBoundaryInternalSubmatricesAndInvertKiiImpl(bool diagonalKii)
         {
             int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);
@@ -114,6 +112,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             Krc = linearSystem.Matrix.GetSubmatrixCsc(DofsRemainder, DofsCorner);
             Krr = linearSystem.Matrix.GetSubmatrixSymmetricSkyline(DofsRemainder);
         }
+
+        protected override void ExtractKbbImpl() => Kbb = Krr.GetSubmatrixSymmetricFull(DofsBoundary);
 
         public override void HandleDofOrderingWillBeModified() => assembler.HandleDofOrderingWillBeModified();
 

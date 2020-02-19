@@ -9,9 +9,15 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 //      Also add respective tests.
 namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
 {
+    /// <summary>
+    /// Each row has exactly one 1 entry.
+    /// </summary>
     public class GlobalToLocalBooleanMatrix : IMappingMatrix
     {
         //TODO: Perhaps this should also contain the number of cols as its last entry, in order to make MPI communication faster
+        /// <summary>
+        /// The column index of the non-zero entry of each row
+        /// </summary>
         private readonly int[] colIndices;
 
         public GlobalToLocalBooleanMatrix(int numCols, int[] colIndices)

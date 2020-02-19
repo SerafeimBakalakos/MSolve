@@ -12,6 +12,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
         Matrix CopyToFullMatrix(); //TODO: Should this be here?
 
         Vector Multiply(Vector vector, bool transposeThis = false);
+
         Matrix MultiplyRight(Matrix other, bool transposeThis = false);
     }
 }
