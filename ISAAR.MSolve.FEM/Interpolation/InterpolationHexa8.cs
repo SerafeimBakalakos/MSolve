@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.FEM.Interpolation
 
         private static readonly InterpolationHexa8 uniqueInstance= new InterpolationHexa8();
 
-        private InterpolationHexa8() : base(8)
+        private InterpolationHexa8() : base(Discretization.Mesh.CellType.Hexa8, 8)
         {
             NodalNaturalCoordinates = new NaturalPoint[]
             {

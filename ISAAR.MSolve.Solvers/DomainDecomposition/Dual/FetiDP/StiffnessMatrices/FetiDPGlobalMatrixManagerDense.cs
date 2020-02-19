@@ -26,15 +26,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         protected override void CalcInverseCoarseProblemMatrixImpl(ICornerNodeSelection cornerNodeSelection,
             Dictionary<ISubdomain, IMatrixView> condensedMatrices)
         {
-            // globalKccStar = sum_over_s(Lc[s]^T * KccStar[s] * Lc[s])
+            // globalKccStar = sum_over_s(Bc[s]^T * KccStar[s] * Bc[s])
             var globalKccStar = Matrix.CreateZero(dofSeparator.NumGlobalCornerDofs, dofSeparator.NumGlobalCornerDofs);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int s = subdomain.ID;
                 IMatrixView subdomainKccStar = condensedMatrices[subdomain];
 
-                UnsignedBooleanMatrix Lc = dofSeparator.GetCornerBooleanMatrix(subdomain);
-                globalKccStar.AddIntoThis(Lc.ThisTransposeTimesOtherTimesThis(subdomainKccStar));
+                UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
+                globalKccStar.AddIntoThis(Bc.ThisTransposeTimesOtherTimesThis(subdomainKccStar));
             }
 
             inverseGlobalKccStar = globalKccStar;
@@ -42,24 +42,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         }
 
         protected override void ClearInverseCoarseProblemMatrixImpl() => inverseGlobalKccStar = null;
-
-        public void AssembleAndInvertCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection, 
-            IFetiDPDofSeparator dofSeparator, Dictionary<ISubdomain, IMatrixView> schurComplementsOfRemainderDofs)
-        {
-            // globalKccStar = sum_over_s(Lc[s]^T * KccStar[s] * Lc[s])
-            var globalKccStar = Matrix.CreateZero(dofSeparator.NumGlobalCornerDofs, dofSeparator.NumGlobalCornerDofs);
-            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-            {
-                int s = subdomain.ID;
-                IMatrixView subdomainKccStar = schurComplementsOfRemainderDofs[subdomain];
-
-                UnsignedBooleanMatrix Lc = dofSeparator.GetCornerBooleanMatrix(subdomain);
-                globalKccStar.AddIntoThis(Lc.ThisTransposeTimesOtherTimesThis(subdomainKccStar));
-            }
-
-            inverseGlobalKccStar = globalKccStar;
-            inverseGlobalKccStar.InvertInPlace();
-        }
 
         protected override Vector MultiplyInverseCoarseProblemMatrixTimesImpl(Vector vector) => inverseGlobalKccStar * vector;
     }

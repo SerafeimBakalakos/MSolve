@@ -6,6 +6,7 @@ using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Commons;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
+//TODO: Rename to UnsignedBooleanMatrixRowMajor
 namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
 {
     /// <summary>
@@ -17,7 +18,8 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
     public class UnsignedBooleanMatrix : IIndexable2D, IMappingMatrix
     {
         /// <summary>
-        /// Non-zero entries: (row, columns)
+        /// Non-zero entries: (row, columns). The key of the Dictionary is the row index, while the HashSet contains column 
+        /// indices of non-zero entries.
         /// </summary>
         private readonly Dictionary<int, HashSet<int>> data;
 
@@ -30,7 +32,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
         {
             this.NumRows = numRows;
             this.NumColumns = numColumns;
-            this.data = new Dictionary<int, HashSet<int>>();
+            this.data = new Dictionary<int, HashSet<int>>(numRows);
         }
 
         /// <summary>
@@ -92,13 +94,44 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             {
                 colIndices = new HashSet<int>();
                 data[rowIdx] = colIndices;
+                colIndices.Add(colIdx);
             }
-            colIndices.Add(colIdx);
         }
+
+        public Matrix CopyToFullMatrix() => DenseStrategies.CopyToFullMatrix((IMappingMatrix)this); //TODO: Optimize this
 
         public bool Equals(IIndexable2D other, double tolerance = 1E-13)
         {
             return DenseStrategies.AreEqual(this, other, tolerance);
+        }
+
+        /// <summary>
+        /// WARNING: this only works if this matrix has the following properties:
+        /// 1) Each row of this matrix must have at most one 1 and all other 0,
+        /// </summary>
+        public UnsignedBooleanMatrix GetColumns(int[] colsToKeep)
+        {
+            //TODO: This would be more efficient if the matrix was column major
+            var originalToSubmatrixColumns = new Dictionary<int, int>();
+            for (int j = 0; j < colsToKeep.Length; ++j) originalToSubmatrixColumns[colsToKeep[j]] = j;
+
+            var clone = new UnsignedBooleanMatrix(this.NumRows, colsToKeep.Length);
+            foreach (var rowColumnsPair in data)
+            {
+                int row = rowColumnsPair.Key;
+                HashSet<int> columnsOfRow = rowColumnsPair.Value;
+                Debug.Assert(columnsOfRow.Count == 1, "This method only works if there is at most one '1' per row");
+                int col = columnsOfRow.First();
+                bool keepThisCol = originalToSubmatrixColumns.TryGetValue(col, out int subCol);
+                if (keepThisCol)
+                {
+                    var cloneColumn = new HashSet<int>();
+                    cloneColumn.Add(subCol);
+                    clone.data.Add(row, cloneColumn);
+                }
+            }
+            
+            return clone;
         }
 
         /// <summary>
@@ -108,6 +141,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
         /// 3) Each column must have at most one 1. It is possible that a column is completely 0.
         /// </summary>
         //TODO: This should be the actual way this matrix is stored. The dictionaries should be for building it only.
+        //TODO: Perhaps rename this as GetNonZerosColumnIndices()
         public int[] GetRowsToColumnsMap()
         {
             var map = new int[NumRows];
@@ -123,6 +157,27 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
         {
             if (transposeThis) return MultiplyTransposed(vector);
             else return MultiplyUntransposed(vector);
+        }
+
+        public Matrix MultiplyLeft(IMatrixView other)
+        {
+
+            Preconditions.CheckMultiplicationDimensions(other, this);
+            int numRowsResult = other.NumRows;
+            int numColsResult = this.NumColumns;
+            var result = Matrix.CreateZero(numRowsResult, numColsResult);
+            foreach (var wholeRow in data)
+            {
+                int k = wholeRow.Key;
+                foreach (int j in wholeRow.Value)
+                {
+                    for (int i = 0; i < numRowsResult; ++i)
+                    {
+                        result[i, j] += other[i, k];
+                    }
+                }
+            }
+            return result;
         }
 
         public Matrix MultiplyRight(Matrix other, bool transposeThis = false)
@@ -171,9 +226,10 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             // Transpose it conceptually and multiply with the vector on the right. 
             foreach (var wholeRow in data)
             {
+                double scalar = vector[wholeRow.Key];
                 foreach (int col in wholeRow.Value)
                 {
-                    result[col] += vector[wholeRow.Key];
+                    result[col] += scalar;
                 }
             }
             return Vector.CreateFromArray(result, false);
@@ -200,29 +256,34 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             //TODO: I think that it will pay off to transpose an all integer CSR matrix and store both. Especially in the case 
             //     of subdomain boolean matrices, that little extra memory should not be of concern.
             Preconditions.CheckMultiplicationDimensions(this.NumRows, other.NumRows);
-            var result = new double[this.NumColumns * other.NumRows];
-            for (int j = 0; j < other.NumColumns; ++j)
+            int numRowsResult = this.NumColumns;
+            int numColsResult = other.NumColumns;
+            var result = new double[numRowsResult * numColsResult];
+            for (int j = 0; j < numColsResult; ++j)
             {
-                int offset = j * this.NumRows;
+                int offset = j * numRowsResult;
                 // Transpose it conceptually and multiply with the vector on the right. 
                 foreach (var wholeRow in data)
                 {
+                    double scalar = other[wholeRow.Key, j];
                     foreach (int col in wholeRow.Value)
                     {
-                        result[offset + col] += other[wholeRow.Key, j];
+                        result[offset + col] += scalar;
                     }
                 }
             }
-            return Matrix.CreateFromArray(result, this.NumColumns, other.NumColumns, false);
+            return Matrix.CreateFromArray(result, numRowsResult, numColsResult, false);
         }
 
         private Matrix MultiplyRightUntransposed(Matrix other)
         {
             Preconditions.CheckMultiplicationDimensions(this.NumColumns, other.NumRows);
-            var result = new double[this.NumRows * other.NumColumns];
-            for (int j = 0; j < other.NumColumns; ++j)
+            int numRowsResult = this.NumRows;
+            int numColsResult = other.NumColumns;
+            var result = new double[numRowsResult * numColsResult];
+            for (int j = 0; j < numColsResult; ++j)
             {
-                int offset = j * this.NumRows;
+                int offset = j * numRowsResult;
                 foreach (var wholeRow in data)
                 {
                     double sum = 0.0;
@@ -233,7 +294,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
                     result[offset + wholeRow.Key] = sum;
                 }
             }
-            return Matrix.CreateFromArray(result, this.NumRows, other.NumColumns, false);
+            return Matrix.CreateFromArray(result, numRowsResult, numColsResult, false);
         }
     }
 }

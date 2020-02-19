@@ -45,7 +45,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         private static Matrix CalcPreconditioner(IFetiPreconditioningOperations preconditioning)
         {
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
+                FetiDPLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
 
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
             IStiffnessDistribution stiffnessDistribution = new MockHomogeneousStiffnessDistribution();

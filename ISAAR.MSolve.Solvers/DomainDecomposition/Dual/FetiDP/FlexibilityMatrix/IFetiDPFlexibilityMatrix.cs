@@ -12,7 +12,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
 
         Vector MultiplyFIrc(Vector vIn);
         Vector MultiplyFIrcTransposed(Vector vIn);
-        void MultiplyFIrr(Vector vIn, Vector vOut);
+        void MultiplyFIrr(Vector vIn, Vector vOut); //TODO: Unused, contrary to FIrc^T
 
         (Vector FIrrTimesVector, Vector FIrcTransposedTimesVector) MultiplyFIrrAndFIrcTransposedTimesVector(Vector vIn);
 

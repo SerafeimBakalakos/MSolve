@@ -15,8 +15,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
         private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
         private readonly Dictionary<ISubdomain, IFetiDPSubdomainFlexibilityMatrix> subdomainFlexibilities;
 
-        public FetiDPFlexibilityMatrixSerial(IModel model, IFetiDPDofSeparator dofSeparator, 
-            ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPMatrixManager matrixManager) 
+        public FetiDPFlexibilityMatrixSerial(IModel model, IFetiDPDofSeparator dofSeparator,
+            ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPMatrixManager matrixManager)
         {
             this.dofSeparator = dofSeparator;
             this.lagrangesEnumerator = lagrangesEnumerator;
@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix
             this.subdomainFlexibilities = new Dictionary<ISubdomain, IFetiDPSubdomainFlexibilityMatrix>();
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                this.subdomainFlexibilities[sub] = new FetiDPSubdomainFlexibilityMatrix(sub, dofSeparator, lagrangesEnumerator, 
+                this.subdomainFlexibilities[sub] = new FetiDPSubdomainFlexibilityMatrix(sub, dofSeparator, lagrangesEnumerator,
                     matrixManager);
             }
         }

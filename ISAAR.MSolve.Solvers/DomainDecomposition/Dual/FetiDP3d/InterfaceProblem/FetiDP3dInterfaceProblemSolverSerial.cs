@@ -1,0 +1,180 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.LinearAlgebra.Iterative;
+using ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
+using ISAAR.MSolve.Solvers.Logging;
+
+//TODO: This class should not exist. Instead the corresponding one in FETI-DP 2D should be used. The only difference is in the 
+//      calculation of dr, fcStarTilde, which are assigned to MatrixManager component. For now only the 3D MatrixManager provides
+//      these vectors, but they should be in 2D as well. This would also remove the need for casting
+//TODO: IAugmentationConstraints augmentationConstraints are injected into the constructor since they do not exist in 2D FETI-DP.
+//      Perhaps LagrangeEnumerator and MatrixManager should also be injected
+//TODO: Reorder both corner and augmented dofs and store the coarse problem dof ordering. Do this in matrix manager. Then use it 
+//      here (at least) for fcStarTilde. The current approach is to list all augmented dofs after all corner and apply permutations
+//      before and after solving linear systems with the coarse problem matrix KccStarTilde.
+namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
+{
+    /// <summary>
+    /// The interface problem is solved using PCG. The matrix of the coarse problem KccStar, namely the static condensation of 
+    /// the remainder dofs onto the corner dofs is performed explicitly.
+    /// </summary>
+    public class FetiDP3dInterfaceProblemSolverSerial : IFetiDPInterfaceProblemSolver
+    {
+        private readonly IAugmentationConstraints augmentationConstraints;
+        private readonly IModel model;
+        private readonly PcgSettings pcgSettings;
+
+        public FetiDP3dInterfaceProblemSolverSerial(IModel model, PcgSettings pcgSettings, 
+            IAugmentationConstraints augmentationConstraints)
+        {
+            this.model = model;
+            this.pcgSettings = pcgSettings;
+            this.augmentationConstraints = augmentationConstraints;
+        }
+
+        public Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
+            ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility, 
+            IFetiPreconditioner preconditioner, double globalForcesNorm, ISolverLogger logger)
+        {
+            int systemOrder = flexibility.NumGlobalLagrangeMultipliers;
+
+            // Prepare PCG matrix, preconditioner, rhs and solution
+            var pcgMatrix = new FetiDPInterfaceProblemMatrixSerial(matrixManager, flexibility);
+            var pcgPreconditioner = new FetiDPInterfaceProblemPreconditioner(preconditioner);
+            Vector globalDr = ((IFetiDP3dMatrixManager)matrixManager).GlobalDr;
+            Vector pcgRhs = CalcInterfaceProblemRhs(matrixManager, flexibility, globalDr);
+            var lagranges = Vector.CreateZero(systemOrder);
+
+            #region debug
+            int nL = lagranges.Length;
+            int nC = matrixManager.CoarseProblemRhs.Length;
+            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
+
+            //string pathRhs = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\rhs.txt";
+            ////new LinearAlgebra.Output.FullVectorWriter().WriteToFile(pcgRhs, pathRhs);
+            ////LinearAlgebra.LibrarySettings.LinearAlgebraProviders = LinearAlgebra.LinearAlgebraProviderChoice.MKL;
+
+            //// Process FIrr
+            //Matrix FIrr = MultiplyWithIdentity(nL, nL, flexibility.MultiplyGlobalFIrr);
+            //FIrr = 0.5 * (FIrr + FIrr.Transpose());
+            //SkylineMatrix skyFIrr = SkylineMatrix.CreateFromMatrix(FIrr);
+            //string pathFIrr = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\FIrr.txt";
+            ////writer.WriteToFile(FIrr, pathFIrr);
+            //(Matrix rrefFIrr, List<int> independentColsFIrr) = FIrr.ReducedRowEchelonForm();
+
+            //bool isFIrrInvertible = false;
+            //double detFIrr = double.NaN;
+            //try
+            //{
+            //    detFIrr = FIrr.CalcDeterminant();
+            //    isFIrrInvertible = true;
+            //}
+            //catch (Exception) { }
+
+
+            //bool isFIrrPosDef = false;
+            //try
+            //{
+            //    double tol = 1E-50;
+            //    var FIrrFactorized = skyFIrr.FactorCholesky(false, tol);
+            //    isFIrrPosDef = true;
+            //}
+            //catch (Exception) { }
+
+
+            //// Process PCG matrix
+            //Matrix pcgMatrixExplicit = MultiplyWithIdentity(nL, nL, pcgMatrix.Multiply);
+            //pcgMatrixExplicit = 0.5 * (pcgMatrixExplicit + pcgMatrixExplicit.Transpose());
+            //SkylineMatrix skyPcgMatrix = SkylineMatrix.CreateFromMatrix(pcgMatrixExplicit);
+            //string pathPcgMatrix = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\pcg_matrix.txt";
+            ////writer.WriteToFile(pcgMatrixExplicit, pathPcgMatrix);
+            //(Matrix rref, List<int> independentCols) = pcgMatrixExplicit.ReducedRowEchelonForm();
+
+            //bool isPcgMatrixInvertible = false;
+            //double detPcgMatrix = double.NaN;
+            //try
+            //{
+            //    detPcgMatrix = pcgMatrixExplicit.CalcDeterminant();
+            //    isPcgMatrixInvertible = true;
+            //}
+            //catch (Exception) { }
+
+            //bool isPcgMatrixPosDef = false;
+            //try
+            //{
+            //    double tol = 1E-50;
+            //    var pcgMatrixFactorized = skyPcgMatrix.FactorCholesky(false, tol);
+            //    isPcgMatrixPosDef = true;
+            //}
+            //catch (Exception) { }
+            #endregion
+
+            // Solve the interface problem using PCG algorithm
+            var pcgBuilder = new PcgAlgorithm.Builder();
+            pcgBuilder.MaxIterationsProvider = pcgSettings.MaxIterationsProvider;
+            pcgBuilder.ResidualTolerance = pcgSettings.ConvergenceTolerance;
+            pcgBuilder.Convergence = pcgSettings.ConvergenceStrategyFactory.CreateConvergenceStrategy(globalForcesNorm);
+            PcgAlgorithm pcg = pcgBuilder.Build(); //TODO: perhaps use the pcg from the previous analysis if it has reorthogonalization.
+            IterativeStatistics stats = pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, true,
+                () => Vector.CreateZero(systemOrder));
+
+            // Log statistics about PCG execution
+            FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
+            logger.LogIterativeAlgorithm(stats.NumIterationsRequired, stats.ResidualNormRatioEstimation);
+
+            #region debug
+            int nIter = stats.NumIterationsRequired;
+
+            // Lagranges from LU
+            //var lagrangesDirect = Vector.CreateZero(nL);
+            //pcgMatrixExplicit.FactorLU(false).SolveLinearSystem(pcgRhs, lagrangesDirect);
+            //double errorLagranges = (lagranges - lagrangesDirect).Norm2() / lagrangesDirect.Norm2();
+
+            //Vector resDirect = pcgRhs - pcgMatrixExplicit * lagrangesDirect;
+            //double normResDirect = resDirect.Norm2();
+
+            //Vector resPcg = pcgRhs - pcgMatrixExplicit * lagranges;
+            //double normResPcg = resPcg.Norm2();
+
+            //return lagrangesDirect;
+            #endregion
+            return lagranges;
+        }
+
+        private Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility, 
+            Vector globalDr)
+        {
+            // rhs = dr - FIrcTilde * inv(KccStarTilde) * fcStarTilde
+            Vector fcStarTilde = matrixManager.CoarseProblemRhs; 
+            Vector temp = matrixManager.MultiplyInverseCoarseProblemMatrix(fcStarTilde);
+            temp = flexibility.MultiplyFIrc(temp);
+            return globalDr - temp;
+        }
+
+        #region debug 
+        public static Matrix MultiplyWithIdentity(int numRows, int numCols, Action<Vector, Vector> matrixVectorMultiplication)
+        {
+            var result = Matrix.CreateZero(numRows, numCols);
+            for (int j = 0; j < numCols; ++j)
+            {
+                var lhs = Vector.CreateZero(numCols);
+                lhs[j] = 1.0;
+                var rhs = Vector.CreateZero(numRows);
+                matrixVectorMultiplication(lhs, rhs);
+                result.SetSubcolumn(j, rhs);
+            }
+            return result;
+        }
+        #endregion
+    }
+}

@@ -13,7 +13,7 @@ using Xunit;
 //      to get that stuff.
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
 {
-    public static class LagrangeMultiplierEnumeratorMpiTests
+    public static class FetiDPLagrangesEnumeratorMpiTests
     {
         public static void TestBooleanMappingMatrices(int numProcesses)
         {

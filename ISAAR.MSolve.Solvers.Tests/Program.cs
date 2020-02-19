@@ -29,7 +29,7 @@ namespace ISAAR.MSolve.Solvers.Tests
         {
             suite.AddFact(FetiDPDofSeparatorMpiTests.TestDofSeparation);
             suite.AddFact(FetiDPDofSeparatorMpiTests.TestCornerBooleanMatrices);
-            suite.AddFact(LagrangeMultiplierEnumeratorMpiTests.TestBooleanMappingMatrices);
+            suite.AddFact(FetiDPLagrangesEnumeratorMpiTests.TestBooleanMappingMatrices);
             suite.AddFact(HomogeneousStiffnessDistributionMpiTests.TestBooleanMappingMatrices);
 
             suite.AddFact(FetiDPMatrixManagerMpiTests.TestVectorsFbcFr);

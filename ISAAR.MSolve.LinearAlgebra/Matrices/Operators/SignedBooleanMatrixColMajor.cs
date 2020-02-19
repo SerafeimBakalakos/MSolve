@@ -96,6 +96,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
                 data.Add(colIdx, newRowSigns);
             }
         }
+        public Matrix CopyToFullMatrix() => CopyToFullMatrix(false);
 
         /// <summary>
         /// Initializes a new <see cref="Matrix"/> instance by copying the entries of this <see cref="SignedBooleanMatrixRowMajor"/>.
@@ -135,7 +136,16 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             return DenseStrategies.AreEqual(this, other, tolerance);
         }
 
-        public SignedBooleanMatrixColMajor GetColumns(int[] colsToKeep, bool deepCopy)
+        /// <summary>
+        /// The returned dictionary has keys the non-zero row indices and values the sign (+-1) of each row. 
+        /// </summary>
+        /// <param name="col"></param>
+        public Dictionary<int, int> GetColumn(int col) //TODO: This exposes internal data structures, which is risky
+        {
+            return data[col];
+        }
+
+        public SignedBooleanMatrixColMajor GetColumns(int[] colsToKeep, bool deepCopy) //TODO: This exposes internal data structures, which is risky
         {
             //TODO: This would be more efficient if the matrix was column major
             var clone = new SignedBooleanMatrixColMajor(this.NumRows, colsToKeep.Length);
@@ -211,7 +221,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
             //TODO: I think that it will pay off to transpose an all integer CSR matrix and store both. Especially in the case 
             //     of subdomain boolean matrices, that little extra memory should not be of concern.
             Preconditions.CheckMultiplicationDimensions(this.NumRows, other.NumRows);
-            var result = new double[this.NumColumns * other.NumRows];
+            var result = new double[this.NumColumns * other.NumColumns];
             for (int j = 0; j < other.NumColumns; ++j)
             {
                 int offset = j * this.NumColumns;

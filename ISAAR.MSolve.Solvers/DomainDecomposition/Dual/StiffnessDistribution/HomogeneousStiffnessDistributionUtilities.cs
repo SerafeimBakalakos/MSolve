@@ -45,6 +45,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             public int NumColumns => explicitBpb.NumColumns;
 
             public int NumRows => explicitBpb.NumRows;
+            public Matrix CopyToFullMatrix() => LinearAlgebra.Commons.DenseStrategies.CopyToFullMatrix(this);
 
             public Vector Multiply(Vector vector, bool transposeThis = false)
                 => explicitBpb.Multiply(vector, transposeThis);
@@ -79,6 +80,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             public int NumColumns => invMb.NumColumns;
 
             public int NumRows => Bb.NumRows;
+
+            public Matrix CopyToFullMatrix() => LinearAlgebra.Commons.DenseStrategies.CopyToFullMatrix(this);
+
 
             public Vector Multiply(Vector vector, bool transposeThis = false)
             {

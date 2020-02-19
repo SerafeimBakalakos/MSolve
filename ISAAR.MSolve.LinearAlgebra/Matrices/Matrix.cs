@@ -16,6 +16,7 @@ using ISAAR.MSolve.LinearAlgebra.Orthogonalization;
 //TODO: Se https://software.intel.com/en-us/mkl-developer-reference-c-lapmr, 
 //      https://software.intel.com/en-us/mkl-developer-reference-c-laswp, 
 //      https://software.intel.com/en-us/mkl-developer-reference-c-syswapr for reordering
+//TODO: Implement Matlab's K[dofs, dofs] += k;
 namespace ISAAR.MSolve.LinearAlgebra.Matrices
 {
     /// <summary>
@@ -110,6 +111,20 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
             {
                 return new Matrix(array1D, numRows, numColumns);
             }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="Matrix"/> by copying the entries of <paramref name="matrix"/>.
+        /// </summary>
+        /// <param name="matrix">The original matrix that will be copied.</param>
+        public static Matrix CreateFromMatrix(IIndexable2D matrix)
+        {
+            var clone = Matrix.CreateZero(matrix.NumRows, matrix.NumColumns);
+            for (int j = 0; j < matrix.NumColumns; ++j)
+            {
+                for (int i = 0; i < matrix.NumRows; ++i) clone[i, j] = matrix[i, j];
+            }
+            return clone;
         }
 
         /// <summary>
@@ -244,7 +259,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
             Preconditions.CheckSameColDimension(this, matrix);
             double[] result = ArrayColMajor.JoinVertically(this.NumRows, this.NumColumns, this.data,
                 matrix.NumRows, matrix.NumColumns, matrix.data);
-            return new Matrix(result, this.NumRows + matrix.NumColumns, NumColumns);
+            return new Matrix(result, this.NumRows + matrix.NumRows, NumColumns);
         }
 
         /// <summary>
@@ -478,7 +493,10 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
                 var comparer = new ValueComparer(tolerance);
                 for (int i = 0; i < this.data.Length; ++i)
                 {
-                    if (!comparer.AreEqual(this.data[i], otherData[i])) return false;
+                    if (!comparer.AreEqual(this.data[i], otherData[i]))
+                    {
+                        return false;
+                    }
                 }
                 return true;
             }

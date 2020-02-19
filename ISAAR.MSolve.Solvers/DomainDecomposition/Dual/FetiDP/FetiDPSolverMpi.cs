@@ -32,7 +32,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
     public class FetiDPSolverMpi : ISolverMpi
     {
         internal const string name = "FETI-DP Solver (MPI)"; // for error messages and logging
-        private readonly ICrosspointStrategy crosspointStrategy = new FullyRedundantConstraints();
         private readonly IFreeDofDisplacementsCalculator displacementsCalculator;
         private readonly DofOrdererMpi dofOrderer;
         private readonly FetiDPDofSeparatorMpi dofSeparator;
@@ -55,7 +54,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
         public FetiDPSolverMpi(ProcessDistribution processDistribution, IModel model, ICornerNodeSelection cornerNodeSelection,
             IFetiDPMatrixManagerFactory matrixManagerFactory, IFetiPreconditioningOperations preconditioning,
-            PcgSettings pcgSettings, bool problemIsHomogeneous)
+            ICrosspointStrategy crosspointStrategy, PcgSettings pcgSettings, bool problemIsHomogeneous)
         {
             this.procs = processDistribution;
             this.msgHeader = $"Process {procs.OwnRank}, {this.GetType().Name}: ";
@@ -309,6 +308,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 this.matrixManagerFactory = matrixManagerFactory;
             }
 
+            public ICrosspointStrategy CrosspointStrategy { get; set; } = new FullyRedundantConstraints();
+
             public IDofOrderer DofOrderer { get; set; } =
                 new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
 
@@ -321,7 +322,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             public FetiDPSolverMpi Build(IModel model, ICornerNodeSelection cornerNodeSelection)
             {
                 return new FetiDPSolverMpi(procs, model, cornerNodeSelection, matrixManagerFactory, Preconditioning,
-                    PcgSettings, ProblemIsHomogeneous);
+                    CrosspointStrategy, PcgSettings, ProblemIsHomogeneous);
             }
         }
     }

@@ -16,7 +16,7 @@ namespace ISAAR.MSolve.FEM.Interpolation
     {
 	    private static readonly InterpolationTet10 uniqueInstance = new InterpolationTet10();
 
-		private InterpolationTet10() : base(10)
+		private InterpolationTet10() : base(Discretization.Mesh.CellType.Tet10, 10)
 	    {
 		    NodalNaturalCoordinates = new NaturalPoint[]
 		    {

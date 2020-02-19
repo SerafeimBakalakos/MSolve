@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator, 
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
+                FetiDPLagrangesEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
 
             // Setup matrix manager
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
@@ -45,7 +45,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator,
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
+                FetiDPLagrangesEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
 
             // Setup matrix manager
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
@@ -69,7 +69,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator,
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
+                FetiDPLagrangesEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
 
             // Setup matrix manager
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);
@@ -92,7 +92,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         {
             (ProcessDistribution procs, IModel model, FetiDPDofSeparatorMpi dofSeparator,
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) =
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
+                FetiDPLagrangesEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
 
             // Setup matrix manager
             IFetiDPMatrixManager matrixManager = new MockMatrixManager(model);

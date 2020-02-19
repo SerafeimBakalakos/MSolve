@@ -20,7 +20,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
         {
             (ProcessDistribution procs, IModel model, IFetiDPDofSeparator dofSeparator,
                 LagrangeMultipliersEnumeratorMpi lagrangesEnumerator) = 
-                LagrangeMultiplierEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
+                FetiDPLagrangesEnumeratorMpiTests.CreateModelDofSeparatorLagrangesEnumerator(numProcesses);
 
             // Caclulate scaling coefficients
             var stiffnessDistribution = new HomogeneousStiffnessDistributionMpi(procs, model, dofSeparator,
