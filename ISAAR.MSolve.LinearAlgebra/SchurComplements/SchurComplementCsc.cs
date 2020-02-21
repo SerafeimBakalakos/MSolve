@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.LinearAlgebra.SchurComplements
             {
                 // column j of (inv(A22) * A21) = inv(A22) * column j of A21
                 Vector colA21 = A21.GetColumn(j);
-                double[] colInvCA21 = inverseA22.SolveLinearSystem(colA21).RawData;
+                double[] colInvA22A21 = inverseA22.SolveLinearSystem(colA21).RawData;
 
                 // column j of (A21^T * inv(A22) * A21) = A21^T * column j of (inv(A22) * A21)
                 // However we only need the superdiagonal part of this column. 
@@ -35,7 +35,50 @@ namespace ISAAR.MSolve.LinearAlgebra.SchurComplements
                     double dot = 0.0;
                     int colStart = colOffsetsA21[i]; //inclusive
                     int colEnd = colOffsetsA21[i + 1]; //exclusive
-                    for (int k = colStart; k < colEnd; ++k) dot += valuesA21[k] * colInvCA21[rowIndicesA21[k]];
+                    for (int k = colStart; k < colEnd; ++k) dot += valuesA21[k] * colInvA22A21[rowIndicesA21[k]];
+
+                    // Perform the subtraction S = A11 - (A21^T * inv(A22) * A21) for the current (i, j)
+                    int indexS = S.Find1DIndex(i, j);
+                    S.RawData[indexS] = A11.RawData[indexS] - dot;
+                }
+            }
+
+            return S;
+        }
+
+        /// <summary>
+        /// Calculates the Schur complement of A/A22 = S = A11 - A21^T * inv(A22) * A21, where M = [A11 A21; A21^T A22].
+        /// This method operates with the explicit product inv(A22) * A21, which is accepted as an argument and then uses each 
+        /// column to calculate the superdiagonal entries of the corresponding column of A21^T * inv(A22) * A21. 
+        /// Therefore the client can calculate inv(A22) * A21 only once and then use it for this method and other ones.
+        /// </summary>
+        public static SymmetricMatrix CalcSchurComplementSymmetric(SymmetricMatrix A11, CscMatrix A21, Matrix inverseA22TimesA21)
+        { //TODO: Unfortunately this cannot take advantage of MKL for CSC^T * vector.
+            double[] valuesInvA22TimesA21 = inverseA22TimesA21.RawData;
+            double[] valuesA21 = A21.RawValues;
+            int[] rowIndicesA21 = A21.RawRowIndices;
+            int[] colOffsetsA21 = A21.RawColOffsets;
+            var S = SymmetricMatrix.CreateZero(A11.Order);
+
+            for (int j = 0; j < A21.NumColumns; ++j)
+            {
+                // column j of (inv(A22) * A21)
+                int offsetInvA22TimesA21 = j * inverseA22TimesA21.NumRows;
+                //Vector colA21 = A21.GetColumn(j);
+                //double[] colInvCA21 = inverseA22.SolveLinearSystem(colA21).RawData;
+
+                // column j of (A21^T * inv(A22) * A21) = A21^T * column j of (inv(A22) * A21)
+                // However we only need the superdiagonal part of this column. 
+                // Thus we only multiply the rows i of A21^T (stored as columns i of A21) with i <= j. 
+                for (int i = 0; i <= j; ++i)
+                {
+                    double dot = 0.0;
+                    int colStart = colOffsetsA21[i]; //inclusive
+                    int colEnd = colOffsetsA21[i + 1]; //exclusive
+                    for (int k = colStart; k < colEnd; ++k)
+                    {
+                        dot += valuesA21[k] * valuesInvA22TimesA21[offsetInvA22TimesA21 + rowIndicesA21[k]];
+                    }
 
                     // Perform the subtraction S = A11 - (A21^T * inv(A22) * A21) for the current (i, j)
                     int indexS = S.Find1DIndex(i, j);

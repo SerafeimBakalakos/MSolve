@@ -5,6 +5,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Tests.TestData;
 using ISAAR.MSolve.LinearAlgebra.Tests.Utilities;
+using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using Xunit;
 
@@ -80,6 +81,22 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Matrices
             Matrix BtC = sparseB.MultiplyRight(C, true);
             Matrix expectedBtC = denseB.MultiplyRight(C, true);
             comparer.AssertEqual(expectedBtC, BtC);
+        }
+
+        [Fact]
+        private static void TestMultiplyTransposeThisTimesOtherTimesThis()
+        {
+            var A = Matrix.CreateFromArray(SymmPosDef10by10.Matrix);
+            CholeskyFull factA = A.FactorCholesky(false);
+            Matrix invA = A.Invert();
+
+            double[,] B = BooleanMatrices.MatrixA10x5Single1PerCol;
+            LocalToGlobalMappingMatrix sparseB = CreateBooleanMatrix(B);
+            Matrix denseB = Matrix.CreateFromArray(B);
+
+            SymmetricMatrix Bt_invA_B = sparseB.MultiplyTransposeThisTimesOtherTimesThis(factA);
+            Matrix expectedBt_invA_B = denseB.MultiplyRight(invA, true) * denseB;
+            comparer.AssertEqual(expectedBt_invA_B, Bt_invA_B);
         }
     }
 }

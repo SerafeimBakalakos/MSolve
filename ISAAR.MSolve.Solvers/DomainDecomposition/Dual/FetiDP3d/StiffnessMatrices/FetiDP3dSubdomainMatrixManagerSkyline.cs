@@ -143,13 +143,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
 
         public void CondenseMatricesStatically()
         {
-            Start here:
-            // Do inv(Krr[s]) * Krc[s] only once. Use it for the Schur complement of line 151
-            // Then use it for the multiplication of line 167
-
             // Top left
             // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s]
-            _KccStar = SchurComplementCsc.CalcSchurComplementSymmetric(Kcc, Krc, inverseKrr);
+            Matrix invKrrTimesKrc = inverseKrr.SolveLinearSystems(Krc.CopyToFullMatrix()); //TODO: Perhaps this should be done column-by-column
+            _KccStar = SchurComplementCsc.CalcSchurComplementSymmetric(Kcc, Krc, invKrrTimesKrc);
 
 
             // Bottom right
@@ -166,9 +163,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             // where Ba[s] is taken into account during assembly of the global coarse problem matrix
             _KacStar = R1.MultiplyRight(invKrrTimesKrc, true);
             _KacStar.ScaleIntoThis(-1);
-
-
-            
         }
 
         public void CondenseRhsVectorsStatically()

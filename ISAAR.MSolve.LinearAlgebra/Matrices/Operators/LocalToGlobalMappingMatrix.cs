@@ -61,8 +61,8 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
 
         public double MultiplyColumnTimes(Vector vector, int col)
         {
-            Preconditions.CheckMultiplicationDimensions(NumColumns, vector.Length);
-            return values[col] * vector[col];
+            Preconditions.CheckMultiplicationDimensions(NumRows, vector.Length);
+            return values[col] * vector[rowIndices[col]];
         }
 
         public Matrix MultiplyRight(Matrix other, bool transposeThis = false)
@@ -93,10 +93,6 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
                 // Thus we only multiply the rows i of A21^T (stored as columns i of A21) with i <= j. 
                 for (int i = 0; i <= j; ++i)
                 {
-                    //double dot = 0.0;
-                    //int colStart = colOffsetsA21[i]; //inclusive
-                    //int colEnd = colOffsetsA21[i + 1]; //exclusive
-                    //for (int k = colStart; k < colEnd; ++k) dot += valuesA21[k] * colInvCA21[rowIndicesA21[k]];
                     double dot = A21.MultiplyColumnTimes(colInvCA21, i);
 
                     // Assign the result for the current (i, j)

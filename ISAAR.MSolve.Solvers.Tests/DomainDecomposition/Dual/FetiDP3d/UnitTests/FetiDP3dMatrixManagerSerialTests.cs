@@ -21,17 +21,13 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 { 
     public static class FetiDP3dMatrixManagerSerialTests
     {
-        public enum MatrixFormat
-        {
-            Dense, Skyline
-        }
-
         [Theory]
         [InlineData(MatrixFormat.Dense)]
-        //[InlineData(MatrixFormat.Skyline)]
+        [InlineData(MatrixFormat.Skyline)]
+        [InlineData(MatrixFormat.SuiteSparse)]
         public static void TestCoarseProblemMatrixAndRhs(MatrixFormat format)
         {
-            IFetiDP3dMatrixManagerFactory matricesFactory = DefineMatrixManagerFactory(format);
+            IFetiDP3dMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
                 FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
             IAugmentationConstraints augmentationConstraints =
@@ -70,10 +66,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
         [Theory]
         [InlineData(MatrixFormat.Dense)]
-        //[InlineData(MatrixFormat.Skyline)]
+        [InlineData(MatrixFormat.Skyline)]
+        [InlineData(MatrixFormat.SuiteSparse)]
         public static void TestMatricesKbbKbiKii(MatrixFormat format)
         {
-            IFetiDP3dMatrixManagerFactory matricesFactory = DefineMatrixManagerFactory(format);
+            IFetiDP3dMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
                 FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
             IAugmentationConstraints augmentationConstraints =
@@ -111,10 +108,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
         [Theory]
         [InlineData(MatrixFormat.Dense)]
-        //[InlineData(MatrixFormat.Skyline)]
+        [InlineData(MatrixFormat.Skyline)]
+        [InlineData(MatrixFormat.SuiteSparse)]
         public static void TestMatricesKcrKrr(MatrixFormat format)
         {
-            IFetiDP3dMatrixManagerFactory matricesFactory = DefineMatrixManagerFactory(format);
+            IFetiDP3dMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
                 FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
             IAugmentationConstraints augmentationConstraints =
@@ -152,10 +150,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
         [Theory]
         [InlineData(MatrixFormat.Dense)]
-        //[InlineData(MatrixFormat.Skyline)]
+        [InlineData(MatrixFormat.Skyline)]
+        [InlineData(MatrixFormat.SuiteSparse)]
         public static void TestStaticCondensations(MatrixFormat format)
         {
-            IFetiDP3dMatrixManagerFactory matricesFactory = DefineMatrixManagerFactory(format);
+            IFetiDP3dMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
                 FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
             IAugmentationConstraints augmentationConstraints =
@@ -236,13 +235,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 Assert.True(ExpectedSubdomainMatrices.GetVectorFbc(sub.ID).Equals(subdomainMatrices.Fbc, tol));
                 Assert.True(ExpectedSubdomainMatrices.GetVectorFr(sub.ID).Equals(subdomainMatrices.Fr, tol));
             }
-        }
-
-        internal static IFetiDP3dMatrixManagerFactory DefineMatrixManagerFactory(MatrixFormat format)
-        {
-            if (format == MatrixFormat.Dense) return new FetiDP3dMatrixManagerFactoryDense();
-            else if (format == MatrixFormat.Skyline) throw new NotImplementedException();
-            else throw new NotImplementedException();
         }
 
         internal static FetiDP3dMatrixManagerSerial PrepareCoarseProblemSubdomainMatrices(IModel model,

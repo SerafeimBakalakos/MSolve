@@ -34,10 +34,15 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.SchurComplements
             // Calculate the Schur complement
             LdlSkyline inverseA22 = A22.FactorLdl(false); //TODO: This should be hardcoded
             Matrix schurComplementExpected = SchurComplementCsc.CalcSchurComplementFull(A11, A21, inverseA22); //TODO: This should be hardcoded
-            SymmetricMatrix schurComplementComputed = SchurComplementCsc.CalcSchurComplementSymmetric(symA11, A21, inverseA22);
+            SymmetricMatrix schurComplementComputed1 = SchurComplementCsc.CalcSchurComplementSymmetric(symA11, A21, inverseA22);
+
+            Matrix invA22TimesA21 = inverseA22.SolveLinearSystems(A21.CopyToFullMatrix());
+            SymmetricMatrix schurComplementComputed2 = 
+                SchurComplementCsc.CalcSchurComplementSymmetric(symA11, A21, invA22TimesA21);
 
             // Check
-            Assert.True(schurComplementExpected.Equals(schurComplementComputed));
+            Assert.True(schurComplementExpected.Equals(schurComplementComputed1));
+            Assert.True(schurComplementExpected.Equals(schurComplementComputed2));
         }
     }
 }
