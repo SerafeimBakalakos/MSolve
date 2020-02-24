@@ -23,6 +23,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
 
         void CalcCoarseProblemRhs(Dictionary<ISubdomain, Vector> condensedRhsVectors);
 
+        //TODO: Does not make sense to only provide cornerNodeSelection, without midsideNodeSelection. However the latter is 
+        //      injected through the constructor
+        //TODO: Perhaps the 3 matrices should be joined into one at the subdomain level
         void CalcInverseCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection,
             Dictionary<ISubdomain, (IMatrixView KccStar, IMatrixView KacStar, IMatrixView KaaStar)> matrices);
 

@@ -6,7 +6,6 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
-using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
@@ -58,7 +57,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             var skylineBuilder = SkylineBuilder.Create(dofSeparator.NumGlobalCornerDofs, skylineColHeights);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                int s = subdomain.ID;
                 IMatrixView subdomainKccStar = condensedMatrices[subdomain];
                 int[] subdomainToGlobalIndices = dofSeparator.GetCornerBooleanMatrix(subdomain).GetRowsToColumnsMap();
                 skylineBuilder.AddSubmatrixSymmetric(subdomainKccStar, subdomainToGlobalIndices);
@@ -76,7 +74,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         private int[] FindSkylineColumnHeights(ICornerNodeSelection cornerNodeSelection)
         {
-            //only entries above the diagonal count towards the column height
+            // Only entries above the diagonal count towards the column height
             int[] colHeights = new int[dofSeparator.NumGlobalCornerDofs];
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
@@ -84,7 +82,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
                 // To determine the col height, first find the min of the dofs of this element. All these are 
                 // considered to interact with each other, even if there are 0.0 entries in the element stiffness matrix.
-                int minDof = Int32.MaxValue;
+                int minDof = int.MaxValue;
                 foreach (INode node in cornerNodes)
                 {
                     foreach (int dof in dofSeparator.GlobalCornerDofOrdering.GetValuesOfRow(node)) minDof = Math.Min(dof, minDof);

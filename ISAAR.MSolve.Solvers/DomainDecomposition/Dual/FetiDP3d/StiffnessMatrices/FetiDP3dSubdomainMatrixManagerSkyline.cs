@@ -5,6 +5,7 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
+using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.SchurComplements;
 using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
@@ -24,6 +25,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         private readonly IFetiDPDofSeparator dofSeparator;
         private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
         private readonly SingleSubdomainSystemMpi<SkylineMatrix> linearSystem;
+        private readonly IReorderingAlgorithm reordering;
         private readonly ISubdomain subdomain;
 
         private Vector fbc, fr, fcStar;
@@ -39,12 +41,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         private Matrix _KacStar;
 
         public FetiDP3dSubdomainMatrixManagerSkyline(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator, 
-            ILagrangeMultipliersEnumerator lagrangesEnumerator, IAugmentationConstraints augmentationConstraints)
+            ILagrangeMultipliersEnumerator lagrangesEnumerator, IAugmentationConstraints augmentationConstraints,
+            IReorderingAlgorithm reordering)
         {
             this.subdomain = subdomain;
             this.dofSeparator = dofSeparator;
             this.lagrangesEnumerator = lagrangesEnumerator;
             this.augmentationConstraints = augmentationConstraints;
+            this.reordering = reordering;
             this.linearSystem = new SingleSubdomainSystemMpi<SkylineMatrix>(subdomain);
         }
 
@@ -257,14 +261,18 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
 
         public DofPermutation ReorderInternalDofs()
         {
-            // Do nothing, since the sparsity pattern is irrelevant for dense matrices.
-            return DofPermutation.CreateNoPermutation();
+            int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
+            SparsityPatternSymmetric pattern = Krr.GetSubmatrixSymmetricPattern(internalDofs);
+            (int[] permutation, bool oldToNew) = reordering.FindPermutation(pattern);
+            return DofPermutation.Create(permutation, oldToNew);
         }
 
         public DofPermutation ReorderRemainderDofs()
         {
-            // Do nothing, since the sparsity pattern is irrelevant for dense matrices.
-            return DofPermutation.CreateNoPermutation();
+            int[] remainderDofs = dofSeparator.GetRemainderDofIndices(subdomain);
+            SparsityPatternSymmetric pattern = linearSystem.Matrix.GetSubmatrixSymmetricPattern(remainderDofs);
+            (int[] permutation, bool oldToNew) = reordering.FindPermutation(pattern);
+            return DofPermutation.Create(permutation, oldToNew);
         }
     }
 }

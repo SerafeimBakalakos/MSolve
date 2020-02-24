@@ -218,6 +218,25 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
             }
         }
 
+        public void AddSubmatrixToLowerTriangle(IIndexable2D subMatrix, int[] subRowsToGlobalRows, int[] subColsToGlobalCols)
+        {
+            int numSubRows = subRowsToGlobalRows.Length;
+            int numSubCols = subColsToGlobalCols.Length;
+            for (int i = 0; i < numSubRows; ++i) // Transpose(Col major ordering) = Row major ordering
+            {
+                int globalRow = subRowsToGlobalRows[i];
+                for (int j = 0; j < numSubCols; ++j)
+                {
+                    int globalCol = subColsToGlobalCols[j];
+                    
+                    // The assumption is: globalCol <= globalRow, thus height <=0
+                    // Transpose the access on the global matrix, instead of swapping the indices. 
+                    int offset = diagOffsets[globalRow] + globalRow - globalCol;
+                    values[offset] += subMatrix[i, j];
+                }
+            }
+        }
+
         /// <summary>
         /// See <see cref="ISymmetricMatrixBuilder.AddSubmatrixToLowerTriangle(IIndexable2D, IReadOnlyDictionary{int, int}, 
         /// IReadOnlyDictionary{int, int})"/>

@@ -55,70 +55,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             Vector pcgRhs = CalcInterfaceProblemRhs(matrixManager, flexibility, globalDr);
             var lagranges = Vector.CreateZero(systemOrder);
 
-            #region debug
-            int nL = lagranges.Length;
-            int nC = matrixManager.CoarseProblemRhs.Length;
-            //var writer = new LinearAlgebra.Output.FullMatrixWriter();
-
-            //string pathRhs = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\rhs.txt";
-            ////new LinearAlgebra.Output.FullVectorWriter().WriteToFile(pcgRhs, pathRhs);
-            ////LinearAlgebra.LibrarySettings.LinearAlgebraProviders = LinearAlgebra.LinearAlgebraProviderChoice.MKL;
-
-            //// Process FIrr
-            //Matrix FIrr = MultiplyWithIdentity(nL, nL, flexibility.MultiplyGlobalFIrr);
-            //FIrr = 0.5 * (FIrr + FIrr.Transpose());
-            //SkylineMatrix skyFIrr = SkylineMatrix.CreateFromMatrix(FIrr);
-            //string pathFIrr = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\FIrr.txt";
-            ////writer.WriteToFile(FIrr, pathFIrr);
-            //(Matrix rrefFIrr, List<int> independentColsFIrr) = FIrr.ReducedRowEchelonForm();
-
-            //bool isFIrrInvertible = false;
-            //double detFIrr = double.NaN;
-            //try
-            //{
-            //    detFIrr = FIrr.CalcDeterminant();
-            //    isFIrrInvertible = true;
-            //}
-            //catch (Exception) { }
-
-
-            //bool isFIrrPosDef = false;
-            //try
-            //{
-            //    double tol = 1E-50;
-            //    var FIrrFactorized = skyFIrr.FactorCholesky(false, tol);
-            //    isFIrrPosDef = true;
-            //}
-            //catch (Exception) { }
-
-
-            //// Process PCG matrix
-            //Matrix pcgMatrixExplicit = MultiplyWithIdentity(nL, nL, pcgMatrix.Multiply);
-            //pcgMatrixExplicit = 0.5 * (pcgMatrixExplicit + pcgMatrixExplicit.Transpose());
-            //SkylineMatrix skyPcgMatrix = SkylineMatrix.CreateFromMatrix(pcgMatrixExplicit);
-            //string pathPcgMatrix = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\pcg_matrix.txt";
-            ////writer.WriteToFile(pcgMatrixExplicit, pathPcgMatrix);
-            //(Matrix rref, List<int> independentCols) = pcgMatrixExplicit.ReducedRowEchelonForm();
-
-            //bool isPcgMatrixInvertible = false;
-            //double detPcgMatrix = double.NaN;
-            //try
-            //{
-            //    detPcgMatrix = pcgMatrixExplicit.CalcDeterminant();
-            //    isPcgMatrixInvertible = true;
-            //}
-            //catch (Exception) { }
-
-            //bool isPcgMatrixPosDef = false;
-            //try
-            //{
-            //    double tol = 1E-50;
-            //    var pcgMatrixFactorized = skyPcgMatrix.FactorCholesky(false, tol);
-            //    isPcgMatrixPosDef = true;
-            //}
-            //catch (Exception) { }
-            #endregion
-
             // Solve the interface problem using PCG algorithm
             var pcgBuilder = new PcgAlgorithm.Builder();
             pcgBuilder.MaxIterationsProvider = pcgSettings.MaxIterationsProvider;
@@ -131,23 +67,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             // Log statistics about PCG execution
             FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
             logger.LogIterativeAlgorithm(stats.NumIterationsRequired, stats.ResidualNormRatioEstimation);
-
-            #region debug
-            int nIter = stats.NumIterationsRequired;
-
-            // Lagranges from LU
-            //var lagrangesDirect = Vector.CreateZero(nL);
-            //pcgMatrixExplicit.FactorLU(false).SolveLinearSystem(pcgRhs, lagrangesDirect);
-            //double errorLagranges = (lagranges - lagrangesDirect).Norm2() / lagrangesDirect.Norm2();
-
-            //Vector resDirect = pcgRhs - pcgMatrixExplicit * lagrangesDirect;
-            //double normResDirect = resDirect.Norm2();
-
-            //Vector resPcg = pcgRhs - pcgMatrixExplicit * lagranges;
-            //double normResPcg = resPcg.Norm2();
-
-            //return lagrangesDirect;
-            #endregion
             return lagranges;
         }
 
@@ -160,21 +79,5 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             temp = flexibility.MultiplyFIrc(temp);
             return globalDr - temp;
         }
-
-        #region debug 
-        public static Matrix MultiplyWithIdentity(int numRows, int numCols, Action<Vector, Vector> matrixVectorMultiplication)
-        {
-            var result = Matrix.CreateZero(numRows, numCols);
-            for (int j = 0; j < numCols; ++j)
-            {
-                var lhs = Vector.CreateZero(numCols);
-                lhs[j] = 1.0;
-                var rhs = Vector.CreateZero(numRows);
-                matrixVectorMultiplication(lhs, rhs);
-                result.SetSubcolumn(j, rhs);
-            }
-            return result;
-        }
-        #endregion
     }
 }

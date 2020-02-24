@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
@@ -10,6 +11,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 {
     public interface IAugmentationConstraints
     {
+        DofTable GlobalAugmentationDofOrdering { get; }
+
         /// <summary>
         /// Qr is a (nL x na) matrix where nL is the number of global lagrange multipliers and na is 
         /// <see cref="NumGlobalAugmentationConstraints"/>.

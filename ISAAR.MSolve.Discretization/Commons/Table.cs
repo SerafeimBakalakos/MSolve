@@ -82,6 +82,16 @@ namespace ISAAR.MSolve.Discretization.Commons
             else return wholeRow.ContainsKey(col);
         }
 
+        public Table<TRow, TColumn, TValue> CopyShallow()
+        {
+            var cloneData = new Dictionary<TRow, Dictionary<TColumn, TValue>>();
+            foreach (KeyValuePair<TRow, Dictionary<TColumn, TValue>> wholeRow in this.data)
+            {
+                cloneData[wholeRow.Key] = new Dictionary<TColumn, TValue>(wholeRow.Value);
+            }
+            return new Table<TRow, TColumn, TValue>(cloneData);
+        }
+
         /// <summary>
         /// Finds and returns the an entry for which <typeparamref name="TValue"/>> satisfies <paramref name="predicate"/>.
         /// If none is found, a <see cref="KeyNotFoundException"/> will be thrown.
@@ -217,6 +227,27 @@ namespace ISAAR.MSolve.Discretization.Commons
                 return false;
             }
             else return wholeRow.TryGetValue(col, out value);
+        }
+
+        public void UnionWith(Table<TRow, TColumn, TValue> other)
+        {
+            foreach (KeyValuePair<TRow, Dictionary<TColumn, TValue>> wholeRowOther in other.data)
+            {
+                TRow row = wholeRowOther.Key;
+                bool rowExistsInThis = this.data.TryGetValue(row, out Dictionary<TColumn, TValue> colValuesThis);
+                if (rowExistsInThis)
+                {
+                    throw new NotImplementedException("Col-val pairs of other must be added to this.");
+                }
+                else
+                {
+                    this.data[row] = new Dictionary<TColumn, TValue>(wholeRowOther.Value);
+
+                    //TODO: Not really a "deep" copy since TRow, TColumn and TValue are not copied. 
+                    //if (deepCopyOther) this.data[row] = new Dictionary<TColumn, TValue>(wholeRowOther.Value); 
+                    //else this.data[row] = wholeRowOther.Value;
+                }
+            }
         }
     }
 }

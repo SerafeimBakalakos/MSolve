@@ -43,10 +43,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Operators
 
         //TODO: Perhaps rename this as GetNonZerosColumnIndices()
         //TODO: This is risky as it exposes internal data.
-        public int[] GetRowsToColumnsMap()
-        {
-            return colIndices;
-        }
+        public int[] GetRowsToColumnsMap() => colIndices;
 
         public Vector Multiply(Vector vector, bool transposeThis = false)
         {

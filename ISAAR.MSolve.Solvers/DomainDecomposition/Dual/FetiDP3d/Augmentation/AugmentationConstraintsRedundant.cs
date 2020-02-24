@@ -33,6 +33,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 
         public int NumGlobalAugmentationConstraints { get; private set; }
 
+        public DofTable GlobalAugmentationDofOrdering => throw new NotImplementedException();
+
         public void CalcAugmentationMappingMatrices()
         {
             Table<INode, IDofType, HashSet<int>> augmentationLagranges = FindAugmentationLagranges();
