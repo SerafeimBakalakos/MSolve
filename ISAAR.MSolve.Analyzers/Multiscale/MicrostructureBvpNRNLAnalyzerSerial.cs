@@ -7,6 +7,7 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM;
 using ISAAR.MSolve.FEM.Entities;
+using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Logging;
 using ISAAR.MSolve.Logging.Interfaces;
@@ -22,7 +23,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
     /// </summary>
     public class MicrostructureBvpNRNLAnalyzerSerial : IChildAnalyzer
     {
-        private readonly IReadOnlyDictionary<int, ILinearSystem> linearSystems;
+        private Dictionary<int, ILinearSystem> linearSystems;
         protected readonly IModel model;
         private readonly Dictionary<int,NonLinearSubdomainUpdaterWithInitialConditions> subdomainUpdaters;
         //private readonly ISubdomainGlobalMapping[] mappings; 
@@ -55,6 +56,8 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
             this.model = model;
             this.solver = solver;
             this.subdomainUpdaters = subdomainUpdaters;
+            linearSystems = new Dictionary<int, ILinearSystem>();
+            foreach (ISubdomain secSubdomain in model.EnumerateSubdomains()) { linearSystems.Add(secSubdomain.ID, solver.GetLinearSystem(secSubdomain)); }
             //this.mappings = mappings;
             //this.linearSystems = solver.LinearSystems;
             //this.provider = provider;
@@ -147,7 +150,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                 //uPlusdu.Add(linearSystem.ID, tempCopy); //prosthiki MS
                 //mappings[linearSystems.Select((v, i) => new { System = v, Index = i }).First(x => x.System.ID == linearSystem.ID).Index].SubdomainToGlobalVector(((Vector)linearSystem.RHS).Data, globalRhs.Data);
             }
-            rhsNorm = provider.CalculateRhsNorm(globalRhs);
+            rhsNorm = globalRhs.Norm2(); // provider.CalculateRhsNorm(globalRhs);
         }
 
         private void UpdateInternalVectors()//TODOMaria this is where I should add the calculation of the internal nodal force vector
@@ -162,7 +165,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                 rhs[id] = r; //comment MS: xanahtizei to rhs kai to xanaperna sto globalRHS(molis to kane clear opote ok)
                 model.GlobalDofOrdering.AddVectorSubdomainToGlobal(linearSystem.Subdomain, linearSystem.RhsVector, globalRhs);
             }
-            rhsNorm = provider.CalculateRhsNorm(globalRhs);
+            rhsNorm = globalRhs.Norm2(); // provider.CalculateRhsNorm(globalRhs);
         }
 
         public void Initialize(bool isFirstAnalysis = true)
@@ -203,7 +206,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                     SplitResidualForcesToSubdomains();//TODOMaria scatter residuals to subdomains
                     if ((step + 1) % stepsForMatrixRebuild == 0)
                     {
-                        provider.Reset();
+                        providerReset(); // provider.Reset();
                         BuildMatrices();
                         //solver.Initialize(); //TODO: Using this needs refactoring
                     }
@@ -218,6 +221,20 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
             //StoreLogResults(start, end);
         }
 
+        private void providerReset()
+        {
+
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                foreach (IElement element in subdomain.EnumerateElements())
+                {
+                    ((IFiniteElement)element.ElementType).ClearMaterialState();
+                }
+                subdomain.StiffnessModified = true;
+            }
+            
+        }
+
         private double CalculateInternalRHS(int currentIncrement, int step, int totalIncrements)
         {
             globalRhs.Clear();
@@ -227,7 +244,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
 
                 if (currentIncrement == 0 && step == 0)
                 {                    
-                    du[id].AddIntoThis((linearSystem.Solution));
+                    du[id].AddIntoThis((linearSystem.Solution)); //TODOGer1
                     uPlusdu[id].Clear();
                     uPlusdu[id].AddIntoThis(u[id]);
                     uPlusdu[id].AddIntoThis(du[id]);
@@ -241,7 +258,8 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                 }
                 IVector internalRhs = subdomainUpdaters[id].GetRHSFromSolutionWithInitialDisplacemntsEffect(uPlusdu[id], du[id], boundaryNodes,
                 initialConvergedBoundaryDisplacements, totalBoundaryDisplacements, currentIncrement + 1, totalIncrements);//TODOMaria this calculates the internal forces
-                provider.ProcessInternalRhs(linearSystem.Subdomain, uPlusdu[id], internalRhs);//TODOMaria this does nothing
+                
+                //provider.ProcessInternalRhs(linearSystem.Subdomain, uPlusdu[id], internalRhs);//TODOMaria this does nothing
                                                                                     //(new Vector<double>(u[subdomain.ID] + du[subdomain.ID])).Data);
 
                 if (parentAnalyzer != null)
@@ -256,7 +274,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                 linearSystem.RhsVector.SubtractIntoThis(internalRhs);
                 model.GlobalDofOrdering.AddVectorSubdomainToGlobal(linearSystem.Subdomain, linearSystem.RhsVector, globalRhs);
             }
-            double providerRHSNorm = provider.CalculateRhsNorm(globalRhs);
+            double providerRHSNorm = globalRhs.Norm2(); // provider.CalculateRhsNorm(globalRhs);
             return providerRHSNorm;
         }
 
@@ -353,7 +371,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                 model.GlobalDofOrdering.AddVectorSubdomainToGlobal(linearSystem.Subdomain, linearSystem.RhsVector, globalRhs);
                 //mappings[linearSystems.Select((v, i) => new { System = v, Index = i }).First(x => x.System.ID == linearSystem.ID).Index].SubdomainToGlobalVector(subdomainRHS.Data, globalRhs.Data);
             }
-            rhsNorm = provider.CalculateRhsNorm(globalRhs);
+            rhsNorm = globalRhs.Norm2(); // provider.CalculateRhsNorm(globalRhs);
             //TODOMS: possibly it is not nessesary to update globalRHS (and of course not clear it before the loop) as it is not updated in 177-UpdateRHS(increment) either.
             // and it is used when it is recalculated in CalculateInternalRHS......
         }

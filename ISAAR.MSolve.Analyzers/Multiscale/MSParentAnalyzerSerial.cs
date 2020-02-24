@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ISAAR.MSolve.Analyzers.Interfaces;
 using ISAAR.MSolve.Analyzers.NonLinear;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Providers;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Logging.Interfaces;
 using ISAAR.MSolve.Solvers;
@@ -16,19 +17,20 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
     /// </summary>
     public class MSParentAnalyzerSerial : INonLinearParentAnalyzer
     {
-        private readonly IReadOnlyDictionary<int, ILinearSystem> linearSystems;
+        //private readonly IReadOnlyDictionary<int, ILinearSystem> linearSystems;
         private readonly IModel model;
-        private readonly IStaticProvider provider;
-        private readonly ISolver solver;
+        //private readonly IStaticProvider provider;
+        private readonly ISolverMpi solver;
         private bool firstInitialization;
+        private ElementStructuralStiffnessProvider stiffnessProvider = new ElementStructuralStiffnessProvider();
 
-        public MSParentAnalyzerSerial(IModel model, ISolver solver, IStaticProvider provider, 
+        public MSParentAnalyzerSerial(IModel model, ISolverMpi solver/*, IStaticProvider provider*/, 
             IChildAnalyzer childAnalyzer)
         {
             this.model = model;
-            this.linearSystems = solver.LinearSystems;
+            //this.linearSystems = solver.LinearSystems;
             this.solver = solver;
-            this.provider = provider;
+            //this.provider = provider;
             this.ChildAnalyzer = childAnalyzer;
             this.ChildAnalyzer.ParentAnalyzer = this;
         }
@@ -39,10 +41,11 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
 
         public void BuildMatrices()
         {
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
-            {
-                linearSystem.Matrix = provider.CalculateMatrix(linearSystem.Subdomain);
-            }
+            solver.BuildGlobalMatrix(stiffnessProvider);
+            //foreach (ILinearSystem linearSystem in linearSystems.Values)
+            //{
+            //    linearSystem.Matrix = provider.CalculateMatrix(linearSystem.Subdomain);
+            //}
         }
 
         public IVector GetOtherRhsComponents(ILinearSystem linearSystem, IVector currentSolution)
@@ -65,10 +68,18 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
             //model.AssignLoads(); //mhdenizei ta subdomain.forces ean exoume epivalei fortio afou tous pernaei ta fortia
 
             //TODO: this should be done elsewhere. It makes sense to assign the RHS vector when the stiffness matrix is assigned
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
+
+            foreach(ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                linearSystem.RhsVector = linearSystem.Subdomain.Forces;
+                solver.GetLinearSystem(subdomain).RhsVector = solver.GetLinearSystem(subdomain).Subdomain.Forces; 
+
+
             }
+
+            //foreach (ILinearSystem linearSystem in linearSystems.Values)
+            //{
+            //    linearSystem.RhsVector = linearSystem.Subdomain.Forces;
+            //}
 
             ChildAnalyzer.Initialize(isFirstAnalysis);
         }

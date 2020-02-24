@@ -132,7 +132,8 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 foreach (ISubdomain secSubdomain in model.EnumerateSubdomains())
                 {
                     ILinearSystem linearSystem = solver.GetLinearSystem(secSubdomain);
-                    linearSystem.Reset();
+                    //linearSystem.Reset();
+                    //TODOGer1: mhpws xreiazetai linearSystem.Solution.Clear ?s
                     linearSystem.RhsVector = Vector.CreateFromArray(KfpDqSubdomains[secSubdomain.ID][k], false);
                     
                     //secSubdomain.RhsVector = Vector.CreateFromArray(KfpDqSubdomains[secSubdomain.Subdomain.ID][k], false);
@@ -221,6 +222,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                             }
                         }
                     }
+                    #endregion
 
                 }
 

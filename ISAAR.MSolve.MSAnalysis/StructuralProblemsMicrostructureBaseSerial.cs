@@ -97,7 +97,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             
         }
 
-        public virtual (MicrostructureBvpNRNLAnalyzer, ProblemStructural,ElementStructuralStiffnessProvider) AnalyzeMicrostructure(Model model,  ISolverMpi solver,
+        public virtual (MicrostructureBvpNRNLAnalyzerSerial, ElementStructuralStiffnessProvider) AnalyzeMicrostructure(Model model,  ISolverMpi solver,
             int increments, int MaxIterations, int IterationsForMatrixRebuild, Dictionary<int, Dictionary<IDofType, double>> totalPrescribedBoundaryDisplacements,
             Dictionary<int, Dictionary<IDofType, double>> initialConvergedBoundaryDisplacements, Dictionary<int, Node> boundaryNodes, Dictionary<int, IVector> uInitialFreeDOFDisplacementsPerSubdomain)
         {
@@ -136,13 +136,13 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             #endregion
 
             #region solution and update ------------->THA MPEI ENTOS KLASHS: of free converged displacements vectors;
-            MSParentAnalyzer parentAnalyzer = new MSParentAnalyzer(model, solver, provider, microAnalyzer);
+            MSParentAnalyzerSerial parentAnalyzer = new MSParentAnalyzerSerial(model, solver, microAnalyzer);
             //parentAnalyzer.BuildMatrices(); //v2.6 ston neon static analyzer den xreiazetai to build matrices poia
             parentAnalyzer.Initialize();
             parentAnalyzer.Solve();
             #endregion
 
-            return (microAnalyzer,provider,elementProvider);
+            return (microAnalyzer,elementProvider);
         }
     }
 }

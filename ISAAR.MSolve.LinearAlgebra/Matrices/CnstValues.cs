@@ -12,7 +12,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
         //public string exampleOutputPathGen = @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\examples\example1\input_matlab";
 
         public string exampleOutputPathGen { get { if (runCluster) { return @"C:\Users\cluster\Documents\Large_rves\examples\example3\input_matlab"; }
-                else { return @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\examples\example1\input_matlab"; } } }
+                else { return @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\examples\example2\input_matlab"; } } }
         public string solverPath { get { return exampleOutputPathGen + @"\model_overwrite\subdomain_data_solver"; } }
 
         public string debugString = @"C:\Users\acivi\Documents\notes_elegxoi_2\develp_3D";

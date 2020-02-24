@@ -111,7 +111,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         public object Clone()
         {
             int new_rve_id = rnd1.Next(1, database_size + 1);
-            return new MicrostructureDefGrad3D(rveBuilder.Clone(new_rve_id), createSolver, EstimateOnlyLinearResponse, database_size);
+            return new MicrostructureDefGrad3DSerial(rveBuilder.Clone(new_rve_id), createSolver, EstimateOnlyLinearResponse, database_size);
         }
 
         public Dictionary<int, Node> BoundaryNodesDictionary
@@ -136,7 +136,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 {
                     ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
                     linearSystem.Reset(); //TODO find out if new structures cause any problems
-                    linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
+                    linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size); //TODOGer1: is this really nesessary?
                     linearSystem.RhsVector = linearSystem.Subdomain.Forces; //TODOGer1: pithanws thelei elegxo afto.
                 }
                 this.InitializeFreeAndPrescribedDofsInitialDisplacementVectors();
@@ -174,7 +174,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             
             #region Creation of nessesary analyzers for NRNLAnalyzer and Creation of Microstructure analyzer (NRNLdevelop temporarilly) and solution ;
             int increments = 1; int MaxIterations = 100; int IterationsForMatrixRebuild = 1;
-            (MicrostructureBvpNRNLAnalyzer microAnalyzer, ProblemStructural provider, ElementStructuralStiffnessProvider elementProvider) = 
+            (MicrostructureBvpNRNLAnalyzerSerial microAnalyzer,  ElementStructuralStiffnessProvider elementProvider) = 
                 AnalyzeMicrostructure(model, solver, increments, MaxIterations, IterationsForMatrixRebuild,
                 totalPrescribedBoundaryDisplacements, initialConvergedBoundaryDisplacements, boundaryNodes, uInitialFreeDOFDisplacementsPerSubdomain);
             #endregion
@@ -186,9 +186,9 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
             #region INTEGRATION stresses 
             Dictionary<int, IVector> du = microAnalyzer.GetConvergedIncrementalSolutionVectorsOfFreeDofs();
-            Dictionary<int, double[]> FppReactionVectorSubdomains = SubdomainCalculationsMultiple.CalculateFppReactionsVectorSubdomains(model, elementProvider, scaleTransitions, boundaryNodes,
+            Dictionary<int, double[]> FppReactionVectorSubdomains = SubdomainCalculationsMultipleSerial.CalculateFppReactionsVectorSubdomains(model, elementProvider, scaleTransitions, boundaryNodes,
                 uInitialFreeDOFDisplacementsPerSubdomain, du, initialConvergedBoundaryDisplacements, totalPrescribedBoundaryDisplacements, increments, increments);
-            double[] FppReactionVector= SubdomainCalculationsMultiple.CombineMultipleSubdomainsStressesIntegrationVectorsIntoTotal(FppReactionVectorSubdomains);
+            double[] FppReactionVector= SubdomainCalculationsMultipleSerial.CombineMultipleSubdomainsStressesIntegrationVectorsIntoTotal(FppReactionVectorSubdomains);
 
 
 
@@ -206,17 +206,17 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             #endregion
 
             #region INTEGRATION constitutive Matrix
-            var integrationSimultaneous = new SubdomainCalculationsAndAssembly();
+            var integrationSimultaneous = new SubdomainCalculationsAndAssemblySerial();
             (Dictionary<int, double[][]> KfpDqSubdomains, Dictionary<int, double[][]> KppDqVectorsSubdomains) = 
                 integrationSimultaneous.UpdateSubdomainKffAndCalculateKfpDqAndKppDqpMultipleObje(model, elementProvider, scaleTransitions, boundaryNodes, boundaryElements, solver);
 
 
-            Dictionary<int, double[][]> f2_vectorsSubdomains = SubdomainCalculationsMultiple.CalculateKffinverseKfpDqSubdomains(KfpDqSubdomains, model, elementProvider, scaleTransitions, boundaryNodes, solver);
+            Dictionary<int, double[][]> f2_vectorsSubdomains = SubdomainCalculationsMultipleSerial.CalculateKffinverseKfpDqSubdomains(KfpDqSubdomains, model, elementProvider, scaleTransitions, boundaryNodes, solver);
 
-            Dictionary<int, double[][]> f3_vectorsSubdomains = SubdomainCalculationsMultiple.CalculateKpfKffinverseKfpDqSubdomains(f2_vectorsSubdomains, model, elementProvider, scaleTransitions, boundaryNodes);
+            Dictionary<int, double[][]> f3_vectorsSubdomains = SubdomainCalculationsMultipleSerial.CalculateKpfKffinverseKfpDqSubdomains(f2_vectorsSubdomains, model, elementProvider, scaleTransitions, boundaryNodes);
 
-            double[][] f3_vectors = SubdomainCalculationsMultiple.CombineMultipleSubdomainsIntegrationVectorsIntoTotal(f3_vectorsSubdomains,scaleTransitions);
-            double[][] KppDqVectors = SubdomainCalculationsMultiple.CombineMultipleSubdomainsIntegrationVectorsIntoTotal(KppDqVectorsSubdomains,scaleTransitions);
+            double[][] f3_vectors = SubdomainCalculationsMultipleSerial.CombineMultipleSubdomainsIntegrationVectorsIntoTotal(f3_vectorsSubdomains,scaleTransitions);
+            double[][] KppDqVectors = SubdomainCalculationsMultipleSerial.CombineMultipleSubdomainsIntegrationVectorsIntoTotal(KppDqVectorsSubdomains,scaleTransitions);
 
             double[][] f4_vectors = SubdomainCalculations.SubtractConsecutiveVectors(KppDqVectors, f3_vectors);
             double[,] DqCondDq = SubdomainCalculations.CalculateDqCondDq(f4_vectors, scaleTransitions, boundaryNodes);
@@ -504,17 +504,19 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
         public void CalculateOriginalConstitutiveMatrixWithoutNLAnalysis()
         {
-            ISolver solver;
+            ISolverMpi solver;
             if (matrices_not_initialized)
             {
                 this.InitializeMatrices();
                 this.InitializeData();
                 solver = createSolver(model);
                 solver.OrderDofs(false);
-                foreach (ILinearSystem linearSystem in solver.LinearSystems.Values)
+                foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
+                    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
                     linearSystem.Reset(); //TODO find out if new structures cause any problems
-                    linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
+                    linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size); //TODOGer1: is this really nesessary?
+                    linearSystem.RhsVector = linearSystem.Subdomain.Forces; //TODOGer1: pithanws thelei elegxo afto.
                 }
                 this.InitializeFreeAndPrescribedDofsInitialDisplacementVectors();
             }
@@ -522,23 +524,28 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             {
                 solver = createSolver(model);
                 solver.OrderDofs(false); //v2.1. TODO: Is this needed in this case?
-                foreach (ILinearSystem linearSystem in solver.LinearSystems.Values) linearSystem.Reset();
+                foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+                {
+                    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                    linearSystem.Reset();
+                    linearSystem.RhsVector = linearSystem.Subdomain.Forces; //TODOGer1: is this really nesessary?
+                }
                 //solver.ResetSubdomainForcesVector();
             }
 
 
             var elementProvider = new ElementStructuralStiffnessProvider();                      
             #region INTEGRATION constitutive Matrix            
-            var integrationSimultaneous = new SubdomainCalculationsAndAssembly();
+            var integrationSimultaneous = new SubdomainCalculationsAndAssemblySerial();
             (Dictionary<int, double[][]> KfpDqSubdomains, Dictionary<int, double[][]> KppDqVectorsSubdomains) =
                 integrationSimultaneous.UpdateSubdomainKffAndCalculateKfpDqAndKppDqpMultipleObje(model, elementProvider, scaleTransitions, boundaryNodes, boundaryElements, solver);
 
-            Dictionary<int, double[][]> f2_vectorsSubdomains = SubdomainCalculationsMultiple.CalculateKffinverseKfpDqSubdomains(KfpDqSubdomains, model, elementProvider, scaleTransitions, boundaryNodes, solver);
+            Dictionary<int, double[][]> f2_vectorsSubdomains = SubdomainCalculationsMultipleSerial.CalculateKffinverseKfpDqSubdomains(KfpDqSubdomains, model, elementProvider, scaleTransitions, boundaryNodes, solver);
 
-            Dictionary<int, double[][]> f3_vectorsSubdomains = SubdomainCalculationsMultiple.CalculateKpfKffinverseKfpDqSubdomains(f2_vectorsSubdomains, model, elementProvider, scaleTransitions, boundaryNodes);
+            Dictionary<int, double[][]> f3_vectorsSubdomains = SubdomainCalculationsMultipleSerial.CalculateKpfKffinverseKfpDqSubdomains(f2_vectorsSubdomains, model, elementProvider, scaleTransitions, boundaryNodes);
 
-            double[][] f3_vectors = SubdomainCalculationsMultiple.CombineMultipleSubdomainsIntegrationVectorsIntoTotal(f3_vectorsSubdomains, scaleTransitions);
-            double[][] KppDqVectors = SubdomainCalculationsMultiple.CombineMultipleSubdomainsIntegrationVectorsIntoTotal(KppDqVectorsSubdomains, scaleTransitions);
+            double[][] f3_vectors = SubdomainCalculationsMultipleSerial.CombineMultipleSubdomainsIntegrationVectorsIntoTotal(f3_vectorsSubdomains, scaleTransitions);
+            double[][] KppDqVectors = SubdomainCalculationsMultipleSerial.CombineMultipleSubdomainsIntegrationVectorsIntoTotal(KppDqVectorsSubdomains, scaleTransitions);
 
             double[][] f4_vectors = SubdomainCalculations.SubtractConsecutiveVectors(KppDqVectors, f3_vectors);
             double[,] DqCondDq = SubdomainCalculations.CalculateDqCondDq(f4_vectors, scaleTransitions, boundaryNodes);
