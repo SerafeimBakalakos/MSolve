@@ -115,6 +115,40 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
 
         public DofPermutation ReorderCoarseProblemDofs() => DofPermutation.CreateNoPermutation();
 
+        private DofPermutation ReorderGlobalCornerDofs()
+        {
+            if (reordering == null) throw new ArgumentException();
+
+            // Find global dof ordering of coarse dofs
+            int numCornerDofs = dofSeparator.NumGlobalCornerDofs;
+            int numCoarseDofs = numCornerDofs + augmentationConstraints.NumGlobalAugmentationConstraints;
+
+            //TODO: Do this in another method and store the result after reordering
+            var coarseDofOrdering = dofSeparator.GlobalCornerDofOrdering.CopyShallow();
+            // TODO: Do this in DofTable
+            foreach ((INode node, IDofType dof, int idx) in augmentationConstraints.GlobalAugmentationDofOrdering)
+            {
+                coarseDofOrdering[node, dof] = numCornerDofs + idx;
+            }
+
+            var pattern = SparsityPatternSymmetric.CreateEmpty(dofSeparator.NumGlobalCornerDofs);
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                // Treat each subdomain as a superelement with only its corner nodes.
+                DofTable localCornerDofOrdering = dofSeparator.GetCornerDofOrdering(subdomain);
+                int numLocalCornerDofs = localCornerDofOrdering.EntryCount;
+                var subdomainToGlobalDofs = new int[numLocalCornerDofs];
+                foreach ((INode node, IDofType dofType, int localIdx) in localCornerDofOrdering)
+                {
+                    int globalIdx = coarseDofOrdering[node, dofType];
+                    subdomainToGlobalDofs[localIdx] = globalIdx;
+                }
+                pattern.ConnectIndices(subdomainToGlobalDofs, false);
+            }
+            (int[] permutation, bool oldToNew) = reordering.FindPermutation(pattern);
+            return DofPermutation.Create(permutation, oldToNew);
+        }
+
         //TODO: Duplication between this and the 2D version
         private int[] FindSkylineColumnHeights(ICornerNodeSelection cornerNodeSelection, 
             IMidsideNodesSelection midsideNodesSelection)
@@ -129,7 +163,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             }
 
             // Only entries above the diagonal count towards the column height
-            int numCoarseDofs = dofSeparator.NumGlobalCornerDofs + augmentationConstraints.NumGlobalAugmentationConstraints;
+            int numCoarseDofs = numCornerDofs + augmentationConstraints.NumGlobalAugmentationConstraints;
             int[] colHeights = new int[numCoarseDofs];
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
