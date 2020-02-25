@@ -16,9 +16,11 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
     /// Supportive class  that implements nesessary integration methods associated with FE2 multiscale analysis 
     /// Authors: Gerasimos Sotiropoulos
     /// </summary>
-    public static class SubdomainCalculationsMultipleSerial
+    public class SubdomainCalculationsMultipleSerial
     {
-        
+        public bool UseLambdaSolutionsKff { get; set; } = false;
+        public Vector[] previousLambdaSolutionsKff;
+                
         #region v2 methods
         public static double[][] CombineMultipleSubdomainsIntegrationVectorsIntoTotal(Dictionary<int, double[][]> VectorsSubdomains, IScaleTransitions scaleTransitions)
         {
@@ -92,7 +94,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         /// <param name="solver">
         /// <paramref name="solver"/>.<see cref="ISolver.Initialize"/> must already have been called. Also the linear system matrices must already have been set.
         /// </param>
-        public static Dictionary<int, double[][]> CalculateKffinverseKfpDqSubdomains(Dictionary<int, double[][]> KfpDqSubdomains, Model model, IElementMatrixProvider elementProvider,
+        public Dictionary<int, double[][]> CalculateKffinverseKfpDqSubdomains(Dictionary<int, double[][]> KfpDqSubdomains, Model model, IElementMatrixProvider elementProvider,
             IScaleTransitions scaleTransitions, Dictionary<int, Node> boundaryNodes, ISolverMpi solver)
         {
             //IReadOnlyDictionary<int, ILinearSystem> linearSystems = solver.LinearSystems;
@@ -123,6 +125,10 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
             RedistributeKfpDqInSubdomainRHSs(KfpDqSubdomains, model, scaleTransitions, solver);
 
+
+            if (UseLambdaSolutionsKff)
+            { if (previousLambdaSolutionsKff == null) { previousLambdaSolutionsKff = new Vector[scaleTransitions.MacroscaleVariableDimension()]; } } //TODOGer1: pithanws axrhsto to copy
+
             #region Consecutively(for macroscaleVariableDimension times) Set proper right hand side. Solve. Copy solution in output vector 
             //int oneSubomainID = linearSystems.First().Value.Subdomain.ID;           //seclinearSystems[0].ID;
             for (int k = 0; k < scaleTransitions.MacroscaleVariableDimension(); k++) //KfpDqSubdomains[linearSystems[0].ID].GetLength(0)=Mac
@@ -146,7 +152,12 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 #endregion
 
                 #region Solve
+
+                solver.usePreviousLambda = this.UseLambdaSolutionsKff;
+                if (!(previousLambdaSolutionsKff == null)) { solver.previousLambda = previousLambdaSolutionsKff[k]; }
                 solver.Solve();
+                if (UseLambdaSolutionsKff)
+                { previousLambdaSolutionsKff[k] = solver.previousLambda.Copy(); } //TODOGer1: pithanws axrhsto to copy
                 #endregion
 
                 #region Copy solution in output vector

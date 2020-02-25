@@ -53,6 +53,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private FetiDPFlexibilityMatrixMpi flexibility;
         private bool isStiffnessModified = true;
         private IFetiPreconditioner preconditioner;
+        public Vector previousLambda { get; set; }
+        public bool usePreviousLambda { get; set; } = false;
 
         public FetiDPSolverMpi(ProcessDistribution processDistribution, IModel model, ICornerNodeSelection cornerNodeSelection,
             IFetiDPMatrixManagerFactory matrixManagerFactory, IFetiPreconditioningOperations preconditioning,

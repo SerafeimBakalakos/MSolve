@@ -96,5 +96,8 @@ namespace ISAAR.MSolve.Solvers
         /// Solves the linear systems.
         /// </summary>
         void Solve();
+
+        Vector previousLambda { get; set; }
+        bool usePreviousLambda { get; set; }
     }
 }

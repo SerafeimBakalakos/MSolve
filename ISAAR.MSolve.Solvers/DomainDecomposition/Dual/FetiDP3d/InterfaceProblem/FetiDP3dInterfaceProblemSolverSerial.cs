@@ -34,6 +34,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         private readonly IModel model;
         private readonly PcgSettings pcgSettings;
 
+        public Vector previousLambda { get; set; }
+
+        public bool usePreviousLambda;
+
         public FetiDP3dInterfaceProblemSolverSerial(IModel model, PcgSettings pcgSettings, 
             IAugmentationConstraints augmentationConstraints)
         {
@@ -53,7 +57,16 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             var pcgPreconditioner = new FetiDPInterfaceProblemPreconditioner(preconditioner);
             Vector globalDr = ((IFetiDP3dMatrixManager)matrixManager).GlobalDr;
             Vector pcgRhs = CalcInterfaceProblemRhs(matrixManager, flexibility, globalDr);
-            var lagranges = Vector.CreateZero(systemOrder);
+
+            Vector lagranges;
+            if (!(previousLambda == null))
+            {
+               lagranges= previousLambda;
+            }
+            else
+            {
+                lagranges=  Vector.CreateZero(systemOrder);
+            }
 
             #region debug
             int nL = lagranges.Length;
@@ -129,8 +142,18 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             pcgBuilder.ResidualTolerance = pcgSettings.ConvergenceTolerance;
             pcgBuilder.Convergence = pcgSettings.ConvergenceStrategyFactory.CreateConvergenceStrategy(globalForcesNorm);
             PcgAlgorithm pcg = pcgBuilder.Build(); //TODO: perhaps use the pcg from the previous analysis if it has reorthogonalization.
-            IterativeStatistics stats = pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, true,
-                () => Vector.CreateZero(systemOrder));
+
+            IterativeStatistics stats;
+            if (!(previousLambda == null))
+            {
+                stats = pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, false,
+                  () => Vector.CreateZero(systemOrder));
+            }
+            else
+            {
+                stats = pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, true,
+                  () => Vector.CreateZero(systemOrder));
+            }
 
             // Log statistics about PCG execution
             FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
