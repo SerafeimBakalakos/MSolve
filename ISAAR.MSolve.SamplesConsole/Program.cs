@@ -11,6 +11,9 @@ using ISAAR.MSolve.Solvers.Tests.Utilities;
 using MGroup.Stochastic;
 using MGroup.Stochastic.Structural;
 using MGroup.Stochastic.Structural.Example;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
+using System.Linq;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 
 namespace ISAAR.MSolve.SamplesConsole
 {
@@ -20,42 +23,62 @@ namespace ISAAR.MSolve.SamplesConsole
 
         static void Main(string[] args)
         {
-            //Console.WriteLine("Hello World");
-            //Parallel.DistributeModelExample.RunParallelHardcoded(args);
-            //Parallel.DistributeModelExample.RunParallelWithSolver(args);
-            //MpiTestSuite.StartTesting(args);
-            //MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Quads4x4HomogeneousTests.TestScalingMatricesMpi(args);
+            (Model model1, double[] uc1, Vector globalU1, bool IsFetiDpSolver3d) = SeparateCodeCheckingClass5b_bNEW_debugGit.RunExample();
+            (Model model2, double[] uc2, Vector globalU2) =SeparateCodeCheckingClass5b_bNEW_debugGit.RunExampleSerial();
+                        
+            Vector globalU1_2 = ReorderDirectSolverSolutionIn_globalU1_format(globalU1, globalU2, model1, model2);
+            
+            var check = ((globalU1 - globalU1_2).Norm2()) / (globalU1.Norm2());
+            var check2 = (globalU1 - globalU1_2);
 
-            //SolveBuildingInNoSoilSmall();
-            //TrussExample.Run();
-            //FEM.Cantilever2D.Run();
-            //FEM.Cantilever2DPreprocessor.Run();
-            //FEM.WallWithOpenings.Run();
-            //SeparateCodeCheckingClass.Check06();
-            //SolveBuildingInNoSoilSmall();
-            //SolveBuildingInNoSoilSmallDynamic();
-            //SolveStochasticMaterialBeam2DWithBruteForceMonteCarlo();
-            //CNTExamples.CNT_4_4_DisplacementControl();
-            //CNTExamples.CNT_4_4_NewtonRaphson();
-            //Tests.FEM.Shell8andCohesiveNonLinear.RunTest();
-            //AppliedDisplacementExample.Run();
+            printGlobalSolutionStats(check, IsFetiDpSolver3d);
+            
 
-            //Logging.PrintForceDisplacementCurve.CantileverBeam2DCorotationalLoadControl();
+            double maxErrValue = check2.CopyToArray().Max();
 
-            //SuiteSparseBenchmarks.MemoryConsumptionDebugging();
-            //SolverBenchmarks.SuiteSparseMemoryConsumptionDebugging();
-            //NRNLAnalyzerDevelopTest.SolveDisplLoadsExample();
-            //SeparateCodeCheckingClass4.Check05bStressIntegrationObje_Integration();
-            //SeparateCodeCheckingClass4.Check_Graphene_rve_Obje_Integration();
-            //IntegrationElasticCantileverBenchmark.RunExample();
-            //OneRveExample.Check_Graphene_rve_serial();
-            //BondSlipTest.CheckStressStrainBonSlipMaterial();
-            //OneRveExample.Check_Graphene_rve_parallel();
-            //LinearRves.CheckShellScaleTransitionsAndMicrostructure();
-            //SolveCantileverWithStochasticMaterial();
+            
 
-            //MeshPartitioningExamples.PartitionMeshes();
 
+
+
+        }
+
+        private static void printGlobalSolutionStats(double check, bool IsFetiDpSolver3d)
+        {
+            var cnstVal = new CnstValues();
+            if (cnstVal.printGlobalSolutionStats)
+            {
+                string[] statsLines = new string[] { "GlobalSolutionError=" + check.ToString() + ",", };
+                if (IsFetiDpSolver3d)
+                {
+                    var statsOutputPath = cnstVal.interfaceSolverStatsPath + @"\GlobalSolution_FetiDP_3d_stats.txt";
+                    cnstVal.WriteToFileStringArray(statsLines, statsOutputPath);
+                }
+                else
+                {
+                    var statsOutputPath = cnstVal.interfaceSolverStatsPath + @"\GlobalSolution_FetiDP_stats.txt";
+                    cnstVal.WriteToFileStringArray(statsLines, statsOutputPath);
+                }
+            }
+        }
+
+        private static Vector ReorderDirectSolverSolutionIn_globalU1_format(Vector globalU1, Vector globalU2 , Model model1, Model model2)
+        {
+            //var freeNodesIds = model1.NodesDictionary.Values.Where(x => x.Constraints.Count == 0).Select(x=>x.ID).ToList();
+            var freeNodesIds = model1.GlobalDofOrdering.GlobalFreeDofs.GetRows().Select(x => x.ID);
+            Vector globalU1_2 = Vector.CreateZero(globalU1.Length);
+            foreach (int nodeID in freeNodesIds)
+            {
+                foreach (var dof in model2.GlobalDofOrdering.GlobalFreeDofs.GetDataOfRow(model2.GetNode(nodeID)).Keys)
+                {
+                    int model1Dof_order = model1.GlobalDofOrdering.GlobalFreeDofs[model1.GetNode(nodeID), dof];
+                    int model2Dof_order = model2.GlobalDofOrdering.GlobalFreeDofs[model2.GetNode(nodeID), dof];
+
+                    globalU1_2[model1Dof_order] = globalU2[model2Dof_order];
+                }
+            }
+
+            return globalU1_2; 
         }
 
         private static void SolveBuildingInNoSoilSmall()

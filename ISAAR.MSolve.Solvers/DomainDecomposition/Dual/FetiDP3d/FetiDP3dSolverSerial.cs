@@ -32,14 +32,14 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.FlexibilityMatrix;
 //TODO: Use a base class for the code that is identical between FETI-1 and FETI-DP.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
 {
-    public class FetiDP3dSolverSerial : ISolverMpi
+    public class FetiDP3dSolverSerial : ISolverMpi, IFetiSolver
     {
         internal const string name = "FETI-DP Solver"; // for error messages and logging
         private readonly IAugmentationConstraints augmentationConstraints;
         private readonly IFreeDofDisplacementsCalculator displacementsCalculator;
         private readonly DofOrderer dofOrderer;
         private readonly FetiDPDofSeparatorSerial dofSeparator;
-        private readonly IFetiDPInterfaceProblemSolver interfaceProblemSolver;
+        private readonly FetiDP3dInterfaceProblemSolverSerial interfaceProblemSolver;
         private readonly LagrangeMultipliersEnumeratorSerial lagrangesEnumerator;
         private readonly FetiDP3dMatrixManagerSerial matrixManager;
         private readonly IModel model;
@@ -55,6 +55,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
         private bool isStiffnessModified = true;
         private IFetiPreconditioner preconditioner;
 
+        public Vector previousLambda { get; set; }
+
+        public bool usePreviousLambda { get; set; }
         public FetiDP3dSolverSerial(IModel model, ICornerNodeSelection cornerNodeSelection, IMidsideNodesSelection midsideNodesSelection, IAugmentationConstraintsFactory augmentationConstraintsFactory,
             IFetiDP3dMatrixManagerFactory matrixManagerFactory, IFetiPreconditioningOperations preconditioning,
             ICrosspointStrategy crosspointStrategy, PcgSettings pcgSettings, bool problemIsHomogeneous)
@@ -87,7 +90,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             this.precondFactory = new FetiPreconditionerSerial.Factory();
 
             // Interface problem
-            this.interfaceProblemSolver = new FetiDP3dInterfaceProblemSolverSerial(model, pcgSettings,augmentationConstraints);
+            this.interfaceProblemSolver = new FetiDP3dInterfaceProblemSolverSerial(model, pcgSettings, augmentationConstraints);
             this.displacementsCalculator = new FetiDP3dFreeDofDisplacementsCalculatorSerial(model, dofSeparator, lagrangesEnumerator,
                 augmentationConstraints, matrixManager);
 
@@ -284,8 +287,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
                     sub => matrixManager.GetFetiDPSubdomainMatrixManager(sub).LinearSystem.RhsConcrete);
 
             // Solve interface problem
+            interfaceProblemSolver.previousLambda = previousLambda;
+            interfaceProblemSolver.usePreviousLambda = usePreviousLambda;
             Vector lagranges = interfaceProblemSolver.SolveInterfaceProblem(matrixManager, lagrangesEnumerator,
                 flexibility, preconditioner, globalForcesNorm, Logger);
+            if (usePreviousLambda) { previousLambda = lagranges; }
+            
             Logger.LogCurrentTaskDuration("Solving interface problem");
 
             // Calculate the displacements of each subdomain

@@ -12,7 +12,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
     public class LagrangeMultipliersEnumeratorSerial : ILagrangeMultipliersEnumerator
     {
         private readonly ICrosspointStrategy crosspointStrategy;
-        private readonly IDofSeparator dofSeparator;
+        public readonly IDofSeparator dofSeparator;
         private readonly IModel model;
 
         private Dictionary<ISubdomain, SignedBooleanMatrixColMajor> subdomainBooleanMatrices;

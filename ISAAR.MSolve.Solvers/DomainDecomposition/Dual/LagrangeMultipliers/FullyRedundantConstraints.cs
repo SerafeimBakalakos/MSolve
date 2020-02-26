@@ -8,7 +8,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers
     /// <summary>
     /// Applies fully redundant constraints
     /// </summary>
-    internal class FullyRedundantConstraints : ICrosspointStrategy
+    public class FullyRedundantConstraints : ICrosspointStrategy
     {
         public (ISubdomain[] subdomainsPlus, ISubdomain[] subdomainsMinus) FindSubdomainCombinations(ISubdomain[] nodeSubdomains)
         {

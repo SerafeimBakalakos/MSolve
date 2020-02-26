@@ -27,9 +27,6 @@
     <ProjectReference Include="..\MGroup.Stochastic\MGroup.Stochastic.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="SupportiveClasses\" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="MPI.NET" Version="1.4.0" />
   </ItemGroup>
 </Project>

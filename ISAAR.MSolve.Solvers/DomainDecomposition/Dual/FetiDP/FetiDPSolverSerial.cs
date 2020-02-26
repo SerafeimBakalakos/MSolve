@@ -24,12 +24,15 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 using ISAAR.MSolve.Solvers.Logging;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements;
+using System.Reflection;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
+using ISAAR.MSolve.FEM.Entities;
 
 //TODO: Add time logging
 //TODO: Use a base class for the code that is identical between FETI-1 and FETI-DP.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 {
-    public class FetiDPSolverSerial : ISolverMpi
+    public class FetiDPSolverSerial : ISolverMpi, IFetiSolver
     {
         internal const string name = "FETI-DP Solver"; // for error messages and logging
         private readonly IFreeDofDisplacementsCalculator displacementsCalculator;
@@ -51,6 +54,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private bool isStiffnessModified = true;
         private IFetiPreconditioner preconditioner;
 
+        public Vector previousLambda { get; set; }
+        public bool usePreviousLambda { get; set; }
         public FetiDPSolverSerial(IModel model, ICornerNodeSelection cornerNodeSelection,
             IFetiDPMatrixManagerFactory matrixManagerFactory, IFetiPreconditioningOperations preconditioning,
             ICrosspointStrategy crosspointStrategy, PcgSettings pcgSettings, bool problemIsHomogeneous)
@@ -216,15 +221,58 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             if (isStiffnessModified)
             {
-                // Separate the stiffness matrix
+                // Separate the stiffness matrix 
                 Logger.StartMeasuringTime();
                 foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
                     if (subdomain.StiffnessModified)
                     {
                         matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).ExtractCornerRemainderSubmatrices();
+                        #region debug1
+                        // TODOGer: edw ginetai extract Kcc, Krc kai Krr. en telei sto FetiDPsubdomainMatrixmanagerSkyline %108
+                        #endregion
                     }
                 }
+                #region debug1
+                var nodeCoords = new double[3] { -22.5, -22.5, -22.5 };
+                int nodeId = ((Model)model).NodesDictionary.Values.Where(x => ((x.X1 == nodeCoords[0]) && (x.X2 == nodeCoords[1]) && (x.X3 == nodeCoords[2]))).ToList().ElementAt(0).ID;
+                int subdID = 2; // ((Model)model).NodesDictionary[nodeId].SubdomainsDictionary.ElementAt(0).Key;
+
+                var nodeCoords2 = new double[3][] { new double[3] { 0, -22.5, -22.5 }, new double[3] { -22.5,0, -22.5 }, new double[3] { -22.5, -22.5,0 } };
+                int[] nodeIds  = nodeCoords2.Select(x=>((Model)model).NodesDictionary.Values.Where(y => ((y.X1 == x[0]) && y.X2 == x[1]) && (y.X3 == x[2])).ToList().ElementAt(0).ID).ToArray();
+
+                var crossPointCoords = new double[3][] {  new double[3] { -22.5, 0, 0 }, new double[3] { 0, -22.5, 0 }, new double[3] { 0,0, -22.5 } };
+                int[] crossPointIds = crossPointCoords.Select(x => ((Model)model).NodesDictionary.Values.Where(y => ((y.X1 == x[0]) && y.X2 == x[1]) && (y.X3 == x[2])).ToList().ElementAt(0).ID).ToArray();
+
+                var cornerNodeCoords = new double[3] { 0, 0, 0 };
+                int cornerNodeId = ((Model)model).NodesDictionary.Values.Where(x => ((x.X1 == cornerNodeCoords[0]) && (x.X2 == cornerNodeCoords[1]) && (x.X3 == cornerNodeCoords[2]))).ToList().ElementAt(0).ID;
+                // Use reflection to set the necessary matrices
+                var ch01 = matrixManager.GetFetiDPSubdomainMatrixManager(model.GetSubdomain(subdID));
+                FieldInfo fi;
+                fi = typeof(FetiDPSubdomainMatrixManagerSkyline).GetField("Krr", BindingFlags.NonPublic | BindingFlags.Instance);
+                SkylineMatrix Krr = (SkylineMatrix)(fi.GetValue(ch01));
+
+                fi = typeof(FetiDPSubdomainMatrixManagerSkyline).GetField("Krc", BindingFlags.NonPublic | BindingFlags.Instance);
+                CscMatrix Krc = (CscMatrix)(fi.GetValue(ch01));
+
+                //var dofSeparator = ((FetiDPFlexibilityMatrixSerial)flexibility).dofSeparator;
+                DofTable subdRemainderDofs = dofSeparator.GetRemainderDofOrdering(model.GetSubdomain(subdID));
+                DofTable subdCornerDofs = dofSeparator.GetCornerDofOrdering(model.GetSubdomain(subdID));
+
+                int cornerNode_xdof_order = subdCornerDofs[model.GetNode(cornerNodeId), StructuralDof.TranslationX];
+                //int node2_remainder_xdof_order = subdRemainderDofs[model.GetNode(nodeIds[0]), StructuralDof.TranslationX]; // TODO 1
+                int crosspoint_remainder_xdof_order = subdRemainderDofs[model.GetNode(crossPointIds[0]), StructuralDof.TranslationX];
+                             
+                //double krc_value = Krc[node2_remainder_xdof_order, cornerNode_xdof_order];
+                //double krr_value = Krr[node2_remainder_xdof_order, node2_remainder_xdof_order];
+                
+
+                //List<int> crosspoint_lagranges_X = new List<int>();
+                int cross_point_remainder_xdof_order = subdRemainderDofs[model.GetNode(crossPointIds[0]), StructuralDof.TranslationX]; // TODO 1
+                double krc_value2 = Krc[cross_point_remainder_xdof_order, cornerNode_xdof_order];
+                //double krr_value2 = Krr[cross_point_remainder_xdof_order, node2_remainder_xdof_order];
+                double krr_value3 = Krr[cross_point_remainder_xdof_order, cross_point_remainder_xdof_order];
+                #endregion
                 Logger.LogCurrentTaskDuration("Calculating coarse problem matrix");
 
                 // Calculate the preconditioner before factorizing each subdomain's Krr.
@@ -246,6 +294,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                         Debug.WriteLine(msgHeader
                             + $"Inverting the remainder-remainder stiffness matrix of subdomain {subdomain.ID} in place.");
                         matrixManager.GetFetiDPSubdomainMatrixManager(subdomain).InvertKrr(true);
+                        #region debug1
+                        // TODOGer: edw ginetai extract Kcc, Krc kai Krr. en telei sto FetiDPsubdomainMatrixmanagerSkyline %115
+                        #endregion
                     }
                 }
 
