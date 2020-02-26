@@ -31,6 +31,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual;
 
 namespace ISAAR.MSolve.MultiscaleAnalysis
 {
@@ -60,7 +61,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         public bool useInput = true;
         
         public Dictionary<int, HashSet<INode>> cornerNodes;
-        public ISolverMpi GetAppropriateSolverMpi(Model model)
+        public IFetiSolver GetAppropriateSolverMpi(Model model)
         {
             //if (decomposeModel)
             //{
@@ -402,7 +403,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
                 #region find embedded
                 EmbeddedNodes = new List<Node>();
-                foreach (Element element in model.Elements)
+                foreach (Element element in model.EnumerateElements())
                 {
                     if (element.ID == 572)
                     {
@@ -598,7 +599,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         private Dictionary<ISubdomain, HashSet<INode>> GetExtraConstrSubdFromExtraConstraintNoeds(List<List<int>> extraConstraintsNoeds, Model model)
         {
             Dictionary<ISubdomain, HashSet<INode>> extraConstrNodesofsubd = new Dictionary<ISubdomain, HashSet<INode>>();
-            foreach (Subdomain subd in model.Subdomains) extraConstrNodesofsubd.Add((ISubdomain)subd, new HashSet<INode>());
+            foreach (Subdomain subd in model.EnumerateSubdomains()) extraConstrNodesofsubd.Add((ISubdomain)subd, new HashSet<INode>());
             foreach (var extraConstrNodeList in extraConstraintsNoeds)
             {
                 int extraNodeId = extraConstrNodeList[0];
@@ -1041,10 +1042,10 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
         private Dictionary<int, HashSet<INode>> DefineCornerNodesPerSubdomainAndOtherwise(Dictionary<int, int[]> CornerNodesIdAndsubdomains, Model model)
         {
-            Dictionary<int, HashSet<INode>> cornerNodesList = new Dictionary<int, HashSet<INode>>(model.Subdomains.Count());
-            Dictionary<int, HashSet<INode>> cornerNodes = new Dictionary<int, HashSet<INode>>(model.Subdomains.Count());
+            Dictionary<int, HashSet<INode>> cornerNodesList = new Dictionary<int, HashSet<INode>>(model.EnumerateSubdomains().Count());
+            Dictionary<int, HashSet<INode>> cornerNodes = new Dictionary<int, HashSet<INode>>(model.EnumerateSubdomains().Count());
 
-            foreach (Subdomain subdomain in model.Subdomains)
+            foreach (Subdomain subdomain in model.EnumerateSubdomains())
             {
                 cornerNodesList.Add(subdomain.ID, new HashSet<INode>());
             }

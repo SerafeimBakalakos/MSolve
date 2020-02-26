@@ -112,7 +112,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
 
         public static void SeparateSubdomains(Model model, int[][] subdElementIds)
         {
-            foreach (Subdomain subdomain in model.Subdomains)
+            foreach (Subdomain subdomain in model.EnumerateSubdomains())
             {
                 subdomain.Elements.Clear();
             }
@@ -924,14 +924,14 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
 
         public static int[][] DetermineHexaElementsSubdomainsFromModel(Model model)
         {
-            int[][] subdomainsAndHexas = new int[model.Subdomains.Count()][];
+            int[][] subdomainsAndHexas = new int[model.EnumerateSubdomains().Count()][];
 
-            for (int subdomainId = 0; subdomainId < model.Subdomains.Count(); subdomainId++)
+            for (int subdomainId = 0; subdomainId < model.EnumerateSubdomains().Count(); subdomainId++)
             {
-                var subdomain = model.Subdomains[subdomainId]; //ZERo based model.subdomainsDictionary access == model.Subdomains access
-                subdomainsAndHexas[subdomainId] = new int[subdomain.Elements.Count()];
+                var subdomain = model.GetSubdomain(subdomainId); //ZERo based model.subdomainsDictionary access == model.Subdomains access
+                subdomainsAndHexas[subdomainId] = new int[subdomain.EnumerateElements().Count()];
                 int hexaPositionInArray = 0;
-                foreach (Element element in subdomain.Elements.Values)
+                foreach (Element element in subdomain.EnumerateElements())
                 {
                     subdomainsAndHexas[subdomainId][hexaPositionInArray] = element.ID;
                     hexaPositionInArray++;
@@ -1725,7 +1725,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
         internal static bool CheckSubdomainsEmbeddingHostNodes(Model model, Dictionary<ISubdomain, List<Node>> rveMatrixSubdomainInnerNodes)
         {
             bool isTrue = false;
-            foreach (Subdomain subdomain in model.Subdomains)
+            foreach (Subdomain subdomain in model.EnumerateSubdomains())
             {
                 foreach (Node node in subdomain.Nodes.Values)
                 {

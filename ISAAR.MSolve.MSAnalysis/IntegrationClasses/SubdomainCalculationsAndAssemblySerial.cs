@@ -7,6 +7,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.MultiscaleAnalysis.Interfaces;
 using ISAAR.MSolve.MultiscaleAnalysisMerge;
 using ISAAR.MSolve.Solvers;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual;
 using ISAAR.MSolve.Solvers.LinearSystems;
 
 namespace ISAAR.MSolve.MultiscaleAnalysis
@@ -31,7 +32,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         //int currentSubdomainID;
 
         public (Dictionary<int, double[][]>, Dictionary<int, double[][]>) UpdateSubdomainKffAndCalculateKfpDqAndKppDqpMultipleObje(Model model, IElementMatrixProvider elementProvider, IScaleTransitions scaleTransitions,
-            Dictionary<int, Node> boundaryNodes, Dictionary<int, Dictionary<int, Element>> boundaryElements,ISolverMpi solver)
+            Dictionary<int, Node> boundaryNodes, Dictionary<int, Dictionary<int, Element>> boundaryElements,IFetiSolver solver)
         {
             //IReadOnlyDictionary<int, ILinearSystem> linearSystems = solver.LinearSystems; //v2.3
 

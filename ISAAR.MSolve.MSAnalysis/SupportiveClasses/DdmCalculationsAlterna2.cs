@@ -638,7 +638,7 @@ namespace ISAAR.MSolve.MSAnalysis.SupportiveClasses
 
             double E_disp = mp.E_disp; //Gpa
             double ni_disp = mp.ni_disp; // stather Poisson
-            int ElementID = model.Elements.Count() + 1;
+            int ElementID = model.EnumerateElements().Count() + 1;
             Dictionary<int, List<int>> subdAdditionalHexas = new Dictionary<int, List<int>>(totalSubdomains);
             Dictionary<int, int> NewHexaIdsAndTheirOriginals = new Dictionary<int, int>(); 
 

@@ -234,6 +234,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                     }
                 }
                 #region debug1
+                /*
                 var nodeCoords = new double[3] { -22.5, -22.5, -22.5 };
                 int nodeId = ((Model)model).NodesDictionary.Values.Where(x => ((x.X1 == nodeCoords[0]) && (x.X2 == nodeCoords[1]) && (x.X3 == nodeCoords[2]))).ToList().ElementAt(0).ID;
                 int subdID = 2; // ((Model)model).NodesDictionary[nodeId].SubdomainsDictionary.ElementAt(0).Key;
@@ -272,6 +273,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 double krc_value2 = Krc[cross_point_remainder_xdof_order, cornerNode_xdof_order];
                 //double krr_value2 = Krr[cross_point_remainder_xdof_order, node2_remainder_xdof_order];
                 double krr_value3 = Krr[cross_point_remainder_xdof_order, cross_point_remainder_xdof_order];
+                */
                 #endregion
                 Logger.LogCurrentTaskDuration("Calculating coarse problem matrix");
 

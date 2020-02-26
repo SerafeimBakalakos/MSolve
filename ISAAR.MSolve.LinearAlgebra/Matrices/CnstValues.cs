@@ -29,9 +29,11 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
 
         }
 
-        public bool printInterfaceSolutionStats = true;
+        public bool printInterfaceSolutionStats = false;
 
         public bool printGlobalSolutionStats = true;
+
+        public bool printPcgMatRhsEtc_AndInterfaceProblemStats = false; // 
 
         public void WriteToFileStringArray(string[] array, string path)
         {

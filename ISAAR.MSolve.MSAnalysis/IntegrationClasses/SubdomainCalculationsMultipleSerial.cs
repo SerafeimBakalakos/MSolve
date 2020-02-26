@@ -9,6 +9,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.MultiscaleAnalysis.Interfaces;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.LinearSystems;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual;
 
 namespace ISAAR.MSolve.MultiscaleAnalysis
 {
@@ -95,7 +96,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         /// <paramref name="solver"/>.<see cref="ISolver.Initialize"/> must already have been called. Also the linear system matrices must already have been set.
         /// </param>
         public Dictionary<int, double[][]> CalculateKffinverseKfpDqSubdomains(Dictionary<int, double[][]> KfpDqSubdomains, Model model, IElementMatrixProvider elementProvider,
-            IScaleTransitions scaleTransitions, Dictionary<int, Node> boundaryNodes, ISolverMpi solver)
+            IScaleTransitions scaleTransitions, Dictionary<int, Node> boundaryNodes, IFetiSolver solver)
         {
             //IReadOnlyDictionary<int, ILinearSystem> linearSystems = solver.LinearSystems;
 
@@ -137,7 +138,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 //var globalRHS = new Vector(model.TotalDOFs); //TODO: uncoomment if globalRHS is needed for solver
                 foreach (ISubdomain secSubdomain in model.EnumerateSubdomains())
                 {
-                    ILinearSystem linearSystem = solver.GetLinearSystem(secSubdomain);
+                    ILinearSystemMpi linearSystem = solver.GetLinearSystem(secSubdomain);
                     //linearSystem.Reset();
                     //TODOGer1: mhpws xreiazetai linearSystem.Solution.Clear ?s
                     linearSystem.RhsVector = Vector.CreateFromArray(KfpDqSubdomains[secSubdomain.ID][k], false);

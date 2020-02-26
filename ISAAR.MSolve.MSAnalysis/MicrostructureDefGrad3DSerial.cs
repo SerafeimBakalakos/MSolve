@@ -15,6 +15,7 @@ using ISAAR.MSolve.MultiscaleAnalysis.Interfaces;
 using ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual;
 using ISAAR.MSolve.Solvers.LinearSystems;
 
 namespace ISAAR.MSolve.MultiscaleAnalysis
@@ -37,7 +38,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         Dictionary<int, Dictionary<IDofType, double>> initialConvergedBoundaryDisplacements;
         private IScaleTransitions scaleTransitions = new DefGradVec3DScaleTransition();
         Random rnd1 = new Random();
-        private readonly Func<Model, ISolverMpi> createSolver;
+        private readonly Func<Model, IFetiSolver> createSolver;
 
         public bool UseLambdaSolution { get; set; } = false;
         private Vector LambdaSolution;
@@ -68,7 +69,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         //Random properties 
         private int database_size;
 
-        public MicrostructureDefGrad3DSerial(IRVEbuilder rveBuilder, Func<Model, ISolverMpi> createSolver, 
+        public MicrostructureDefGrad3DSerial(IRVEbuilder rveBuilder, Func<Model, IFetiSolver> createSolver, 
             bool EstimateOnlyLinearResponse, int database_size, bool UseLambdaSolution, bool UseLambdaSolutionsKff)
         {
             this.rveBuilder = rveBuilder;
@@ -133,7 +134,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
         public void UpdateMaterial(double[] DefGradVec)
         {
-            ISolverMpi solver;
+            IFetiSolver solver;
             if (matrices_not_initialized)
             {
                 this.InitializeMatrices();
@@ -142,7 +143,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 solver.OrderDofs(false);
                 foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
-                    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                    ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
                     linearSystem.Reset(); //TODO find out if new structures cause any problems
                     linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size); //TODOGer1: is this really nesessary?
                     linearSystem.RhsVector = linearSystem.Subdomain.Forces; //TODOGer1: pithanws thelei elegxo afto.
@@ -155,7 +156,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 solver.OrderDofs(false); //v2.1. TODO: Is this needed in this case?
                 foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
-                    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                    ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
                     linearSystem.Reset();
                     linearSystem.RhsVector = linearSystem.Subdomain.Forces; //TODO MS 
                 }
@@ -518,7 +519,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
         public void CalculateOriginalConstitutiveMatrixWithoutNLAnalysis()
         {
-            ISolverMpi solver;
+            IFetiSolver solver;
             if (matrices_not_initialized)
             {
                 this.InitializeMatrices();
@@ -527,7 +528,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 solver.OrderDofs(false);
                 foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
-                    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                    ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
                     linearSystem.Reset(); //TODO find out if new structures cause any problems
                     linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size); //TODOGer1: is this really nesessary?
                     linearSystem.RhsVector = linearSystem.Subdomain.Forces; //TODOGer1: pithanws thelei elegxo afto.
@@ -540,7 +541,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 solver.OrderDofs(false); //v2.1. TODO: Is this needed in this case?
                 foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
-                    ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                    ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
                     linearSystem.Reset();
                     linearSystem.RhsVector = linearSystem.Subdomain.Forces; //TODOGer1: is this really nesessary?
                 }

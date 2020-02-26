@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
     /// </summary>
     public class MicrostructureBvpNRNLAnalyzerSerial : IChildAnalyzer
     {
-        private Dictionary<int, ILinearSystem> linearSystems;
+        private Dictionary<int, ILinearSystemMpi> linearSystems;
         protected readonly IModel model;
         private readonly Dictionary<int,NonLinearSubdomainUpdaterWithInitialConditions> subdomainUpdaters;
         //private readonly ISubdomainGlobalMapping[] mappings; 
@@ -56,7 +56,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
             this.model = model;
             this.solver = solver;
             this.subdomainUpdaters = subdomainUpdaters;
-            linearSystems = new Dictionary<int, ILinearSystem>();
+            linearSystems = new Dictionary<int, ILinearSystemMpi>();
             foreach (ISubdomain secSubdomain in model.EnumerateSubdomains()) { linearSystems.Add(secSubdomain.ID, solver.GetLinearSystem(secSubdomain)); }
             //this.mappings = mappings;
             //this.linearSystems = solver.LinearSystems;
@@ -132,7 +132,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
             du.Clear();
             uPlusdu.Clear(); //prosthiki MS
 
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            foreach (ILinearSystemMpi linearSystem in linearSystems.Values)
             {
                 int id = linearSystem.Subdomain.ID;
 
@@ -156,7 +156,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         private void UpdateInternalVectors()//TODOMaria this is where I should add the calculation of the internal nodal force vector
         {
             globalRhs.Clear();
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            foreach (ILinearSystemMpi linearSystem in linearSystems.Values)
             {
                 int id = linearSystem.Subdomain.ID;
 
@@ -176,7 +176,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
 
         private void UpdateRHS(int step)
         {
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            foreach (ILinearSystemMpi linearSystem in linearSystems.Values)
             {
                 linearSystem.RhsVector.CopyFrom(rhs[linearSystem.Subdomain.ID]);                                
             }
@@ -238,7 +238,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         private double CalculateInternalRHS(int currentIncrement, int step, int totalIncrements)
         {
             globalRhs.Clear();
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            foreach (ILinearSystemMpi linearSystem in linearSystems.Values)
             {
                 int id = linearSystem.Subdomain.ID;
 
@@ -258,16 +258,16 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                 }
                 IVector internalRhs = subdomainUpdaters[id].GetRHSFromSolutionWithInitialDisplacemntsEffect(uPlusdu[id], du[id], boundaryNodes,
                 initialConvergedBoundaryDisplacements, totalBoundaryDisplacements, currentIncrement + 1, totalIncrements);//TODOMaria this calculates the internal forces
-                
-                //provider.ProcessInternalRhs(linearSystem.Subdomain, uPlusdu[id], internalRhs);//TODOMaria this does nothing
-                                                                                    //(new Vector<double>(u[subdomain.ID] + du[subdomain.ID])).Data);
 
-                if (parentAnalyzer != null)
+                //provider.ProcessInternalRhs(linearSystem.Subdomain, uPlusdu[id], internalRhs);//TODOMaria this does nothing
+                //(new Vector<double>(u[subdomain.ID] + du[subdomain.ID])).Data);
+
+                bool parentAnalyzerHasMoreRhsComponents = false;
+                if ((parentAnalyzer != null)&&parentAnalyzerHasMoreRhsComponents)
                 {
-                    IVector otherRhsComponents = parentAnalyzer.GetOtherRhsComponents(linearSystem, uPlusdu[id]);
-                    internalRhs.AddIntoThis(otherRhsComponents);//TODOMaria this does nothing for the static problem
-                }//TODOMaria this does nothing for the static problem
-                 //new Vector<double>(u[subdomain.ID] + du[subdomain.ID]))));
+                    //IVector otherRhsComponents = parentAnalyzer.GetOtherRhsComponents(linearSystem, uPlusdu[id]);  
+                    //internalRhs.AddIntoThis(otherRhsComponents);//TODOMaria this does nothing for the static problem 
+                }
 
                 linearSystem.RhsVector.Clear();
                 for (int j = 0; j <= currentIncrement; j++) linearSystem.RhsVector.AddIntoThis(rhs[id]);//TODOMaria this adds the external forces 
@@ -280,7 +280,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
 
         private void ClearIncrementalSolutionVector()
         {
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            foreach (ILinearSystemMpi linearSystem in linearSystems.Values)
             {
                 int id = linearSystem.Subdomain.ID;
                 du[id].Clear();
@@ -289,7 +289,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
 
         private void SplitResidualForcesToSubdomains()
         {
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            foreach (ILinearSystemMpi linearSystem in linearSystems.Values)
             {
                 int id = linearSystem.Subdomain.ID;
                 linearSystem.RhsVector.Clear();
@@ -299,7 +299,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
 
         private void UpdateSolution()
         {
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            foreach (ILinearSystemMpi linearSystem in linearSystems.Values)
             {
                 int id = linearSystem.Subdomain.ID;
                 u[id].AddIntoThis(du[id]);
@@ -308,7 +308,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
 
         public void SaveMaterialState()
         {
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            foreach (ILinearSystemMpi linearSystem in linearSystems.Values)
             {
                 int id = linearSystem.Subdomain.ID;
                 subdomainUpdaters[id].UpdateState();
@@ -329,7 +329,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
 
         private void CopySolutionToSubdomains()
         {
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            foreach (ILinearSystemMpi linearSystem in linearSystems.Values)
             {
                 //TODO:
                 //int id = linearSystem.Subdomain.ID;
@@ -339,7 +339,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
 
         private void ClearMaterialStresses()
         {
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            foreach (ILinearSystemMpi linearSystem in linearSystems.Values)
             {
                 int id = linearSystem.Subdomain.ID;
                 subdomainUpdaters[id].ResetState();
@@ -358,7 +358,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         private void UpdateRHSForLinearizationContributions(int nIncrement, int increments)
         {
             globalRhs.Clear();
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            foreach (ILinearSystemMpi linearSystem in linearSystems.Values)
             {
                 int id = linearSystem.Subdomain.ID;
                 //var equivalentContributionsAssembler = equivalentContributionsAssemblers[linearSystems.Select((v, i) => new { System = v, Index = i }).First(x => x.System.ID == subdomain.ID).Index];

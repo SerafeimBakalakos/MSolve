@@ -377,7 +377,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
                 #region find embedded
                 EmbeddedNodes = new List<Node>();
-                foreach (Element element in model.Elements)
+                foreach (Element element in model.EnumerateElements())
                 {
                     if (element.ID == 572)
                     {
@@ -1000,10 +1000,10 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
         private Dictionary<int, HashSet<INode>> DefineCornerNodesPerSubdomainAndOtherwise(Dictionary<int, int[]> CornerNodesIdAndsubdomains, Model model)
         {
-            Dictionary<int, HashSet<INode>> cornerNodesList = new Dictionary<int, HashSet<INode>>(model.Subdomains.Count());
-            Dictionary<int, HashSet<INode>> cornerNodes = new Dictionary<int, HashSet<INode>>(model.Subdomains.Count());
+            Dictionary<int, HashSet<INode>> cornerNodesList = new Dictionary<int, HashSet<INode>>(model.EnumerateSubdomains().Count());
+            Dictionary<int, HashSet<INode>> cornerNodes = new Dictionary<int, HashSet<INode>>(model.EnumerateSubdomains().Count());
 
-            foreach (Subdomain subdomain in model.Subdomains)
+            foreach (Subdomain subdomain in model.EnumerateSubdomains())
             {
                 cornerNodesList.Add(subdomain.ID, new HashSet<INode>());
             }

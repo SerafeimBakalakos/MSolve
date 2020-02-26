@@ -38,7 +38,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
         public bool usePreviousLambda;
 
-        public FetiDP3dInterfaceProblemSolverSerial(IModel model, PcgSettings pcgSettings, 
+        public FetiDP3dInterfaceProblemSolverSerial(IModel model, PcgSettings pcgSettings,
             IAugmentationConstraints augmentationConstraints)
         {
             this.model = model;
@@ -47,7 +47,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         }
 
         public Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
-            ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility, 
+            ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility,
             IFetiPreconditioner preconditioner, double globalForcesNorm, ISolverLogger logger)
         {
             int systemOrder = flexibility.NumGlobalLagrangeMultipliers;
@@ -61,16 +61,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             Vector lagranges;
             if (!(previousLambda == null))
             {
-               lagranges= previousLambda;
+                lagranges = previousLambda;
             }
             else
             {
-                lagranges=  Vector.CreateZero(systemOrder);
+                lagranges = Vector.CreateZero(systemOrder);
             }
 
-<<<<<<< HEAD
-=======
-            #region debug
+            #region debug1
             int nL = lagranges.Length;
             int nC = matrixManager.CoarseProblemRhs.Length;
             var writer = new LinearAlgebra.Output.FullMatrixWriter();
@@ -80,13 +78,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             ////LinearAlgebra.LibrarySettings.LinearAlgebraProviders = LinearAlgebra.LinearAlgebraProviderChoice.MKL;
 
             //// Process FIrr
-            Matrix FIrr = MultiplyWithIdentity(nL, nL, flexibility.MultiplyGlobalFIrr);
+            Matrix FIrr = MultiplyWithIdentity(nL, nL, flexibility.MultiplyFIrr);
             FIrr = 0.5 * (FIrr + FIrr.Transpose());
             SkylineMatrix skyFIrr = SkylineMatrix.CreateFromMatrix(FIrr);
             string pathFIrr = (new CnstValues()).solverPath + @"\a_FIrr_fetiDP3D.txt";
             string pathFIrc = (new CnstValues()).solverPath + @"\a_FIrc_fetiDP3D.txt";
             writer.WriteToFile(FIrr, pathFIrr);
-            Matrix FIrc = MultiplyWithIdentity(nL, nC, (x, y) => y.CopyFrom(flexibility.MultiplyGlobalFIrc(x)));
+            Matrix FIrc = MultiplyWithIdentity(nL, nC, (x, y) => y.CopyFrom(flexibility.MultiplyFIrc(x)));
             writer.WriteToFile(FIrr, pathFIrc);
 
             //(Matrix rrefFIrr, List<int> independentColsFIrr) = FIrr.ReducedRowEchelonForm();
@@ -138,7 +136,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             catch (Exception) { }
             #endregion
 
->>>>>>> feat/ddm/feti_dp_3d
             // Solve the interface problem using PCG algorithm
             var pcgBuilder = new PcgAlgorithm.Builder();
             pcgBuilder.MaxIterationsProvider = pcgSettings.MaxIterationsProvider;
@@ -161,8 +158,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             // Log statistics about PCG execution
             FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
             logger.LogIterativeAlgorithm(stats.NumIterationsRequired, stats.ResidualNormRatioEstimation);
-<<<<<<< HEAD
-=======
 
 
 
@@ -176,8 +171,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             string pathErrorLagranges = (new CnstValues()).solverPath + @"\a_errorLagranges_LU_iters_fetiDP3D.txt";
             new LinearAlgebra.Output.FullVectorWriter().WriteToFile(Vector.CreateFromArray(new double[] { errorLagranges, (double)nIter }), pathErrorLagranges);
 
-            if((new CnstValues()).printInterfaceSolutionStats) { PrintInterfaceSolverStats(nC, nL, nIter, errorLagranges,
-                isFIrrInvertible, isFIrrPosDef,isPcgMatrixInvertible, isPcgMatrixPosDef); }
+            if ((new CnstValues()).printInterfaceSolutionStats)
+            {
+                PrintInterfaceSolverStats(nC, nL, nIter, errorLagranges,
+isFIrrInvertible, isFIrrPosDef, isPcgMatrixInvertible, isPcgMatrixPosDef);
+            }
 
             //Vector resDirect = pcgRhs - pcgMatrixExplicit * lagrangesDirect;
             //double normResDirect = resDirect.Norm2();
@@ -187,11 +185,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
             //return lagrangesDirect;
             #endregion
->>>>>>> feat/ddm/feti_dp_3d
             return lagranges;
         }
 
-        private void PrintInterfaceSolverStats(int nC, int nL, int nIter, double errorLagranges, 
+        private void PrintInterfaceSolverStats(int nC, int nL, int nIter, double errorLagranges,
             bool isFIrrInvertible, bool isFIrrPosDef, bool isPcgMatrixInvertible, bool isPcgMatrixPosDef)
         {
             string[] statsLines = new string[] { "nCornerDofs=" + nC.ToString() + ",",
@@ -211,14 +208,30 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
         }
 
-        private Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility, 
+        private Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility,
             Vector globalDr)
         {
             // rhs = dr - FIrcTilde * inv(KccStarTilde) * fcStarTilde
-            Vector fcStarTilde = matrixManager.CoarseProblemRhs; 
+            Vector fcStarTilde = matrixManager.CoarseProblemRhs;
             Vector temp = matrixManager.MultiplyInverseCoarseProblemMatrix(fcStarTilde);
             temp = flexibility.MultiplyFIrc(temp);
             return globalDr - temp;
         }
+
+        #region debug1 
+        public static Matrix MultiplyWithIdentity(int numRows, int numCols, Action<Vector, Vector> matrixVectorMultiplication)
+        {
+            var result = Matrix.CreateZero(numRows, numCols);
+            for (int j = 0; j < numCols; ++j)
+            {
+                var lhs = Vector.CreateZero(numCols);
+                lhs[j] = 1.0;
+                var rhs = Vector.CreateZero(numRows);
+                matrixVectorMultiplication(lhs, rhs);
+                result.SetSubcolumn(j, rhs);
+            }
+            return result;
+        }
+        #endregion
     }
 }
