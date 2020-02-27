@@ -51,7 +51,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private IFetiDPFlexibilityMatrix flexibility;
         private bool isStiffnessModified = true;
         private IFetiPreconditioner preconditioner;
-
+        
         public FetiDPSolverMpi(ProcessDistribution processDistribution, IModel model, ICornerNodeSelection cornerNodeSelection,
             IFetiDPMatrixManagerFactory matrixManagerFactory, IFetiPreconditioningOperations preconditioning,
             ICrosspointStrategy crosspointStrategy, PcgSettings pcgSettings, bool problemIsHomogeneous)

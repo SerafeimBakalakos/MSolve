@@ -34,7 +34,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         private readonly IModel model;
         private readonly PcgSettings pcgSettings;
 
-        public FetiDP3dInterfaceProblemSolverSerial(IModel model, PcgSettings pcgSettings, 
+        public Vector previousLambda { get; set; }
+
+        public bool usePreviousLambda;
+
+        public FetiDP3dInterfaceProblemSolverSerial(IModel model, PcgSettings pcgSettings,
             IAugmentationConstraints augmentationConstraints)
         {
             this.model = model;
@@ -43,7 +47,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         }
 
         public Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
-            ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility, 
+            ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility,
             IFetiPreconditioner preconditioner, double globalForcesNorm, ISolverLogger logger)
         {
             int systemOrder = flexibility.NumGlobalLagrangeMultipliers;
@@ -53,7 +57,18 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             var pcgPreconditioner = new FetiDPInterfaceProblemPreconditioner(preconditioner);
             Vector globalDr = ((IFetiDP3dMatrixManager)matrixManager).GlobalDr;
             Vector pcgRhs = CalcInterfaceProblemRhs(matrixManager, flexibility, globalDr);
-            var lagranges = Vector.CreateZero(systemOrder);
+
+            Vector lagranges;
+            if (!(previousLambda == null))
+            {
+                lagranges = previousLambda;
+            }
+            else
+            {
+                lagranges = Vector.CreateZero(systemOrder);
+            }
+
+            
 
             // Solve the interface problem using PCG algorithm
             var pcgBuilder = new PcgAlgorithm.Builder();
@@ -61,8 +76,18 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             pcgBuilder.ResidualTolerance = pcgSettings.ConvergenceTolerance;
             pcgBuilder.Convergence = pcgSettings.ConvergenceStrategyFactory.CreateConvergenceStrategy(globalForcesNorm);
             PcgAlgorithm pcg = pcgBuilder.Build(); //TODO: perhaps use the pcg from the previous analysis if it has reorthogonalization.
-            IterativeStatistics stats = pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, true,
-                () => Vector.CreateZero(systemOrder));
+
+            IterativeStatistics stats;
+            if (!(previousLambda == null))
+            {
+                stats = pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, false,
+                  () => Vector.CreateZero(systemOrder));
+            }
+            else
+            {
+                stats = pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, true,
+                  () => Vector.CreateZero(systemOrder));
+            }
 
             // Log statistics about PCG execution
             FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
@@ -70,11 +95,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             return lagranges;
         }
 
-        private Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility, 
+        private Vector CalcInterfaceProblemRhs(IFetiDPMatrixManager matrixManager, IFetiDPFlexibilityMatrix flexibility,
             Vector globalDr)
         {
             // rhs = dr - FIrcTilde * inv(KccStarTilde) * fcStarTilde
-            Vector fcStarTilde = matrixManager.CoarseProblemRhs; 
+            Vector fcStarTilde = matrixManager.CoarseProblemRhs;
             Vector temp = matrixManager.MultiplyInverseCoarseProblemMatrix(fcStarTilde);
             temp = flexibility.MultiplyFIrc(temp);
             return globalDr - temp;

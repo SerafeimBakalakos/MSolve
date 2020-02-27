@@ -14,6 +14,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using Xunit;
+using System.Linq;
 
 //TODO: Perhaps I should also check intermediate steps by pulling the solver's compenent using reflection and check their state
 //      and operations.
@@ -89,7 +90,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
             #region debug
             string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Plots";
             var logger = new MSolve.Logging.DomainDecomposition.DomainDecompositionLoggerFetiDP(path, cornerNodes, midsideNodesSelection, true);
-            logger.PlotSubdomains(model);
+            //logger.PlotSubdomains(model);
             #endregion
 
             var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();
