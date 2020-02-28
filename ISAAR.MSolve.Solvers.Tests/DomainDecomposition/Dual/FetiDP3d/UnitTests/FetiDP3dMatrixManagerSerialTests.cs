@@ -5,6 +5,7 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
@@ -58,12 +59,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 augmentationConstraints, matricesFactory);
 
 
-            SetKffRhs(model, matrixManager);
+            SetKffRhs(model, matrixManager, format);
             //dofSeparator.SeparateDofs(new MockSeparatedDofReordering()); //TODO: This does not work as intended
             dofSeparator.SeparateDofs(matrixManager);
             lagrangesEnumerator.CalcBooleanMatrices(dofSeparator.GetRemainderDofOrdering);
             augmentationConstraints.CalcAugmentationMappingMatrices();
-            PrepareCoarseProblemSubdomainMatrices(model, matrixManager);
+            PrepareCoarseProblemSubdomainMatrices(model, matrixManager, format);
 
             // Calculate the global data to test
             matrixManager.CalcInverseCoarseProblemMatrix(ModelCreator.DefineCornerNodeSelectionSerial(model));
@@ -93,15 +94,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             IAugmentationConstraints augmentationConstraints =
                 FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
             FetiDP3dMatrixManagerSerial matrixManager = PrepareCoarseProblemSubdomainMatrices(model, dofSeparator,
-                lagrangesEnumerator, augmentationConstraints, matricesFactory);
+                lagrangesEnumerator, augmentationConstraints, matricesFactory, format);
 
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-                SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, ExpectedSubdomainMatrices.GetMatrixKff(sub.ID));
-
                 // Calculate the matrices to test
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
                 subdomainMatrices.ExtractCornerRemainderSubmatrices();
                 subdomainMatrices.ExtractBoundaryInternalSubmatricesAndInvertKii(false);
 
@@ -135,15 +133,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             IAugmentationConstraints augmentationConstraints =
                 FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
             FetiDP3dMatrixManagerSerial matrixManager = PrepareCoarseProblemSubdomainMatrices(model, dofSeparator,
-                lagrangesEnumerator, augmentationConstraints, matricesFactory);
+                lagrangesEnumerator, augmentationConstraints, matricesFactory, format);
 
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-                SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, ExpectedSubdomainMatrices.GetMatrixKff(sub.ID));
-
                 // Calculate the matrices to test
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
                 subdomainMatrices.ExtractCornerRemainderSubmatrices();
                 subdomainMatrices.InvertKrr(true);
 
@@ -177,16 +172,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             IAugmentationConstraints augmentationConstraints =
                 FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
             FetiDP3dMatrixManagerSerial matrixManager = PrepareCoarseProblemSubdomainMatrices(model, dofSeparator,
-                lagrangesEnumerator, augmentationConstraints, matricesFactory);
+                lagrangesEnumerator, augmentationConstraints, matricesFactory, format);
 
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-                SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, ExpectedSubdomainMatrices.GetMatrixKff(sub.ID));
-                subdomainMatrices.LinearSystem.RhsConcrete = ExpectedSubdomainMatrices.GetVectorFf(sub.ID);
-
                 // Calculate the data to test
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
                 subdomainMatrices.ExtractCornerRemainderSubmatrices();
                 subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
                 subdomainMatrices.InvertKrr(true);
@@ -209,7 +200,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             IAugmentationConstraints augmentationConstraints =
                 FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
             FetiDP3dMatrixManagerSerial matrixManager = PrepareCoarseProblemSubdomainMatrices(model, dofSeparator,
-                lagrangesEnumerator, augmentationConstraints, matricesFactory);
+                lagrangesEnumerator, augmentationConstraints, matricesFactory, MatrixFormat.Dense);
 
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
@@ -256,18 +247,15 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
         internal static FetiDP3dMatrixManagerSerial PrepareCoarseProblemSubdomainMatrices(IModel model,
             IFetiDPDofSeparator dofSeparator, ILagrangeMultipliersEnumerator lagrangesEnumerator, 
-            IAugmentationConstraints augmentationConstraints, IFetiDP3dMatrixManagerFactory matricesFactory)
+            IAugmentationConstraints augmentationConstraints, IFetiDP3dMatrixManagerFactory matricesFactory, MatrixFormat format)
         {
             var matrixManager = new FetiDP3dMatrixManagerSerial(model, dofSeparator, lagrangesEnumerator, 
                 augmentationConstraints, matricesFactory);
+            SetKffRhs(model, matrixManager, format);
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-                SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, ExpectedSubdomainMatrices.GetMatrixKff(sub.ID));
-                subdomainMatrices.LinearSystem.RhsConcrete = ExpectedSubdomainMatrices.GetVectorFf(sub.ID);
-
                 // Prepare the subdomain data
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
                 subdomainMatrices.ExtractCornerRemainderSubmatrices();
                 subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
                 subdomainMatrices.InvertKrr(true);
@@ -276,39 +264,54 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             return matrixManager;
         }
 
-        internal static void PrepareCoarseProblemSubdomainMatrices(IModel model, FetiDP3dMatrixManagerSerial matrixManager)
+        internal static void PrepareCoarseProblemSubdomainMatrices(IModel model, FetiDP3dMatrixManagerSerial matrixManager, 
+            MatrixFormat format)
         {
+            SetKffRhs(model, matrixManager, format);
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-                SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, ExpectedSubdomainMatrices.GetMatrixKff(sub.ID));
-                subdomainMatrices.LinearSystem.RhsConcrete = ExpectedSubdomainMatrices.GetVectorFf(sub.ID);
-
                 // Prepare the subdomain data
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
                 subdomainMatrices.ExtractCornerRemainderSubmatrices();
                 subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
                 subdomainMatrices.InvertKrr(true);
             }
         }
 
-        //TODO: Jesus Christ! It is way too difficult to mess with linear system classes, even using reflection.
-        //      I should allow some provisions for testing. Also ILinearSystem.Matrix {set;} should be internal. Analyzers and 
-        //      providers should not even try.
-        internal static void SetSkylineLinearSystemMatrix(ISingleSubdomainLinearSystemMpi linearSystem, IMatrixView matrix)
-        {
-            var castedLS = (SingleSubdomainSystemMpi<SkylineMatrix>)linearSystem;
-            castedLS.Matrix = SkylineMatrix.CreateFromMatrix(matrix);
-        }
+        #region debug
+        //internal static void SetLinearSystemMatrix(ISingleSubdomainLinearSystemMpi linearSystem, IIndexable2D matrix,
+        //    MatrixFormat format)
+        //{
+        //    if ((format == MatrixFormat.Dense) || (format == MatrixFormat.Skyline))
+        //    {
+        //        var castedLS = (SingleSubdomainSystemMpi<SkylineMatrix>)linearSystem;
+        //        castedLS.Matrix = SkylineMatrix.CreateFromMatrix(matrix);
+        //    }
+        //    else
+        //    {
+        //        var castedLS = (SingleSubdomainSystemMpi<DokSymmetric>)linearSystem;
+        //        castedLS.Matrix = DokSymmetric.CreateFromMatrix(matrix);
+        //    }
+        //}
+        #endregion
 
-        private static void SetKffRhs(IModel model, IFetiDPMatrixManager matrixManager)
+        private static void SetKffRhs(IModel model, IFetiDPMatrixManager matrixManager, MatrixFormat format)
         {
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
                 // Input data
                 IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-                var castedLS = (SingleSubdomainSystemMpi<SkylineMatrix>)(subdomainMatrices.LinearSystem);
-                castedLS.Matrix = SkylineMatrix.CreateFromMatrix(ExpectedSubdomainMatrices.GetMatrixKff(sub.ID));
+                Matrix Kff = ExpectedSubdomainMatrices.GetMatrixKff(sub.ID);
+                if ((format == MatrixFormat.Dense) || (format == MatrixFormat.Skyline))
+                {
+                    var castedLS = (SingleSubdomainSystemMpi<SkylineMatrix>)subdomainMatrices.LinearSystem;
+                    castedLS.Matrix = SkylineMatrix.CreateFromMatrix(Kff);
+                }
+                else
+                {
+                    var castedLS = (SingleSubdomainSystemMpi<DokSymmetric>)subdomainMatrices.LinearSystem;
+                    castedLS.Matrix = DokSymmetric.CreateFromMatrix(Kff);
+                }
                 subdomainMatrices.LinearSystem.RhsConcrete = ExpectedSubdomainMatrices.GetVectorFf(sub.ID);
             }
         }

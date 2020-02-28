@@ -4,6 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.SchurComplements;
@@ -18,29 +19,29 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices
 {
-    public class FetiDP3dSubdomainMatrixManagerSkyline : IFetiDP3dSubdomainMatrixManager
+    public class FetiDP3dSubdomainMatrixManagerSuiteSparse : IFetiDP3dSubdomainMatrixManager
     {
-        private readonly SkylineAssembler assembler = new SkylineAssembler();
+        private readonly SymmetricDokAssembler assembler = new SymmetricDokAssembler();
         private readonly IAugmentationConstraints augmentationConstraints;
         private readonly IFetiDPDofSeparator dofSeparator;
         private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
-        private readonly SingleSubdomainSystemMpi<SkylineMatrix> linearSystem;
+        private readonly SingleSubdomainSystemMpi<DokSymmetric> linearSystem;
         private readonly IReorderingAlgorithm reordering;
         private readonly ISubdomain subdomain;
 
         private Vector fbc, fr, fcStar;
         private DiagonalMatrix inverseKiiDiagonal;
-        private LdlSkyline inverseKii;
-        private LdlSkyline inverseKrr;
+        private CholeskySuiteSparse inverseKii;
+        private CholeskySuiteSparse inverseKrr;
         private Matrix Kbb;
         private CscMatrix Kib;
         private SymmetricMatrix Kcc;
         private CscMatrix Krc;
-        private SkylineMatrix Krr;
+        private DokSymmetric Krr;
         private SymmetricMatrix _KccStar, _KaaStar, _KccStarTilde;
         private Matrix _KacStar;
 
-        public FetiDP3dSubdomainMatrixManagerSkyline(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator, 
+        public FetiDP3dSubdomainMatrixManagerSuiteSparse(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator, 
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IAugmentationConstraints augmentationConstraints,
             IReorderingAlgorithm reordering)
         {
@@ -49,7 +50,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             this.lagrangesEnumerator = lagrangesEnumerator;
             this.augmentationConstraints = augmentationConstraints;
             this.reordering = reordering;
-            this.linearSystem = new SingleSubdomainSystemMpi<SkylineMatrix>(subdomain);
+            this.linearSystem = new SingleSubdomainSystemMpi<DokSymmetric>(subdomain);
         }
 
         public ISingleSubdomainLinearSystemMpi LinearSystem => linearSystem;
@@ -90,9 +91,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         public IMatrixView KccStarTilde => _KccStarTilde;
 
         public (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildFreeConstrainedMatrices(
-            ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering, 
+            ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering,
             IEnumerable<IElement> elements, IElementMatrixProvider matrixProvider)
-            => assembler.BuildGlobalSubmatrices(freeDofOrdering, constrainedDofOrdering, elements, matrixProvider);
+            => throw new NotImplementedException();
 
         public void BuildFreeDofsMatrix(ISubdomainFreeDofOrdering dofOrdering, IElementMatrixProvider matrixProvider)
         {
@@ -100,32 +101,36 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
                 linearSystem.Subdomain.EnumerateElements(), matrixProvider);
         }
 
-        public void CalcInverseKii(bool diagonalOnly)
-        {
-            int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
-            if (diagonalOnly)
-            {
-                var diagonal = new double[internalDofs.Length];
-                for (int i = 0; i < diagonal.Length; ++i)
-                {
-                    int idx = internalDofs[i];
-                    diagonal[i] = 1.0 / Krr[idx, idx];
-                    //diagonal[i] = Krr[idx, idx];
-                }
-                inverseKiiDiagonal = DiagonalMatrix.CreateFromArray(diagonal, false);
-                //inverseKiiDiagonal.Invert();
-            }
-            else
-            {
-                SkylineMatrix Kii = Krr.GetSubmatrixSymmetricSkyline(internalDofs);
-                inverseKii = Kii.FactorLdl(true);
-            }
-        }
+        #region debug
+        //public void CalcInverseKii(bool diagonalOnly)
+        //{
+        //    int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
+        //    if (diagonalOnly)
+        //    {
+        //        var diagonal = new double[internalDofs.Length];
+        //        for (int i = 0; i < diagonal.Length; ++i)
+        //        {
+        //            int idx = internalDofs[i];
+        //            diagonal[i] = 1.0 / Krr[idx, idx];
+        //            //diagonal[i] = Krr[idx, idx];
+        //        }
+        //        inverseKiiDiagonal = DiagonalMatrix.CreateFromArray(diagonal, false);
+        //        //inverseKiiDiagonal.Invert();
+        //    }
+        //    else
+        //    {
+        //        SkylineMatrix Kii = Krr.GetSubmatrixSymmetricSkyline(internalDofs);
+        //        inverseKii = Kii.FactorLdl(true);
+        //    }
+        //}
+        #endregion
 
         public void ClearMatrices()
         {
+            if (inverseKii != null) inverseKii.Dispose();
             inverseKii = null;
             inverseKiiDiagonal = null;
+            if (inverseKrr != null) inverseKii.Dispose();
             inverseKrr = null;
             Kbb = null;
             Kib = null;
@@ -186,12 +191,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         {
             int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);
             int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
-
-            Kbb = Krr.GetSubmatrixSymmetricFull(boundaryDofs);
-            Kib = Krr.GetSubmatrixCsc(internalDofs, boundaryDofs);
-
             if (diagonalKii)
             {
+                DokColMajor KibDok;
+                (Kbb, KibDok) = Krr.Split_Full_DokColMajor(boundaryDofs, internalDofs);
+
+                Kib = KibDok.BuildCscMatrix(true);
+                KibDok = null; // free this memory for GC
+
                 var diagonal = new double[internalDofs.Length];
                 for (int i = 0; i < diagonal.Length; ++i)
                 {
@@ -204,8 +211,17 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             }
             else
             {
-                SkylineMatrix Kii = Krr.GetSubmatrixSymmetricSkyline(internalDofs);
-                inverseKii = Kii.FactorLdl(true);
+                DokColMajor KibDok;
+                DokSymmetric KiiDok;
+                (Kbb, KibDok, KiiDok) = Krr.Split_Full_DokColMajor_DokSymmetric(boundaryDofs, internalDofs);
+
+                Kib = KibDok.BuildCscMatrix(true);
+                KibDok = null; // free this memory for GC
+
+                SymmetricCscMatrix Kii = KiiDok.BuildSymmetricCscMatrix(true);
+                KiiDok = null; // free this memory for GC
+                if (inverseKii != null) inverseKii.Dispose();
+                inverseKii = CholeskySuiteSparse.Factorize(Kii, true);
             }
         }
 
@@ -223,9 +239,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         {
             int[] cornerDofs = dofSeparator.GetCornerDofIndices(subdomain);
             int[] remainderDofs = dofSeparator.GetRemainderDofIndices(subdomain);
-            Kcc = linearSystem.Matrix.GetSubmatrixSymmetricPacked(cornerDofs);
-            Krc = linearSystem.Matrix.GetSubmatrixCsc(remainderDofs, cornerDofs);
-            Krr = linearSystem.Matrix.GetSubmatrixSymmetricSkyline(remainderDofs);
+            DokColMajor KrcDok;
+            (Kcc, KrcDok, Krr) = linearSystem.Matrix.Split_Packed_DokColMajor_DokSymmetric(cornerDofs, remainderDofs);
+            Krc = KrcDok.BuildCscMatrix(true);
         }
 
         public void ExtractKbb()
@@ -236,7 +252,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
 
         public void HandleDofOrderingWillBeModified() => assembler.HandleDofOrderingWillBeModified();
 
-        public void InvertKrr(bool inPlace) => inverseKrr = Krr.FactorLdl(inPlace);
+        public void InvertKrr(bool inPlace)
+        {
+            if (inverseKrr != null) inverseKrr.Dispose();
+            inverseKrr = CholeskySuiteSparse.Factorize(Krr.BuildSymmetricCscMatrix(true), true);
+        }
 
         public Vector MultiplyInverseKiiTimes(Vector vector, bool diagonalOnly)
             => diagonalOnly ? inverseKiiDiagonal * vector : inverseKii.SolveLinearSystem(vector);
