@@ -30,6 +30,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
 
         void CalcAugmentationMappingMatrices();
 
+        DofTable GetAugmentationDofOrdering(ISubdomain subdomain);
+
+
         /// <summary>
         /// The augmented constraints of the subdomain are in the same order as the nodes in 
         /// <see cref="IMidsideNodesSelection.GetMidsideNodesOfSubdomain(ISubdomain)"/> of <see cref="MidsideNodesSelection"/>.
@@ -39,5 +42,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
         GlobalToLocalBooleanMatrix GetMatrixBa(ISubdomain subdomain); //TODO: This should be an interface instead. Hard to define interface though.
 
         IMappingMatrix GetMatrixR1(ISubdomain subdomain);
+
+        int GetNumAugmentationDofs(ISubdomain subdomain);
     }
 }

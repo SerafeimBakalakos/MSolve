@@ -105,6 +105,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             return inverseGlobalKccStarTilde * vector;
         }
 
-        public DofPermutation ReorderCoarseProblemDofs() => DofPermutation.CreateNoPermutation();
+        public DofPermutation ReorderCornerDofs() => DofPermutation.CreateNoPermutation();
     }
 }

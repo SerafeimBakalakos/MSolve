@@ -34,7 +34,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
 
         Vector MultiplyInverseCoarseProblemMatrixTimes(Vector vector);
 
-        DofPermutation ReorderCoarseProblemDofs();
+        DofPermutation ReorderCornerDofs();
 
     }
 }

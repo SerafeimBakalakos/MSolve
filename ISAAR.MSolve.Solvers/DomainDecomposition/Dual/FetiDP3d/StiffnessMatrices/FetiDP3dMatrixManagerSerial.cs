@@ -93,7 +93,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         public Vector MultiplyInverseCoarseProblemMatrix(Vector vector) 
             => matrixManagerGlobal.MultiplyInverseCoarseProblemMatrixTimes(vector);
 
-        public DofPermutation ReorderGlobalCornerDofs() => matrixManagerGlobal.ReorderCoarseProblemDofs();
+        public DofPermutation ReorderGlobalCornerDofs() => matrixManagerGlobal.ReorderCornerDofs();
 
         public DofPermutation ReorderSubdomainInternalDofs(ISubdomain subdomain) 
             => matrixManagersSubdomain[subdomain].ReorderInternalDofs();
