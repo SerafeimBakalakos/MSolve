@@ -928,7 +928,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses
 
             for (int subdomainId = 0; subdomainId < model.EnumerateSubdomains().Count(); subdomainId++)
             {
-                var subdomain = model.GetSubdomain(subdomainId); //ZERo based model.subdomainsDictionary access == model.Subdomains access
+                var subdomain = model.EnumerateSubdomains().ElementAt(subdomainId); //ZERo based model.subdomainsDictionary access == model.Subdomains access
                 subdomainsAndHexas[subdomainId] = new int[subdomain.EnumerateElements().Count()];
                 int hexaPositionInArray = 0;
                 foreach (Element element in subdomain.EnumerateElements())

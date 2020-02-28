@@ -115,7 +115,7 @@ namespace ISAAR.MSolve.SamplesConsole
 
             Dictionary<int, HashSet<INode>> cornerNodes = rveBuilder.cornerNodes;
             Dictionary<ISubdomain, HashSet<INode>> extraConstrNodesofsubd = new Dictionary<ISubdomain, HashSet<INode>>();
-            foreach (Subdomain subd in model.Subdomains) extraConstrNodesofsubd.Add((ISubdomain)subd, new HashSet<INode>());
+            foreach (Subdomain subd in model.EnumerateSubdomains()) extraConstrNodesofsubd.Add((ISubdomain)subd, new HashSet<INode>());
             foreach(var extraConstrNodeList in rveBuilder.extraConstraintsNoeds)
             {
                 int extraNodeId = extraConstrNodeList[0];
@@ -179,7 +179,7 @@ namespace ISAAR.MSolve.SamplesConsole
             #region print subdomain stiffness matrix and global dofs
             // @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\Subdomain{0}Iter{1}Stiffness.txt";
             string print_path_gen = rveBuilder.subdomainOutputPath + @"\subdomain_matrices_and_data\Subdomain{0}Iter{1}Stiffness.txt";
-            foreach (ISubdomain subdomain in model.Subdomains)
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 //var subdMatrix= provider.CalculateMatrix(subdomain);
 
@@ -194,7 +194,7 @@ namespace ISAAR.MSolve.SamplesConsole
             }
             //string print_path_gen2 = @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\Subdomain{0}GlobalDofs.txt";
             string print_path_gen2 = rveBuilder.subdomainOutputPath + @"\subdomain_matrices_and_data\Subdomain{0}GlobalDofs.txt";
-            foreach (Subdomain subdomain in model.Subdomains)
+            foreach (Subdomain subdomain in model.EnumerateSubdomains())
             {
                 double[] subdomainGlobalDofs = new double[subdomain.FreeDofOrdering.NumFreeDofs];
 
@@ -345,7 +345,7 @@ namespace ISAAR.MSolve.SamplesConsole
 
             #region  Gather the global displacements
             var sudomainDisplacements = new Dictionary<int, IVectorView>();
-            foreach (var ls in model.Subdomains) sudomainDisplacements[ls.ID] = fetiSolver.GetLinearSystem(ls).Solution;
+            foreach (var ls in model.EnumerateSubdomains()) sudomainDisplacements[ls.ID] = fetiSolver.GetLinearSystem(ls).Solution;
             Vector globalU = fetiSolver.GatherGlobalDisplacements();// sudomainDisplacements);
 
             Node monitoredNode = model.NodesDictionary[rveBuilder.CornerNodesIds.ElementAt(0).Key];
@@ -387,7 +387,7 @@ namespace ISAAR.MSolve.SamplesConsole
             #endregion
 
             #region  overwrite data model region
-            bool run_overwrite_data_region = false;
+            bool run_overwrite_data_region = true;
             bool print_hexa_model = false;
             if (run_overwrite_data_region)
             {
@@ -446,7 +446,7 @@ namespace ISAAR.MSolve.SamplesConsole
             solver.OrderDofs(false);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                ILinearSystem linearSystem = solver.GetLinearSystem(subdomain);
+                ILinearSystemMpi linearSystem = solver.GetLinearSystem(subdomain);
                 linearSystem.Reset(); // Necessary to define the linear system's size 
                 linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
                 linearSystem.RhsVector = linearSystem.Subdomain.Forces;
@@ -475,14 +475,14 @@ namespace ISAAR.MSolve.SamplesConsole
         private static void PrintHexaModelData(Model model, string subdomainOutputPath)
         {
             Dictionary<int, List<int>> ElementIdsAndModelIds = new Dictionary<int, List<int>>();
-            foreach (var element in model.Elements)
+            foreach (var element in model.EnumerateElements())
             {
                 List<int> ElementNodesIds = element.Nodes.Select(x => x.ID).ToList();
                 ElementIdsAndModelIds.Add(element.ID, ElementNodesIds);
             }
 
-            int[] ElementIds = model.Elements.Select(x => x.ID).ToArray();
-            int[] subdomainIds = model.Subdomains.Select(x => x.ID).ToArray();
+            int[] ElementIds = model.EnumerateElements().Select(x => x.ID).ToArray();
+            int[] subdomainIds = model.EnumerateSubdomains().Select(x => x.ID).ToArray();
             int[] NodeIds = model.NodesDictionary.Values.Select(x => x.ID).ToArray();
 
             int[,] ElementNodes = new int[ElementIds.GetLength(0), 8];
@@ -508,7 +508,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 thesi++;
             }
 
-            int[,] SubdElements = new int[model.Subdomains.Count, model.Subdomains.ElementAt(0).Elements.Count];
+            int[,] SubdElements = new int[model.EnumerateSubdomains().Count(), model.EnumerateSubdomains().ElementAt(0).EnumerateElements().Count()];
             thesi = 0;
             foreach (var SubdId in subdomainIds)
             {

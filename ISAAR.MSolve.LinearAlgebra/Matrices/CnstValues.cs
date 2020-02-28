@@ -29,7 +29,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
 
         }
 
-        public bool printInterfaceSolutionStats = false;
+        public bool printInterfaceSolutionStats = true;
 
         public bool printGlobalSolutionStats = true;
 
