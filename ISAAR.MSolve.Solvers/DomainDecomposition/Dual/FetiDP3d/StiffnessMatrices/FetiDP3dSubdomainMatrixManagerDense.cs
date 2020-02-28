@@ -31,9 +31,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         private CholeskyFull inverseKrr;
         private Matrix Kbb, Kbi;
         private Matrix Kcc, Krc, Krr;
-        private Matrix _KccStar, _KacStar, _KaaStar;
+        private Matrix _KccStar, _KacStar, _KaaStar, _KccStarTilde;
 
-        public FetiDP3dSubdomainMatrixManagerDense(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator, 
+        public FetiDP3dSubdomainMatrixManagerDense(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator,
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IAugmentationConstraints augmentationConstraints)
         {
             this.subdomain = subdomain;
@@ -41,13 +41,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             this.lagrangesEnumerator = lagrangesEnumerator;
             this.augmentationConstraints = augmentationConstraints;
             this.linearSystem = new SingleSubdomainSystemMpi<SkylineMatrix>(subdomain);
-        }
-
-        public IMatrixView KaaStar => _KaaStar;
-        public IMatrixView KacStar => _KacStar;
-        public IMatrixView KccStar => _KccStar;
-
-
+        }  
+        
         public ISingleSubdomainLinearSystemMpi LinearSystem => linearSystem;
 
         public Vector Fbc
@@ -79,6 +74,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
                 return fcStar;
             }
         }
+
+        public IMatrixView KaaStar => _KaaStar;
+        public IMatrixView KacStar => _KacStar;
+        public IMatrixView KccStar => _KccStar;
+
+        public IMatrixView KccStarTilde => _KccStarTilde;
 
         public (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildFreeConstrainedMatrices(
             ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering, 
@@ -126,6 +127,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             _KccStar = null;
             _KacStar = null;
             _KaaStar = null;
+            _KccStarTilde = null;
             //linearSystem.Matrix = null; // DO NOT DO THAT!!! The analyzer manages that.
         }
 
@@ -159,6 +161,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             // where Ba[s] is taken into account during assembly of the global coarse problem matrix
             _KacStar = R1.MultiplyRight(invKrrTimesKrc, true);
             _KacStar.ScaleIntoThis(-1);
+
+            Matrix top = _KccStar.AppendRight(_KacStar.Transpose());
+            Matrix bottom = _KacStar.AppendRight(_KaaStar);
+            _KccStarTilde = top.AppendBottom(bottom);
         }
 
         public void CondenseRhsVectorsStatically()

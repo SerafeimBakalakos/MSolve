@@ -59,7 +59,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             this.CoarseProblemRhs = fcStarTilde;
         }
 
-        public void CalcInverseCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection)
+        #region debug
+        public void CalcInverseCoarseProblemMatrixOLD(ICornerNodeSelection cornerNodeSelection)
         {
             // Calculate KccStarTilde of each subdomain
             // globalKccStarTilde = sum_over_s(Lc[s]^T * KccStarTilde[s] * Lc[s]) -> delegated to the GlobalMatrixManager 
@@ -79,6 +80,29 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
 
             // Give them to the global matrix manager so that it can create the global KccStar
             matrixManagerGlobal.CalcInverseCoarseProblemMatrix(cornerNodeSelection, allKStarMatrices);
+        }
+        #endregion
+
+        public void CalcInverseCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection)
+        {
+            // Calculate KccStarTilde of each subdomain
+            // globalKccStarTilde = sum_over_s(Lc[s]^T * KccStarTilde[s] * Lc[s]) -> delegated to the GlobalMatrixManager 
+            // Here we will just prepare the data for GlobalMatrixManager
+            var allKccStarTilde = new Dictionary<ISubdomain, IMatrixView>();
+            foreach (ISubdomain sub in model.EnumerateSubdomains())
+            {
+                IFetiDP3dSubdomainMatrixManager matrices = matrixManagersSubdomain[sub];
+                if (sub.StiffnessModified)
+                {
+                    Debug.WriteLine(msgHeader + "Calculating Schur complement of remainder dofs"
+                        + $" for the stiffness of subdomain {sub.ID}");
+                    matrices.CondenseMatricesStatically(); //TODO: At this point Kcc and Krc can be cleared. Maybe Krr too.
+                }
+                allKccStarTilde[sub] = matrices.KccStarTilde;
+            }
+
+            // Give them to the global matrix manager so that it can create the global KccStar
+            matrixManagerGlobal.CalcInverseCoarseProblemMatrix(cornerNodeSelection, allKccStarTilde);
         }
 
         public void ClearCoarseProblemRhs() => matrixManagerGlobal.ClearCoarseProblemRhs();

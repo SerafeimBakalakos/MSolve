@@ -98,6 +98,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
             public ISingleSubdomainLinearSystemMpi LinearSystem { get; }
 
+            public IMatrixView KccStarTilde => throw new NotImplementedException();
+
             public (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildFreeConstrainedMatrices(
                 ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering, 
                 IEnumerable<IElement> elements, IElementMatrixProvider matrixProvider)

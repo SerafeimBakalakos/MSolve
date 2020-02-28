@@ -22,6 +22,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         /// </summary>
         IMatrixView KacStar { get; }
 
+        IMatrixView KccStarTilde { get; }
 
         //TODO: Use these names instead of CondenseMatricesStatically(), CondenseVectorsStatically
         //void CalcSubdomainKStarMatrices();

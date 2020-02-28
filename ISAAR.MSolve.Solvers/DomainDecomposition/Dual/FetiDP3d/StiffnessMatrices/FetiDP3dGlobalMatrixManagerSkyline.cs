@@ -114,6 +114,37 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             hasInverseGlobalKccStarTilde = true;
         }
 
+        public void CalcInverseCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection, 
+            Dictionary<ISubdomain, IMatrixView> subdomainCoarseMatrices)
+        {
+            OrderCoarseProblemDofs();
+
+            // globalKccStar = sum_over_s(Bc[s]^T * KccStar[s] * Bc[s])
+            // globalKacStar = sum_over_s(Ba[s]^T * KacStar[s] * Bc[s])
+            // globalKaaStar = sum_over_s(Ba[s]^T * KaaStar[s] * Ba[s])
+            // However K matrices are joined as [KccStar, KacStar^T; KacStar, KaaStar] and Bc, Ba matrices are no longer very
+            // useful, as the mappings they represent have been permuted.
+
+            // Assembly
+            int numCornerDofs = dofSeparator.NumGlobalCornerDofs;
+            int numAugmentationDofs = augmentationConstraints.NumGlobalAugmentationConstraints;
+            int numCoarseDofs = numCornerDofs + numAugmentationDofs;
+            int[] skylineColHeights =
+                FindSkylineColumnHeights(cornerNodeSelection, augmentationConstraints.MidsideNodesSelection);
+            var skylineBuilder = SkylineBuilder.Create(numCoarseDofs, skylineColHeights);
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                int[] subToGlobalIndices = coarseDofMapsSubdomainToGlobal[subdomain]; // subdomain-to-global mapping array
+                IMatrixView subdomainMatrix = subdomainCoarseMatrices[subdomain]; // corner dofs followed by augmentation dofs
+                skylineBuilder.AddSubmatrixSymmetric(subdomainMatrix, subToGlobalIndices);
+            }
+            SkylineMatrix globalKccStarTilde = skylineBuilder.BuildSkylineMatrix();
+
+            // Factorization
+            this.inverseGlobalKccStarTilde = globalKccStarTilde.FactorLdl(true);
+            hasInverseGlobalKccStarTilde = true;
+        }
+
         public void ClearCoarseProblemRhs() => globalFcStar = null;
 
         public void ClearInverseCoarseProblemMatrix()

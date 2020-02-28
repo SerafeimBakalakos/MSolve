@@ -61,6 +61,35 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Matrices
         }
 
         [Theory]
+        [InlineData(2, 2)]
+        [InlineData(5, 5)]
+        [InlineData(7, 3)]
+        [InlineData(2, 8)]
+        [InlineData(1, 9)]
+        [InlineData(9, 1)]
+        private static void TestJoinMatrices(int size0, int size1)
+        {
+            var expectedA = Matrix.CreateZero(size0 + size1, size0 + size1);
+            int val = 0;
+            for (int j = 0; j < expectedA.NumColumns; ++j)
+            {
+                for (int i = 0; i <= j; ++i)
+                {
+                    expectedA[i, j] = val;
+                    expectedA[j, i] = val;
+                    ++val;
+                }
+            }
+
+            var A00 = SymmetricMatrix.CreateFromMatrix(expectedA.GetSubmatrix(0, size0, 0, size0));
+            Matrix A10 = expectedA.GetSubmatrix(size0, size0 + size1, 0, size0);
+            var A11 = SymmetricMatrix.CreateFromMatrix(expectedA.GetSubmatrix(size0, size0 + size1, size0, size0 + size1));
+
+            SymmetricMatrix computedA = SymmetricMatrix.JoinLowerTriangleSubmatrices(A00, A10, A11);
+            comparer.AssertEqual(expectedA, computedA);
+        }
+
+        [Theory]
         [MemberData(nameof(TestSettings.ProvidersToTest), MemberType = typeof(TestSettings))]
         private static void TestMatrixVectorMultiplication(LinearAlgebraProviderChoice providers)
         {

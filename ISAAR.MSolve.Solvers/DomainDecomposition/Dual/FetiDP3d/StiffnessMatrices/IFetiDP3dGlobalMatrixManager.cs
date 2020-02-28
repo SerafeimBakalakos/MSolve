@@ -29,6 +29,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         void CalcInverseCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection,
             Dictionary<ISubdomain, (IMatrixView KccStar, IMatrixView KacStar, IMatrixView KaaStar)> matrices);
 
+        void CalcInverseCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection,
+            Dictionary<ISubdomain, IMatrixView> subdomainCoarseMatrices);
+
         void ClearCoarseProblemRhs();
         void ClearInverseCoarseProblemMatrix();
 

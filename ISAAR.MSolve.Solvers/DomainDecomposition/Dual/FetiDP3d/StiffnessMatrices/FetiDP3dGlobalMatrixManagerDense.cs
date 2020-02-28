@@ -90,6 +90,48 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             hasInverseGlobalKccStarTilde = true;
         }
 
+        public void CalcInverseCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection, 
+            Dictionary<ISubdomain, IMatrixView> subdomainCoarseMatrices)
+        {
+            // globalKccStar = sum_over_s(Bc[s]^T * KccStar[s] * Bc[s])
+            // globalKacStar = sum_over_s(Ba[s]^T * KacStar[s] * Bc[s])
+            // globalKaaStar = sum_over_s(Ba[s]^T * KaaStar[s] * Ba[s])
+
+            int numCorners = dofSeparator.NumGlobalCornerDofs;
+            int numAugmented = augmentationConstraints.NumGlobalAugmentationConstraints;
+            var globalKccStar = Matrix.CreateZero(numCorners, numCorners);
+            var globalKacStar = Matrix.CreateZero(numAugmented, numCorners);
+            var globalKaaStar = Matrix.CreateZero(numAugmented, numAugmented);
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                int s = subdomain.ID;
+
+                // Split the matrix containing all coarse dofs of this subdomain to corner and augmented dofs
+                int countC = dofSeparator.GetCornerDofIndices(subdomain).Length;
+                int countA = augmentationConstraints.GetNumAugmentationDofs(subdomain);
+                Matrix subdomainMatrix = subdomainCoarseMatrices[subdomain].CopyToFullMatrix();
+                Matrix KccStar = subdomainMatrix.GetSubmatrix(0, countC, 0, countC);
+                Matrix KaaStar = subdomainMatrix.GetSubmatrix(countC, countC + countA, countC, countC + countA);
+                Matrix KacStar = subdomainMatrix.GetSubmatrix(countC, countC + countA, 0, countC);
+
+                UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
+                GlobalToLocalBooleanMatrix Ba = augmentationConstraints.GetMatrixBa(subdomain);
+
+                globalKccStar.AddIntoThis(Bc.ThisTransposeTimesOtherTimesThis(KccStar));
+                globalKacStar.AddIntoThis(Ba.MultiplyRight(Bc.MultiplyLeft(KacStar), true));
+                globalKaaStar.AddIntoThis(Ba.MultiplyThisTransposeTimesOtherTimesThis(KaaStar));
+            }
+
+            // KccTilde = [Kcc, Kac'; Kac Kaa];
+            Matrix topRows = globalKccStar.AppendRight(globalKacStar.Transpose());
+            Matrix bottomRows = globalKacStar.AppendRight(globalKaaStar);
+            inverseGlobalKccStarTilde = topRows.AppendBottom(bottomRows);
+
+            // Invert
+            inverseGlobalKccStarTilde.InvertInPlace();
+            hasInverseGlobalKccStarTilde = true;
+        }
+
         public void ClearCoarseProblemRhs() => globalFcStar = null;
 
         public void ClearInverseCoarseProblemMatrix()

@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         private SymmetricMatrix Kcc;
         private CscMatrix Krc;
         private SkylineMatrix Krr;
-        private SymmetricMatrix _KccStar, _KaaStar;
+        private SymmetricMatrix _KccStar, _KaaStar, _KccStarTilde;
         private Matrix _KacStar;
 
         public FetiDP3dSubdomainMatrixManagerSkyline(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator, 
@@ -51,11 +51,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             this.reordering = reordering;
             this.linearSystem = new SingleSubdomainSystemMpi<SkylineMatrix>(subdomain);
         }
-
-        public IMatrixView KaaStar => _KaaStar;
-        public IMatrixView KacStar => _KacStar;
-        public IMatrixView KccStar => _KccStar;
-
 
         public ISingleSubdomainLinearSystemMpi LinearSystem => linearSystem;
 
@@ -88,6 +83,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
                 return fcStar;
             }
         }
+
+        public IMatrixView KaaStar => _KaaStar;
+        public IMatrixView KacStar => _KacStar;
+        public IMatrixView KccStar => _KccStar;
+        public IMatrixView KccStarTilde => _KccStarTilde;
 
         public (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildFreeConstrainedMatrices(
             ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering, 
@@ -135,6 +135,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             _KccStar = null;
             _KacStar = null;
             _KaaStar = null;
+            _KccStarTilde = null;
             //linearSystem.Matrix = null; // DO NOT DO THAT!!! The analyzer manages that.
         }
 
@@ -167,6 +168,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             // where Ba[s] is taken into account during assembly of the global coarse problem matrix
             _KacStar = R1.MultiplyRight(invKrrTimesKrc, true);
             _KacStar.ScaleIntoThis(-1);
+
+            //TODO: Copying matrices can be avoided by providing methods that write the matrix vector multiplications above, 
+            //      directly to their correct indices in the joined matrix. 
+            _KccStarTilde = SymmetricMatrix.JoinLowerTriangleSubmatrices(_KccStar, _KacStar, _KaaStar);
         }
 
         public void CondenseRhsVectorsStatically()
