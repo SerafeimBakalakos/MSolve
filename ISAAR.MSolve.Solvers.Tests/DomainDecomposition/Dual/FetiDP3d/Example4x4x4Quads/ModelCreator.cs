@@ -205,14 +205,14 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x
                 6,
                 7};
 
-            //int[] subdomainIds = new int[8]{1,
-            //    2,
-            //    3,
+            //int[] subdomainIds = new int[8]{0,
             //    4,
-            //    5,
+            //    2,
             //    6,
-            //    7,
-            //    8};
+            //    1,
+            //    5,
+            //    3,
+            //    7};
 
             int[] NodeIds = new int[125]{1,
                 26,

@@ -29,7 +29,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements;
 //TODO: Use a base class for the code that is identical between FETI-1 and FETI-DP.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 {
-    public class FetiDPSolverSerial : ISolverMpi
+    public class FetiDPSolverSerial : ISolverMpi, IFetiSolver
     {
         internal const string name = "FETI-DP Solver"; // for error messages and logging
         private readonly IFreeDofDisplacementsCalculator displacementsCalculator;
@@ -51,6 +51,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private bool isStiffnessModified = true;
         private IFetiPreconditioner preconditioner;
 
+        public Vector previousLambda { get; set; } // TODO: implment lambda recycling for fetidpsolver as well
+        public bool usePreviousLambda { get; set; }
         public FetiDPSolverSerial(IModel model, ICornerNodeSelection cornerNodeSelection,
             IFetiDPMatrixManagerFactory matrixManagerFactory, IFetiPreconditioningOperations preconditioning,
             ICrosspointStrategy crosspointStrategy, PcgSettings pcgSettings, bool problemIsHomogeneous)
@@ -216,7 +218,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             if (isStiffnessModified)
             {
-                // Separate the stiffness matrix
+                // Separate the stiffness matrix 
                 Logger.StartMeasuringTime();
                 foreach (ISubdomain subdomain in model.EnumerateSubdomains())
                 {
