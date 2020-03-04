@@ -21,8 +21,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
     {
         private readonly IAugmentationConstraints augmentationConstraints;
         private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
-        private readonly IFetiDP3dGlobalMatrixManager matrixManagerGlobal;
-        private readonly Dictionary<ISubdomain, IFetiDP3dSubdomainMatrixManager> matrixManagersSubdomain;
+        private readonly IFetiDPGlobalMatrixManager matrixManagerGlobal;
+        private readonly Dictionary<ISubdomain, IFetiDPSubdomainMatrixManager> matrixManagersSubdomain;
         private readonly IModel model;
         private readonly string msgHeader;
 
@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             this.model = model;
             this.lagrangesEnumerator = lagrangesEnumerator;
             this.augmentationConstraints = augmentationConstraints;
-            this.matrixManagersSubdomain = new Dictionary<ISubdomain, IFetiDP3dSubdomainMatrixManager>();
+            this.matrixManagersSubdomain = new Dictionary<ISubdomain, IFetiDPSubdomainMatrixManager>();
             matrixManagerGlobal = matrixManagerFactory.CreateGlobalMatrixManager(model, dofSeparator, augmentationConstraints);
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
@@ -59,30 +59,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             this.CoarseProblemRhs = fcStarTilde;
         }
 
-        #region debug
-        public void CalcInverseCoarseProblemMatrixOLD(ICornerNodeSelection cornerNodeSelection)
-        {
-            // Calculate KccStarTilde of each subdomain
-            // globalKccStarTilde = sum_over_s(Lc[s]^T * KccStarTilde[s] * Lc[s]) -> delegated to the GlobalMatrixManager 
-            // Here we will just prepare the data for GlobalMatrixManager
-            var allKStarMatrices = new Dictionary<ISubdomain, (IMatrixView KccStar, IMatrixView KacStar, IMatrixView KaaStar)>();
-            foreach (ISubdomain sub in model.EnumerateSubdomains())
-            {
-                IFetiDP3dSubdomainMatrixManager matrices = matrixManagersSubdomain[sub];
-                if (sub.StiffnessModified)
-                {
-                    Debug.WriteLine(msgHeader + "Calculating Schur complement of remainder dofs"
-                        + $" for the stiffness of subdomain {sub.ID}");
-                    matrices.CondenseMatricesStatically(); //TODO: At this point Kcc and Krc can be cleared. Maybe Krr too.
-                }
-                allKStarMatrices[sub] = (matrices.KccStar, matrices.KacStar, matrices.KaaStar);
-            }
-
-            // Give them to the global matrix manager so that it can create the global KccStar
-            matrixManagerGlobal.CalcInverseCoarseProblemMatrix(cornerNodeSelection, allKStarMatrices);
-        }
-        #endregion
-
         public void CalcInverseCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection)
         {
             // Calculate KccStarTilde of each subdomain
@@ -91,14 +67,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             var allKccStarTilde = new Dictionary<ISubdomain, IMatrixView>();
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                IFetiDP3dSubdomainMatrixManager matrices = matrixManagersSubdomain[sub];
+                IFetiDPSubdomainMatrixManager matrices = matrixManagersSubdomain[sub];
                 if (sub.StiffnessModified)
                 {
                     Debug.WriteLine(msgHeader + "Calculating Schur complement of remainder dofs"
                         + $" for the stiffness of subdomain {sub.ID}");
-                    matrices.CondenseMatricesStatically(); //TODO: At this point Kcc and Krc can be cleared. Maybe Krr too.
+                    matrices.CalcCoarseProblemSubmatrices(); //TODO: At this point Kcc and Krc can be cleared. Maybe Krr too.
                 }
-                allKccStarTilde[sub] = matrices.KccStarTilde;
+                allKccStarTilde[sub] = matrices.CoarseProblemSubmatrix;
             }
 
             // Give them to the global matrix manager so that it can create the global KccStar
@@ -117,7 +93,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         public Vector MultiplyInverseCoarseProblemMatrix(Vector vector) 
             => matrixManagerGlobal.MultiplyInverseCoarseProblemMatrixTimes(vector);
 
-        public DofPermutation ReorderGlobalCornerDofs() => matrixManagerGlobal.ReorderCornerDofs();
+        public DofPermutation ReorderGlobalCornerDofs() => matrixManagerGlobal.ReorderGlobalCornerDofs();
 
         public DofPermutation ReorderSubdomainInternalDofs(ISubdomain subdomain) 
             => matrixManagersSubdomain[subdomain].ReorderInternalDofs();
@@ -146,7 +122,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             var allFcStar = new Dictionary<ISubdomain, Vector>();
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                matrixManagersSubdomain[sub].CondenseRhsVectorsStatically();
+                matrixManagersSubdomain[sub].CalcCoarseProblemRhsSubvectors();
                 allFcStar[sub] = matrixManagersSubdomain[sub].FcStar;
             }
 

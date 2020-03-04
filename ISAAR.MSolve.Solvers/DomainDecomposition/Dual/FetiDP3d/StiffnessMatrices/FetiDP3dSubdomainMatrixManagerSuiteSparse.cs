@@ -12,6 +12,7 @@ using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.Assemblers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.LinearSystems;
@@ -19,7 +20,7 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices
 {
-    public class FetiDP3dSubdomainMatrixManagerSuiteSparse : IFetiDP3dSubdomainMatrixManager
+    public class FetiDP3dSubdomainMatrixManagerSuiteSparse : IFetiDPSubdomainMatrixManager
     {
         private readonly SymmetricDokAssembler assembler = new SymmetricDokAssembler();
         private readonly IAugmentationConstraints augmentationConstraints;
@@ -38,8 +39,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         private SymmetricMatrix Kcc;
         private CscMatrix Krc;
         private DokSymmetric Krr;
-        private SymmetricMatrix _KccStar, _KaaStar, _KccStarTilde;
-        private Matrix _KacStar;
+        private SymmetricMatrix KccStar, KaaStar, KccStarTilde;
+        private Matrix KacStar;
 
         public FetiDP3dSubdomainMatrixManagerSuiteSparse(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator, 
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IAugmentationConstraints augmentationConstraints,
@@ -85,10 +86,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             }
         }
 
-        public IMatrixView KaaStar => _KaaStar;
-        public IMatrixView KacStar => _KacStar;
-        public IMatrixView KccStar => _KccStar;
-        public IMatrixView KccStarTilde => _KccStarTilde;
+        public IMatrixView CoarseProblemSubmatrix => KccStarTilde;
 
         public (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildFreeConstrainedMatrices(
             ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering,
@@ -100,30 +98,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             linearSystem.Matrix = assembler.BuildGlobalMatrix(dofOrdering,
                 linearSystem.Subdomain.EnumerateElements(), matrixProvider);
         }
-
-        #region debug
-        //public void CalcInverseKii(bool diagonalOnly)
-        //{
-        //    int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
-        //    if (diagonalOnly)
-        //    {
-        //        var diagonal = new double[internalDofs.Length];
-        //        for (int i = 0; i < diagonal.Length; ++i)
-        //        {
-        //            int idx = internalDofs[i];
-        //            diagonal[i] = 1.0 / Krr[idx, idx];
-        //            //diagonal[i] = Krr[idx, idx];
-        //        }
-        //        inverseKiiDiagonal = DiagonalMatrix.CreateFromArray(diagonal, false);
-        //        //inverseKiiDiagonal.Invert();
-        //    }
-        //    else
-        //    {
-        //        SkylineMatrix Kii = Krr.GetSubmatrixSymmetricSkyline(internalDofs);
-        //        inverseKii = Kii.FactorLdl(true);
-        //    }
-        //}
-        #endregion
 
         public void ClearMatrices()
         {
@@ -137,10 +111,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             Kcc = null;
             Krc = null;
             Krr = null;
-            _KccStar = null;
-            _KacStar = null;
-            _KaaStar = null;
-            _KccStarTilde = null;
+            KccStar = null;
+            KacStar = null;
+            KaaStar = null;
+            KccStarTilde = null;
             //linearSystem.Matrix = null; // DO NOT DO THAT!!! The analyzer manages that.
         }
 
@@ -151,12 +125,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             fcStar = null;
         }
 
-        public void CondenseMatricesStatically()
+        public void CalcCoarseProblemSubmatrices()
         {
             // Top left
             // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s]
             Matrix invKrrTimesKrc = inverseKrr.SolveLinearSystems(Krc.CopyToFullMatrix()); //TODO: Perhaps this should be done column-by-column
-            _KccStar = SchurComplementCsc.CalcSchurComplementSymmetric(Kcc, Krc, invKrrTimesKrc);
+            KccStar = SchurComplementCsc.CalcSchurComplementSymmetric(Kcc, Krc, invKrrTimesKrc);
 
 
             // Bottom right
@@ -164,22 +138,22 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             // KaaStar[s] = Ba[s]^T * (- R1[s]^T * inv(Krr[s]) * R1[s]) * Ba[s]
             // where Ba[s] is taken into account during assembly of the global coarse problem matrix
             var R1 = (LocalToGlobalMappingMatrix)augmentationConstraints.GetMatrixR1(subdomain);
-            _KaaStar = R1.MultiplyTransposeThisTimesOtherTimesThis(inverseKrr);
-            _KaaStar.ScaleIntoThis(-1);
+            KaaStar = R1.MultiplyTransposeThisTimesOtherTimesThis(inverseKrr);
+            KaaStar.ScaleIntoThis(-1);
 
             // Bottom left
             // KacStar[s] = - Qr^T * Br[s] * inv(Krr[s]) * Krc[s] <=>
             // KacStar[s] = - R1[s]^T * inv(Krr[s]) * Krc[s]
             // where Ba[s] is taken into account during assembly of the global coarse problem matrix
-            _KacStar = R1.MultiplyRight(invKrrTimesKrc, true);
-            _KacStar.ScaleIntoThis(-1);
+            KacStar = R1.MultiplyRight(invKrrTimesKrc, true);
+            KacStar.ScaleIntoThis(-1);
 
             //TODO: Copying matrices can be avoided by providing methods that write the matrix vector multiplications above, 
             //      directly to their correct indices in the joined matrix. 
-            _KccStarTilde = SymmetricMatrix.JoinLowerTriangleSubmatrices(_KccStar, _KacStar, _KaaStar);
+            KccStarTilde = SymmetricMatrix.JoinLowerTriangleSubmatrices(KccStar, KacStar, KaaStar);
         }
 
-        public void CondenseRhsVectorsStatically()
+        public void CalcCoarseProblemRhsSubvectors()
         {
             // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s]
             Vector temp = MultiplyInverseKrrTimes(Fr);

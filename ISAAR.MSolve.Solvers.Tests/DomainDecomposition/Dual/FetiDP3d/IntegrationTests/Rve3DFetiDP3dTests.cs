@@ -72,8 +72,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
 
 
             #region debug
-            double resDirect = Ff.Subtract(Kff.Multiply(directDisplacements)).Norm2();
-            double resFeti = Ff.Subtract(Kff.Multiply(fetiDisplacements)).Norm2();
+            //double resDirect = Ff.Subtract(Kff.Multiply(directDisplacements)).Norm2();
+            //double resFeti = Ff.Subtract(Kff.Multiply(fetiDisplacements)).Norm2();
             #endregion
 
             // The error is provided in the reference solution the, but it is almost impossible for two different codes run on 

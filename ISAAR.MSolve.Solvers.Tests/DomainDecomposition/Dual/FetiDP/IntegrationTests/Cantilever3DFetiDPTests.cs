@@ -47,21 +47,21 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         public enum Augmentation { None, Case0, Case1 }
         public enum Mesh { e4x2x1, e4x4x2 }
 
-        [Theory]
+        //[Theory]
         //[InlineData(Mesh.e4x2x1, Corners.Case0, Crosspoints.Minimum, Augmentation.None)]
         //[InlineData(Mesh.e4x2x1, Corners.Case1, Crosspoints.Minimum, Augmentation.None)]
         //[InlineData(Mesh.e4x2x1, Corners.Case1, Crosspoints.FullyRedundant, Augmentation.None)]
         //[InlineData(Mesh.e4x2x1, Corners.Case1, Crosspoints.Minimum, Augmentation.Case0)]
         //[InlineData(Mesh.e4x2x1, Corners.Case1, Crosspoints.FullyRedundant, Augmentation.Case0)]
 
-        [InlineData(Mesh.e4x4x2, Corners.Case2, Crosspoints.Minimum, Augmentation.None)]
-        [InlineData(Mesh.e4x4x2, Corners.Case2, Crosspoints.FullyRedundant, Augmentation.None)]
-        [InlineData(Mesh.e4x4x2, Corners.Case2, Crosspoints.Minimum, Augmentation.Case1)]
-        [InlineData(Mesh.e4x4x2, Corners.Case2, Crosspoints.FullyRedundant, Augmentation.Case1)]
-        [InlineData(Mesh.e4x4x2, Corners.Case3, Crosspoints.Minimum, Augmentation.None)]
-        [InlineData(Mesh.e4x4x2, Corners.Case3, Crosspoints.FullyRedundant, Augmentation.None)]
-        [InlineData(Mesh.e4x4x2, Corners.Case3, Crosspoints.Minimum, Augmentation.Case1)]
-        [InlineData(Mesh.e4x4x2, Corners.Case3, Crosspoints.FullyRedundant, Augmentation.Case1)]
+        //[InlineData(Mesh.e4x4x2, Corners.Case2, Crosspoints.Minimum, Augmentation.None)]
+        //[InlineData(Mesh.e4x4x2, Corners.Case2, Crosspoints.FullyRedundant, Augmentation.None)]
+        //[InlineData(Mesh.e4x4x2, Corners.Case2, Crosspoints.Minimum, Augmentation.Case1)]
+        //[InlineData(Mesh.e4x4x2, Corners.Case2, Crosspoints.FullyRedundant, Augmentation.Case1)]
+        //[InlineData(Mesh.e4x4x2, Corners.Case3, Crosspoints.Minimum, Augmentation.None)]
+        //[InlineData(Mesh.e4x4x2, Corners.Case3, Crosspoints.FullyRedundant, Augmentation.None)]
+        //[InlineData(Mesh.e4x4x2, Corners.Case3, Crosspoints.Minimum, Augmentation.Case1)]
+        //[InlineData(Mesh.e4x4x2, Corners.Case3, Crosspoints.FullyRedundant, Augmentation.Case1)]
 
         //[InlineData(Corners.C1526, Crosspoints.Minimum, Augmented.None)]
         //[InlineData(Corners.C1526, Crosspoints.FullyRedundant, Augmented.None)]

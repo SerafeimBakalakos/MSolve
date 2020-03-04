@@ -181,12 +181,17 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 subdomainMatrices.ExtractCornerRemainderSubmatrices();
                 subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
                 subdomainMatrices.InvertKrr(true);
-                subdomainMatrices.CondenseMatricesStatically();
-                subdomainMatrices.CondenseRhsVectorsStatically();
+                subdomainMatrices.CalcCoarseProblemSubmatrices();
+                subdomainMatrices.CalcCoarseProblemRhsSubvectors();
+
+                // Isolate KccStar
+                Matrix KccStarTilde = subdomainMatrices.CoarseProblemSubmatrix.CopyToFullMatrix();
+                int numCornerDofs = dofSeparator.GetCornerDofIndices(sub).Length;
+                Matrix KccStar = KccStarTilde.GetSubmatrix(0, numCornerDofs, 0, numCornerDofs);
 
                 // Check
                 double tol = 1E-5;
-                Assert.True(ExpectedSubdomainMatrices.GetMatrixKccStar(sub.ID).Equals(subdomainMatrices.KccStar, tol));
+                Assert.True(ExpectedSubdomainMatrices.GetMatrixKccStar(sub.ID).Equals(KccStar, tol));
                 Assert.True(ExpectedSubdomainMatrices.GetVectorFcStar(sub.ID).Equals(subdomainMatrices.FcStar, tol));
             }
         }
@@ -277,23 +282,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 subdomainMatrices.InvertKrr(true);
             }
         }
-
-        #region debug
-        //internal static void SetLinearSystemMatrix(ISingleSubdomainLinearSystemMpi linearSystem, IIndexable2D matrix,
-        //    MatrixFormat format)
-        //{
-        //    if ((format == MatrixFormat.Dense) || (format == MatrixFormat.Skyline))
-        //    {
-        //        var castedLS = (SingleSubdomainSystemMpi<SkylineMatrix>)linearSystem;
-        //        castedLS.Matrix = SkylineMatrix.CreateFromMatrix(matrix);
-        //    }
-        //    else
-        //    {
-        //        var castedLS = (SingleSubdomainSystemMpi<DokSymmetric>)linearSystem;
-        //        castedLS.Matrix = DokSymmetric.CreateFromMatrix(matrix);
-        //    }
-        //}
-        #endregion
 
         private static void SetKffRhs(IModel model, IFetiDPMatrixManager matrixManager, MatrixFormat format)
         {

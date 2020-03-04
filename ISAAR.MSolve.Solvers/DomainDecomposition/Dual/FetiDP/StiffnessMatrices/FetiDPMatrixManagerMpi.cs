@@ -59,7 +59,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             {
                 // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s] -> delegated to the SubdomainMatrixManager
                 // globalFcStar = sum_over_s(Lc[s]^T * fcStar[s]) -> delegated to the GlobalMatrixManager
-                matrixManagerSubdomains[s].CondenseRhsVectorsStatically();
+                matrixManagerSubdomains[s].CalcCoarseProblemRhsSubvectors();
                 processVectors[s] = matrixManagerSubdomains[s].FcStar;
             }
 
@@ -91,9 +91,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
                 {
                     Debug.WriteLine(msgHeader + "Calculating Schur complement of remainder dofs"
                         + $" for the stiffness of subdomain {subdomain.ID}");
-                    matrixManagerSubdomains[s].CondenseMatricesStatically(); //TODO: At this point Kcc and Krc can be cleared. Maybe Krr too.
+                    matrixManagerSubdomains[s].CalcCoarseProblemSubmatrices(); //TODO: At this point Kcc and Krc can be cleared. Maybe Krr too.
                 }
-                processMatrices[s] = matrixManagerSubdomains[s].KccStar;
+                processMatrices[s] = matrixManagerSubdomains[s].CoarseProblemSubmatrix;
             }
 
             // Gather them in master

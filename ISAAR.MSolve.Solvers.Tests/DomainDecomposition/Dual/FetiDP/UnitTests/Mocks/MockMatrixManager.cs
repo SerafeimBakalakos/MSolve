@@ -75,7 +75,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
                 Kbb = Example4x4QuadsHomogeneous.GetMatrixKbb(s);
                 Kbi = Example4x4QuadsHomogeneous.GetMatrixKbi(s);
                 Kcc = Example4x4QuadsHomogeneous.GetMatrixKcc(s);
-                KccStar = Example4x4QuadsHomogeneous.GetMatrixKccStar(s);
+                CoarseProblemSubmatrix = Example4x4QuadsHomogeneous.GetMatrixKccStar(s);
                 Kff = Example4x4QuadsHomogeneous.GetMatrixKff(s);
                 Krc = Example4x4QuadsHomogeneous.GetMatrixKrc(s);
                 Krr = Example4x4QuadsHomogeneous.GetMatrixKrr(s);
@@ -85,7 +85,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
             public Vector Fbc { get; }
             public Vector FcStar { get; }
             public Vector Fr { get; }
-            public IMatrixView KccStar { get; }
+            public IMatrixView CoarseProblemSubmatrix { get; }
 
             public ISingleSubdomainLinearSystemMpi LinearSystem { get; }
 
@@ -100,8 +100,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
 
             public void ClearMatrices() { }
             public void ClearRhsVectors() { }
-            public void CondenseMatricesStatically() { }
-            public void CondenseRhsVectorsStatically() { }
+            public void CalcCoarseProblemSubmatrices() { }
+            public void CalcCoarseProblemRhsSubvectors() { }
 
             public void ExtractBoundaryInternalSubmatricesAndInvertKii(bool diagonalKii) { }
 

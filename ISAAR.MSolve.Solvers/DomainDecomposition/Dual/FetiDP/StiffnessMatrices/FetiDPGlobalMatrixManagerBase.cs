@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         private Vector globalFcStar;
 
-        private bool hasInverseGlobalKccStar;
+        private bool hasInverseCoarseProblemMatrix;
 
         public FetiDPGlobalMatrixManagerBase(IModel model, IFetiDPDofSeparator dofSeparator)
         {
@@ -55,26 +55,26 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         }
 
         public void CalcInverseCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection, 
-            Dictionary<ISubdomain, IMatrixView> condensedMatrices)
+            Dictionary<ISubdomain, IMatrixView> subdomainCoarseMatrices)
         {
-            CalcInverseCoarseProblemMatrixImpl(cornerNodeSelection, condensedMatrices);
-            hasInverseGlobalKccStar = true;
+            CalcInverseCoarseProblemMatrixImpl(cornerNodeSelection, subdomainCoarseMatrices);
+            hasInverseCoarseProblemMatrix = true;
         }
         protected abstract void CalcInverseCoarseProblemMatrixImpl(ICornerNodeSelection cornerNodeSelection, 
-            Dictionary<ISubdomain, IMatrixView> condensedMatrices);
+            Dictionary<ISubdomain, IMatrixView> subdomainCoarseMatrices);
 
         public void ClearCoarseProblemRhs() => globalFcStar = null;
 
         public void ClearInverseCoarseProblemMatrix()
         {
             ClearInverseCoarseProblemMatrixImpl();
-            hasInverseGlobalKccStar = false;
+            hasInverseCoarseProblemMatrix = false;
         }
         protected abstract void ClearInverseCoarseProblemMatrixImpl();
 
         public Vector MultiplyInverseCoarseProblemMatrixTimes(Vector vector)
         {
-            if (!hasInverseGlobalKccStar) throw new InvalidOperationException(
+            if (!hasInverseCoarseProblemMatrix) throw new InvalidOperationException(
                 "The inverse of the coarse problem matrix must be calculated first.");
             return MultiplyInverseCoarseProblemMatrixTimesImpl(vector);
         }

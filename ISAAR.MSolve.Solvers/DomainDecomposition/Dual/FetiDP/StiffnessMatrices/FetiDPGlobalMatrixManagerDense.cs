@@ -24,14 +24,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         public override DofPermutation ReorderGlobalCornerDofs() => DofPermutation.CreateNoPermutation();
 
         protected override void CalcInverseCoarseProblemMatrixImpl(ICornerNodeSelection cornerNodeSelection,
-            Dictionary<ISubdomain, IMatrixView> condensedMatrices)
+            Dictionary<ISubdomain, IMatrixView> subdomainCoarseMatrices)
         {
             // globalKccStar = sum_over_s(Bc[s]^T * KccStar[s] * Bc[s])
             var globalKccStar = Matrix.CreateZero(dofSeparator.NumGlobalCornerDofs, dofSeparator.NumGlobalCornerDofs);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int s = subdomain.ID;
-                IMatrixView subdomainKccStar = condensedMatrices[subdomain];
+                IMatrixView subdomainKccStar = subdomainCoarseMatrices[subdomain];
 
                 UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
                 globalKccStar.AddIntoThis(Bc.ThisTransposeTimesOtherTimesThis(subdomainKccStar));

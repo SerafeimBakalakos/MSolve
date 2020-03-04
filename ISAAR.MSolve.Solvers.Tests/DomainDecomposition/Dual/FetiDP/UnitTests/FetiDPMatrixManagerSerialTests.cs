@@ -160,12 +160,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests
                 subdomainMatrices.ExtractCornerRemainderSubmatrices();
                 subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
                 subdomainMatrices.InvertKrr(true);
-                subdomainMatrices.CondenseMatricesStatically();
-                subdomainMatrices.CondenseRhsVectorsStatically();
+                subdomainMatrices.CalcCoarseProblemSubmatrices();
+                subdomainMatrices.CalcCoarseProblemRhsSubvectors();
 
                 // Check
                 double tol = 1E-13;
-                Assert.True(Example4x4QuadsHomogeneous.GetMatrixKccStar(sub.ID).Equals(subdomainMatrices.KccStar, tol));
+                Assert.True(Example4x4QuadsHomogeneous.GetMatrixKccStar(sub.ID).Equals(subdomainMatrices.CoarseProblemSubmatrix, tol));
                 Assert.True(Example4x4QuadsHomogeneous.GetVectorFcStar(sub.ID).Equals(subdomainMatrices.FcStar, tol));
             }
         }

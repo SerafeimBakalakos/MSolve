@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
 {
     public static class FetiDP3dSolverSerialTests
     {
-        [Fact]
+        //[Fact]
         public static void TestSolutionGlobalDisplacements()
         {
             (IModel model, FetiDP3dSolverSerial solver) = CreateModelAndSolver();
@@ -85,12 +85,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
             model.ConnectDataStructures();
             ICornerNodeSelection cornerNodes = Example4x4x4Quads.ModelCreator.DefineCornerNodeSelectionSerial(model);
             IMidsideNodesSelection midsideNodesSelection = Example4x4x4Quads.ModelCreator.DefineMidsideNodeSelectionSerial(model);
-
-            #region debug
-            string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Plots";
-            var logger = new MSolve.Logging.DomainDecomposition.DomainDecompositionLoggerFetiDP(path, cornerNodes, midsideNodesSelection, true);
-            logger.PlotSubdomains(model);
-            #endregion
 
             var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();
             var solverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);

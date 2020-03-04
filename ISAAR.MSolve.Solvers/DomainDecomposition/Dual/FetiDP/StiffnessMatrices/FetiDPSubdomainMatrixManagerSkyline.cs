@@ -31,9 +31,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         private LdlSkyline inverseKrr;
         private Matrix Kbb;
         private CscMatrix Kib;
-        private SymmetricMatrix Kcc;
-        //TODO: This can be overwritten with KccStar. Not high priority, since it is a small matrix.
-        private SymmetricMatrix _KccStar;
+        private SymmetricMatrix Kcc; //TODO: This can be overwritten with KccStar. Not high priority, since it is a small matrix.
+        private SymmetricMatrix KccStar;
         private CscMatrix Krc;
         private SkylineMatrix Krr;
 
@@ -45,7 +44,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         public override ISingleSubdomainLinearSystemMpi LinearSystem => linearSystem;
 
-        protected override IMatrixView KccStarImpl => this._KccStar;
+        protected override IMatrixView CoarseProblemSubmatrixImpl => this.KccStar;
 
         protected override void BuildFreeDofsMatrixImpl(ISubdomainFreeDofOrdering dofOrdering,
             IElementMatrixProvider matrixProvider)
@@ -69,14 +68,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             Kcc = null;
             Krc = null;
             Krr = null;
-            _KccStar = null;
+            KccStar = null;
             //linearSystem.Matrix = null; // DO NOT DO THAT!!! The analyzer manages that.
         }
 
         protected override void CondenseMatricesStaticallyImpl()
         {
             // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s]
-            _KccStar = SchurComplementCsc.CalcSchurComplementSymmetric(Kcc, Krc, inverseKrr);
+            KccStar = SchurComplementCsc.CalcSchurComplementSymmetric(Kcc, Krc, inverseKrr);
         }
 
         protected override void ExtractBoundaryInternalSubmatricesAndInvertKiiImpl(bool diagonalKii)

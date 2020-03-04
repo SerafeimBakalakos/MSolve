@@ -98,12 +98,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
                 this.subdomainAugmentationDofOrderings[subdomain] = augmentationDofOrdering;
                 matricesBa[subdomain] =
                     new GlobalToLocalBooleanMatrix(NumGlobalAugmentationConstraints, subdomainToGlobalAugmentedConstraints);
-
-                #region debug
-                //var writer = new LinearAlgebra.Output.FullMatrixWriter();
-                //string path = @"C:\Users\Serafeim\Desktop\FETI-DP\Matrices\Kaa_" + subdomain.ID +".txt";
-                //writer.WriteToFile(matricesBa[subdomain].CopyToFullMatrix(), path, true);
-                #endregion
             }
         }
 
