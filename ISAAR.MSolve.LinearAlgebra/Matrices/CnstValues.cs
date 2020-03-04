@@ -31,6 +31,8 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
 
         public bool printInterfaceSolutionStats = true;
 
+        public bool printSolver_run_overwrite_data_region = true;
+
         public bool printGlobalSolutionStats = true;
 
         public bool printPcgMatRhsEtc_AndInterfaceProblemStats = false; // 

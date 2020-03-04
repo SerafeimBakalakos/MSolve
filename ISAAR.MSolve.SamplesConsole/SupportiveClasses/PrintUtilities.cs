@@ -81,6 +81,33 @@ namespace ISAAR.MSolve.SamplesConsole.SupportiveClasses
             double[,] a1 = new double[2, 2] { { 0, 0 }, { 0, 0 } };
         }
 
+        public static void WriteToFileDictionaryMsolveInput(Dictionary<int, int[]> subdBoundariesNodes, string generalPath, string fileAddedPath)
+        {
+            string boundNodesPath = generalPath + fileAddedPath;
+            var writer = new StreamWriter(boundNodesPath);
+            writer.WriteLine("new Dictionary<int, int[]>{");
+            foreach (int subdBoundNodeID in subdBoundariesNodes.Keys)
+            {
+                int[] connectedsubdsIDs = subdBoundariesNodes[subdBoundNodeID];
+                writer.Write("{"+$"{subdBoundNodeID}"+", new int[]{"); //TODOGer12 Console.WriteLine("o{"+$"{b1}");
+                for (int j = 0; j < connectedsubdsIDs.GetLength(0) - 1; ++j)
+                {
+                    writer.Write(connectedsubdsIDs[j]);
+                    writer.Write(',');
+                }
+                writer.Write(connectedsubdsIDs[connectedsubdsIDs.GetLength(0) - 1]);
+
+                if (!(subdBoundNodeID==subdBoundariesNodes.Keys.ElementAt(subdBoundariesNodes.Count-1))) writer.WriteLine("} },");
+                else writer.WriteLine("} }};");
+                
+            }
+            
+            writer.Flush();
+            writer.Dispose();
+
+
+        }
+
         public static void WriteToFile(SkylineMatrix Mat, int i1, int j1, string path)
         {
             var writer = new StreamWriter(path);
@@ -181,14 +208,17 @@ namespace ISAAR.MSolve.SamplesConsole.SupportiveClasses
         {
             var writer2 = new StreamWriter(path2);
             writer2.Write('{');
-            for (int i = 0; i < array.GetLength(0); ++i)
+            for (int i = 0; i < array.GetLength(0) - 1; ++i)
             {
                 writer2.Write(array[i]);
                 writer2.Write(',');
                 writer2.Write(' ');
                 writer2.WriteLine(); // allagh seiras (dld grafei oti exei mesa h parenths=esh edw keno kai allazei seira)
             }
+
+            writer2.Write(array[array.GetLength(0) - 1]);
             writer2.Write('}');
+
             writer2.Flush();
             writer2.Dispose();
 

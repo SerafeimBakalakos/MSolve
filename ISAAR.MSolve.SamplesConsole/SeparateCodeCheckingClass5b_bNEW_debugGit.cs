@@ -388,7 +388,7 @@ namespace ISAAR.MSolve.SamplesConsole
 
             #region  overwrite data model region
             bool run_overwrite_data_region = true;
-            bool print_hexa_model = false;
+            bool print_hexa_model = true;
             if (run_overwrite_data_region)
             {
                 if (print_hexa_model)
@@ -475,13 +475,13 @@ namespace ISAAR.MSolve.SamplesConsole
         private static void PrintHexaModelData(Model model, string subdomainOutputPath)
         {
             Dictionary<int, List<int>> ElementIdsAndModelIds = new Dictionary<int, List<int>>();
-            foreach (var element in model.EnumerateElements())
+            foreach (var element in model.EnumerateElements().Where(x=>(x.ElementType is Hexa8NonLinear| x.ElementType is Hexa8NonLinearDefGrad)))
             {
                 List<int> ElementNodesIds = element.Nodes.Select(x => x.ID).ToList();
                 ElementIdsAndModelIds.Add(element.ID, ElementNodesIds);
             }
 
-            int[] ElementIds = model.EnumerateElements().Select(x => x.ID).ToArray();
+            int[] ElementIds = model.EnumerateElements().Where(x => (x.ElementType is Hexa8NonLinear | x.ElementType is Hexa8NonLinearDefGrad)).Select(x => x.ID).ToArray();
             int[] subdomainIds = model.EnumerateSubdomains().Select(x => x.ID).ToArray();
             int[] NodeIds = model.NodesDictionary.Values.Select(x => x.ID).ToArray();
 
@@ -508,20 +508,25 @@ namespace ISAAR.MSolve.SamplesConsole
                 thesi++;
             }
 
-            int[,] SubdElements = new int[model.EnumerateSubdomains().Count(), model.EnumerateSubdomains().ElementAt(0).EnumerateElements().Count()];
+            //int[,] SubdElements = new int[model.EnumerateSubdomains().Count(), model.EnumerateSubdomains().ElementAt(0).EnumerateElements().Count()];
+            Dictionary<int, int[]> subdElements = new Dictionary<int, int[]>(model.EnumerateSubdomains().Count());
             thesi = 0;
             foreach (var SubdId in subdomainIds)
             {
-                int thesi2 = 0;
-                foreach (var element in model.SubdomainsDictionary[SubdId].Elements.Values)
-                {
-                    var elementID = element.ID;
-                    SubdElements[thesi,thesi2]=elementID;
-                    thesi2++;
-                }
-                thesi++;
+                int[] elements = model.SubdomainsDictionary[SubdId].Elements.Values.Where(x => (x.ElementType is Hexa8NonLinear | x.ElementType is Hexa8NonLinearDefGrad)).Select(x => x.ID).ToArray();
+                subdElements.Add(SubdId, elements);
+                //int thesi2 = 0;
+                //foreach (var element in model.SubdomainsDictionary[SubdId].Elements.Values.Where(x => (x.ElementType is Hexa8NonLinear | x.ElementType is Hexa8NonLinearDefGrad)))
+                //{
+                //    var elementID = element.ID;
+                //    SubdElements[thesi,thesi2]=elementID;
+                //    thesi2++;
+                //}
+                //thesi++;
 
             }
+
+            double[] elementStiffnessFactor = DetermineElementStiffnessFactor(model, ElementIds);
 
             List<int> constrainedNodes = new List<int>();
             foreach (var constraint in model.Constraints)
@@ -541,12 +546,53 @@ namespace ISAAR.MSolve.SamplesConsole
 
             ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(ElementNodes, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementNodes.txt");
             ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(NodeCoordinates, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeCoordinates.txt");
-            ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(SubdElements, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\SubdElements.txt");
+            //ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(SubdElements, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\SubdElements.txt");
+            ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileDictionaryMsolveInput(subdElements, subdomainOutputPath, @"\model_overwrite\MsolveModel\subdElements2.txt");
+            ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(elementStiffnessFactor, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementStiffnessFactors.txt");
+
+
+
 
         }
 
-        
-    
+        private static double[] DetermineElementStiffnessFactor(Model model, int[] elementIds)
+        {
+            var hexaElements = elementIds.Select(x => model.ElementsDictionary[x]).ToList();
+            var nodes = hexaElements.Select(x => x.Nodes.OrderBy(y => AllignedDistance(y)).ElementAt(0)).ToArray();
+            var uniqueNodes = nodes.Distinct();
+            var uniqueNodesMultiplicities = new Dictionary<Node, int>(uniqueNodes.Count());
+
+            foreach (var element in hexaElements)
+            {
+                var node = element.Nodes.OrderBy(y => AllignedDistance(y)).ElementAt(0);
+                if (uniqueNodesMultiplicities.Keys.Contains(node))
+                {
+                    uniqueNodesMultiplicities[node]++;
+                }
+                else
+                {
+                    uniqueNodesMultiplicities.Add(node, 1);
+                }
+
+
+            }
+
+            double[] elementStiffnessFactor = new double[elementIds.Length];
+            for (int i1 = 0; i1 < hexaElements.Count(); i1++)
+            {
+                var node = nodes[i1];
+                var multiplicitiy = uniqueNodesMultiplicities[node];
+                elementStiffnessFactor[i1] = ((double)1 / multiplicitiy);
+            }
+
+            return elementStiffnessFactor;
+        }
+
+        private static double AllignedDistance(Node node)
+        {
+            //einai eswteriko ginomeno dld provolh sto dianusma (0,0,0)--->(1,1,1)
+            return (node.X + node.Y + node.Z);  //Vector.CreateFromArray(new double[] { node.X, node.Y, node.Z }) * Vector.CreateFromArray(new double[] { 1, 1, 1 });
+        }
 
         private static Dictionary<int, int[]> GetExtraConstrNodesPositions(Dictionary<int, int[]> subdBRNodesAndGlobalDOfs, List<List<int>> extraConstraintsNoedsIds, Model model)
         {

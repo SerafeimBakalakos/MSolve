@@ -16,55 +16,55 @@ namespace ISAAR.MSolve.Solvers.Tests
     {
         public static void Main(string[] args)
         {
-            ProfileFetiDPCantileverBeam2D.Run();
+            //ProfileFetiDPCantileverBeam2D.Run();
 
-            //var suite = new MpiTestSuite();
-            //RegisterFetiDP2dUnitTests(args, suite);
+            var suite = new MpiTestSuite();
+            RegisterFetiDP2dUnitTests(args, suite);
             //RegisterFetiDP2dIntegrationTests(args, suite);
             //RegisterFetiDP2dPapagiannakisTests(args, suite);
-            //suite.RunTests(args);
+            suite.RunTests(args);
         }
 
         private static void RegisterFetiDP2dUnitTests(string[] args, MpiTestSuite suite)
         {
-            suite.AddFact(FetiDPDofSeparatorMpiTests.TestDofSeparation);
-            suite.AddFact(FetiDPDofSeparatorMpiTests.TestCornerBooleanMatrices);
-            suite.AddFact(FetiDPLagrangesEnumeratorMpiTests.TestBooleanMappingMatrices);
-            suite.AddFact(HomogeneousStiffnessDistributionMpiTests.TestBooleanMappingMatrices);
+            //suite.AddFact(FetiDPDofSeparatorMpiTests.TestDofSeparation);
+            //suite.AddFact(FetiDPDofSeparatorMpiTests.TestCornerBooleanMatrices);
+            //suite.AddFact(FetiDPLagrangesEnumeratorMpiTests.TestBooleanMappingMatrices);
+            //suite.AddFact(HomogeneousStiffnessDistributionMpiTests.TestBooleanMappingMatrices);
 
-            suite.AddFact(FetiDPMatrixManagerMpiTests.TestVectorsFbcFr);
-            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKccKcrKrr, MatrixFormat.Dense);
-            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKccKcrKrr, MatrixFormat.Skyline);
-            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKccKcrKrr, MatrixFormat.SuiteSparse);
-            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKbbKbiKii, MatrixFormat.Dense);
-            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKbbKbiKii, MatrixFormat.Skyline);
-            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKbbKbiKii, MatrixFormat.SuiteSparse);
-            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestStaticCondensations, MatrixFormat.Dense);
-            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestStaticCondensations, MatrixFormat.Skyline);
-            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestStaticCondensations, MatrixFormat.SuiteSparse);
-            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestCoarseProblemMatrixAndRhs, MatrixFormat.Dense);
-            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestCoarseProblemMatrixAndRhs, MatrixFormat.Skyline);
-            suite.AddTheory(FetiDPMatrixManagerMpiTests.TestCoarseProblemMatrixAndRhs, MatrixFormat.SuiteSparse);
+            //suite.AddFact(FetiDPMatrixManagerMpiTests.TestVectorsFbcFr);
+            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKccKcrKrr, MatrixFormat.Dense);
+            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKccKcrKrr, MatrixFormat.Skyline);
+            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKccKcrKrr, MatrixFormat.SuiteSparse);
+            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKbbKbiKii, MatrixFormat.Dense);
+            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKbbKbiKii, MatrixFormat.Skyline);
+            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestMatricesKbbKbiKii, MatrixFormat.SuiteSparse);
+            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestStaticCondensations, MatrixFormat.Dense);
+            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestStaticCondensations, MatrixFormat.Skyline);
+            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestStaticCondensations, MatrixFormat.SuiteSparse);
+            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestCoarseProblemMatrixAndRhs, MatrixFormat.Dense);
+            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestCoarseProblemMatrixAndRhs, MatrixFormat.Skyline);
+            //suite.AddTheory(FetiDPMatrixManagerMpiTests.TestCoarseProblemMatrixAndRhs, MatrixFormat.SuiteSparse);
 
-            suite.AddFact(FetiDPFlexibilityMatrixMpiTests.TestFIrcTimesVector);
-            suite.AddFact(FetiDPFlexibilityMatrixMpiTests.TestFIrcTransposedTimesVector);
-            suite.AddFact(FetiDPFlexibilityMatrixMpiTests.TestFIrrTimesVector);
-            suite.AddFact(FetiDPFlexibilityMatrixMpiTests.TestFIrrAndFIrcTransposedTimesVector);
+            //suite.AddFact(FetiDPFlexibilityMatrixMpiTests.TestFIrcTimesVector);
+            //suite.AddFact(FetiDPFlexibilityMatrixMpiTests.TestFIrcTransposedTimesVector);
+            //suite.AddFact(FetiDPFlexibilityMatrixMpiTests.TestFIrrTimesVector);
+            //suite.AddFact(FetiDPFlexibilityMatrixMpiTests.TestFIrrAndFIrcTransposedTimesVector);
 
-            suite.AddFact(FetiDPPreconditionerMpiTests.TestLumpedPreconditioner);
-            suite.AddFact(FetiDPPreconditionerMpiTests.TestDirichletPreconditioner);
-            suite.AddFact(FetiDPPreconditionerMpiTests.TestDiagonalDirichletPreconditioner);
+            //suite.AddFact(FetiDPPreconditionerMpiTests.TestLumpedPreconditioner);
+            //suite.AddFact(FetiDPPreconditionerMpiTests.TestDirichletPreconditioner);
+            //suite.AddFact(FetiDPPreconditionerMpiTests.TestDiagonalDirichletPreconditioner);
 
-            suite.AddFact(FetiDPInterfaceProblemMpiTests.TestVectorDr);
-            suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemMatrix);
-            suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemRhs);
-            suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemSolution);
+            //suite.AddFact(FetiDPInterfaceProblemMpiTests.TestVectorDr);
+            //suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemMatrix);
+            //suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemRhs);
+            //suite.AddFact(FetiDPInterfaceProblemMpiTests.TestInterfaceProblemSolution);
 
             suite.AddFact(FetiDPDisplacementsCalculatorMpiTests.TestCornerDisplacements);
             suite.AddFact(FetiDPDisplacementsCalculatorMpiTests.TestFreeDisplacements);
 
-            suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalDiplacements);
-            suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalForcesNorm);
+            //suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalDiplacements);
+            //suite.AddFact(FetiDPSubdomainGlobalMappingMpiTests.TestGlobalForcesNorm);
         }
 
         private static void RegisterFetiDP2dIntegrationTests(string[] args, MpiTestSuite suite)

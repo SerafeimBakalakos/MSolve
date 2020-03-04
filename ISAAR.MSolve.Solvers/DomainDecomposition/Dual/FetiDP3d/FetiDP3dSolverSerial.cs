@@ -27,6 +27,8 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.Displacements;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.FlexibilityMatrix;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
+using System.IO;
 
 //TODO: Add time logging
 //TODO: Use a base class for the code that is identical between FETI-1 and FETI-DP.
@@ -286,6 +288,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             double globalForcesNorm = globalForcesNorm = subdomainGlobalMapping.CalcGlobalForcesNorm(
                     sub => matrixManager.GetFetiDPSubdomainMatrixManager(sub).LinearSystem.RhsConcrete);
 
+            if ((new CnstValues()).printSolver_run_overwrite_data_region)
+            {
+                PrintLagrangeEqsData();
+                PrintCornerEqsData();
+            }
+
             // Solve interface problem
             interfaceProblemSolver.previousLambda = previousLambda;
             interfaceProblemSolver.usePreviousLambda = usePreviousLambda;
@@ -301,6 +309,138 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             Logger.LogCurrentTaskDuration("Calculate displacements from lagrange multipliers");
 
             Logger.IncrementAnalysisStep();
+        }
+
+        private void PrintLagrangeEqsData()
+        {
+            List<int>[] subdomainLocals = new List<int>[model.EnumerateSubdomains().Count()];
+            List<int>[] subdomainGobEqs = new List<int>[model.EnumerateSubdomains().Count()];
+            List<int>[] subdomainPlMinus = new List<int>[model.EnumerateSubdomains().Count()];
+
+            for (int i1 = 0; i1 < model.EnumerateSubdomains().Count(); i1++)
+            {
+                subdomainLocals[i1] = new List<int>();
+                subdomainGobEqs[i1] = new List<int>();
+                subdomainPlMinus[i1] = new List<int>();
+            }
+
+            for (int i = 0; i < lagrangesEnumerator.NumLagrangeMultipliers; i++)
+            {
+                var lagrange = lagrangesEnumerator.LagrangeMultipliers[i];
+                int subdId_pl = lagrange.SubdomainPlus.ID;
+                int subdId_mn = lagrange.SubdomainMinus.ID;
+                int dofId_local_plus = lagrange.SubdomainPlus.FreeDofOrdering.FreeDofs[lagrange.Node, lagrange.DofType];
+                int dofId_local_minus = lagrange.SubdomainMinus.FreeDofOrdering.FreeDofs[lagrange.Node, lagrange.DofType];
+
+                subdomainLocals[subdId_pl].Add(dofId_local_plus + 1);
+                subdomainGobEqs[subdId_pl].Add(i + 1);
+                subdomainPlMinus[subdId_pl].Add(+1);
+
+                subdomainLocals[subdId_mn].Add(dofId_local_minus + 1);
+                subdomainGobEqs[subdId_mn].Add(i + 1);
+                subdomainPlMinus[subdId_mn].Add(-1);
+            }
+
+            var LagrangeNodeIds = new List<int>();
+            var LagrangeNodeCouplingWaysNums = new Dictionary<int, int>();
+            int previousNodeId = -1;
+            int position = 0;
+            for (int i = 0; i < lagrangesEnumerator.NumLagrangeMultipliers; i++)
+            {
+                int currentNodeId = lagrangesEnumerator.LagrangeMultipliers[i].Node.ID;
+                if (!(currentNodeId == previousNodeId))
+                {
+                    LagrangeNodeIds.Add(currentNodeId);
+                    position = LagrangeNodeIds.Count();
+                    LagrangeNodeCouplingWaysNums[position] = 1;
+                    previousNodeId = currentNodeId;
+
+
+                }
+                else
+                {
+                    LagrangeNodeCouplingWaysNums[position] = LagrangeNodeCouplingWaysNums[position] + 1;
+                    //coupling_ways_num += 1;
+                }
+            }
+
+
+
+            //string subdomainOutputPath_gen = @"C:\Users\turbo-x\Desktop\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\REF2_10__000_renu_new_multiple_algorithms_check_develop_gia_fe2_3grsh_4182dofs_multiple2b_debug\RVE_database\rve_no_1";
+            //string subdomainOutputPath_gen = @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\REF2_10__000_renu_new_multiple_algorithms_check_develop_gia_fe2_3grsh_4182dofs_multiple2b_debug_corner\RVE_database\rve_no_1";
+            string subdomainOutputPath_gen = (new CnstValues()).exampleOutputPathGen+ @"\model_overwrite\subdomain_data_solver";
+
+
+            for (int i1 = 0; i1 < model.EnumerateSubdomains().Count(); i1++)
+            {
+                var path1 = subdomainOutputPath_gen + @"\subdomainLagrangesLocals" + (i1 + 1) + ".txt";
+                WriteToFileVector(subdomainLocals[i1], path1);
+
+                path1 = subdomainOutputPath_gen + @"\subdomainLagrangesGlobalEqs" + (i1 + 1) + ".txt";
+                WriteToFileVector(subdomainGobEqs[i1], path1);
+
+                path1 = subdomainOutputPath_gen + @"\subdomainLagrangesPlMinus" + (i1 + 1) + ".txt";
+                WriteToFileVector(subdomainPlMinus[i1], path1);
+
+                path1 = subdomainOutputPath_gen + @"\RB_Nodes_IDs_MSOLVE_wise" + ".txt";
+                WriteToFileVector(LagrangeNodeIds, path1);
+
+                path1 = subdomainOutputPath_gen + @"\RB_Nodes_IDs_couplingwaysNum_MSOLVE_wise" + ".txt";
+                WriteToFileVector(LagrangeNodeCouplingWaysNums.Values.ToList(), path1);
+            }
+
+
+        }
+
+        private void PrintCornerEqsData()
+        {
+            List<int>[] subdomainLocals = new List<int>[model.EnumerateSubdomains().Count()];
+            List<int>[] subdomainGobEqs = new List<int>[model.EnumerateSubdomains().Count()];
+
+            for (int i1 = 0; i1 < model.EnumerateSubdomains().Count(); i1++)
+            {
+                subdomainLocals[i1] = new List<int>();
+                subdomainGobEqs[i1] = new List<int>();
+
+                var subdomain = model.EnumerateSubdomains().ElementAt(i1);
+
+                foreach ((INode node, IDofType dof, _) in dofSeparator.GetCornerDofOrdering(subdomain) )
+                {
+                    subdomainLocals[i1].Add(subdomain.FreeDofOrdering.FreeDofs[node, dof] + 1);
+                    subdomainGobEqs[i1].Add(dofSeparator.GlobalCornerDofOrdering[node, dof] + 1);
+                }
+            }
+
+            //string subdomainOutputPath_gen = @"C:\Users\turbo-x\Desktop\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\REF2_10__000_renu_new_multiple_algorithms_check_develop_gia_fe2_3grsh_4182dofs_multiple2b_debug\RVE_database\rve_no_1";
+            //string subdomainOutputPath_gen = @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\REF2_10__000_renu_new_multiple_algorithms_check_develop_gia_fe2_3grsh_4182dofs_multiple2b_debug_corner\RVE_database\rve_no_1";
+            string subdomainOutputPath_gen = (new CnstValues()).exampleOutputPathGen + @"\model_overwrite\subdomain_data_solver";
+
+
+            for (int i1 = 0; i1 < model.EnumerateSubdomains().Count(); i1++)
+            {
+                var path1 = subdomainOutputPath_gen + @"\subdomainCornerLocals" + (i1 + 1) + ".txt";
+                WriteToFileVector(subdomainLocals[i1], path1);
+
+                path1 = subdomainOutputPath_gen + @"\subdomainCornerGlobalEqs" + (i1 + 1) + ".txt";
+                WriteToFileVector(subdomainGobEqs[i1], path1);
+
+            }
+
+        }
+
+        public static void WriteToFileVector(List<int> array, string path2)
+        {
+            var writer2 = new StreamWriter(path2);
+            for (int i = 0; i < array.Count(); ++i)
+            {
+                writer2.Write(array[i]);
+                writer2.Write(' ');
+                writer2.WriteLine(); // allagh seiras (dld grafei oti exei mesa h parenths=esh edw keno kai allazei seira)
+            }
+            writer2.Flush();
+
+            writer2.Dispose();
+
         }
 
         public class Builder
