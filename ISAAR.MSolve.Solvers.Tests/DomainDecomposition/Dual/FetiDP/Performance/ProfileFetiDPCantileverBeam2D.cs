@@ -18,7 +18,6 @@ using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Solvers.Logging;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.IntegrationTests;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Utilities;
-using Xunit;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Performance
 {

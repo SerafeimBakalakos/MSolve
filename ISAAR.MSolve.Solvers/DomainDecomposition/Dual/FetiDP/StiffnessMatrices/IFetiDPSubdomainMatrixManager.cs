@@ -39,13 +39,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         Vector Fr { get; }
 
         /// <summary>
-        /// The Schur complement of the submatrix corresponding to remainder dofs: K / Krr. Its rows and columns correspond to 
-        /// corner dofs.
+        /// The stiffness of the subdomain condensed to its coarse problem dofs
         /// </summary>
-        IMatrixView KccStar { get; }
+        IMatrixView CoarseProblemSubmatrix { get; }
 
-        void CondenseMatricesStatically();
-        void CondenseRhsVectorsStatically();
+        void CalcCoarseProblemSubmatrices();
+        void CalcCoarseProblemRhsSubvectors();
 
         void ClearRhsVectors();
 

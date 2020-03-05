@@ -11,6 +11,7 @@ using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.Assemblers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.LinearSystems;
@@ -18,7 +19,7 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices
 {
-    public class FetiDP3dSubdomainMatrixManagerSkyline : IFetiDP3dSubdomainMatrixManager
+    public class FetiDP3dSubdomainMatrixManagerSkyline : IFetiDPSubdomainMatrixManager
     {
         private readonly SkylineAssembler assembler = new SkylineAssembler();
         private readonly IAugmentationConstraints augmentationConstraints;
@@ -29,15 +30,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
         private readonly ISubdomain subdomain;
 
         private Vector fbc, fr, fcStar;
-        private LdlSkyline inverseKii;
         private DiagonalMatrix inverseKiiDiagonal;
+        private LdlSkyline inverseKii;
         private LdlSkyline inverseKrr;
         private Matrix Kbb;
         private CscMatrix Kib;
         private SymmetricMatrix Kcc;
         private CscMatrix Krc;
         private SkylineMatrix Krr;
-        private SymmetricMatrix _KccStar, _KaaStar;
+        private SymmetricMatrix _KccStar, _KaaStar, _KccStarTilde;
         private Matrix _KacStar;
 
         public FetiDP3dSubdomainMatrixManagerSkyline(ISubdomain subdomain, IFetiDPDofSeparator dofSeparator, 
@@ -51,11 +52,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             this.reordering = reordering;
             this.linearSystem = new SingleSubdomainSystemMpi<SkylineMatrix>(subdomain);
         }
-
-        public IMatrixView KaaStar => _KaaStar;
-        public IMatrixView KacStar => _KacStar;
-        public IMatrixView KccStar => _KccStar;
-
 
         public ISingleSubdomainLinearSystemMpi LinearSystem => linearSystem;
 
@@ -88,6 +84,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
                 return fcStar;
             }
         }
+
+        public IMatrixView CoarseProblemSubmatrix => _KccStarTilde;
 
         public (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildFreeConstrainedMatrices(
             ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering, 
@@ -135,6 +133,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             _KccStar = null;
             _KacStar = null;
             _KaaStar = null;
+            _KccStarTilde = null;
             //linearSystem.Matrix = null; // DO NOT DO THAT!!! The analyzer manages that.
         }
 
@@ -145,7 +144,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             fcStar = null;
         }
 
-        public void CondenseMatricesStatically()
+        public void CalcCoarseProblemSubmatrices()
         {
             // Top left
             // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s]
@@ -167,9 +166,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             // where Ba[s] is taken into account during assembly of the global coarse problem matrix
             _KacStar = R1.MultiplyRight(invKrrTimesKrc, true);
             _KacStar.ScaleIntoThis(-1);
+
+            //TODO: Copying matrices can be avoided by providing methods that write the matrix vector multiplications above, 
+            //      directly to their correct indices in the joined matrix. 
+            _KccStarTilde = SymmetricMatrix.JoinLowerTriangleSubmatrices(_KccStar, _KacStar, _KaaStar);
         }
 
-        public void CondenseRhsVectorsStatically()
+        public void CalcCoarseProblemRhsSubvectors()
         {
             // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s]
             Vector temp = MultiplyInverseKrrTimes(Fr);

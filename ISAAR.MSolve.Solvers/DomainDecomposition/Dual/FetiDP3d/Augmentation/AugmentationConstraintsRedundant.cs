@@ -61,12 +61,22 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation
             MatrixGlobalQr = Qr;
         }
 
+        public DofTable GetAugmentationDofOrdering(ISubdomain subdomain)
+        {
+            throw new NotImplementedException();
+        }
+
         public GlobalToLocalBooleanMatrix GetMatrixBa(ISubdomain subdomain)
         {
             throw new NotImplementedException();
         }
 
         public IMappingMatrix GetMatrixR1(ISubdomain subdomain)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetNumAugmentationDofs(ISubdomain subdomain)
         {
             throw new NotImplementedException();
         }

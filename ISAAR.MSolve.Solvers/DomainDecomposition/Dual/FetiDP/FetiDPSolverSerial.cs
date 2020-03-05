@@ -54,7 +54,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private bool isStiffnessModified = true;
         private IFetiPreconditioner preconditioner;
 
-        public Vector previousLambda { get; set; }
+        public Vector previousLambda { get; set; } // TODO: implment lambda recycling for fetidpsolver as well
         public bool usePreviousLambda { get; set; }
         public FetiDPSolverSerial(IModel model, ICornerNodeSelection cornerNodeSelection,
             IFetiDPMatrixManagerFactory matrixManagerFactory, IFetiPreconditioningOperations preconditioning,

@@ -1,16 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.LinearSystems;
+using ISAAR.MSolve.Solvers.Ordering;
+using ISAAR.MSolve.Solvers.Ordering.Reordering;
+using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.Mocks;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x4x4Quads;
 using ISAAR.MSolve.Solvers.Tests.Utilities;
 using Xunit;
@@ -27,26 +34,37 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
         [InlineData(MatrixFormat.SuiteSparse)]
         public static void TestCoarseProblemMatrixAndRhs(MatrixFormat format)
         {
-            IFetiDP3dMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(format);
-            (IModel model, FetiDPDofSeparatorSerial dofSeparator, LagrangeMultipliersEnumeratorSerial lagrangesEnumerator) =
-                FetiDP3dLagrangesEnumeratorSerialTests.CreateModelDofSeparatorLagrangesEnumerator();
+            // Create model
+            Model model = ModelCreator.CreateModel();
+            model.ConnectDataStructures();
+
+            // Order free dofs
+            var dofOrderer = new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
+            dofOrderer.OrderFreeDofs(model);
+
+            // Separate dofs and calculate the boolean matrices
+            // Enumerate lagranges and calculate the boolean matrices
+
+            ICornerNodeSelection cornerNodes = ModelCreator.DefineCornerNodeSelectionSerial(model);
+            var dofSeparator = new FetiDPDofSeparatorSerial(model, cornerNodes);
+            var crosspointStrategy = new FullyRedundantConstraints();
+            var lagrangesEnumerator = new LagrangeMultipliersEnumeratorSerial(model, crosspointStrategy, dofSeparator);
+            Dictionary<ISubdomain, HashSet<INode>> midsideNodes = ModelCreator.DefineMidsideNodesAll(model);
+            IMidsideNodesSelection midsideNodesSelection = new UserDefinedMidsideNodes(midsideNodes,
+                new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ });
             IAugmentationConstraints augmentationConstraints =
-                FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
-            FetiDP3dMatrixManagerSerial matrixManager = PrepareCoarseProblemSubdomainMatrices(model, dofSeparator,
-                lagrangesEnumerator, augmentationConstraints, matricesFactory);
+                    new AugmentationConstraints(model, midsideNodesSelection, dofSeparator, lagrangesEnumerator);
+            IFetiDP3dMatrixManagerFactory matricesFactory = MatrixFormatSelection.DefineMatrixManagerFactory(format);
+            var matrixManager = new FetiDP3dMatrixManagerSerial(model, dofSeparator, lagrangesEnumerator,
+                augmentationConstraints, matricesFactory);
 
-            foreach (ISubdomain sub in model.EnumerateSubdomains())
-            {
-                // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-                SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, ExpectedSubdomainMatrices.GetMatrixKff(sub.ID));
-                subdomainMatrices.LinearSystem.RhsConcrete = ExpectedSubdomainMatrices.GetVectorFf(sub.ID);
 
-                // Prepare the subdomain data
-                subdomainMatrices.ExtractCornerRemainderSubmatrices();
-                subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
-                subdomainMatrices.InvertKrr(true);
-            }
+            SetKffRhs(model, matrixManager, format);
+            //dofSeparator.SeparateDofs(new MockSeparatedDofReordering()); //TODO: This does not work as intended
+            dofSeparator.SeparateDofs(matrixManager);
+            lagrangesEnumerator.CalcBooleanMatrices(dofSeparator.GetRemainderDofOrdering);
+            augmentationConstraints.CalcAugmentationMappingMatrices();
+            PrepareCoarseProblemSubdomainMatrices(model, matrixManager, format);
 
             // Calculate the global data to test
             matrixManager.CalcInverseCoarseProblemMatrix(ModelCreator.DefineCornerNodeSelectionSerial(model));
@@ -76,15 +94,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             IAugmentationConstraints augmentationConstraints =
                 FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
             FetiDP3dMatrixManagerSerial matrixManager = PrepareCoarseProblemSubdomainMatrices(model, dofSeparator,
-                lagrangesEnumerator, augmentationConstraints, matricesFactory);
+                lagrangesEnumerator, augmentationConstraints, matricesFactory, format);
 
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-                SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, ExpectedSubdomainMatrices.GetMatrixKff(sub.ID));
-
                 // Calculate the matrices to test
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
                 subdomainMatrices.ExtractCornerRemainderSubmatrices();
                 subdomainMatrices.ExtractBoundaryInternalSubmatricesAndInvertKii(false);
 
@@ -118,15 +133,12 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             IAugmentationConstraints augmentationConstraints =
                 FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
             FetiDP3dMatrixManagerSerial matrixManager = PrepareCoarseProblemSubdomainMatrices(model, dofSeparator,
-                lagrangesEnumerator, augmentationConstraints, matricesFactory);
+                lagrangesEnumerator, augmentationConstraints, matricesFactory, format);
 
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-                SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, ExpectedSubdomainMatrices.GetMatrixKff(sub.ID));
-
                 // Calculate the matrices to test
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
                 subdomainMatrices.ExtractCornerRemainderSubmatrices();
                 subdomainMatrices.InvertKrr(true);
 
@@ -160,25 +172,26 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             IAugmentationConstraints augmentationConstraints =
                 FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
             FetiDP3dMatrixManagerSerial matrixManager = PrepareCoarseProblemSubdomainMatrices(model, dofSeparator,
-                lagrangesEnumerator, augmentationConstraints, matricesFactory);
+                lagrangesEnumerator, augmentationConstraints, matricesFactory, format);
 
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-                SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, ExpectedSubdomainMatrices.GetMatrixKff(sub.ID));
-                subdomainMatrices.LinearSystem.RhsConcrete = ExpectedSubdomainMatrices.GetVectorFf(sub.ID);
-
                 // Calculate the data to test
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
                 subdomainMatrices.ExtractCornerRemainderSubmatrices();
                 subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
                 subdomainMatrices.InvertKrr(true);
-                subdomainMatrices.CondenseMatricesStatically();
-                subdomainMatrices.CondenseRhsVectorsStatically();
+                subdomainMatrices.CalcCoarseProblemSubmatrices();
+                subdomainMatrices.CalcCoarseProblemRhsSubvectors();
+
+                // Isolate KccStar
+                Matrix KccStarTilde = subdomainMatrices.CoarseProblemSubmatrix.CopyToFullMatrix();
+                int numCornerDofs = dofSeparator.GetCornerDofIndices(sub).Length;
+                Matrix KccStar = KccStarTilde.GetSubmatrix(0, numCornerDofs, 0, numCornerDofs);
 
                 // Check
                 double tol = 1E-5;
-                Assert.True(ExpectedSubdomainMatrices.GetMatrixKccStar(sub.ID).Equals(subdomainMatrices.KccStar, tol));
+                Assert.True(ExpectedSubdomainMatrices.GetMatrixKccStar(sub.ID).Equals(KccStar, tol));
                 Assert.True(ExpectedSubdomainMatrices.GetVectorFcStar(sub.ID).Equals(subdomainMatrices.FcStar, tol));
             }
         }
@@ -192,7 +205,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             IAugmentationConstraints augmentationConstraints =
                 FetiDP3dAugmentedConstraintsTests.CalcAugmentationConstraintsSimple(model, dofSeparator, lagrangesEnumerator);
             FetiDP3dMatrixManagerSerial matrixManager = PrepareCoarseProblemSubdomainMatrices(model, dofSeparator,
-                lagrangesEnumerator, augmentationConstraints, matricesFactory);
+                lagrangesEnumerator, augmentationConstraints, matricesFactory, MatrixFormat.Dense);
 
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
@@ -239,18 +252,15 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
         internal static FetiDP3dMatrixManagerSerial PrepareCoarseProblemSubdomainMatrices(IModel model,
             IFetiDPDofSeparator dofSeparator, ILagrangeMultipliersEnumerator lagrangesEnumerator, 
-            IAugmentationConstraints augmentationConstraints, IFetiDP3dMatrixManagerFactory matricesFactory)
+            IAugmentationConstraints augmentationConstraints, IFetiDP3dMatrixManagerFactory matricesFactory, MatrixFormat format)
         {
             var matrixManager = new FetiDP3dMatrixManagerSerial(model, dofSeparator, lagrangesEnumerator, 
                 augmentationConstraints, matricesFactory);
+            SetKffRhs(model, matrixManager, format);
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                // Input data
-                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
-                SetSkylineLinearSystemMatrix(subdomainMatrices.LinearSystem, ExpectedSubdomainMatrices.GetMatrixKff(sub.ID));
-                subdomainMatrices.LinearSystem.RhsConcrete = ExpectedSubdomainMatrices.GetVectorFf(sub.ID);
-
                 // Prepare the subdomain data
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
                 subdomainMatrices.ExtractCornerRemainderSubmatrices();
                 subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
                 subdomainMatrices.InvertKrr(true);
@@ -259,13 +269,39 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             return matrixManager;
         }
 
-        //TODO: Jesus Christ! It is way too difficult to mess with linear system classes, even using reflection.
-        //      I should allow some provisions for testing. Also ILinearSystem.Matrix {set;} should be internal. Analyzers and 
-        //      providers should not even try.
-        internal static void SetSkylineLinearSystemMatrix(ISingleSubdomainLinearSystemMpi linearSystem, IMatrixView matrix)
+        internal static void PrepareCoarseProblemSubdomainMatrices(IModel model, FetiDP3dMatrixManagerSerial matrixManager, 
+            MatrixFormat format)
         {
-            var castedLS = (SingleSubdomainSystemMpi<SkylineMatrix>)linearSystem;
-            castedLS.Matrix = SkylineMatrix.CreateFromMatrix(matrix);
+            SetKffRhs(model, matrixManager, format);
+            foreach (ISubdomain sub in model.EnumerateSubdomains())
+            {
+                // Prepare the subdomain data
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
+                subdomainMatrices.ExtractCornerRemainderSubmatrices();
+                subdomainMatrices.ExtractCornerRemainderRhsSubvectors();
+                subdomainMatrices.InvertKrr(true);
+            }
+        }
+
+        private static void SetKffRhs(IModel model, IFetiDPMatrixManager matrixManager, MatrixFormat format)
+        {
+            foreach (ISubdomain sub in model.EnumerateSubdomains())
+            {
+                // Input data
+                IFetiDPSubdomainMatrixManager subdomainMatrices = matrixManager.GetFetiDPSubdomainMatrixManager(sub);
+                Matrix Kff = ExpectedSubdomainMatrices.GetMatrixKff(sub.ID);
+                if ((format == MatrixFormat.Dense) || (format == MatrixFormat.Skyline))
+                {
+                    var castedLS = (SingleSubdomainSystemMpi<SkylineMatrix>)subdomainMatrices.LinearSystem;
+                    castedLS.Matrix = SkylineMatrix.CreateFromMatrix(Kff);
+                }
+                else
+                {
+                    var castedLS = (SingleSubdomainSystemMpi<DokSymmetric>)subdomainMatrices.LinearSystem;
+                    castedLS.Matrix = DokSymmetric.CreateFromMatrix(Kff);
+                }
+                subdomainMatrices.LinearSystem.RhsConcrete = ExpectedSubdomainMatrices.GetVectorFf(sub.ID);
+            }
         }
     }
 }

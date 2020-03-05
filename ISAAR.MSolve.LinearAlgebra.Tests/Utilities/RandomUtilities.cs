@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
@@ -12,6 +13,20 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Utilities
     /// </summary>
     internal static class RandomUtilities
     {
+        internal static Matrix CreateRandomMatrixFull(int numRows, int numCols, int seed)
+        {
+            var rand = new Random(seed);
+            var matrix = Matrix.CreateZero(numRows, numCols);
+            for (int j = 0; j < numCols; ++j)
+            {
+                for (int i = 0; i < numRows; ++i)
+                {
+                    matrix[i, j] = rand.NextDouble();
+                }
+            }
+            return matrix;
+        }
+
         internal static DokSymmetric CreateRandomMatrix(int order, double nonZeroChance)
         {
             var rand = new Random();

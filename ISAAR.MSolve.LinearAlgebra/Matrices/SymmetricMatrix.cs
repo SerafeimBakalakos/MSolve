@@ -182,6 +182,48 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
             return new SymmetricMatrix(data, order, DefiniteProperty.Unknown);
         }
 
+        //TODO: Perhaps appending matrices should be done in dedicated (perhaps internal) classes.
+        public static SymmetricMatrix JoinLowerTriangleSubmatrices(SymmetricMatrix A00, Matrix A10, SymmetricMatrix A11)
+        {
+            // needs testing. also do iterator with array copy for A01 and A11.
+            int count0 = A00.Order;
+            int count1 = A11.Order;
+            int totalOrder = count0 + count1;
+            var totalData = new double[((totalOrder + 1) * totalOrder) / 2];
+
+            // Copy A00. All entries are contiguous in both matrices.
+            Array.Copy(A00.data, totalData, A00.data.Length);
+
+            // Copy A11. The entries of each column are contiguous in both matrices, but the columns themselves are not in 
+            // the total matrix
+            for (int j = 0; j < count1; ++j)
+            {
+                int J = j + count0;
+                int startA11 = (j * (j + 1)) / 2;
+                int startTotal = (J * (J + 1)) / 2 + count0;
+                int colHeight = j + 1;
+                Array.Copy(A11.data, startA11, totalData, startTotal, colHeight);
+            }
+
+
+            // Copy A10. Traverse A10 columnwise, transpose it implicitly and copy to noncontiguous positions in the total matrix
+            double[] dataA10 = A10.RawData;
+            for (int j = 0; j < count0; ++j)
+            {
+                int offsetColA10 = j * count1;
+                for (int i = 0; i < count1; ++i)
+                {
+                    int J = i + count0;
+                    int I = j;
+                    int idxTotal = I + (J * (J + 1)) / 2;
+                    int idxA10 = offsetColA10 + i; // idxA10 = i + j * count1;
+                    totalData[idxTotal] = dataA10[idxA10];
+                }
+            }
+
+            return new SymmetricMatrix(totalData, totalOrder, DefiniteProperty.Unknown);
+        }
+
         #region operators (use extension operators when they become available)
         public static SymmetricMatrix operator +(SymmetricMatrix matrix1, SymmetricMatrix matrix2)
             => matrix1.DoEntrywise(matrix2, (x, y) => x + y);

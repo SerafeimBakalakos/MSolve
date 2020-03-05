@@ -78,16 +78,16 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             }
         }
 
-        public IMatrixView KccStar
+        public IMatrixView CoarseProblemSubmatrix
         {
             get
             {
                 if (!areKccKcrKrcKrrCondensed) throw new InvalidOperationException(
                     "The remainder and corner submatrics (Kcc, Krc, Krc, Krr) must be condensed into KccStar first.");
-                return KccStarImpl;
+                return CoarseProblemSubmatrixImpl;
             }
         }
-        protected abstract IMatrixView KccStarImpl { get; }
+        protected abstract IMatrixView CoarseProblemSubmatrixImpl { get; }
 
         public abstract ISingleSubdomainLinearSystemMpi LinearSystem { get; }
 
@@ -130,7 +130,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             fcStar = null;
         }
 
-        public void CondenseMatricesStatically()
+        public void CalcCoarseProblemSubmatrices()
         {
             CheckKccKcrKrcKrrExtraction();
             CheckKrrInversion();
@@ -139,7 +139,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         }
         protected abstract void CondenseMatricesStaticallyImpl();
 
-        public void CondenseRhsVectorsStatically()
+        public void CalcCoarseProblemRhsSubvectors()
         {
             // fcStar[s] = fbc[s] - Krc[s]^T * inv(Krr[s]) * fr[s]
             Vector temp = MultiplyInverseKrrTimes(Fr);

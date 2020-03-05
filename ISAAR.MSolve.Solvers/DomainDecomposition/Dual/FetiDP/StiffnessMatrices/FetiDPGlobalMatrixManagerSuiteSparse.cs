@@ -49,7 +49,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         }
 
         protected override void CalcInverseCoarseProblemMatrixImpl(ICornerNodeSelection cornerNodeSelection,
-            Dictionary<ISubdomain, IMatrixView> condensedMatrices)
+            Dictionary<ISubdomain, IMatrixView> subdomainCoarseMatrices)
         {
             // globalKccStar = sum_over_s(Lc[s]^T * KccStar[s] * Lc[s])
 
@@ -58,7 +58,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int s = subdomain.ID;
-                IMatrixView subdomainKccStar = condensedMatrices[subdomain];
+                IMatrixView subdomainKccStar = subdomainCoarseMatrices[subdomain];
                 int[] subdomainToGlobalIndices = dofSeparator.GetCornerBooleanMatrix(subdomain).GetRowsToColumnsMap();
                 dok.AddSubmatrixSymmetric(subdomainKccStar, subdomainToGlobalIndices);
             }

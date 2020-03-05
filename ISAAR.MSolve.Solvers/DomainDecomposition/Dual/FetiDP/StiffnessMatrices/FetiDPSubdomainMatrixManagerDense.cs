@@ -30,7 +30,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         private Matrix Kbb;
         private Matrix Kbi;
         private Matrix Kcc; //TODO: This can be overwritten with KccStar. Not high priority, since it is a small matrix.
-        private Matrix _KccStar; 
+        private Matrix KccStar; 
         private Matrix Krc;
         private Matrix Krr;
 
@@ -40,7 +40,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             this.linearSystem = new SingleSubdomainSystemMpi<SkylineMatrix>(subdomain);
         }
 
-        protected override IMatrixView KccStarImpl => this._KccStar;
+        protected override IMatrixView CoarseProblemSubmatrixImpl => this.KccStar;
 
         public override ISingleSubdomainLinearSystemMpi LinearSystem => linearSystem;
 
@@ -66,14 +66,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             Kcc = null;
             Krc = null;
             Krr = null;
-            _KccStar = null;
+            KccStar = null;
             //linearSystem.Matrix = null; // DO NOT DO THAT!!! The analyzer manages that.
         }
 
         protected override void CondenseMatricesStaticallyImpl()
         {
             // KccStar[s] = Kcc[s] - Krc[s]^T * inv(Krr[s]) * Krc[s]
-            _KccStar = Kcc - Krc.MultiplyRight(inverseKrr.SolveLinearSystems(Krc), true);
+            KccStar = Kcc - Krc.MultiplyRight(inverseKrr.SolveLinearSystems(Krc), true);
         }
 
         protected override void ExtractKbbImpl() => Kbb = Krr.GetSubmatrix(DofsBoundary, DofsBoundary);

@@ -22,19 +22,20 @@ using ISAAR.MSolve.Solvers.Ordering.Reordering;
 //TODO: remove duplication between Dense, Skyline and SuiteSparse versions.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices
 {
-    public class FetiDP3dGlobalMatrixManagerSkyline : FetiDPGlobalMatrixManagerBase
+    public class FetiDP3dGlobalMatrixManagerSuiteSparse : FetiDPGlobalMatrixManagerBase
     {
         private readonly IAugmentationConstraints augmentationConstraints;
         private readonly IReorderingAlgorithm reordering;
 
         private FetiDP3dCoarseProblemOrdering coarseOrdering;
-        private LdlSkyline inverseGlobalKccStarTilde;
+        private CholeskySuiteSparse inverseGlobalKccStarTilde;
 
-        public FetiDP3dGlobalMatrixManagerSkyline(IModel model, IFetiDPDofSeparator dofSeparator,
-            IAugmentationConstraints augmentationConstraints, IReorderingAlgorithm reordering) 
-            : base (model, dofSeparator)
+        public FetiDP3dGlobalMatrixManagerSuiteSparse(IModel model, IFetiDPDofSeparator dofSeparator,
+            IAugmentationConstraints augmentationConstraints, IReorderingAlgorithm reordering)
+            : base(model, dofSeparator)
         {
             this.augmentationConstraints = augmentationConstraints;
+
             if (reordering == null) throw new NotImplementedException();
             this.reordering = reordering;
         }
@@ -67,66 +68,34 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             int numCornerDofs = dofSeparator.NumGlobalCornerDofs;
             int numAugmentationDofs = augmentationConstraints.NumGlobalAugmentationConstraints;
             int numCoarseDofs = numCornerDofs + numAugmentationDofs;
-            int[] skylineColHeights =
-                FindSkylineColumnHeights(cornerNodeSelection, augmentationConstraints.MidsideNodesSelection);
-            var skylineBuilder = SkylineBuilder.Create(numCoarseDofs, skylineColHeights);
+            var dok = DokSymmetric.CreateEmpty(numCoarseDofs);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int[] subToGlobalIndices = coarseOrdering.CoarseDofMapsSubdomainToGlobal[subdomain]; // subdomain-to-global mapping array
-                IMatrixView subdomainMatrix = subdomainCoarseMatrices[subdomain]; // corner dofs followed by augmentation dofs
-                skylineBuilder.AddSubmatrixSymmetric(subdomainMatrix, subToGlobalIndices);
+                IMatrixView subdomainKccStarTilde = subdomainCoarseMatrices[subdomain];
+                dok.AddSubmatrixSymmetric(subdomainKccStarTilde, subToGlobalIndices);
             }
-            SkylineMatrix globalKccStarTilde = skylineBuilder.BuildSkylineMatrix();
+            SymmetricCscMatrix globalKccStar = dok.BuildSymmetricCscMatrix(true);
 
-            // Factorization
-            this.inverseGlobalKccStarTilde = globalKccStarTilde.FactorLdl(true);
+            // Factorization using SuiteSparse
+            if (inverseGlobalKccStarTilde != null) inverseGlobalKccStarTilde.Dispose();
+            inverseGlobalKccStarTilde = CholeskySuiteSparse.Factorize(globalKccStar, true);
         }
 
-        protected override void ClearInverseCoarseProblemMatrixImpl() => inverseGlobalKccStarTilde = null;
+        protected override void ClearInverseCoarseProblemMatrixImpl()
+        {
+            if (inverseGlobalKccStarTilde != null) inverseGlobalKccStarTilde.Dispose();
+            inverseGlobalKccStarTilde = null;
+        }
 
         protected override Vector MultiplyInverseCoarseProblemMatrixTimesImpl(Vector vector)
         {
+            //TODO: These should be handled by a dedicated PermutationMatrix class
             Vector permutedInputVector = vector.Reorder(coarseOrdering.CoarseDofPermutation, false);
             Vector permutedOutputVector = inverseGlobalKccStarTilde.SolveLinearSystem(permutedInputVector);
             Vector outputVector = permutedOutputVector.Reorder(coarseOrdering.CoarseDofPermutation, true);
 
             return outputVector;
-        }
-
-        //TODO: Duplication between this and the 2D version
-        private int[] FindSkylineColumnHeights(ICornerNodeSelection cornerNodeSelection, 
-            IMidsideNodesSelection midsideNodesSelection)
-        {
-            int numCornerDofs = dofSeparator.NumGlobalCornerDofs;
-            int numCoarseDofs = numCornerDofs + augmentationConstraints.NumGlobalAugmentationConstraints;
-
-            // Only entries above the diagonal count towards the column height
-            int[] colHeights = new int[numCoarseDofs];
-            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-            {
-                // Put all coarse problem nodes (corners and midsides) together.
-                var coarseNodes = new HashSet<INode>(cornerNodeSelection.GetCornerNodesOfSubdomain(subdomain));
-                coarseNodes.UnionWith(midsideNodesSelection.GetMidsideNodesOfSubdomain(subdomain));
-
-                // To determine the col height, first find the min of the dofs of this element. All these are 
-                // considered to interact with each other, even if there are 0.0 entries in the element stiffness matrix.
-                int minDof = int.MaxValue;
-                foreach (INode node in coarseNodes)
-                {
-                    foreach (int dof in coarseOrdering.CoarseDofOrdering.GetValuesOfRow(node)) minDof = Math.Min(dof, minDof);
-                }
-
-                // The height of each col is updated for all elements that engage the corresponding dof. 
-                // The max height is stored.
-                foreach (INode node in coarseNodes)
-                {
-                    foreach (int dof in coarseOrdering.CoarseDofOrdering.GetValuesOfRow(node))
-                    {
-                        colHeights[dof] = Math.Max(colHeights[dof], dof - minDof);
-                    }
-                }
-            }
-            return colHeights;
         }
     }
 }

@@ -9,54 +9,30 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.CornerNodes;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 
+//TODO: remove duplication between this and the 2D version
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices
 {
-    public class FetiDP3dGlobalMatrixManagerDense : IFetiDP3dGlobalMatrixManager
+    public class FetiDP3dGlobalMatrixManagerDense : FetiDPGlobalMatrixManagerBase
     {
         private readonly IAugmentationConstraints augmentationConstraints;
-        private readonly IFetiDPDofSeparator dofSeparator;
-        private readonly IModel model;
 
-        private Vector globalFcStar;
-        private bool hasInverseGlobalKccStarTilde;
         private Matrix inverseGlobalKccStarTilde;
 
         public FetiDP3dGlobalMatrixManagerDense(IModel model, IFetiDPDofSeparator dofSeparator,
-            IAugmentationConstraints augmentationConstraints)
+            IAugmentationConstraints augmentationConstraints) : base(model, dofSeparator)
         {
-            this.model = model;
-            this.dofSeparator = dofSeparator;
             this.augmentationConstraints = augmentationConstraints;
         }
 
-        public Vector CoarseProblemRhs
-        {
-            get
-            {
-                if (globalFcStar == null) throw new InvalidOperationException(
-                    "The coarse problem RHS must be assembled from subdomains first.");
-                return globalFcStar;
-            }
-        }
+        public override DofPermutation ReorderGlobalCornerDofs() => DofPermutation.CreateNoPermutation();
 
-        public void CalcCoarseProblemRhs(Dictionary<ISubdomain, Vector> condensedRhsVectors)
-        {
-            // globalFcStar = sum_over_s(Bc[s]^T * fcStar[s])
-            globalFcStar = Vector.CreateZero(dofSeparator.NumGlobalCornerDofs);
-            foreach (ISubdomain subdomain in condensedRhsVectors.Keys)
-            {
-                UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
-                Vector fcStar = condensedRhsVectors[subdomain];
-                globalFcStar.AddIntoThisNonContiguouslyFrom(Bc.GetRowsToColumnsMap(), fcStar);
-            }
-        }
-
-        public void CalcInverseCoarseProblemMatrix(ICornerNodeSelection cornerNodeSelection,
-            Dictionary<ISubdomain, (IMatrixView KccStar, IMatrixView KacStar, IMatrixView KaaStar)> matrices)
+        protected override void CalcInverseCoarseProblemMatrixImpl(ICornerNodeSelection cornerNodeSelection, 
+            Dictionary<ISubdomain, IMatrixView> subdomainCoarseMatrices)
         {
             // globalKccStar = sum_over_s(Bc[s]^T * KccStar[s] * Bc[s])
             // globalKacStar = sum_over_s(Ba[s]^T * KacStar[s] * Bc[s])
@@ -70,7 +46,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 int s = subdomain.ID;
-                (IMatrixView KccStar, IMatrixView KacStar, IMatrixView KaaStar) = matrices[subdomain];
+
+                // Split the matrix containing all coarse dofs of this subdomain to corner and augmented dofs
+                int countC = dofSeparator.GetCornerDofIndices(subdomain).Length;
+                int countA = augmentationConstraints.GetNumAugmentationDofs(subdomain);
+                Matrix subdomainMatrix = subdomainCoarseMatrices[subdomain].CopyToFullMatrix();
+                Matrix KccStar = subdomainMatrix.GetSubmatrix(0, countC, 0, countC);
+                Matrix KaaStar = subdomainMatrix.GetSubmatrix(countC, countC + countA, countC, countC + countA);
+                Matrix KacStar = subdomainMatrix.GetSubmatrix(countC, countC + countA, 0, countC);
 
                 UnsignedBooleanMatrix Bc = dofSeparator.GetCornerBooleanMatrix(subdomain);
                 GlobalToLocalBooleanMatrix Ba = augmentationConstraints.GetMatrixBa(subdomain);
@@ -87,24 +70,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
 
             // Invert
             inverseGlobalKccStarTilde.InvertInPlace();
-            hasInverseGlobalKccStarTilde = true;
         }
 
-        public void ClearCoarseProblemRhs() => globalFcStar = null;
+        protected override void ClearInverseCoarseProblemMatrixImpl() => inverseGlobalKccStarTilde = null;
 
-        public void ClearInverseCoarseProblemMatrix()
-        {
-            inverseGlobalKccStarTilde = null;
-            hasInverseGlobalKccStarTilde = false;
-        }
-
-        public Vector MultiplyInverseCoarseProblemMatrixTimes(Vector vector)
-        {
-            if (!hasInverseGlobalKccStarTilde) throw new InvalidOperationException(
-                "The inverse of the coarse problem matrix must be calculated first.");
-            return inverseGlobalKccStarTilde * vector;
-        }
-
-        public DofPermutation ReorderCoarseProblemDofs() => DofPermutation.CreateNoPermutation();
+        protected override Vector MultiplyInverseCoarseProblemMatrixTimesImpl(Vector vector) 
+            => inverseGlobalKccStarTilde * vector;
     }
 }

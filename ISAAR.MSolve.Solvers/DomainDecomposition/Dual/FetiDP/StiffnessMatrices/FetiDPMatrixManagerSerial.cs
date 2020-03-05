@@ -41,7 +41,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             var allFcStar = new Dictionary<ISubdomain, Vector>();
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
-                matrixManagersSubdomain[sub].CondenseRhsVectorsStatically();
+                matrixManagersSubdomain[sub].CalcCoarseProblemRhsSubvectors();
                 allFcStar[sub] = matrixManagersSubdomain[sub].FcStar;
             }
 
@@ -61,9 +61,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
                 {
                     Debug.WriteLine(msgHeader + "Calculating Schur complement of remainder dofs"
                         + $" for the stiffness of subdomain {sub.ID}");
-                    matrixManagersSubdomain[sub].CondenseMatricesStatically(); //TODO: At this point Kcc and Krc can be cleared. Maybe Krr too.
+                    matrixManagersSubdomain[sub].CalcCoarseProblemSubmatrices(); //TODO: At this point Kcc and Krc can be cleared. Maybe Krr too.
                 } 
-                allKccStar[sub] = matrixManagersSubdomain[sub].KccStar;
+                allKccStar[sub] = matrixManagersSubdomain[sub].CoarseProblemSubmatrix;
             }
 
             // Give them to the global matrix manager so that it can create the global KccStar

@@ -4,6 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
@@ -18,11 +19,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             this.reordering = reordering;
         }
 
-        public IFetiDP3dGlobalMatrixManager CreateGlobalMatrixManager(IModel model, IFetiDPDofSeparator dofSeparator,
+        public IFetiDPGlobalMatrixManager CreateGlobalMatrixManager(IModel model, IFetiDPDofSeparator dofSeparator,
             IAugmentationConstraints augmentationConstraints) 
             => new FetiDP3dGlobalMatrixManagerSkyline(model, dofSeparator, augmentationConstraints, reordering);
 
-        public IFetiDP3dSubdomainMatrixManager CreateSubdomainMatrixManager(ISubdomain subdomain, 
+        public IFetiDPSubdomainMatrixManager CreateSubdomainMatrixManager(ISubdomain subdomain, 
             IFetiDPDofSeparator dofSeparator, ILagrangeMultipliersEnumerator lagrangesEnumerator, 
             IAugmentationConstraints augmentationConstraints)
             => new FetiDP3dSubdomainMatrixManagerSkyline(subdomain, dofSeparator, lagrangesEnumerator, augmentationConstraints, 

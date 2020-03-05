@@ -17,11 +17,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 {
     public class MockMatrixManager : IFetiDP3dMatrixManager
     {
-        private readonly Dictionary<ISubdomain, IFetiDP3dSubdomainMatrixManager> subdomainMatrices;
+        private readonly Dictionary<ISubdomain, IFetiDPSubdomainMatrixManager> subdomainMatrices;
 
         public MockMatrixManager(IModel model)
         {
-            subdomainMatrices = new Dictionary<ISubdomain, IFetiDP3dSubdomainMatrixManager>();
+            subdomainMatrices = new Dictionary<ISubdomain, IFetiDPSubdomainMatrixManager>();
             foreach (ISubdomain sub in model.EnumerateSubdomains())
             {
                 subdomainMatrices[sub] = new MockSubdomainMatrixManager(sub);
@@ -58,7 +58,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
         public DofPermutation ReorderSubdomainRemainderDofs(ISubdomain subdomain) => DofPermutation.CreateNoPermutation();
 
-        private class MockSubdomainMatrixManager : IFetiDP3dSubdomainMatrixManager
+        private class MockSubdomainMatrixManager : IFetiDPSubdomainMatrixManager
         {
             private readonly DiagonalMatrix invDii = null;
             private readonly Matrix invKii, invKrr, Kbb, Kbi, Kcc, Kff, Krc, Krr;
@@ -78,10 +78,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
                 invKii = ExpectedSubdomainMatrices.GetMatrixKii(s).Invert();
                 Kbb = ExpectedSubdomainMatrices.GetMatrixKbb(s);
                 Kbi = ExpectedSubdomainMatrices.GetMatrixKbi(s);
-                KaaStar = null;
-                KacStar = null;
                 Kcc = ExpectedSubdomainMatrices.GetMatrixKcc(s);
-                KccStar = ExpectedSubdomainMatrices.GetMatrixKccStar(s);
+                CoarseProblemSubmatrix = ExpectedSubdomainMatrices.GetMatrixKccStar(s);
                 Kff = ExpectedSubdomainMatrices.GetMatrixKff(s);
                 Krc = ExpectedSubdomainMatrices.GetMatrixKrc(s);
                 Krr = ExpectedSubdomainMatrices.GetMatrixKrr(s);
@@ -92,9 +90,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
             public Vector FcStar { get; }
             public Vector Fr { get; }
 
-            public IMatrixView KaaStar { get; }
-            public IMatrixView KacStar { get; }
-            public IMatrixView KccStar { get; }
+            public IMatrixView CoarseProblemSubmatrix { get; }
 
             public ISingleSubdomainLinearSystemMpi LinearSystem { get; }
 
@@ -113,8 +109,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.UnitTests
 
             public void ClearMatrices() { }
             public void ClearRhsVectors() { }
-            public void CondenseMatricesStatically() { }
-            public void CondenseRhsVectorsStatically() { }
+            public void CalcCoarseProblemSubmatrices() { }
+            public void CalcCoarseProblemRhsSubvectors() { }
 
             public void ExtractBoundaryInternalSubmatricesAndInvertKii(bool diagonalKii) { }
 
