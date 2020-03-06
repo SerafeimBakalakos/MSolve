@@ -145,7 +145,9 @@ namespace ISAAR.MSolve.SamplesConsole
             var midSideNodeSelection = new UserDefinedMidsideNodes(extraConstrNodesofsubd, new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ });
             
             //var fetiSolverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);  //A.3
-            var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();   //A.3
+            //var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();   //A.3.1
+            //var matrixManagerFactory = new FetiDP3dMatrixManagerFactorySkyline();   //A.3.1
+            var matrixManagerFactory = new FetiDP3dMatrixManagerFactorySuiteSparse(new OrderingAmdSuiteSparse());   //A.3.1
             var fetiSolverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);  //A.3
 
             //fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();

@@ -251,7 +251,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             else { renumbering = new renumbering(sunol_nodes_numbering); }
             #endregion
 
-            extraConstraintsNoeds = GetExtraConstraintNodes2renumberingRandomData(discr1, subdiscr1, renumbering);
+            extraConstraintsNoeds = GetExtraConstraintNodes2renumberingRandomDataOriginal(discr1, subdiscr1, renumbering);
 
             //TODO delete unesessary double arrays (Dq)
             Dq = new double[9, 3 * (((mp.hexa1 + 1) * (mp.hexa2 + 1) * (mp.hexa3 + 1)) - ((mp.hexa1 - 1) * (mp.hexa2 - 1) * (mp.hexa3 - 1)))];
