@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         {
             //TODO: remove casts. I think PCG, LinearTransformation and preconditioners should be generic, bounded by 
             //      IVectorView and IVector
-            var lhs = (Vector)lhsVector;
+            var lhs = (Vector)lhsVector;//bookmark1
             var rhs = (Vector)rhsVector;
             fetiPreconditioner.SolveLinearSystem(rhs, lhs);
         }

@@ -14,7 +14,7 @@ using ISAAR.MSolve.Solvers.LinearSystems;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual
 {
-    internal static class Utilities
+    public static class Utilities
     {
         internal static void AnalyzeMultiSubdomainModel(IModel model, ISolverMpi solver)
         {
@@ -70,7 +70,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual
             return  (sys.Matrix, sys.RhsVector, sys.Solution);
         }
 
-        internal static void RemoveSubdomains(Model model, int singleSubdomainID = 0)
+        public static void RemoveSubdomains(Model model, int singleSubdomainID = 0)
         {
             // Replace the existing subdomains with a single one 
             model.SubdomainsDictionary.Clear();

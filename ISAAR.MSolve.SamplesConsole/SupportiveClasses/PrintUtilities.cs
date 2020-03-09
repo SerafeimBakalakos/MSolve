@@ -28,6 +28,21 @@ namespace ISAAR.MSolve.SamplesConsole.SupportiveClasses
             writer.Flush();
             writer.Dispose();
         }
+        public static void WriteToFile(int[,] array, string path)
+        {
+            var writer = new StreamWriter(path);
+            for (int i = 0; i < array.GetLength(0); ++i)
+            {
+                for (int j = 0; j < array.GetLength(1); ++j)
+                {
+                    writer.Write(array[i, j]);
+                    writer.Write(' ');
+                }
+                writer.WriteLine();
+            }
+            writer.Flush();
+            writer.Dispose();
+        }
 
         public static void WriteToFileMsolveInput(double[,] array, string path)
         {
@@ -268,6 +283,28 @@ namespace ISAAR.MSolve.SamplesConsole.SupportiveClasses
             WriteToFile(array_A, path_A);
             WriteToFile(array_B, path_B);
 
+        }
+
+        public static Dictionary<int, int[]> ConvertArrayToDictionary(int[] array1)
+        {
+            Dictionary<int, int[]> dictionary1 = new Dictionary<int, int[]>();
+            int thesi = 0;
+            while (thesi < array1.Length)
+            {
+                int ID = array1[thesi];
+                thesi++;
+                int[] data = new int[array1[thesi]];
+                thesi++;
+                for (int i1 = 0; i1 < data.Length; i1++)
+                {
+                    data[i1] = array1[thesi];
+                    thesi++;
+                }
+                dictionary1.Add(ID, data);
+
+            }
+
+            return dictionary1;
         }
     }
 }

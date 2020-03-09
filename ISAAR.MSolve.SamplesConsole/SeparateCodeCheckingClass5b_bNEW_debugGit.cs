@@ -538,20 +538,43 @@ namespace ISAAR.MSolve.SamplesConsole
             }
             var constraintIds = constrainedNodes.ToArray();
 
-            //print model reconstruction data 
-            ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(ElementIds,  subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementIds.txt");
-            ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(subdomainIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\subdomainIds.txt");
-            ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(NodeIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeIds.txt");
-            ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(constraintIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\constraintIds.txt");
+
+            bool outputTypeOriginal = false;
+
+            if (outputTypeOriginal)
+            {
+                //print model reconstruction data 
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(ElementIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementIds.txt");
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(subdomainIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\subdomainIds.txt");
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(NodeIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeIds.txt");
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(constraintIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\constraintIds.txt");
 
 
 
-            ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(ElementNodes, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementNodes.txt");
-            ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(NodeCoordinates, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeCoordinates.txt");
-            //ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(SubdElements, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\SubdElements.txt");
-            ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileDictionaryMsolveInput(subdElements, subdomainOutputPath, @"\model_overwrite\MsolveModel\subdElements2.txt");
-            ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(elementStiffnessFactor, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementStiffnessFactors.txt");
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(ElementNodes, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementNodes.txt");
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(NodeCoordinates, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeCoordinates.txt");
+                //ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(SubdElements, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\SubdElements.txt");
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileDictionaryMsolveInput(subdElements, subdomainOutputPath, @"\model_overwrite\MsolveModel\subdElements.txt");
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(elementStiffnessFactor, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementStiffnessFactors.txt");
+            }
+            else
+            {
+                //DdmCalculationsGeneral.PrintSubdomainDataForPostPro2(ExtraConstrIdAndTheirBR_msolveWise_NodesTheseis, rveBuilder.subdomainOutputPath, @"\model_overwrite\ExtraConstrIdAndTheirBR_msolveWise_NodesTheseis.txt");
+                //int[] brNodesMsolveWise = ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.ReadIntVector(rveBuilder.subdomainOutputPath + @"\model_overwrite\subdomain_data_solver\RB_Nodes_IDs_MSOLVE_wise" + ".txt");
+                //print model reconstruction data 
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVector(ElementIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementIds.txt");
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVector(subdomainIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\subdomainIds.txt");
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVector(NodeIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeIds.txt");
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVector(constraintIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\constraintIds.txt");
 
+
+
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFile(ElementNodes, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementNodes.txt");
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFile(NodeCoordinates, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeCoordinates.txt");
+                //ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(SubdElements, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\SubdElements.txt");
+                DdmCalculationsGeneral.PrintSubdomainDataForPostPro2(subdElements, subdomainOutputPath, @"\model_overwrite\MsolveModel\subdElements.txt");
+                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVector(elementStiffnessFactor, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementStiffnessFactors.txt");
+            }
 
 
 

@@ -23,6 +23,8 @@ namespace ISAAR.MSolve.SamplesConsole
 
         static void Main(string[] args)
         {
+            FetiDP3dSolverSerialTestsInput.TestSolutionGlobalDisplacements();
+
             (Model model1, double[] uc1, Vector globalU1, bool IsFetiDpSolver3d) = SeparateCodeCheckingClass5b_bNEW_debugGit.RunExample();
             (Model model2, double[] uc2, Vector globalU2) =SeparateCodeCheckingClass5b_bNEW_debugGit.RunExampleSerial();
                         
