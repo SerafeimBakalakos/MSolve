@@ -101,7 +101,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
             // Homogeneous/heterogeneous problems
             this.problemIsHomogeneous = problemIsHomogeneous;
             if (problemIsHomogeneous) this.stiffnessDistribution = new FetiDPHomogeneousStiffnessDistributionOLD(model, dofSeparator);
-            else this.stiffnessDistribution = new FetiDPHeterogeneousStiffnessDistribution(model, dofSeparator);
+            else this.stiffnessDistribution = new FetiDPHeterogeneousStiffnessDistributionOLD(model, dofSeparator);
         }
 
         public Dictionary<int, HashSet<INode>> CornerNodesOfSubdomains { get; private set; }

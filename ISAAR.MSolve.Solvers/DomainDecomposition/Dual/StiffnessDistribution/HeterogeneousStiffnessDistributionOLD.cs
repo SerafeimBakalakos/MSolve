@@ -19,7 +19,7 @@ using ISAAR.MSolve.Solvers.LinearSystems;
 //      global loads are distributed, which is when the IStiffnessDistribution is first created.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
-    public abstract class HeterogeneousStiffnessDistribution : IStiffnessDistributionOLD
+    public abstract class HeterogeneousStiffnessDistributionOLD : IStiffnessDistributionOLD
     {
         //TODO: Is it more efficient to use (INode node, DOFType[] dofTypes)[]? It would reduce the cost of accessing node data?
         //TODO: perhaps it would be faster to have a field Dictionary<int, double[]> boundaryDofStiffnesses, instead of the next
@@ -29,7 +29,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         private readonly IModel model;
         private readonly IDofSeparator dofSeparator;
 
-        public HeterogeneousStiffnessDistribution(IModel model, IDofSeparator dofSeparator)
+        public HeterogeneousStiffnessDistributionOLD(IModel model, IDofSeparator dofSeparator)
         {
             this.model = model;
             this.dofSeparator = dofSeparator;
@@ -170,7 +170,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             public int NumRows => explicitBpb.NumRows;
 
             internal static Dictionary<int, IMappingMatrix> CreateBpbOfSubdomains(
-                HeterogeneousStiffnessDistribution stiffnessDistribution, ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator, 
+                HeterogeneousStiffnessDistributionOLD stiffnessDistribution, ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator, 
                 Dictionary<int, SignedBooleanMatrixColMajor> boundarySignedBooleanMatrices)
             {
                 // According to Fragakis PhD (e.q. 3.28): 
@@ -233,7 +233,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             public int NumRows => Dlambda.NumRows;
 
             internal static Dictionary<int, IMappingMatrix> CreateBpbOfSubdomains(
-                HeterogeneousStiffnessDistribution stiffnessDistribution, ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator,
+                HeterogeneousStiffnessDistributionOLD stiffnessDistribution, ILagrangeMultipliersEnumeratorOLD lagrangeEnumerator,
                 Dictionary<int, SignedBooleanMatrixColMajor> boundarySignedBooleanMatrices)
             {
                 // According to Fragakis PhD (e.q. 3.28): 
