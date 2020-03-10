@@ -124,6 +124,11 @@ namespace ISAAR.MSolve.SamplesConsole
                     extraConstrNodesofsubd[subd].Add(model.NodesDictionary[extraNodeId]);
                 }
             }
+            if(WRITESTIFFNESSES)
+            {
+                var subdExtraConstrsFirstNode = extraConstrNodesofsubd.Select(x => new KeyValuePair<int, int[]>  ( x.Key.ID, x.Value.Select(y => y.ID).ToArray())  ).ToDictionary(x=>x.Key,x=>x.Value); 
+                DdmCalculationsGeneral.PrintSubdomainDataForPostPro2(subdExtraConstrsFirstNode, rveBuilder.subdomainOutputPath, @"\subdomain_matrices_and_data\subdExtraConstrsFirstNode.txt");
+            }
             #endregion
 
 
@@ -281,11 +286,14 @@ namespace ISAAR.MSolve.SamplesConsole
             
 
             Dictionary<int, int[]> ExtraConstrIdAndTheirBRNodesTheseis = GetExtraConstrNodesPositions(subdBRNodesAndGlobalDOfs, extraConstraintsNoeds, model);
+            Dictionary<int, int[]> ExtraConstrAveIdsAndTheirBRNodesTheseis = GetExtraConstrNodesPositions(subdBRNodesAndGlobalDOfs, rveBuilder.extraConstraintsNoedsAve, model);
 
             bool ommitZeros = true;
             if (ommitZeros) { ExtraConstrIdAndTheirBRNodesTheseis = OmmitZeros(ExtraConstrIdAndTheirBRNodesTheseis); }
-            
+            if (ommitZeros) { ExtraConstrAveIdsAndTheirBRNodesTheseis = OmmitZeros(ExtraConstrAveIdsAndTheirBRNodesTheseis); }
+
             if (WRITESTIFFNESSES) DdmCalculationsGeneral.PrintSubdomainDataForPostPro2(ExtraConstrIdAndTheirBRNodesTheseis, rveBuilder.subdomainOutputPath, @"\subdomain_matrices_and_data\ExtraConstrIdAndTheirBRNodesTheseis.txt");
+            if (WRITESTIFFNESSES) DdmCalculationsGeneral.PrintSubdomainDataForPostPro2(ExtraConstrAveIdsAndTheirBRNodesTheseis, rveBuilder.subdomainOutputPath, @"\subdomain_matrices_and_data\ExtraConstrAveIdsAndTheirBRNodesTheseis.txt");
             if (WRITESTIFFNESSES) DdmCalculationsGeneral.printNodeData(model, extraConstraintsNoeds, rveBuilder.CornerNodesIdAndsubdomains, rveBuilder.subdomainOutputPath, @"\subdomain_matrices_and_data\ExtraNodeCoordinates.txt", @"\subdomain_matrices_and_data\CornerNodeCoordinates.txt");
             #endregion
                                    
@@ -485,7 +493,14 @@ namespace ISAAR.MSolve.SamplesConsole
 
             int[] ElementIds = model.EnumerateElements().Where(x => (x.ElementType is Hexa8NonLinear | x.ElementType is Hexa8NonLinearDefGrad)).Select(x => x.ID).ToArray();
             int[] subdomainIds = model.EnumerateSubdomains().Select(x => x.ID).ToArray();
-            int[] NodeIds = model.NodesDictionary.Values.Select(x => x.ID).ToArray();
+            
+
+            List<int> nodeIds = new List<int>();
+            foreach (var hexaElementId in ElementIds)
+            {
+                nodeIds = nodeIds.Union(model.GetElement(hexaElementId).Nodes.Select(x => x.ID).ToList()).ToList();
+            }
+            int[] NodeIds = nodeIds.ToArray();
 
             int[,] ElementNodes = new int[ElementIds.GetLength(0), 8];
             int thesi = 0;

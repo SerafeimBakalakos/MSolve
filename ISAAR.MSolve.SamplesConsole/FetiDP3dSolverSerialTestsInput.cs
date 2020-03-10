@@ -18,6 +18,8 @@ using System.Linq;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x4x4Quads;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
+using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 
 //TODO: Perhaps I should also check intermediate steps by pulling the solver's compenent using reflection and check their state
 //      and operations.
@@ -36,6 +38,8 @@ namespace ISAAR.MSolve.SamplesConsole
             Utilities.RemoveSubdomains(modelDirect);
             IVectorView globalUDirect = SolveDirect(modelDirect);
 
+            Vector globalU1_2 = ReorderDirectSolverSolutionIn_globalU1_format(globalUFeti, (Vector)globalUDirect, (Model)model, modelDirect);
+            Vector check = globalUFeti - globalU1_2;
             // Check solution
             double normalizedError = globalUDirect.Subtract(globalUFeti).Norm2() / globalUDirect.Norm2();
             Assert.Equal(0.0, normalizedError, 5);
@@ -43,6 +47,25 @@ namespace ISAAR.MSolve.SamplesConsole
             //// Check solution
             //double tol = 1E-8;
             //Assert.True(Example4x4x4Quads.SolutionGlobalDisplacements.Equals(globalU, tol));
+        }
+
+        private static Vector ReorderDirectSolverSolutionIn_globalU1_format(Vector globalU1, Vector globalU2, Model model1, Model model2)
+        {
+            //var freeNodesIds = model1.NodesDictionary.Values.Where(x => x.Constraints.Count == 0).Select(x=>x.ID).ToList();
+            var freeNodesIds = model1.GlobalDofOrdering.GlobalFreeDofs.GetRows().Select(x => x.ID);
+            Vector globalU1_2 = Vector.CreateZero(globalU1.Length);
+            foreach (int nodeID in freeNodesIds)
+            {
+                foreach (var dof in model2.GlobalDofOrdering.GlobalFreeDofs.GetDataOfRow(model2.GetNode(nodeID)).Keys)
+                {
+                    int model1Dof_order = model1.GlobalDofOrdering.GlobalFreeDofs[model1.GetNode(nodeID), dof];
+                    int model2Dof_order = model2.GlobalDofOrdering.GlobalFreeDofs[model2.GetNode(nodeID), dof];
+
+                    globalU1_2[model1Dof_order] = globalU2[model2Dof_order];
+                }
+            }
+
+            return globalU1_2;
         }
 
         //[Fact]
@@ -87,7 +110,7 @@ namespace ISAAR.MSolve.SamplesConsole
             // Prepare solver
             IModel model = ModelCreatorInput.CreateModel();
             model.ConnectDataStructures();
-            ICornerNodeSelection cornerNodes =ModelCreatorInput.DefineCornerNodeSelectionSerial(model);
+            ICornerNodeSelection cornerNodes =ModelCreatorInput.DefineCornerNodeSelectionSerial((Model)model);
             IMidsideNodesSelection midsideNodesSelection = ModelCreatorInput.DefineMidsideNodeSelectionSerial(model);
 
             #region debug
@@ -96,8 +119,14 @@ namespace ISAAR.MSolve.SamplesConsole
             //logger.PlotSubdomains(model);
             #endregion
 
+            var pcgSettings = new PcgSettings()
+            {
+                ConvergenceTolerance = 1E-4,
+                MaxIterationsProvider = new FixedMaxIterationsProvider(1000)
+            };
             var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();
             var solverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);
+            solverBuilder.PcgSettings = pcgSettings;
             FetiDP3dSolverSerial solver = solverBuilder.Build(model, cornerNodes,midsideNodesSelection);
 
             return (model, solver);

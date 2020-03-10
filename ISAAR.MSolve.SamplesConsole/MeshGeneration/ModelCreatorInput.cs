@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
@@ -92,52 +93,42 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x
             }
 
             // Load
-            model.Loads.Add(new Load() { Node = model.NodesDictionary[63], DOF = StructuralDof.TranslationZ, Amount = 1.0 });
+            var CornerNodesIdAndsubdomains = GetCornerNodesForModel();
+            model.Loads.Add(new Load() { Node = model.NodesDictionary[CornerNodesIdAndsubdomains.ElementAt(0).Key], DOF = StructuralDof.TranslationZ, Amount = 1.0 });
 
             return model;
         }
-
-        public static UsedDefinedCornerNodes DefineCornerNodeSelectionSerial(IModel model)
+                
+        public static UsedDefinedCornerNodes DefineCornerNodeSelectionSerial(Model model)
             => new UsedDefinedCornerNodes(DefineCornerNodesSubdomainsAll(model));
 
-        public static Dictionary<ISubdomain, HashSet<INode>> DefineCornerNodesSubdomainsAll(IModel model)
+        public static Dictionary<ISubdomain, HashSet<INode>> DefineCornerNodesSubdomainsAll(Model model)
         {
-            var cornerNodes = new Dictionary<ISubdomain, HashSet<INode>>();
-            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-            {
-                cornerNodes[subdomain] = new HashSet<INode>(new INode[] { model.GetNode(63) });
-            }
-            return cornerNodes;
+            var CornerNodesIdAndsubdomains = GetCornerNodesForModel();
+            Dictionary<int, HashSet<INode>> cornerNodes = DefineCornerNodesPerSubdomainAndOtherwise(CornerNodesIdAndsubdomains,model);
+
+            var cornerNodes_ = cornerNodes.Select(x => ((ISubdomain)model.SubdomainsDictionary[x.Key], x.Value)).ToDictionary(x => x.Item1, x => x.Value);
+
+            //var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes_);
+
+            return cornerNodes_;
         }
 
-        public static HashSet<INode> DefineCornerNodesSubdomain(ISubdomain subdomain)
-        {
-            Debug.Assert(subdomain.ID >= 0 && subdomain.ID < 8);
-            return new HashSet<INode>(new INode[] { subdomain.GetNode(63), });
-        }
 
         public static UserDefinedMidsideNodes DefineMidsideNodeSelectionSerial(IModel model)
             => new UserDefinedMidsideNodes(DefineMidsideNodesAll(model), new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ } );
 
         public static Dictionary<ISubdomain, HashSet<INode>> DefineMidsideNodesAll(IModel model)
         {
-            int[] midsideNodeIds = { 62, 64, 58, 70, 38, 100 };
+            var subdomainOutputPath = (new CnstValues()).exampleOutputPathGen;
 
-            var midsideNodes = new Dictionary<ISubdomain, HashSet<INode>>();
-            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-            {
-                midsideNodes[subdomain] = new HashSet<INode>();
-                foreach (int midsideNodeId in midsideNodeIds)
-                {
-                    try
-                    {
-                        midsideNodes[subdomain].Add(subdomain.GetNode(midsideNodeId));
-                    }
-                    catch (Exception)
-                    {}
-                }
-            }
-            return midsideNodes;
+            int[] subdExtraConstrsFirstNode = SamplesConsole.SupportiveClasses.PrintUtilities.ReadIntVector(subdomainOutputPath + @"\subdomain_matrices_and_data\subdExtraConstrsFirstNode.txt");
+
+            Dictionary<int, int[]> CornerNodesAndSubdoaminIds = SamplesConsole.SupportiveClasses.PrintUtilities.ConvertArrayToDictionary(subdExtraConstrsFirstNode);
+
+            var SubdomainsAndMidsideNods = CornerNodesAndSubdoaminIds.Select(x => new KeyValuePair<ISubdomain, HashSet<INode>>( model.GetSubdomain(x.Key), x.Value.Select(y => model.GetNode(y)).ToHashSet())).ToDictionary(x => x.Key, x => x.Value);
+
+            return SubdomainsAndMidsideNods;
         }
 
         private static (int[], int[], int[], int[], int[,], double[,], Dictionary<int, int[]>,double[]) GetModelCreationData()
@@ -174,6 +165,45 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x
             double[] elementStiffnessFactors = SamplesConsole.SupportiveClasses.PrintUtilities.ReadVector(subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementStiffnessFactors.txt");
 
             return (ElementIds, subdomainIds, NodeIds, constraintIds, ElementNodes, NodeCoordinates, SubdElements, elementStiffnessFactors);
+        }
+
+        public static   Dictionary<int, int[]>  GetCornerNodesForModel()
+        {
+            var subdomainOutputPath = (new CnstValues()).exampleOutputPathGen;
+
+            int[] cornerNodeAndSubdoaminData = SamplesConsole.SupportiveClasses.PrintUtilities.ReadIntVector(subdomainOutputPath + @"\subdomain_matrices_and_data\CornerNodesAndSubdIds.txt");
+
+            Dictionary<int, int[]> CornerNodesAndSubdoaminIds = SamplesConsole.SupportiveClasses.PrintUtilities.ConvertArrayToDictionary(cornerNodeAndSubdoaminData);
+
+            return CornerNodesAndSubdoaminIds;
+        }
+
+        public static Dictionary<int, HashSet<INode>> DefineCornerNodesPerSubdomainAndOtherwise(Dictionary<int, int[]> CornerNodesIdAndsubdomains, Model model)
+        {
+            // a copy of this is used in modelCreatorInput class
+            Dictionary<int, HashSet<INode>> cornerNodesList = new Dictionary<int, HashSet<INode>>(model.EnumerateSubdomains().Count());
+            Dictionary<int, HashSet<INode>> cornerNodes = new Dictionary<int, HashSet<INode>>(model.EnumerateSubdomains().Count());
+
+            foreach (Subdomain subdomain in model.EnumerateSubdomains())
+            {
+                cornerNodesList.Add(subdomain.ID, new HashSet<INode>());
+            }
+
+            foreach (int CornerNodeID in CornerNodesIdAndsubdomains.Keys)
+            {
+                Node node1 = model.NodesDictionary[CornerNodeID];
+                foreach (Subdomain subdomain in node1.SubdomainsDictionary.Values)
+                {
+                    cornerNodesList[subdomain.ID].Add(node1);
+                }
+            }
+
+            //foreach (Subdomain subdomain in model.Subdomains)
+            //{
+            //    cornerNodes.Add(subdomain.ID, cornerNodesList[subdomain.ID]);
+            //}
+
+            return cornerNodesList;
         }
     }
 }
