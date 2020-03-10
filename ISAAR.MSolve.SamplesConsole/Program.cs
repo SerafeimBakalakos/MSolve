@@ -23,32 +23,36 @@ namespace ISAAR.MSolve.SamplesConsole
 
         static void Main(string[] args)
         {
-            FetiDP3dSolverSerialTestsInput.TestSolutionGlobalDisplacements();
+            for (int example = 1; example < 3; example++)
+            {
+                CnstValues.exampleNo = example;
+                CnstValues.runOnlyHexaModel = false;
 
-            (Model model1, double[] uc1, Vector globalU1, bool IsFetiDpSolver3d) = SeparateCodeCheckingClass5b_bNEW_debugGit.RunExample();
-            (Model model2, double[] uc2, Vector globalU2) =SeparateCodeCheckingClass5b_bNEW_debugGit.RunExampleSerial();
-                        
-            Vector globalU1_2 = ReorderDirectSolverSolutionIn_globalU1_format(globalU1, globalU2, model1, model2);
-            
-            var check = ((globalU1 - globalU1_2).Norm2()) / (globalU1.Norm2());
-            var check2 = (globalU1 - globalU1_2);
-
-            printGlobalSolutionStats(check, IsFetiDpSolver3d);
-            
-
-            double maxErrValue = check2.CopyToArray().Max();
-
-            
+                (Model model1, double[] uc1, Vector globalU1, bool IsFetiDpSolver3d) = SeparateCodeCheckingClass5b_bNEW_debugGit.RunExample();
+                (Model model2, double[] uc2, Vector globalU2) = SeparateCodeCheckingClass5b_bNEW_debugGit.RunExampleSerial();
+                Vector globalU1_2 = ReorderDirectSolverSolutionIn_globalU1_format(globalU1, globalU2, model1, model2);
+                var check = ((globalU1 - globalU1_2).Norm2()) / (globalU1.Norm2());
+                var check2 = (globalU1 - globalU1_2);
+                printGlobalSolutionStats(check, IsFetiDpSolver3d);
 
 
 
 
+
+                CnstValues.runOnlyHexaModel = true;
+                CnstValues.preventOutputFileWrite(); 
+
+                FetiDP3dSolverSerialTestsInput.TestSolutionGlobalDisplacements();
+
+                CnstValues.RestoreDefaultBoolValues();
+            }
+                                                                        
         }
 
         private static void printGlobalSolutionStats(double check, bool IsFetiDpSolver3d)
         {
             var cnstVal = new CnstValues();
-            if (cnstVal.printGlobalSolutionStats)
+            if (CnstValues.printGlobalSolutionStats)
             {
                 string[] statsLines = new string[] { "GlobalSolutionError=" + check.ToString() + ",", };
                 if (IsFetiDpSolver3d)

@@ -100,7 +100,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             var writer = new LinearAlgebra.Output.FullMatrixWriter();
 
             var cnst = new CnstValues();
-            if (cnst.printPcgMatRhsEtc_AndInterfaceProblemStats)
+            if (CnstValues.printPcgMatRhsEtc_AndInterfaceProblemStats)
             {
                 string pathRhs = (new CnstValues()).solverPath + @"\a_pcg_rhs_fetiDP3D.txt";
                 new LinearAlgebra.Output.FullVectorWriter().WriteToFile(pcgRhs, pathRhs);
@@ -112,7 +112,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             bool isFIrrPosDef = false;
             bool isPcgMatrixInvertible = false;
             bool isPcgMatrixPosDef = false;
-            if (cnst.printPcgMatRhsEtc_AndInterfaceProblemStats)
+            if (CnstValues.printPcgMatRhsEtc_AndInterfaceProblemStats)
             {
                 Matrix FIrr = MultiplyWithIdentity(nL, nL, flexibility.MultiplyFIrr);
                 FIrr = 0.5 * (FIrr + FIrr.Transpose());
@@ -176,7 +176,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
                 string pathErrorLagranges = (new CnstValues()).solverPath + @"\a_errorLagranges_LU_iters_fetiDP3D.txt";
                 new LinearAlgebra.Output.FullVectorWriter().WriteToFile(Vector.CreateFromArray(new double[] { errorLagranges, (double)nIter }), pathErrorLagranges);
 
-                if ((new CnstValues()).printInterfaceSolutionStats)
+                if (CnstValues.printInterfaceSolutionStats)
                 {
                     PrintInterfaceSolverStats(nC, nL, nIter, errorLagranges,
     isFIrrInvertible, isFIrrPosDef, isPcgMatrixInvertible, isPcgMatrixPosDef);
@@ -193,11 +193,17 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
             #endregion
 
-            if ((new CnstValues()).printInterfaceSolutionStats&&(!cnst.printPcgMatRhsEtc_AndInterfaceProblemStats))
+            if (CnstValues.printInterfaceSolutionStats&&(!CnstValues.printPcgMatRhsEtc_AndInterfaceProblemStats))
             {
                 PrintInterfaceSolverStats(nC, nL, stats.NumIterationsRequired, 0.00001,
 isFIrrInvertible, isFIrrPosDef, isPcgMatrixInvertible, isPcgMatrixPosDef);
             }
+            if (CnstValues.runOnlyHexaModel && (!CnstValues.printPcgMatRhsEtc_AndInterfaceProblemStats))
+            {
+                PrintInterfaceSolverStats(nC, nL, stats.NumIterationsRequired, 0.00001,
+isFIrrInvertible, isFIrrPosDef, isPcgMatrixInvertible, isPcgMatrixPosDef);
+            }
+
 
             return lagranges;
         }
@@ -217,7 +223,11 @@ isFIrrInvertible, isFIrrPosDef, isPcgMatrixInvertible, isPcgMatrixPosDef);
             };
 
             var cnstVal = new CnstValues();
-            var statsOutputPath = cnstVal.interfaceSolverStatsPath + @"\interfaceSolver_FetiDP_3d_stats.txt";
+            string statsOutputPath;
+            if(CnstValues.runOnlyHexaModel)
+            { statsOutputPath = cnstVal.interfaceSolverStatsPath + @"\interfaceSolver_FetiDP_3d_only_hexa_stats.txt"; }
+            else
+            { statsOutputPath = cnstVal.interfaceSolverStatsPath + @"\interfaceSolver_FetiDP_3d_stats.txt"; }
             cnstVal.WriteToFileStringArray(statsLines, statsOutputPath);
 
         }

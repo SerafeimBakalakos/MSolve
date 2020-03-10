@@ -20,6 +20,8 @@ using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 //TODO: Perhaps I should also check intermediate steps by pulling the solver's compenent using reflection and check their state
 //      and operations.
@@ -41,12 +43,9 @@ namespace ISAAR.MSolve.SamplesConsole
             Vector globalU1_2 = ReorderDirectSolverSolutionIn_globalU1_format(globalUFeti, (Vector)globalUDirect, (Model)model, modelDirect);
             Vector check = globalUFeti - globalU1_2;
             // Check solution
-            double normalizedError = globalUDirect.Subtract(globalUFeti).Norm2() / globalUDirect.Norm2();
-            Assert.Equal(0.0, normalizedError, 5);
+            double normalizedError = check.Norm2() / globalUDirect.Norm2();
+            
 
-            //// Check solution
-            //double tol = 1E-8;
-            //Assert.True(Example4x4x4Quads.SolutionGlobalDisplacements.Equals(globalU, tol));
         }
 
         private static Vector ReorderDirectSolverSolutionIn_globalU1_format(Vector globalU1, Vector globalU2, Model model1, Model model2)
@@ -103,6 +102,7 @@ namespace ISAAR.MSolve.SamplesConsole
             model.ApplyLoads();
             LoadingUtilities.ApplyNodalLoads(model, solver);
             solver.Solve();
+            
         }
 
         private static (IModel, FetiDP3dSolverSerial) CreateModelAndSolver()
@@ -127,6 +127,10 @@ namespace ISAAR.MSolve.SamplesConsole
             var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();
             var solverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);
             solverBuilder.PcgSettings = pcgSettings;
+            solverBuilder.ProblemIsHomogeneous = true; //TODO
+            solverBuilder.Preconditioning = new DirichletPreconditioning();
+            solverBuilder.CrosspointStrategy = new FullyRedundantConstraints();
+
             FetiDP3dSolverSerial solver = solverBuilder.Build(model, cornerNodes,midsideNodesSelection);
 
             return (model, solver);

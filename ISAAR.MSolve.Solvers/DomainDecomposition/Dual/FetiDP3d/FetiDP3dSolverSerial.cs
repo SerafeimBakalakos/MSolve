@@ -288,7 +288,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             double globalForcesNorm = globalForcesNorm = subdomainGlobalMapping.CalcGlobalForcesNorm(
                     sub => matrixManager.GetFetiDPSubdomainMatrixManager(sub).LinearSystem.RhsConcrete);
 
-            if ((new CnstValues()).printSolver_run_overwrite_data_region)
+            if (CnstValues.printSolver_run_overwrite_data_region)
             {
                 PrintLagrangeEqsData();
                 PrintCornerEqsData();

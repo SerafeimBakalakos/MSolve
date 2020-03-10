@@ -7,12 +7,21 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
 {
     public class CnstValues
     {
-        bool runCluster = false; 
+        public static int exampleNo { get; set; }
 
+        bool runCluster = false;
+
+        public static bool runOnlyHexaModel { get; set; } = false;
         //public string exampleOutputPathGen = @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\examples\example1\input_matlab";
 
-        public string exampleOutputPathGen { get { if (runCluster) { return @"C:\Users\cluster\Documents\Large_rves\examples\example15\input_matlab"; }
-                else { return @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\examples\example1\input_matlab"; } } }
+        public string exampleOutputPathGen
+        {
+            get
+            {
+                if (runCluster) { return @"C:\Users\cluster\Documents\Large_rves\examples\example" + exampleNo + @"\input_matlab"; }
+                else { return @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\examples\example" + exampleNo + @"\input_matlab"; }
+            }
+        }
         public string solverPath { get { return exampleOutputPathGen + @"\model_overwrite\subdomain_data_solver"; } }
 
         public string debugString = @"C:\Users\acivi\Documents\notes_elegxoi_2\develp_3D";
@@ -21,21 +30,28 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
 
         public string interfaceSolverStatsPath { get { return exampleOutputPathGen + @"\Msolve_solution"; } }
 
-        public string rand_data_vec_path { get { if (runCluster) { return @"C:\Users\cluster\Documents\Large_rves\files_from_old_paths\rand_data.txt"; }
-                else { return @"C:\Users\acivi\Documents\notes_elegxoi_2\develop_random_geometry_Msolve\REF2_50_000_renu_new_multiple_algorithms_check_develop_copy_for_progr_random_direct_in_C\rand_data.txt";  }
-            } }
+        public string rand_data_vec_path
+        {
+            get
+            {
+                if (runCluster) { return @"C:\Users\cluster\Documents\Large_rves\files_from_old_paths\rand_data.txt"; }
+                else { return @"C:\Users\acivi\Documents\notes_elegxoi_2\develop_random_geometry_Msolve\REF2_50_000_renu_new_multiple_algorithms_check_develop_copy_for_progr_random_direct_in_C\rand_data.txt"; }
+            }
+        }
         public CnstValues()
         {
 
         }
 
-        public bool printInterfaceSolutionStats = true;
+        public static bool printInterfaceSolutionStats { get; set; } = true;
 
-        public bool printSolver_run_overwrite_data_region = true;
 
-        public bool printGlobalSolutionStats = true;
 
-        public bool printPcgMatRhsEtc_AndInterfaceProblemStats = false; // 
+        public static bool printSolver_run_overwrite_data_region { get; set; } = true;
+
+        public static bool printGlobalSolutionStats { get; set; } = true;
+
+        public static bool printPcgMatRhsEtc_AndInterfaceProblemStats { get; set; } = false; // 
 
         public void WriteToFileStringArray(string[] array, string path)
         {
@@ -53,6 +69,31 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
             writer.Dispose();
         }
 
+        public static void preventOutputFileWrite()
+        {
+            SaveDefaultValuesForRestore();
+            printInterfaceSolutionStats = false;
+            printSolver_run_overwrite_data_region = false;
+            printGlobalSolutionStats = false;
+            printPcgMatRhsEtc_AndInterfaceProblemStats = false;
+        }
 
+        private static bool[] defaultBooleanValues;
+        private static void SaveDefaultValuesForRestore()
+        {
+            defaultBooleanValues = new bool[] {
+                printInterfaceSolutionStats ,
+                printSolver_run_overwrite_data_region,
+                printGlobalSolutionStats,
+            printPcgMatRhsEtc_AndInterfaceProblemStats};
+        }
+
+        public static void RestoreDefaultBoolValues()
+        {
+            printInterfaceSolutionStats = defaultBooleanValues[0];
+            printSolver_run_overwrite_data_region = defaultBooleanValues[1];
+            printGlobalSolutionStats = defaultBooleanValues[2];
+            printPcgMatRhsEtc_AndInterfaceProblemStats = defaultBooleanValues[3];
+        }
     }
 }

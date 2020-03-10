@@ -67,7 +67,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
             #region debug1
             var cnstValues = new CnstValues();
-            if (cnstValues.printInterfaceSolutionStats)
+            if (CnstValues.printInterfaceSolutionStats)
             {
                 int nL = lagranges.Length;
                 int nC = matrixManager.CoarseProblemRhs.Length;
@@ -78,7 +78,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
                 Matrix FIrr = MultiplyWithIdentity(nL, nL, flexibility.MultiplyFIrr);
                 FIrr = 0.5 * (FIrr + FIrr.Transpose());
 
-                if (cnstValues.printPcgMatRhsEtc_AndInterfaceProblemStats) {
+                if (CnstValues.printPcgMatRhsEtc_AndInterfaceProblemStats) {
                     string pathFIrr = cnstValues.solverPath + @"\a_FIrr_fetiDP.txt";
                     string pathFIrc = cnstValues.solverPath + @"\a_FIrc_fetiDP.txt";
                     writer.WriteToFile(FIrr, pathFIrr);
@@ -114,7 +114,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
                 Matrix pcgMatrixExplicit = MultiplyWithIdentity(nL, nL, pcgMatrix.Multiply);
                 pcgMatrixExplicit = 0.5 * (pcgMatrixExplicit + pcgMatrixExplicit.Transpose());
 
-                if (cnstValues.printPcgMatRhsEtc_AndInterfaceProblemStats)
+                if (CnstValues.printPcgMatRhsEtc_AndInterfaceProblemStats)
                 {
                     string pathPcgMatrix = cnstValues.solverPath + @"\a_pcgMAT_fetiDP.txt";
                     writer.WriteToFile(pcgMatrixExplicit, pathPcgMatrix);
@@ -221,13 +221,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
                 pcgMatrixExplicit.FactorLU(false).SolveLinearSystem(pcgRhs, lagrangesDirect);
                 double errorLagranges = (lagranges - lagrangesDirect).Norm2() / lagrangesDirect.Norm2();
 
-                if (cnstValues.printPcgMatRhsEtc_AndInterfaceProblemStats)
+                if (CnstValues.printPcgMatRhsEtc_AndInterfaceProblemStats)
                 {
                     string pathErrorLagranges = cnstValues.solverPath + @"\a_errorLagranges_LU_iters_fetiDP.txt";
                     new LinearAlgebra.Output.FullVectorWriter().WriteToFile(Vector.CreateFromArray(new double[] { errorLagranges, (double)nIter }), pathErrorLagranges);
                 }
 
-                if (cnstValues.printInterfaceSolutionStats)
+                if (CnstValues.printInterfaceSolutionStats)
                 {
                     PrintInterfaceSolverStats(nC, nL, nIter, errorLagranges,
                         isFIrrInvertible, isFIrrPosDef, isPcgMatrixInvertible, isPcgMatrixPosDef);
