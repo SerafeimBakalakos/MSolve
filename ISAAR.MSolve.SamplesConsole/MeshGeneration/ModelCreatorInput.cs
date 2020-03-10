@@ -21,15 +21,15 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Example4x
     {
         public static Model CreateModel()
         {
-            Model model = new Model();
-            for (int s = 0; s < 8; ++s)
-            {
-                model.SubdomainsDictionary[s] = new Subdomain(s);
-            }
-
             (int[] ElementIds, int[] subdomainIds, int[] NodeIds, int[] constraintIds, int[,] ElementNodes, double[,] NodeCoordinates,
                 Dictionary<int, int[]> SubdElements, double[] elementStiffnessFactors) =
                 GetModelCreationData();
+
+            Model model = new Model();
+            for (int s = 0; s < subdomainIds.GetLength(0); ++s)
+            {
+                model.SubdomainsDictionary[subdomainIds[s]] = new Subdomain(subdomainIds[s]);
+            }
 
             double E_disp = 3.5; //Gpa
             double ni_disp = 0.4;
