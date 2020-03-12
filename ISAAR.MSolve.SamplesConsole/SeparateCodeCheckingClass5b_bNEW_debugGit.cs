@@ -156,7 +156,7 @@ namespace ISAAR.MSolve.SamplesConsole
             var fetiSolverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);  //A.3
 
             //fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
-            fetiSolverBuilder.ProblemIsHomogeneous = true; //TODO
+            fetiSolverBuilder.ProblemIsHomogeneous = false; //TODO
             fetiSolverBuilder.Preconditioning = new DirichletPreconditioning();
             fetiSolverBuilder.PcgSettings = pcgSettings;
 

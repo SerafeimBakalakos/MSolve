@@ -127,7 +127,7 @@ namespace ISAAR.MSolve.SamplesConsole
             var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();
             var solverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);
             solverBuilder.PcgSettings = pcgSettings;
-            solverBuilder.ProblemIsHomogeneous = true; //TODO
+            solverBuilder.ProblemIsHomogeneous = false; //TODO
             solverBuilder.Preconditioning = new DirichletPreconditioning();
             solverBuilder.CrosspointStrategy = new FullyRedundantConstraints();
 

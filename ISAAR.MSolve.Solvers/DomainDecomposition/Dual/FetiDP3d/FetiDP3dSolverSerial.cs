@@ -103,7 +103,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
                 this.stiffnessDistribution = new HomogeneousStiffnessDistributionSerial(model, dofSeparator,
                     new FetiDPHomogeneousDistributionLoadScaling(dofSeparator));
             }
-            else throw new NotImplementedException();
+            else
+            {
+                this.stiffnessDistribution = new HeterogeneousStiffnessDistributionSerial(model, dofSeparator,
+                    lagrangesEnumerator, matrixManager, new FetiDPHeterogeneousDistributionLoadScaling(dofSeparator));
+            }
 
             this.subdomainGlobalMapping = new FetiDPSubdomainGlobalMappingSerial(model, dofSeparator, stiffnessDistribution);
         }
