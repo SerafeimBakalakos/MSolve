@@ -7,7 +7,6 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
-//TODO: Perhaps the code here should be exposed as static utility methods, not through inheritence
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
     internal static class HomogeneousStiffnessDistributionUtilities

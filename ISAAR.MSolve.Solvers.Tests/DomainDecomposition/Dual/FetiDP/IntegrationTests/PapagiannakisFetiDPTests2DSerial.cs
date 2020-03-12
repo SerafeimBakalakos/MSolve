@@ -44,30 +44,30 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         [InlineData(1.0, Precond.Lumped, Residual.Approximate, 18, MatrixFormat.Skyline)]
         [InlineData(1.0, Precond.Lumped, Residual.Approximate, 18, MatrixFormat.SuiteSparse)]
 
-        //// Stiffness ratio = 1E-2
-        //[InlineData(1E-2, Precond.Dirichlet, Residual.Approximate, 12)]
-        //[InlineData(1E-2, Precond.DirichletDiagonal, Residual.Approximate, 16)]
-        //[InlineData(1E-2, Precond.Lumped, Residual.Approximate, 21)]
+        // Stiffness ratio = 1E-2
+        [InlineData(1E-2, Precond.Dirichlet, Residual.Approximate, 12, MatrixFormat.Skyline)]
+        [InlineData(1E-2, Precond.DirichletDiagonal, Residual.Approximate, 16, MatrixFormat.Skyline)]
+        [InlineData(1E-2, Precond.Lumped, Residual.Approximate, 21, MatrixFormat.Skyline)]
 
-        //// Stiffness ratio = 1E-3
-        //[InlineData(1E-3, Precond.Dirichlet, Residual.Approximate, 13)]
-        //[InlineData(1E-3, Precond.DirichletDiagonal, Residual.Approximate, 20)]
-        //[InlineData(1E-3, Precond.Lumped, Residual.Approximate, 22)]
+        // Stiffness ratio = 1E-3
+        [InlineData(1E-3, Precond.Dirichlet, Residual.Approximate, 13, MatrixFormat.Skyline)]
+        [InlineData(1E-3, Precond.DirichletDiagonal, Residual.Approximate, 20, MatrixFormat.Skyline)]
+        [InlineData(1E-3, Precond.Lumped, Residual.Approximate, 22, MatrixFormat.Skyline)]
 
-        //// Stiffness ratio = 1E-4
-        //[InlineData(1E-4, Precond.Dirichlet, Residual.Approximate, 14)]
-        //[InlineData(1E-4, Precond.DirichletDiagonal, Residual.Approximate, 22)]
-        //[InlineData(1E-4, Precond.Lumped, Residual.Approximate, 26)]
+        // Stiffness ratio = 1E-4
+        [InlineData(1E-4, Precond.Dirichlet, Residual.Approximate, 14, MatrixFormat.Skyline)]
+        [InlineData(1E-4, Precond.DirichletDiagonal, Residual.Approximate, 22, MatrixFormat.Skyline)]
+        [InlineData(1E-4, Precond.Lumped, Residual.Approximate, 26, MatrixFormat.Skyline)]
 
-        //// Stiffness ratio = 1E-5
-        //[InlineData(1E-5, Precond.Dirichlet, Residual.Approximate, 14)]
-        //[InlineData(1E-5, Precond.DirichletDiagonal, Residual.Approximate, 23)]
-        //[InlineData(1E-5, Precond.Lumped, Residual.Approximate, 30)]
+        // Stiffness ratio = 1E-5
+        [InlineData(1E-5, Precond.Dirichlet, Residual.Approximate, 14, MatrixFormat.Skyline)]
+        [InlineData(1E-5, Precond.DirichletDiagonal, Residual.Approximate, 23, MatrixFormat.Skyline)]
+        [InlineData(1E-5, Precond.Lumped, Residual.Approximate, 30, MatrixFormat.Skyline)]
 
-        //// Stiffness ratio = 1E-6
-        //[InlineData(1E-6, Precond.Dirichlet, Residual.Approximate, 15)]
-        //[InlineData(1E-6, Precond.DirichletDiagonal, Residual.Approximate, 27)]
-        //[InlineData(1E-6, Precond.Lumped, Residual.Approximate, 33)]
+        // Stiffness ratio = 1E-6
+        [InlineData(1E-6, Precond.Dirichlet, Residual.Approximate, 15, MatrixFormat.Skyline)]
+        [InlineData(1E-6, Precond.DirichletDiagonal, Residual.Approximate, 27, MatrixFormat.Skyline)]
+        [InlineData(1E-6, Precond.Lumped, Residual.Approximate, 33, MatrixFormat.Skyline)]
         public static void Run(double stiffnessRatio, Precond precond, Residual convergence, int iterExpected, 
             MatrixFormat format)
         {

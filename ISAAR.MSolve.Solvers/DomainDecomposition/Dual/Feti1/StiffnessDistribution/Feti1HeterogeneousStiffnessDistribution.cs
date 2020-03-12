@@ -8,7 +8,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Feti1.StiffnessDistribution
 {
-    public class Feti1HeterogeneousStiffnessDistribution : HeterogeneousStiffnessDistribution
+    public class Feti1HeterogeneousStiffnessDistribution : HeterogeneousStiffnessDistributionOLD
     {
         public Feti1HeterogeneousStiffnessDistribution(IModel model, Feti1DofSeparator dofSeparator) : base(model, dofSeparator)
         {
