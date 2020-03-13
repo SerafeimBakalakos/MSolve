@@ -89,26 +89,19 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
                 linearSystem.Subdomain.EnumerateElements(), matrixProvider);
         }
 
-        public void CalcInverseKii(bool diagonalOnly)
+        public IMatrixView CalcMatrixSb(ISubdomain subdomain)
         {
+            int[] remainderDofs = dofSeparator.GetRemainderDofIndices(subdomain);
+            int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);
             int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
-            if (diagonalOnly)
-            {
-                var diagonal = new double[internalDofs.Length];
-                for (int i = 0; i < diagonal.Length; ++i)
-                {
-                    int idx = internalDofs[i];
-                    diagonal[i] = 1.0 / Krr[idx, idx];
-                    //diagonal[i] = Krr[idx, idx];
-                }
-                inverseKiiDiagonal = DiagonalMatrix.CreateFromArray(diagonal, false);
-                //inverseKiiDiagonal.Invert();
-            }
-            else
-            {
-                inverseKii = Krr.GetSubmatrix(internalDofs, internalDofs);
-                inverseKii.InvertInPlace();
-            }
+
+            Matrix Krr = linearSystem.Matrix.GetSubmatrixFull(remainderDofs, remainderDofs);
+            Matrix Kbb = Krr.GetSubmatrix(boundaryDofs, boundaryDofs);
+            Matrix Kbi = Krr.GetSubmatrix(boundaryDofs, internalDofs);
+            Matrix inverseKii = Krr.GetSubmatrix(internalDofs, internalDofs);
+            inverseKii.InvertInPlace();
+
+            return Kbb - Kbi * inverseKii * Kbi.Transpose();
         }
 
         public void ClearMatrices()

@@ -56,6 +56,31 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
                 linearSystem.Subdomain.EnumerateElements(), matrixProvider);
         }
 
+        public override IMatrixView CalcMatrixSb(ISubdomain subdomain)
+        {
+            // Extract submatrices
+            DokSymmetric Krr = linearSystem.Matrix.GetSubmatrixSymmetricDok(DofsRemainder);
+
+            DokColMajor KibDok;
+            DokSymmetric KiiDok;
+            Matrix Kbb;
+            (Kbb, KibDok, KiiDok) = Krr.Split_Full_DokColMajor_DokSymmetric(DofsBoundary, DofsInternal);
+
+            CscMatrix Kib = KibDok.BuildCscMatrix(true);
+            KibDok = null; // free this memory for GC
+
+            SymmetricCscMatrix Kii = KiiDok.BuildSymmetricCscMatrix(true);
+            KiiDok = null; // free this memory for GC
+
+            // Static condensation
+            CholeskySuiteSparse inverseKii = CholeskySuiteSparse.Factorize(Kii, true);
+            Matrix invKii_Kib = inverseKii.SolveLinearSystems(Kib.CopyToFullMatrix());
+            Matrix Sb = Kbb - Kib.MultiplyRight(invKii_Kib, true);
+            
+            inverseKii.Dispose();
+            return Sb;
+        }
+
         protected override (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc) BuildFreeConstrainedMatricesImpl(
             ISubdomainFreeDofOrdering freeDofOrdering, ISubdomainConstrainedDofOrdering constrainedDofOrdering,
             IEnumerable<IElement> elements, IElementMatrixProvider matrixProvider)

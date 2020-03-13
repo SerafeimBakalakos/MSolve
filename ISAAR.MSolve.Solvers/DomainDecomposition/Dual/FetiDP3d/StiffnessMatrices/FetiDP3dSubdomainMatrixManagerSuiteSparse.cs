@@ -161,6 +161,35 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             fcStar = Fbc - temp;
         }
 
+        public IMatrixView CalcMatrixSb(ISubdomain subdomain)
+        {
+            int[] remainderDofs = dofSeparator.GetRemainderDofIndices(subdomain);
+            int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);
+            int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
+
+            // Extract submatrices
+            DokSymmetric Krr = linearSystem.Matrix.GetSubmatrixSymmetricDok(remainderDofs);
+
+            DokColMajor KibDok;
+            DokSymmetric KiiDok;
+            Matrix Kbb;
+            (Kbb, KibDok, KiiDok) = Krr.Split_Full_DokColMajor_DokSymmetric(boundaryDofs, internalDofs);
+
+            CscMatrix Kib = KibDok.BuildCscMatrix(true);
+            KibDok = null; // free this memory for GC
+
+            SymmetricCscMatrix Kii = KiiDok.BuildSymmetricCscMatrix(true);
+            KiiDok = null; // free this memory for GC
+
+            // Static condensation
+            CholeskySuiteSparse inverseKii = CholeskySuiteSparse.Factorize(Kii, true);
+            Matrix invKii_Kib = inverseKii.SolveLinearSystems(Kib.CopyToFullMatrix());
+            Matrix Sb = Kbb - Kib.MultiplyRight(invKii_Kib, true);
+
+            inverseKii.Dispose();
+            return Sb;
+        }
+
         public void ExtractBoundaryInternalSubmatricesAndInvertKii(bool diagonalKii)
         {
             int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);

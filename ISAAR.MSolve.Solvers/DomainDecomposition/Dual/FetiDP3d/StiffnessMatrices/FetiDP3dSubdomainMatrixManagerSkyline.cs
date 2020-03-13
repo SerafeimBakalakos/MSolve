@@ -98,28 +98,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
                 linearSystem.Subdomain.EnumerateElements(), matrixProvider);
         }
 
-        public void CalcInverseKii(bool diagonalOnly)
-        {
-            int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
-            if (diagonalOnly)
-            {
-                var diagonal = new double[internalDofs.Length];
-                for (int i = 0; i < diagonal.Length; ++i)
-                {
-                    int idx = internalDofs[i];
-                    diagonal[i] = 1.0 / Krr[idx, idx];
-                    //diagonal[i] = Krr[idx, idx];
-                }
-                inverseKiiDiagonal = DiagonalMatrix.CreateFromArray(diagonal, false);
-                //inverseKiiDiagonal.Invert();
-            }
-            else
-            {
-                SkylineMatrix Kii = Krr.GetSubmatrixSymmetricSkyline(internalDofs);
-                inverseKii = Kii.FactorLdl(true);
-            }
-        }
-
         public void ClearMatrices()
         {
             inverseKii = null;
@@ -178,6 +156,23 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             Vector temp = MultiplyInverseKrrTimes(Fr);
             temp = MultiplyKcrTimes(temp);
             fcStar = Fbc - temp;
+        }
+
+        public IMatrixView CalcMatrixSb(ISubdomain subdomain)
+        {
+            int[] remainderDofs = dofSeparator.GetRemainderDofIndices(subdomain);
+            int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);
+            int[] internalDofs = dofSeparator.GetInternalDofIndices(subdomain);
+
+            SkylineMatrix Krr = linearSystem.Matrix.GetSubmatrixSymmetricSkyline(remainderDofs);
+            Matrix Kbb = Krr.GetSubmatrixSymmetricFull(boundaryDofs);
+            CscMatrix Kib = Krr.GetSubmatrixCsc(internalDofs, boundaryDofs);
+            SkylineMatrix Kii = Krr.GetSubmatrixSymmetricSkyline(internalDofs);
+
+            inverseKii = Kii.FactorLdl(true);
+            var invKii_Kib = Matrix.CreateZero(Kib.NumRows, Kib.NumColumns);
+            inverseKii.SolveLinearSystems(Kib, invKii_Kib);
+            return Kbb - Kib.MultiplyRight(invKii_Kib, true);
         }
 
         public void ExtractBoundaryInternalSubmatricesAndInvertKii(bool diagonalKii)
