@@ -9,7 +9,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
     {
         public static int exampleNo { get; set; }
 
-        bool runCluster = false;
+        bool runCluster = true;
 
         public static bool runOnlyHexaModel { get; set; } = false;
         //public string exampleOutputPathGen = @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\examples\example1\input_matlab";
