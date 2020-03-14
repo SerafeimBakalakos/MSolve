@@ -22,11 +22,7 @@ using Xunit;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.IntegrationTests
 {
-    /// <summary>
-    /// Tests from Papagiannakis bachelor thesis (NTUA 2011), p. 134 - 147
-    /// Authors: Serafeim Bakalakos
-    /// </summary>
-    public static class PapagiannakisFetiDPTests2DSerial
+    public static class HeterogeneousCantileverTests
     {
         public enum Precond { Dirichlet, DirichletDiagonal, Lumped }
         public enum Residual { Approximate, Exact }
@@ -38,44 +34,65 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
         //      accurately using the approximate residual yet.
         [Theory]
         // Homogeneous problem
-        [InlineData(1.0, Precond.Dirichlet, Residual.Approximate, 11, MatrixFormat.Skyline)]
-        [InlineData(1.0, Precond.Dirichlet, Residual.Approximate, 11, MatrixFormat.SuiteSparse)]
-        [InlineData(1.0, Precond.DirichletDiagonal, Residual.Approximate, 14, MatrixFormat.Skyline)]
-        [InlineData(1.0, Precond.DirichletDiagonal, Residual.Approximate, 14, MatrixFormat.SuiteSparse)]
-        [InlineData(1.0, Precond.Lumped, Residual.Approximate, 18, MatrixFormat.Skyline)]
-        [InlineData(1.0, Precond.Lumped, Residual.Approximate, 18, MatrixFormat.SuiteSparse)]
+        [InlineData(StiffnessDistributionType.Homogeneous, 1.0, Precond.Dirichlet, Residual.Approximate, 11, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.Homogeneous, 1.0, Precond.Dirichlet, Residual.Approximate, 11, MatrixFormat.SuiteSparse)]
+        [InlineData(StiffnessDistributionType.Homogeneous, 1.0, Precond.DirichletDiagonal, Residual.Approximate, 14, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.Homogeneous, 1.0, Precond.DirichletDiagonal, Residual.Approximate, 14, MatrixFormat.SuiteSparse)]
+        [InlineData(StiffnessDistributionType.Homogeneous, 1.0, Precond.Lumped, Residual.Approximate, 18, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.Homogeneous, 1.0, Precond.Lumped, Residual.Approximate, 18, MatrixFormat.SuiteSparse)]
 
+        // Heterogeneous Lumped
         // Stiffness ratio = 1E-2
-        [InlineData(1E-2, Precond.Dirichlet, Residual.Approximate, 12, MatrixFormat.Skyline)]
-        [InlineData(1E-2, Precond.DirichletDiagonal, Residual.Approximate, 16, MatrixFormat.Skyline)]
-        [InlineData(1E-2, Precond.Lumped, Residual.Approximate, 21, MatrixFormat.Skyline)]
-
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-2, Precond.Dirichlet, Residual.Approximate, 12, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-2, Precond.DirichletDiagonal, Residual.Approximate, 16, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-2, Precond.Lumped, Residual.Approximate, 21, MatrixFormat.Skyline)]
         // Stiffness ratio = 1E-3
-        [InlineData(1E-3, Precond.Dirichlet, Residual.Approximate, 13, MatrixFormat.Skyline)]
-        [InlineData(1E-3, Precond.DirichletDiagonal, Residual.Approximate, 20, MatrixFormat.Skyline)]
-        [InlineData(1E-3, Precond.Lumped, Residual.Approximate, 22, MatrixFormat.Skyline)]
-
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-3, Precond.Dirichlet, Residual.Approximate, 13, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-3, Precond.DirichletDiagonal, Residual.Approximate, 20, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-3, Precond.Lumped, Residual.Approximate, 22, MatrixFormat.Skyline)]
         // Stiffness ratio = 1E-4
-        [InlineData(1E-4, Precond.Dirichlet, Residual.Approximate, 14, MatrixFormat.Skyline)]
-        [InlineData(1E-4, Precond.DirichletDiagonal, Residual.Approximate, 22, MatrixFormat.Skyline)]
-        [InlineData(1E-4, Precond.Lumped, Residual.Approximate, 26, MatrixFormat.Skyline)]
-
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-4, Precond.Dirichlet, Residual.Approximate, 14, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-4, Precond.DirichletDiagonal, Residual.Approximate, 22, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-4, Precond.Lumped, Residual.Approximate, 26, MatrixFormat.Skyline)]
         // Stiffness ratio = 1E-5
-        [InlineData(1E-5, Precond.Dirichlet, Residual.Approximate, 14, MatrixFormat.Skyline)]
-        [InlineData(1E-5, Precond.DirichletDiagonal, Residual.Approximate, 23, MatrixFormat.Skyline)]
-        [InlineData(1E-5, Precond.Lumped, Residual.Approximate, 30, MatrixFormat.Skyline)]
-
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-5, Precond.Dirichlet, Residual.Approximate, 14, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-5, Precond.DirichletDiagonal, Residual.Approximate, 23, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-5, Precond.Lumped, Residual.Approximate, 30, MatrixFormat.Skyline)]
         // Stiffness ratio = 1E-6
-        [InlineData(1E-6, Precond.Dirichlet, Residual.Approximate, 15, MatrixFormat.Skyline)]
-        [InlineData(1E-6, Precond.DirichletDiagonal, Residual.Approximate, 27, MatrixFormat.Skyline)]
-        [InlineData(1E-6, Precond.Lumped, Residual.Approximate, 33, MatrixFormat.Skyline)]
-        public static void Run(double stiffnessRatio, Precond precond, Residual convergence, int iterExpected, 
-            MatrixFormat format)
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-6, Precond.Dirichlet, Residual.Approximate, 15, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-6, Precond.DirichletDiagonal, Residual.Approximate, 27, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousLumped, 1E-6, Precond.Lumped, Residual.Approximate, 33, MatrixFormat.Skyline)]
+
+        // Heterogeneous Condensed
+        // Stiffness ratio = 1E-2
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-2, Precond.Dirichlet, Residual.Approximate, 12, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-2, Precond.DirichletDiagonal, Residual.Approximate, 16, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-2, Precond.Lumped, Residual.Approximate, 21, MatrixFormat.Skyline)]
+        // Stiffness ratio = 1E-3
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-3, Precond.Dirichlet, Residual.Approximate, 13, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-3, Precond.DirichletDiagonal, Residual.Approximate, 20, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-3, Precond.Lumped, Residual.Approximate, 22, MatrixFormat.Skyline)]
+        // Stiffness ratio = 1E-4
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-4, Precond.Dirichlet, Residual.Approximate, 14, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-4, Precond.DirichletDiagonal, Residual.Approximate, 22, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-4, Precond.Lumped, Residual.Approximate, 26, MatrixFormat.Skyline)]
+        // Stiffness ratio = 1E-5
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-5, Precond.Dirichlet, Residual.Approximate, 14, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-5, Precond.DirichletDiagonal, Residual.Approximate, 23, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-5, Precond.Lumped, Residual.Approximate, 30, MatrixFormat.Skyline)]
+        // Stiffness ratio = 1E-6
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-6, Precond.Dirichlet, Residual.Approximate, 15, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-6, Precond.DirichletDiagonal, Residual.Approximate, 27, MatrixFormat.Skyline)]
+        [InlineData(StiffnessDistributionType.HeterogeneousCondensed, 1E-6, Precond.Lumped, Residual.Approximate, 33, MatrixFormat.Skyline)]
+
+
+        public static void Run(StiffnessDistributionType stiffnessDistributionType, double stiffnessRatio, Precond precond, 
+            Residual convergence, int iterExpected, MatrixFormat format)
         {
             double pcgConvergenceTol = 1E-5;
             IVectorView directDisplacements = SolveModelWithoutSubdomains(stiffnessRatio);
-            (IVectorView ddDisplacements, ISolverLogger logger) =
-                SolveModelWithSubdomains(stiffnessRatio, precond, convergence, pcgConvergenceTol, format);
+            (IVectorView ddDisplacements, ISolverLogger logger) = SolveModelWithSubdomains(
+                stiffnessDistributionType, stiffnessRatio, precond, convergence, pcgConvergenceTol, format);
             double normalizedError = directDisplacements.Subtract(ddDisplacements).Norm2() / directDisplacements.Norm2();
 
             int analysisStep = 0;
@@ -155,7 +172,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             return model;
         }
 
-        private static (IVectorView globalDisplacements, ISolverLogger logger) SolveModelWithSubdomains(double stiffnessRatio,
+        private static (IVectorView globalDisplacements, ISolverLogger logger) SolveModelWithSubdomains(
+            StiffnessDistributionType stiffnessDistributionType, double stiffnessRatio,
             Precond precond, Residual residualConvergence, double pcgConvergenceTolerance, MatrixFormat format)
         {
             // Model
@@ -185,8 +203,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             // Solver
             IFetiDPMatrixManagerFactory fetiMatrices = MatrixFormatSelection.DefineMatrixManagerFactory(format);
             var solverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);
-            if (stiffnessRatio == 1.0) solverBuilder.StiffnessDistribution = StiffnessDistributionType.Homogeneous;
-            else solverBuilder.StiffnessDistribution = StiffnessDistributionType.HeterogeneousLumped;
+            solverBuilder.StiffnessDistribution = stiffnessDistributionType;
 
 
             // Preconditioner

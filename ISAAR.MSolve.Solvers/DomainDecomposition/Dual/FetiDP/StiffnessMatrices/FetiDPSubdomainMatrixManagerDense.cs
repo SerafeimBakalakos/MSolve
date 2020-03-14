@@ -44,7 +44,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
 
         public override ISingleSubdomainLinearSystemMpi LinearSystem => linearSystem;
 
-        public override IMatrixView CalcMatrixSb(ISubdomain subdomain)
+        public override IMatrixView CalcMatrixSb()
         {
             Matrix Krr = linearSystem.Matrix.GetSubmatrixFull(DofsRemainder, DofsRemainder);
             Matrix Kbb = Krr.GetSubmatrix(DofsBoundary, DofsBoundary);

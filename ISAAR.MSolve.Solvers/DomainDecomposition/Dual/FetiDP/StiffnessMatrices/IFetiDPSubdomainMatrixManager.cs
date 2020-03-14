@@ -49,7 +49,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         //TODO: The matrix is computed every time this method is called. Only compute it once and then reuse it.
         //TODO: This has a lot in common with the matrices used for (Dirichlet) preconditioning. Integrate this method with the 
         //      corresponding ones for preconditioning.
-        IMatrixView CalcMatrixSb(ISubdomain subdomain);
+        IMatrixView CalcMatrixSb();
 
         void ClearRhsVectors();
 

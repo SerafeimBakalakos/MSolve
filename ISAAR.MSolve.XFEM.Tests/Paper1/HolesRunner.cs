@@ -392,7 +392,6 @@ namespace ISAAR.MSolve.XFEM.Tests.Paper1
             //builder.Preconditioning = new LumpedPreconditioning();
             //builder.Preconditioning = new DiagonalDirichletPreconditioning();
             builder.Preconditioning = new DirichletPreconditioning();
-            builder.ProblemIsHomogeneous = true;
             builder.PcgSettings = new PcgSettings() { ConvergenceTolerance = 1E-7 };
             return builder.Build(benchmark.Model, cornerNodeSelection);
         }

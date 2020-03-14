@@ -147,7 +147,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             fcStar = Fbc - temp;
         }
 
-        public abstract IMatrixView CalcMatrixSb(ISubdomain subdomain);
+        public abstract IMatrixView CalcMatrixSb();
 
         public void ExtractBoundaryInternalSubmatricesAndInvertKii(bool diagonalKii)
         {

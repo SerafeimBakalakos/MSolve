@@ -56,7 +56,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
                 linearSystem.Subdomain.EnumerateElements(), matrixProvider);
         }
 
-        public override IMatrixView CalcMatrixSb(ISubdomain subdomain)
+        public override IMatrixView CalcMatrixSb()
         {
             // Extract submatrices
             DokSymmetric Krr = linearSystem.Matrix.GetSubmatrixSymmetricDok(DofsRemainder);

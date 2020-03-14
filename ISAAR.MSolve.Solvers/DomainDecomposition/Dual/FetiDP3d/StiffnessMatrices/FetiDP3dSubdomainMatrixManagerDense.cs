@@ -89,7 +89,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
                 linearSystem.Subdomain.EnumerateElements(), matrixProvider);
         }
 
-        public IMatrixView CalcMatrixSb(ISubdomain subdomain)
+        public IMatrixView CalcMatrixSb()
         {
             int[] remainderDofs = dofSeparator.GetRemainderDofIndices(subdomain);
             int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);

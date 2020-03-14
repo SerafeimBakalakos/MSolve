@@ -12,7 +12,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
-    public class HeterogeneousStiffnessDistributionSerial : IStiffnessDistribution
+    public class HeterogeneouspCondensedStiffnessDistributionSerial : IStiffnessDistribution
     {
         private readonly IFetiDPDofSeparator dofSeparator;
         private readonly ILagrangeMultipliersEnumerator lagrangesEnumerator;
@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         private Dictionary<ISubdomain, double[]> boundaryRelativeStiffnesses;
         private DiagonalMatrix Dlambda;
 
-        public HeterogeneousStiffnessDistributionSerial(IModel model, IFetiDPDofSeparator dofSeparator, 
+        public HeterogeneouspCondensedStiffnessDistributionSerial(IModel model, IFetiDPDofSeparator dofSeparator, 
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPMatrixManager matrixManager,
             IHeterogeneousDistributionLoadScaling loadScaling)
         {
@@ -54,14 +54,15 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             //if (subdomain.ConnectivityModified) //TODO: Is this what I should check?
             //{ }
 
-            var matricesKff = new Dictionary<ISubdomain, IIndexable2D>();
+            var matricesSb = new Dictionary<ISubdomain, IMatrixView>();
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                matricesKff[subdomain] = matrixManager.GetSubdomainMatrixManager(subdomain).LinearSystem.Matrix;
+                matricesSb[subdomain] = 
+                    ((IFetiDPSubdomainMatrixManager)matrixManager.GetSubdomainMatrixManager(subdomain)).CalcMatrixSb();
             }
 
             this.boundaryDofStiffnesses =
-                HeterogeneousStiffnessDistributionUtilities.CalcBoundaryDofStiffnesses(dofSeparator, matricesKff);
+                HeterogeneousStiffnessDistributionUtilities.CalcBoundaryDofStiffnesses(dofSeparator, matricesSb);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 boundaryRelativeStiffnesses[subdomain] = HeterogeneousStiffnessDistributionUtilities.CalcBoundaryDofCoefficients(
