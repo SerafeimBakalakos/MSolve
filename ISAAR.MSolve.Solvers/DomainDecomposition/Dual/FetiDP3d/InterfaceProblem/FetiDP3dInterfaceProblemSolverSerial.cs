@@ -196,12 +196,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             if (CnstValues.printInterfaceSolutionStats&&(!CnstValues.printPcgMatRhsEtc_AndInterfaceProblemStats))
             {
                 PrintInterfaceSolverStats(nC, nL, stats.NumIterationsRequired, 0.00001,
-isFIrrInvertible, isFIrrPosDef, isPcgMatrixInvertible, isPcgMatrixPosDef);
+                    isFIrrInvertible, isFIrrPosDef, isPcgMatrixInvertible, isPcgMatrixPosDef);
             }
             if (CnstValues.runOnlyHexaModel && (!CnstValues.printPcgMatRhsEtc_AndInterfaceProblemStats))
             {
                 PrintInterfaceSolverStats(nC, nL, stats.NumIterationsRequired, 0.00001,
-isFIrrInvertible, isFIrrPosDef, isPcgMatrixInvertible, isPcgMatrixPosDef);
+                    isFIrrInvertible, isFIrrPosDef, isPcgMatrixInvertible, isPcgMatrixPosDef);
             }
 
 

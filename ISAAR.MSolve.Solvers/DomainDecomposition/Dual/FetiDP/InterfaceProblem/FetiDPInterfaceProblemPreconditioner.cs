@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Preconditioning;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Output;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 
@@ -24,6 +26,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             var lhs = (Vector)lhsVector;//bookmark1
             var rhs = (Vector)rhsVector;
             fetiPreconditioner.SolveLinearSystem(rhs, lhs);
+            if (CnstValues.printPreconditoner)
+            {
+                var prec =Matrix.CreateZero(lhs.Length, rhs.Length);
+                fetiPreconditioner.SolveLinearSystems(Matrix.CreateIdentity(rhs.Length),prec);
+                string pathprec = (new CnstValues()).solverPath + @"\preconditioner.txt";
+                (new FullMatrixWriter()).WriteToFile(prec, pathprec);
+                CnstValues.printPreconditoner = false;
+            }
         }
     }
 }
