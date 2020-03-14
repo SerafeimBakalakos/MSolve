@@ -22,6 +22,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 
 //TODO: Perhaps I should also check intermediate steps by pulling the solver's compenent using reflection and check their state
 //      and operations.
@@ -127,7 +128,7 @@ namespace ISAAR.MSolve.SamplesConsole
             var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();
             var solverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);
             solverBuilder.PcgSettings = pcgSettings;
-            solverBuilder.ProblemIsHomogeneous = false; //TODO
+            solverBuilder.StiffnessDistribution = StiffnessDistributionType.HeterogeneousCondensed;
             solverBuilder.Preconditioning = new DirichletPreconditioning();
             solverBuilder.CrosspointStrategy = new FullyRedundantConstraints();
 

@@ -45,6 +45,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 
 namespace ISAAR.MSolve.SamplesConsole
 {
@@ -82,7 +83,7 @@ namespace ISAAR.MSolve.SamplesConsole
             //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGit(1, true, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-            rveBuilder.useInput = false;
+            rveBuilder.useInput = true;
             // EPILOGH RVE
             //var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicateDevelop(1, true); //edw ginetai develop h feti dp gia provlhmata 3d
             //var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicateLARGE(1, true);
@@ -156,7 +157,7 @@ namespace ISAAR.MSolve.SamplesConsole
             var fetiSolverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);  //A.3
 
             //fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
-            fetiSolverBuilder.ProblemIsHomogeneous = false; //TODO
+            fetiSolverBuilder.StiffnessDistribution = StiffnessDistributionType.HeterogeneousCondensed;
             fetiSolverBuilder.Preconditioning = new DirichletPreconditioning();
             fetiSolverBuilder.PcgSettings = pcgSettings;
 

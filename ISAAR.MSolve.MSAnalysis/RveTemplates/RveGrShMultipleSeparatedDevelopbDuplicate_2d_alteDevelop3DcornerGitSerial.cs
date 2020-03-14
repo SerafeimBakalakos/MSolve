@@ -32,6 +32,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 
 namespace ISAAR.MSolve.MultiscaleAnalysis
 {
@@ -85,7 +86,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 var fetiSolverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);  //A.3
 
                 //fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
-                fetiSolverBuilder.ProblemIsHomogeneous = true; //TODO
+                fetiSolverBuilder.StiffnessDistribution =  StiffnessDistributionType.HeterogeneousCondensed; //TODO
                 fetiSolverBuilder.Preconditioning = new DirichletPreconditioning();
                 fetiSolverBuilder.PcgSettings = pcgSettings;
 

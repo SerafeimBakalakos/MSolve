@@ -136,6 +136,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
 
             public DofPermutation ReorderInternalDofs() => DofPermutation.CreateNoPermutation();
             public DofPermutation ReorderRemainderDofs() => DofPermutation.CreateNoPermutation();
+
+            public IMatrixView CalcMatrixSb()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

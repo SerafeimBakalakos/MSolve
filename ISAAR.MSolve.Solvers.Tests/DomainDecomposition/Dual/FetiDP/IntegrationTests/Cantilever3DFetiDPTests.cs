@@ -177,7 +177,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             {
                 var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(new OrderingAmdSuiteSparse());
                 var solverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);
-                solverBuilder.ProblemIsHomogeneous = true;
                 solverBuilder.Preconditioning = new DirichletPreconditioning();
                 solverBuilder.CrosspointStrategy = crosspointStrategy;
                 solverBuilder.PcgSettings = pcgSettings;
@@ -195,7 +194,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
 
                 var fetiMatrices = new FetiDP3dMatrixManagerFactoryDense();
                 var solverBuilder = new FetiDP3dSolverSerial.Builder(fetiMatrices);
-                solverBuilder.ProblemIsHomogeneous = true;
                 solverBuilder.Preconditioning = new DirichletPreconditioning();
                 solverBuilder.CrosspointStrategy = crosspointStrategy;
                 solverBuilder.PcgSettings = pcgSettings;

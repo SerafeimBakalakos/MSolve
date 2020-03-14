@@ -15,6 +15,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
     internal static class HeterogeneousStiffnessDistributionUtilities
     {
+        private const int invalidDof = -1; 
+
         internal static double[] CalcBoundaryDofCoefficients(IFetiDPDofSeparator dofSeparator, ISubdomain subdomain, 
             Table<INode, IDofType, BoundaryDofLumpedStiffness> boundaryDofStiffnesses)
         {
@@ -50,10 +52,39 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
                     double totalStiffness = 0.0;
                     foreach (ISubdomain subdomain in node.SubdomainsDictionary.Values)
                     {
-                        double stiffness;
                         int dofIdx = subdomain.FreeDofOrdering.FreeDofs[node, dofType];
                         IIndexable2D Kff = stiffnessesFreeFree[subdomain];
-                        stiffness = Kff[dofIdx, dofIdx]; //TODO: optimized GetDiagonal(i) or GetDiagonal(subset) method for matrices. 
+                        double stiffness = Kff[dofIdx, dofIdx]; //TODO: optimized GetDiagonal(i) or GetDiagonal(subset) method for matrices. 
+                        subdomainStiffnesses[subdomain] = stiffness;
+                        totalStiffness += stiffness;
+                    }
+                    boundaryDofStiffnesses[node, dofType] = new BoundaryDofLumpedStiffness(subdomainStiffnesses, totalStiffness);
+                }
+            }
+            return boundaryDofStiffnesses;
+        }
+
+        internal static Table<INode, IDofType, BoundaryDofLumpedStiffness> CalcBoundaryDofStiffnesses(
+            IFetiDPDofSeparator dofSeparator, Dictionary<ISubdomain, IMatrixView> stiffnessesSb)
+        {
+            Dictionary<ISubdomain, int[]> freeToBoundaryDofmaps = MapFreeToBoundaryDofs(dofSeparator, stiffnessesSb.Keys);
+
+            var boundaryDofStiffnesses = new Table<INode, IDofType, BoundaryDofLumpedStiffness>();
+            foreach (var nodeDofsPair in dofSeparator.GlobalBoundaryDofs)
+            {
+                INode node = nodeDofsPair.Key;
+                foreach (IDofType dofType in nodeDofsPair.Value)
+                {
+                    var subdomainStiffnesses = new Dictionary<ISubdomain, double>();
+                    double totalStiffness = 0.0;
+                    foreach (ISubdomain subdomain in node.SubdomainsDictionary.Values)
+                    {
+                        int freeDofIdx = subdomain.FreeDofOrdering.FreeDofs[node, dofType];
+                        int boundaryDofIdx = freeToBoundaryDofmaps[subdomain][freeDofIdx];
+                        Debug.Assert(boundaryDofIdx != invalidDof);
+
+                        IIndexable2D Sb = stiffnessesSb[subdomain];
+                        double stiffness = Sb[boundaryDofIdx, boundaryDofIdx]; //TODO: optimized GetDiagonal(i) or GetDiagonal(subset) method for matrices. 
                         subdomainStiffnesses[subdomain] = stiffness;
                         totalStiffness += stiffness;
                     }
@@ -97,6 +128,32 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             }
             var result = DiagonalMatrix.CreateFromArray(invDb, false);
             return result;
+        }
+
+        //TODO: These should be cached somehow. Better do the whole process in dofSeparator
+        private static Dictionary<ISubdomain, int[]> MapFreeToBoundaryDofs(IFetiDPDofSeparator dofSeparator, 
+            IEnumerable<ISubdomain> subdomains)
+        {
+            var freeToBoundaryDofmaps = new Dictionary<ISubdomain, int[]>();
+            {
+                foreach (ISubdomain subdomain in subdomains)
+                {
+                    int numFreeDofs = subdomain.FreeDofOrdering.NumFreeDofs;
+                    var mapFreeToBoundary = new int[numFreeDofs];
+                    for (int i = 0; i < numFreeDofs; ++i) mapFreeToBoundary[i] = invalidDof;
+
+                    int[] remainderDofs = dofSeparator.GetRemainderDofIndices(subdomain);
+                    int[] boundaryDofs = dofSeparator.GetBoundaryDofIndices(subdomain);
+                    for (int i = 0; i < boundaryDofs.Length; ++i)
+                    {
+                        int remainderIdx = boundaryDofs[i];
+                        int freeIdx = remainderDofs[remainderIdx];
+                        mapFreeToBoundary[freeIdx] = i;
+                    }
+                    freeToBoundaryDofmaps[subdomain] = mapFreeToBoundary;
+                }
+            }
+            return freeToBoundaryDofmaps;
         }
 
         //TODO: This should be modified to CSR or CSC format and then benchmarked against the implicit alternative.

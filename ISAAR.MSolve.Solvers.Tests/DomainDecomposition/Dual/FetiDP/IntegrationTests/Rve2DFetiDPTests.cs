@@ -20,6 +20,7 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Solvers.Logging;
 using Xunit;
@@ -160,7 +161,8 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Integration
             // Solver
             var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(new OrderingAmdSuiteSparse());
             var solverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);
-            solverBuilder.ProblemIsHomogeneous = stiffnessRatio == 1.0;
+            if (stiffnessRatio == 1.0) solverBuilder.StiffnessDistribution = StiffnessDistributionType.Homogeneous;
+            else solverBuilder.StiffnessDistribution = StiffnessDistributionType.HeterogeneousLumped;
 
             // Preconditioner
             if (precond == Precond.Lumped) solverBuilder.Preconditioning = new LumpedPreconditioning();
