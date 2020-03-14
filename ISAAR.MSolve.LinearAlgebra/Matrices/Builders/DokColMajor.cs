@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ISAAR.MSolve.LinearAlgebra.Commons;
@@ -83,6 +84,30 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
                 columns[j] = idenityCol;
             }
             return new DokColMajor(order, order, columns);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="DokColMajor"/> which contains the non-zero entries of 
+        /// <paramref name="matrix"/>.
+        /// </summary>
+        /// <param name="matrix">The original matrix that will be copied.</param>
+        /// <param name="zeroTolerance">
+        /// If the absolute value of <paramref name="matrix"/>[i,j] is less than or equal to <paramref name="zeroTolerance"/>, 
+        /// then ij will be considered a zero entry and will not be explicitly stored.
+        /// </param>
+        public static DokColMajor CreateFromDense(IMatrixView matrix, double zeroTolerance)
+        {
+            //TODO: Opptimize the accesses of this method and simplify the check if tolerance = 0.
+            var dok = DokColMajor.CreateEmpty(matrix.NumRows, matrix.NumColumns);
+            for (int j = 0; j < matrix.NumColumns; ++j)
+            {
+                for (int i = 0; i < matrix.NumRows; ++i)
+                {
+                    double val = matrix[i, j];
+                    if (Math.Abs(val) > zeroTolerance) dok[i, j] = val;
+                }
+            }
+            return dok;
         }
 
         /// <summary>
