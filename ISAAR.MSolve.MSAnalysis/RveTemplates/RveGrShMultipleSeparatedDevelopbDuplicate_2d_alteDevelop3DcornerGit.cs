@@ -26,6 +26,7 @@ using ISAAR.MSolve.MSAnalysis.SupportiveClasses;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Pcg;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 
 namespace ISAAR.MSolve.MultiscaleAnalysis
 {
@@ -78,7 +79,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes_);
                 var fetiSolverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);
                 //fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
-                fetiSolverBuilder.ProblemIsHomogeneous = false;
+                fetiSolverBuilder.StiffnessDistribution = StiffnessDistributionType.HeterogeneousCondensed;
                 fetiSolverBuilder.Preconditioning = new DirichletPreconditioning();
                 FetiDPSolverSerial fetiSolver = fetiSolverBuilder.Build(model,cornerNodeSelection);
                 return (ISolver)fetiSolver;

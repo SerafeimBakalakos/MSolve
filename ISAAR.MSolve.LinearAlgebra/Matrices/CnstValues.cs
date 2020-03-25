@@ -53,6 +53,8 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
 
         public static bool printPcgMatRhsEtc_AndInterfaceProblemStats { get; set; } = false; // 
 
+        public static bool printPreconditoner { get; set; } = true; // 
+
         public void WriteToFileStringArray(string[] array, string path)
         {
             var writer = new StreamWriter(path);
@@ -76,6 +78,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
             printSolver_run_overwrite_data_region = false;
             printGlobalSolutionStats = false;
             printPcgMatRhsEtc_AndInterfaceProblemStats = false;
+            printPreconditoner = false;
         }
 
         private static bool[] defaultBooleanValues;
@@ -85,7 +88,8 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
                 printInterfaceSolutionStats ,
                 printSolver_run_overwrite_data_region,
                 printGlobalSolutionStats,
-            printPcgMatRhsEtc_AndInterfaceProblemStats};
+                printPcgMatRhsEtc_AndInterfaceProblemStats,
+                printPreconditoner};
         }
 
         public static void RestoreDefaultBoolValues()
@@ -94,6 +98,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
             printSolver_run_overwrite_data_region = defaultBooleanValues[1];
             printGlobalSolutionStats = defaultBooleanValues[2];
             printPcgMatRhsEtc_AndInterfaceProblemStats = defaultBooleanValues[3];
+            printPreconditoner = defaultBooleanValues[4];
         }
     }
 }

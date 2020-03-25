@@ -43,7 +43,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         private readonly FetiDPMatrixManagerSerial matrixManager;
         private readonly IModel model;
         private readonly string msgHeader;
-        private readonly bool problemIsHomogeneous;
         private readonly IFetiPreconditionerFactory precondFactory;
         private readonly IFetiPreconditioningOperations preconditioning; //TODO: perhaps this should be hidden inside IFetiPreconditionerFactory
         private readonly IStiffnessDistribution stiffnessDistribution;
@@ -58,7 +57,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         public bool usePreviousLambda { get; set; }
         public FetiDPSolverSerial(IModel model, ICornerNodeSelection cornerNodeSelection,
             IFetiDPMatrixManagerFactory matrixManagerFactory, IFetiPreconditioningOperations preconditioning,
-            ICrosspointStrategy crosspointStrategy, PcgSettings pcgSettings, bool problemIsHomogeneous)
+            ICrosspointStrategy crosspointStrategy, PcgSettings pcgSettings, StiffnessDistributionType stiffnessDistributionType)
         {
             this.msgHeader = $"{this.GetType().Name}: ";
 
@@ -90,15 +89,19 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
                 lagrangesEnumerator);
 
             // Homogeneous/heterogeneous problems
-            this.problemIsHomogeneous = problemIsHomogeneous;
-            if (problemIsHomogeneous)
+            if (stiffnessDistributionType == StiffnessDistributionType.Homogeneous)
             {
                 this.stiffnessDistribution = new HomogeneousStiffnessDistributionSerial(model, dofSeparator,
                     new FetiDPHomogeneousDistributionLoadScaling(dofSeparator));
             }
-            else
+            else if (stiffnessDistributionType == StiffnessDistributionType.HeterogeneousLumped)
             {
-                this.stiffnessDistribution = new HeterogeneousStiffnessDistributionSerial(model, dofSeparator,
+                this.stiffnessDistribution = new HeterogeneousLumpedStiffnessDistributionSerial(model, dofSeparator,
+                    lagrangesEnumerator, matrixManager, new FetiDPHeterogeneousDistributionLoadScaling(dofSeparator));
+            }
+            else if (stiffnessDistributionType == StiffnessDistributionType.HeterogeneousCondensed)
+            {
+                this.stiffnessDistribution = new HeterogeneouspCondensedStiffnessDistributionSerial(model, dofSeparator,
                     lagrangesEnumerator, matrixManager, new FetiDPHeterogeneousDistributionLoadScaling(dofSeparator));
             }
 
@@ -358,12 +361,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
 
             public IFetiPreconditioningOperations Preconditioning { get; set; } = new DirichletPreconditioning();
 
-            public bool ProblemIsHomogeneous { get; set; } = true;
+            public StiffnessDistributionType StiffnessDistribution { get; set; } = StiffnessDistributionType.Homogeneous;
 
             public FetiDPSolverSerial Build(IModel model, ICornerNodeSelection cornerNodeSelection)
             {
                 return new FetiDPSolverSerial(model, cornerNodeSelection, matrixManagerFactory, Preconditioning,
-                    CrosspointStrategy, PcgSettings, ProblemIsHomogeneous);
+                    CrosspointStrategy, PcgSettings, StiffnessDistribution);
             }
         }
     }

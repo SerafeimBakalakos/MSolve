@@ -147,6 +147,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
             fcStar = Fbc - temp;
         }
 
+        public abstract IMatrixView CalcMatrixSb();
+
         public void ExtractBoundaryInternalSubmatricesAndInvertKii(bool diagonalKii)
         {
             CheckKrrAvailability();
@@ -345,5 +347,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         {
             if (!isKrrInverted) throw new InvalidOperationException("The remainder submatrix (Krr) must be inverted first");
         }
+
     }
 }

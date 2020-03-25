@@ -46,6 +46,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices
         void CalcCoarseProblemSubmatrices();
         void CalcCoarseProblemRhsSubvectors();
 
+        //TODO: The matrix is computed every time this method is called. Only compute it once and then reuse it.
+        //TODO: This has a lot in common with the matrices used for (Dirichlet) preconditioning. Integrate this method with the 
+        //      corresponding ones for preconditioning.
+        IMatrixView CalcMatrixSb();
+
         void ClearRhsVectors();
 
         //TODO: E.g. Once Kcc* is calculated Kcc and Krc can be cleared. There are 2 options:

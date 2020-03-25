@@ -121,7 +121,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.Performance
 
             // Solver
             var solverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);
-            solverBuilder.ProblemIsHomogeneous = homogeneous;
             //solverBuilder.ProblemIsHomogeneous = false;
 
             // Preconditioner

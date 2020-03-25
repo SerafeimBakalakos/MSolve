@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.SamplesConsole
 
         static void Main(string[] args)
         {
-            for (int example = 29; example < 31; example++)
+            for (int example = 21; example < 31; example++)
             {
                 CnstValues.exampleNo = example;
                 CnstValues.runOnlyHexaModel = false;

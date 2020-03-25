@@ -48,7 +48,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.Preconditioning
             }
         }
 
-        public void SolveLinearSystems(Matrix rhs, Matrix lhs)
+        public void SolveLinearSystems(Matrix rhs, Matrix lhs) // bookmark1
         {
             foreach (ISubdomain sub in matricesBpb.Keys)
             {

@@ -263,7 +263,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
             {
                 var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(new OrderingAmdSuiteSparse());
                 var solverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);
-                solverBuilder.ProblemIsHomogeneous = true;
                 solverBuilder.Preconditioning = new DirichletPreconditioning();
                 solverBuilder.CrosspointStrategy = crosspointStrategy;
                 solverBuilder.PcgSettings = pcgSettings;
@@ -281,7 +280,6 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP3d.Integrati
                 //LinearAlgebra.LibrarySettings.LinearAlgebraProviders = LinearAlgebra.LinearAlgebraProviderChoice.MKL;
                 var fetiMatrices = new FetiDP3dMatrixManagerFactoryDense();
                 var solverBuilder = new FetiDP3dSolverSerial.Builder(fetiMatrices);
-                solverBuilder.ProblemIsHomogeneous = true;
                 solverBuilder.Preconditioning = new DirichletPreconditioning();
                 solverBuilder.CrosspointStrategy = crosspointStrategy;
                 solverBuilder.PcgSettings = pcgSettings;
