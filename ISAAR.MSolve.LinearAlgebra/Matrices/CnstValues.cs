@@ -53,7 +53,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
 
         public static bool printPcgMatRhsEtc_AndInterfaceProblemStats { get; set; } = false; // 
 
-        public static bool printPreconditoner { get; set; } = true; // 
+        public static bool printPreconditoner { get; set; } = false; // 
 
         public void WriteToFileStringArray(string[] array, string path)
         {

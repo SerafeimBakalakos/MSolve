@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.SamplesConsole
 
         static void Main(string[] args)
         {
-            for (int example = 21; example < 31; example++)
+            for (int example = 21; example < 31 ; example++)
             {
                 CnstValues.exampleNo = example;
                 CnstValues.runOnlyHexaModel = false;
@@ -39,12 +39,12 @@ namespace ISAAR.MSolve.SamplesConsole
 
 
 
-                CnstValues.runOnlyHexaModel = true;
-                CnstValues.preventOutputFileWrite(); 
+                //CnstValues.runOnlyHexaModel = true;
+                //CnstValues.preventOutputFileWrite(); 
 
-                FetiDP3dSolverSerialTestsInput.TestSolutionGlobalDisplacements();
+                //FetiDP3dSolverSerialTestsInput.TestSolutionGlobalDisplacements();
 
-                CnstValues.RestoreDefaultBoolValues();
+                //CnstValues.RestoreDefaultBoolValues();
             }
                                                                         
         }
