@@ -25,7 +25,7 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
         protected readonly INonLinearProvider provider;
         protected readonly double residualTolerance;
         protected readonly ISolver solver;
-        protected readonly IReadOnlyDictionary<int, INonLinearSubdomainUpdater> subdomainUpdaters;
+        protected readonly IReadOnlyDictionary<int, INonLinearSubdomainUpdaterDevelop> subdomainUpdaters;
         protected readonly Dictionary<int, IVector> rhs = new Dictionary<int, IVector>();
         protected readonly Dictionary<int, IVector> u = new Dictionary<int, IVector>();
         protected readonly Dictionary<int, IVector> du = new Dictionary<int, IVector>();
@@ -35,7 +35,7 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
         protected INonLinearParentAnalyzer parentAnalyzer = null;
 
         internal NonLinearAnalyzerBaseDevelop(IModel model, ISolver solver, INonLinearProvider provider,
-            IReadOnlyDictionary<int, INonLinearSubdomainUpdater> subdomainUpdaters,
+            IReadOnlyDictionary<int, INonLinearSubdomainUpdaterDevelop> subdomainUpdaters,
             int numIncrements, int maxIterationsPerIncrement, int numIterationsForMatrixRebuild, double residualTolerance)
         {
             this.model = model;
@@ -120,6 +120,63 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
             }
 
             return internalRhsVectors; 
+        }
+
+        protected void CalculateInternalRhsStressesOnly(int currentIncrement, int iteration)
+        {
+            var internalRhsVectors = new Dictionary<int, IVector>();
+            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            {
+                int id = linearSystem.Subdomain.ID;
+
+                if (currentIncrement == 0 && iteration == 0)
+                {
+                    //TODO: instead of Clear() and then AddIntoThis(), use only CopyFromVector()
+                    du[id].Clear();
+                    uPlusdu[id].Clear();
+                    du[id].AddIntoThis(linearSystem.Solution);
+                    uPlusdu[id].AddIntoThis(linearSystem.Solution);
+                    du[id].SubtractIntoThis(u[id]);
+                }
+                else
+                {
+
+                    du[id].AddIntoThis(linearSystem.Solution);
+                    //TODO: instead of Clear() and then AddIntoThis(), use only CopyFromVector()
+                    uPlusdu[id].Clear();
+                    uPlusdu[id].AddIntoThis(u[id]);
+                    uPlusdu[id].AddIntoThis(du[id]);
+                }
+                //Vector<double> internalRhs = (Vector<double>)subdomain.GetRhsFromSolution(u[subdomain.ID], du[subdomain.ID]);
+
+                subdomainUpdaters[id].CalculateStressesOnly(uPlusdu[id], du[id]);//TODOMaria this calculates the internal forces
+               
+            }
+
+        }
+
+        protected Dictionary<int, IVector> CalculateInternalRhsClaculateRhsOnly(int currentIncrement, int iteration)
+        {
+            var internalRhsVectors = new Dictionary<int, IVector>();
+            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            {
+                int id = linearSystem.Subdomain.ID;
+
+                //TODO: remove cast
+                IVector internalRhs = subdomainUpdaters[id].CalculateRHSonly(uPlusdu[id], du[id]);//TODOMaria this calculates the internal forces
+                provider.ProcessInternalRhs(linearSystem.Subdomain, uPlusdu[id], internalRhs);//TODOMaria this does nothing
+                //(new Vector<double>(u[subdomain.ID] + du[subdomain.ID])).Data);
+
+                if (parentAnalyzer != null)
+                {
+                    IVector otherRhsComponents = parentAnalyzer.GetOtherRhsComponents(linearSystem, uPlusdu[id]);
+                    internalRhs.AddIntoThis(otherRhsComponents);//TODOMaria this does nothing for the static problem
+                }
+
+                internalRhsVectors.Add(id, internalRhs);
+            }
+
+            return internalRhsVectors;
         }
 
         protected double UpdateResidualForcesAndNorm(int currentIncrement, Dictionary<int, IVector> internalRhs)
