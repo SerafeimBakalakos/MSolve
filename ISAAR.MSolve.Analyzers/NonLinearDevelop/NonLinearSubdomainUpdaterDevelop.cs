@@ -6,9 +6,9 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
 {
     public class NonLinearSubdomainUpdaterDevelop : INonLinearSubdomainUpdater
     {
-        private readonly ISubdomain subdomain;
+        private readonly ISubdomainDevelop subdomain;
 
-        public NonLinearSubdomainUpdaterDevelop(ISubdomain subdomain)
+        public NonLinearSubdomainUpdaterDevelop(ISubdomainDevelop subdomain)
         {
             this.subdomain = subdomain;
         }
@@ -21,6 +21,16 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
         public IVector GetRhsFromSolution(IVectorView solution, IVectorView dSolution)
         {
             return subdomain.GetRhsFromSolution(solution, dSolution);
+        }
+
+        public void CalculateStressesOnly(IVectorView solution, IVectorView dSolution)
+        {
+            subdomain.CalculateStressesOnly(solution, dSolution);
+        }
+
+        public IVector CalculateRHSonly(IVectorView solution, IVectorView dSolution)
+        {
+            return subdomain.CalculateRHSonly(solution, dSolution);
         }
 
         public void ResetState()
