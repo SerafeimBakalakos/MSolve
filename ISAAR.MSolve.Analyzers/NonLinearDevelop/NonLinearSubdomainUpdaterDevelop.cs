@@ -26,12 +26,12 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
 
         public void CalculateStressesOnly(IVectorView solution, IVectorView dSolution)
         {
-            ((SubdomainDevelop)subdomain).CalculateStressesOnly(solution, dSolution);
+            subdomain.CalculateStressesOnly(solution, dSolution);
         }
 
         public IVector CalculateRHSonly(IVectorView solution, IVectorView dSolution)
         {
-            return ((SubdomainDevelop)subdomain).CalculateRHSonly(solution, dSolution);
+            return subdomain.CalculateRHSonly(solution, dSolution);
         }
 
         public void ResetState()

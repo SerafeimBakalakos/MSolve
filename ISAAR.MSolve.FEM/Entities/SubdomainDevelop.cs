@@ -13,7 +13,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 //TODO: same for multiscale
 namespace ISAAR.MSolve.FEM.Entities
 {
-    public class SubdomainDevelop : ISubdomainDevelop
+    public class SubdomainDevelop : ISubdomain
     {
         public SubdomainDevelop(int id)
         {

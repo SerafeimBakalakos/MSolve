@@ -8,6 +8,9 @@ namespace ISAAR.MSolve.Discretization.Interfaces
 {
     public interface ISubdomain
     {
+        void CalculateStressesOnly(IVectorView solution, IVectorView dSolution);
+
+        IVector CalculateRHSonly(IVectorView solution, IVectorView dSolution);
         Table<INode, IDofType, double> Constraints { get; }
 
         ISubdomainConstrainedDofOrdering ConstrainedDofOrdering { get; set; }

@@ -154,6 +154,41 @@ namespace ISAAR.MSolve.FEM.Entities
             return forces;
         }
 
+        public void CalculateStressesOnly(IVectorView solution, IVectorView dSolution)
+        {
+            foreach (Element element in Elements.Values)
+            {
+                //var localSolution = GetLocalVectorFromGlobal(element, solution);//TODOMaria: This is where the element displacements are calculated //removeMaria
+                //var localdSolution = GetLocalVectorFromGlobal(element, dSolution);//removeMaria
+
+                //TODO: ElementType should operate with Vector instead of double[]. Then the ToRawArray() calls can be removed
+                double[] localSolution = CalculateElementDisplacements(element, solution);
+                double[] localdSolution = CalculateElementDisplacements(element, dSolution);
+                element.ElementType.CalculateStresses(element, localSolution, localdSolution);
+                if (element.ElementType.MaterialModified)
+                    element.Subdomain.StiffnessModified = true;
+            }
+
+        }
+
+        public IVector CalculateRHSonly(IVectorView solution, IVectorView dSolution)
+        {
+            var forces = Vector.CreateZero(FreeDofOrdering.NumFreeDofs); //TODO: use Vector
+            foreach (Element element in Elements.Values)
+            {
+                //var localSolution = GetLocalVectorFromGlobal(element, solution);//TODOMaria: This is where the element displacements are calculated //removeMaria
+                //var localdSolution = GetLocalVectorFromGlobal(element, dSolution);//removeMaria
+
+                //TODO: ElementType should operate with Vector instead of double[]. Then the ToRawArray() calls can be removed
+                double[] localSolution = CalculateElementDisplacements(element, solution);
+                double[] localdSolution = CalculateElementDisplacements(element, dSolution);
+
+                var f = element.ElementType.CalculateForces(element, localSolution, localdSolution);
+                FreeDofOrdering.AddVectorElementToSubdomain(element, f, forces);
+            }
+            return forces;
+        }
+
         public void ResetMaterialsModifiedProperty()
         {
             this.StiffnessModified = false;

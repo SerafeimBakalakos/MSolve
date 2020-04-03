@@ -509,6 +509,15 @@ namespace ISAAR.MSolve.IGA.Entities
             #endregion
         }
 
+        public void CalculateStressesOnly(IVectorView solution, IVectorView dSolution)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IVector CalculateRHSonly(IVectorView solution, IVectorView dSolution)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }

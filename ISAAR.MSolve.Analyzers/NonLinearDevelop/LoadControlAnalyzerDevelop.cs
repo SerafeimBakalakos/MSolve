@@ -39,7 +39,12 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
                     solver.Solve();
                     //double rhsNormIt = solver.LinearSystems.First().Value.RhsVector.Norm2();
                     //double xNormIt = solver.LinearSystems.First().Value.Solution.Norm2();
-                    Dictionary<int, IVector> internalRhsVectors = CalculateInternalRhs(increment, iteration);
+
+
+                    //Dictionary<int, IVector> internalRhsVectors = CalculateInternalRhs(increment, iteration);
+                    CalculateInternalRhsStressesOnly(increment, iteration);
+                    Dictionary<int, IVector> internalRhsVectors = CalculateInternalRhsClaculateRhsOnly(increment, iteration);
+
                     double residualNormCurrent = UpdateResidualForcesAndNorm(increment, internalRhsVectors); // This also sets the rhs vectors in linear systems.
                     errorNorm = globalRhsNormInitial != 0 ? residualNormCurrent / globalRhsNormInitial : 0;// (rhsNorm*increment/increments) : 0;//TODOMaria this calculates the internal force vector and subtracts it from the external one (calculates the residual)
                     //Console.WriteLine($"Increment {increment}, iteration {iteration}: norm2(error) = {errorNorm}");
