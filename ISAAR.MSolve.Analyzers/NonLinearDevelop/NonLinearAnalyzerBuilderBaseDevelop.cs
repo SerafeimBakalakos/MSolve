@@ -57,15 +57,15 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
             }
         }
 
-        public IReadOnlyDictionary<int, INonLinearSubdomainUpdater> SubdomainUpdaters { get; set; }
+        public IReadOnlyDictionary<int, INonLinearSubdomainUpdaterDevelop> SubdomainUpdaters { get; set; }
 
-        private IReadOnlyDictionary<int, INonLinearSubdomainUpdater> CreateDefaultSubdomainUpdaters()
+        private IReadOnlyDictionary<int, INonLinearSubdomainUpdaterDevelop> CreateDefaultSubdomainUpdaters()
         {
             int numSubdomains = model.NumSubdomains;
-            var subdomainUpdaters = new Dictionary<int, INonLinearSubdomainUpdater>(numSubdomains);
+            var subdomainUpdaters = new Dictionary<int, INonLinearSubdomainUpdaterDevelop>(numSubdomains);
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
-                subdomainUpdaters[subdomain.ID] = new NonLinearSubdomainUpdaterDevelop((ISubdomainDevelop)subdomain);
+                subdomainUpdaters[subdomain.ID] = new NonLinearSubdomainUpdaterDevelop(subdomain);
 
             }
             return subdomainUpdaters;

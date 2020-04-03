@@ -1,14 +1,15 @@
 ﻿using ISAAR.MSolve.Analyzers.Interfaces;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 namespace ISAAR.MSolve.Analyzers.NonLinear
 {
-    public class NonLinearSubdomainUpdaterDevelop : INonLinearSubdomainUpdater
+    public class NonLinearSubdomainUpdaterDevelop : INonLinearSubdomainUpdaterDevelop
     {
-        private readonly ISubdomainDevelop subdomain;
+        private readonly ISubdomain subdomain;
 
-        public NonLinearSubdomainUpdaterDevelop(ISubdomainDevelop subdomain)
+        public NonLinearSubdomainUpdaterDevelop(ISubdomain subdomain)
         {
             this.subdomain = subdomain;
         }
@@ -25,12 +26,12 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
 
         public void CalculateStressesOnly(IVectorView solution, IVectorView dSolution)
         {
-            subdomain.CalculateStressesOnly(solution, dSolution);
+            ((SubdomainDevelop)subdomain).CalculateStressesOnly(solution, dSolution);
         }
 
         public IVector CalculateRHSonly(IVectorView solution, IVectorView dSolution)
         {
-            return subdomain.CalculateRHSonly(solution, dSolution);
+            return ((SubdomainDevelop)subdomain).CalculateRHSonly(solution, dSolution);
         }
 
         public void ResetState()

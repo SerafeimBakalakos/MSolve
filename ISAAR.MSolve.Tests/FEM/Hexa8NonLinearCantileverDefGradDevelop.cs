@@ -84,7 +84,8 @@ namespace ISAAR.MSolve.Tests.FEM
         {
             //VectorExtensions.AssignTotalAffinityCount();
             Model model = new Model();
-            model.SubdomainsDictionary.Add(subdomainID, new Subdomain( subdomainID));
+            var subd1 = new SubdomainDevelop(subdomainID);
+            model.SubdomainsDictionary.Add(subdomainID, (Subdomain)subd1);
 
             BuildCantileverModel(model, 850);
 

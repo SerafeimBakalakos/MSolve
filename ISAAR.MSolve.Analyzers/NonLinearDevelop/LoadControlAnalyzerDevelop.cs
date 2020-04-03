@@ -12,7 +12,7 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
     public class LoadControlAnalyzerDevelop : NonLinearAnalyzerBaseDevelop
     {
         private LoadControlAnalyzerDevelop(IModel model, ISolver solver, INonLinearProvider provider,
-            IReadOnlyDictionary<int, INonLinearSubdomainUpdater> subdomainUpdaters,
+            IReadOnlyDictionary<int, INonLinearSubdomainUpdaterDevelop> subdomainUpdaters,
             int numIncrements, int maxIterationsPerIncrement, int numIterationsForMatrixRebuild, double residualTolerance) : 
             base(model, solver, provider, subdomainUpdaters, numIncrements, maxIterationsPerIncrement, 
                 numIterationsForMatrixRebuild, residualTolerance)
