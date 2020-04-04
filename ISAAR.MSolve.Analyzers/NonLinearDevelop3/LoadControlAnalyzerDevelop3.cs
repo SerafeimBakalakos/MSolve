@@ -15,27 +15,29 @@ using ISAAR.MSolve.Logging;
 using ISAAR.MSolve.Logging.Interfaces;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.LinearSystems;
+using ISAAR.MSolve.Analyzers.ObjectManagers;
 
 namespace ISAAR.MSolve.Analyzers.NonLinear
 {
     public class LoadControlAnalyzerDevelop3 : IChildAnalyzer //: NonLinearAnalyzerBaseDevelop2
     {
 
+        IMaterialManager materialManager;
 
-
-        private LoadControlAnalyzerDevelop3(IModel model, ISolver solver, INonLinearProvider provider,
-            IReadOnlyDictionary<int, INonLinearSubdomainUpdaterDevelop> subdomainUpdaters,
-            int numIncrements, int maxIterationsPerIncrement, int numIterationsForMatrixRebuild, double residualTolerance)
+        public LoadControlAnalyzerDevelop3(IModel model, ISolver solver, INonLinearProvider provider,
+            int numIncrements, int maxIterationsPerIncrement, int numIterationsForMatrixRebuild, double residualTolerance, IMaterialManager materialManager)
         {
             this.model = model;
             this.solver = solver;
             this.provider = provider;
-            this.subdomainUpdaters = subdomainUpdaters;
+            this.subdomainUpdaters = CreateDefaultSubdomainUpdaters();
             this.linearSystems = solver.LinearSystems;
             this.numIncrements = numIncrements;
             this.maxIterationsPerIncrement = maxIterationsPerIncrement;
             this.numIterationsForMatrixRebuild = numIterationsForMatrixRebuild;
             this.residualTolerance = residualTolerance;
+            this.materialManager = materialManager;
+            //SubdomainUpdaters = CreateDefaultSubdomainUpdaters();
         }
         
         public void Solve()
@@ -63,6 +65,7 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
 
                     //Dictionary<int, IVector> internalRhsVectors = CalculateInternalRhs(increment, iteration);
                     CalculateInternalRhsStressesOnly(increment, iteration);
+                    materialManager.UpdateMaterials();
                     Dictionary<int, IVector> internalRhsVectors = CalculateInternalRhsClaculateRhsOnly(increment, iteration);
 
                     double residualNormCurrent = UpdateResidualForcesAndNorm(increment, internalRhsVectors); // This also sets the rhs vectors in linear systems.
@@ -368,6 +371,19 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
             }
         }
 
+        private IReadOnlyDictionary<int, INonLinearSubdomainUpdaterDevelop> CreateDefaultSubdomainUpdaters()
+        {
+            int numSubdomains = model.NumSubdomains;
+            var subdomainUpdaters = new Dictionary<int, INonLinearSubdomainUpdaterDevelop>(numSubdomains);
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                subdomainUpdaters[subdomain.ID] = new NonLinearSubdomainUpdaterDevelop3(subdomain);
+
+            }
+            return subdomainUpdaters;
+
+        }
+
         #endregion
 
         public class Builder
@@ -395,11 +411,11 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
             protected double residualTolerance = 1e-8;
             protected readonly ISolver solver;
 
-            public LoadControlAnalyzerDevelop3 Build()
-            {
-                return new LoadControlAnalyzerDevelop3(model, solver, provider, SubdomainUpdaters,
-                    numIncrements, maxIterationsPerIncrement, numIterationsForMatrixRebuild, residualTolerance);
-            }
+            //public LoadControlAnalyzerDevelop3 Build()
+            //{
+            //    return new LoadControlAnalyzerDevelop3(model, solver, provider, SubdomainUpdaters,
+            //        numIncrements, maxIterationsPerIncrement, numIterationsForMatrixRebuild, residualTolerance);
+            //}
 
             public int MaxIterationsPerIncrement
             {

@@ -22,11 +22,24 @@ namespace ISAAR.MSolve.MSAnalysis.remoteMatImplementations
     public class RemoteMaterial : IContinuumMaterial3DDefGrad
     {
         private IMaterialManager materialManager;
-        RemoteMaterial(IMaterialManager materialManager)
+        public RemoteMaterial(IMaterialManager materialManager)
         {
             this.materialManager = materialManager;
         }
-        public double[] Stresses { get { return materialManager.GetMaterialStress(this); } }
+        public double[] Stresses
+        {
+            get
+            {
+                if (materialManager.GetMaterialStress(this) == null)
+                {
+                    return new double[6];
+                }
+                else
+                {
+                    return materialManager.GetMaterialStress(this);
+                }
+            }
+        }
 
         public IMatrixView ConstitutiveMatrix { get { return materialManager.GetMaterialConstitutiveMatrix(this); } }
 

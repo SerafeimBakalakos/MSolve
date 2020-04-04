@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Analyzers.NonLinear;
+using ISAAR.MSolve.Analyzers.ObjectManagers;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
@@ -10,6 +11,7 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.Logging;
 using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.Materials.Interfaces;
+using ISAAR.MSolve.MSAnalysis.remoteMatImplementations;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.Direct;
@@ -87,7 +89,7 @@ namespace ISAAR.MSolve.Tests.FEM
             var subd1 = new Subdomain(subdomainID);
             model.SubdomainsDictionary.Add(subdomainID, subd1);
 
-            BuildCantileverModel(model, 850);
+            var materialManager = BuildCantileverModel(model, 850);
 
             //model.ConnectDataStructures();
 
@@ -118,12 +120,11 @@ namespace ISAAR.MSolve.Tests.FEM
             //var subdomainMappers = new[] { new SubdomainGlobalMapping(model.Subdomains[0]) };
 
             var increments = 2;
-            var childAnalyzerBuilder = new LoadControlAnalyzerDevelop3.Builder(model, solver, provider, increments);
-            childAnalyzerBuilder.ResidualTolerance = 1E-8;
-            childAnalyzerBuilder.MaxIterationsPerIncrement = 100;
-            childAnalyzerBuilder.NumIterationsForMatrixRebuild = 1;
+            var resTol = 1E-8;
+            int maxIters = 100;
+            int itersRebuild = 1;
             //childAnalyzerBuilder.SubdomainUpdaters = new[] { new NonLinearSubdomainUpdater(model.SubdomainsDictionary[subdomainID]) }; // This is the default
-            LoadControlAnalyzerDevelop3 childAnalyzer = childAnalyzerBuilder.Build();
+            LoadControlAnalyzerDevelop3 childAnalyzer = new LoadControlAnalyzerDevelop3(model, solver, provider, increments, 100, 1, 1E-8, materialManager);
             var parentAnalyzer = new StaticAnalyzer(model, solver, provider, childAnalyzer);
 
             var watchDofs = new Dictionary<int, int[]>();
@@ -138,6 +139,7 @@ namespace ISAAR.MSolve.Tests.FEM
             //StaticAnalyzer parentAnalyzer = new StaticAnalyzer(provider, childAnalyzer, linearSystems);
 
             //parentAnalyzer.BuildMatrices();
+            materialManager.Initialize();
             parentAnalyzer.Initialize();
             parentAnalyzer.Solve();
 
@@ -145,7 +147,7 @@ namespace ISAAR.MSolve.Tests.FEM
             return log1;
         }
 
-        private static void BuildCantileverModel(Model model, double load_value)
+        private static IMaterialManager BuildCantileverModel(Model model, double load_value)
         {
             //xrhsimopoiithike to  ParadeigmataElegxwnBuilder.HexaCantileverBuilder(Model model, double load_value)
             // allagh tou element kai tou material
@@ -158,7 +160,9 @@ namespace ISAAR.MSolve.Tests.FEM
 
 
             //VonMisesMaterial3D material1 = new VonMisesMaterial3D(1353000, 0.30, 1353000, 0.15);
-            IContinuumMaterial3DDefGrad material1 = new ElasticMaterial3DDefGrad() { PoissonRatio = 0.3, YoungModulus = 1353000 };
+            IMaterialManager materialManager = new MaterialManager(new ElasticMaterial3DDefGrad() { PoissonRatio = 0.3, YoungModulus = 1353000 });
+            IContinuumMaterial3DDefGrad material1 = new RemoteMaterial(materialManager);
+            //IContinuumMaterial3DDefGrad material1 = new ElasticMaterial3DDefGrad() { PoissonRatio = 0.3, YoungModulus = 1353000 };
 
             double[,] nodeData = new double[,] { {-0.250000,-0.250000,-1.000000},
             {0.250000,-0.250000,-1.000000},
@@ -243,6 +247,8 @@ namespace ISAAR.MSolve.Tests.FEM
                 };
                 model.Loads.Add(load1);
             }
+
+            return materialManager;
         }
     }
 

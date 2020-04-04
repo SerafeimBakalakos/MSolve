@@ -11,7 +11,7 @@ namespace ISAAR.MSolve.Analyzers.ObjectManagers
     {
         private IContinuumMaterial3DDefGrad chosenMaterial;
 
-        private List<IContinuumMaterial3DDefGrad> ghostMaterials;
+        private List<IContinuumMaterial3DDefGrad> ghostMaterials = new List<IContinuumMaterial3DDefGrad>();
 
         private Dictionary<IContinuumMaterial3DDefGrad, double[]> ghostMaterialStrains;
         private Dictionary<IContinuumMaterial3DDefGrad, double[]> ghostMaterialStresses;
@@ -21,9 +21,7 @@ namespace ISAAR.MSolve.Analyzers.ObjectManagers
 
         private IContinuumMaterial3DDefGrad[] materialDatabase;
 
-        private
-
-        MaterialManager(IContinuumMaterial3DDefGrad coosenMaterial)
+        public MaterialManager(IContinuumMaterial3DDefGrad coosenMaterial)
         {
             this.chosenMaterial = coosenMaterial;
         }
@@ -55,12 +53,19 @@ namespace ISAAR.MSolve.Analyzers.ObjectManagers
             ghostMaterialStresses = ghostMaterials.Select(x => new KeyValuePair<IContinuumMaterial3DDefGrad, double[]>(x, null)).ToDictionary(x => x.Key, x => x.Value);
             ghostMaterialConsMatrices = ghostMaterials.Select(x=>  new KeyValuePair<IContinuumMaterial3DDefGrad,IMatrixView>( x,null)).ToDictionary(x=>x.Key,x=>x.Value);
 
+
+            foreach(var ghoMat in ghostMaterials)
+            {
+                ghostMaterialConsMatrices[ghoMat] = materialDatabase[ghostMaterialsMappingToDatabase[ghoMat]].ConstitutiveMatrix; //.CopyToFullMatrix();
+            }
+
             //...
         }
 
         private void BuildMaterials()
         {
             materialDatabase = new IContinuumMaterial3DDefGrad[ghostMaterials.Count];
+            ghostMaterialsMappingToDatabase = new Dictionary<IContinuumMaterial3DDefGrad, int>(ghostMaterials.Count);
             int counter = 0;
             foreach(var material in ghostMaterials)
             {
@@ -74,6 +79,14 @@ namespace ISAAR.MSolve.Analyzers.ObjectManagers
             foreach(KeyValuePair<IContinuumMaterial3DDefGrad,double[]> matAndStrain  in ghostMaterialStrains)
             {
                 materialDatabase[ghostMaterialsMappingToDatabase[matAndStrain.Key]].UpdateMaterial(matAndStrain.Value);
+            }
+            foreach (var ghoMat in ghostMaterials)
+            {
+                ghostMaterialConsMatrices[ghoMat] = materialDatabase[ghostMaterialsMappingToDatabase[ghoMat]].ConstitutiveMatrix; //.CopyToFullMatrix();
+            }
+            foreach (var ghoMat in ghostMaterials)
+            {
+                ghostMaterialStresses[ghoMat] = materialDatabase[ghostMaterialsMappingToDatabase[ghoMat]].Stresses; //.CopyToFullMatrix();
             }
         }
 
