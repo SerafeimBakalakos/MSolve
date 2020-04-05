@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Analyzers.NonLinear;
 using ISAAR.MSolve.Analyzers.ObjectManagers;
@@ -8,6 +9,8 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.FEM.Elements;
 using ISAAR.MSolve.FEM.Entities;
+using ISAAR.MSolve.LinearAlgebra.Distributed;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Tests;
 using ISAAR.MSolve.Logging;
 using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.Materials.Interfaces;
@@ -19,8 +22,53 @@ using Xunit;
 
 namespace ISAAR.MSolve.Tests.FEM
 {
-    public static class Hexa8NonLinearCantileverDefGradDevelop4developMat
+    public static class materialParrallelExecutionTest
     {
+
+
+
+        public static void TestMaterialUpdateOnly(int numProcesses)
+        {
+            var procs = ProcessDistribution.CreateDistribution(numProcesses, 2); // FetiDPDofSeparatorMpiTests .CreateModelAndDofSeparator
+            double[][] data = new double[2][];
+
+            if (procs.IsMasterProcess)
+            { data = new double[][] { new double[] { 1, 1, 1, 1, 1, 1 }, new double[] { 1, 1, 1, 1, 1, 1 } }; }
+
+            MpiUtilities.BroadcastArray(procs.Communicator, ref data, procs.MasterProcess);
+
+            double[] Subdresults = new double[2] { data[0][0] * (procs.OwnRank + 1) * 2, data[0][0] * (procs.OwnRank + 1) * 2 };
+
+            double[][] gatheredResults = procs.Communicator.Gather(Subdresults, procs.MasterProcess);
+
+            if (procs.IsMasterProcess) { Console.WriteLine($"gatheredResults[0][0]=", gatheredResults[0][0], " gatheredResults[1][0]=", gatheredResults[1][0]); }
+
+
+        }
+
+
+
+
+
+
+
+        //[Fact]
+        //public static void TestMaterialUpdateOnly()
+        //{
+
+                //    IMaterialManager materialManager = new MaterialManager(new ElasticMaterial3DDefGrad() { PoissonRatio = 0.3, YoungModulus = 1353000 });
+                //    IContinuumMaterial3DDefGrad remoteMaterial = new RemoteMaterial(materialManager);
+
+                //    int numMaterials=5;
+                //    var remoteMaterials = new IContinuumMaterial3DDefGrad[numMaterials];
+                //    for (int i = 0; i < numMaterials; i++)
+                //    { remoteMaterials[i] = (IContinuumMaterial3DDefGrad)remoteMaterial.Clone(); }
+
+
+                //}
+
+
+
         private const int subdomainID = 1;
 
         private static bool AreDisplacementsSame(IReadOnlyList<Dictionary<int, double>> expectedDisplacements, TotalDisplacementsPerIterationLog computedDisplacements)
