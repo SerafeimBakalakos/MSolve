@@ -102,7 +102,13 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
                 //double rhsNormInc = solver.LinearSystems.First().Value.RhsVector.Norm2();
                 //double xNormInc = solver.LinearSystems.First().Value.Solution.Norm2();
                 Debug.WriteLine("NR {0}, first error: {1}, exit error: {2}", iteration, firstError, errorNorm);
-                SaveMaterialStateAndUpdateSolution();
+
+
+                //SaveMaterialStateAndUpdateSolution();
+                SaveSolution();
+                materialManager.SaveState();
+
+
             }
             //            ClearMaterialStresses();
 
@@ -324,6 +330,16 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
             {
                 int id = linearSystem.Subdomain.ID;
                 subdomainUpdaters[id].UpdateState();
+                u[id].AddIntoThis(du[id]);
+            }
+        }
+
+        protected void SaveSolution()
+        {
+            foreach (ILinearSystem linearSystem in linearSystems.Values)
+            {
+                int id = linearSystem.Subdomain.ID;
+                //subdomainUpdaters[id].UpdateState();
                 u[id].AddIntoThis(du[id]);
             }
         }

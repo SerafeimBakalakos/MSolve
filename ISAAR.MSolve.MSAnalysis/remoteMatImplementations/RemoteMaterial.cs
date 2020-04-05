@@ -73,6 +73,8 @@ namespace ISAAR.MSolve.MSAnalysis.remoteMatImplementations
         public void SaveState()
         {
             throw new NotImplementedException("material save state will be handled in an other way");
+            //materialManager handles this function.
+            
         }
 
         public void UpdateMaterial(double[] strains)
