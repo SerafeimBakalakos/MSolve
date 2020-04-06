@@ -18,14 +18,12 @@ using ISAAR.MSolve.MSAnalysis.remoteMatImplementations;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.Direct;
-using Xunit;
+//using Xunit;
 
 namespace ISAAR.MSolve.Tests.FEM
 {
     public static class materialParrallelExecutionTest
     {
-
-
 
         public static void TestMaterialUpdateOnly(int numProcesses)
         {
@@ -41,7 +39,7 @@ namespace ISAAR.MSolve.Tests.FEM
 
             double[][] gatheredResults = procs.Communicator.Gather(Subdresults, procs.MasterProcess);
 
-            if (procs.IsMasterProcess) { Console.WriteLine($"gatheredResults[0][0]=", gatheredResults[0][0], " gatheredResults[1][0]=", gatheredResults[1][0]); }
+            if (procs.IsMasterProcess) { Console.WriteLine($"gatheredResults[0][0]=" + gatheredResults[0][0] + " gatheredResults[1][0]=" + gatheredResults[1][0]); ; }
 
 
         }
@@ -87,12 +85,12 @@ namespace ISAAR.MSolve.Tests.FEM
             return true;
         }
 
-        [Fact]
+        //[Fact]
         private static void RunTest()
         {
             IReadOnlyList<Dictionary<int, double>> expectedDisplacements = GetExpectedDisplacements();
             TotalDisplacementsPerIterationLog computedDisplacements = SolveModel();
-            Assert.True(AreDisplacementsSame(expectedDisplacements, computedDisplacements));
+            //Assert.True(AreDisplacementsSame(expectedDisplacements, computedDisplacements));
         }
 
         private static IReadOnlyList<Dictionary<int, double>> GetExpectedDisplacements()
