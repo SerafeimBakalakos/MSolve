@@ -32,7 +32,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase
 {
     public static class ExamplePhasesFromCsv
     {
-        private const int numElementsX = 200, numElementsY = 200;
+        private const int numElementsX = 400, numElementsY = 400;
         private const int subdomainID = 0;
         private const double thickness = 1.0;
         private const bool integrationWithSubtriangles = true;
@@ -101,33 +101,33 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase
             materialPlotter.PlotBoundaryMaterials(paths.boundaryIntegrationMaterials);
 
             // Analysis
-            //IVectorView solution = RunAnalysis(physicalModel);
+            IVectorView solution = RunAnalysis(physicalModel);
 
-            //// Plot temperature
-            //using (var writer = new Logging.VTK.VtkPointWriter(paths.temperatureAtNodes))
-            //{
-            //    var temperatureField = new TemperatureAtNodesField(physicalModel);
-            //    writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
-            //}
-            //using (var writer = new Logging.VTK.VtkPointWriter(paths.temperatureAtGaussPoints))
-            //{
-            //    var temperatureField = new TemperatureAtGaussPointsField(physicalModel);
-            //    writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
-            //}
-            //using (var writer = new VtkFileWriter(paths.temperatureField))
-            //{
-            //    var temperatureField = new TemperatureField2D(physicalModel, conformingMesh);
-            //    writer.WriteMesh(conformingMesh);
-            //    writer.WriteScalarField("temperature", conformingMesh, temperatureField.CalcValuesAtVertices(solution));
-            //}
-            //using (var writer = new Logging.VTK.VtkPointWriter(paths.heatFluxAtGaussPoints))
-            //{
-            //    var fluxField = new HeatFluxAtGaussPointsField(physicalModel);
-            //    writer.WriteVector2DField("heat_flux", fluxField.CalcValuesAtVertices(solution));
-            //}
+            // Plot temperature
+            using (var writer = new Logging.VTK.VtkPointWriter(paths.temperatureAtNodes))
+            {
+                var temperatureField = new TemperatureAtNodesField(physicalModel);
+                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
+            }
+            using (var writer = new Logging.VTK.VtkPointWriter(paths.temperatureAtGaussPoints))
+            {
+                var temperatureField = new TemperatureAtGaussPointsField(physicalModel);
+                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
+            }
+            using (var writer = new VtkFileWriter(paths.temperatureField))
+            {
+                var temperatureField = new TemperatureField2D(physicalModel, conformingMesh);
+                writer.WriteMesh(conformingMesh);
+                writer.WriteScalarField("temperature", conformingMesh, temperatureField.CalcValuesAtVertices(solution));
+            }
+            using (var writer = new Logging.VTK.VtkPointWriter(paths.heatFluxAtGaussPoints))
+            {
+                var fluxField = new HeatFluxAtGaussPointsField(physicalModel);
+                writer.WriteVector2DField("heat_flux", fluxField.CalcValuesAtVertices(solution));
+            }
 
             // Homogenization
-            RunHomogenization(physicalModel, phaseReader.MinX, phaseReader.MinY, phaseReader.MaxX, phaseReader.MaxY);
+            //RunHomogenization(physicalModel, phaseReader.MinX, phaseReader.MinY, phaseReader.MaxX, phaseReader.MaxY);
         }
 
         private static XModel CreatePhysicalModel(GeometricModel geometricModel, 
