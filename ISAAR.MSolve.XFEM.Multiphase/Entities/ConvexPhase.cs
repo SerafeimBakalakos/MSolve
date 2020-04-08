@@ -29,7 +29,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Entities
 
         public HashSet<IPhase> Neighbors { get; } = new HashSet<IPhase>();
 
-        public bool Contains(CartesianPoint point)
+        public virtual bool Contains(CartesianPoint point)
         {
             foreach (PhaseBoundary boundary in Boundaries)
             {

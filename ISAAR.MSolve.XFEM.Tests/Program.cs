@@ -22,9 +22,10 @@ namespace ISAAR.MSolve.XFEM.Tests
             //Multiphase.Singularity.TwoVerticalInclusions.RunTest();
 
             //BenchmarkTests.Test2Phases();
-            ThreePhasesBenchmark.RunTest();
+            //ThreePhasesBenchmark.RunTest();
             //ThreePhasesBenchmarkHardcoded.RunTest();
 
+            HollowPhasePlots.PlotHollowPhasesInteractions();
             //PhasePlots.PlotScatteredPhasesInteractions();
             //PhasePlots.PlotTetrisPhasesInteractions();
             //PhasePlots.PlotPercolationPhasesInteractions();

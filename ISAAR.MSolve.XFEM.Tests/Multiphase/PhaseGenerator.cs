@@ -94,6 +94,83 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase
             return geometricModel;
         }
 
+        public GeometricModel CreateHollowTetrisPhases()
+        {
+            // Generate rectangles by rotating the following shapes
+            //
+            //  G------------------H
+            //  |  C4----------C3  |
+            //  |   | 4        |   | 
+            //  |2 C1----------C2  |
+            //  C---------D--------E--------F
+            //            |  D4----------D3 |
+            //            |   | 3        |  |
+            //            |1 D1----------D2 |
+            //            A-----------------B
+            //
+            double rectLength = 0.4, rectHeight = rectLength / 4.0;
+            CartesianPoint A = TranformSingle(0.5 * rectLength, 0.0);
+            CartesianPoint B = TranformSingle(1.5 * rectLength, 0.0);
+            CartesianPoint C = TranformSingle(0.0, rectHeight);
+            CartesianPoint D = TranformSingle(0.5 * rectLength, rectHeight);
+            CartesianPoint E = TranformSingle(rectLength, rectHeight);
+            CartesianPoint F = TranformSingle(1.5 * rectLength, rectHeight);
+            CartesianPoint G = TranformSingle(0.0, 2.0 * rectHeight);
+            CartesianPoint H = TranformSingle(rectLength, 2.0 * rectHeight);
+
+            CartesianPoint C1 = TranformSingle(0.25 * rectLength, 1.25 * rectHeight);
+            CartesianPoint C2 = TranformSingle(0.75 * rectLength, 1.25 * rectHeight);
+            CartesianPoint C3 = TranformSingle(0.75 * rectLength, 1.75 * rectHeight);
+            CartesianPoint C4 = TranformSingle(0.25 * rectLength, 1.75 * rectHeight);
+            CartesianPoint D1 = TranformSingle(0.75 * rectLength, 0.25 * rectHeight);
+            CartesianPoint D2 = TranformSingle(1.25 * rectLength, 0.25 * rectHeight);
+            CartesianPoint D3 = TranformSingle(1.25 * rectLength, 0.75 * rectHeight);
+            CartesianPoint D4 = TranformSingle(0.75 * rectLength, 0.75 * rectHeight);
+
+            // Define phases
+            var phase0 = new DefaultPhase();
+            var phase1 = new HollowConvexPhase(1);
+            var phase2 = new HollowConvexPhase(2);
+            var phase3 = new ConvexPhase(3);
+            var phase4 = new ConvexPhase(4);
+
+            // Create boundaries and associate them with their phases
+            var AB = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(A, B), phase1, phase0);
+            var CD = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(C, D), phase2, phase0);
+            var DE = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(D, E), phase2, phase1);
+            var EF = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(E, F), phase0, phase1);
+            var GH = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(G, H), phase0, phase2);
+            var AD = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(A, D), phase0, phase1);
+            var BF = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(B, F), phase1, phase0);
+            var CG = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(C, G), phase0, phase2);
+            var EH = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(E, H), phase2, phase0);
+
+            var C1C2 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(C1, C2), phase4, phase2);
+            var C2C3 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(C2, C3), phase4, phase2);
+            var C3C4 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(C3, C4), phase4, phase2);
+            var C4C1 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(C4, C1), phase4, phase2);
+            var D1D2 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(D1, D2), phase3, phase1);
+            var D2D3 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(D2, D3), phase3, phase1);
+            var D3D4 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(D3, D4), phase3, phase1);
+            var D4D1 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(D4, D1), phase3, phase1);
+
+            // Define internal phases
+            phase1.AddInternalPhase(phase3);
+            phase2.AddInternalPhase(phase4);
+
+            // Initialize model
+            var geometricModel = new GeometricModel();
+            double elementSize = (maxX - minX) / numElementsPerAxis;
+            geometricModel.MeshTolerance = new UserDefinedMeshTolerance(elementSize);
+            geometricModel.Phases.Add(phase0);
+            geometricModel.Phases.Add(phase1);
+            geometricModel.Phases.Add(phase2);
+            geometricModel.Phases.Add(phase3);
+            geometricModel.Phases.Add(phase4);
+
+            return geometricModel;
+        }
+
         public GeometricModel CreatePercolatedTetrisPhases()
         {
             // Generate rectangles by rotating the following shapes
@@ -148,6 +225,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase
             var L7_14 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P7, P14), phase1, phase0);
             var L8_15 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P8, P15), phase0, phase3);
             var L11_16 = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(P11, P16), phase3, phase0);
+   
 
             // Initialize model
             var geometricModel = new GeometricModel();

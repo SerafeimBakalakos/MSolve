@@ -69,6 +69,7 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
 
         public double EvaluateAt(IPhase phaseAtPoint)
         {
+            //TODO: This does not work for a blending element that is intersected by another unrelated to the junction interface
             for (int i = 0; i < descendingPhases.Length; ++i)
             {
                 if (phaseAtPoint == descendingPhases[i]) return descendingPhaseCoeffs[i];
