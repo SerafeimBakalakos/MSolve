@@ -25,7 +25,8 @@ namespace ISAAR.MSolve.XFEM.Tests
             //ThreePhasesBenchmark.RunTest();
             //ThreePhasesBenchmarkHardcoded.RunTest();
 
-            HollowPhasePlots.PlotHollowPhasesInteractions();
+            HollowPhasePlots.PlotHollowPhasesInteractionsFromCSV();
+            //HollowPhasePlots.PlotHollowPhasesInteractions();
             //PhasePlots.PlotScatteredPhasesInteractions();
             //PhasePlots.PlotTetrisPhasesInteractions();
             //PhasePlots.PlotPercolationPhasesInteractions();

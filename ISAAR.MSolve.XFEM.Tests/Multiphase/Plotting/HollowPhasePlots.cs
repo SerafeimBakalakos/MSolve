@@ -16,6 +16,7 @@ using ISAAR.MSolve.XFEM.Multiphase.Elements;
 using ISAAR.MSolve.XFEM.Multiphase.Enrichment;
 using ISAAR.MSolve.XFEM.Multiphase.Enrichment.SingularityResolution;
 using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM.Multiphase.Input;
 using ISAAR.MSolve.XFEM.Multiphase.Integration;
 using ISAAR.MSolve.XFEM.Multiphase.Materials;
 using ISAAR.MSolve.XFEM.Multiphase.Plotting;
@@ -28,9 +29,10 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
 {
     public static class HollowPhasePlots
     {
-        private const int numElementsX = 201, numElementsY = 201;
+        private const int numElementsX = 41, numElementsY = 41;
         private const int subdomainID = 0;
-        private const double minX = -1.0, minY = -1.0, maxX = 1.0, maxY = 1.0;
+        private const double minX = 0, minY = 0, maxX = 100, maxY = 100;
+        //private const double minX = -1.0, minY = -1.0, maxX = 1.0, maxY = 1.0;
         private const double elementSize = (maxX - minX) / numElementsX;
         private const double thickness = 1.0;
         private static readonly PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
@@ -40,6 +42,18 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             inclusionLayerInterfaceConductivity = 100;
         private const double specialHeatCoeff = 1.0;
         private const double singularityRelativeAreaTolerance = 1E-8;
+
+        public static void PlotHollowPhasesInteractionsFromCSV()
+        {
+            var phaseReader = new PhaseReader(true, 0);
+            string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\HollowFromCSV\";
+            string matrixLayersFile = directory + "boundaries.txt";
+            string inclusionsFile = directory + "CNTnodes.txt";
+            GeometricModel geometricModel = phaseReader.ReadPhasesFromFile(matrixLayersFile, inclusionsFile);
+            var paths = new OutputPaths();
+            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\HollowFromCSV");
+            PlotPhasesInteractions(() => geometricModel, paths);
+        }
 
         public static void PlotHollowPhasesInteractions()
         {
