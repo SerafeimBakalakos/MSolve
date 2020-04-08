@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Analyzers;
+using ISAAR.MSolve.Analyzers.Multiscale;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
@@ -24,26 +26,28 @@ using ISAAR.MSolve.XFEM.Multiphase.Plotting.Enrichments;
 using ISAAR.MSolve.XFEM.Multiphase.Plotting.Fields;
 using ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh;
 using ISAAR.MSolve.XFEM.Multiphase.Plotting.Writers;
+using ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting;
 
-namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
+namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Paper1
 {
-    public static class HollowPhasePlots
+    public static class Paper1Example2
     {
-        private const int numElementsX = 41, numElementsY = 41;
+        private const int numElementsX = 200, numElementsY = 200;
         private const int subdomainID = 0;
-        private const double minX = 0, minY = 0, maxX = 100, maxY = 100;
+        private const double minX = 0, minY = 0, maxX = 2000, maxY = 2000;
         //private const double minX = -1.0, minY = -1.0, maxX = 1.0, maxY = 1.0;
         private const double elementSize = (maxX - minX) / numElementsX;
         private const double thickness = 1.0;
         private static readonly PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
         private const bool integrationWithSubtriangles = true;
-        private const double matrixConductivity = 1E0/*1*/, inclusionConductivity = 1E4 /*4*/, layerConductivity = 10;
-        private const double matrixLayerInterfaceConductivity = 5, layerLayerInterfaceConductivity = 10, 
-            inclusionLayerInterfaceConductivity = 100;
+        private const double matrixConductivity = 0.2, inclusionConductivity = 2000, layerConductivity = 0.3;
+        private const double matrixLayerInterfaceConductivity = 1E5 /*0.25*/, 
+            layerLayerInterfaceConductivity = 1E3, //1E3
+            inclusionLayerInterfaceConductivity = 1E3; //1E3
         private const double specialHeatCoeff = 1.0;
         private const double singularityRelativeAreaTolerance = 1E-8;
 
-        public static void RunPaper1Example2()
+        public static void Run()
         {
             var phaseReader = new PhaseReader(true, 0);
             string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example2\";
@@ -55,23 +59,32 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             PlotPhasesInteractions(() => geometricModel, paths);
         }
 
-        public static void PlotHollowPhasesInteractionsFromCSV()
+        public static void RunHomogenization()
         {
-            var phaseReader = new PhaseReader(true, 0);
-            string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\HollowFromCSV\";
+            string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example2\";
             string matrixLayersFile = directory + "boundaries.txt";
             string inclusionsFile = directory + "CNTnodes.txt";
+            var phaseReader = new PhaseReader(true, 0);
             GeometricModel geometricModel = phaseReader.ReadPhasesFromFile(matrixLayersFile, inclusionsFile);
-            var paths = new OutputPaths();
-            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\HollowFromCSV");
-            PlotPhasesInteractions(() => geometricModel, paths);
-        }
 
-        public static void PlotHollowPhasesInteractions()
-        {
-            var paths = new OutputPaths();
-            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Hollow");
-            PlotPhasesInteractions(generator.CreateHollowTetrisPhases, paths);
+            XModel physicalModel = CreatePhysicalModel(geometricModel);
+            PrepareForAnalysis(physicalModel, geometricModel);
+
+            // Analysis
+            //Vector2 temperatureGradient = Vector2.Create(200, 0);
+            Vector2 temperatureGradient = Vector2.Create(0, 0);
+            //var solver = (new SkylineSolver.Builder()).BuildSolver(physicalModel);
+            SuiteSparseSolver solver = new SuiteSparseSolver.Builder().BuildSolver(physicalModel);
+            var provider = new ProblemThermalSteadyState(physicalModel, solver);
+            var rve = new ThermalSquareRve(physicalModel, Vector2.Create(minX, minY), Vector2.Create(maxX, maxY), thickness,
+                temperatureGradient);
+            var homogenization = new HomogenizationAnalyzer(physicalModel, solver, provider, rve);
+
+            homogenization.Initialize();
+            homogenization.Solve();
+
+            IMatrix conductivity = homogenization.EffectiveConstitutiveTensors[subdomainID];
+            Console.WriteLine($"C = [ {conductivity[0, 0]} {conductivity[0, 1]}; {conductivity[1, 0]} {conductivity[1, 1]} ]");
         }
 
         private static void PlotPhasesInteractions(Func<GeometricModel> genPhases, OutputPaths paths)
@@ -212,6 +225,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
                 node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = -100 });
             }
         }
+
 
         private static void PrepareForAnalysis(XModel physicalModel, GeometricModel geometricModel)
         {

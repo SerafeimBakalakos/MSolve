@@ -11,7 +11,8 @@ namespace ISAAR.MSolve.XFEM.Tests
     {
         public static void Main(string[] args)
         {
-
+            Multiphase.Paper1.Paper1Example2.RunHomogenization();
+            //Multiphase.Paper1.Paper1Example2.Run();
             //HomogenizationExamples.RunHomogenizationAnalysis();
 
             //Multiphase.ExamplePhasesFromCsv.Run();
@@ -25,7 +26,7 @@ namespace ISAAR.MSolve.XFEM.Tests
             //ThreePhasesBenchmark.RunTest();
             //ThreePhasesBenchmarkHardcoded.RunTest();
 
-            HollowPhasePlots.PlotHollowPhasesInteractionsFromCSV();
+            //HollowPhasePlots.PlotHollowPhasesInteractionsFromCSV();
             //HollowPhasePlots.PlotHollowPhasesInteractions();
             //PhasePlots.PlotScatteredPhasesInteractions();
             //PhasePlots.PlotTetrisPhasesInteractions();

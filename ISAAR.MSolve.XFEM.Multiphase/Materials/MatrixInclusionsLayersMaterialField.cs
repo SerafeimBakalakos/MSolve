@@ -43,13 +43,13 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Materials
             }
             else
             {
-                if (phaseBoundary.PositivePhase is ConvexPhase || phaseBoundary.NegativePhase is ConvexPhase)
-                {
-                    return new ThermalInterfaceMaterial(inclusionLayerInterfaceConductivity);
-                }
-                else if (phaseBoundary.PositivePhase is HollowConvexPhase && phaseBoundary.NegativePhase is HollowConvexPhase)
+                if (phaseBoundary.PositivePhase is HollowConvexPhase && phaseBoundary.NegativePhase is HollowConvexPhase)
                 {
                     return new ThermalInterfaceMaterial(layerLayerInterfaceConductivity);
+                }
+                else if (phaseBoundary.PositivePhase is ConvexPhase || phaseBoundary.NegativePhase is ConvexPhase)
+                {
+                    return new ThermalInterfaceMaterial(inclusionLayerInterfaceConductivity);
                 }
                 else throw new NotImplementedException();
             }
