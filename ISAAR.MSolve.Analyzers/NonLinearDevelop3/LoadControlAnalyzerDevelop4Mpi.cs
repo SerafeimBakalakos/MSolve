@@ -42,11 +42,13 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
             this.procs = procs;
         }
 
-        public LoadControlAnalyzerDevelop4Mpi(IMaterialManager materialManager, ProcessDistribution procs)
+        public LoadControlAnalyzerDevelop4Mpi(IMaterialManager materialManager, ProcessDistribution procs, int numIncrements, int maxIterationsPerIncrement, int numIterationsForMatrixRebuild,)
         {
             this.materialManager = materialManager;
-
             this.procs = procs;
+            this.numIncrements = numIncrements;
+            this.maxIterationsPerIncrement = maxIterationsPerIncrement;
+            this.numIterationsForMatrixRebuild = numIterationsForMatrixRebuild;
         }
 
         public void Solve()
