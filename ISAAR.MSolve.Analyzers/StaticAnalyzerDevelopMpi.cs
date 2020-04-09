@@ -4,6 +4,7 @@ using ISAAR.MSolve.Analyzers.Interfaces;
 using ISAAR.MSolve.Analyzers.Loading;
 using ISAAR.MSolve.Analyzers.NonLinear;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.LinearAlgebra.Distributed;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Logging.Interfaces;
 using ISAAR.MSolve.Solvers;
@@ -13,13 +14,16 @@ namespace ISAAR.MSolve.Analyzers
 {
     public class StaticAnalyzerDevelopMpi : INonLinearParentAnalyzer
     {
+        private ProcessDistribution procs;
+        
         private readonly IReadOnlyDictionary<int, ILinearSystem> linearSystems;
         private readonly IModel model;
         private readonly IStaticProvider provider;
         private readonly ISolver solver;
 
+
         public StaticAnalyzerDevelopMpi(IModel model, ISolver solver, IStaticProvider provider, 
-            IChildAnalyzer childAnalyzer)
+            IChildAnalyzer childAnalyzer, ProcessDistribution procs)
         {
             this.model = model;
             this.linearSystems = solver.LinearSystems;
@@ -27,6 +31,12 @@ namespace ISAAR.MSolve.Analyzers
             this.provider = provider;
             this.ChildAnalyzer = childAnalyzer;
             this.ChildAnalyzer.ParentAnalyzer = this;
+            this.procs = procs;
+        }
+
+        public StaticAnalyzerDevelopMpi(ProcessDistribution procs)
+        {
+            this.procs = procs;
         }
 
         public Dictionary<int, IAnalyzerLog[]> Logs { get; } = new Dictionary<int, IAnalyzerLog[]>();

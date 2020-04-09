@@ -16,6 +16,7 @@ using ISAAR.MSolve.Logging.Interfaces;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Analyzers.ObjectManagers;
+using ISAAR.MSolve.LinearAlgebra.Distributed;
 
 namespace ISAAR.MSolve.Analyzers.NonLinear
 {
@@ -23,9 +24,9 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
     {
 
         IMaterialManager materialManager;
-
+        private ProcessDistribution procs;
         public LoadControlAnalyzerDevelop4Mpi(IModel model, ISolver solver, INonLinearProvider provider,
-            int numIncrements, int maxIterationsPerIncrement, int numIterationsForMatrixRebuild, double residualTolerance, IMaterialManager materialManager)
+            int numIncrements, int maxIterationsPerIncrement, int numIterationsForMatrixRebuild, double residualTolerance, IMaterialManager materialManager, ProcessDistribution procs)
         {
             this.model = model;
             this.solver = solver;
@@ -38,12 +39,14 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
             this.residualTolerance = residualTolerance;
             this.materialManager = materialManager;
             //SubdomainUpdaters = CreateDefaultSubdomainUpdaters();
+            this.procs = procs;
         }
 
-        public LoadControlAnalyzerDevelop4Mpi(IMaterialManager materialManager)
+        public LoadControlAnalyzerDevelop4Mpi(IMaterialManager materialManager, ProcessDistribution procs)
         {
             this.materialManager = materialManager;
 
+            this.procs = procs;
         }
 
         public void Solve()
