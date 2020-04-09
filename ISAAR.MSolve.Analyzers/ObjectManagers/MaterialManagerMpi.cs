@@ -118,6 +118,7 @@ namespace ISAAR.MSolve.Analyzers.ObjectManagers
                     for (int i2 = 0; i2 < gatheredCons[i1].Length; i2++)
                     {
                         pseudoMaterialConsMatrices[pseudoMaterials.ElementAt(counter)] = gatheredCons[i1][i2];
+                        counter++;
                     }
                 }
             }

@@ -41,7 +41,7 @@ namespace ISAAR.MSolve.Tests.FEM
             return true;
         }
 
-        [Fact]
+        //[Fact]
         private static void RunTest()
         {
             IReadOnlyList<Dictionary<int, double>> expectedDisplacements = GetExpectedDisplacements();
@@ -86,6 +86,9 @@ namespace ISAAR.MSolve.Tests.FEM
 
         public static void ParallelNonLinearCantilever(int numProcesses)
         {
+            Console.Write("Enter integer: ");
+            System.Threading.Thread.Sleep(20000);
+
 
             int numSubdomains = numProcesses;
             var procs = ProcessDistribution.CreateDistribution(numProcesses, numSubdomains); // FetiDPDofSeparatorMpiTests .CreateModelAndDofSeparator
@@ -100,42 +103,27 @@ namespace ISAAR.MSolve.Tests.FEM
             }
 
 
-            StaticAnalyzer parentAnalyzer;
-            LoadControlAnalyzerDevelop3 childAnalyzer;
-            if (procs.IsMasterProcess)
-            {
-                // Solver
-                var solverBuilder = new SkylineSolver.Builder();
-                ISolver solver = solverBuilder.BuildSolver(model);
-                // Problem type
-                var provider = new ProblemStructural(model, solver);
-                var increments = 2;//.
-                var resTol = 1E-8;
-                int maxIters = 100;
-                int itersRebuild = 1;
-                childAnalyzer = new LoadControlAnalyzerDevelop3(model, solver, provider, increments, 100, 1, 1E-8, materialManager);
-                parentAnalyzer = new StaticAnalyzer(model, solver, provider, childAnalyzer);
-                var watchDofs = new Dictionary<int, int[]>();
-                watchDofs.Add(subdomainID, new int[5] { 0, 11, 23, 35, 47 });
-                var log1 = new TotalDisplacementsPerIterationLog(watchDofs);
-                childAnalyzer.TotalDisplacementsPerIterationLog = log1;
-            }
-            else
-            {
-                // define analyzer
-            }
+            var increments = 2;//.
+            var resTol = 1E-8;
+            int maxIters = 100;
+            int itersRebuild = 1;
 
-            /*
+
+            (StaticAnalyzerDevelopMpi parentAnalyzer, LoadControlAnalyzerDevelop4Mpi childAnalyzer) = GetAnalyzers(procs, model, increments, maxIters,
+                itersRebuild, resTol, materialManager);
+            
+
+
             materialManager.Initialize();
             parentAnalyzer.Initialize();
             parentAnalyzer.Solve();
 
-            if(procs.IsMasterProcess)
+            if (procs.IsMasterProcess)
             {
                 var log1 = childAnalyzer.TotalDisplacementsPerIterationLog;//
                 IReadOnlyList<Dictionary<int, double>> expectedDisplacements = GetExpectedDisplacements();
                 bool isProblemSolvedCorrectly = AreDisplacementsSame(expectedDisplacements, log1);
-                if(isProblemSolvedCorrectly)
+                if (isProblemSolvedCorrectly)
                 {
                     Console.WriteLine($"Problem is solved correctly ");
                 }
@@ -143,10 +131,38 @@ namespace ISAAR.MSolve.Tests.FEM
                 {
                     Console.WriteLine($"the problem has not been solved correctly");
                 }
-                
-            }
-            */
 
+            }
+
+
+        }
+
+        private static (StaticAnalyzerDevelopMpi parentAnalyzer, LoadControlAnalyzerDevelop4Mpi childAnalyzer) GetAnalyzers(ProcessDistribution procs,
+            Model model, int increments, int maxIters, int itersRebuild, double resTol, IMaterialManager materialManager)
+        {
+            if (procs.IsMasterProcess)
+            {
+                // Solver
+                var solverBuilder = new SkylineSolver.Builder();
+                ISolver solver = solverBuilder.BuildSolver(model);
+                // Problem type
+                var provider = new ProblemStructural(model, solver);
+                var childAnalyzer = new LoadControlAnalyzerDevelop4Mpi(model, solver, provider, increments, maxIters, itersRebuild, resTol, materialManager, procs);
+                var parentAnalyzer = new StaticAnalyzerDevelopMpi(model, solver, provider, childAnalyzer, procs);
+                var watchDofs = new Dictionary<int, int[]>();
+                watchDofs.Add(subdomainID, new int[5] { 0, 11, 23, 35, 47 });
+                var log1 = new TotalDisplacementsPerIterationLog(watchDofs);
+                childAnalyzer.TotalDisplacementsPerIterationLog = log1; //.
+
+                return (parentAnalyzer, childAnalyzer);
+            }
+            else
+            {
+                var childAnalyzer = new LoadControlAnalyzerDevelop4Mpi(materialManager, procs, increments, maxIters, itersRebuild);
+                var parentAnalyzer = new StaticAnalyzerDevelopMpi(childAnalyzer, procs);
+
+                return (parentAnalyzer, childAnalyzer);
+            }
         }
 
         private static void CreateModel(Model model, IMaterialManager materialManager)

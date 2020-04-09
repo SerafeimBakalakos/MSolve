@@ -42,7 +42,7 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
             this.procs = procs;
         }
 
-        public LoadControlAnalyzerDevelop4Mpi(IMaterialManager materialManager, ProcessDistribution procs, int numIncrements, int maxIterationsPerIncrement, int numIterationsForMatrixRebuild,)
+        public LoadControlAnalyzerDevelop4Mpi(IMaterialManager materialManager, ProcessDistribution procs, int numIncrements, int maxIterationsPerIncrement, int numIterationsForMatrixRebuild)
         {
             this.materialManager = materialManager;
             this.procs = procs;
@@ -53,79 +53,85 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
 
         public void Solve()
         {
-            InitializeLogs();
-
-            DateTime start = DateTime.Now;
-            UpdateInternalVectors();//TODOMaria this divides the externally applied load by the number of increments and scatters it to all subdomains and stores it in the class subdomain dictionary and total external load vector
+            if (procs.IsMasterProcess)
+            {
+                InitializeLogs();
+                DateTime start = DateTime.Now;
+                UpdateInternalVectors();//TODOMaria this divides the externally applied load by the number of increments and scatters it to all subdomains and stores it in the class subdomain dictionary and total external load vector
+            }
             for (int increment = 0; increment < numIncrements; increment++)
             {
+                if (procs.IsMasterProcess)
+                {
+                    ClearIncrementalSolutionVector();//TODOMaria this sets du to 0
+                    UpdateRhs(increment);//TODOMaria this copies the residuals stored in the class dictionary to the subdomains
+                }
                 double errorNorm = 0;
-                ClearIncrementalSolutionVector();//TODOMaria this sets du to 0
-                UpdateRhs(increment);//TODOMaria this copies the residuals stored in the class dictionary to the subdomains
-
                 double firstError = 0;
                 int iteration = 0;
                 for (iteration = 0; iteration < maxIterationsPerIncrement; iteration++)
                 {
-                    if (iteration == maxIterationsPerIncrement - 1) return;
-                    if (Double.IsNaN(errorNorm)) return;
-                    solver.Solve();
-                    //double rhsNormIt = solver.LinearSystems.First().Value.RhsVector.Norm2();
-                    //double xNormIt = solver.LinearSystems.First().Value.Solution.Norm2();
+                    if (procs.IsMasterProcess)
+                    {
+                        if (iteration == maxIterationsPerIncrement - 1) return;
+                        if (Double.IsNaN(errorNorm)) return;
+                        solver.Solve();
+                        //Dictionary<int, IVector> internalRhsVectors = CalculateInternalRhs(increment, iteration);
+                        CalculateInternalRhsStressesOnly(increment, iteration);
+                    }
 
-
-                    //Dictionary<int, IVector> internalRhsVectors = CalculateInternalRhs(increment, iteration);
-                    CalculateInternalRhsStressesOnly(increment, iteration);
                     materialManager.UpdateMaterials();
-                    Dictionary<int, IVector> internalRhsVectors = CalculateInternalRhsClaculateRhsOnly(increment, iteration);
 
-                    double residualNormCurrent = UpdateResidualForcesAndNorm(increment, internalRhsVectors); // This also sets the rhs vectors in linear systems.
-                    errorNorm = globalRhsNormInitial != 0 ? residualNormCurrent / globalRhsNormInitial : 0;// (rhsNorm*increment/increments) : 0;//TODOMaria this calculates the internal force vector and subtracts it from the external one (calculates the residual)
-                    //Console.WriteLine($"Increment {increment}, iteration {iteration}: norm2(error) = {errorNorm}");
+                    bool hasConverged=false;
+                    if (procs.IsMasterProcess)
+                    {
+                        Dictionary<int, IVector> internalRhsVectors = CalculateInternalRhsClaculateRhsOnly(increment, iteration);
+                        double residualNormCurrent = UpdateResidualForcesAndNorm(increment, internalRhsVectors); // This also sets the rhs vectors in linear systems.
+                        errorNorm = globalRhsNormInitial != 0 ? residualNormCurrent / globalRhsNormInitial : 0;// (rhsNorm*increment/increments) : 0;//TODOMaria this calculates the internal force vector and subtracts it from the external one (calculates the residual)
+                                                                                                               //Console.WriteLine($"Increment {increment}, iteration {iteration}: norm2(error) = {errorNorm}");
+                        if (iteration == 0) firstError = errorNorm;
+                        if (TotalDisplacementsPerIterationLog != null) TotalDisplacementsPerIterationLog.StoreDisplacements(uPlusdu);
+                        hasConverged = errorNorm < residualTolerance;
+                    }
 
-                    if (iteration == 0) firstError = errorNorm;
-
-                    if (TotalDisplacementsPerIterationLog != null) TotalDisplacementsPerIterationLog.StoreDisplacements(uPlusdu);
-
-                    bool hasConverged;
-                    hasConverged = errorNorm < residualTolerance;
+                    procs.Communicator.Broadcast<bool>(ref hasConverged, procs.MasterProcess);
 
 
                     if (hasConverged)
                     {
                         foreach (var subdomainLogPair in IncrementalLogs)
                         {
-                            int subdomainID = subdomainLogPair.Key;
-                            TotalLoadsDisplacementsPerIncrementLog log = subdomainLogPair.Value;
-                            log.LogTotalDataForIncrement(increment, iteration, errorNorm,
-                                uPlusdu[subdomainID], internalRhsVectors[subdomainID]);
+                            //ta parakatw h mono sto master process h kanena
+                            //int subdomainID = subdomainLogPair.Key;
+                            //TotalLoadsDisplacementsPerIncrementLog log = subdomainLogPair.Value;
+                            //log.LogTotalDataForIncrement(increment, iteration, errorNorm,
+                            //    uPlusdu[subdomainID], internalRhsVectors[subdomainID]);
                         }
                         break;
                     }
 
-                    SplitResidualForcesToSubdomains();//TODOMaria scatter residuals to subdomains
-                    if ((iteration + 1) % numIterationsForMatrixRebuild == 0) // Matrix rebuilding should be handled in another way. E.g. in modified NR, it must be done at each increment.
+                    if (procs.IsMasterProcess)
                     {
-                        provider.Reset();
-                        BuildMatrices();
+                        SplitResidualForcesToSubdomains();//TODOMaria scatter residuals to subdomains
+                        if ((iteration + 1) % numIterationsForMatrixRebuild == 0) // Matrix rebuilding should be handled in another way. E.g. in modified NR, it must be done at each increment.
+                        {
+                            provider.Reset();
+                            BuildMatrices();
+                        }
                     }
                 }
-                //double rhsNormInc = solver.LinearSystems.First().Value.RhsVector.Norm2();
-                //double xNormInc = solver.LinearSystems.First().Value.Solution.Norm2();
-                Debug.WriteLine("NR {0}, first error: {1}, exit error: {2}", iteration, firstError, errorNorm);
-
-
-                //SaveMaterialStateAndUpdateSolution();
-                SaveSolution();
+                if (procs.IsMasterProcess)
+                {
+                    Debug.WriteLine("NR {0}, first error: {1}, exit error: {2}", iteration, firstError, errorNorm);
+                    SaveSolution();
+                }
                 materialManager.SaveState();
 
 
             }
-            //            ClearMaterialStresses();
-
-            // TODO: Logging should be done at each iteration. And it should be done using pull observers
-            DateTime end = DateTime.Now;
-            StoreLogResults(start, end);
+            
+            //DateTime end = DateTime.Now;
+            //StoreLogResults(start, end); // TODO this can be implemented (for master process if we need it) as a field.
         }
 
         #region fields from base copy

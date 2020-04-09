@@ -34,8 +34,10 @@ namespace ISAAR.MSolve.Analyzers
             this.procs = procs;
         }
 
-        public StaticAnalyzerDevelopMpi(ProcessDistribution procs)
+        public StaticAnalyzerDevelopMpi(IChildAnalyzer childAnalyzer, ProcessDistribution procs)
         {
+            this.ChildAnalyzer = childAnalyzer;
+            this.ChildAnalyzer.ParentAnalyzer = this;
             this.procs = procs;
         }
 
@@ -43,6 +45,9 @@ namespace ISAAR.MSolve.Analyzers
 
         public IChildAnalyzer ChildAnalyzer { get; }
 
+        /// <summary>
+        /// Warning: it is possible only for the master process.
+        /// </summary>
         public void BuildMatrices()
         {
             foreach (ILinearSystem linearSystem in linearSystems.Values)
@@ -60,43 +65,46 @@ namespace ISAAR.MSolve.Analyzers
 
         public void Initialize(bool isFirstAnalysis = true)
         {
-            if (isFirstAnalysis)
+            if (procs.IsMasterProcess)
             {
-                // The order in which the next initializations happen is very important.
-                model.ConnectDataStructures();
-                solver.OrderDofs(false);
+                if (isFirstAnalysis)
+                {
+                    // The order in which the next initializations happen is very important.
+                    model.ConnectDataStructures();
+                    solver.OrderDofs(false);
+                    foreach (ILinearSystem linearSystem in linearSystems.Values)
+                    {
+                        linearSystem.Reset(); // Necessary to define the linear system's size 
+                        linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
+                    }
+                }
+                else
+                {
+                    foreach (ILinearSystem linearSystem in linearSystems.Values)
+                    {
+                        //TODO: Perhaps these shouldn't be done if an analysis has already been executed. The model will not be 
+                        //      modified. Why should the linear system be?
+                        linearSystem.Reset();
+                        linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
+                    }
+                }
+
+                //TODO: Perhaps this should be called by the child analyzer
+                BuildMatrices();
+
+                // Loads must be created after building the matrices.
+                //TODO: Some loads may not have to be recalculated each time the stiffness changes.
+                model.ApplyLoads();
+                LoadingUtilities.ApplyNodalLoads(model, solver);
+
                 foreach (ILinearSystem linearSystem in linearSystems.Values)
                 {
-                    linearSystem.Reset(); // Necessary to define the linear system's size 
-                    linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
+                    linearSystem.RhsVector = linearSystem.Subdomain.Forces;
                 }
+
+                if (ChildAnalyzer == null) throw new InvalidOperationException("Static analyzer must contain an embedded analyzer.");
+                ChildAnalyzer.Initialize(isFirstAnalysis);
             }
-            else
-            {
-                foreach (ILinearSystem linearSystem in linearSystems.Values)
-                {
-                    //TODO: Perhaps these shouldn't be done if an analysis has already been executed. The model will not be 
-                    //      modified. Why should the linear system be?
-                    linearSystem.Reset(); 
-                    linearSystem.Subdomain.Forces = Vector.CreateZero(linearSystem.Size);
-                }
-            }
-
-            //TODO: Perhaps this should be called by the child analyzer
-            BuildMatrices(); 
-
-            // Loads must be created after building the matrices.
-            //TODO: Some loads may not have to be recalculated each time the stiffness changes.
-            model.ApplyLoads();
-            LoadingUtilities.ApplyNodalLoads(model, solver);
-
-            foreach (ILinearSystem linearSystem in linearSystems.Values)
-            {
-                linearSystem.RhsVector = linearSystem.Subdomain.Forces;
-            }
-
-            if (ChildAnalyzer == null) throw new InvalidOperationException("Static analyzer must contain an embedded analyzer.");
-            ChildAnalyzer.Initialize(isFirstAnalysis);
         }
 
         public void Solve()

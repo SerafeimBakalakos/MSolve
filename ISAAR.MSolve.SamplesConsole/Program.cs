@@ -57,7 +57,8 @@ namespace ISAAR.MSolve.SamplesConsole
 
             var suite = new MpiTestSuite();
             //suite.AddFact(materialParrallelExecutionTest.TestMaterialUpdateOnly);
-            suite.AddFact(materialManagerParrallelExecutionTest1.TestMaterialUpdateOnly);
+            //suite.AddFact(materialManagerParrallelExecutionTest1.TestMaterialUpdateOnly);
+            suite.AddFact(Hexa8NonLinearCantileverDefGradDevelop4.ParallelNonLinearCantilever);
             suite.RunTests(args);
         }
 
