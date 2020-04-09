@@ -56,10 +56,8 @@ namespace ISAAR.MSolve.SamplesConsole
             //ProfileFetiDPCantileverBeam2D.Run();
 
             var suite = new MpiTestSuite();
-            suite.AddFact(materialParrallelExecutionTest.TestMaterialUpdateOnly);
-            //RegisterFetiDP2dUnitTests(args, suite);
-            //RegisterFetiDP2dIntegrationTests(args, suite);
-            //RegisterFetiDP2dPapagiannakisTests(args, suite);
+            //suite.AddFact(materialParrallelExecutionTest.TestMaterialUpdateOnly);
+            suite.AddFact(materialManagerParrallelExecutionTest1.TestMaterialUpdateOnly);
             suite.RunTests(args);
         }
 

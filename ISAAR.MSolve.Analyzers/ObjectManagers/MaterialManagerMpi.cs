@@ -44,6 +44,7 @@ namespace ISAAR.MSolve.Analyzers.ObjectManagers
 
             if (procs.IsMasterProcess)
             {
+                BuildTheSimpleMapping();
                 pseudoMaterialStresses = pseudoMaterials.Select(x => new KeyValuePair<IContinuumMaterial3DDefGrad, double[]>(x, null)).ToDictionary(x => x.Key, x => x.Value);
                 pseudoMaterialConsMatrices = pseudoMaterials.Select(x => new KeyValuePair<IContinuumMaterial3DDefGrad, IMatrixView>(x, null)).ToDictionary(x => x.Key, x => x.Value);
             }
@@ -147,22 +148,21 @@ namespace ISAAR.MSolve.Analyzers.ObjectManagers
                     {
                         pseudoMaterialStresses[pseudoMaterials.ElementAt(counter)] = gatheredStresses[i1][i2];
                         pseudoMaterialConsMatrices[pseudoMaterials.ElementAt(counter)] = gatheredCons[i1][i2];
+                        counter++;
                     }
                 }
             }
         }
 
-        //private void BuildMaterials()
-        //{
-        //    materialDatabase = new IContinuumMaterial3DDefGrad[pseudoMaterials.Count];
-        //    pseudoMaterialsMappingToDatabase = new Dictionary<IContinuumMaterial3DDefGrad, int>(pseudoMaterials.Count);
-        //    int counter = 0;
-        //    foreach(var material in pseudoMaterials)
-        //    {
-        //        materialDatabase[counter] = (IContinuumMaterial3DDefGrad)chosenMaterial.Clone();
-        //        pseudoMaterialsMappingToDatabase[material] = counter; counter++;
-        //    }
-        //}
+        private void BuildTheSimpleMapping()
+        {
+            pseudoMaterialsMappingToDatabase = new Dictionary<IContinuumMaterial3DDefGrad, int>(pseudoMaterials.Count);
+            int counter = 0;
+            foreach (var material in pseudoMaterials)
+            {
+                pseudoMaterialsMappingToDatabase[material] = counter; counter++;
+            }
+        }
 
         public MaterialManagerMpi(IContinuumMaterial3DDefGrad coosenMaterial, ProcessDistribution procs)
         {
