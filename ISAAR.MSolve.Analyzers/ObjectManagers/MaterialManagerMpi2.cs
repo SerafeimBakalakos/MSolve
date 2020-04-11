@@ -27,9 +27,11 @@ namespace ISAAR.MSolve.Analyzers.ObjectManagers
         private double[][] localMaterialStrains;
         private double[][] localMaterialStresses;
         private IMatrixView[] localMaterialConsMatrices;
+        private int numProcesses;
+        private int numRemainderProcesses;
         private int numFullProcesses;
         private int numMaterialsOfFullProcesses;
-        private int numMaterialsOfLastProcess;
+        private int numMaterialsOfRemaindeProcess;
 
         private int sizeOfGLobalMaterialDatabase;
 
@@ -62,35 +64,18 @@ namespace ISAAR.MSolve.Analyzers.ObjectManagers
 
         private void BuildLocalDataStructures(int sizeOfGLobalMaterialDatabase)
         {
-            numFullProcesses = procs.GetNumSubdomainsPerProcess().Count()-1;
-            numMaterialsOfFullProcesses = sizeOfGLobalMaterialDatabase / numFullProcesses;
-            numMaterialsOfLastProcess = sizeOfGLobalMaterialDatabase % numFullProcesses;
+            numProcesses = procs.GetNumSubdomainsPerProcess().Count();
 
-            if(procs.OwnRank==numFullProcesses) //ennooume oti vriskomaste sthn teleftaia 
-            {
-                zbased_globalFromLocal = new int[numMaterialsOfLastProcess];
-                int firstElementValue = sizeOfGLobalMaterialDatabase - numMaterialsOfLastProcess ; // logw zerobased
+            numFullProcesses = sizeOfGLobalMaterialDatabase % numProcesses;
+            numRemainderProcesses = numProcesses - numFullProcesses;
 
-                for (int i1 = 0; i1 < numMaterialsOfLastProcess; i1++)
-                {
-                    zbased_globalFromLocal[i1] = firstElementValue + i1;
-                }
-                localMaterialStrains = new double[numMaterialsOfLastProcess][];
-                localMaterialStresses = new double[numMaterialsOfLastProcess][];
-                localMaterialConsMatrices = new IMatrixView[numMaterialsOfLastProcess];
+            numMaterialsOfFullProcesses = sizeOfGLobalMaterialDatabase / numFullProcesses +1 ;
+            numMaterialsOfRemaindeProcess = sizeOfGLobalMaterialDatabase / numFullProcesses;
 
-                localMaterialList = new IContinuumMaterial3DDefGrad[numMaterialsOfLastProcess];
-                for (int i1 = 0; i1 < localMaterialList.Length; i1++)
-                {
-                    localMaterialList[i1] = (IContinuumMaterial3DDefGrad)chosenMaterial.Clone();
-                    localMaterialConsMatrices[i1] = localMaterialList[i1].ConstitutiveMatrix;
-                }
-                 
-            }
-            else
+            if(procs.OwnRank<numFullProcesses) //ennooume oti vriskomaste sthn teleftaia 
             {
                 zbased_globalFromLocal = new int[numMaterialsOfFullProcesses];
-                int firstElementValue = procs.OwnRank * numMaterialsOfFullProcesses;
+                int firstElementValue = procs.OwnRank*numMaterialsOfFullProcesses ; // logw zerobased
 
                 for (int i1 = 0; i1 < numMaterialsOfFullProcesses; i1++)
                 {
@@ -106,6 +91,27 @@ namespace ISAAR.MSolve.Analyzers.ObjectManagers
                     localMaterialList[i1] = (IContinuumMaterial3DDefGrad)chosenMaterial.Clone();
                     localMaterialConsMatrices[i1] = localMaterialList[i1].ConstitutiveMatrix;
                 }
+                 
+            }
+            else
+            {
+                zbased_globalFromLocal = new int[numMaterialsOfRemaindeProcess];
+                int firstElementValue = numFullProcesses * numMaterialsOfFullProcesses +(procs.OwnRank-numFullProcesses)*numMaterialsOfRemaindeProcess;
+
+                for (int i1 = 0; i1 < zbased_globalFromLocal.Length; i1++)
+                {
+                    zbased_globalFromLocal[i1] = firstElementValue + i1;
+                }
+                localMaterialStrains = new double[numMaterialsOfRemaindeProcess][];
+                localMaterialStresses = new double[numMaterialsOfRemaindeProcess][];
+                localMaterialConsMatrices = new IMatrixView[numMaterialsOfRemaindeProcess];
+
+                localMaterialList = new IContinuumMaterial3DDefGrad[numMaterialsOfRemaindeProcess];
+                for (int i1 = 0; i1 < localMaterialList.Length; i1++)
+                {
+                    localMaterialList[i1] = (IContinuumMaterial3DDefGrad)chosenMaterial.Clone();
+                    localMaterialConsMatrices[i1] = localMaterialList[i1].ConstitutiveMatrix;
+                }
             }
 
             IMatrixView[][] gatheredCons = procs.Communicator.Gather(localMaterialConsMatrices, procs.MasterProcess);
@@ -113,7 +119,7 @@ namespace ISAAR.MSolve.Analyzers.ObjectManagers
             if (procs.IsMasterProcess)
             {
                 var counter = 0;
-                for (int i1 = 0; i1 < numFullProcesses + 1; i1++)
+                for (int i1 = 0; i1 < numProcesses; i1++)
                 {
                     for (int i2 = 0; i2 < gatheredCons[i1].Length; i2++)
                     {
@@ -143,7 +149,7 @@ namespace ISAAR.MSolve.Analyzers.ObjectManagers
             if (procs.IsMasterProcess)
             {
                 var counter = 0;
-                for (int i1 = 0; i1 < numFullProcesses + 1; i1++)
+                for (int i1 = 0; i1 < numProcesses; i1++)
                 {
                     for (int i2 = 0; i2 < gatheredStresses[i1].Length; i2++)
                     {
