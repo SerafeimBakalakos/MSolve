@@ -14,6 +14,8 @@ using ISAAR.MSolve.Logging;
 using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.Materials.Interfaces;
 using ISAAR.MSolve.MSAnalysis.remoteMatImplementations;
+using ISAAR.MSolve.MultiscaleAnalysis;
+using ISAAR.MSolve.MultiscaleAnalysis.Interfaces;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.Direct;
@@ -21,7 +23,7 @@ using Xunit;
 
 namespace ISAAR.MSolve.Tests.FEM
 {
-    public static class Hexa8NonLinearCantileverDefGradDevelop4
+    public static class Hexa8NonLinearCantileverDefGradDevelop4Multiscale
     {
         private const int subdomainID = 1;
                     
@@ -105,10 +107,95 @@ namespace ISAAR.MSolve.Tests.FEM
                 return (parentAnalyzer, childAnalyzer);
             }
         }
-                      
+
+        public static void HexaCantileverBuilder_copyMS_222(Model model, IMaterialManager materialManager)
+        {
+            double load_value = 0.00219881744271988174427;
+            int subdomainID = 1;
+            var subd1 = new Subdomain(subdomainID);
+            model.SubdomainsDictionary.Add(subdomainID, subd1);
+            IContinuumMaterial3DDefGrad material1 = new RemoteMaterial(materialManager);
+
+            IRVEbuilder homogeneousRveBuilder1 = new HomogeneousRVEBuilderNonLinear();
+
+            IContinuumMaterial3DDefGrad material1 = new MicrostructureDefGrad3D(homogeneousRveBuilder1,
+                m => (new SkylineSolver.Builder()).BuildSolver(m), false, 1);
+
+            double[,] nodeData = new double[,] { {-0.250000,-0.250000,-1.000000},
+            {0.250000,-0.250000,-1.000000},
+            {-0.250000,0.250000,-1.000000},
+            {0.250000,0.250000,-1.000000},
+            {-0.250000,-0.250000,-0.500000},
+            {0.250000,-0.250000,-0.500000},
+            {-0.250000,0.250000,-0.500000},
+            {0.250000,0.250000,-0.500000},
+            {-0.250000,-0.250000,0.000000},
+            {0.250000,-0.250000,0.000000},
+            {-0.250000,0.250000,0.000000},
+            {0.250000,0.250000,0.000000},
+            {-0.250000,-0.250000,0.500000},
+            {0.250000,-0.250000,0.500000},
+            {-0.250000,0.250000,0.500000},
+            {0.250000,0.250000,0.500000},
+            {-0.250000,-0.250000,1.000000},
+            {0.250000,-0.250000,1.000000},
+            {-0.250000,0.250000,1.000000},
+            {0.250000,0.250000,1.000000}};
+
+            int[,] elementData = new int[,] {{1,8,7,5,6,4,3,1,2},
+            {2,12,11,9,10,8,7,5,6},
+            {3,16,15,13,14,12,11,9,10},
+            {4,20,19,17,18,16,15,13,14}, };
+
+            // orismos shmeiwn
+            for (int nNode = 0; nNode < nodeData.GetLength(0); nNode++)
+            {
+                model.NodesDictionary.Add(nNode + 1, new Node(id: nNode + 1, x: nodeData[nNode, 0], y: nodeData[nNode, 1], z: nodeData[nNode, 2]));
+
+            }
+
+            // orismos elements 
+            Element e1;
+            int subdomainID = 1;
+            for (int nElement = 0; nElement < elementData.GetLength(0); nElement++)
+            {
+                e1 = new Element()
+                {
+                    ID = nElement + 1,
+                    ElementType = new Hexa8NonLinearDefGrad(material1, GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2)) // dixws to e. exoume sfalma enw sto beambuilding oxi//edw kaleitai me ena orisma to Hexa8
+                };
+                for (int j = 0; j < 8; j++)
+                {
+                    e1.NodesDictionary.Add(elementData[nElement, j + 1], model.NodesDictionary[elementData[nElement, j + 1]]);
+                }
+                model.ElementsDictionary.Add(e1.ID, e1);
+                model.SubdomainsDictionary[subdomainID].Elements.Add(e1.ID, e1);
+            }
+
+            // constraint vashh opou z=-1
+            for (int k = 1; k < 5; k++)
+            {
+                model.NodesDictionary[k].Constraints.Add(new Constraint { DOF = StructuralDof.TranslationX });
+                model.NodesDictionary[k].Constraints.Add(new Constraint { DOF = StructuralDof.TranslationY });
+                model.NodesDictionary[k].Constraints.Add(new Constraint { DOF = StructuralDof.TranslationZ });
+            }
+
+            // fortish korufhs
+            Load load1;
+            for (int k = 17; k < 21; k++)
+            {
+                load1 = new Load()
+                {
+                    Node = model.NodesDictionary[k],
+                    DOF = StructuralDof.TranslationX,
+                    Amount = 1 * load_value
+                };
+                model.Loads.Add(load1);
+            }
+        }
         private static void BuildCantileverModel(Model model, IMaterialManager materialManager)
         {
-            double load_value = 850;
+            double load_value = 0.00219881744271988174427;
             int subdomainID = 1;
             var subd1 = new Subdomain(subdomainID);
             model.SubdomainsDictionary.Add(subdomainID, subd1);
@@ -155,7 +242,7 @@ namespace ISAAR.MSolve.Tests.FEM
                 e1 = new Element()
                 {
                     ID = nElement + 1,
-                    ElementType = new Hexa8NonLinearDefGrad(material1, GaussLegendre3D.GetQuadratureWithOrder(3, 3, 3)) // dixws to e. exoume sfalma enw sto beambuilding oxi//edw kaleitai me ena orisma to Hexa8                    
+                    ElementType = new Hexa8NonLinearDefGrad(material1, GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2)) // dixws to e. exoume sfalma enw sto beambuilding oxi//edw kaleitai me ena orisma to Hexa8                    
                 };
                 for (int j = 0; j < 8; j++)
                 {
@@ -216,36 +303,30 @@ namespace ISAAR.MSolve.Tests.FEM
             return true;
         }
 
+
+
         private static IReadOnlyList<Dictionary<int, double>> GetExpectedDisplacements()
         {
-            var expectedDisplacements = new Dictionary<int, double>[11]; //TODO: this should be 11 EINAI ARRAY APO DICTIONARIES
+            var expectedDisplacements = new Dictionary<int, double>[9]; //TODO: this should be 11 EINAI ARRAY APO DICTIONARIES            
 
             expectedDisplacements[0] = new Dictionary<int, double> {
-                { 0, 0.039075524153873623}, {11, -0.032541895181220408}, {23, -0.057387148941853101}, {35, -0.071994381984550326}, {47, -0.077053554770404833}
-            };
-
-            expectedDisplacements[0] = new Dictionary<int, double> {
-    { 0,3.907552415387362300e-02 }, {11,-3.254189518122040800e-02 }, {23,-5.738714894185310100e-02 }, {35,-7.199438198455032600e-02 }, {47,-7.705355477040483300e-02 }};
+    { 0,3.335700883958350000e-02 }, {11,-2.632079302287960000e-02 }, {23,-4.942856730039380000e-02 }, {35,-6.269433016162970200e-02 }, {47,-6.765615287120199700e-02 }};
             expectedDisplacements[1] = new Dictionary<int, double> {
-    { 0,4.061313406968563400e-02 }, {11,-3.418876666892714500e-02 }, {23,-6.682708262609965400e-02 }, {35,-9.647418428408424700e-02 }, {47,-1.214556593711370000e-01 }};
+    { 0,3.450997936135530300e-02 }, {11,-2.739535658161109900e-02 }, {23,-5.634615891128919700e-02 }, {35,-8.131311540906950600e-02 }, {47,-1.019128163215870000e-01 }};
             expectedDisplacements[2] = new Dictionary<int, double> {
-    { 0,4.036171804663909300e-02 }, {11,-3.396515033613205900e-02 }, {23,-6.665084050819490600e-02 }, {35,-9.713633946904017000e-02 }, {47,-1.236631490430697600e-01 }};
+    { 0,3.433216808183409800e-02 }, {11,-2.726099954481620000e-02 }, {23,-5.629518934457999900e-02 }, {35,-8.199981263488670400e-02 }, {47,-1.039303808027040000e-01 }};
             expectedDisplacements[3] = new Dictionary<int, double> {
-    { 0,4.032905162001462800e-02 }, {11,-3.393260905426281900e-02 }, {23,-6.657423779424630200e-02 }, {35,-9.701032579889114200e-02 }, {47,-1.234941821043235900e-01 }};
+    { 0,3.431257880330890200e-02 }, {11,-2.724173809701519900e-02 }, {23,-5.624825754899259700e-02 }, {35,-8.192386243981529500e-02 }, {47,-1.038312844223340000e-01 }};
             expectedDisplacements[4] = new Dictionary<int, double> {
-    { 0,4.032900093364350700e-02 }, {11,-3.393255831972321500e-02 }, {23,-6.657411965268195100e-02 }, {35,-9.701012513482368300e-02 }, {47,-1.234939001150344400e-01 }};
+    { 0,6.894482083872839600e-02 }, {11,-5.475067582655650200e-02 }, {23,-1.173163323056880000e-01 }, {35,-1.790583221645240000e-01 }, {47,-2.376077026742320100e-01 }};
             expectedDisplacements[5] = new Dictionary<int, double> {
-    { 0,8.095088461395548400e-02 }, {11,-6.826589092291023000e-02 }, {23,-1.393261307096994000e-01 }, {35,-2.129883579558797000e-01 }, {47,-2.840192458274605800e-01 }};
+    { 0,6.972463521590920000e-02 }, {11,-5.540512678394360300e-02 }, {23,-1.220341983649240000e-01 }, {35,-1.920604720743059900e-01 }, {47,-2.620585115820520100e-01 }};
             expectedDisplacements[6] = new Dictionary<int, double> {
-    { 0,8.179065808895391600e-02 }, {11,-6.914910025670165100e-02 }, {23,-1.449912527358244700e-01 }, {35,-2.283048858573358000e-01 }, {47,-3.126785624370127000e-01 }};
+    { 0,6.858059919522070700e-02 }, {11,-5.432730995597089700e-02 }, {23,-1.192782599647590100e-01 }, {35,-1.873563500914020000e-01 }, {47,-2.554697448169410100e-01 }};
             expectedDisplacements[7] = new Dictionary<int, double> {
-    { 0,8.008398180684392400e-02 }, {11,-6.747544383562544000e-02 }, {23,-1.408463169597064000e-01 }, {35,-2.210877012127209200e-01 }, {47,-3.022981704019522300e-01 }};
+    { 0,6.835175024769160600e-02 }, {11,-5.410392477418309700e-02 }, {23,-1.186661258178350100e-01 }, {35,-1.861855064114160100e-01 }, {47,-2.536413732588089800e-01 }};
             expectedDisplacements[8] = new Dictionary<int, double> {
-    { 0,7.976397887674688300e-02 }, {11,-6.715673915988762400e-02 }, {23,-1.400151566610138300e-01 }, {35,-2.195056794855129700e-01 }, {47,-2.998365539162924900e-01 }};
-            expectedDisplacements[9] = new Dictionary<int, double> {
-    { 0,7.975945236918889600e-02 }, {11,-6.715223199537226400e-02 }, {23,-1.400036710136937400e-01 }, {35,-2.194845023343510200e-01 }, {47,-2.998046100841828000e-01 }};
-            expectedDisplacements[10] = new Dictionary<int, double> {
-    { 0,7.975944951878896600e-02 }, {11,-6.715222916021290600e-02 }, {23,-1.400036636464831200e-01 }, {35,-2.194844883932760600e-01 }, {47,-2.998045884933974200e-01 }};
+    { 0,6.834878138258780600e-02 }, {11,-5.410102312471470200e-02 }, {23,-1.186583648525040000e-01 }, {35,-1.861711431280629900e-01 }, {47,-2.536196564358649800e-01 }};
 
 
             return expectedDisplacements;
