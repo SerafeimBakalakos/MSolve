@@ -32,7 +32,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Paper1
 {
     public static class Paper1Example2
     {
-        private const int numElementsX = 200, numElementsY = 200;
+        private const int numElementsX = 400, numElementsY = 400;
         private const int subdomainID = 0;
         private const double minX = 0, minY = 0, maxX = 2000, maxY = 2000;
         //private const double minX = -1.0, minY = -1.0, maxX = 1.0, maxY = 1.0;
@@ -40,14 +40,11 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Paper1
         private const double thickness = 1.0;
         private static readonly PhaseGenerator generator = new PhaseGenerator(minX, maxX, numElementsX);
         private const bool integrationWithSubtriangles = true;
-        private const double matrixConductivity = 0.2, inclusionConductivity = 2000, layerConductivity = 0.3;
-        private const double matrixLayerInterfaceConductivity = 1E5 /*0.25*/, 
-            layerLayerInterfaceConductivity = 1E3, //1E3
-            inclusionLayerInterfaceConductivity = 1E3; //1E3
+        
         private const double specialHeatCoeff = 1.0;
         private const double singularityRelativeAreaTolerance = 1E-8;
 
-        public static void Run()
+        public static void RunSingleAnalysisAndPlotting()
         {
             var phaseReader = new PhaseReader(true, 0);
             string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example2\";
@@ -59,7 +56,110 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Paper1
             PlotPhasesInteractions(() => geometricModel, paths);
         }
 
-        public static void RunHomogenization()
+        public static void RunParametricHomogenization()
+        {
+            double[] matrixLayerInterfaceCondictivities = 
+            { 
+                //1E-5, 
+                //1E-4, 
+                //1E-3, 
+                //1E-2,
+                //0.009,
+                //1E-1, 
+                //1E0, 
+                //1E1, 
+                //1E2, 
+                //1E3,
+                //1E4,
+                //9999, 
+                //1E5, 
+                //99999 
+            };
+            Console.WriteLine();
+            Console.WriteLine("matrix-layer conductivity | effective conductivity XX");
+            for (int i = 0; i < matrixLayerInterfaceCondictivities.Length; ++i)
+            {
+                var conductivities = new Conductivities
+                {
+                    Matrix = 0.2, Inclusion = 2000, Layer = 0.3,
+                    MatrixLayerInterface = matrixLayerInterfaceCondictivities[i],
+                    LayerLayerInterface = 1E3, InclusionLayerInterface = 1E3,
+                };
+
+                IMatrix effectiveConductivity = RunHomogenization(conductivities);
+                Console.WriteLine(matrixLayerInterfaceCondictivities[i] + " " + effectiveConductivity[0, 0]);
+            }
+
+            double[] layerLayerInterfaceCondictivities = 
+            { 
+                //1E-5, 
+                //1E-4, 
+                //1E-3, 
+                //1E-2,
+                //1E-1,
+                //1E0,
+                //1E1,
+                //1E2,
+                //1E3,
+                //1E4,
+                //1E5,
+                //99999 
+            };
+            Console.WriteLine();
+            Console.WriteLine("layer-layer conductivity | effective conductivity XX");
+            for (int i = 0; i < layerLayerInterfaceCondictivities.Length; ++i)
+            {
+                var conductivities = new Conductivities
+                {
+                    Matrix = 0.2,
+                    Inclusion = 2000,
+                    Layer = 0.3,
+                    MatrixLayerInterface = 0.25,
+                    LayerLayerInterface = layerLayerInterfaceCondictivities[i],
+                    InclusionLayerInterface = 1E3,
+                };
+
+                IMatrix effectiveConductivity = RunHomogenization(conductivities);
+                Console.WriteLine(layerLayerInterfaceCondictivities[i] + " " + effectiveConductivity[0, 0]);
+            }
+
+            double[] inclusionLayerInterfaceCondictivities = 
+            { 
+                //1E-5, 
+                //1E-4, 
+                //1E-3, 
+                //1E-2, 
+                //1E-1,
+                //0.099,
+                //1E0, 
+                //1E1, 
+                //9.99,
+                //1E2, 
+                //1E3, 
+                //1E4, 
+                9999,
+                1E5, 
+            };
+            Console.WriteLine();
+            Console.WriteLine("inclusion-layer conductivity | effective conductivity XX");
+            for (int i = 0; i < inclusionLayerInterfaceCondictivities.Length; ++i)
+            {
+                var conductivities = new Conductivities
+                {
+                    Matrix = 0.2,
+                    Inclusion = 2000,
+                    Layer = 0.3,
+                    MatrixLayerInterface = 0.25,
+                    LayerLayerInterface = 1E3,
+                    InclusionLayerInterface = inclusionLayerInterfaceCondictivities[i],
+                };
+
+                IMatrix effectiveConductivity = RunHomogenization(conductivities);
+                Console.WriteLine(inclusionLayerInterfaceCondictivities[i] + " " + effectiveConductivity[0, 0]);
+            }
+        }
+
+        private static IMatrix RunHomogenization(Conductivities conductivities)
         {
             string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example2\";
             string matrixLayersFile = directory + "boundaries.txt";
@@ -67,7 +167,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Paper1
             var phaseReader = new PhaseReader(true, 0);
             GeometricModel geometricModel = phaseReader.ReadPhasesFromFile(matrixLayersFile, inclusionsFile);
 
-            XModel physicalModel = CreatePhysicalModel(geometricModel);
+            XModel physicalModel = CreatePhysicalModel(geometricModel, conductivities);
             PrepareForAnalysis(physicalModel, geometricModel);
 
             // Analysis
@@ -83,14 +183,24 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Paper1
             homogenization.Initialize();
             homogenization.Solve();
 
-            IMatrix conductivity = homogenization.EffectiveConstitutiveTensors[subdomainID];
-            Console.WriteLine($"C = [ {conductivity[0, 0]} {conductivity[0, 1]}; {conductivity[1, 0]} {conductivity[1, 1]} ]");
+            solver.Dispose();
+            return homogenization.EffectiveConstitutiveTensors[subdomainID];
         }
 
         private static void PlotPhasesInteractions(Func<GeometricModel> genPhases, OutputPaths paths)
         {
+            var conductivities = new Conductivities
+            {
+                Matrix = 0.2, // Paper: 0.2
+                Inclusion = 2000, // Paper: 2000
+                Layer = 0.3, // 0.3
+                MatrixLayerInterface = 0.25, // guess: 0.25
+                LayerLayerInterface = 1E3, // guess: 1E3
+                InclusionLayerInterface = 1E3, // paper: 1E-5
+            };
+
             GeometricModel geometricModel = genPhases();
-            XModel physicalModel = CreatePhysicalModel(geometricModel);
+            XModel physicalModel = CreatePhysicalModel(geometricModel, conductivities);
             PrepareForAnalysis(physicalModel, geometricModel);
             
             var feMesh = new ContinuousOutputMesh<XNode>(physicalModel.Nodes, physicalModel.Elements);
@@ -156,7 +266,7 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Paper1
             }
         }
 
-        private static XModel CreatePhysicalModel(GeometricModel geometricModel)
+        private static XModel CreatePhysicalModel(GeometricModel geometricModel, Conductivities conductivities)
         {
             var physicalModel = new XModel();
             physicalModel.Subdomains[subdomainID] = new XSubdomain(subdomainID);
@@ -185,11 +295,11 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Paper1
             IBoundaryIntegration boundaryIntegration = new LinearBoundaryIntegration(GaussLegendre1D.GetQuadratureWithOrder(3));
 
             // Materials
-            var matrixMaterial = new ThermalMaterial(matrixConductivity, specialHeatCoeff);
-            var inclusionMaterial = new ThermalMaterial(inclusionConductivity, specialHeatCoeff);
-            var layerMaterial = new ThermalMaterial(layerConductivity, specialHeatCoeff);
+            var matrixMaterial = new ThermalMaterial(conductivities.Matrix, specialHeatCoeff);
+            var inclusionMaterial = new ThermalMaterial(conductivities.Inclusion, specialHeatCoeff);
+            var layerMaterial = new ThermalMaterial(conductivities.Layer, specialHeatCoeff);
             var materialField = new MatrixInclusionsLayersMaterialField(matrixMaterial, inclusionMaterial, layerMaterial,
-                matrixLayerInterfaceConductivity, layerLayerInterfaceConductivity, inclusionLayerInterfaceConductivity, 
+                conductivities.MatrixLayerInterface, conductivities.LayerLayerInterface, conductivities.InclusionLayerInterface, 
                 DefaultPhase.DefaultPhaseID);
 
             // Elements
@@ -246,7 +356,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Paper1
 
         private static IVectorView RunAnalysis(XModel physicalModel)
         {
-            SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(physicalModel);
+            Console.WriteLine("Starting analysis");
+            SuiteSparseSolver solver = new SuiteSparseSolver.Builder().BuildSolver(physicalModel);
+            //SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(physicalModel);
             var problem = new ProblemThermalSteadyState(physicalModel, solver);
             var linearAnalyzer = new LinearAnalyzer(physicalModel, solver, problem);
             var staticAnalyzer = new StaticAnalyzer(physicalModel, solver, problem, linearAnalyzer);
@@ -254,7 +366,22 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Paper1
             staticAnalyzer.Initialize();
             staticAnalyzer.Solve();
 
+            Console.WriteLine("Analysis finished");
+
+
             return solver.LinearSystems[subdomainID].Solution;
+        }
+
+        private class Conductivities
+        {
+            public double Matrix { get; set; }
+            public double Inclusion { get; set; }
+            public double Layer { get; set; }
+
+            public double MatrixLayerInterface { get; set; }
+            public double LayerLayerInterface { get; set; }
+            public double InclusionLayerInterface { get; set; }
+
         }
     }
 }

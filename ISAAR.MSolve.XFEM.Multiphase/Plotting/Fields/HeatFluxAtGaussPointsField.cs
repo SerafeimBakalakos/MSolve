@@ -33,6 +33,9 @@ namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Fields
             var result = new Dictionary<CartesianPoint, double[]>();
             foreach (IXFiniteElement element in model.Elements)
             {
+                //#region debug
+                //if (element.PhaseIntersections.Count >= 1) continue;
+                //#endregion
                 (IReadOnlyList<GaussPoint> gaussPoints, IReadOnlyList<ThermalMaterial> materials) 
                     = element.GetMaterialsForVolumeIntegration();
                 double[] nodalTemperatures = Utilities.ExtractNodalTemperatures(element, subdomain, solution);
