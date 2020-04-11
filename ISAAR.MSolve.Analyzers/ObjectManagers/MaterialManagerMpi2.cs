@@ -67,10 +67,22 @@ namespace ISAAR.MSolve.Analyzers.ObjectManagers
             numProcesses = procs.GetNumSubdomainsPerProcess().Count();
 
             numFullProcesses = sizeOfGLobalMaterialDatabase % numProcesses;
-            numRemainderProcesses = numProcesses - numFullProcesses;
 
-            numMaterialsOfFullProcesses = sizeOfGLobalMaterialDatabase / numFullProcesses +1 ;
-            numMaterialsOfRemaindeProcess = sizeOfGLobalMaterialDatabase / numFullProcesses;
+            if (!(numFullProcesses == 0))
+            {
+                numRemainderProcesses = numProcesses - numFullProcesses;
+
+                numMaterialsOfFullProcesses = sizeOfGLobalMaterialDatabase / numProcesses + 1;
+                numMaterialsOfRemaindeProcess = sizeOfGLobalMaterialDatabase / numProcesses;
+            }
+            else
+            {
+                numFullProcesses = numProcesses;
+                numRemainderProcesses = numProcesses - numFullProcesses;
+
+                numMaterialsOfFullProcesses = sizeOfGLobalMaterialDatabase / numFullProcesses ;
+                numMaterialsOfRemaindeProcess = sizeOfGLobalMaterialDatabase / numFullProcesses; // axrhsto se afthn thn periptwsh pou
+            }
 
             if(procs.OwnRank<numFullProcesses) //ennooume oti vriskomaste sthn teleftaia 
             {

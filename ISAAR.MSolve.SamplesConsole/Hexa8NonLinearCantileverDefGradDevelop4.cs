@@ -93,7 +93,7 @@ namespace ISAAR.MSolve.Tests.FEM
             int numSubdomains = numProcesses;
             var procs = ProcessDistribution.CreateDistribution(numProcesses, numSubdomains); // FetiDPDofSeparatorMpiTests .CreateModelAndDofSeparator
 
-            IMaterialManager materialManager = new MaterialManagerMpi(new ElasticMaterial3DDefGrad() { PoissonRatio = 0.3, YoungModulus = 1353000 }, procs);
+            IMaterialManager materialManager = new MaterialManagerMpi2(new ElasticMaterial3DDefGrad() { PoissonRatio = 0.3, YoungModulus = 1353000 }, procs);
 
             Model model = new Model();//'
 
