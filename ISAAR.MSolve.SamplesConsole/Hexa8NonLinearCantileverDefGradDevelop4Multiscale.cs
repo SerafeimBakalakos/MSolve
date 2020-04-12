@@ -29,14 +29,18 @@ namespace ISAAR.MSolve.Tests.FEM
                     
         public static void ParallelNonLinearCantilever(int numProcesses)
         {
-            Console.Write("Enter integer: ");
-            System.Threading.Thread.Sleep(20000);
-
-
+                   
             int numSubdomains = numProcesses;
             var procs = ProcessDistribution.CreateDistribution(numProcesses, numSubdomains); // FetiDPDofSeparatorMpiTests .CreateModelAndDofSeparator
 
-            IMaterialManager materialManager = new MaterialManagerMpi2(new ElasticMaterial3DDefGrad() { PoissonRatio = 0.3, YoungModulus = 1353000 }, procs);
+            Console.Write("thread sleeping for sychronization");
+            //Console.Write($"waiting time = " + procs.OwnRank*20000);
+            System.Threading.Thread.Sleep(/*(procs.OwnRank+1)**/20000);
+
+            IRVEbuilder homogeneousRveBuilder1 = new HomogeneousRVEBuilderNonLinearNoRenum();
+            IContinuumMaterial3DDefGrad material1 = new MicrostructureDefGrad3D(homogeneousRveBuilder1,
+                m => (new SkylineSolver.Builder()).BuildSolver(m), false, 1);
+            IMaterialManager materialManager = new MaterialManagerMpi2(material1, procs);
 
             Model model = new Model();//'
 
@@ -47,7 +51,7 @@ namespace ISAAR.MSolve.Tests.FEM
 
 
             var increments = 2;//.
-            var resTol = 1E-8;
+            var resTol = 1E-3;// sto multiscale xrhsimopoihsame thn default.
             int maxIters = 100;
             int itersRebuild = 1;
 
@@ -108,7 +112,7 @@ namespace ISAAR.MSolve.Tests.FEM
             }
         }
 
-        public static void HexaCantileverBuilder_copyMS_222(Model model, IMaterialManager materialManager)
+        public static void BuildCantileverModel(Model model, IMaterialManager materialManager)
         {
             double load_value = 0.00219881744271988174427;
             int subdomainID = 1;
@@ -116,10 +120,7 @@ namespace ISAAR.MSolve.Tests.FEM
             model.SubdomainsDictionary.Add(subdomainID, subd1);
             IContinuumMaterial3DDefGrad material1 = new RemoteMaterial(materialManager);
 
-            IRVEbuilder homogeneousRveBuilder1 = new HomogeneousRVEBuilderNonLinear();
-
-            IContinuumMaterial3DDefGrad material1 = new MicrostructureDefGrad3D(homogeneousRveBuilder1,
-                m => (new SkylineSolver.Builder()).BuildSolver(m), false, 1);
+            
 
             double[,] nodeData = new double[,] { {-0.250000,-0.250000,-1.000000},
             {0.250000,-0.250000,-1.000000},
@@ -156,7 +157,6 @@ namespace ISAAR.MSolve.Tests.FEM
 
             // orismos elements 
             Element e1;
-            int subdomainID = 1;
             for (int nElement = 0; nElement < elementData.GetLength(0); nElement++)
             {
                 e1 = new Element()
@@ -193,99 +193,7 @@ namespace ISAAR.MSolve.Tests.FEM
                 model.Loads.Add(load1);
             }
         }
-        private static void BuildCantileverModel(Model model, IMaterialManager materialManager)
-        {
-            double load_value = 0.00219881744271988174427;
-            int subdomainID = 1;
-            var subd1 = new Subdomain(subdomainID);
-            model.SubdomainsDictionary.Add(subdomainID, subd1);
-            IContinuumMaterial3DDefGrad material1 = new RemoteMaterial(materialManager);
-            //IContinuumMaterial3DDefGrad material1 = new ElasticMaterial3DDefGrad() { PoissonRatio = 0.3, YoungModulus = 1353000 };
-
-            double[,] nodeData = new double[,] { {-0.250000,-0.250000,-1.000000},
-            {0.250000,-0.250000,-1.000000},
-            {-0.250000,0.250000,-1.000000},
-            {0.250000,0.250000,-1.000000},
-            {-0.250000,-0.250000,-0.500000},
-            {0.250000,-0.250000,-0.500000},
-            {-0.250000,0.250000,-0.500000},
-            {0.250000,0.250000,-0.500000},
-            {-0.250000,-0.250000,0.000000},
-            {0.250000,-0.250000,0.000000},
-            {-0.250000,0.250000,0.000000},
-            {0.250000,0.250000,0.000000},
-            {-0.250000,-0.250000,0.500000},
-            {0.250000,-0.250000,0.500000},
-            {-0.250000,0.250000,0.500000},
-            {0.250000,0.250000,0.500000},
-            {-0.250000,-0.250000,1.000000},
-            {0.250000,-0.250000,1.000000},
-            {-0.250000,0.250000,1.000000},
-            {0.250000,0.250000,1.000000}};
-
-            int[,] elementData = new int[,] {{1,8,7,5,6,4,3,1,2},
-            {2,12,11,9,10,8,7,5,6},
-            {3,16,15,13,14,12,11,9,10},
-            {4,20,19,17,18,16,15,13,14}, };
-
-            // orismos shmeiwn
-            for (int nNode = 0; nNode < nodeData.GetLength(0); nNode++)
-            {
-                model.NodesDictionary.Add(nNode + 1, new Node(id: nNode + 1, x: nodeData[nNode, 0], y: nodeData[nNode, 1], z: nodeData[nNode, 2]));
-
-            }
-
-            // orismos elements 
-            Element e1;
-            for (int nElement = 0; nElement < elementData.GetLength(0); nElement++)
-            {
-                e1 = new Element()
-                {
-                    ID = nElement + 1,
-                    ElementType = new Hexa8NonLinearDefGrad(material1, GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2)) // dixws to e. exoume sfalma enw sto beambuilding oxi//edw kaleitai me ena orisma to Hexa8                    
-                };
-                for (int j = 0; j < 8; j++)
-                {
-                    e1.NodesDictionary.Add(elementData[nElement, j + 1], model.NodesDictionary[elementData[nElement, j + 1]]);
-                }
-                model.ElementsDictionary.Add(e1.ID, e1);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(e1.ID, e1);
-            }
-
-            // constraint vashh opou z=-1
-            for (int k = 1; k < 5; k++)
-            {
-                model.NodesDictionary[k].Constraints.Add(new Constraint()
-                {
-                    Amount = 0,
-                    DOF = StructuralDof.TranslationX
-                });
-                model.NodesDictionary[k].Constraints.Add(new Constraint()
-                {
-                    Amount = 0,
-                    DOF = StructuralDof.TranslationY
-                });
-                model.NodesDictionary[k].Constraints.Add(new Constraint()
-                {
-                    Amount = 0,
-                    DOF = StructuralDof.TranslationZ
-                });
-            }
-
-            // fortish korufhs
-            Load load1;
-            for (int k = 17; k < 21; k++)
-            {
-                load1 = new Load()
-                {
-                    Node = model.NodesDictionary[k],
-                    DOF = StructuralDof.TranslationX,
-                    Amount = 1 * load_value
-                };
-                model.Loads.Add(load1);
-            }
-
-        }
+        
 
         private static bool AreDisplacementsSame(IReadOnlyList<Dictionary<int, double>> expectedDisplacements, TotalDisplacementsPerIterationLog computedDisplacements)
         {

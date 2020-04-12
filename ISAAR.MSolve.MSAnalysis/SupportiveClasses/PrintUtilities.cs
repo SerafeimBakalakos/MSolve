@@ -55,6 +55,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
 
             }
             reader.Close();
+            reader.Dispose();
             return data;
         }
 
@@ -70,6 +71,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
 
             }
             reader.Close();
+            reader.Dispose();
             return data;
         }
 
