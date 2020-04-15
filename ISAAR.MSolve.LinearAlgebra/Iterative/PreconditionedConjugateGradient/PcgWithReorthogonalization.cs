@@ -44,7 +44,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
         /// Set to true if <paramref name="initialSolution"/> is the zero vector, to avoid clearing it.
         /// </param>
         /// <exception cref="InvalidOperationException">Thrown if there are no direction vectors stored yet.</exception>
-        public void CalculateInitialSolutionFromStoredDirections(IVectorView rhsNew, IVector initialSolution, 
+        public void CalculateInitialSolutionFromStoredDirections(IVectorView rhsNew, IVector initialSolution,
             bool isSolutionZero)
         {
             if (reorthoCache.Directions.Count < 1) throw new InvalidOperationException("There are no direction vectors stored.");
@@ -57,7 +57,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
             // D_nd = [d_1 ... d_nd], Q_nd = A * D_nd = [q_1 ... q_nd], Q_nd * D_nd = diag([d1*A*d1 ... d_nd*A*d_nd])
             for (int i = 0; i < reorthoCache.Directions.Count; ++i)
             {
-                // x_d[i] = 1/(d_i * q_i) * (d_i * b)
+                // x_d[i] = (d_i * b) / (d_i * q_i) 
                 double xd = reorthoCache.Directions[i].DotProduct(rhsNew) / reorthoCache.DirectionsTimesMatrixTimesDirections[i];
 
                 Debug.Assert(!double.IsNaN(xd));
@@ -91,13 +91,13 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
             // q = A * d
             matrixTimesDirection = zeroVectorInitializer();
             Matrix.Multiply(direction, matrixTimesDirection);
-            double directionTimesMatrixTimesDirection = direction.DotProduct(matrixTimesDirection);
+            DirectionTimesMatrixTimesDirection = direction.DotProduct(matrixTimesDirection);
 
             // Update the direction vectors cache
             reorthoCache.StoreDirectionData(this);
 
             // δnew = δ0 = r * d
-            double resDotPrecondRes = residual.DotProduct(direction);
+            resDotPrecondRes = residual.DotProduct(direction);
 
             // The convergence strategy must be initialized immediately after the first r and r*inv(M)*r are computed.
             convergence.Initialize(this);
@@ -108,7 +108,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
             //TODO: Find proof that this correct. Why is it better than the default formula α = (r * s) / (d * q)?
             // α = (d * r) / (d * q) = (d * r) / (d * (A * d)) 
             // In the first iteration all multiplications have already been performed.
-            stepSize = resDotPrecondRes / directionTimesMatrixTimesDirection;
+            stepSize = resDotPrecondRes / DirectionTimesMatrixTimesDirection;
 
             for (int iteration = 0; iteration < maxIterations; ++iteration)
             {
@@ -129,6 +129,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
 
                 /// At this point we can check if CG has converged and exit, thus avoiding the uneccesary operations that follow.
                 residualNormRatio = convergence.EstimateResidualNormRatio(this);
+                Debug.WriteLine($"PCG (reorthogonalization) Iteration = {iteration}: residual norm ratio = {residualNormRatio}");
                 if (residualNormRatio <= residualTolerance)
                 {
                     return new IterativeStatistics
@@ -145,14 +146,14 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
 
                 // q = A * d
                 Matrix.Multiply(direction, matrixTimesDirection);
-                directionTimesMatrixTimesDirection = direction.DotProduct(matrixTimesDirection);
+                DirectionTimesMatrixTimesDirection = direction.DotProduct(matrixTimesDirection);
 
                 // Update the direction vectors cache
                 reorthoCache.StoreDirectionData(this);
 
                 //TODO: Find proof that this correct. Why is it better than the default formula α = (r * s) / (d * q)?
                 // α = (d * r) / (d * q) = (d * r) / (d * (A * d)) 
-                stepSize = direction.DotProduct(residual) / directionTimesMatrixTimesDirection;
+                stepSize = direction.DotProduct(residual) / DirectionTimesMatrixTimesDirection;
             }
 
             // We reached the max iterations before PCG converged
@@ -183,7 +184,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
         /// required parameters and provides defaults for the rest.
         /// Author: Serafeim Bakalakos
         /// </summary>
-        public class Builder: PcgBuilderBase
+        public class Builder : PcgBuilderBase
         {
             /// <summary>
             /// Creates a new instance of <see cref="PcgWithReorthogonalization"/>.
