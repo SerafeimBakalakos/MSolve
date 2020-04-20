@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using ISAAR.MSolve.LinearAlgebra.Commons;
+using ISAAR.MSolve.LinearAlgebra.Iterative.Preconditioning;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
@@ -13,14 +15,12 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
     /// "Seismic soil-structure interaction with finite elements and the method of substructures", George Stavroulakis, 2014
     /// Authors: Serafeim Bakalakos, George Stavroulakis 
     /// </summary>
-    public class PcgWithReorthogonalization : PcgAlgorithmBase
+    public class ReorthogonalizedPcg : PcgAlgorithmBase
     {
-        private const string name = "PCG with reorthogonalization";
+        private const string name = "Reorthogonalized PCG";
 
-        //TODO: this could be abstracted to use a cyclic cache.
-        private readonly PcgReorthogonalizationCache reorthoCache = new PcgReorthogonalizationCache();
 
-        private PcgWithReorthogonalization(double residualTolerance, IMaxIterationsProvider maxIterationsProvider,
+        private ReorthogonalizedPcg(double residualTolerance, IMaxIterationsProvider maxIterationsProvider,
             IPcgResidualConvergence residualConvergence, IPcgResidualUpdater residualCorrection) :
             base(residualTolerance, maxIterationsProvider, residualConvergence, residualCorrection)
         {
@@ -31,6 +31,9 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
         /// </summary>
         public double DirectionTimesMatrixTimesDirection { get; private set; }
 
+        //TODO: this could be abstracted to use a cyclic cache.
+        public PcgReorthogonalizationCache ReorthoCache { get; set; } = new PcgReorthogonalizationCache();
+
         /// <summary>
         /// Calculates the initial approximation to the linear system's solution vector, by using a series of conjugate direction 
         /// vectors that have been stored previously by PCG during the solution of other linear systems with the same matrix. 
@@ -40,32 +43,25 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
         /// <param name="initialSolution">
         /// The initial approximation to the solution vector, which PCG will improve. It will be overwritten by this method.
         /// </param>
-        /// <param name="isSolutionZero">
-        /// Set to true if <paramref name="initialSolution"/> is the zero vector, to avoid clearing it.
-        /// </param>
         /// <exception cref="InvalidOperationException">Thrown if there are no direction vectors stored yet.</exception>
-        public void CalculateInitialSolutionFromStoredDirections(IVectorView rhsNew, IVector initialSolution,
-            bool isSolutionZero)
+        public void CalculateInitialSolutionFromStoredDirections(IVectorView rhsNew, IVector initialSolution)
         {
-            if (reorthoCache.Directions.Count < 1) throw new InvalidOperationException("There are no direction vectors stored.");
-            if (!isSolutionZero) initialSolution.Clear();
-
             //TODO: An implementation by G. Stavroulakis discarded the last stored direction vector at this point. Why?
             //reorthoCache.RemoveNewDirectionVectorData(1);
 
             // x0 = D_nd * x_d, x_d = inv(Q_nd * D_nd) * D_nd^T * b
             // D_nd = [d_1 ... d_nd], Q_nd = A * D_nd = [q_1 ... q_nd], Q_nd * D_nd = diag([d1*A*d1 ... d_nd*A*d_nd])
-            for (int i = 0; i < reorthoCache.Directions.Count; ++i)
+            for (int i = 0; i < ReorthoCache.Directions.Count; ++i)
             {
                 // x_d[i] = (d_i * b) / (d_i * q_i) 
-                double xd = reorthoCache.Directions[i].DotProduct(rhsNew) / reorthoCache.DirectionsTimesMatrixTimesDirections[i];
+                double xd = ReorthoCache.Directions[i].DotProduct(rhsNew) / ReorthoCache.DirectionsTimesMatrixTimesDirections[i];
 
                 Debug.Assert(!double.IsNaN(xd));
                 Debug.Assert(!double.IsPositiveInfinity(xd));
                 Debug.Assert(!double.IsNegativeInfinity(xd));
 
                 // x0 += d_i * x_d[i]
-                initialSolution.AxpyIntoThis(reorthoCache.Directions[i], xd);
+                initialSolution.AxpyIntoThis(ReorthoCache.Directions[i], xd);
             }
         }
 
@@ -78,25 +74,55 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
             DirectionTimesMatrixTimesDirection = 0.0;
         }
 
+        public override IterativeStatistics Solve(ILinearTransformation matrix, IPreconditioner preconditioner, IVectorView rhs,
+            IVector solution, bool initialGuessIsZero, Func<IVector> zeroVectorInitializer)
+        {
+            //TODO: find a better way to handle optimizations for the case x0=0, than using an initialGuessIsZero flag
+            Preconditions.CheckMultiplicationDimensions(matrix.NumColumns, solution.Length);
+            Preconditions.CheckSystemSolutionDimensions(matrix.NumRows, rhs.Length);
+
+            this.Matrix = matrix;
+            this.Preconditioner = preconditioner;
+            this.Rhs = rhs;
+
+            // Initial solution and rhs (r = b - A * x)
+            this.solution = solution;
+            if (ReorthoCache.Directions.Count > 0)
+            {
+                if (!initialGuessIsZero) solution.Clear();
+                CalculateInitialSolutionFromStoredDirections(rhs, solution);
+                residual = ExactResidual.Calculate(matrix, rhs, solution);
+            }
+            else // preferably call base method
+            {
+                // r = b - A * x
+                if (initialGuessIsZero) residual = rhs.Copy();
+                else residual = ExactResidual.Calculate(matrix, rhs, solution);
+            }
+
+            // Initialize vectors 
+            //TODO: Pehaps I can just clear them from previous iterations 
+            precondResidual = zeroVectorInitializer();
+            direction = zeroVectorInitializer();
+            matrixTimesDirection = zeroVectorInitializer();
+
+            int maxIterations = maxIterationsProvider.GetMaxIterations(matrix.NumColumns);
+            return SolveInternal(maxIterations, zeroVectorInitializer);
+        }
+
         protected override IterativeStatistics SolveInternal(int maxIterations, Func<IVector> zeroVectorInitializer)
         {
-            // In contrast to the source algorithm, we initialize s here. At each iteration it will be overwritten, 
-            // thus avoiding allocating deallocating a new vector.
-            precondResidual = zeroVectorInitializer();
-
-            // d = inv(M) * r
-            direction = zeroVectorInitializer();
+            // d0 = s0 = inv(M) * r0
             Preconditioner.SolveLinearSystem(residual, direction);
 
-            // q = A * d
-            matrixTimesDirection = zeroVectorInitializer();
+            // q0 = A * d0
             Matrix.Multiply(direction, matrixTimesDirection);
             DirectionTimesMatrixTimesDirection = direction.DotProduct(matrixTimesDirection);
 
             // Update the direction vectors cache
-            reorthoCache.StoreDirectionData(this);
+            ReorthoCache.StoreDirectionData(this);
 
-            // δnew = δ0 = r * d
+            // δnew = δ0 = r0 * s0 = r0 * d0
             resDotPrecondRes = residual.DotProduct(direction);
 
             // The convergence strategy must be initialized immediately after the first r and r*inv(M)*r are computed.
@@ -105,9 +131,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
             // This is also used as output
             double residualNormRatio = double.NaN;
 
-            //TODO: Find proof that this correct. Why is it better than the default formula α = (r * s) / (d * q)?
-            // α = (d * r) / (d * q) = (d * r) / (d * (A * d)) 
-            // In the first iteration all multiplications have already been performed.
+            // α0 = (d0 * r0) / (d0 * q0) = (s0 * r0) / (d0 * (A * d0)) 
             stepSize = resDotPrecondRes / DirectionTimesMatrixTimesDirection;
 
             for (int iteration = 0; iteration < maxIterations; ++iteration)
@@ -129,7 +153,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
 
                 /// At this point we can check if CG has converged and exit, thus avoiding the uneccesary operations that follow.
                 residualNormRatio = convergence.EstimateResidualNormRatio(this);
-                Debug.WriteLine($"PCG (reorthogonalization) Iteration = {iteration}: residual norm ratio = {residualNormRatio}");
+                Debug.WriteLine($"Reorthogonalized PCG iteration = {iteration}: residual norm ratio = {residualNormRatio}");
                 if (residualNormRatio <= residualTolerance)
                 {
                     return new IterativeStatistics
@@ -149,9 +173,8 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
                 DirectionTimesMatrixTimesDirection = direction.DotProduct(matrixTimesDirection);
 
                 // Update the direction vectors cache
-                reorthoCache.StoreDirectionData(this);
+                ReorthoCache.StoreDirectionData(this);
 
-                //TODO: Find proof that this correct. Why is it better than the default formula α = (r * s) / (d * q)?
                 // α = (d * r) / (d * q) = (d * r) / (d * (A * d)) 
                 stepSize = direction.DotProduct(residual) / DirectionTimesMatrixTimesDirection;
             }
@@ -171,27 +194,32 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
             // d = s - sum(β_i * d_i), 0 <= i < currentIteration
             // β_i = (s * q_i) / (d_i * q_i)
             direction.CopyFrom(preconditionedResidual);
-            for (int i = 0; i < reorthoCache.Directions.Count; ++i)
+            for (int i = 0; i < ReorthoCache.Directions.Count; ++i)
             {
-                double beta = preconditionedResidual.DotProduct(reorthoCache.MatrixTimesDirections[i])
-                    / reorthoCache.DirectionsTimesMatrixTimesDirections[i];
-                direction.AxpyIntoThis(reorthoCache.Directions[i], -beta);
+                double beta = preconditionedResidual.DotProduct(ReorthoCache.MatrixTimesDirections[i])
+                    / ReorthoCache.DirectionsTimesMatrixTimesDirections[i];
+                direction.AxpyIntoThis(ReorthoCache.Directions[i], -beta);
             }
         }
 
         /// <summary>
-        /// Constructs <see cref="PcgWithReorthogonalization"/> instances, allows the user to specify some or all of the 
+        /// Constructs <see cref="ReorthogonalizedPcg"/> instances, allows the user to specify some or all of the 
         /// required parameters and provides defaults for the rest.
         /// Author: Serafeim Bakalakos
         /// </summary>
         public class Builder : PcgBuilderBase
         {
-            /// <summary>
-            /// Creates a new instance of <see cref="PcgWithReorthogonalization"/>.
-            /// </summary>
-            public PcgWithReorthogonalization Build()
+            public Builder()
             {
-                return new PcgWithReorthogonalization(ResidualTolerance, MaxIterationsProvider, Convergence, ResidualUpdater);
+                Convergence = new RhsNormalizedConvergence();
+            }
+
+            /// <summary>
+            /// Creates a new instance of <see cref="ReorthogonalizedPcg"/>.
+            /// </summary>
+            public ReorthogonalizedPcg Build()
+            {
+                return new ReorthogonalizedPcg(ResidualTolerance, MaxIterationsProvider, Convergence, ResidualUpdater);
             }
         }
     }
