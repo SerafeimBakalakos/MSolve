@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
@@ -15,6 +16,10 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 {
     public interface IFetiDPInterfaceProblemSolver
     {
+        Vector PreviousLambda { get; set; }
+        bool UsePreviousLambda { get; set; }
+        ReorthogonalizedPcg Pcg { get; }
+
         Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility, 
             IFetiPreconditioner preconditioner, double globalForcesNorm, ISolverLogger logger);

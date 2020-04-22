@@ -24,7 +24,10 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
             IPcgResidualConvergence residualConvergence, IPcgResidualUpdater residualCorrection) :
             base(residualTolerance, maxIterationsProvider, residualConvergence, residualCorrection)
         {
+            Convergence = residualConvergence; //TODO: Now there are 2 convergence properties. One here and one in base class. Fix it.
         }
+
+        public IPcgResidualConvergence Convergence { get; set; }
 
         /// <summary>
         /// The dot product d * (A*d), where d is the direction vector <see cref="PcgAlgorithmBase.Direction"/>.
@@ -126,7 +129,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
             resDotPrecondRes = residual.DotProduct(direction);
 
             // The convergence strategy must be initialized immediately after the first r and r*inv(M)*r are computed.
-            convergence.Initialize(this);
+            Convergence.Initialize(this);
 
             // This is also used as output
             double residualNormRatio = double.NaN;
@@ -152,7 +155,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
                 resDotPrecondRes = residual.DotProduct(precondResidual);
 
                 /// At this point we can check if CG has converged and exit, thus avoiding the uneccesary operations that follow.
-                residualNormRatio = convergence.EstimateResidualNormRatio(this);
+                residualNormRatio = Convergence.EstimateResidualNormRatio(this);
                 Debug.WriteLine($"Reorthogonalized PCG iteration = {iteration}: residual norm ratio = {residualNormRatio}");
                 if (residualNormRatio <= residualTolerance)
                 {

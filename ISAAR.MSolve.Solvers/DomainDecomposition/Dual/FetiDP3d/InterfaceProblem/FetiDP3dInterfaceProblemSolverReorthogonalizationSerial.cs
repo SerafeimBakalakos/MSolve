@@ -28,25 +28,30 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
     /// The interface problem is solved using PCG. The matrix of the coarse problem KccStar, namely the static condensation of 
     /// the remainder dofs onto the corner dofs is performed explicitly.
     /// </summary>
-    public class FetiDP3dInterfaceProblemSolverSerial : IFetiDPInterfaceProblemSolver
+    public class FetiDP3dInterfaceProblemSolverReorthogonalizationSerial : IFetiDPInterfaceProblemSolver
     {
         private readonly IAugmentationConstraints augmentationConstraints;
         private readonly IModel model;
         private readonly PcgSettings pcgSettings;
 
-        public FetiDP3dInterfaceProblemSolverSerial(IModel model, PcgSettings pcgSettings,
+        public FetiDP3dInterfaceProblemSolverReorthogonalizationSerial(IModel model, PcgSettings pcgSettings,
             IAugmentationConstraints augmentationConstraints)
         {
             this.model = model;
             this.pcgSettings = pcgSettings;
             this.augmentationConstraints = augmentationConstraints;
+
+            var pcgBuilder = new ReorthogonalizedPcg.Builder();
+            pcgBuilder.MaxIterationsProvider = pcgSettings.MaxIterationsProvider;
+            pcgBuilder.ResidualTolerance = pcgSettings.ConvergenceTolerance;
+            Pcg = pcgBuilder.Build();
         }
+
+        public ReorthogonalizedPcg Pcg { get; }
 
         public Vector PreviousLambda { get; set; }
 
         public bool UsePreviousLambda { get; set; }
-
-        public ReorthogonalizedPcg Pcg => throw new NotImplementedException();
 
         public Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility,
@@ -70,24 +75,19 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
                 lagranges = Vector.CreateZero(systemOrder);
             }
 
-            
-
             // Solve the interface problem using PCG algorithm
-            var pcgBuilder = new PcgAlgorithm.Builder();
-            pcgBuilder.MaxIterationsProvider = pcgSettings.MaxIterationsProvider;
-            pcgBuilder.ResidualTolerance = pcgSettings.ConvergenceTolerance;
-            pcgBuilder.Convergence = pcgSettings.ConvergenceStrategyFactory.CreateConvergenceStrategy(globalForcesNorm);
-            PcgAlgorithm pcg = pcgBuilder.Build(); //TODO: perhaps use the pcg from the previous analysis if it has reorthogonalization.
+            
+            Pcg.Convergence = pcgSettings.ConvergenceStrategyFactory.CreateConvergenceStrategy(globalForcesNorm);
 
             IterativeStatistics stats;
             if (!(PreviousLambda == null))
             {
-                stats = pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, false,
+                stats = Pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, false,
                   () => Vector.CreateZero(systemOrder));
             }
             else
             {
-                stats = pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, true,
+                stats = Pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, true,
                   () => Vector.CreateZero(systemOrder));
             }
 
