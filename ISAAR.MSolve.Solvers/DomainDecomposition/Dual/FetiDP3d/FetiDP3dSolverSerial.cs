@@ -131,6 +131,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
         public string Name => name;
         public INodalLoadDistributor NodalLoadDistributor => stiffnessDistribution;
 
+        public IFetiDPInterfaceProblemSolver InterfaceProblemSolver => interfaceProblemSolver;
+
         /// <summary>
         ///  builds Kff of each subdomain
         /// </summary>
@@ -313,9 +315,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             }
 
             // Solve interface problem
-            interfaceProblemSolver.PreviousLambda = previousLambda;
-            interfaceProblemSolver.UsePreviousLambda = usePreviousLambda;
-            Vector lagranges = interfaceProblemSolver.SolveInterfaceProblem(matrixManager, lagrangesEnumerator,
+            InterfaceProblemSolver.PreviousLambda = previousLambda;
+            InterfaceProblemSolver.UsePreviousLambda = usePreviousLambda;
+            Vector lagranges = InterfaceProblemSolver.SolveInterfaceProblem(matrixManager, lagrangesEnumerator,
                 flexibility, preconditioner, globalForcesNorm, Logger);
             if (usePreviousLambda) { previousLambda = lagranges; }
             

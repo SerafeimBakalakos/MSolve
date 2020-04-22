@@ -109,6 +109,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP
         }
 
         public ICornerNodeSelection CornerNodes { get; }
+
+        public IFetiDPInterfaceProblemSolver InterfaceProblemSolver => interfaceProblemSolver;
+
         public ISolverLogger Logger { get; }
         public string Name => name;
         public INodalLoadDistributor NodalLoadDistributor => stiffnessDistribution;

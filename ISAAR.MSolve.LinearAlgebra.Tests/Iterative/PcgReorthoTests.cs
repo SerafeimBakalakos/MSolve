@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Iterative
         private static readonly MatrixComparer comparer = new MatrixComparer(1E-5);
 
         [Theory]
-        [InlineData(0.0001, 2, 5)]
+        [InlineData(0.0001, 2, 7)]
         private static void TestNearbyProblems(double noiseWidth, int maxIterations, int numRhsVectors)
         {
             int order = SymmPosDef10by10.Order;
@@ -44,7 +44,6 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Iterative
 
             // Subsequent runs
             int seed = 345;
-            //double noiseWidth = 0.0001;
             for (int i = 0; i < numRhsVectors; ++i)
             {
                 Vector dx = Vector.CreateFromArray(RandomMatrices.CreateRandomVector(order, seed));

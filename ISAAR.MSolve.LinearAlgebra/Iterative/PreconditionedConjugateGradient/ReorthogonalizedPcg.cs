@@ -194,7 +194,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
 
         private void UpdateDirectionVector(IVectorView preconditionedResidual, IVector direction)
         {
-            // d = s - sum(β_i * d_i), 0 <= i < currentIteration
+            // d = s - sum(β_i * d_i), 0 <= i < numStoredDirections
             // β_i = (s * q_i) / (d_i * q_i)
             direction.CopyFrom(preconditionedResidual);
             for (int i = 0; i < ReorthoCache.Directions.Count; ++i)
