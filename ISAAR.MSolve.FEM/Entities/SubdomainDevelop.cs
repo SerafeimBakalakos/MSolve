@@ -13,9 +13,9 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 //TODO: same for multiscale
 namespace ISAAR.MSolve.FEM.Entities
 {
-    public class Subdomain : ISubdomain
+    public class SubdomainDevelop : ISubdomain
     {
-        public Subdomain(int id)
+        public SubdomainDevelop(int id)
         {
             this.ID = id;
         }
@@ -168,7 +168,7 @@ namespace ISAAR.MSolve.FEM.Entities
                 if (element.ElementType.MaterialModified)
                     element.Subdomain.StiffnessModified = true;
             }
-
+            
         }
 
         public IVector CalculateRHSonly(IVectorView solution, IVectorView dSolution)

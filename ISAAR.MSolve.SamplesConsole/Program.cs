@@ -14,6 +14,8 @@ using MGroup.Stochastic.Structural.Example;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using System.Linq;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Distributed.Tests;
+using ISAAR.MSolve.Tests.FEM;
 
 namespace ISAAR.MSolve.SamplesConsole
 {
@@ -21,33 +23,47 @@ namespace ISAAR.MSolve.SamplesConsole
     {
         private const int subdomainID = 0;
 
-        static void Main(string[] args)
+        //static void Main(string[] args)
+        //{
+        //    for (int example = 21; example < 31 ; example++)
+        //    {
+        //        CnstValues.exampleNo = example;
+        //        CnstValues.runOnlyHexaModel = false;
+
+        //        (Model model1, double[] uc1, Vector globalU1, bool IsFetiDpSolver3d) = SeparateCodeCheckingClass5b_bNEW_debugGit.RunExample();
+        //        (Model model2, double[] uc2, Vector globalU2) = SeparateCodeCheckingClass5b_bNEW_debugGit.RunExampleSerial();
+        //        Vector globalU1_2 = ReorderDirectSolverSolutionIn_globalU1_format(globalU1, globalU2, model1, model2);
+        //        var check = ((globalU1 - globalU1_2).Norm2()) / (globalU1.Norm2());
+        //        var check2 = (globalU1 - globalU1_2);
+        //        printGlobalSolutionStats(check, IsFetiDpSolver3d);
+
+
+
+
+
+        //        //CnstValues.runOnlyHexaModel = true;
+        //        //CnstValues.preventOutputFileWrite(); 
+
+        //        //FetiDP3dSolverSerialTestsInput.TestSolutionGlobalDisplacements();
+
+        //        //CnstValues.RestoreDefaultBoolValues();
+        //    }
+
+        //}
+
+        public static void Main(string[] args)
         {
-            for (int example = 21; example < 31 ; example++)
-            {
-                CnstValues.exampleNo = example;
-                CnstValues.runOnlyHexaModel = false;
+            //ProfileFetiDPCantileverBeam2D.Run();
 
-                (Model model1, double[] uc1, Vector globalU1, bool IsFetiDpSolver3d) = SeparateCodeCheckingClass5b_bNEW_debugGit.RunExample();
-                (Model model2, double[] uc2, Vector globalU2) = SeparateCodeCheckingClass5b_bNEW_debugGit.RunExampleSerial();
-                Vector globalU1_2 = ReorderDirectSolverSolutionIn_globalU1_format(globalU1, globalU2, model1, model2);
-                var check = ((globalU1 - globalU1_2).Norm2()) / (globalU1.Norm2());
-                var check2 = (globalU1 - globalU1_2);
-                printGlobalSolutionStats(check, IsFetiDpSolver3d);
-
-
-
-
-
-                //CnstValues.runOnlyHexaModel = true;
-                //CnstValues.preventOutputFileWrite(); 
-
-                //FetiDP3dSolverSerialTestsInput.TestSolutionGlobalDisplacements();
-
-                //CnstValues.RestoreDefaultBoolValues();
-            }
-                                                                        
+            var suite = new MpiTestSuite();
+            //suite.AddFact(materialParrallelExecutionTest.TestMaterialUpdateOnly);
+            //suite.AddFact(materialManagerParrallelExecutionTest1.TestMaterialUpdateOnly);
+            //suite.AddFact(Hexa8NonLinearCantileverDefGradDevelop4.ParallelNonLinearCantilever);
+            suite.AddFact(Hexa8NonLinearCantileverDefGradDevelop4Multiscale.ParallelNonLinearCantilever);
+            suite.RunTests(args);
         }
+
+        
 
         private static void printGlobalSolutionStats(double check, bool IsFetiDpSolver3d)
         {

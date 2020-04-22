@@ -47,6 +47,16 @@ namespace ISAAR.MSolve.XFEM.Entities
             return elementNodalDisplacements;
         }
 
+        public IVector CalculateRHSonly(IVectorView solution, IVectorView dSolution)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CalculateStressesOnly(IVectorView solution, IVectorView dSolution)
+        {
+            throw new NotImplementedException();
+        }
+
         public void ClearMaterialStresses() => throw new NotImplementedException();
 
         public void ConnectDataStructures()
