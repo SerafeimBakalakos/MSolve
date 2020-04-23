@@ -33,7 +33,6 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.Augmentation;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
-using ISAAR.MSolve.MSAnalysis.RveTemplates.SupportiveClasses;
 
 namespace ISAAR.MSolve.MultiscaleAnalysis
 {
@@ -42,7 +41,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
     /// Use of model separation methods is made.
     /// Authors Gerasimos Sotiropoulos
     /// </summary>
-    public class RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial : IRVEbuilder //IdegenerateRVEbuilder
+    public class RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerialCopy : IRVEbuilder //IdegenerateRVEbuilder
     {
         //origin: RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3D opou ginetai debug h 3D FETI me Ser
         //changes:  epiprostheta merika corner nodes
@@ -61,7 +60,6 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
         private bool decomposeModel;
         public bool useInput = true;
-        public bool isInputInCode = true;
         
         public Dictionary<int, HashSet<INode>> cornerNodes;
         public IFetiSolver GetAppropriateSolverMpi(Model model)
@@ -131,7 +129,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         int RVE_id;
         public int[][] CornerNodesData;
 
-        public RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(int RVE_id, bool decomposeModel, Tuple<rveMatrixParameters, grapheneSheetParameters> mpgp,
+        public RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerialCopy(int RVE_id, bool decomposeModel, Tuple<rveMatrixParameters, grapheneSheetParameters> mpgp,
             int subdiscr1, int discr1, int discr3, int subdiscr1_shell, int discr1_shell, int graphene_sheets_number)
         {
             this.RVE_id = RVE_id;
@@ -147,7 +145,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
         }
 
-        public IRVEbuilder Clone(int a) => new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(a, decomposeModel, mpgp, subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+        public IRVEbuilder Clone(int a) => new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerialCopy(a, decomposeModel, mpgp, subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
 
         public Tuple<Model, Dictionary<int, Node>, double> GetModelAndBoundaryNodes()
         {
@@ -272,22 +270,11 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 RveDataPrintMethods.WriteModelDataOutput(modelOutputPath_gen, subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, mp, gp, kanonas_renumbering_2,
                     o_xsunol_vectors, sunol_nodes_numbering);
             }
-            else
-            {
-                if (isInputInCode)
-                {
-                    (o_xsunol_vectors, sunol_nodes_numbering) = GeometryProviderForMpi.GetGeometryAndNumbering();
-                }
-            }
 
 
             #region assignrenumbering
             renumbering renumbering;
-            if (useInput) 
-            {
-                if (isInputInCode){renumbering=new renumbering(sunol_nodes_numbering);}
-                else{ renumbering = new renumbering(PrintUtilities.ReadIntVector(renumbering_vector_path));}
-            }
+            if (useInput) { renumbering = new renumbering(PrintUtilities.ReadIntVector(renumbering_vector_path)); }
             else { renumbering = new renumbering(sunol_nodes_numbering); }
             #endregion
 
@@ -297,11 +284,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             Dq = new double[9, 3 * (((mp.hexa1 + 1) * (mp.hexa2 + 1) * (mp.hexa3 + 1)) - ((mp.hexa1 - 1) * (mp.hexa2 - 1) * (mp.hexa3 - 1)))];
 
 
-            if (useInput)
-            {
-                if (isInputInCode) { FEMMeshBuilder.HexaElementsOnlyRVEwithRenumbering_forMS(model, mp, Dq, renumbering, boundaryNodes); }
-                else { FEMMeshBuilder.HexaElementsOnlyRVEwithRenumbering_forMS(model, mp, Dq, renumbering_vector_path, boundaryNodes); }
-            }
+            if (useInput) { FEMMeshBuilder.HexaElementsOnlyRVEwithRenumbering_forMS(model, mp, Dq, renumbering_vector_path, boundaryNodes); }
             else { FEMMeshBuilder.HexaElementsOnlyRVEwithRenumbering_forMS(model, mp, Dq, renumbering, boundaryNodes); }
 
 
@@ -328,13 +311,9 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             {
                 if (useInput)
                 {
-                    if (isInputInCode){ FEMMeshBuilder.AddGrapheneSheet_with_o_x_Input_from_MSOLVE_withRenumbering_from_MSOLVE(model, gp, renumbering, o_xsunol_vectors[j]); }
-                    else
-                    {
-                        string file_no = (j + 1).ToString();
-                        string ox_sunol_input_path = string.Format(o_xsunol_input_path_gen, file_no);
-                        FEMMeshBuilder.AddGrapheneSheet_with_o_x_Input_withRenumberingBondSlip(model, gp, ekk_xyz[j], model_o_x_parameteroi[j], renumbering_vector_path, ox_sunol_input_path);
-                    }
+                    string file_no = (j + 1).ToString();
+                    string ox_sunol_input_path = string.Format(o_xsunol_input_path_gen, file_no);
+                    FEMMeshBuilder.AddGrapheneSheet_with_o_x_Input_withRenumberingBondSlip(model, gp, ekk_xyz[j], model_o_x_parameteroi[j], renumbering_vector_path, ox_sunol_input_path);
                 }
                 else
                 {
@@ -365,11 +344,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             var hostSubGroups = new Dictionary<int, IEnumerable<Element>>();
             for (int i1 = 0; i1 < EmbElementsIds.GetLength(0); i1++)
             {
-                if (useInput) //TODO: den xreiazetai  o xwrismos me if dioti to renumbering_vector_path_pou pername san orisma den xrhsimopoieitai kapou
-                {
-                    if (isInputInCode){ hostSubGroups.Add(EmbElementsIds[i1], FEMMeshBuilder.GetHostGroupForCohesiveElement(model.ElementsDictionary[EmbElementsIds[i1]], mp, model)); }
-                    else { hostSubGroups.Add(EmbElementsIds[i1], FEMMeshBuilder.GetHostGroupForCohesiveElement(model.ElementsDictionary[EmbElementsIds[i1]], mp, model, renumbering_vector_path)); }
-                }
+                if (useInput) { hostSubGroups.Add(EmbElementsIds[i1], FEMMeshBuilder.GetHostGroupForCohesiveElement(model.ElementsDictionary[EmbElementsIds[i1]], mp, model, renumbering_vector_path)); }
                 else { hostSubGroups.Add(EmbElementsIds[i1], FEMMeshBuilder.GetHostGroupForCohesiveElement(model.ElementsDictionary[EmbElementsIds[i1]], mp, model)); }
                 //hostSubGroups.Add(EmbElementsIds[i1], FEMMeshBuilder.GetHostGroupForCohesiveElement(model.ElementsDictionary[EmbElementsIds[i1]], mp, model, renumbering_vector_path));
 
@@ -384,11 +359,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
             if (!decomposeModel)
             {
-                if (useInput)
-                {
-                    if (isInputInCode) { (CornerNodesIds, CornerNodesIdAndsubdomains, cornerNodes) = DefineCornerNodesFromCornerNodeData(CornerNodesData, model, renumbering); }
-                    else { (CornerNodesIds, CornerNodesIdAndsubdomains, cornerNodes) = DefineCornerNodesFromCornerNodeData(CornerNodesData, model); }
-                }
+                if (useInput) { (CornerNodesIds, CornerNodesIdAndsubdomains, cornerNodes) = DefineCornerNodesFromCornerNodeData(CornerNodesData, model); }
                 else { (CornerNodesIds, CornerNodesIdAndsubdomains, cornerNodes) = DefineCornerNodesFromCornerNodeData(CornerNodesData, model, renumbering); }
             }
 
@@ -428,11 +399,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
                 #region print extra data 
 
-                if (useInput)
-                {
-                    if (isInputInCode){ (CornerNodesIds, CornerNodesIdAndsubdomains, cornerNodes) = DefineCornerNodesFromCornerNodeData(CornerNodesData, model, renumbering); }
-                    else { (CornerNodesIds, CornerNodesIdAndsubdomains, cornerNodes) = DefineCornerNodesFromCornerNodeData(CornerNodesData, model); }
-                }
+                if (useInput) { (CornerNodesIds, CornerNodesIdAndsubdomains, cornerNodes) = DefineCornerNodesFromCornerNodeData(CornerNodesData, model); }
                 else { (CornerNodesIds, CornerNodesIdAndsubdomains, cornerNodes) = DefineCornerNodesFromCornerNodeData(CornerNodesData, model, renumbering); }
 
                 #region find embedded
