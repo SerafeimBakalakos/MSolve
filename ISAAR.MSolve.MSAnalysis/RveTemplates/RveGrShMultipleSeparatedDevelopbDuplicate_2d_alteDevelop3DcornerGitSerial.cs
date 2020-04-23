@@ -58,6 +58,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         public IList<Node> EmbeddedNodes { get; private set; }
         public Dictionary<ISubdomain, List<Node>> RveMatrixSubdomainInnerNodes { get; private set; }
         public List<List<int>> extraConstraintsNoeds { get; set; }
+        public List<List<int>> extraConstraintsNoedsAve { get; set; }
 
         private bool decomposeModel;
         public bool useInput = true;
@@ -291,7 +292,8 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             else { renumbering = new renumbering(sunol_nodes_numbering); }
             #endregion
 
-            extraConstraintsNoeds = GetExtraConstraintNodes2renumberingRandomDataOriginal(discr1, subdiscr1, renumbering);
+            extraConstraintsNoeds = GetExtraConstraintNodes2renumberingRandomData(discr1, subdiscr1, renumbering);
+            extraConstraintsNoedsAve = GetExtraConstraintNodes2renumberingRandomDataOriginal(discr1, subdiscr1, renumbering);
 
             //TODO delete unesessary double arrays (Dq)
             Dq = new double[9, 3 * (((mp.hexa1 + 1) * (mp.hexa2 + 1) * (mp.hexa3 + 1)) - ((mp.hexa1 - 1) * (mp.hexa2 - 1) * (mp.hexa3 - 1)))];
@@ -830,6 +832,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             return extraConstraintsNoeds;
         }
 
+        //midside node sta mesa twn plevrwn
         private List<List<int>> GetExtraConstraintNodes2renumberingRandomData(int discr1, int subdiscr1, renumbering renumbering)
         {
             List<List<int>> extraConstraintsNoeds = new List<List<int>>();
@@ -932,6 +935,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             return extraConstraintsNoeds;
         }
 
+        //midside node sta mesa twn faces(mallon)
         private List<List<int>> GetExtraConstraintNodes2renumberingRandomDataV2(int discr1, int subdiscr1, renumbering renumbering)
         {
             List<List<int>> extraConstraintsNoeds = new List<List<int>>();
@@ -1076,6 +1080,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
         private Dictionary<int, HashSet<INode>> DefineCornerNodesPerSubdomainAndOtherwise(Dictionary<int, int[]> CornerNodesIdAndsubdomains, Model model)
         {
+            // a copy of this is used in modelCreatorInput class
             Dictionary<int, HashSet<INode>> cornerNodesList = new Dictionary<int, HashSet<INode>>(model.EnumerateSubdomains().Count());
             Dictionary<int, HashSet<INode>> cornerNodes = new Dictionary<int, HashSet<INode>>(model.EnumerateSubdomains().Count());
 
