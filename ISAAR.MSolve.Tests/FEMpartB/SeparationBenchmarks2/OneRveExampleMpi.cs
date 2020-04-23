@@ -72,7 +72,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             //var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3D(1, true, mpgp,
             //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
 
-            // 
+            CnstValues.exampleNo = 58;
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
             rveBuilder.useInput = false;
