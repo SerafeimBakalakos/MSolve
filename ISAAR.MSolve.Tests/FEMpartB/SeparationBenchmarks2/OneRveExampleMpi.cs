@@ -2,6 +2,7 @@
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.Materials.Interfaces;
+using ISAAR.MSolve.MSAnalysis.RveTemplates.SupportiveClasses;
 using ISAAR.MSolve.MultiscaleAnalysis;
 using ISAAR.MSolve.MultiscaleAnalysis.Interfaces;
 using ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses;
@@ -55,6 +56,8 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             int graphene_sheets_number;// =2; //periektikothta 0.525% 
             double scale_factor;//= 1; //PROSOXH
 
+            CnstValues.exampleNo = 60;
+            CnstValues.isInputInCode_forRVE = false;
             (subdiscr1, discr1, subdiscr1_shell, discr1_shell, graphene_sheets_number, scale_factor) = GetGrRveExampleDiscrDataFromFile(new CnstValues());
             discr3 = discr1 * subdiscr1;
 
@@ -72,25 +75,36 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             //var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3D(1, true, mpgp,
             //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
 
-            CnstValues.exampleNo = 58;
+
+            CnstValues.useInput_forRVE = true; //Panta prin thn getRveModelAndBoundaryNodes
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-            rveBuilder.useInput = false;
+            #endregion
+
+            #region solveserially
+            var rveBuilder2 = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGit(1, false, mpgp,
+            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            var microstructureSerial = new MicrostructureDefGrad3D(rveBuilder2,
+                model => (new SuiteSparseSolver.Builder()).BuildSolver(model), false, 1);
+
+            //double[,] consCheckSerial = new double[6, 6];
+            //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { consCheckSerial[i1, i2] = microstructureSerial.ConstitutiveMatrix[i1, i2]; } }
+            //microstructureSerial.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
             #endregion
 
 
-            var microstructure3 = new MicrostructureDefGrad3DSerial(rveBuilder,
-                rveBuilder.GetAppropriateSolverMpi, false, 1, true, true);
-            //IContinuumMaterial3DDefGrad microstructure3copyConsCheck = new Microstructure3copyConsCheckEna(homogeneousRveBuilder1);
-            double[,] consCheck1 = new double[6, 6];
-            for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { consCheck1[i1, i2] = microstructure3.ConstitutiveMatrix[i1, i2]; } }
 
-            microstructure3.UpdateMaterial(new double[9] { 1.10, 1, 1, 0, 0, 0, 0, 0, 0 });
+            var microstructure3 = new MicrostructureDefGrad3DSerial(rveBuilder,
+                rveBuilder.GetAppropriateSolverMpi, false, 1, false, false);
+            double[,] consCheck1 = new double[6, 6];
+            //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { consCheck1[i1, i2] = microstructure3.ConstitutiveMatrix[i1, i2]; } }
+
+            microstructure3.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
             double[] stressesCheck3 = microstructure3.Stresses;
             microstructure3.SaveState();
             IVector uInitialFreeDOFs_state1 = microstructure3.uInitialFreeDOFDisplacementsPerSubdomain[1].Copy();
 
-            microstructure3.UpdateMaterial(new double[9] { 1.20, 1, 1, 0, 0, 0, 0, 0, 0 });
+            microstructure3.UpdateMaterial(new double[9] { /*1.20*/ 1.02, 1, 1, 0, 0, 0, 0, 0, 0 });
             double[] stressesCheck4 = microstructure3.Stresses;
             IVector uInitialFreeDOFs_state2 = microstructure3.uInitialFreeDOFDisplacementsPerSubdomain[1].Copy();
 
@@ -105,45 +119,96 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 
         public static Tuple<rveMatrixParameters, grapheneSheetParameters> GetReferenceKanonikhGewmetriaRveExampleParametersStiffCase(int subdiscr1, int discr1, int discr3, int subdiscr1_shell, int discr1_shell)
         {
-            rveMatrixParameters mp;
-            mp = new rveMatrixParameters()
+            //// DUPLICATE ANNY CHANGES IN SEPARATEINTEGRATIONCLASSCHEC
+
+            if (CnstValues.parameterSet == ParameterSet.stiffCase)
             {
-                E_disp = 3.5, //Gpa
-                ni_disp = 0.4, // stather Poisson
-                L01 = 95, //150, // diastaseis
-                L02 = 95, //150,
-                L03 = 95, //40,
-                hexa1 = discr1 * subdiscr1,// diakritopoihsh
-                hexa2 = discr1 * subdiscr1,
-                hexa3 = discr1 * subdiscr1,
-            };
+                rveMatrixParameters mp;
+                mp = new rveMatrixParameters()
+                {
+                    E_disp = 3.5, //Gpa
+                    ni_disp = 0.4, // stather Poisson
+                    L01 = 95, //150, // diastaseis
+                    L02 = 95, //150,
+                    L03 = 95, //40,
+                    hexa1 = discr1 * subdiscr1,// diakritopoihsh
+                    hexa2 = discr1 * subdiscr1,
+                    hexa3 = discr1 * subdiscr1,
+                };
 
-            grapheneSheetParameters gp;
-            gp = new grapheneSheetParameters()
+                grapheneSheetParameters gp;
+                gp = new grapheneSheetParameters()
+                {
+                    // parametroi shell
+                    E_shell = 27196.4146610211, // GPa = 1000Mpa = 1000N / mm2
+                    ni_shell = 0.0607, // stathera poisson
+                    elem1 = discr1_shell * subdiscr1_shell,
+                    elem2 = discr1_shell * subdiscr1_shell,
+                    L1 = 50,// nm  // DIORTHOSI 2 graphene sheets
+                    L2 = 50,// nm
+                    L3 = 112.5096153846, // nm
+                    a1_shell = 0, // nm
+                    tk = 0.0125016478913782,  // 0.0125016478913782nm //0.125*40,
+
+                    //parametroi cohesive epifaneias
+                    T_o_3 = 0.20, //0.05,  // 1Gpa = 1000Mpa = 1000N / mm2
+                    D_o_3 = 0.25, //0.5, // nm
+                    D_f_3 = 4, // nm
+                    T_o_1 = 0.20, //0.05,// Gpa
+                    D_o_1 = 0.25, //0.5, // nm
+                    D_f_1 = 4, // nm
+                    n_curve = 1.4
+                };
+
+                Tuple<rveMatrixParameters, grapheneSheetParameters> gpmp = new Tuple<rveMatrixParameters, grapheneSheetParameters>(mp, gp);
+                return gpmp;
+            }
+
+            if (CnstValues.parameterSet == ParameterSet.stiffLargerRve)
             {
-                // parametroi shell
-                E_shell = 27196.4146610211, // GPa = 1000Mpa = 1000N / mm2
-                ni_shell = 0.0607, // stathera poisson
-                elem1 = discr1_shell * subdiscr1_shell,
-                elem2 = discr1_shell * subdiscr1_shell,
-                L1 = 50,// nm  // DIORTHOSI 2 graphene sheets
-                L2 = 50,// nm
-                L3 = 112.5096153846, // nm
-                a1_shell = 0, // nm
-                tk = 0.0125016478913782,  // 0.0125016478913782nm //0.125*40,
 
-                //parametroi cohesive epifaneias
-                T_o_3 = 0.20, //0.05,  // 1Gpa = 1000Mpa = 1000N / mm2
-                D_o_3 = 0.25, //0.5, // nm
-                D_f_3 = 4, // nm
-                T_o_1 = 0.20, //0.05,// Gpa
-                D_o_1 = 0.25, //0.5, // nm
-                D_f_1 = 4, // nm
-                n_curve = 1.4
-            };
+                rveMatrixParameters mp;
+                mp = new rveMatrixParameters()
+                {
+                    E_disp = 3.5, //Gpa
+                    ni_disp = 0.4, // stather Poisson
+                    L01 = 120, //95, //150, // diastaseis
+                    L02 = 120, //95, //150,
+                    L03 = 120, //95, //40,
+                    hexa1 = discr1 * subdiscr1,// diakritopoihsh
+                    hexa2 = discr1 * subdiscr1,
+                    hexa3 = discr1 * subdiscr1,
+                };
 
-            Tuple<rveMatrixParameters, grapheneSheetParameters> gpmp = new Tuple<rveMatrixParameters, grapheneSheetParameters>(mp, gp);
-            return gpmp;
+                grapheneSheetParameters gp;
+                gp = new grapheneSheetParameters()
+                {
+                    // parametroi shell
+                    E_shell = 27196.4146610211, // GPa = 1000Mpa = 1000N / mm2
+                    ni_shell = 0.0607, // stathera poisson
+                    elem1 = discr1_shell * subdiscr1_shell,
+                    elem2 = discr1_shell * subdiscr1_shell,
+                    L1 = 38, //50,// nm  // DIORTHOSI 2 graphene sheets
+                    L2 = 38, //.50,// nm
+                    L3 = 112.5096153846, // nm
+                    a1_shell = 0, // nm
+                    tk = 0.0125016478913782,  // 0.0125016478913782nm //0.125*40,
+
+                    //parametroi cohesive epifaneias
+                    T_o_3 = 0.20, //0.05,  // 1Gpa = 1000Mpa = 1000N / mm2
+                    D_o_3 = 0.25, //0.5, // nm
+                    D_f_3 = 4, // nm
+                    T_o_1 = 0.20, //0.05,// Gpa
+                    D_o_1 = 0.25, //0.5, // nm
+                    D_f_1 = 4, // nm
+                    n_curve = 1.4
+                };
+
+                Tuple<rveMatrixParameters, grapheneSheetParameters> gpmp = new Tuple<rveMatrixParameters, grapheneSheetParameters>(mp, gp);
+                return gpmp;
+            }
+            else { throw new NotImplementedException}
+
         }
 
         public static int[] ReadIntVector(string path)
@@ -164,10 +229,24 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 
         private static (int subdiscr1, int discr1, int subdiscr1_shell, int discr1_shell, int graphene_sheets_number, double scale_factor) GetGrRveExampleDiscrDataFromFile(CnstValues cnstValues)
         {
-            int[] discrData = ReadIntVector(cnstValues.exampleDiscrInputPathGen + @"\subdiscr1_discr1_ subdiscr1_shell_discr1_shell_graphene_sheets_number" + ".txt");
-            double[] modelScaleFactor = MultiscaleAnalysis.SupportiveClasses.PrintUtilities.ReadVector(cnstValues.exampleDiscrInputPathGen + @"\modelScalingFactor" + ".txt");
+            //DUPLICATE CHANGES IN SAMPLE CONSOLE
+            if (!CnstValues.isInputInCode_forRVE)
+            {
+                int[] discrData = ReadIntVector(cnstValues.exampleDiscrInputPathGen + @"\subdiscr1_discr1_ subdiscr1_shell_discr1_shell_graphene_sheets_number" + ".txt");
+                double[] modelScaleFactor = MultiscaleAnalysis.SupportiveClasses.PrintUtilities.ReadVector(cnstValues.exampleDiscrInputPathGen + @"\modelScalingFactor" + ".txt");
 
-            return (discrData[0], discrData[1], discrData[2], discrData[3], discrData[4], modelScaleFactor[0]);
+                return (discrData[0], discrData[1], discrData[2], discrData[3], discrData[4], modelScaleFactor[0]);
+            }
+            else
+            {
+                (int[] discrData, double[] modelScaleFactor) = GeometryProviderForMpi.GetDiscrDataAndModelScaleFactor();
+
+                //    = ReadIntVector(cnstValues.exampleDiscrInputPathGen + @"\subdiscr1_discr1_ subdiscr1_shell_discr1_shell_graphene_sheets_number" + ".txt");
+                //double[] modelScaleFactor = MultiscaleAnalysis.SupportiveClasses.PrintUtilities.ReadVector(cnstValues.exampleDiscrInputPathGen + @"\modelScalingFactor" + ".txt");
+
+                return (discrData[0], discrData[1], discrData[2], discrData[3], discrData[4], modelScaleFactor[0]);
+            }
+
         }
 
         public static (int[], int[], int[]) Check_Graphene_rve_parallel() //palio "Check_Graphene_rve_Obje_Integration()"

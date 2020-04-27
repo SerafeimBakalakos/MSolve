@@ -104,7 +104,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatric
             if (inverseKii != null) inverseKii.Dispose();
             inverseKii = null;
             inverseKiiDiagonal = null;
-            if (inverseKrr != null) inverseKii.Dispose();
+            if (inverseKrr != null) inverseKrr.Dispose();
             inverseKrr = null;
             Kbb = null;
             Kib = null;

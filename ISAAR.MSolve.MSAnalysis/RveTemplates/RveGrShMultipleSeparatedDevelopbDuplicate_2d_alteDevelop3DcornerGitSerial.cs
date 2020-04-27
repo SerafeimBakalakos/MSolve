@@ -61,8 +61,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         public List<List<int>> extraConstraintsNoedsAve { get; set; }
 
         private bool decomposeModel;
-        public bool useInput = true;
-        public bool isInputInCode = true;
+        
         
         public Dictionary<int, HashSet<INode>> cornerNodes;
         public IFetiSolver GetAppropriateSolverMpi(Model model)
@@ -79,30 +78,32 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 //Setup solver
                 var pcgSettings = new PcgSettings()
                 {
-                    ConvergenceTolerance = 1E-7,
+                    ConvergenceTolerance = 1E-8,
                     MaxIterationsProvider = new FixedMaxIterationsProvider(1000)
                 };
                 var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(new OrderingAmdSuiteSparse());
 
-                //var fetiSolverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);  //A.3
-                var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();   //A.3
-                var fetiSolverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);  //A.3
+            //var fetiSolverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);  //A.3
+            //var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();   //A.3.1
+            //var matrixManagerFactory = new FetiDP3dMatrixManagerFactorySkyline();   //A.3.1
+            var matrixManagerFactory = new FetiDP3dMatrixManagerFactorySuiteSparse(new OrderingAmdSuiteSparse());   //A.3.1
+            var fetiSolverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);  //A.3
 
-                //fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
-                fetiSolverBuilder.StiffnessDistribution =  StiffnessDistributionType.HeterogeneousCondensed; //TODO
+            //fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
+            fetiSolverBuilder.StiffnessDistribution =  StiffnessDistributionType.HeterogeneousCondensed; //TODO
                 fetiSolverBuilder.Preconditioning = new DirichletPreconditioning();
                 fetiSolverBuilder.PcgSettings = pcgSettings;
 
-                //Crosspoints crosspoints = Crosspoints.FullyRedundant; //A.2
-                                                                      //Crosspoints crosspoints = Crosspoints.Minimum; //A.2
+            //Crosspoints crosspoints = Crosspoints.FullyRedundant; //A.2
+            //Crosspoints crosspoints = Crosspoints.Minimum; //A.2
 
-                ICrosspointStrategy crosspointStrategy;
-                crosspointStrategy = new MinimumConstraints(); //A.2
-                //crosspointStrategy = new FullyRedundantConstraints(); //A.2
-                fetiSolverBuilder.CrosspointStrategy = crosspointStrategy;
+            ICrosspointStrategy crosspointStrategy;
+            //crosspointStrategy = new MinimumConstraints(); //A.2
+            crosspointStrategy = new FullyRedundantConstraints(); //A.2
+            fetiSolverBuilder.CrosspointStrategy = crosspointStrategy;
 
-                //FetiDPSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection); //A.1
-                FetiDP3dSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection, midSideNodeSelection); //A.1
+            //FetiDPSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection); //A.1
+            FetiDP3dSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection, midSideNodeSelection); //A.1
 
             return fetiSolver;
             //}
@@ -111,7 +112,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             //    throw new NotSupportedException();
             //}
         }
-
+        
         public ISolver GetAppropriateSolver(Model model)
         {
             return (new SkylineSolver.Builder()).BuildSolver(model);
@@ -157,6 +158,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
         private Tuple<Model, Dictionary<int, Node>, double> Reference2RVEExample10000withRenumberingwithInput_forMS()
         {
+            bool useInput = CnstValues.useInput_forRVE; bool isInputInCode = CnstValues.isInputInCode_forRVE;
             Model model = new Model();
             model.SubdomainsDictionary.Add(1, new Subdomain(1));
             Dictionary<int, Node> boundaryNodes = new Dictionary<int, Node>();

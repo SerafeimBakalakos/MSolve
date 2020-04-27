@@ -5,9 +5,17 @@ using System.Text;
 
 namespace ISAAR.MSolve.LinearAlgebra.Matrices
 {
+    public enum ParameterSet { stiffCase, stiffLargerRve};
     public class CnstValues
     {
+        // rve booleans
         public static int exampleNo { get; set; }
+        
+        public static bool useInput_forRVE = true;
+        public static bool isInputInCode_forRVE = false;
+
+        public static ParameterSet parameterSet = ParameterSet.stiffCase;
+         
 
         bool runCluster = true;
 

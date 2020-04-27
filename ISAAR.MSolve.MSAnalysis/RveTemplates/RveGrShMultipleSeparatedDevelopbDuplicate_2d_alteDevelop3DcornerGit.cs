@@ -54,7 +54,6 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         public List<List<int>> extraConstraintsNoedsAve { get; set; }
 
         private bool decomposeModel;
-        public bool useInput = true;
         
         public Dictionary<int, HashSet<INode>> cornerNodes;
         public ISolver GetAppropriateSolver(Model model)
@@ -129,6 +128,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
 
         private Tuple<Model, Dictionary<int, Node>, double> Reference2RVEExample10000withRenumberingwithInput_forMS()
         {
+            bool useInput = CnstValues.useInput_forRVE;
             Model model = new Model();
             model.SubdomainsDictionary.Add(1, new Subdomain(1));
             Dictionary<int, Node> boundaryNodes = new Dictionary<int, Node>();
