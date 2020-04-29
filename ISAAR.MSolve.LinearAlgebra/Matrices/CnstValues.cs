@@ -15,6 +15,8 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
         public static bool isInputInCode_forRVE = false;
 
         public static ParameterSet parameterSet = ParameterSet.stiffCase;
+
+        public static bool useCornerNodesInShell = false;
          
 
         bool runCluster = true;

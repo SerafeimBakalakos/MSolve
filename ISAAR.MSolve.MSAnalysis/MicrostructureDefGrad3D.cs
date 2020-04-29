@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
     /// </summary>
     public class MicrostructureDefGrad3D : StructuralProblemsMicrostructureBase, IContinuumMaterial3DDefGrad
     {
-        private Model model { get; set; }
+        public Model model { get; set; }
         //private readonly Dictionary<int, Node> nodesDictionary = new Dictionary<int, Node>();
         private Dictionary<int, Node> boundaryNodes { get; set; }
         Dictionary<int, Dictionary<int, Element>> boundaryElements;

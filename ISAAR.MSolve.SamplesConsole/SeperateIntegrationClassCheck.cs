@@ -164,7 +164,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 Tuple<rveMatrixParameters, grapheneSheetParameters> gpmp = new Tuple<rveMatrixParameters, grapheneSheetParameters>(mp, gp);
                 return gpmp;
             }
-            else { throw new NotImplementedException}
+            else { throw new NotImplementedException(); }
         }
     }
 }

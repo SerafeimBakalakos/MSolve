@@ -1,4 +1,5 @@
-﻿using ISAAR.MSolve.LinearAlgebra.Matrices;
+﻿using ISAAR.MSolve.FEM.Entities;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.Materials.Interfaces;
@@ -8,6 +9,7 @@ using ISAAR.MSolve.MultiscaleAnalysis.Interfaces;
 using ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses;
 using ISAAR.MSolve.Solvers.Direct;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -47,20 +49,13 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 
 
             #region rve builder with mpi solver
-            int subdiscr1;//= 4;// 4;// 6;
-            int discr1;//= 2;// 3;//4;
-
-            int discr3;//= discr1 * subdiscr1;// 23;
-            int subdiscr1_shell;//= 6;//14;
-            int discr1_shell;// = 1;
-            int graphene_sheets_number;// =2; //periektikothta 0.525% 
-            double scale_factor;//= 1; //PROSOXH
 
             CnstValues.exampleNo = 60;
             CnstValues.isInputInCode_forRVE = false;
-            (subdiscr1, discr1, subdiscr1_shell, discr1_shell, graphene_sheets_number, scale_factor) = GetGrRveExampleDiscrDataFromFile(new CnstValues());
-            discr3 = discr1 * subdiscr1;
+            CnstValues.useInput_forRVE = true; //Panta prin thn getRveModelAndBoundaryNodes
 
+            (int subdiscr1, int discr1, int subdiscr1_shell, int discr1_shell, int graphene_sheets_number, double scale_factor) = GetGrRveExampleDiscrDataFromFile(new CnstValues());
+            int discr3 = discr1 * subdiscr1;
             //tvra ginontai scale input tou mpgp = getRe... methodou
             graphene_sheets_number = (int)Math.Floor(scale_factor * scale_factor * scale_factor * graphene_sheets_number);
             subdiscr1 = (int)Math.Floor(scale_factor * subdiscr1);
@@ -68,30 +63,37 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 
             Tuple<rveMatrixParameters, grapheneSheetParameters> mpgp = GetReferenceKanonikhGewmetriaRveExampleParametersStiffCase(subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell);
             //mpgp.Item2.E_shell = 0.0000001;
-            mpgp.Item1.L01 = scale_factor * 90; mpgp.Item1.L02 = scale_factor * 90; mpgp.Item1.L03 = scale_factor * 90;
+            if (CnstValues.parameterSet == ParameterSet.stiffCase)
+            { mpgp.Item1.L01 = scale_factor * 90; mpgp.Item1.L02 = scale_factor * 90; mpgp.Item1.L03 = scale_factor * 90; }
             mpgp.Item1.L01 = scale_factor * mpgp.Item1.L01; mpgp.Item1.L02 = scale_factor * mpgp.Item1.L02; mpgp.Item1.L03 = scale_factor * mpgp.Item1.L03;
 
-            bool run_new_corner = true;
-            //var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3D(1, true, mpgp,
-            //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-
-
-            CnstValues.useInput_forRVE = true; //Panta prin thn getRveModelAndBoundaryNodes
-            var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
-            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
             #endregion
 
-            #region solveserially
-            var rveBuilder2 = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGit(1, false, mpgp,
-            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-            var microstructureSerial = new MicrostructureDefGrad3D(rveBuilder2,
-                model => (new SuiteSparseSolver.Builder()).BuildSolver(model), false, 1);
+            #region solve skyline Microstructures (with Git and GitSerial RveBuilders)
+            //var rveBuilder2 = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGit(1, false, mpgp,
+            //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            //var microstructureSerial = new MicrostructureDefGrad3D(rveBuilder2,
+            //    model => (new SuiteSparseSolver.Builder()).BuildSolver(model), false, 1);
 
             //double[,] consCheckSerial = new double[6, 6];
             //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { consCheckSerial[i1, i2] = microstructureSerial.ConstitutiveMatrix[i1, i2]; } }
             //microstructureSerial.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
+            //double[] vector1 = microstructureSerial.uInitialFreeDOFDisplacementsPerSubdomain.ElementAt(0).Value.CopyToArray();
+
+
+            var rveBuilder3 = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
+            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            var microstructure2Serial = new MicrostructureDefGrad3D(rveBuilder3,
+                model => (new SuiteSparseSolver.Builder()).BuildSolver(model), false, 1);
+
+            //double[,] consCheckSerial2 = new double[6, 6];
+            //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { consCheckSerial2[i1, i2] = microstructure2Serial.ConstitutiveMatrix[i1, i2]; } }
+            microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
+            Vector vector2 = (Vector)microstructure2Serial.uInitialFreeDOFDisplacementsPerSubdomain.ElementAt(0).Value.Copy();
             #endregion
 
+            var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
+            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
 
 
             var microstructure3 = new MicrostructureDefGrad3DSerial(rveBuilder,
@@ -103,18 +105,36 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             double[] stressesCheck3 = microstructure3.Stresses;
             microstructure3.SaveState();
             IVector uInitialFreeDOFs_state1 = microstructure3.uInitialFreeDOFDisplacementsPerSubdomain[1].Copy();
+            Vector globalUvectrInSerialFormat = ReorderSolutionInSerialSkylineFormat(microstructure2Serial.model, vector2, microstructure3.model, microstructure3.uInitialFreeDOFDisplacementsPerSubdomain);
+            var errorVector = (vector2 - globalUvectrInSerialFormat).Scale(1 / vector2.Norm2());
 
             microstructure3.UpdateMaterial(new double[9] { /*1.20*/ 1.02, 1, 1, 0, 0, 0, 0, 0, 0 });
             double[] stressesCheck4 = microstructure3.Stresses;
             IVector uInitialFreeDOFs_state2 = microstructure3.uInitialFreeDOFDisplacementsPerSubdomain[1].Copy();
 
             //PrintUtilities.WriteToFileVector(stressesCheck3, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\stressesCheck3.txt");
-            //PrintUtilities.WriteToFileVector(stressesCheck4, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\stressesCheck4.txt");
             //PrintUtilities.WriteToFile(consCheck1, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\consCheck1.txt");
-            //PrintUtilities.WriteToFileVector(uInitialFreeDOFs_state1.CopyToArray(), @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\uInitialFreeDOFs_state1.txt");
-            //PrintUtilities.WriteToFileVector(uInitialFreeDOFs_state2.CopyToArray(), @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\uInitialFreeDOFs_state2.txt");
-
+            
             return (stressesCheck3, stressesCheck4, consCheck1, uInitialFreeDOFs_state1, uInitialFreeDOFs_state2);
+        }
+
+        private static Vector ReorderSolutionInSerialSkylineFormat(Model skylineModel, Vector skylineSolution, Model fetimodel, Dictionary<int, IVector> uInitialFreeDOFDisplacementsPerSubdomain)
+        {
+            var freeNodesIds = skylineModel.GlobalDofOrdering.GlobalFreeDofs.GetRows().Select(x => x.ID);
+            Vector globalU1_2 = Vector.CreateZero(skylineSolution.Length);
+            foreach (int nodeID in freeNodesIds)
+            {
+                var fetiSubdomain = fetimodel.GetNode(nodeID).SubdomainsDictionary.ElementAt(0).Value;
+                foreach (var dof in fetimodel.GlobalDofOrdering.GlobalFreeDofs.GetDataOfRow(fetimodel.GetNode(nodeID)).Keys)
+                {
+                    int skylineModelDofOrder = skylineModel.GlobalDofOrdering.GlobalFreeDofs[skylineModel.GetNode(nodeID), dof];
+                    int fetisubdomainDofOrder = fetiSubdomain.FreeDofOrdering.FreeDofs[fetimodel.GetNode(nodeID), dof];
+
+                    globalU1_2[skylineModelDofOrder] = uInitialFreeDOFDisplacementsPerSubdomain[fetiSubdomain.ID][fetisubdomainDofOrder];
+                }
+            }
+
+            return globalU1_2;
         }
 
         public static Tuple<rveMatrixParameters, grapheneSheetParameters> GetReferenceKanonikhGewmetriaRveExampleParametersStiffCase(int subdiscr1, int discr1, int discr3, int subdiscr1_shell, int discr1_shell)
@@ -207,7 +227,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
                 Tuple<rveMatrixParameters, grapheneSheetParameters> gpmp = new Tuple<rveMatrixParameters, grapheneSheetParameters>(mp, gp);
                 return gpmp;
             }
-            else { throw new NotImplementedException}
+            else { throw new NotImplementedException(); }
 
         }
 
