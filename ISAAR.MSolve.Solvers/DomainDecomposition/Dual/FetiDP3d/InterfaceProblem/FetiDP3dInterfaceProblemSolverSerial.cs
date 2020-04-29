@@ -46,7 +46,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
         public bool UsePreviousLambda { get; set; }
 
-        public ReorthogonalizedPcg Pcg => throw new NotImplementedException();
+        public ReorthogonalizedPcg Pcg => null;
 
         public Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility,

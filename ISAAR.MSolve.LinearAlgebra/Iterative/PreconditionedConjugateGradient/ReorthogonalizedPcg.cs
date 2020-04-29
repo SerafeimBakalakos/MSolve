@@ -115,8 +115,12 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
 
         protected override IterativeStatistics SolveInternal(int maxIterations, Func<IVector> zeroVectorInitializer)
         {
+            Preconditioner.SolveLinearSystem(residual, precondResidual);
+
             // d0 = s0 = inv(M) * r0
-            Preconditioner.SolveLinearSystem(residual, direction);
+            //direction.CopyFrom(precondResidual);
+            //Preconditioner.SolveLinearSystem(residual, direction);
+            UpdateDirectionVector(precondResidual, direction);
 
             // q0 = A * d0
             Matrix.Multiply(direction, matrixTimesDirection);

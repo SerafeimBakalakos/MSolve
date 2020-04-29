@@ -66,40 +66,43 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         {
             //if (decomposeModel)
             //{
-                var cornerNodes1 = cornerNodes.Select(x => ((ISubdomain)model.SubdomainsDictionary[x.Key], x.Value)).ToDictionary(x=>x.Item1,x=>x.Value);
-                var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes1);
+            var cornerNodes1 = cornerNodes.Select(x => ((ISubdomain)model.SubdomainsDictionary[x.Key], x.Value)).ToDictionary(x => x.Item1, x => x.Value);
+            var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes1);
 
-                Dictionary<ISubdomain, HashSet<INode>> extraConstrNodesofsubd = GetExtraConstrSubdFromExtraConstraintNoeds(extraConstraintsNoeds, model);
-                var midSideNodeSelection = new UserDefinedMidsideNodes(extraConstrNodesofsubd,
-                    new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ });
+            Dictionary<ISubdomain, HashSet<INode>> extraConstrNodesofsubd = GetExtraConstrSubdFromExtraConstraintNoeds(extraConstraintsNoeds, model);
+            var midSideNodeSelection = new UserDefinedMidsideNodes(extraConstrNodesofsubd,
+                new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ });
 
-                //Setup solver
-                var pcgSettings = new PcgSettings()
-                {
-                    ConvergenceTolerance = 1E-7,
-                    MaxIterationsProvider = new FixedMaxIterationsProvider(1000)
-                };
-                var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(new OrderingAmdSuiteSparse());
+            //Setup solver
+            var pcgSettings = new PcgSettings()
+            {
+                ConvergenceTolerance = 1E-4,
+                MaxIterationsProvider = new FixedMaxIterationsProvider(1000)
+            };
+            var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(new OrderingAmdSuiteSparse());
 
-                //var fetiSolverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);  //A.3
-                var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();   //A.3
-                var fetiSolverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);  //A.3
+            //var fetiSolverBuilder = new FetiDPSolverSerial.Builder(fetiMatrices);  //A.3
+            //var matrixManagerFactory = new FetiDP3dMatrixManagerFactoryDense();   //A.3.1
+            //var matrixManagerFactory = new FetiDP3dMatrixManagerFactorySkyline();   //A.3.1
+            var matrixManagerFactory = new FetiDP3dMatrixManagerFactorySuiteSparse(new OrderingAmdSuiteSparse());   //A.3.1
+            var fetiSolverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);  //A.3
 
-                //fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
-                fetiSolverBuilder.StiffnessDistribution =  StiffnessDistributionType.HeterogeneousCondensed; //TODO
-                fetiSolverBuilder.Preconditioning = new DirichletPreconditioning();
-                fetiSolverBuilder.PcgSettings = pcgSettings;
+            //fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
+            fetiSolverBuilder.StiffnessDistribution = StiffnessDistributionType.HeterogeneousCondensed; //TODO
+            fetiSolverBuilder.Preconditioning = new DirichletPreconditioning();
+            fetiSolverBuilder.PcgSettings = pcgSettings;
+            fetiSolverBuilder.Reorthogonalization = false;
 
-                //Crosspoints crosspoints = Crosspoints.FullyRedundant; //A.2
-                                                                      //Crosspoints crosspoints = Crosspoints.Minimum; //A.2
+            //Crosspoints crosspoints = Crosspoints.FullyRedundant; //A.2
+            //Crosspoints crosspoints = Crosspoints.Minimum; //A.2
 
-                ICrosspointStrategy crosspointStrategy;
-                crosspointStrategy = new MinimumConstraints(); //A.2
-                //crosspointStrategy = new FullyRedundantConstraints(); //A.2
-                fetiSolverBuilder.CrosspointStrategy = crosspointStrategy;
+            ICrosspointStrategy crosspointStrategy;
+            //crosspointStrategy = new MinimumConstraints(); //A.2
+            crosspointStrategy = new FullyRedundantConstraints(); //A.2
+            fetiSolverBuilder.CrosspointStrategy = crosspointStrategy;
 
-                //FetiDPSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection); //A.1
-                FetiDP3dSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection, midSideNodeSelection); //A.1
+            //FetiDPSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection); //A.1
+            FetiDP3dSolverSerial fetiSolver = fetiSolverBuilder.Build(model, cornerNodeSelection, midSideNodeSelection); //A.1
 
             return fetiSolver;
             //}
@@ -278,7 +281,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             else { renumbering = new renumbering(sunol_nodes_numbering); }
             #endregion
 
-            extraConstraintsNoeds = GetExtraConstraintNodes2renumberingRandomDataOriginal(discr1, subdiscr1, renumbering);
+            extraConstraintsNoeds = GetExtraConstraintNodes2renumberingRandomData(discr1, subdiscr1, renumbering);
 
             //TODO delete unesessary double arrays (Dq)
             Dq = new double[9, 3 * (((mp.hexa1 + 1) * (mp.hexa2 + 1) * (mp.hexa3 + 1)) - ((mp.hexa1 - 1) * (mp.hexa2 - 1) * (mp.hexa3 - 1)))];

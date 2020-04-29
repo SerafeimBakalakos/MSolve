@@ -54,7 +54,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             int discr1_shell;// = 1;
             int graphene_sheets_number;// =2; //periektikothta 0.525% 
             double scale_factor;//= 1; //PROSOXH
-
+            CnstValues.exampleNo = 3;
             (subdiscr1, discr1, subdiscr1_shell, discr1_shell, graphene_sheets_number, scale_factor) = GetGrRveExampleDiscrDataFromFile(new CnstValues());
             discr3 = discr1 * subdiscr1;
 
@@ -75,7 +75,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             // 
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-            rveBuilder.useInput = false;
+            rveBuilder.useInput = true;
             #endregion
 
 
@@ -85,12 +85,12 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             double[,] consCheck1 = new double[6, 6];
             for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { consCheck1[i1, i2] = microstructure3.ConstitutiveMatrix[i1, i2]; } }
 
-            microstructure3.UpdateMaterial(new double[9] { 1.10, 1, 1, 0, 0, 0, 0, 0, 0 });
+            microstructure3.UpdateMaterial(new double[9] { /*1.10*/1.03, 1, 1, 0, 0, 0, 0, 0, 0 });
             double[] stressesCheck3 = microstructure3.Stresses;
             microstructure3.SaveState();
             IVector uInitialFreeDOFs_state1 = microstructure3.uInitialFreeDOFDisplacementsPerSubdomain[1].Copy();
 
-            microstructure3.UpdateMaterial(new double[9] { 1.20, 1, 1, 0, 0, 0, 0, 0, 0 });
+            microstructure3.UpdateMaterial(new double[9] { /*1.20*/1.06, 1, 1, 0, 0, 0, 0, 0, 0 });
             double[] stressesCheck4 = microstructure3.Stresses;
             IVector uInitialFreeDOFs_state2 = microstructure3.uInitialFreeDOFDisplacementsPerSubdomain[1].Copy();
 
