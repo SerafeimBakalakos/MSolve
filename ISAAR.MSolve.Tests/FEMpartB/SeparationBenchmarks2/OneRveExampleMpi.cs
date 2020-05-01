@@ -10,6 +10,7 @@ using ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses;
 using ISAAR.MSolve.Solvers.Direct;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -50,7 +51,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 
             #region rve builder with mpi solver
 
-            CnstValues.exampleNo = 60;
+            CnstValues.exampleNo = 58;
             CnstValues.isInputInCode_forRVE = false;
             CnstValues.useInput_forRVE = true; //Panta prin thn getRveModelAndBoundaryNodes
 
@@ -80,6 +81,8 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             //microstructureSerial.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
             //double[] vector1 = microstructureSerial.uInitialFreeDOFDisplacementsPerSubdomain.ElementAt(0).Value.CopyToArray();
 
+            var timer = new Stopwatch();
+            timer.Start();
 
             var rveBuilder3 = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
@@ -89,24 +92,42 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             //double[,] consCheckSerial2 = new double[6, 6];
             //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { consCheckSerial2[i1, i2] = microstructure2Serial.ConstitutiveMatrix[i1, i2]; } }
             microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
-            Vector vector2 = (Vector)microstructure2Serial.uInitialFreeDOFDisplacementsPerSubdomain.ElementAt(0).Value.Copy();
-            #endregion
+            microstructure2Serial.SaveState();
+            microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.03, 1, 1, 0, 0, 0, 0, 0, 0 });
+            microstructure2Serial.SaveState();
+            microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.04, 1, 1, 0, 0, 0, 0, 0, 0 });
+            timer.Stop();
+            double duration1 = timer.Elapsed.TotalMilliseconds;
 
+            Vector vector2 = (Vector)microstructure2Serial.uInitialFreeDOFDisplacementsPerSubdomain.ElementAt(0).Value.Copy();
+
+
+            #endregion
+            timer.Reset();
+            timer.Restart();
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
 
 
             var microstructure3 = new MicrostructureDefGrad3DSerial(rveBuilder,
-                rveBuilder.GetAppropriateSolverMpi, false, 1, false, false);
+                rveBuilder.GetAppropriateSolverMpi, false, 1, true, true);
             double[,] consCheck1 = new double[6, 6];
             //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { consCheck1[i1, i2] = microstructure3.ConstitutiveMatrix[i1, i2]; } }
 
             microstructure3.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
+            microstructure3.SaveState();
+            microstructure3.UpdateMaterial(new double[9] { /*1.10*/ 1.03, 1, 1, 0, 0, 0, 0, 0, 0 });
+            microstructure3.SaveState();
+            microstructure3.UpdateMaterial(new double[9] { /*1.10*/ 1.04, 1, 1, 0, 0, 0, 0, 0, 0 });
+
+            timer.Stop(); double duration2 = timer.Elapsed.TotalMilliseconds;
             double[] stressesCheck3 = microstructure3.Stresses;
             microstructure3.SaveState();
             IVector uInitialFreeDOFs_state1 = microstructure3.uInitialFreeDOFDisplacementsPerSubdomain[1].Copy();
             Vector globalUvectrInSerialFormat = ReorderSolutionInSerialSkylineFormat(microstructure2Serial.model, vector2, microstructure3.model, microstructure3.uInitialFreeDOFDisplacementsPerSubdomain);
-            var errorVector = (vector2 - globalUvectrInSerialFormat).Scale(1 / vector2.Norm2());
+            //var errorVector = (vector2 - globalUvectrInSerialFormat).Scale(1 / vector2.Norm2());
+            double errorNorm = (vector2 - globalUvectrInSerialFormat).Norm2() / vector2.Norm2();
+
 
             microstructure3.UpdateMaterial(new double[9] { /*1.20*/ 1.02, 1, 1, 0, 0, 0, 0, 0, 0 });
             double[] stressesCheck4 = microstructure3.Stresses;
@@ -114,7 +135,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 
             //PrintUtilities.WriteToFileVector(stressesCheck3, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\stressesCheck3.txt");
             //PrintUtilities.WriteToFile(consCheck1, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\consCheck1.txt");
-            
+
             return (stressesCheck3, stressesCheck4, consCheck1, uInitialFreeDOFs_state1, uInitialFreeDOFs_state2);
         }
 
@@ -298,7 +319,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             //IRVEbuilder homogeneousRveBuilder1 = new HomogeneousRVEBuilderCheckEnaHexa();
 
             // pros to paron
-            var ModelAndNodes = grapheneRveBuilder1.GetModelAndBoundaryNodes();            
+            var ModelAndNodes = grapheneRveBuilder1.GetModelAndBoundaryNodes();
             int[] hexaPrint = grapheneRveBuilder1.hexaPrint;
             int[] cohePrint = grapheneRveBuilder1.cohePrint;
             int[] shellPrint = grapheneRveBuilder1.shellPrint;
