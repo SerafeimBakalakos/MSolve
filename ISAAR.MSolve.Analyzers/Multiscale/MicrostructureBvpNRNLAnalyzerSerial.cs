@@ -203,7 +203,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                     if (step == 0) firstError = errorNorm;
                     if (errorNorm < tolerance) break;
 
-                    SplitResidualForcesToSubdomains();//TODOMaria scatter residuals to subdomains
+                    //SplitResidualForcesToSubdomains();//TODOmpi scatter residuals is unenecessary and implemented wrong for ISolverMpi
                     if ((step + 1) % stepsForMatrixRebuild == 0)
                     {
                         providerReset(); // provider.Reset();
