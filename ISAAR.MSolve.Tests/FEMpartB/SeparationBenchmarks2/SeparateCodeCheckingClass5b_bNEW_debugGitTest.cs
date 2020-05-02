@@ -47,11 +47,93 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 using ISAAR.MSolve.MSAnalysis.RveTemplates.SupportiveClasses;
+using Xunit;
 
-namespace ISAAR.MSolve.SamplesConsole
+namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 {
-    public class SeparateCodeCheckingClass5b_bNEW_debugGit
+    public static class SeparateCodeCheckingClass5b_bNEW_debugGitTest
     {//check unpushed changes commit
+
+        [Fact]
+        static void Solve()
+        {
+            for (int example = 28; example < 29; example++)
+            {
+                CnstValues.exampleNo = example;
+                CnstValues.runOnlyHexaModel = false;
+
+                (Model model1, double[] uc1, Vector globalU1, bool IsFetiDpSolver3d) = SeparateCodeCheckingClass5b_bNEW_debugGitTest.RunExample();
+                (Model model2, double[] uc2, Vector globalU2) = SeparateCodeCheckingClass5b_bNEW_debugGitTest.RunExampleSerial();
+                Vector globalU1_2 = ReorderDirectSolverSolutionIn_globalU1_format(globalU1, globalU2, model1, model2);
+                var check = ((globalU1 - globalU1_2).Norm2()) / (globalU1.Norm2());
+                var check2 = (globalU1 - globalU1_2);
+                printGlobalSolutionStats(check, IsFetiDpSolver3d);
+
+
+                double[] expectedGlobalSolutionFeti3Dfirst11values = new double[11] {0.000126146992609552, 0.000130114215483872, 8.33384821217284E-05,9.32792268779396E-05,9.74136328421431E-05,
+                    5.26728981221024E-05,3.18832581261157E-05,3.26803860323064E-05,6.36506185081758E-05,-1.95427905842077E-05,-2.34221379496245E-05 };
+                double[] calculatedGlobalSolutionFeti = (new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }).Select(x => globalU1[x]).ToArray();
+                    
+
+
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(expectedGlobalSolutionFeti3Dfirst11values, calculatedGlobalSolutionFeti));
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(new double[] { check }, new double[] { 5.7123480244662094E-05 },0.2)); // actual error = 5.7123480244662094E-05
+
+
+
+                #region old comments for hexa only model
+                //CnstValues.runOnlyHexaModel = true;
+                //CnstValues.preventOutputFileWrite(); 
+
+                //FetiDP3dSolverSerialTestsInput.TestSolutionGlobalDisplacements();
+
+                //CnstValues.RestoreDefaultBoolValues();
+                #endregion
+            }
+
+        }
+
+        [Fact]
+        static void SolveInput()
+        {
+            for (int example = 28; example < 29; example++)
+            {
+                CnstValues.exampleNo = example;
+                CnstValues.runOnlyHexaModel = false;
+                CnstValues.isInputInCode_forRVE = true;
+
+                (Model model1, double[] uc1, Vector globalU1, bool IsFetiDpSolver3d) = SeparateCodeCheckingClass5b_bNEW_debugGitTest.RunExample();
+                (Model model2, double[] uc2, Vector globalU2) = SeparateCodeCheckingClass5b_bNEW_debugGitTest.RunExampleSerial();
+                Vector globalU1_2 = ReorderDirectSolverSolutionIn_globalU1_format(globalU1, globalU2, model1, model2);
+                var check = ((globalU1 - globalU1_2).Norm2()) / (globalU1.Norm2());
+                var check2 = (globalU1 - globalU1_2);
+                printGlobalSolutionStats(check, IsFetiDpSolver3d);
+
+
+                double[] expectedGlobalSolutionFeti3Dfirst11values = new double[11] {0.000126146992609552, 0.000130114215483872, 8.33384821217284E-05,9.32792268779396E-05,9.74136328421431E-05,
+                    5.26728981221024E-05,3.18832581261157E-05,3.26803860323064E-05,6.36506185081758E-05,-1.95427905842077E-05,-2.34221379496245E-05 };
+                double[] calculatedGlobalSolutionFeti = (new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }).Select(x => globalU1[x]).ToArray();
+
+
+
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(expectedGlobalSolutionFeti3Dfirst11values, calculatedGlobalSolutionFeti,1e-8));
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(new double[] { check }, new double[] { 5.7123480488295326E-05 }, 0.2)); // error 5.7123480488295326E-05
+
+
+
+                #region old comments for hexa only model
+                //CnstValues.runOnlyHexaModel = true;
+                //CnstValues.preventOutputFileWrite(); 
+
+                //FetiDP3dSolverSerialTestsInput.TestSolutionGlobalDisplacements();
+
+                //CnstValues.RestoreDefaultBoolValues();
+                #endregion
+            }
+
+        }
+
+
 
         //prosthiki model.ConnectDataStructures entos rve gia na vrei to output node.Subdomains =/=0
         public static (Model, double[], Vector, bool) RunExample()
@@ -74,7 +156,7 @@ namespace ISAAR.MSolve.SamplesConsole
             subdiscr1 = (int)Math.Floor(scale_factor * subdiscr1);
 
 
-            Tuple<rveMatrixParameters, grapheneSheetParameters> mpgp = SeperateIntegrationClassCheck.GetReferenceKanonikhGewmetriaRveExampleParametersStiffCase(subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell);
+            Tuple<rveMatrixParameters, grapheneSheetParameters> mpgp = GetReferenceKanonikhGewmetriaRveExampleParametersStiffCase(subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell);
             //mpgp.Item2.E_shell = 0.0000001;
             if (CnstValues.parameterSet == ParameterSet.stiffCase)
             { mpgp.Item1.L01 = scale_factor * 90; mpgp.Item1.L02 = scale_factor * 90; mpgp.Item1.L03 = scale_factor * 90; }
@@ -409,7 +491,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 { PrintHexaModelData(model, rveBuilder.subdomainOutputPath); }
 
                 Dictionary<int, int[]> ExtraConstrIdAndTheirBRNodesIds = GetExtraConstrNodesIds(subdBRNodesAndGlobalDOfs, extraConstraintsNoeds, model);
-                int[] brNodesMsolveWise = ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.ReadIntVector(rveBuilder.subdomainOutputPath + @"\model_overwrite\subdomain_data_solver\RB_Nodes_IDs_MSOLVE_wise" + ".txt");
+                int[] brNodesMsolveWise = PrintUtilities.ReadIntVector(rveBuilder.subdomainOutputPath + @"\model_overwrite\subdomain_data_solver\RB_Nodes_IDs_MSOLVE_wise" + ".txt");
                 Dictionary<int, int[]> subdBRNodesMsolveWiseAndGlobalDOfs = new Dictionary<int, int[]>();
                 for (int i1 = 0; i1 < brNodesMsolveWise.Length; i1++) subdBRNodesMsolveWiseAndGlobalDOfs.Add(brNodesMsolveWise[i1], new int[1]);
                 Dictionary<int, int[]> ExtraConstrIdAndTheirBR_msolveWise_NodesTheseis = GetExtraConstrNodesPositions(subdBRNodesMsolveWiseAndGlobalDOfs, extraConstraintsNoeds, model);
@@ -451,7 +533,7 @@ namespace ISAAR.MSolve.SamplesConsole
             //DUPLICATE CHANGES IN SAMPLE CONSOLE
             if (!CnstValues.isInputInCode_forRVE)
             {
-                int[] discrData = ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.ReadIntVector(cnstValues.exampleDiscrInputPathGen + @"\subdiscr1_discr1_ subdiscr1_shell_discr1_shell_graphene_sheets_number" + ".txt");
+                int[] discrData = PrintUtilities.ReadIntVector(cnstValues.exampleDiscrInputPathGen + @"\subdiscr1_discr1_ subdiscr1_shell_discr1_shell_graphene_sheets_number" + ".txt");
                 double[] modelScaleFactor = MultiscaleAnalysis.SupportiveClasses.PrintUtilities.ReadVector(cnstValues.exampleDiscrInputPathGen + @"\modelScalingFactor" + ".txt");
 
                 return (discrData[0], discrData[1], discrData[2], discrData[3], discrData[4], modelScaleFactor[0]);
@@ -577,36 +659,36 @@ namespace ISAAR.MSolve.SamplesConsole
             if (outputTypeOriginal)
             {
                 //print model reconstruction data 
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(ElementIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementIds.txt");
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(subdomainIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\subdomainIds.txt");
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(NodeIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeIds.txt");
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(constraintIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\constraintIds.txt");
+                PrintUtilities.WriteToFileVectorMsolveInput(ElementIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementIds.txt");
+                PrintUtilities.WriteToFileVectorMsolveInput(subdomainIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\subdomainIds.txt");
+                PrintUtilities.WriteToFileVectorMsolveInput(NodeIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeIds.txt");
+                PrintUtilities.WriteToFileVectorMsolveInput(constraintIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\constraintIds.txt");
 
 
 
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(ElementNodes, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementNodes.txt");
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(NodeCoordinates, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeCoordinates.txt");
-                //ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(SubdElements, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\SubdElements.txt");
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileDictionaryMsolveInput(subdElements, subdomainOutputPath, @"\model_overwrite\MsolveModel\subdElements.txt");
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVectorMsolveInput(elementStiffnessFactor, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementStiffnessFactors.txt");
+                PrintUtilities.WriteToFileMsolveInput(NodeCoordinates, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeCoordinates.txt");
+                PrintUtilities.WriteToFileMsolveInput(ElementNodes, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementNodes.txt");
+                //PrintUtilities.WriteToFileMsolveInput(SubdElements, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\SubdElements.txt");
+                PrintUtilities.WriteToFileDictionaryMsolveInput(subdElements, subdomainOutputPath, @"\model_overwrite\MsolveModel\subdElements.txt");
+                PrintUtilities.WriteToFileVectorMsolveInput(elementStiffnessFactor, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementStiffnessFactors.txt");
             }
             else
             {
                 //DdmCalculationsGeneral.PrintSubdomainDataForPostPro2(ExtraConstrIdAndTheirBR_msolveWise_NodesTheseis, rveBuilder.subdomainOutputPath, @"\model_overwrite\ExtraConstrIdAndTheirBR_msolveWise_NodesTheseis.txt");
                 //int[] brNodesMsolveWise = ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.ReadIntVector(rveBuilder.subdomainOutputPath + @"\model_overwrite\subdomain_data_solver\RB_Nodes_IDs_MSOLVE_wise" + ".txt");
                 //print model reconstruction data 
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVector(ElementIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementIds.txt");
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVector(subdomainIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\subdomainIds.txt");
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVector(NodeIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeIds.txt");
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVector(constraintIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\constraintIds.txt");
+                PrintUtilities.WriteToFileVector(ElementIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementIds.txt");
+                PrintUtilities.WriteToFileVector(subdomainIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\subdomainIds.txt");
+                PrintUtilities.WriteToFileVector(NodeIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeIds.txt");
+                PrintUtilities.WriteToFileVector(constraintIds, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\constraintIds.txt");
 
 
 
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFile(ElementNodes, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementNodes.txt");
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFile(NodeCoordinates, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeCoordinates.txt");
-                //ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileMsolveInput(SubdElements, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\SubdElements.txt");
+                PrintUtilities.WriteToFile(ElementNodes, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementNodes.txt");
+                PrintUtilities.WriteToFile(NodeCoordinates, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\NodeCoordinates.txt");
+                //PrintUtilities.WriteToFileMsolveInput(SubdElements, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\SubdElements.txt");
                 DdmCalculationsGeneral.PrintSubdomainDataForPostPro2(subdElements, subdomainOutputPath, @"\model_overwrite\MsolveModel\subdElements.txt");
-                ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.WriteToFileVector(elementStiffnessFactor, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementStiffnessFactors.txt");
+                PrintUtilities.WriteToFileVector(elementStiffnessFactor, subdomainOutputPath + @"\model_overwrite\MsolveModel\" + @"\ElementStiffnessFactors.txt");
             }
 
 
@@ -723,7 +805,7 @@ namespace ISAAR.MSolve.SamplesConsole
             subdiscr1 = (int)Math.Floor(scale_factor * subdiscr1);
 
             (subdiscr1, discr1, subdiscr1_shell, discr1_shell, graphene_sheets_number, scale_factor) = GetGrRveExampleDiscrDataFromFile(new CnstValues());
-            Tuple<rveMatrixParameters, grapheneSheetParameters> mpgp = SeperateIntegrationClassCheck.GetReferenceKanonikhGewmetriaRveExampleParametersStiffCase(subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell);
+            Tuple<rveMatrixParameters, grapheneSheetParameters> mpgp = GetReferenceKanonikhGewmetriaRveExampleParametersStiffCase(subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell);
             //mpgp.Item2.E_shell = 0.0000001;
             if (CnstValues.parameterSet == ParameterSet.stiffCase)
             { mpgp.Item1.L01 = scale_factor * 90; mpgp.Item1.L02 = scale_factor * 90; mpgp.Item1.L03 = scale_factor * 90; }
@@ -752,7 +834,7 @@ namespace ISAAR.MSolve.SamplesConsole
             //var mpgp = rveBuilder.mpgp; 
             var mp = mpgp.Item1; 
             var gp = mpgp.Item2;
-            renumbering renumbering = new renumbering(ISAAR.MSolve.SamplesConsole.SupportiveClasses.PrintUtilities.ReadIntVector(renumbering_vector_path));
+            renumbering renumbering = new renumbering(PrintUtilities.ReadIntVector(renumbering_vector_path));
             double L01 = mp.L01; double L02 = mp.L02; double L03 = mp.L03;
             int hexa1 = mp.hexa1; int hexa2 = mp.hexa2; int hexa3 = mp.hexa3;
             int kuvos = (hexa1 - 1) * (hexa2 - 1) * (hexa3 - 1);
@@ -895,6 +977,100 @@ namespace ISAAR.MSolve.SamplesConsole
             }
         }
 
+        public static Tuple<rveMatrixParameters, grapheneSheetParameters> GetReferenceKanonikhGewmetriaRveExampleParametersStiffCase(int subdiscr1, int discr1, int discr3, int subdiscr1_shell, int discr1_shell)
+        {
+            //// DUPLICATE ANNY CHANGES IN ONERVEEXAMPLEMPI
+            //// kai sto integration Separatecodecheckingclass....GitTest
+
+            if (CnstValues.parameterSet == ParameterSet.stiffCase)
+            {
+                rveMatrixParameters mp;
+                mp = new rveMatrixParameters()
+                {
+                    E_disp = 3.5, //Gpa
+                    ni_disp = 0.4, // stather Poisson
+                    L01 = 95, //150, // diastaseis
+                    L02 = 95, //150,
+                    L03 = 95, //40,
+                    hexa1 = discr1 * subdiscr1,// diakritopoihsh
+                    hexa2 = discr1 * subdiscr1,
+                    hexa3 = discr1 * subdiscr1,
+                };
+
+                grapheneSheetParameters gp;
+                gp = new grapheneSheetParameters()
+                {
+                    // parametroi shell
+                    E_shell = 27196.4146610211, // GPa = 1000Mpa = 1000N / mm2
+                    ni_shell = 0.0607, // stathera poisson
+                    elem1 = discr1_shell * subdiscr1_shell,
+                    elem2 = discr1_shell * subdiscr1_shell,
+                    L1 = 50,// nm  // DIORTHOSI 2 graphene sheets
+                    L2 = 50,// nm
+                    L3 = 112.5096153846, // nm
+                    a1_shell = 0, // nm
+                    tk = 0.0125016478913782,  // 0.0125016478913782nm //0.125*40,
+
+                    //parametroi cohesive epifaneias
+                    T_o_3 = 0.20, //0.05,  // 1Gpa = 1000Mpa = 1000N / mm2
+                    D_o_3 = 0.25, //0.5, // nm
+                    D_f_3 = 4, // nm
+                    T_o_1 = 0.20, //0.05,// Gpa
+                    D_o_1 = 0.25, //0.5, // nm
+                    D_f_1 = 4, // nm
+                    n_curve = 1.4
+                };
+
+                Tuple<rveMatrixParameters, grapheneSheetParameters> gpmp = new Tuple<rveMatrixParameters, grapheneSheetParameters>(mp, gp);
+                return gpmp;
+            }
+
+            if (CnstValues.parameterSet == ParameterSet.stiffLargerRve)
+            {
+
+                rveMatrixParameters mp;
+                mp = new rveMatrixParameters()
+                {
+                    E_disp = 3.5, //Gpa
+                    ni_disp = 0.4, // stather Poisson
+                    L01 = 120, //95, //150, // diastaseis
+                    L02 = 120, //95, //150,
+                    L03 = 120, //95, //40,
+                    hexa1 = discr1 * subdiscr1,// diakritopoihsh
+                    hexa2 = discr1 * subdiscr1,
+                    hexa3 = discr1 * subdiscr1,
+                };
+
+                grapheneSheetParameters gp;
+                gp = new grapheneSheetParameters()
+                {
+                    // parametroi shell
+                    E_shell = 27196.4146610211, // GPa = 1000Mpa = 1000N / mm2
+                    ni_shell = 0.0607, // stathera poisson
+                    elem1 = discr1_shell * subdiscr1_shell,
+                    elem2 = discr1_shell * subdiscr1_shell,
+                    L1 = 38, //50,// nm  // DIORTHOSI 2 graphene sheets
+                    L2 = 38, //.50,// nm
+                    L3 = 112.5096153846, // nm
+                    a1_shell = 0, // nm
+                    tk = 0.0125016478913782,  // 0.0125016478913782nm //0.125*40,
+
+                    //parametroi cohesive epifaneias
+                    T_o_3 = 0.20, //0.05,  // 1Gpa = 1000Mpa = 1000N / mm2
+                    D_o_3 = 0.25, //0.5, // nm
+                    D_f_3 = 4, // nm
+                    T_o_1 = 0.20, //0.05,// Gpa
+                    D_o_1 = 0.25, //0.5, // nm
+                    D_f_1 = 4, // nm
+                    n_curve = 1.4
+                };
+
+                Tuple<rveMatrixParameters, grapheneSheetParameters> gpmp = new Tuple<rveMatrixParameters, grapheneSheetParameters>(mp, gp);
+                return gpmp;
+            }
+            else { throw new NotImplementedException(); }
+        }
+
         private static void DefineAppropriateConstraintsForBoundaryNodes(Model model, Dictionary<int, Node> boundaryNodes)
         {
             IScaleTransitions scaleTransitions = new DefGradVec3DScaleTransition();
@@ -915,6 +1091,45 @@ namespace ISAAR.MSolve.SamplesConsole
         }
 
         public enum Crosspoints { Minimum, FullyRedundant }
+
+        private static void printGlobalSolutionStats(double check, bool IsFetiDpSolver3d)
+        {
+            var cnstVal = new CnstValues();
+            if (CnstValues.printGlobalSolutionStats)
+            {
+                string[] statsLines = new string[] { "GlobalSolutionError=" + check.ToString() + ",", };
+                if (IsFetiDpSolver3d)
+                {
+                    var statsOutputPath = cnstVal.interfaceSolverStatsPath + @"\GlobalSolution_FetiDP_3d_stats.txt";
+                    cnstVal.WriteToFileStringArray(statsLines, statsOutputPath);
+                }
+                else
+                {
+                    var statsOutputPath = cnstVal.interfaceSolverStatsPath + @"\GlobalSolution_FetiDP_stats.txt";
+                    cnstVal.WriteToFileStringArray(statsLines, statsOutputPath);
+                }
+            }
+        }
+
+        private static Vector ReorderDirectSolverSolutionIn_globalU1_format(Vector globalU1, Vector globalU2, Model model1, Model model2)
+        {
+            //var freeNodesIds = model1.NodesDictionary.Values.Where(x => x.Constraints.Count == 0).Select(x=>x.ID).ToList();
+            var freeNodesIds = model1.GlobalDofOrdering.GlobalFreeDofs.GetRows().Select(x => x.ID);
+            Vector globalU1_2 = Vector.CreateZero(globalU1.Length);
+            foreach (int nodeID in freeNodesIds)
+            {
+                foreach (var dof in model2.GlobalDofOrdering.GlobalFreeDofs.GetDataOfRow(model2.GetNode(nodeID)).Keys)
+                {
+                    int model1Dof_order = model1.GlobalDofOrdering.GlobalFreeDofs[model1.GetNode(nodeID), dof];
+                    int model2Dof_order = model2.GlobalDofOrdering.GlobalFreeDofs[model2.GetNode(nodeID), dof];
+
+                    globalU1_2[model1Dof_order] = globalU2[model2Dof_order];
+                }
+            }
+
+            return globalU1_2;
+        }
+
 
     }
 }
