@@ -55,8 +55,34 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
 
         public static bool printInterfaceSolutionStats { get; set; } = true;
 
+        #region supress output
+        /// <summary>
+        /// Print globalSolutionStats will be prevented as well.
+        /// </summary>
+        public static void PreventMATLABandTotalOutput()
+        {
+            printSolver_run_overwrite_data_region = false;
+            print_subdomain_data = false;
+            WRITESTIFFNESSES = false;
+            //even interface solution stats
+            printInterfaceSolutionStats = false;
 
+            print_hexa_model = false;
+            run_overwrite_data_region = false;
+            writeFetiSolutionVectors = false;
 
+            printGlobalSolutionStats = false;
+        }
+
+        public static bool print_subdomain_data { get; set; } = true;
+
+        public static bool WRITESTIFFNESSES { get; set; } = true;
+
+        public static bool print_hexa_model { get; set; } = true;
+        public static bool run_overwrite_data_region { get; set; } = true;
+        public static bool writeFetiSolutionVectors { get; set; } = true;
+        
+        #endregion
         public static bool printSolver_run_overwrite_data_region { get; set; } = true;
 
         public static bool printGlobalSolutionStats { get; set; } = true;

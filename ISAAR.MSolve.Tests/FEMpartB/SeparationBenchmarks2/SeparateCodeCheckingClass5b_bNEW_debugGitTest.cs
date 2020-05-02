@@ -101,6 +101,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
                 CnstValues.exampleNo = example;
                 CnstValues.runOnlyHexaModel = false;
                 CnstValues.isInputInCode_forRVE = true;
+                CnstValues.PreventMATLABandTotalOutput();
 
                 (Model model1, double[] uc1, Vector globalU1, bool IsFetiDpSolver3d) = SeparateCodeCheckingClass5b_bNEW_debugGitTest.RunExample();
                 (Model model2, double[] uc2, Vector globalU2) = SeparateCodeCheckingClass5b_bNEW_debugGitTest.RunExampleSerial();
@@ -180,7 +181,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             //var rveBuilder = new RveGrShMultipleSeparatedDevelopbLARGE(1, true);
             //var rveBuilder = new RveGrShMultipleSeparated_c_alteDevelop5elem(1, true);
 
-            bool WRITESTIFFNESSES = true;
+            bool WRITESTIFFNESSES = CnstValues.WRITESTIFFNESSES;
 
             #region model nodes and load
             var ModelAndNodes = rveBuilder.GetModelAndBoundaryNodes();
@@ -467,24 +468,28 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
                 node_counter++;
             }
             //(new ISAAR.MSolve.LinearAlgebra.Output.Array1DWriter()).WriteToFile(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution.txt");
-            bool IsFetiDpSolver3d = false; 
-            if (fetiSolver is FetiDP3dSolverSerial)
+            bool IsFetiDpSolver3d = false;
+            bool writeFetiSolutionVectors = CnstValues.writeFetiSolutionVectors;
+            if (writeFetiSolutionVectors)
             {
-                DdmCalculationsGeneral.WriteToFileVector(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_fetiDP3D.txt");
-                DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_fetiDP3D.txt");
-                IsFetiDpSolver3d = true;
-            }
-            else
-            {
-                DdmCalculationsGeneral.WriteToFileVector(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_fetiDP.txt");
-                DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_fetiDP.txt");
-                IsFetiDpSolver3d = true;
+                if (fetiSolver is FetiDP3dSolverSerial)
+                {
+                    DdmCalculationsGeneral.WriteToFileVector(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_fetiDP3D.txt");
+                    DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_fetiDP3D.txt");
+                    IsFetiDpSolver3d = true;
+                }
+                else
+                {
+                    DdmCalculationsGeneral.WriteToFileVector(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_fetiDP.txt");
+                    DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_fetiDP.txt");
+                    IsFetiDpSolver3d = true;
+                }
             }
             #endregion
 
             #region  overwrite data model region
-            bool run_overwrite_data_region = true;
-            bool print_hexa_model = true;
+            bool run_overwrite_data_region = CnstValues.run_overwrite_data_region;
+            bool print_hexa_model = CnstValues.print_hexa_model;
             if (run_overwrite_data_region)
             {
                 if (print_hexa_model)
@@ -834,7 +839,6 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             //var mpgp = rveBuilder.mpgp; 
             var mp = mpgp.Item1; 
             var gp = mpgp.Item2;
-            renumbering renumbering = new renumbering(PrintUtilities.ReadIntVector(renumbering_vector_path));
             double L01 = mp.L01; double L02 = mp.L02; double L03 = mp.L03;
             int hexa1 = mp.hexa1; int hexa2 = mp.hexa2; int hexa3 = mp.hexa3;
             int kuvos = (hexa1 - 1) * (hexa2 - 1) * (hexa3 - 1);
@@ -866,6 +870,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             }
             else
             {
+                renumbering renumbering = new renumbering(PrintUtilities.ReadIntVector(renumbering_vector_path));
                 int[][] paktwsiNodesData = new int[4][]; //arithmos corner nodes,  h1 h2 h3 data (afairoume 1 apo ta pragmatika)
                 int thesi = 0;
                 int j1 = 0;
@@ -944,8 +949,11 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
                 }
                 node_counter++;
             }
-            DdmCalculationsGeneral.WriteToFileVector(globalU, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_Direct.txt");
-            DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_Direct.txt");
+            if (CnstValues.writeFetiSolutionVectors)
+            {
+                DdmCalculationsGeneral.WriteToFileVector(globalU, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_Direct.txt");
+                DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_Direct.txt");
+            }
 
             return (model, uc, Vector.CreateFromArray(globalU));
         }

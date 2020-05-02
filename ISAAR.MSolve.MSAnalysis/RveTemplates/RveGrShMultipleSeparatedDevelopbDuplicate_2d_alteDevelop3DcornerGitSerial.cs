@@ -477,7 +477,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 DdmCalculationsGeneral.UndoModelInterconnectionDataBuild(model);
 
 
-                bool print_subdomain_data = true;
+                bool print_subdomain_data = CnstValues.print_subdomain_data;
                 if (print_subdomain_data)
                 {
                     //DdmCalculationsGeneral.PrintSubdomainDataForPostPro(subdHexaIds, subdCohElementIds, subdShellElementIds, subdomainOutputPath);

@@ -98,7 +98,7 @@ namespace ISAAR.MSolve.SamplesConsole
             //var rveBuilder = new RveGrShMultipleSeparatedDevelopbLARGE(1, true);
             //var rveBuilder = new RveGrShMultipleSeparated_c_alteDevelop5elem(1, true);
 
-            bool WRITESTIFFNESSES = true;
+            bool WRITESTIFFNESSES = CnstValues.WRITESTIFFNESSES;
 
             #region model nodes and load
             var ModelAndNodes = rveBuilder.GetModelAndBoundaryNodes();
@@ -385,24 +385,28 @@ namespace ISAAR.MSolve.SamplesConsole
                 node_counter++;
             }
             //(new ISAAR.MSolve.LinearAlgebra.Output.Array1DWriter()).WriteToFile(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution.txt");
-            bool IsFetiDpSolver3d = false; 
-            if (fetiSolver is FetiDP3dSolverSerial)
+            bool IsFetiDpSolver3d = false;
+            bool writeFetiSolutionVectors = CnstValues.writeFetiSolutionVectors;
+            if (writeFetiSolutionVectors)
             {
-                DdmCalculationsGeneral.WriteToFileVector(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_fetiDP3D.txt");
-                DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_fetiDP3D.txt");
-                IsFetiDpSolver3d = true;
-            }
-            else
-            {
-                DdmCalculationsGeneral.WriteToFileVector(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_fetiDP.txt");
-                DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_fetiDP.txt");
-                IsFetiDpSolver3d = true;
+                if (fetiSolver is FetiDP3dSolverSerial)
+                {
+                    DdmCalculationsGeneral.WriteToFileVector(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_fetiDP3D.txt");
+                    DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_fetiDP3D.txt");
+                    IsFetiDpSolver3d = true;
+                }
+                else
+                {
+                    DdmCalculationsGeneral.WriteToFileVector(globalU.CopyToArray(), rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_fetiDP.txt");
+                    DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_fetiDP.txt");
+                    IsFetiDpSolver3d = true;
+                }
             }
             #endregion
 
             #region  overwrite data model region
-            bool run_overwrite_data_region = true;
-            bool print_hexa_model = true;
+            bool run_overwrite_data_region = CnstValues.run_overwrite_data_region;
+            bool print_hexa_model = CnstValues.print_hexa_model;
             if (run_overwrite_data_region)
             {
                 if (print_hexa_model)
