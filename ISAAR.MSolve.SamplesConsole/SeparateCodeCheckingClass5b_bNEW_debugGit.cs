@@ -450,7 +450,7 @@ namespace ISAAR.MSolve.SamplesConsole
 
         }
 
-        private static (int subdiscr1, int discr1, int subdiscr1_shell, int discr1_shell, int graphene_sheets_number, double scale_factor)  GetGrRveExampleDiscrDataFromFile(CnstValues cnstValues)
+        public static (int subdiscr1, int discr1, int subdiscr1_shell, int discr1_shell, int graphene_sheets_number, double scale_factor)  GetGrRveExampleDiscrDataFromFile(CnstValues cnstValues)
         {
             //DUPLICATE CHANGES IN SAMPLE CONSOLE
             if (!CnstValues.isInputInCode_forRVE)

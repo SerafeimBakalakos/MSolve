@@ -18,13 +18,15 @@ using ISAAR.MSolve.Materials.Interfaces;
 using ISAAR.MSolve.MSAnalysis.remoteMatImplementations;
 using ISAAR.MSolve.MultiscaleAnalysis;
 using ISAAR.MSolve.MultiscaleAnalysis.Interfaces;
+using ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses;
 using ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses;
 using ISAAR.MSolve.Problems;
+using ISAAR.MSolve.SamplesConsole;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.Direct;
 using Xunit;
 
-namespace ISAAR.MSolve.Tests.FEM
+namespace ISAAR.MSolve.SamplesConsole
 {
     public static class Hexa8NonLinearCantileverDefGradDevelop4MultiscaleGraphene
     {
@@ -40,10 +42,42 @@ namespace ISAAR.MSolve.Tests.FEM
             //Console.Write($"waiting time = " + procs.OwnRank*20000);
             System.Threading.Thread.Sleep(/*(procs.OwnRank+1)**/20000);
 
-            IRVEbuilder homogeneousRveBuilder1 = new HomogeneousRVEBuilderNonLinearNoRenum();
-            IContinuumMaterial3DDefGrad material1 = new MicrostructureDefGrad3D(homogeneousRveBuilder1,
-                m => (new SkylineSolver.Builder()).BuildSolver(m), false, 1);
+            #region rve material choice and manager creation and if the micro model will be solved serially or feti
+            CnstValues.exampleNo = 28;
+            CnstValues.runOnlyHexaModel = false;
+            CnstValues.isInputInCode_forRVE = true;
+            CnstValues.useInput_forRVE = true;
+            CnstValues.PreventMATLABandTotalOutput();
+
+            #region discretization data
+            (int subdiscr1, int discr1, int subdiscr1_shell, int discr1_shell, int graphene_sheets_number, double scale_factor) = SeparateCodeCheckingClass5b_bNEW_debugGit.GetGrRveExampleDiscrDataFromFile(new CnstValues());
+            int discr3 = discr1 * subdiscr1;
+
+            //tvra ginontai scale input tou mpgp = getRe... methodou
+            graphene_sheets_number = (int)Math.Floor(scale_factor * scale_factor * scale_factor * graphene_sheets_number);
+            subdiscr1 = (int)Math.Floor(scale_factor * subdiscr1);
+
+
+            Tuple<rveMatrixParameters, grapheneSheetParameters> mpgp = SeperateIntegrationClassCheck.GetReferenceKanonikhGewmetriaRveExampleParametersStiffCase(subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell);
+            //mpgp.Item2.E_shell = 0.0000001;
+            if (CnstValues.parameterSet == ParameterSet.stiffCase)
+            { mpgp.Item1.L01 = scale_factor * 90; mpgp.Item1.L02 = scale_factor * 90; mpgp.Item1.L03 = scale_factor * 90; }
+            mpgp.Item1.L01 = scale_factor * mpgp.Item1.L01; mpgp.Item1.L02 = scale_factor * mpgp.Item1.L02; mpgp.Item1.L03 = scale_factor * mpgp.Item1.L03;
+            #endregion
+
+            var rveBuilderSuitesparse = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
+            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            var material1 = new MicrostructureDefGrad3D(rveBuilderSuitesparse,
+                skylinemodel => (new SuiteSparseSolver.Builder()).BuildSolver(skylinemodel), false, 1);
             IMaterialManager materialManager = new MaterialManagerMpi2(material1, procs);
+
+            //var rveBuilderFeti = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
+            //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            //var material1 = new MicrostructureDefGrad3DSerial(rveBuilderFeti,
+            //    rveBuilderFeti.GetAppropriateSolverMpi, false, 1, true, true);
+            //IMaterialManager materialManager = new MaterialManagerMpi2(material1, procs);
+
+            #endregion
 
             Model model = new Model();//'
 
@@ -71,7 +105,7 @@ namespace ISAAR.MSolve.Tests.FEM
             if (procs.IsMasterProcess)
             {
                 
-                var log1 = childAnalyzer.TotalDisplacementsPerIterationLog;//
+                IncrementalDisplacementsLog log1 = childAnalyzer.IncrementalDisplacementsLog;//
                 IReadOnlyList<Dictionary<int, double>> expectedDisplacements = GetExpectedDisplacements();
                 bool isProblemSolvedCorrectly = AreDisplacementsSame(expectedDisplacements, log1);
                 if (isProblemSolvedCorrectly)
@@ -84,10 +118,11 @@ namespace ISAAR.MSolve.Tests.FEM
                 }
                 if (CnstValues.writeFe2MacroscaleSolution)
                 {
-                    double[][] solutionVectors = ExtractCalculatedSolutionsMacro(log1, increments, expectedDisplacements);
-
-                    DdmCalculationsGeneral.WriteToFileVector(globalU, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_Direct.txt");
-                    DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_Direct.txt");
+                    double[][] solutionVectors = ExtractCalculatedSolutionsMacro(log1, subdomainID);
+                    for (int i1 = 0; i1 < solutionVectors.Length; i1++)
+                    {
+                        DdmCalculationsGeneral.WriteToFileVector(solutionVectors[i1], (new CnstValues()).exampleOutputPathGen + (@"\Msolve_solution\MacroscaleSolutionatInctrment" + i1 + ".txt"));
+                    }
                 }
 
             }
@@ -95,20 +130,20 @@ namespace ISAAR.MSolve.Tests.FEM
 
         }
 
-        private static double[][] ExtractCalculatedSolutionsMacro(TotalDisplacementsPerIterationLog log1, int increments, IReadOnlyList<Dictionary<int, double>> expectedDisplacements)
+        private static double[][] ExtractCalculatedSolutionsMacro(IncrementalDisplacementsLog log1, int subdomainId)
         {
+            double[][] incrementSolutions = new double[log1.dofDisplacementsPerIter.Count][];
             var comparer = new ValueComparer(1E-13);
-            for (int iter = 0; iter < increments;iter++)
+            for (int iter = 0; iter < log1.dofDisplacementsPerIter.Count; iter++)
             {
-                foreach (int dof in expectedDisplacements[iter].Keys)
+                incrementSolutions[iter] = new double[log1.dofDisplacementsPerIter[iter][subdomainId].Keys.Count];
+                int thesi = 0;
+                foreach (int dof in log1.dofDisplacementsPerIter[iter][subdomainId].Keys)
                 {
-                    if (!comparer.AreEqual(expectedDisplacements[iter][dof], computedDisplacements.GetTotalDisplacement(iter, subdomainID, dof)))
-                    {
-                        return false;
-                    }
+                    incrementSolutions[iter][thesi] = log1.dofDisplacementsPerIter[iter][subdomainId][dof];
                 }
             }
-            return true;
+            return incrementSolutions;
         }
 
         private static (StaticAnalyzerDevelopMpi parentAnalyzer, LoadControlAnalyzerDevelop4Mpi childAnalyzer) GetAnalyzers(ProcessDistribution procs,
@@ -239,7 +274,21 @@ namespace ISAAR.MSolve.Tests.FEM
             }
             return true;
         }
-
+        private static bool AreDisplacementsSame(IReadOnlyList<Dictionary<int, double>> expectedDisplacements, IncrementalDisplacementsLog computedDisplacements)
+        {
+            var comparer = new ValueComparer(1E-13);
+            for (int iter = 0; iter < expectedDisplacements.Count; ++iter)
+            {
+                foreach (int dof in expectedDisplacements[iter].Keys)
+                {
+                    if (!comparer.AreEqual(expectedDisplacements[iter][dof], computedDisplacements.GetTotalDisplacement(iter, subdomainID, dof)))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
 
 
         private static IReadOnlyList<Dictionary<int, double>> GetExpectedDisplacements()
