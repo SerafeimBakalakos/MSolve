@@ -17,40 +17,12 @@ using Xunit;
 
 namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 {
-    public class OneRveExampleMpi // palio: "SeparateCodeCheckingClass4 "
+    public class OneRveExampleMpiTest // palio: "SeparateCodeCheckingClass4 "
     {
         [Fact]
-        public static (double[], double[], double[,], IVector, IVector) Check_Graphene_rve_serial() //palio "Check_Graphene_rve_Obje_Integration()"
+        public static /*(double[], double[], double[,], IVector, IVector)*/ void Check_Graphene_rve_serial() //palio "Check_Graphene_rve_Obje_Integration()"
         {
-            #region old comments.
-            //Origin: SeparateCodeCheckingClass4.Check_Graphene_rve_Obje_Integration apo to branch: example/ms_development_nl_elements_merge
-            //modifications: update kai tha xrhsimopoithei o GrapheneReinforcedRVEBuilderExample35fe2boundstiffHostTestPostData 
-            //o opoios exei kai antistoixo ddm: GrapheneReinforcedRVEBuilderExample35fe2boundstiffHostTestPostDataDdm pou tha trexei akrivws apo katw
-            //PROSOXH gia na elegxei kai h defterh iteration u_sunol_micro_2 prepei na valoume ston graphenebuilder Addgraphenesheet xwris to bondslip.
-            #endregion
-
-            #region elastic material stresses
-            //mporoun na ginoun delete:
-            double E_disp = 3.5; /*Gpa*/ double ni_disp = 0.4; // stather Poisson
-            var material1 = new ElasticMaterial3D()
-            { YoungModulus = E_disp, PoissonRatio = ni_disp, };
-            double[,] DGtr = new double[3, 3] { { 1.10, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
-            double[] GLVec = Transform_DGtr_to_GLvec(DGtr);
-            material1.UpdateMaterial(GLVec);
-            //double[] stressesCheck1 = material1.Stresses;
-            double[] stressesCheck1 = new double[6] {material1.Stresses[0], material1.Stresses[1], material1.Stresses[2],
-                material1.Stresses[3],material1.Stresses[4],material1.Stresses[5] };
-            DGtr = new double[3, 3] { { 1.20, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
-            GLVec = Transform_DGtr_to_GLvec(DGtr);
-            material1.UpdateMaterial(GLVec);
-            material1.SaveState();
-            double[] stressesCheck2 = material1.Stresses;
-            #endregion
-
-
-
-            #region rve builder with mpi solver
-
+            #region rve builder parameters and example choice
             CnstValues.exampleNo = 58;
             CnstValues.isInputInCode_forRVE = false;
             CnstValues.useInput_forRVE = true; //Panta prin thn getRveModelAndBoundaryNodes
@@ -67,23 +39,9 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             if (CnstValues.parameterSet == ParameterSet.stiffCase)
             { mpgp.Item1.L01 = scale_factor * 90; mpgp.Item1.L02 = scale_factor * 90; mpgp.Item1.L03 = scale_factor * 90; }
             mpgp.Item1.L01 = scale_factor * mpgp.Item1.L01; mpgp.Item1.L02 = scale_factor * mpgp.Item1.L02; mpgp.Item1.L03 = scale_factor * mpgp.Item1.L03;
-
             #endregion
 
-            #region solve skyline Microstructures (with Git and GitSerial RveBuilders)
-            //var rveBuilder2 = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGit(1, false, mpgp,
-            //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-            //var microstructureSerial = new MicrostructureDefGrad3D(rveBuilder2,
-            //    model => (new SuiteSparseSolver.Builder()).BuildSolver(model), false, 1);
-
-            //double[,] consCheckSerial = new double[6, 6];
-            //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { consCheckSerial[i1, i2] = microstructureSerial.ConstitutiveMatrix[i1, i2]; } }
-            //microstructureSerial.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
-            //double[] vector1 = microstructureSerial.uInitialFreeDOFDisplacementsPerSubdomain.ElementAt(0).Value.CopyToArray();
-
-            var timer = new Stopwatch();
-            timer.Start();
-
+            #region solve skyline Microstructures (with Git and GitSerial RveBuilders)                    
             var rveBuilder3 = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
             var microstructure2Serial = new MicrostructureDefGrad3D(rveBuilder3,
@@ -94,49 +52,43 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
             microstructure2Serial.SaveState();
             microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.03, 1, 1, 0, 0, 0, 0, 0, 0 });
-            microstructure2Serial.SaveState();
-            microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.04, 1, 1, 0, 0, 0, 0, 0, 0 });
-            timer.Stop();
-            double duration1 = timer.Elapsed.TotalMilliseconds;
-
-            Vector vector2 = (Vector)microstructure2Serial.uInitialFreeDOFDisplacementsPerSubdomain.ElementAt(0).Value.Copy();
-
-
+            Vector solutionSuiteSparse = (Vector)microstructure2Serial.uInitialFreeDOFDisplacementsPerSubdomain.ElementAt(0).Value.Copy();
+            double[] stressesSuitesparse = microstructure2Serial.Stresses;
+            double[,] constitutiveSuitesparse = microstructure2Serial.ConstitutiveMatrix.CopytoArray2D();
+            //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { constitutiveSuitesparse[i1, i2] = microstructure3.ConstitutiveMatrix[i1, i2]; } }
             #endregion
-            timer.Reset();
-            timer.Restart();
+
+            #region solve microstructure with feti dp solver
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-
-
             var microstructure3 = new MicrostructureDefGrad3DSerial(rveBuilder,
                 rveBuilder.GetAppropriateSolverMpi, false, 1, true, true);
-            double[,] consCheck1 = new double[6, 6];
-            //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { consCheck1[i1, i2] = microstructure3.ConstitutiveMatrix[i1, i2]; } }
+            
 
             microstructure3.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
             microstructure3.SaveState();
             microstructure3.UpdateMaterial(new double[9] { /*1.10*/ 1.03, 1, 1, 0, 0, 0, 0, 0, 0 });
-            microstructure3.SaveState();
-            microstructure3.UpdateMaterial(new double[9] { /*1.10*/ 1.04, 1, 1, 0, 0, 0, 0, 0, 0 });
+            double[] stressesFeti = microstructure3.Stresses;
+            double[,] constitutiveFeti = microstructure3.ConstitutiveMatrix.CopytoArray2D();
+            //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { constitutiveFeti[i1, i2] = microstructure3.ConstitutiveMatrix[i1, i2]; } }
 
-            timer.Stop(); double duration2 = timer.Elapsed.TotalMilliseconds;
-            double[] stressesCheck3 = microstructure3.Stresses;
             microstructure3.SaveState();
-            IVector uInitialFreeDOFs_state1 = microstructure3.uInitialFreeDOFDisplacementsPerSubdomain[1].Copy();
-            Vector globalUvectrInSerialFormat = ReorderSolutionInSerialSkylineFormat(microstructure2Serial.model, vector2, microstructure3.model, microstructure3.uInitialFreeDOFDisplacementsPerSubdomain);
+            Vector SolutionFetiInSerialFormat = ReorderSolutionInSerialSkylineFormat(microstructure2Serial.model, solutionSuiteSparse, microstructure3.model, microstructure3.uInitialFreeDOFDisplacementsPerSubdomain);
+            #endregion
+
             //var errorVector = (vector2 - globalUvectrInSerialFormat).Scale(1 / vector2.Norm2());
-            double errorNorm = (vector2 - globalUvectrInSerialFormat).Norm2() / vector2.Norm2();
+            double errorNorm = (solutionSuiteSparse - SolutionFetiInSerialFormat).Norm2() / solutionSuiteSparse.Norm2();
 
+            Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, stressesSuitesparse, 1e-8));
+            Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(solutionSuiteSparse.CopyToArray(), SolutionFetiInSerialFormat.CopyToArray(), 1e-4));
 
-            microstructure3.UpdateMaterial(new double[9] { /*1.20*/ 1.02, 1, 1, 0, 0, 0, 0, 0, 0 });
-            double[] stressesCheck4 = microstructure3.Stresses;
-            IVector uInitialFreeDOFs_state2 = microstructure3.uInitialFreeDOFDisplacementsPerSubdomain[1].Copy();
+            Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(constitutiveSuitesparse, constitutiveFeti, 1e-7));
+
 
             //PrintUtilities.WriteToFileVector(stressesCheck3, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\stressesCheck3.txt");
             //PrintUtilities.WriteToFile(consCheck1, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\consCheck1.txt");
 
-            return (stressesCheck3, stressesCheck4, consCheck1, uInitialFreeDOFs_state1, uInitialFreeDOFs_state2);
+            //return (stressesSuitesparse, stressesFeti, constitutiveSuitesparse, uInitialFreeDOFs_state1, uInitialFreeDOFs_state2);
         }
 
         private static Vector ReorderSolutionInSerialSkylineFormat(Model skylineModel, Vector skylineSolution, Model fetimodel, Dictionary<int, IVector> uInitialFreeDOFDisplacementsPerSubdomain)

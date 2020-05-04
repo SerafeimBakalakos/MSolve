@@ -50,6 +50,7 @@
 
   <ItemGroup>
     <Folder Include="Analyzers\" />
+    <Folder Include="FEMpartB\MultiscaleTests\" />
     <Folder Include="Logging\" />
     <Folder Include="MaterialsTest\" />
     <Folder Include="Problems\" />

@@ -477,7 +477,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 DdmCalculationsGeneral.UndoModelInterconnectionDataBuild(model);
 
 
-                bool print_subdomain_data = true;
+                bool print_subdomain_data = CnstValues.print_subdomain_data;
                 if (print_subdomain_data)
                 {
                     //DdmCalculationsGeneral.PrintSubdomainDataForPostPro(subdHexaIds, subdCohElementIds, subdShellElementIds, subdomainOutputPath);
@@ -1133,10 +1133,31 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 CornerNodesIds.Add(nodeID, coordinates);
                 CornerNodesIdAndsubdomains.Add(nodeID, model.NodesDictionary[nodeID].SubdomainsDictionary.Keys.ToArray());
             }
+            if (CnstValues.useCornerNodesInShell) { AddShellCornerNodes(CornerNodesIds, CornerNodesIdAndsubdomains, model); }
 
             cornerNodes = DefineCornerNodesPerSubdomainAndOtherwise(CornerNodesIdAndsubdomains, model);
 
             return (CornerNodesIds, CornerNodesIdAndsubdomains, cornerNodes);
+        }
+
+        private void AddShellCornerNodes(Dictionary<int, double[]> cornerNodesIds, Dictionary<int, int[]> cornerNodesIdAndsubdomains, Model model)
+        {
+            var shellElements = model.ElementsDictionary.Values.Where(x => x.ElementType is Shell8NonLinear);
+            var shellEmentesNodes = new List<Node>();
+            foreach(var shellElement in shellElements)
+            {
+                shellEmentesNodes = shellEmentesNodes.Union(shellElement.Nodes).ToList();
+            }
+
+            var cornerShellNodes = shellEmentesNodes.Where(x => x.SubdomainsDictionary.Keys.Count == 4).ToList();
+
+            foreach(var cornerShellElementNode in cornerShellNodes)
+            {
+                double[] coordinates = new double[3] { cornerShellElementNode.X, cornerShellElementNode.Y, cornerShellElementNode.Z };
+                CornerNodesIds.Add(cornerShellElementNode.ID, coordinates);
+                CornerNodesIdAndsubdomains.Add(cornerShellElementNode.ID, model.NodesDictionary[cornerShellElementNode.ID].SubdomainsDictionary.Keys.ToArray());
+            }
+
         }
 
         private (Dictionary<int, double[]> CornerNodesIds, Dictionary<int, int[]> CornerNodesIdAndsubdomains, Dictionary<int, HashSet<INode>> cornerNodes)

@@ -77,6 +77,7 @@ namespace ISAAR.MSolve.SamplesConsole
         public static Tuple<rveMatrixParameters, grapheneSheetParameters> GetReferenceKanonikhGewmetriaRveExampleParametersStiffCase(int subdiscr1, int discr1, int discr3, int subdiscr1_shell, int discr1_shell)
         {
             //// DUPLICATE ANNY CHANGES IN ONERVEEXAMPLEMPI
+            //// kai sto integration Separatecodecheckingclass....GitTest
 
             if (CnstValues.parameterSet == ParameterSet.stiffCase)
             {
@@ -164,7 +165,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 Tuple<rveMatrixParameters, grapheneSheetParameters> gpmp = new Tuple<rveMatrixParameters, grapheneSheetParameters>(mp, gp);
                 return gpmp;
             }
-            else { throw new NotImplementedException}
+            else { throw new NotImplementedException(); }
         }
     }
 }

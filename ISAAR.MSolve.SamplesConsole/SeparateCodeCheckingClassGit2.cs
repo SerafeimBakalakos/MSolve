@@ -69,7 +69,7 @@ namespace ISAAR.MSolve.SamplesConsole
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGit(1, true, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
 
-            bool WRITESTIFFNESSES = true;
+            bool WRITESTIFFNESSES = CnstValues.WRITESTIFFNESSES;
 
             #region model nodes and load
             var ModelAndNodes = rveBuilder.GetModelAndBoundaryNodes();
