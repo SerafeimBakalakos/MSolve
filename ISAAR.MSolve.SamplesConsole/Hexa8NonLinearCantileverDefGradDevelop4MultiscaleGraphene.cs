@@ -11,12 +11,14 @@ using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.FEM.Elements;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Distributed;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Logging;
 using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.Materials.Interfaces;
 using ISAAR.MSolve.MSAnalysis.remoteMatImplementations;
 using ISAAR.MSolve.MultiscaleAnalysis;
 using ISAAR.MSolve.MultiscaleAnalysis.Interfaces;
+using ISAAR.MSolve.MultiscaleAnalysisMerge.SupportiveClasses;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.Direct;
@@ -68,6 +70,7 @@ namespace ISAAR.MSolve.Tests.FEM
 
             if (procs.IsMasterProcess)
             {
+                
                 var log1 = childAnalyzer.TotalDisplacementsPerIterationLog;//
                 IReadOnlyList<Dictionary<int, double>> expectedDisplacements = GetExpectedDisplacements();
                 bool isProblemSolvedCorrectly = AreDisplacementsSame(expectedDisplacements, log1);
@@ -79,10 +82,33 @@ namespace ISAAR.MSolve.Tests.FEM
                 {
                     Console.WriteLine($"the problem has not been solved correctly");
                 }
+                if (CnstValues.writeFe2MacroscaleSolution)
+                {
+                    double[][] solutionVectors = ExtractCalculatedSolutionsMacro(log1, increments, expectedDisplacements);
+
+                    DdmCalculationsGeneral.WriteToFileVector(globalU, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Global_solution_Direct.txt");
+                    DdmCalculationsGeneral.WriteToFileVector(uc, rveBuilder.subdomainOutputPath + @"\Msolve_solution\Corner_solution_Direct.txt");
+                }
 
             }
 
 
+        }
+
+        private static double[][] ExtractCalculatedSolutionsMacro(TotalDisplacementsPerIterationLog log1, int increments, IReadOnlyList<Dictionary<int, double>> expectedDisplacements)
+        {
+            var comparer = new ValueComparer(1E-13);
+            for (int iter = 0; iter < increments;iter++)
+            {
+                foreach (int dof in expectedDisplacements[iter].Keys)
+                {
+                    if (!comparer.AreEqual(expectedDisplacements[iter][dof], computedDisplacements.GetTotalDisplacement(iter, subdomainID, dof)))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         private static (StaticAnalyzerDevelopMpi parentAnalyzer, LoadControlAnalyzerDevelop4Mpi childAnalyzer) GetAnalyzers(ProcessDistribution procs,
@@ -99,8 +125,10 @@ namespace ISAAR.MSolve.Tests.FEM
                 var parentAnalyzer = new StaticAnalyzerDevelopMpi(model, solver, provider, childAnalyzer, procs);
                 var watchDofs = new Dictionary<int, int[]>();
                 watchDofs.Add(subdomainID, new int[5] { 0, 11, 23, 35, 47 });
-                var log1 = new TotalDisplacementsPerIterationLog(watchDofs);
-                childAnalyzer.TotalDisplacementsPerIterationLog = log1; //.
+                //var log1 = new TotalDisplacementsPerIterationLog(watchDofs);
+                //childAnalyzer.TotalDisplacementsPerIterationLog = log1; //.
+                var log1 = new IncrementalDisplacementsLog(watchDofs);
+                childAnalyzer.IncrementalDisplacementsLog = log1;
 
                 return (parentAnalyzer, childAnalyzer);
             }
@@ -216,26 +244,15 @@ namespace ISAAR.MSolve.Tests.FEM
 
         private static IReadOnlyList<Dictionary<int, double>> GetExpectedDisplacements()
         {
-            var expectedDisplacements = new Dictionary<int, double>[9]; //TODO: this should be 11 EINAI ARRAY APO DICTIONARIES            
+            var expectedDisplacements = new Dictionary<int, double>[2]; //TODO: this should be 11 EINAI ARRAY APO DICTIONARIES
 
             expectedDisplacements[0] = new Dictionary<int, double> {
-    { 0,3.335700883958350000e-02 }, {11,-2.632079302287960000e-02 }, {23,-4.942856730039380000e-02 }, {35,-6.269433016162970200e-02 }, {47,-6.765615287120199700e-02 }};
+                { 0, 0.039075524153873623}, {11, -0.032541895181220408}, {23, -0.057387148941853101}, {35, -0.071994381984550326}, {47, -0.077053554770404833}
+            };
+
+
             expectedDisplacements[1] = new Dictionary<int, double> {
-    { 0,3.450997936135530300e-02 }, {11,-2.739535658161109900e-02 }, {23,-5.634615891128919700e-02 }, {35,-8.131311540906950600e-02 }, {47,-1.019128163215870000e-01 }};
-            expectedDisplacements[2] = new Dictionary<int, double> {
-    { 0,3.433216808183409800e-02 }, {11,-2.726099954481620000e-02 }, {23,-5.629518934457999900e-02 }, {35,-8.199981263488670400e-02 }, {47,-1.039303808027040000e-01 }};
-            expectedDisplacements[3] = new Dictionary<int, double> {
-    { 0,3.431257880330890200e-02 }, {11,-2.724173809701519900e-02 }, {23,-5.624825754899259700e-02 }, {35,-8.192386243981529500e-02 }, {47,-1.038312844223340000e-01 }};
-            expectedDisplacements[4] = new Dictionary<int, double> {
-    { 0,6.894482083872839600e-02 }, {11,-5.475067582655650200e-02 }, {23,-1.173163323056880000e-01 }, {35,-1.790583221645240000e-01 }, {47,-2.376077026742320100e-01 }};
-            expectedDisplacements[5] = new Dictionary<int, double> {
-    { 0,6.972463521590920000e-02 }, {11,-5.540512678394360300e-02 }, {23,-1.220341983649240000e-01 }, {35,-1.920604720743059900e-01 }, {47,-2.620585115820520100e-01 }};
-            expectedDisplacements[6] = new Dictionary<int, double> {
-    { 0,6.858059919522070700e-02 }, {11,-5.432730995597089700e-02 }, {23,-1.192782599647590100e-01 }, {35,-1.873563500914020000e-01 }, {47,-2.554697448169410100e-01 }};
-            expectedDisplacements[7] = new Dictionary<int, double> {
-    { 0,6.835175024769160600e-02 }, {11,-5.410392477418309700e-02 }, {23,-1.186661258178350100e-01 }, {35,-1.861855064114160100e-01 }, {47,-2.536413732588089800e-01 }};
-            expectedDisplacements[8] = new Dictionary<int, double> {
-    { 0,6.834878138258780600e-02 }, {11,-5.410102312471470200e-02 }, {23,-1.186583648525040000e-01 }, {35,-1.861711431280629900e-01 }, {47,-2.536196564358649800e-01 }};
+    { 0,2* 0.039075524153873623}, {11,2*( -0.032541895181220408)}, {23,2*( -0.057387148941853101)}, {35,2*( -0.071994381984550326)}, {47,2*( -0.077053554770404833)}};
 
 
             return expectedDisplacements;

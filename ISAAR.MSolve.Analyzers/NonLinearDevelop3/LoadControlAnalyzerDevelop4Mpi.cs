@@ -91,6 +91,8 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
                                                                                                                //Console.WriteLine($"Increment {increment}, iteration {iteration}: norm2(error) = {errorNorm}");
                         if (iteration == 0) firstError = errorNorm;
                         if (TotalDisplacementsPerIterationLog != null) TotalDisplacementsPerIterationLog.StoreDisplacements(uPlusdu);
+                        if (IncrementalDisplacementsLog != null) IncrementalDisplacementsLog.StoreDisplacements(uPlusdu);
+
                         hasConverged = errorNorm < residualTolerance;
                     }
 
@@ -156,6 +158,9 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
         public Dictionary<int, IAnalyzerLog[]> Logs { get; } = new Dictionary<int, IAnalyzerLog[]>();
 
         public TotalDisplacementsPerIterationLog TotalDisplacementsPerIterationLog { get; set; }
+
+        public IncrementalDisplacementsLog IncrementalDisplacementsLog { get; set; }
+
         public Dictionary<int, TotalLoadsDisplacementsPerIncrementLog> IncrementalLogs { get; }
             = new Dictionary<int, TotalLoadsDisplacementsPerIncrementLog>();
 

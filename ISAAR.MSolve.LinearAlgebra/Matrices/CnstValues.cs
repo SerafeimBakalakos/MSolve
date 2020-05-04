@@ -136,5 +136,9 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
             printPcgMatRhsEtc_AndInterfaceProblemStats = defaultBooleanValues[3];
             printPreconditoner = defaultBooleanValues[4];
         }
+
+        #region macro model booleans and output
+        public static bool writeFe2MacroscaleSolution;
+        #endregion
     }
 }

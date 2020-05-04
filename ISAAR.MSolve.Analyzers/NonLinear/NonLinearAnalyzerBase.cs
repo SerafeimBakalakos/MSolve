@@ -52,6 +52,7 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
         public Dictionary<int, LinearAnalyzerLogFactory> LogFactories { get; } = new Dictionary<int, LinearAnalyzerLogFactory>();
         public Dictionary<int, IAnalyzerLog[]> Logs { get; } = new Dictionary<int, IAnalyzerLog[]>();
 
+        public IncrementalDisplacementsLog IncrementalDisplacementsLog { get; set; }
         public TotalDisplacementsPerIterationLog TotalDisplacementsPerIterationLog { get; set; }
         public Dictionary<int, TotalLoadsDisplacementsPerIncrementLog> IncrementalLogs { get; }
             = new Dictionary<int, TotalLoadsDisplacementsPerIncrementLog>();
