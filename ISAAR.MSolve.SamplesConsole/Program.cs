@@ -59,7 +59,8 @@ namespace ISAAR.MSolve.SamplesConsole
             //suite.AddFact(materialParrallelExecutionTest.TestMaterialUpdateOnly);
             //suite.AddFact(materialManagerParrallelExecutionTest1.TestMaterialUpdateOnly);
             //suite.AddFact(Hexa8NonLinearCantileverDefGradDevelop4.ParallelNonLinearCantilever);
-            suite.AddFact(Hexa8NonLinearCantileverDefGradDevelop4Multiscale.ParallelNonLinearCantilever);
+            //suite.AddFact(Hexa8NonLinearCantileverDefGradDevelop4Multiscale.ParallelNonLinearCantilever);
+            suite.AddFact(Hexa8NonLinearCantileverDefGradDevelop4MultiscaleGraphene.ParallelNonLinearCantilever);
             suite.RunTests(args);
         }
 

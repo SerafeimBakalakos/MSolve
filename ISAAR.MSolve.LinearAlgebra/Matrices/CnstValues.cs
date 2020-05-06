@@ -138,7 +138,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
         }
 
         #region macro model booleans and output
-        public static bool writeFe2MacroscaleSolution;
+        public static bool writeFe2MacroscaleSolution=true;
         #endregion
     }
 }
