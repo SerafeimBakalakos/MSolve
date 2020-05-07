@@ -78,7 +78,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 //Setup solver
                 var pcgSettings = new PcgSettings()
                 {
-                    ConvergenceTolerance = 1E-8,
+                    ConvergenceTolerance = 1E-5,
                     MaxIterationsProvider = new FixedMaxIterationsProvider(1000)
                 };
                 var fetiMatrices = new FetiDPMatrixManagerFactorySkyline(new OrderingAmdSuiteSparse());

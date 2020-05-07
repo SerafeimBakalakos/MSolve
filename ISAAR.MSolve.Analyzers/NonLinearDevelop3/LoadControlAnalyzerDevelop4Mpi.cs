@@ -91,7 +91,7 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
                                                                                                                //Console.WriteLine($"Increment {increment}, iteration {iteration}: norm2(error) = {errorNorm}");
                         if (iteration == 0) firstError = errorNorm;
                         if (TotalDisplacementsPerIterationLog != null) TotalDisplacementsPerIterationLog.StoreDisplacements(uPlusdu);
-                        if (IncrementalDisplacementsLog != null) IncrementalDisplacementsLog.StoreDisplacements(uPlusdu);
+                        
 
                         hasConverged = errorNorm < residualTolerance;
                     }
@@ -101,6 +101,10 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
 
                     if (hasConverged)
                     {
+                        if (procs.IsMasterProcess)
+                        {
+                            if (IncrementalDisplacementsLog != null) IncrementalDisplacementsLog.StoreDisplacements(uPlusdu);
+                        }
                         foreach (var subdomainLogPair in IncrementalLogs)
                         {
                             //ta parakatw h mono sto master process h kanena

@@ -65,17 +65,17 @@ namespace ISAAR.MSolve.SamplesConsole
             mpgp.Item1.L01 = scale_factor * mpgp.Item1.L01; mpgp.Item1.L02 = scale_factor * mpgp.Item1.L02; mpgp.Item1.L03 = scale_factor * mpgp.Item1.L03;
             #endregion
 
-            var rveBuilderSuitesparse = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
-            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-            var material1 = new MicrostructureDefGrad3D(rveBuilderSuitesparse,
-                skylinemodel => (new SuiteSparseSolver.Builder()).BuildSolver(skylinemodel), false, 1);
-            IMaterialManager materialManager = new MaterialManagerMpi2(material1, procs);
-
-            //var rveBuilderFeti = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
+            //var rveBuilderSuitesparse = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
             //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-            //var material1 = new MicrostructureDefGrad3DSerial(rveBuilderFeti,
-            //    rveBuilderFeti.GetAppropriateSolverMpi, false, 1, true, true);
+            //var material1 = new MicrostructureDefGrad3D(rveBuilderSuitesparse,
+            //    skylinemodel => (new SuiteSparseSolver.Builder()).BuildSolver(skylinemodel), false, 1);
             //IMaterialManager materialManager = new MaterialManagerMpi2(material1, procs);
+
+            var rveBuilderFeti = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
+            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            var material1 = new MicrostructureDefGrad3DSerial(rveBuilderFeti,
+                rveBuilderFeti.GetAppropriateSolverMpi, false, 1, true, true);
+            IMaterialManager materialManager = new MaterialManagerMpi2(material1, procs);
 
             #endregion
 
@@ -107,7 +107,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 
                 IncrementalDisplacementsLog log1 = childAnalyzer.IncrementalDisplacementsLog;//
                 IReadOnlyList<Dictionary<int, double>> expectedDisplacements = GetExpectedDisplacements();
-                bool isProblemSolvedCorrectly = AreDisplacementsSame(expectedDisplacements, log1);
+                bool isProblemSolvedCorrectly = AreDisplacementsSame(expectedDisplacements, log1,1E-6);
                 if (isProblemSolvedCorrectly)
                 {
                     Console.WriteLine($"Problem is solved correctly ");
@@ -116,14 +116,14 @@ namespace ISAAR.MSolve.SamplesConsole
                 {
                     Console.WriteLine($"the problem has not been solved correctly");
                 }
-                if (CnstValues.writeFe2MacroscaleSolution)
-                {
-                    double[][] solutionVectors = ExtractCalculatedSolutionsMacro(log1, subdomainID);
-                    for (int i1 = 0; i1 < solutionVectors.Length; i1++)
-                    {
-                        DdmCalculationsGeneral.WriteToFileVector(solutionVectors[i1], (new CnstValues()).exampleOutputPathGen + (@"\Msolve_solution\MacroscaleSolutionatInctrment" + i1 + ".txt"));
-                    }
-                }
+                //if (CnstValues.writeFe2MacroscaleSolution)
+                //{
+                //    double[][] solutionVectors = ExtractCalculatedSolutionsMacro(log1, subdomainID);
+                //    for (int i1 = 0; i1 < solutionVectors.Length; i1++)
+                //    {
+                //        DdmCalculationsGeneral.WriteToFileVector(solutionVectors[i1], (new CnstValues()).exampleOutputPathGen + (@"\Msolve_solution\MacroscaleSolutionatInctrment" + i1 + ".txt"));
+                //    }
+                //}
 
             }
 
@@ -141,6 +141,7 @@ namespace ISAAR.MSolve.SamplesConsole
                 foreach (int dof in log1.dofDisplacementsPerIter[iter][subdomainId].Keys)
                 {
                     incrementSolutions[iter][thesi] = log1.dofDisplacementsPerIter[iter][subdomainId][dof];
+                    thesi++;
                 }
             }
             return incrementSolutions;
@@ -274,9 +275,9 @@ namespace ISAAR.MSolve.SamplesConsole
             }
             return true;
         }
-        private static bool AreDisplacementsSame(IReadOnlyList<Dictionary<int, double>> expectedDisplacements, IncrementalDisplacementsLog computedDisplacements)
+        private static bool AreDisplacementsSame(IReadOnlyList<Dictionary<int, double>> expectedDisplacements, IncrementalDisplacementsLog computedDisplacements,double tol =1E-13)
         {
-            var comparer = new ValueComparer(1E-13);
+            var comparer = new ValueComparer(tol);
             for (int iter = 0; iter < expectedDisplacements.Count; ++iter)
             {
                 foreach (int dof in expectedDisplacements[iter].Keys)
@@ -295,13 +296,12 @@ namespace ISAAR.MSolve.SamplesConsole
         {
             var expectedDisplacements = new Dictionary<int, double>[2]; //TODO: this should be 11 EINAI ARRAY APO DICTIONARIES
 
-            expectedDisplacements[0] = new Dictionary<int, double> {
-                { 0, 0.039075524153873623}, {11, -0.032541895181220408}, {23, -0.057387148941853101}, {35, -0.071994381984550326}, {47, -0.077053554770404833}
-            };
+            expectedDisplacements[0] = new Dictionary<int, double> {  {0, 0.032945773642662511},
+                    {11, -0.026568607197976647 }, {23, -0.053540818543937239 }, {35, -0.077036613067688109}, {47, -0.09678117550794936}};
 
 
-            expectedDisplacements[1] = new Dictionary<int, double> {
-    { 0,2* 0.039075524153873623}, {11,2*( -0.032541895181220408)}, {23,2*( -0.057387148941853101)}, {35,2*( -0.071994381984550326)}, {47,2*( -0.077053554770404833)}};
+            expectedDisplacements[1] = new Dictionary<int, double> { {0, 0.065619830559031339},
+                {11, -0.053046604784112175}, {23, -0.11346801809331361}, {35, -0.17571559014925475}, {47, -0.23723117394203658},};
 
 
             return expectedDisplacements;

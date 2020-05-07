@@ -120,7 +120,8 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         public object Clone()
         {
             int new_rve_id = rnd1.Next(1, database_size + 1);
-            return new MicrostructureDefGrad3DSerial(rveBuilder.Clone(new_rve_id), createSolver, EstimateOnlyLinearResponse, database_size,UseLambdaSolution,UseLambdaSolutionsKff);
+            var clonedBuilder = (RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial)rveBuilder.Clone(new_rve_id);
+            return new MicrostructureDefGrad3DSerial(clonedBuilder, clonedBuilder.GetAppropriateSolverMpi, EstimateOnlyLinearResponse, database_size,UseLambdaSolution,UseLambdaSolutionsKff);
         }
 
         public Dictionary<int, Node> BoundaryNodesDictionary
