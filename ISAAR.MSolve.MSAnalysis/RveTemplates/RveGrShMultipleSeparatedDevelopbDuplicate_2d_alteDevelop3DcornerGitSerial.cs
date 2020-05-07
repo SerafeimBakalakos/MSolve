@@ -68,12 +68,12 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         {
             //if (decomposeModel)
             //{
-                var cornerNodes1 = cornerNodes.Select(x => ((ISubdomain)model.SubdomainsDictionary[x.Key], x.Value)).ToDictionary(x=>x.Item1,x=>x.Value);
-                var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes1);
+            var cornerNodes1 = cornerNodes.Select(x => ((ISubdomain)model.SubdomainsDictionary[x.Key], x.Value)).ToDictionary(x => x.Item1, x => x.Value);
+            var cornerNodeSelection = new UsedDefinedCornerNodes(cornerNodes1);
 
-                Dictionary<ISubdomain, HashSet<INode>> extraConstrNodesofsubd = GetExtraConstrSubdFromExtraConstraintNoeds(extraConstraintsNoeds, model);
-                var midSideNodeSelection = new UserDefinedMidsideNodes(extraConstrNodesofsubd,
-                    new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ });
+            Dictionary<ISubdomain, HashSet<INode>> extraConstrNodesofsubd = GetExtraConstrSubdFromExtraConstraintNoeds(extraConstraintsNoeds, model);
+            var midSideNodeSelection = new UserDefinedMidsideNodes(extraConstrNodesofsubd,
+                new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ });
 
                 //Setup solver
                 var pcgSettings = new PcgSettings()
@@ -90,9 +90,10 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             var fetiSolverBuilder = new FetiDP3dSolverSerial.Builder(matrixManagerFactory);  //A.3
 
             //fetiSolverBuilder.InterfaceProblemSolver = interfaceSolverBuilder.Build();
-            fetiSolverBuilder.StiffnessDistribution =  StiffnessDistributionType.HeterogeneousCondensed; //TODO
-                fetiSolverBuilder.Preconditioning = new DirichletPreconditioning();
-                fetiSolverBuilder.PcgSettings = pcgSettings;
+            fetiSolverBuilder.StiffnessDistribution = StiffnessDistributionType.HeterogeneousCondensed; //TODO
+            fetiSolverBuilder.Preconditioning = new DirichletPreconditioning();
+            fetiSolverBuilder.PcgSettings = pcgSettings;
+            fetiSolverBuilder.Reorthogonalization = false;
 
             //Crosspoints crosspoints = Crosspoints.FullyRedundant; //A.2
             //Crosspoints crosspoints = Crosspoints.Minimum; //A.2

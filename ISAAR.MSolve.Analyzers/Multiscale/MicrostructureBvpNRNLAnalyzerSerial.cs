@@ -12,6 +12,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Logging;
 using ISAAR.MSolve.Logging.Interfaces;
 using ISAAR.MSolve.Solvers;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual;
 using ISAAR.MSolve.Solvers.LinearSystems;
 
 namespace ISAAR.MSolve.Analyzers.Multiscale
@@ -198,6 +199,14 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                 int step = 0;
                 for (step = 0; step < maxSteps; step++)
                 {
+                    if (solver is IFetiSolver fetiSolver)
+                    {
+                        if (fetiSolver.InterfaceProblemSolver.Pcg != null)
+                        {
+                            fetiSolver.InterfaceProblemSolver.Pcg.Clear();
+                            fetiSolver.InterfaceProblemSolver.Pcg.ReorthoCache.Clear();
+                        }
+                    }
                     solver.Solve();
                     errorNorm = rhsNorm != 0 ? CalculateInternalRHS(increment, step, increments) / rhsNorm : 0;//comment MS2: to subdomain.RHS lamvanei thn timh nIncrement*(externalLoads/increments)-interanalRHS me xrhsh ths fixed timhs apo to rhs[subdomain.ID]
                     if (step == 0) firstError = errorNorm;

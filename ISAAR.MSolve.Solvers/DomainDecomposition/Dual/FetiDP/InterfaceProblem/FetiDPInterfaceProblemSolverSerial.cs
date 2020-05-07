@@ -35,6 +35,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             this.pcgSettings = pcgSettings;
         }
 
+        public Vector PreviousLambda { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public bool UsePreviousLambda { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public ReorthogonalizedPcg Pcg => throw new NotImplementedException();
+        
         public Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility, 
             IFetiPreconditioner preconditioner, double globalForcesNorm, ISolverLogger logger)
