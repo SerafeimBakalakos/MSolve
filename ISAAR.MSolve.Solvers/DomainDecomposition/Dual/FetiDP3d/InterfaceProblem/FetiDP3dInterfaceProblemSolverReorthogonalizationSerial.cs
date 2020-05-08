@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Iterative;
@@ -229,8 +230,17 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             if(CnstValues.runOnlyHexaModel)
             { statsOutputPath = cnstVal.interfaceSolverStatsPath + @"\interfaceSolver_FetiDP_3d_only_hexa_stats.txt"; }
             else
-            { statsOutputPath = cnstVal.interfaceSolverStatsPath + @"\interfaceSolver_FetiDP_3d_stats.txt"; }
+            { statsOutputPath = cnstVal.interfaceSolverStatsPath + @"\interfaceSolver_FetiDP_3d_stats.txt";
+                var incrementalPcgStatsOutput = cnstVal.interfaceSolverStatsPath + cnstVal.incrementalPcgStatsOutputFileExtention ;
+                using (var writer = new StreamWriter(incrementalPcgStatsOutput, true))
+                {
+                    writer.Write(CnstValues.analyzerInfo + $" LoadStep {CnstValues.analyzerLoadingStep} nRITer {CnstValues.analyzerNRIter} : pcg Iterations= {nIter}");
+                    writer.WriteLine();
+                }
+            }
             cnstVal.WriteToFileStringArray(statsLines, statsOutputPath);
+
+
 
         }
 

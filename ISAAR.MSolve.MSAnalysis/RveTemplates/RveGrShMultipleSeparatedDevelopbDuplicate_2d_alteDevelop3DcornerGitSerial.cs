@@ -93,7 +93,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             fetiSolverBuilder.StiffnessDistribution = StiffnessDistributionType.HeterogeneousCondensed; //TODO
             fetiSolverBuilder.Preconditioning = new DirichletPreconditioning();
             fetiSolverBuilder.PcgSettings = pcgSettings;
-            fetiSolverBuilder.Reorthogonalization = false;
+            fetiSolverBuilder.Reorthogonalization = true;
 
             //Crosspoints crosspoints = Crosspoints.FullyRedundant; //A.2
             //Crosspoints crosspoints = Crosspoints.Minimum; //A.2

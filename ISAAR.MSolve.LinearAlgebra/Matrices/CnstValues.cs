@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
          
 
         bool runCluster = true;
-        PC computer = PC.Serafeim;
+        PC computer = PC.Cluster;
 
         public static bool runOnlyHexaModel { get; set; } = false;
         //public string exampleOutputPathGen = @"C:\Users\acivi\Documents\notes_elegxoi\REFERENCE_kanonikh_gewmetria_fe2_post_dg\examples\example1\input_matlab";
@@ -69,6 +69,11 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
         }
 
         public static bool printInterfaceSolutionStats { get; set; } = true;
+        public static int analyzerLoadingStep { get; set; } = -1;
+        public static int analyzerNRIter { get; set; } = -1;
+        public static string analyzerInfo { get; set; }
+        public string incrementalPcgStatsOutputFileExtention = @"\interfaceSolver_FetiDP_3d_iterations_Per_Increment.txt";
+
 
         #region supress output
         /// <summary>
