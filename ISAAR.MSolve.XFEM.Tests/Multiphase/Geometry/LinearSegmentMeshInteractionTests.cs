@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
 using Xunit;
 
-namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Geometry
+namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Geometry
 {
     public static class LinearSegmentMeshInteractionTests
     {

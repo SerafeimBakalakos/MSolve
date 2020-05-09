@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.XFEM.Elements;
+using ISAAR.MSolve.XFEM_OLD.Elements;
 
-namespace ISAAR.MSolve.XFEM.Entities.Decomposition
+namespace ISAAR.MSolve.XFEM_OLD.Entities.Decomposition
 {
     class RectangularRegion: IRegion2D
     {

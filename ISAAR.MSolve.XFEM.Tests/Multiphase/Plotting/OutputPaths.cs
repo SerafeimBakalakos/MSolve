@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
+namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
 {
     internal class OutputPaths
     {

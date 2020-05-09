@@ -6,12 +6,12 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Logging.VTK;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh;
-using ISAAR.MSolve.XFEM.Multiphase.Plotting.Writers;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Mesh;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Writers;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Plotting
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting
 {
     public class PhasePlotter
     {

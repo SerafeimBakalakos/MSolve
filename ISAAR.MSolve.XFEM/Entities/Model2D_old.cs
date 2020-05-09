@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering;
 
-namespace ISAAR.MSolve.XFEM.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Entities
 {
     /// <summary>
     /// This class both manages and assembles the FEM entities. TODO: Those 2 should be split. I could have a nested 

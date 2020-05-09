@@ -8,11 +8,11 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
 
 //TODO: There is a lot of repetition between this FEM.Model and IGA.Model with regards to interconnection data. That code should 
 //      be moved to a common class. Same goes for the interconnection methods of XSubdomain.
-namespace ISAAR.MSolve.XFEM.Multiphase.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
 {
     public class XModel : IStructuralModel
     {

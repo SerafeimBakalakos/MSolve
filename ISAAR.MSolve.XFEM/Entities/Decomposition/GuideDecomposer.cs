@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Exceptions;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Exceptions;
 
 //TODO: All this logic is common to any FEM like method. Decouple from XFEM (use Vertex and Cell).
-namespace ISAAR.MSolve.XFEM.Entities.Decomposition
+namespace ISAAR.MSolve.XFEM_OLD.Entities.Decomposition
 {
     /// <summary>
     /// Automatic domain decomposition given initial regions as guides. Since the boundaries between these regions may intersect

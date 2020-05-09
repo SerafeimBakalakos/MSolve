@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using ISAAR.MSolve.XFEM.Elements;
+using ISAAR.MSolve.XFEM_OLD.Elements;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 
-namespace ISAAR.MSolve.XFEM.Utilities
+namespace ISAAR.MSolve.XFEM_OLD.Utilities
 {
     class EntityFinder
     {

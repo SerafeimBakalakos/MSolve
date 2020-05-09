@@ -4,7 +4,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry.CrackTip
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.CrackTip
 {
     //TODO: decide what data structures (arrays, tuples, matrix & vector classes I will use as arguments, return types 
     // and for operations. Implement convenience methods for those operations on these data types.

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.Implicit.MeshInteraction
 {
     /// <summary>
     /// Represents the type of enrichment that will be applied to all nodes of the element. In LSM with linear 

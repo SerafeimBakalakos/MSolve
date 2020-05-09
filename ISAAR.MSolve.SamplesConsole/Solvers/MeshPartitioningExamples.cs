@@ -10,10 +10,10 @@ using ISAAR.MSolve.Discretization.Mesh.Generation.GMSH;
 using ISAAR.MSolve.Logging.DomainDecomposition;
 using ISAAR.MSolve.Logging.VTK;
 using ISAAR.MSolve.Solvers.DomainDecomposition.MeshPartitioning;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.Integration;
-using ISAAR.MSolve.XFEM.Materials;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.Integration;
+using ISAAR.MSolve.XFEM_OLD.Materials;
 
 namespace ISAAR.MSolve.SamplesConsole.Solvers
 {

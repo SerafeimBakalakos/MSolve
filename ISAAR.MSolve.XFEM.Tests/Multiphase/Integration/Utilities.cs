@@ -5,9 +5,9 @@ using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.FEM.Interpolation.Jacobians;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
 
-namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Integration
+namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Integration
 {
     internal static class Utilities
     {

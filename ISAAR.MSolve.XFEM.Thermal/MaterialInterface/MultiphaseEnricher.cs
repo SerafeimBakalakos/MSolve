@@ -4,16 +4,16 @@ using System.Diagnostics;
 using System.Linq;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
-using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
-using ISAAR.MSolve.XFEM.ThermalOLD.Enrichments.Items;
-using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
-using ISAAR.MSolve.XFEM.ThermalOLD.Curves.MeshInteraction;
-using ISAAR.MSolve.XFEM.ThermalOLD.MaterialInterface.SingularityResolving;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Elements;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Entities;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Curves.MeshInteraction;
+using ISAAR.MSolve.XFEM_OLD.Thermal.MaterialInterface.SingularityResolving;
 
 //TODO: Use IHeavisideSingularityResolver when selecting enriched nodes!!!
 //TODO: Avoid processing all elements in the model to see if they must be enriched. Limit the efforts to the elements near the 
 //      level sets.
-namespace ISAAR.MSolve.XFEM.ThermalOLD.MaterialInterface
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.MaterialInterface
 {
     public class MultiphaseEnricher
     {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.XFEM.Elements;
+using ISAAR.MSolve.XFEM_OLD.Elements;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.Implicit.MeshInteraction
 {
     interface IMeshInteraction
     {

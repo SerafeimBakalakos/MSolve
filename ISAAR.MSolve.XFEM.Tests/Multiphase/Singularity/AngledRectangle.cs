@@ -13,21 +13,21 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Enrichment;
-using ISAAR.MSolve.XFEM.Multiphase.Enrichment.SingularityResolution;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Geometry;
-using ISAAR.MSolve.XFEM.Multiphase.Integration;
-using ISAAR.MSolve.XFEM.Multiphase.Materials;
-using ISAAR.MSolve.XFEM.Multiphase.Plotting;
-using ISAAR.MSolve.XFEM.Multiphase.Plotting.Enrichments;
-using ISAAR.MSolve.XFEM.Multiphase.Plotting.Fields;
-using ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh;
-using ISAAR.MSolve.XFEM.Multiphase.Plotting.Writers;
-using ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment.SingularityResolution;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Integration;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Materials;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Enrichments;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Fields;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Mesh;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Writers;
+using ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting;
 
-namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Singularity
+namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Singularity
 {
     public class AngledRectangle
     {

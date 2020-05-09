@@ -7,16 +7,16 @@ using ISAAR.MSolve.Geometry.Commons;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.CrackGeometry.CrackTip;
-using ISAAR.MSolve.XFEM.CrackGeometry.HeavisideSingularityResolving;
-using ISAAR.MSolve.XFEM.CrackGeometry.Implicit.LevelSetUpdating;
-using ISAAR.MSolve.XFEM.CrackGeometry.Implicit.Logging;
-using ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction;
-using ISAAR.MSolve.XFEM.CrackPropagation;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.CrackTip;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.HeavisideSingularityResolving;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.Implicit.LevelSetUpdating;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.Implicit.Logging;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.Implicit.MeshInteraction;
+using ISAAR.MSolve.XFEM_OLD.CrackPropagation;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering;
 
 //TODO: replace BasicCrackLSM with this one after testing is done
 //TODO: Consider removing the bookkeeping of enrichment items in elements. It creates a lot of opportunities for mistakes.
@@ -39,7 +39,7 @@ using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
 //      namely without a lot of memory copying?
 //TODO: Use a builder. It deserves one.
 //TODO: a lot of bookkeeping could be done by an abstract base class.
-namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.Implicit
 {
     /// <summary>
     /// Warning: may misclassify elements as tip elements, causing gross errors.

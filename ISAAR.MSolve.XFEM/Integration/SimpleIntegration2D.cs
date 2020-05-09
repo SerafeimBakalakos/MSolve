@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Integration;
-using ISAAR.MSolve.XFEM.Elements;
+using ISAAR.MSolve.XFEM_OLD.Elements;
 
-namespace ISAAR.MSolve.XFEM.Integration
+namespace ISAAR.MSolve.XFEM_OLD.Integration
 {
     public class SimpleIntegration2D : IIntegrationStrategy2D<XContinuumElement2D>
     {

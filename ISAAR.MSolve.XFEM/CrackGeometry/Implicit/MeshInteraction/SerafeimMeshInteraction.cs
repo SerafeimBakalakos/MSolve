@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.XFEM.CrackGeometry.CrackTip;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.CrackTip;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.Implicit.MeshInteraction
 {
     /// <summary>
     /// Correctly identifies the elements around the crack tip that Stolarska's criterion always marks as tip elements. Uses the

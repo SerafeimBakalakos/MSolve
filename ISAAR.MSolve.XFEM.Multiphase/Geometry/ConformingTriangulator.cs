@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Triangulation;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
 
 //TODO: Allow the option to specify the minimum triangle area.
-namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry
 {
     public class ConformingTriangulator
     {

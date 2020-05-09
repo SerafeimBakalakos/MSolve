@@ -5,7 +5,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Reduction;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
-namespace ISAAR.MSolve.XFEM.Utilities
+namespace ISAAR.MSolve.XFEM_OLD.Utilities
 {
     internal class CoupledSymmetricMatrix : IMatrix
     {

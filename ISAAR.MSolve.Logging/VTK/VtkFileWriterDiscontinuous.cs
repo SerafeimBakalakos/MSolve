@@ -8,7 +8,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Logging.VTK;
 
 //TODO: Extend this to FEM, but only if all elements are continuum (or at least 2D) without embedding or other fancy stuff.
-namespace ISAAR.MSolve.XFEM.Output.VTK
+namespace ISAAR.MSolve.XFEM_OLD.Output.VTK
 {
     public class VtkFileWriterDiscontinuous<TNode> : IDisposable where TNode : INode
     {

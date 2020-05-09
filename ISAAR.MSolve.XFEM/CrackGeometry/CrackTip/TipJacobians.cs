@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.Utilities;
+using ISAAR.MSolve.XFEM_OLD.Utilities;
 using ISAAR.MSolve.Geometry.Coordinates;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry.CrackTip
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.CrackTip
 {
     // Perhaps I should not expose this class, but use it privately in TipCoordinateSystem and have batch methods when 
     // a lot of calls need to calculate the jacobians at the same point.

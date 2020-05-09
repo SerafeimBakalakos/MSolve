@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.Logging
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.Implicit.Logging
 {
     public class PreviousLevelSetComparer
     {

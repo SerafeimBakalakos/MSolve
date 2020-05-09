@@ -2,10 +2,10 @@
 using System.Diagnostics;
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
 
 //TODO: How do I identify standard/enriched elements? Using the phases or the nodal enrichments?
-namespace ISAAR.MSolve.XFEM.Multiphase.Integration
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Integration
 {
     /// <summary>
     /// TODO: This rule is actually independent from the element and its elements can be cached, albeit not in a 

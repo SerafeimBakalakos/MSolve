@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry.CrackTip
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.CrackTip
 {
     public enum CrackTipPosition
     {

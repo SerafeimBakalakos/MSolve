@@ -9,17 +9,17 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.Geometry.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.CrackGeometry.CrackTip;
-using ISAAR.MSolve.XFEM.CrackGeometry.HeavisideSingularityResolving;
-using ISAAR.MSolve.XFEM.CrackPropagation;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.CrackTip;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.HeavisideSingularityResolving;
+using ISAAR.MSolve.XFEM_OLD.CrackPropagation;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry.Explicit
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.Explicit
 {
-    class BasicExplicitCrack2D: ISingleCrack
+    public class BasicExplicitCrack2D: ISingleCrack
     {
         private static readonly bool reports = false;
         private static readonly IComparer<CartesianPoint> pointComparer = new Point2DComparerXMajor();

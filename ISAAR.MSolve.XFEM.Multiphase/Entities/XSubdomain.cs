@@ -4,9 +4,9 @@ using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
 {
     public class XSubdomain : ISubdomain
     {

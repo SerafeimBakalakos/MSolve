@@ -3,11 +3,11 @@ using System.Linq;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering;
 
-namespace ISAAR.MSolve.XFEM.Output
+namespace ISAAR.MSolve.XFEM_OLD.Output
 {
     // TODO: This class should be more flexible, allowing the caller to specify which output he wants, but still not 
     // repeating calculations. The command pattern seems suitable to handle what fields will be calculated, 

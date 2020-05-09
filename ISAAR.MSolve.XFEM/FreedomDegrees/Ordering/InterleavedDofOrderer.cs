@@ -1,9 +1,9 @@
 ﻿using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 
-namespace ISAAR.MSolve.XFEM.FreedomDegrees.Ordering
+namespace ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering
 {
     class InterleavedDofOrderer: DofOrdererBase
     {

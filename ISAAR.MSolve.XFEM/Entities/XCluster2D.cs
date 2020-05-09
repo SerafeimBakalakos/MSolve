@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering;
 
-namespace ISAAR.MSolve.XFEM.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Entities
 {
     /// <summary>
     /// Inter-subdomain communication 

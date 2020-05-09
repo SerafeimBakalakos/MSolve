@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.ThermalOLD.Curves.Explicit.Line;
-using ISAAR.MSolve.XFEM.ThermalOLD.Curves.MeshInteraction;
-using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
-using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Curves.Explicit.Line;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Curves.MeshInteraction;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Elements;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Entities;
 using Xunit;
 
-namespace ISAAR.MSolve.XFEM.Tests.HeatOLD.CurveMeshInteraction
+namespace ISAAR.MSolve.XFEM_OLD.Tests.HeatOLD.CurveMeshInteraction
 {
     public static class LinearSegmentMeshInteractionTests
     {

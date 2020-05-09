@@ -4,10 +4,10 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.FEM.Interpolation.Jacobians;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
 
-namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Integration
+namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Integration
 {
     public class BenchmarkDomain
     {

@@ -2,7 +2,7 @@
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 
-namespace ISAAR.MSolve.XFEM.Materials
+namespace ISAAR.MSolve.XFEM_OLD.Materials
 {
     // TODO: Perhaps I should return a MaterialPoint DTO instead of each property separately. The trick would be to 
     // avoid redundant object creation and copying doubles in the concrete classes.

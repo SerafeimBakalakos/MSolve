@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Geometry;
-using ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Mesh;
 
 //TODO: Standardize the writer classes and their input. Also simplify them as much as possible (e.g. plot just points, without 
 //      having attached values).
-namespace ISAAR.MSolve.XFEM.Multiphase.Plotting
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting
 {
     public class IntegrationMeshPlotter
     {

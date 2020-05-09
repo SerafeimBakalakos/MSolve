@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ISAAR.MSolve.XFEM.Materials
+namespace ISAAR.MSolve.XFEM_OLD.Materials
 {
     static class MaterialUtilities
     {

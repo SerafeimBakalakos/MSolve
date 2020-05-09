@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry
 {
     public class UserDefinedMeshTolerance : IMeshTolerance
     {

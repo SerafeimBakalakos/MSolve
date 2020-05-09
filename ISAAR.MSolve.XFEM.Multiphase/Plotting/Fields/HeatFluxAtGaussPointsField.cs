@@ -7,13 +7,13 @@ using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Materials;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Materials;
 
 //TODO: Also calculate heat flux at nodes. It needs averaging over the elements. It also needs to specify the material since it 
 //      is not explicitly stored as in elements.
-namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Fields
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Fields
 {
     public class HeatFluxAtGaussPointsField
     {

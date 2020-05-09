@@ -9,15 +9,15 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Logging.VTK;
 using ISAAR.MSolve.Materials;
-using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
-using ISAAR.MSolve.XFEM.ThermalOLD.Enrichments;
-using ISAAR.MSolve.XFEM.ThermalOLD.Enrichments.Items;
-using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
-using ISAAR.MSolve.XFEM.ThermalOLD.Output.Mesh;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Elements;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Enrichments;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Entities;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Output.Mesh;
 
 
 //TODO: Code duplication between this and TemperatureField2D
-namespace ISAAR.MSolve.XFEM.ThermalOLD.Output.Fields
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.Output.Fields
 {
     public class HeatFluxField2D
     {

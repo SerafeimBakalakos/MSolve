@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.FreedomDegrees;
-using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering;
 
 //TODO: Use a SortedSuperSet custom set class, to include the internal and boundaries in a superset
 //TODO: During construction, I need it to be mutable, but afterwards not. This goes for Model and CLuster as weel. Use views.
 //TODO: should these node sets exposed be ISet<>? I depend on their lookup/insertion performance during construction and order
 //      during dof ordering.
-namespace ISAAR.MSolve.XFEM.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Entities
 {
     /// <summary>
     /// Only for enriched dofs.

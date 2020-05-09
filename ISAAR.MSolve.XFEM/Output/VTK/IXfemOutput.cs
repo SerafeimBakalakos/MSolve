@@ -1,10 +1,10 @@
 ﻿using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ISAAR.MSolve.XFEM.Output.VTK
+namespace ISAAR.MSolve.XFEM_OLD.Output.VTK
 {
     interface IXfemOutput
     {

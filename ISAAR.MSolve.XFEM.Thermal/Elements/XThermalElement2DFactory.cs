@@ -3,11 +3,11 @@ using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.FEM.Interpolation.GaussPointExtrapolation;
-using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
-using ISAAR.MSolve.XFEM.ThermalOLD.Integration;
-using ISAAR.MSolve.XFEM.ThermalOLD.Materials;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Entities;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Integration;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Materials;
 
-namespace ISAAR.MSolve.XFEM.ThermalOLD.Elements
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.Elements
 {
     public class XThermalElement2DFactory
     {

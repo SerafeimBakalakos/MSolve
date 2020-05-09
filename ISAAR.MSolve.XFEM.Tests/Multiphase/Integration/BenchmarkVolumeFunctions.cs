@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Geometry;
-using static ISAAR.MSolve.XFEM.Tests.Multiphase.Integration.BenchmarkDomain;
-using static ISAAR.MSolve.XFEM.Tests.Multiphase.Integration.Utilities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
+using static ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Integration.BenchmarkDomain;
+using static ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Integration.Utilities;
 
 //TODO: Hardcode as much calculations (integrals, areas, jacobians) as possible and write part of the calculations in comments
 //TODO: Fill the rest of the not implemented tests
-namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Integration
+namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Integration
 {
     public class ConstantFunction : IBenchmarkVolumeFunction
     {

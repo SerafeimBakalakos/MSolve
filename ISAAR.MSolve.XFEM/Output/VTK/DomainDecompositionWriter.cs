@@ -6,11 +6,11 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Logging.VTK;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.Entities.Decomposition;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.Entities.Decomposition;
 
 //TODO: Move this to Logging project with the rest of VTK classes.
-namespace ISAAR.MSolve.XFEM.Output.VTK
+namespace ISAAR.MSolve.XFEM_OLD.Output.VTK
 {
     internal class DomainDecompositionWriter
     {

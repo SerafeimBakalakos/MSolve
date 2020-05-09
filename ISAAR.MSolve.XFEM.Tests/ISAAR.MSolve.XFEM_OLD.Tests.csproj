@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <StartupObject>ISAAR.MSolve.XFEM.Tests.Program</StartupObject>
+    <StartupObject>ISAAR.MSolve.XFEM_OLD.Tests.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,9 +22,9 @@
   <ItemGroup>
     <ProjectReference Include="..\ISAAR.MSolve.LinearAlgebra\ISAAR.MSolve.LinearAlgebra.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.Problems\ISAAR.MSolve.Problems.csproj" />
-    <ProjectReference Include="..\ISAAR.MSolve.XFEM.Multiphase\ISAAR.MSolve.XFEM.Multiphase.csproj" />
-    <ProjectReference Include="..\ISAAR.MSolve.XFEM.Thermal\ISAAR.MSolve.XFEM.ThermalOLD.csproj" />
-    <ProjectReference Include="..\ISAAR.MSolve.XFEM\ISAAR.MSolve.XFEM.csproj" />
+    <ProjectReference Include="..\ISAAR.MSolve.XFEM.Multiphase\ISAAR.MSolve.XFEM_OLD.Multiphase.csproj" />
+    <ProjectReference Include="..\ISAAR.MSolve.XFEM.Thermal\ISAAR.MSolve.XFEM_OLD.Thermal.csproj" />
+    <ProjectReference Include="..\ISAAR.MSolve.XFEM\ISAAR.MSolve.XFEM_OLD.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,11 +2,11 @@
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
 
-namespace ISAAR.MSolve.XFEM.Materials
+namespace ISAAR.MSolve.XFEM_OLD.Materials
 {
-    class BiElasticMaterial2D: IMaterialField2D
+    public class BiElasticMaterial2D: IMaterialField2D
     {
         private readonly MaterialInterface2D bimaterialInterface;
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ISAAR.MSolve.XFEM.CrackPropagation.Direction
+namespace ISAAR.MSolve.XFEM_OLD.CrackPropagation.Direction
 {
     // TODO: Perhaps it should be (-pi/2, pi/2)
     public interface ICrackGrowthDirectionLaw2D

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Geometry.Coordinates;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry
 {
     // TODO: this only works for cracks with a single tip
     interface IExteriorCrack: ISingleCrack

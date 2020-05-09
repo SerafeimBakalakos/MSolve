@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Logging.VTK;
-using ISAAR.MSolve.XFEM.Multiphase.Enrichment;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Enrichments
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Enrichments
 {
     public class EnrichmentPlotter
     {

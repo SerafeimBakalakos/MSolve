@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ISAAR.MSolve.Discretization.Integration;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Materials;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Materials;
 
-namespace ISAAR.MSolve.XFEM.Integration
+namespace ISAAR.MSolve.XFEM_OLD.Integration
 {
     // Not sure if generics are needed. I could just have different interfaces for different element types. 
     // It would make sense if some of the actual integration strategy implementations would work for many element types.

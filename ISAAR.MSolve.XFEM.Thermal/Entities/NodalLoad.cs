@@ -1,6 +1,6 @@
 ﻿using ISAAR.MSolve.Discretization.FreedomDegrees;
 
-namespace ISAAR.MSolve.XFEM.ThermalOLD.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.Entities
 {
     public class NodalLoad
     {

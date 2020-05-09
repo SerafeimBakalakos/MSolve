@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.XFEM.Enrichments.Functions;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Functions;
 
-namespace ISAAR.MSolve.XFEM.FreedomDegrees
+namespace ISAAR.MSolve.XFEM_OLD.FreedomDegrees
 {
     public class EnrichedDof: IDofType
     {

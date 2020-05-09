@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Enrichment.SingularityResolution;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment.SingularityResolution;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
 
 //TODO: Add heaviside singularity resolver
 //TODO: Remove casts
-namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
 {
     public class NodeEnricher2Junctions
     {

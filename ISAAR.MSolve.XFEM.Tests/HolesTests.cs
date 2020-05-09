@@ -8,7 +8,7 @@ using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 using Xunit;
 
-namespace ISAAR.MSolve.XFEM.Tests
+namespace ISAAR.MSolve.XFEM_OLD.Tests
 {
     public static class HolesTests
     {

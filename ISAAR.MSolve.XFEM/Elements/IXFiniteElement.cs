@@ -4,9 +4,9 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 
-namespace ISAAR.MSolve.XFEM.Elements
+namespace ISAAR.MSolve.XFEM_OLD.Elements
 {
     public interface IXFiniteElement : IElement, IElementType, ICell<XNode>
     {

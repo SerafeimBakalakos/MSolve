@@ -14,18 +14,18 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
-using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
-using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
-using ISAAR.MSolve.XFEM.ThermalOLD.Integration;
-using ISAAR.MSolve.XFEM.ThermalOLD.Curves;
-using ISAAR.MSolve.XFEM.ThermalOLD.MaterialInterface;
-using ISAAR.MSolve.XFEM.ThermalOLD.Materials;
-using ISAAR.MSolve.XFEM.ThermalOLD.Output.Fields;
-using ISAAR.MSolve.XFEM.ThermalOLD.Output.Mesh;
-using ISAAR.MSolve.XFEM.ThermalOLD.Output.Writers;
-using ISAAR.MSolve.XFEM.ThermalOLD.Curves.LevelSetMethod;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Elements;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Entities;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Integration;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Curves;
+using ISAAR.MSolve.XFEM_OLD.Thermal.MaterialInterface;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Materials;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Output.Fields;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Output.Mesh;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Output.Writers;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Curves.LevelSetMethod;
 
-namespace ISAAR.MSolve.XFEM.Tests.HeatOLD.Plotting
+namespace ISAAR.MSolve.XFEM_OLD.Tests.HeatOLD.Plotting
 {
     public static class ThermalInclusionMultipleBalls2D
     {

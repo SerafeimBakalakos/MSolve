@@ -2,12 +2,12 @@
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
-using ISAAR.MSolve.XFEM.CrackGeometry.HeavisideSingularityResolving;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.HeavisideSingularityResolving;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry
 {
     /// <summary>
     /// A crack that has one tip point and: a) a mouth point (exterior crack), b) another tip point (interior crack) or 

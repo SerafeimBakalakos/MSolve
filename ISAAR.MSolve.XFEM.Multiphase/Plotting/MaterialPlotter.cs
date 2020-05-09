@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Materials;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Materials;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Plotting
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting
 {
     public class MaterialPlotter
     {

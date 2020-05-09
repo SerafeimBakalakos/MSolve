@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
-namespace ISAAR.MSolve.XFEM.Utilities
+namespace ISAAR.MSolve.XFEM_OLD.Utilities
 {
     /// <summary>
     /// Data transfer object to store and pass around the value and derivatives of a 2D function, evaluated at some 

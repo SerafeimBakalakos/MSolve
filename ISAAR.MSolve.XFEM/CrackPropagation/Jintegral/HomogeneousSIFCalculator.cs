@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ISAAR.MSolve.XFEM.Materials;
+using ISAAR.MSolve.XFEM_OLD.Materials;
 
-namespace ISAAR.MSolve.XFEM.CrackPropagation.Jintegral
+namespace ISAAR.MSolve.XFEM_OLD.CrackPropagation.Jintegral
 {
     // TODO 1: An IHomogeneousMaterialField would be better than the restrictive HomogeneousElasticMaterial2D
     // TODO 2: Enforce that all elements of the (J-integral) domain have the identical material properties to the ones 
     //      passed to this class.
-    class HomogeneousSIFCalculator : ISIFCalculator
+    public class HomogeneousSIFCalculator : ISIFCalculator
     {
         private readonly double equivalentYoungModulus;
 

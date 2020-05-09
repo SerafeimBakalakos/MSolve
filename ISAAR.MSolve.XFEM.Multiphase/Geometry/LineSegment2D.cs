@@ -6,10 +6,10 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry
 {
     public class LineSegment2D
     {

@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
-using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
-using ISAAR.MSolve.XFEM.ThermalOLD.Enrichments.Items;
-using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
-using ISAAR.MSolve.XFEM.ThermalOLD.Curves;
-using ISAAR.MSolve.XFEM.ThermalOLD.Curves.MeshInteraction;
-using ISAAR.MSolve.XFEM.ThermalOLD.MaterialInterface.SingularityResolving;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Elements;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Entities;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Curves;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Curves.MeshInteraction;
+using ISAAR.MSolve.XFEM_OLD.Thermal.MaterialInterface.SingularityResolving;
 
-namespace ISAAR.MSolve.XFEM.ThermalOLD.MaterialInterface
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.MaterialInterface
 {
     public class SingleMaterialInterfaceEnricher
     {

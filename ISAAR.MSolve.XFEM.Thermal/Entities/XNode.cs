@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.FEM.Entities;
-using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
-using ISAAR.MSolve.XFEM.ThermalOLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Elements;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Enrichments.Items;
 
-namespace ISAAR.MSolve.XFEM.ThermalOLD.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.Entities
 {
     public class XNode : Node
     {

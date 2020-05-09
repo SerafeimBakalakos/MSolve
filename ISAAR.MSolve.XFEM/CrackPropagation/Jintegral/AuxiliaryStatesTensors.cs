@@ -1,7 +1,7 @@
 ﻿using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 
-namespace ISAAR.MSolve.XFEM.CrackPropagation.Jintegral
+namespace ISAAR.MSolve.XFEM_OLD.CrackPropagation.Jintegral
 {
     /// <summary>
     /// All quantities are with respect to the local cartesian system of the crack tip.

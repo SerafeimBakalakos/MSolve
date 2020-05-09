@@ -5,9 +5,9 @@ using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Fields
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Fields
 {
     public class TemperatureAtNodesField
     {

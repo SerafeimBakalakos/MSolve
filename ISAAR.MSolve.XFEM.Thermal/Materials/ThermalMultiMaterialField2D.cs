@@ -1,9 +1,9 @@
 ﻿using ISAAR.MSolve.Materials;
-using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
-using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
-using ISAAR.MSolve.XFEM.ThermalOLD.Curves.LevelSetMethod;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Elements;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Entities;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Curves.LevelSetMethod;
 
-namespace ISAAR.MSolve.XFEM.ThermalOLD.Materials
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.Materials
 {
     public class ThermalMultiMaterialField2D : IThermalMaterialField2D
     {

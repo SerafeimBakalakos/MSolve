@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 
 /// TODO: abstract this with an IGlobalEnumerator2D interface. That way I could have different dof orders:
 /// e.g. 1) first all standard dofs and then all enriched, 2) First all dofs (std & enr) of the 1st node, 
@@ -15,7 +15,7 @@ using ISAAR.MSolve.XFEM.Entities;
 /// should be found, which also changes the way the GlobalAssembler works. The ideal would be to split each element 
 /// matrix into the free, constrained and artificial parts required by the Assembler, without any overlaps, which 
 /// are currently denoted as -1 and need to be checked every single time they are created and accessed.
-namespace ISAAR.MSolve.XFEM.FreedomDegrees.Ordering
+namespace ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering
 {
     /// <summary>
     /// The enriched dofs are numbered after all standard

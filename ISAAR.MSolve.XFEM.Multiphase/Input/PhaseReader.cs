@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Input
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Input
 {
     public class PhaseReader
     {

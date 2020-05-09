@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.CrackGeometry;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 
 //TODO: This needs to be split between standard and enriched. Otherwise all enriched stuff may be uninitialized or in a 
 //      previous state.
-namespace ISAAR.MSolve.XFEM.FreedomDegrees.Ordering
+namespace ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering
 {
     class XClusterDofOrderer: IDofOrderer
     {

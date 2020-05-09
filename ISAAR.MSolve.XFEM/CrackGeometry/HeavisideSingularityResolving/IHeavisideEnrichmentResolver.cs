@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry.HeavisideSingularityResolving
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.HeavisideSingularityResolving
 {
     public interface IHeavisideSingularityResolver
     {

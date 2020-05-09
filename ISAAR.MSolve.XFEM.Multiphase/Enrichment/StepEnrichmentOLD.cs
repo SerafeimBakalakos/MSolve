@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
 {
     public class StepEnrichmentOLD : IEnrichment
     {

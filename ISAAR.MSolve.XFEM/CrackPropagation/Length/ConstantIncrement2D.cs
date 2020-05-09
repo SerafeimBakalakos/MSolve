@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ISAAR.MSolve.XFEM.CrackPropagation.Length
+namespace ISAAR.MSolve.XFEM_OLD.CrackPropagation.Length
 {
-    class ConstantIncrement2D: ICrackGrowthLengthLaw2D
+    public class ConstantIncrement2D: ICrackGrowthLengthLaw2D
     {
         private readonly double length;
 

@@ -2,17 +2,17 @@
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.CrackGeometry.Implicit;
-using ISAAR.MSolve.XFEM.CrackPropagation;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.Implicit;
+using ISAAR.MSolve.XFEM_OLD.CrackPropagation;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering;
 
 //TODO: replace the boilerplate code with one or more (or generic) Union() private methods
-namespace ISAAR.MSolve.XFEM.CrackGeometry
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry
 {
-    class MultipleCracksDisjoint : ICrackDescription
+    public class MultipleCracksDisjoint : ICrackDescription
     {
         private readonly IReadOnlyList<TrackingExteriorCrackLSM> cracks;
 

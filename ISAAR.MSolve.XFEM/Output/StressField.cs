@@ -3,9 +3,9 @@ using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.Elements;
+using ISAAR.MSolve.XFEM_OLD.Elements;
 
-namespace ISAAR.MSolve.XFEM.Output
+namespace ISAAR.MSolve.XFEM_OLD.Output
 {
     class StressField: IOutputField
     {

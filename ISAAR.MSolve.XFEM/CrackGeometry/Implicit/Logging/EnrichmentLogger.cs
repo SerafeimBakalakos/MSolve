@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Logging.VTK;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.Output.VTK;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.Output.VTK;
 
 //TODO: right now lsm.UpdateGeometry() is called before checking collapse, while lsm.UpdateEnrichments() afterwards. Thus there
 //      is less 1 enrichment output file, compared to level set output files. Also if the geometry is updated before the analysis
 //      starts there will not be any enrichment output files for those updates, whcih will cause a mismatch in the numbering.
-namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.Logging
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.Implicit.Logging
 {
     public class EnrichmentLogger
     {

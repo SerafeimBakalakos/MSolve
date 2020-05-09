@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ISAAR.MSolve.XFEM.Entities.Decomposition
+namespace ISAAR.MSolve.XFEM_OLD.Entities.Decomposition
 {
     interface IDomainDecomposer
     {

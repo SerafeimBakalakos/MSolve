@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.CrackGeometry;
-using ISAAR.MSolve.XFEM.CrackGeometry.CrackTip;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Functions;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.FreedomDegrees;
-using ISAAR.MSolve.XFEM.Utilities;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.CrackTip;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Functions;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees;
+using ISAAR.MSolve.XFEM_OLD.Utilities;
 
 // TODO: this class should not be associated with the whole crack geometry, just the part that stores the crack tip.
 // Also it should be immutable, rather than having a settable TipSystem property. 
-namespace ISAAR.MSolve.XFEM.Enrichments.Items
+namespace ISAAR.MSolve.XFEM_OLD.Enrichments.Items
 {
     public class CrackTipEnrichments2D : IEnrichmentItem2D
     {

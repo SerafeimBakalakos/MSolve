@@ -11,11 +11,11 @@ using ISAAR.MSolve.Geometry.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Logging.VTK;
-using ISAAR.MSolve.XFEM.CrackGeometry;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering;
 
 //TODO: the extrapolations from Gauss points to nodes of the subtriangles does not work near the tip, where the displacement 
 //      field contains interpolated tip functions. This could be fixed (for the subtriangle nodes only) by basing the 
@@ -26,7 +26,7 @@ using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
 //TODO: refactor the huge method and break it down to smaller ones.
 //TODO: apply averaging at standard nodes
 //TODO: plot the principal stresses, not only S11, S12, S22
-namespace ISAAR.MSolve.XFEM.Output.VTK
+namespace ISAAR.MSolve.XFEM_OLD.Output.VTK
 {
     class IntersectedMeshOutput: IXfemOutput
     {

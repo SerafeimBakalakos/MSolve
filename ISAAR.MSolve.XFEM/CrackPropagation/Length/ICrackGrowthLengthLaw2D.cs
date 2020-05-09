@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ISAAR.MSolve.XFEM.CrackPropagation.Length
+namespace ISAAR.MSolve.XFEM_OLD.CrackPropagation.Length
 {
     // TODO: Not sure what arguments must be used tbh. Using Paris's law for the increment needs the SIFs.
     public interface ICrackGrowthLengthLaw2D

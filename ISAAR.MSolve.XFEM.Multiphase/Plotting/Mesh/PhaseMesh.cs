@@ -5,9 +5,9 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Logging.VTK;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Mesh
 {
     public class PhaseMesh<TNode> : IOutputMesh<TNode> where TNode : INode
     {

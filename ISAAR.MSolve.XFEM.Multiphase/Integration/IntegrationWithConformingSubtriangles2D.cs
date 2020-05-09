@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
 
 //TODO: Perhaps avoid integration in triangles with very small area. Or should that be handled, by not crating those in the 
 //      first place? The former, would interfere with the code that decides whether to not enrich nodes to avoid singularities.
-namespace ISAAR.MSolve.XFEM.Multiphase.Integration
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Integration
 {
     public class IntegrationWithConformingSubtriangles2D: IIntegrationStrategy
     {

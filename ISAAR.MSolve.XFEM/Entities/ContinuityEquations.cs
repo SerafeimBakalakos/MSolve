@@ -1,10 +1,10 @@
-﻿using ISAAR.MSolve.XFEM.FreedomDegrees;
+﻿using ISAAR.MSolve.XFEM_OLD.FreedomDegrees;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ISAAR.MSolve.XFEM.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Entities
 {
     class ContinuityEquations
     {

@@ -5,11 +5,11 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Logging.VTK;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Mesh
 {
     public class BoundaryIntegrationMesh2D : IOutputMesh<XNode>
     {

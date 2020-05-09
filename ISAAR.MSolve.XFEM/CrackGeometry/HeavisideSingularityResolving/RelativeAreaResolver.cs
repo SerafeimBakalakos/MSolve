@@ -4,12 +4,12 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Triangulation;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry.HeavisideSingularityResolving
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.HeavisideSingularityResolving
 {
-    class RelativeAreaResolver : IHeavisideSingularityResolver
+    public class RelativeAreaResolver : IHeavisideSingularityResolver
     {
         private readonly double relativeAreaTolerance;
         private readonly Triangulator2D<CartesianPoint> triangulator;

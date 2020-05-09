@@ -2,15 +2,15 @@
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using ISAAR.MSolve.XFEM.CrackGeometry.CrackTip;
-using ISAAR.MSolve.XFEM.Materials;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.CrackTip;
+using ISAAR.MSolve.XFEM_OLD.Materials;
 
-namespace ISAAR.MSolve.XFEM.CrackPropagation.Jintegral
+namespace ISAAR.MSolve.XFEM_OLD.CrackPropagation.Jintegral
 {
     // TODO 1: An IHomogeneousMaterialField would be better than the restrictive HomogeneousElasticMaterial2D
     // TODO 2: Enforce that all elements of the (J-integral) domain have the identical material properties to the ones 
     //      passed to this class.
-    class HomogeneousMaterialAuxiliaryStates : IAuxiliaryStates
+    public class HomogeneousMaterialAuxiliaryStates : IAuxiliaryStates
     {
         private readonly HomogeneousElasticMaterial2D material;
 

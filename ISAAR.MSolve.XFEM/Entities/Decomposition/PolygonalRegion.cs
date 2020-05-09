@@ -4,7 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 
-namespace ISAAR.MSolve.XFEM.Entities.Decomposition
+namespace ISAAR.MSolve.XFEM_OLD.Entities.Decomposition
 {
     class PolygonalRegion: IRegion2D
     {

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.Utilities;
+using ISAAR.MSolve.XFEM_OLD.Utilities;
 
-namespace ISAAR.MSolve.XFEM.Enrichments.Functions
+namespace ISAAR.MSolve.XFEM_OLD.Enrichments.Functions
 {
     class SignFunction2D : IHeavisideFunction2D
     {

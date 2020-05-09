@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
 
 //TODO: This is not such a good idea after all, since it is too simple. It would be better to have :
 //      1) an interface that defines the intersected segment between a curve and an element. It would be responsible for 
@@ -18,7 +18,7 @@ using ISAAR.MSolve.XFEM.Multiphase.Entities;
 //      over the multiplicity
 //      5) Taking into account both the natural and cartesian system for all data is needed. For efficiency only 1 should be 
 //      used at first and the other should be computed only when needed  
-namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry
 {
     public class CurveElementIntersection
     {

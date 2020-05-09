@@ -1,8 +1,8 @@
 ﻿using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.FEM.Entities;
-using ISAAR.MSolve.XFEM.FreedomDegrees;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees;
 
-namespace ISAAR.MSolve.XFEM.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Entities
 {
     public class NodalLoad
     {

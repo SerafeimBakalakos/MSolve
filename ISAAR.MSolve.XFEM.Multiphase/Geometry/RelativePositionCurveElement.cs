@@ -1,4 +1,4 @@
-﻿namespace ISAAR.MSolve.XFEM.Multiphase.Geometry
+﻿namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry
 {
     public enum RelativePositionCurveElement
     {

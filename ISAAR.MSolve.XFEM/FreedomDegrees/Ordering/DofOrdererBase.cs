@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 
 //TODO: I should use interchangeble builders, rather than subclasses.
 //TODO: constrained dofs should be ignored (set to -1) and the effect of constraints should be done via equivalent forces.
-namespace ISAAR.MSolve.XFEM.FreedomDegrees.Ordering
+namespace ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering
 {
     class DofOrdererBase: IDofOrderer
     {

@@ -4,15 +4,15 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Triangulation;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 
 //TODO: I suspect this is method is responsible for singular global matrices popping up randomly for many configurations.
 //      Either this doesn't work as good as advertised or I messed it up. Try checking if there is at least  
 //      least 1 GP on either side of the crack instead. Bonus points if the GPs are cached somehow (e.g. all std elements
 //      have the same GPs in natural system, many enriched elements may also have the same active integration rule) for
 //      when the integration actually happens.
-namespace ISAAR.MSolve.XFEM.CrackGeometry.HeavisideSingularityResolving
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.HeavisideSingularityResolving
 {
     class HeavisideResolverOLD: IHeavisideSingularityResolver
     {

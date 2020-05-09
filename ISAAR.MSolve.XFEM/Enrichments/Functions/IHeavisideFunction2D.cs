@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ISAAR.MSolve.XFEM.Utilities;
+using ISAAR.MSolve.XFEM_OLD.Utilities;
 
-namespace ISAAR.MSolve.XFEM.Enrichments.Functions
+namespace ISAAR.MSolve.XFEM_OLD.Enrichments.Functions
 {
     public interface IHeavisideFunction2D : IEnrichmentFunction2D
     {

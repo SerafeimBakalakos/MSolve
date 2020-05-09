@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Materials
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Materials
 {
     public class ThermalMaterial
     {

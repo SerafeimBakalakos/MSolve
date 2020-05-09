@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.XFEM.CrackGeometry.CrackTip;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.CrackTip;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 
 //TODO: Delete this after testing. The new version is more efficient and does the same.
-namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.MeshInteraction
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.Implicit.MeshInteraction
 {
     class HybridMeshInteractionOLD: IMeshInteraction
     {

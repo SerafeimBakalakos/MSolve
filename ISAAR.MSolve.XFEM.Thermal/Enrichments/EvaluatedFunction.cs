@@ -1,4 +1,4 @@
-﻿namespace ISAAR.MSolve.XFEM.ThermalOLD.Enrichments
+﻿namespace ISAAR.MSolve.XFEM_OLD.Thermal.Enrichments
 {
     /// <summary>
     /// Data transfer object to store and pass around the value and derivatives of a function, evaluated at some point.

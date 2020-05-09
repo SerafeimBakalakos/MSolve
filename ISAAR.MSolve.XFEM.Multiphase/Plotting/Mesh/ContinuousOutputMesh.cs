@@ -4,7 +4,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Logging.VTK;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Mesh
 {
     public class ContinuousOutputMesh<TNode> : IOutputMesh<TNode> where TNode : INode
     {

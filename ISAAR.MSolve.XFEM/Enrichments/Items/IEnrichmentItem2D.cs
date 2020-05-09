@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.FreedomDegrees;
-using ISAAR.MSolve.XFEM.Utilities;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees;
+using ISAAR.MSolve.XFEM_OLD.Utilities;
 
-namespace ISAAR.MSolve.XFEM.Enrichments.Items
+namespace ISAAR.MSolve.XFEM_OLD.Enrichments.Items
 {
     // Connects the geometry, model and enrichment function entities.
     // TODO: At this point it does most of the work in 1 class. Appropriate decomposition is needed.

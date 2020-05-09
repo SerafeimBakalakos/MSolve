@@ -2,7 +2,7 @@
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 
-namespace ISAAR.MSolve.XFEM.Materials
+namespace ISAAR.MSolve.XFEM_OLD.Materials
 {
     public class HomogeneousElasticMaterial2D: IMaterialField2D
     {

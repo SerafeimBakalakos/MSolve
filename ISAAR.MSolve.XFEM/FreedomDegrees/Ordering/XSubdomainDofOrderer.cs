@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.CrackGeometry;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.Exceptions;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.Exceptions;
 
 //TODO: these singularHeavisideNodes affect all operations. Perhaps it would be more efficient to keep a local view of the 
 //enriched nodes and alter that one. Another approach is to assign -1 for these dofs and check that 
-namespace ISAAR.MSolve.XFEM.FreedomDegrees.Ordering
+namespace ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering
 {
     //TODO: perhaps the subdomain should do all these itself
     class XSubdomainDofOrderer

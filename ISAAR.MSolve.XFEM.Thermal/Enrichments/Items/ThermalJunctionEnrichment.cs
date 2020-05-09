@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
-using ISAAR.MSolve.XFEM.ThermalOLD.Enrichments.Functions;
-using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
-using ISAAR.MSolve.XFEM.ThermalOLD.Curves;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Elements;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Enrichments.Functions;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Entities;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Curves;
 
-namespace ISAAR.MSolve.XFEM.ThermalOLD.Enrichments.Items
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.Enrichments.Items
 {
     public class ThermalJunctionEnrichment : IEnrichmentItem
     {

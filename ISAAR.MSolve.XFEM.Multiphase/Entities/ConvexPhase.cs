@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
 
 //TODO: This probably does not work if an element is so large that it completely contains a phase
-namespace ISAAR.MSolve.XFEM.Multiphase.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
 {
     public class ConvexPhase : IPhase
     {

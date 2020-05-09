@@ -5,7 +5,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 
 //TODO: Perhaps the interpolation extensions should be included in the original classes, e.g. in abstract classes or as default 
 //      interface implementations.
-namespace ISAAR.MSolve.XFEM.ThermalOLD.Output.Fields
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.Output.Fields
 {
     public static class Utilities
     {

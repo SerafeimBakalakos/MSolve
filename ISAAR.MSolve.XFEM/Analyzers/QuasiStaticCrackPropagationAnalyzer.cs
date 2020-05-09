@@ -12,11 +12,11 @@ using ISAAR.MSolve.Logging.Interfaces;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.LinearSystems;
-using ISAAR.MSolve.XFEM.CrackGeometry;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 
 // TODO: fix a bug that happens when the crack has almost reached the boundary, is inside but no tip can be found
-namespace ISAAR.MSolve.XFEM.Analyzers
+namespace ISAAR.MSolve.XFEM_OLD.Analyzers
 {
     /// <summary>
     /// Implements crack propagation under static loading with linear material behavior. Based on Linear Elastic Fracture 

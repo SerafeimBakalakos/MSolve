@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Integration;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Integration
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Integration
 {
     /// <summary>
     /// Algorithms for complex integration rules for specific finite element types. These need the data from each 

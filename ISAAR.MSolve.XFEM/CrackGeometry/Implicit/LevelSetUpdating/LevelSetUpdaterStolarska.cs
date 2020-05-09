@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit.LevelSetUpdating
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.Implicit.LevelSetUpdating
 {
     class LevelSetUpdaterStolarska : ILevelSetUpdater
     {

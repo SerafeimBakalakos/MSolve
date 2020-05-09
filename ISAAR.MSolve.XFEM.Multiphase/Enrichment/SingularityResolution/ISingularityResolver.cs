@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment.SingularityResolution
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment.SingularityResolution
 {
     public interface ISingularityResolver
     {

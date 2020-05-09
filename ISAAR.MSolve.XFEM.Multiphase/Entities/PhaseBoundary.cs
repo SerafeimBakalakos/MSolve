@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.XFEM.Multiphase.Enrichment;
-using ISAAR.MSolve.XFEM.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
 {
     public class PhaseBoundary
     {

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.XFEM.Tests.HeatOLD.Plotting;
-using ISAAR.MSolve.XFEM.Tests.Multiphase.Homogenization;
-using ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting;
+using ISAAR.MSolve.XFEM_OLD.Tests.HeatOLD.Plotting;
+using ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Homogenization;
+using ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting;
 
-namespace ISAAR.MSolve.XFEM.Tests
+namespace ISAAR.MSolve.XFEM_OLD.Tests
 {
     public static class Program
     {

@@ -4,9 +4,9 @@ using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Elements;
 
-namespace ISAAR.MSolve.XFEM.ThermalOLD.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.Entities
 {
     public class XSubdomain : ISubdomain
     {

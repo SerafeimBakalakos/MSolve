@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using ISAAR.MSolve.Geometry.Coordinates;
 
-namespace ISAAR.MSolve.XFEM.Output.VTK
+namespace ISAAR.MSolve.XFEM_OLD.Output.VTK
 {
     public class VtkPolylineWriter : IDisposable
     {

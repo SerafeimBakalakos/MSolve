@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using ISAAR.MSolve.Logging.VTK;
-using ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Mesh;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Plotting.Writers
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Writers
 {
     public class VtkFileWriter : IDisposable
     {

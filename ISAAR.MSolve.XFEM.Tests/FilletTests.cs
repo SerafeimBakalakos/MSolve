@@ -6,7 +6,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Solvers.Direct;
 using Xunit;
 
-namespace ISAAR.MSolve.XFEM.Tests
+namespace ISAAR.MSolve.XFEM_OLD.Tests
 {
     public static class FilletTests
     {

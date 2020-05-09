@@ -8,16 +8,16 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.Geometry.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.CrackGeometry.CrackTip;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.FreedomDegrees.Ordering;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.CrackTip;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees.Ordering;
 
 // TODO: Consider removing the bookkeeping of enrichment items in elements. It creates a lot of opportunities for mistakes.
 //       Could the enrichment type of an element be infered by just looking at its nodes, without storing state. Could it be
 //       cached for efficiency and how would the cache be updated safely?
-namespace ISAAR.MSolve.XFEM.CrackGeometry.Implicit
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.Implicit
 {
     // For mouth cracks only (single tip). Warning: may misclassify elements as tip elements, causing gross errors.
     class BasicCrackLSM

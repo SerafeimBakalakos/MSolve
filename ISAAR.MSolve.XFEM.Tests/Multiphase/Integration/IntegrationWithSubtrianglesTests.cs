@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Geometry;
-using ISAAR.MSolve.XFEM.Multiphase.Integration;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Integration;
 using Xunit;
-using static ISAAR.MSolve.XFEM.Tests.Multiphase.Integration.BenchmarkDomain;
+using static ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Integration.BenchmarkDomain;
 
-namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Integration
+namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Integration
 {
     public static class IntegrationWithSubtrianglesTests
     {

@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.CrackGeometry.CrackTip;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.CrackTip;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Utilities;
+using ISAAR.MSolve.XFEM_OLD.Utilities;
 
 //TODO: Replace double[] with Vector
-namespace ISAAR.MSolve.XFEM.Enrichments.Functions
+namespace ISAAR.MSolve.XFEM_OLD.Enrichments.Functions
 {
     // TODO: The cartesian global to cartesian local to polar system transformation and the jacobian should be 
     // calculated only once per gauss point for all functions of the same enrichment item.

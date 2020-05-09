@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
-using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
-using ISAAR.MSolve.XFEM.ThermalOLD.MaterialInterface.SingularityResolving;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Elements;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Entities;
+using ISAAR.MSolve.XFEM_OLD.Thermal.MaterialInterface.SingularityResolving;
 
-namespace ISAAR.MSolve.XFEM.ThermalOLD.MaterialInterface
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.MaterialInterface
 {
     /// <summary>
     /// This works if the material interfaces do not intersect each other.

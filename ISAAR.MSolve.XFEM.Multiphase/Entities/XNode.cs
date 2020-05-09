@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.FEM.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Enrichment;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
 {
     public class XNode : Node
     {

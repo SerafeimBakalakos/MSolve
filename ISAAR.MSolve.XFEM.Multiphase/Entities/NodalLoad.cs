@@ -1,6 +1,6 @@
 ﻿using ISAAR.MSolve.Discretization.FreedomDegrees;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
 {
     public class NodalLoad
     {

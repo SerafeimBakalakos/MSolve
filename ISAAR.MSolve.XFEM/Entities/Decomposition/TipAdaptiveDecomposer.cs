@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.CrackGeometry;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Exceptions;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Exceptions;
 
-namespace ISAAR.MSolve.XFEM.Entities.Decomposition
+namespace ISAAR.MSolve.XFEM_OLD.Entities.Decomposition
 {
     class TipAdaptiveDecomposer: IDomainDecomposer //TODO: extend it to more than one tips/cracks
     {

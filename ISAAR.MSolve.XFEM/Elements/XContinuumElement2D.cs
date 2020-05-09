@@ -13,12 +13,12 @@ using ISAAR.MSolve.FEM.Interpolation.GaussPointExtrapolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.FreedomDegrees;
-using ISAAR.MSolve.XFEM.Integration;
-using ISAAR.MSolve.XFEM.Materials;
-using ISAAR.MSolve.XFEM.Utilities;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.FreedomDegrees;
+using ISAAR.MSolve.XFEM_OLD.Integration;
+using ISAAR.MSolve.XFEM_OLD.Materials;
+using ISAAR.MSolve.XFEM_OLD.Utilities;
 
 //TODO: Enumerating artificial dofs may be needed to be done by this class. (e.g if structural FE introduce more 
 //      artificial dofs than continuum FE)
@@ -26,7 +26,7 @@ using ISAAR.MSolve.XFEM.Utilities;
 //      Pros: only need to track one set of Gauss points, which simplifies non linear analysis 
 //         & shape functions and their natural derivatives are cached for the standard quadrature.
 //      Cons: calculating Kss with the Gauss points of an enriched element is much more expensive
-namespace ISAAR.MSolve.XFEM.Elements
+namespace ISAAR.MSolve.XFEM_OLD.Elements
 {
     public class XContinuumElement2D : IXFiniteElement 
     {
@@ -542,7 +542,7 @@ namespace ISAAR.MSolve.XFEM.Elements
             return elementDofs;
         }
 
-        internal IMatrix JoinStiffnessesNodeMajor()
+        public IMatrix JoinStiffnessesNodeMajor()
         {
             //TODO: Perhaps it is more efficient to do this by just appending Kse and Kee to Kss.
             if (IsStandardElement) return BuildStandardStiffnessMatrix();
@@ -609,7 +609,7 @@ namespace ISAAR.MSolve.XFEM.Elements
         /// <summary>
         /// BUG: This does not work. MSolve assumes all dofs of the same node have consecutive indices in the stiffness matrix.
         /// </summary>
-        internal IMatrix JoinStiffnessesStandardFirst()
+        public IMatrix JoinStiffnessesStandardFirst()
         {
             // WARNING: The order here must match the order in OrderDofsNodeMajor() and BuildEnrichedStiffnessMatricesUpper()
             Matrix Kss = BuildStandardStiffnessMatrix();

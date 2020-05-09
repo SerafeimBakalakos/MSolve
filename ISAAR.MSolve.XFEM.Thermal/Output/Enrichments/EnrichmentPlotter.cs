@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Logging.VTK;
-using ISAAR.MSolve.XFEM.ThermalOLD.Enrichments.Items;
-using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Entities;
 
-namespace ISAAR.MSolve.XFEM.ThermalOLD.Output.Enrichments
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.Output.Enrichments
 {
     public class EnrichmentPlotter
     {

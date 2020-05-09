@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ISAAR.MSolve.XFEM.CrackPropagation.Length
+namespace ISAAR.MSolve.XFEM_OLD.CrackPropagation.Length
 {
     /// <summary>
     /// Operates on the variations of the stress intensity factors ΔKI and ΔKII, which should be obtained by applying the 

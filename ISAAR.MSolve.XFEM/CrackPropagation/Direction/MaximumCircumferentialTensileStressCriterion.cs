@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ISAAR.MSolve.XFEM.CrackPropagation.Direction
+namespace ISAAR.MSolve.XFEM_OLD.CrackPropagation.Direction
 {
     // To research: Does this work for heterogenegous materials too?
-    class MaximumCircumferentialTensileStressCriterion: ICrackGrowthDirectionLaw2D
+    public class MaximumCircumferentialTensileStressCriterion: ICrackGrowthDirectionLaw2D
     {
         public MaximumCircumferentialTensileStressCriterion()
         {

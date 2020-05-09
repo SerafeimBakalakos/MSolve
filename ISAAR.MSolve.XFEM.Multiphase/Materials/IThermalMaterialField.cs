@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.FEM.Interpolation;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Materials
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Materials
 {
     public interface IThermalMaterialField
     {

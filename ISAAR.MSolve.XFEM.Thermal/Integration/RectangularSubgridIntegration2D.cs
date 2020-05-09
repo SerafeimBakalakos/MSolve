@@ -2,7 +2,7 @@
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
 
-namespace ISAAR.MSolve.XFEM.ThermalOLD.Integration
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.Integration
 {
     /// <summary>
     /// TODO: This rule is actually independent from the element and its elements can be cached, albeit not in a 

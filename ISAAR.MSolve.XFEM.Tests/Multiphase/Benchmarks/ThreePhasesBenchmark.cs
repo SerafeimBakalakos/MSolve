@@ -13,20 +13,20 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Enrichment;
-using ISAAR.MSolve.XFEM.Multiphase.Enrichment.SingularityResolution;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Geometry;
-using ISAAR.MSolve.XFEM.Multiphase.Integration;
-using ISAAR.MSolve.XFEM.Multiphase.Materials;
-using ISAAR.MSolve.XFEM.Multiphase.Plotting;
-using ISAAR.MSolve.XFEM.Multiphase.Plotting.Enrichments;
-using ISAAR.MSolve.XFEM.Multiphase.Plotting.Fields;
-using ISAAR.MSolve.XFEM.Multiphase.Plotting.Mesh;
-using ISAAR.MSolve.XFEM.Multiphase.Plotting.Writers;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment.SingularityResolution;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Integration;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Materials;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Enrichments;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Fields;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Mesh;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Writers;
 
-namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
+namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
 {
     public static class ThreePhasesBenchmark
     {
@@ -127,9 +127,9 @@ namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Plotting
             var phase2 = new ConvexPhase(2);
 
             // Create boundaries and associate them with their phases
-            var AB = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(A, B), phase0, phase2);
-            var BC = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(B, C), phase0, phase1);
-            var BD = new PhaseBoundary(new XFEM.Multiphase.Geometry.LineSegment2D(B, D), phase1, phase2);
+            var AB = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(A, B), phase0, phase2);
+            var BC = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(B, C), phase0, phase1);
+            var BD = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(B, D), phase1, phase2);
 
             // Initialize model
             var geometricModel = new GeometricModel();

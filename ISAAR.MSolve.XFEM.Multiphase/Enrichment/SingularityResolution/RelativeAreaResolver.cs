@@ -4,11 +4,11 @@ using System.Diagnostics;
 using System.Linq;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Enrichment.SingularityResolution
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment.SingularityResolution
 {
     public class RelativeAreaResolver : ISingularityResolver
     {

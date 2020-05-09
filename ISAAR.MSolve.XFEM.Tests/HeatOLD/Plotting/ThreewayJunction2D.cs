@@ -10,15 +10,15 @@ using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.Materials;
-using ISAAR.MSolve.XFEM.ThermalOLD.Curves.LevelSetMethod;
-using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
-using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
-using ISAAR.MSolve.XFEM.ThermalOLD.Integration;
-using ISAAR.MSolve.XFEM.ThermalOLD.MaterialInterface;
-using ISAAR.MSolve.XFEM.ThermalOLD.Materials;
-using ISAAR.MSolve.XFEM.ThermalOLD.Output.Enrichments;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Curves.LevelSetMethod;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Elements;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Entities;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Integration;
+using ISAAR.MSolve.XFEM_OLD.Thermal.MaterialInterface;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Materials;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Output.Enrichments;
 
-namespace ISAAR.MSolve.XFEM.Tests.HeatOLD.Plotting
+namespace ISAAR.MSolve.XFEM_OLD.Tests.HeatOLD.Plotting
 {
     public static class ThreewayJunction2D
     {

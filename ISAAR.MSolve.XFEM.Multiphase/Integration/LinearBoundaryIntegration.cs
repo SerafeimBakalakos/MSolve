@@ -5,10 +5,10 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
 
-namespace ISAAR.MSolve.XFEM.Multiphase.Integration
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Integration
 {
     /// <summary>
     /// Assumes that finite elements are 1st order (Tri3 or Quad4) and that the boundary segment is linear.

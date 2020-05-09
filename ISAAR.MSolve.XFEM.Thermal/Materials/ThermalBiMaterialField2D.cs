@@ -1,8 +1,8 @@
 ﻿using ISAAR.MSolve.Materials;
-using ISAAR.MSolve.XFEM.ThermalOLD.Elements;
-using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Elements;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Entities;
 
-namespace ISAAR.MSolve.XFEM.ThermalOLD.Materials
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.Materials
 {
     public class ThermalBiMaterialField2D : IThermalMaterialField2D
     {

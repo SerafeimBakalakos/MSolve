@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
 
-namespace ISAAR.MSolve.XFEM.CrackGeometry
+namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry
 {
     interface IInteriorCrack: ISingleCrack
     {

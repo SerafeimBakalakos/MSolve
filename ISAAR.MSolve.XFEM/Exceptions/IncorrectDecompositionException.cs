@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ISAAR.MSolve.XFEM.Exceptions
+namespace ISAAR.MSolve.XFEM_OLD.Exceptions
 {
     class IncorrectDecompositionException: Exception
     {

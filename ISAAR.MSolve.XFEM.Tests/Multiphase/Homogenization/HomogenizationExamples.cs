@@ -14,14 +14,14 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Enrichment;
-using ISAAR.MSolve.XFEM.Multiphase.Enrichment.SingularityResolution;
-using ISAAR.MSolve.XFEM.Multiphase.Entities;
-using ISAAR.MSolve.XFEM.Multiphase.Integration;
-using ISAAR.MSolve.XFEM.Multiphase.Materials;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment.SingularityResolution;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Integration;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Materials;
 
-namespace ISAAR.MSolve.XFEM.Tests.Multiphase.Homogenization
+namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Homogenization
 {
     public static class HomogenizationExamples
     {

@@ -3,9 +3,9 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.ThermalOLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.Thermal.Entities;
 
-namespace ISAAR.MSolve.XFEM.ThermalOLD.Elements
+namespace ISAAR.MSolve.XFEM_OLD.Thermal.Elements
 {
     public interface IXFiniteElement : IElement, IElementType, ICell<XNode>
     {

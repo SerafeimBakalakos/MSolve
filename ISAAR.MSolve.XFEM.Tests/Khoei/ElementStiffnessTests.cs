@@ -6,16 +6,16 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using ISAAR.MSolve.XFEM.CrackGeometry.CrackTip;
-using ISAAR.MSolve.XFEM.CrackGeometry.Explicit;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.Integration;
-using ISAAR.MSolve.XFEM.Materials;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.CrackTip;
+using ISAAR.MSolve.XFEM_OLD.CrackGeometry.Explicit;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.Integration;
+using ISAAR.MSolve.XFEM_OLD.Materials;
 using Xunit;
 
-namespace ISAAR.MSolve.XFEM.Tests.Khoei
+namespace ISAAR.MSolve.XFEM_OLD.Tests.Khoei
 {
     /// <summary>
     /// Tests taken from "Extended Finite Element Method: Theory and Applications, Amir R. Khoei, 2015", sections 2.8.3 & 3.8.4.

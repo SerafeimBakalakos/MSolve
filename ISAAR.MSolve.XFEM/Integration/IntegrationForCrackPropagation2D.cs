@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Integration;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Enrichments.Items;
-using ISAAR.MSolve.XFEM.Entities;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Enrichments.Items;
+using ISAAR.MSolve.XFEM_OLD.Entities;
 
-namespace ISAAR.MSolve.XFEM.Integration
+namespace ISAAR.MSolve.XFEM_OLD.Integration
 {
     public class IntegrationForCrackPropagation2D: IIntegrationStrategy2D<XContinuumElement2D>
     {

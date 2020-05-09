@@ -9,10 +9,10 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
 using ISAAR.MSolve.Materials;
-using ISAAR.MSolve.XFEM.Elements;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.Integration;
-using ISAAR.MSolve.XFEM.Materials;
+using ISAAR.MSolve.XFEM_OLD.Elements;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.Integration;
+using ISAAR.MSolve.XFEM_OLD.Materials;
 
 namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition
 {

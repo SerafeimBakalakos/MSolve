@@ -5,9 +5,9 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.FEM.Interpolation.GaussPointExtrapolation;
 using ISAAR.MSolve.Materials;
-using ISAAR.MSolve.XFEM.Entities;
-using ISAAR.MSolve.XFEM.Integration;
-using ISAAR.MSolve.XFEM.Materials;
+using ISAAR.MSolve.XFEM_OLD.Entities;
+using ISAAR.MSolve.XFEM_OLD.Integration;
+using ISAAR.MSolve.XFEM_OLD.Materials;
 
 //TODO: Materials should be passed in the constructor, not each method
 //TODO: not sure about the quadratures for mass. At least as many Gauss points as there are nodes are necessary 
@@ -17,7 +17,7 @@ using ISAAR.MSolve.XFEM.Materials;
 //      ones, as do the course notes: https://www.colorado.edu/engineering/CAS/courses.d/IFEM.d/IFEM.Ch24.d/IFEM.Ch24.pdf.
 //TODO: XElementFactory and ThermalElementFactory could use the static dictionaries of the regular ContinuumElementFactory,
 //      which should be immutable. On the other hand different pdes need different integration order.
-namespace ISAAR.MSolve.XFEM.Elements
+namespace ISAAR.MSolve.XFEM_OLD.Elements
 {
     /// <summary>
     /// Creates isoparametric continuum elements with uniform thickness. Abstracts the interpolations, integrations,

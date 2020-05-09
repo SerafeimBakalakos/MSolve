@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.XFEM.Multiphase.Elements;
-using ISAAR.MSolve.XFEM.Multiphase.Geometry;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
 
 //TODO: Using a default phase messes up pretty much everything (avoiding it in collections, casts). Its geometry is too 
 //      different to treat it as other phases. It is imply it, than using an explit phase.
-namespace ISAAR.MSolve.XFEM.Multiphase.Entities
+namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
 {
     public class DefaultPhase : IPhase
     {
