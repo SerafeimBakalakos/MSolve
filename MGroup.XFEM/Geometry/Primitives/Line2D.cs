@@ -8,7 +8,11 @@ using ISAAR.MSolve.LinearAlgebra;
 
 namespace MGroup.XFEM.Geometry.Primitives
 {
-    public class DirectedLine2D_Simpler : ILine2D
+    /// <summary>
+    /// The line is directed: it divides the plane into a positive and a negative semiplane
+    /// This implementation projects points onto the line's local (cartesian) coordinate system, to simplify most operations
+    /// </summary>
+    public class Line2D : ICurve2D
     {
         /// <summary>
         /// a is the counter-clockwise angle from the global x axis to the local x axis
@@ -34,7 +38,7 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// <param name="point0"></param>
         /// <param name="point1"></param>
         /// <param name="sys"></param>
-        public DirectedLine2D_Simpler(double[] point0, double[] point1)
+        public Line2D(double[] point0, double[] point1)
         {
             double dx = point1[0] - point0[0];
             double dy = point1[1] - point0[1];
@@ -66,7 +70,7 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// <param name="point1"></param>
         /// <param name="point2"></param>
         /// <returns></returns>
-        public (RelativePositionCurveCurve, double[]) IntersectPolygon(IList<double[]> nodes)
+        public IIntersectionCurve2D IntersectPolygon(IList<double[]> nodes)
         {
             //TODO: Use the results to create a new geometric object that can provide vertices for triangulation, gauss points etc. These can be empty
             //TODO: needs a fast way to eleminate most elements
@@ -75,7 +79,7 @@ namespace MGroup.XFEM.Geometry.Primitives
             var nodesLocal = new double[nodes.Count][];
             for (int i = 0; i < nodes.Count; ++i)
             {
-                nodesLocal[i] = ProjectToLocal(nodes[i]);
+                nodesLocal[i] = ProjectGlobalToLocal(nodes[i]);
             }
 
             // Intersect each segment
@@ -93,16 +97,29 @@ namespace MGroup.XFEM.Geometry.Primitives
             // Investigate the intersection type
             if (intersections.Count == 0)
             {
-                return (RelativePositionCurveCurve.Disjoint, new double[0]);
+                return new NullCurveIntersection2D();
+                //return (RelativePositionCurveDisc.Disjoint, new double[0]);
             }
             else if (intersections.Count == 1)
             {
-                return (RelativePositionCurveCurve.Tangent, new double[] { intersections.First() });
+                return new NullCurveIntersection2D();
+                //return (RelativePositionCurveDisc.Tangent, new double[] { intersections.First() });
             }
             else if (intersections.Count == 2)
             {
-                if (conformingSegment) return (RelativePositionCurveCurve.Conforming, intersections.ToArray());
-                else return (RelativePositionCurveCurve.Intersection, intersections.ToArray());
+                double[] intersectionsLocal = intersections.ToArray();
+                double[] start = ProjectLocalToGlobal(intersectionsLocal[0]);
+                double[] end = ProjectLocalToGlobal(intersectionsLocal[1]);
+                if (conformingSegment)
+                {
+                    return new LineSegmentIntersection2D(start, end, RelativePositionCurveDisc.Conforming);
+                    //return (RelativePositionCurveDisc.Conforming, intersections.ToArray());
+                }
+                else
+                {
+                    return new LineSegmentIntersection2D(start, end, RelativePositionCurveDisc.Intersecting);
+                    //return (RelativePositionCurveDisc.Intersecting, intersections.ToArray());
+                }
             }
             else throw new Exception();
         }
@@ -127,7 +144,7 @@ namespace MGroup.XFEM.Geometry.Primitives
                 // Use linear interpolation
                 double lambda = -point1Local[1] / (point2Local[1] - point1Local[1]);
                 double intersectionLocalX = point1Local[0] + lambda * (point2Local[0] - point1Local[0]);
-                return (RelativePositionCurveCurve.Intersection, new double[] { intersectionLocalX });
+                return (RelativePositionCurveCurve.Intersecting, new double[] { intersectionLocalX });
             }
             else
             {
@@ -137,40 +154,38 @@ namespace MGroup.XFEM.Geometry.Primitives
                 }
                 else if (point1Local[1] == 0 /*&& point2Local[1] != 0*/) // Only P1 lies on the line
                 {
-                    return (RelativePositionCurveCurve.Intersection, new double[] { point1Local[0] });
+                    return (RelativePositionCurveCurve.Intersecting, new double[] { point1Local[0] });
                 }
                 else /*(point1Local[1] != 0 && point2Local[1] == 0)*/ // Only P2 lies on the line
                 {
-                    return (RelativePositionCurveCurve.Intersection, new double[] { point2Local[0] });
+                    return (RelativePositionCurveCurve.Intersecting, new double[] { point2Local[0] });
                 }
             }
         }
-
-
-        public double[] LocalToGlobal(double localX)
-        {
-            // xGlobal = Q^T * (xLocal - originLocal)
-            double dx = localX - originLocal[0];
-            double dy = - originLocal[1];
-            return new double[2]
-            {
-                cosa * dx - sina * dy,
-                sina * dx + cosa * dy
-            };
-        }
-
 
         public double[] NormalVectorThrough(double[] point)
         {
             throw new NotImplementedException();
         }
 
-        private double[] ProjectToLocal(double[] pointGlobal)
+        private double[] ProjectGlobalToLocal(double[] pointGlobal)
         {
             var pointLocal = new double[2];
             pointLocal[0] = cosa * pointGlobal[0] + sina * pointGlobal[1] + originLocal[0];
             pointLocal[1] = -sina * pointGlobal[0] + cosa * pointGlobal[1] + originLocal[1];
             return pointLocal;
+        }
+
+        private double[] ProjectLocalToGlobal(double localX)
+        {
+            // xGlobal = Q^T * (xLocal - originLocal)
+            double dx = localX - originLocal[0];
+            double dy = -originLocal[1];
+            return new double[2]
+            {
+                cosa * dx - sina * dy,
+                sina * dx + cosa * dy
+            };
         }
 
         private double[] Sort(double val1, double val2)

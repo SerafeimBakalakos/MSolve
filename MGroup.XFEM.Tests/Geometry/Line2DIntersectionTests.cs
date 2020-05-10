@@ -35,12 +35,10 @@ namespace MGroup.XFEM.Tests.Geometry
 
 
 
-
-
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public static void TestTriangleDisjoint(bool simple)
+        public static void TestTriangleDisjoint(bool vectorized)
         {
             // 3             |         
             //       /\      |
@@ -54,19 +52,19 @@ namespace MGroup.XFEM.Tests.Geometry
             double[][] triangle = CreateTriangle();
             double[] p1 = new double[] { 4, 0 };
             double[] p2 = new double[] { 4, 1 };
-            ILine2D line;
-            if (simple) line = new DirectedLine2D_Simpler(p1, p2);
-            else line = new DirectedLine2D(p1, p2);
-            (RelativePositionCurveCurve pos, double[] intersections) = line.IntersectPolygon(triangle);
+            ICurve2D line;
+            if (vectorized) line = new Line2DVectorized(p1, p2);
+            else line = new Line2D(p1, p2);
+            IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
 
-            Assert.True(pos == RelativePositionCurveCurve.Disjoint);
-            Assert.Equal(0, intersections.Length);
+            Assert.True(intersection.RelativePosition == RelativePositionCurveDisc.Disjoint);
+            Assert.True(intersection is NullCurveIntersection2D);
         }
 
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public static void TestTriangleTangent(bool simple)
+        public static void TestTriangleTangent(bool vectorized)
         {
             // 3  ___________          
             //       /\     
@@ -80,24 +78,27 @@ namespace MGroup.XFEM.Tests.Geometry
             double[][] triangle = CreateTriangle();
             double[] p1 = new double[] { 0, 3 };
             double[] p2 = new double[] { 4, 3 };
-            ILine2D line;
-            if (simple) line = new DirectedLine2D_Simpler(p1, p2);
-            else line = new DirectedLine2D(p1, p2);
-            (RelativePositionCurveCurve pos, double[] intersectionsLocal) = line.IntersectPolygon(triangle);
+            ICurve2D line;
+            if (vectorized) line = new Line2DVectorized(p1, p2);
+            else line = new Line2D(p1, p2);
+            IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
 
-            Assert.True(pos == RelativePositionCurveCurve.Tangent);
-            Assert.Equal(1, intersectionsLocal.Length);
+            Assert.True(intersection.RelativePosition == RelativePositionCurveDisc.Disjoint);
+            Assert.True(intersection is NullCurveIntersection2D);
 
-            double[] intersection = line.LocalToGlobal(intersectionsLocal[0]);
-            Assert.Equal(2, intersection[0], 5);
-            Assert.Equal(3, intersection[1], 5);
+            //Assert.True(pos == RelativePositionCurveDisc.Tangent);
+            //Assert.Equal(1, intersection.Length);
+
+            //double[] intersection = line.LocalToGlobal(intersection[0]);
+            //Assert.Equal(2, intersection[0], 5);
+            //Assert.Equal(3, intersection[1], 5);
 
         }
 
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public static void TestTriangleIntersecting0Nodes(bool simple)
+        public static void TestTriangleIntersecting0Nodes(bool vectorized)
         {
             // 3          
             //       /\     
@@ -110,27 +111,25 @@ namespace MGroup.XFEM.Tests.Geometry
             double[][] triangle = CreateTriangle();
             double[] p1 = new double[] { 0, 2 };
             double[] p2 = new double[] { 4, 2 };
-            ILine2D line;
-            if (simple) line = new DirectedLine2D_Simpler(p1, p2);
-            else line = new DirectedLine2D(p1, p2);
-            (RelativePositionCurveCurve pos, double[] intersectionsLocal) = line.IntersectPolygon(triangle);
+            ICurve2D line;
+            if (vectorized) line = new Line2DVectorized(p1, p2);
+            else line = new Line2D(p1, p2);
+            IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
 
-            Assert.True(pos == RelativePositionCurveCurve.Intersection);
-            Assert.Equal(2, intersectionsLocal.Length);
+            Assert.True(intersection.RelativePosition == RelativePositionCurveDisc.Intersecting);
+            Assert.True(intersection is LineSegmentIntersection2D);
 
-            double[] intersection1 = line.LocalToGlobal(intersectionsLocal[0]);
-            Assert.Equal(1.5, intersection1[0], 5);
-            Assert.Equal(2, intersection1[1], 5);
+            Assert.Equal(1.5, intersection.Start[0], 5);
+            Assert.Equal(2, intersection.Start[1], 5);
 
-            double[] intersection2 = line.LocalToGlobal(intersectionsLocal[1]);
-            Assert.Equal(2.5, intersection2[0], 5);
-            Assert.Equal(2, intersection2[1], 5);
+            Assert.Equal(2.5, intersection.End[0], 5);
+            Assert.Equal(2, intersection.End[1], 5);
         }
 
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public static void TestTriangleIntersecting1Node(bool simple)
+        public static void TestTriangleIntersecting1Node(bool vectorized)
         {
             // 3      |     
             //       /|\     
@@ -144,27 +143,25 @@ namespace MGroup.XFEM.Tests.Geometry
             double[][] triangle = CreateTriangle();
             double[] p1 = new double[] { 2, 0 };
             double[] p2 = new double[] { 2, 4 };
-            ILine2D line;
-            if (simple) line = new DirectedLine2D_Simpler(p1, p2);
-            else line = new DirectedLine2D(p1, p2);
-            (RelativePositionCurveCurve pos, double[] intersectionsLocal) = line.IntersectPolygon(triangle);
+            ICurve2D line;
+            if (vectorized) line = new Line2DVectorized(p1, p2);
+            else line = new Line2D(p1, p2);
+            IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
 
-            Assert.True(pos == RelativePositionCurveCurve.Intersection);
-            Assert.Equal(2, intersectionsLocal.Length);
+            Assert.True(intersection.RelativePosition == RelativePositionCurveDisc.Intersecting);
+            Assert.True(intersection is LineSegmentIntersection2D);
 
-            double[] intersection1 = line.LocalToGlobal(intersectionsLocal[0]);
-            Assert.Equal(2, intersection1[0], 5);
-            Assert.Equal(1, intersection1[1], 5);
+            Assert.Equal(2, intersection.Start[0], 5);
+            Assert.Equal(1, intersection.Start[1], 5);
 
-            double[] intersection2 = line.LocalToGlobal(intersectionsLocal[1]);
-            Assert.Equal(2, intersection2[0], 5);
-            Assert.Equal(3, intersection2[1], 5);
+            Assert.Equal(2, intersection.End[0], 5);
+            Assert.Equal(3, intersection.End[1], 5);
         }
 
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public static void TestTriangleConforming(bool simple)
+        public static void TestTriangleConforming(bool vectorized)
         {
             //      \
             // 3     \         
@@ -182,21 +179,19 @@ namespace MGroup.XFEM.Tests.Geometry
             //double[] p2 = new double[] { 3, 1 };
             double[] p1 = new double[] { 0, 7 };
             double[] p2 = new double[] { 3.5, 0 };
-            ILine2D line;
-            if (simple) line = new DirectedLine2D_Simpler(p1, p2);
-            else line = new DirectedLine2D(p1, p2);
-            (RelativePositionCurveCurve pos, double[] intersectionsLocal) = line.IntersectPolygon(triangle);
+            ICurve2D line;
+            if (vectorized) line = new Line2DVectorized(p1, p2);
+            else line = new Line2D(p1, p2);
+            IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
 
-            Assert.True(pos == RelativePositionCurveCurve.Conforming);
-            Assert.Equal(2, intersectionsLocal.Length);
+            Assert.True(intersection.RelativePosition == RelativePositionCurveDisc.Conforming);
+            Assert.True(intersection is LineSegmentIntersection2D);
 
-            double[] intersection1 = line.LocalToGlobal(intersectionsLocal[0]);
-            Assert.Equal(2, intersection1[0], 5);
-            Assert.Equal(3, intersection1[1], 5);
+            Assert.Equal(2, intersection.Start[0], 5);
+            Assert.Equal(3, intersection.Start[1], 5);
 
-            double[] intersection2 = line.LocalToGlobal(intersectionsLocal[1]);
-            Assert.Equal(3, intersection2[0], 5);
-            Assert.Equal(1, intersection2[1], 5);
+            Assert.Equal(3, intersection.End[0], 5);
+            Assert.Equal(1, intersection.End[1], 5);
         }
 
         private static double[][] CreateQuad()

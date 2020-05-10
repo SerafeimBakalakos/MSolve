@@ -7,9 +7,10 @@ using ISAAR.MSolve.LinearAlgebra;
 namespace MGroup.XFEM.Geometry.Primitives
 {
     /// <summary>
-    /// Parametric line in 2D: R(t) = <see cref="A"/> + <see cref="s"/> * t 
+    /// Parametric line in 2D: R(t) = <see cref="A"/> + <see cref="s"/> * t.
+    /// The line is directed: it divides the plane into a positive and a negative semiplane
     /// </summary>
-    public class DirectedLine2D : ILine2D
+    public class Line2DVectorized : ICurve2D
     {
         /// <summary>
         /// Point on the line
@@ -33,7 +34,7 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// <param name="point0"></param>
         /// <param name="point1"></param>
         /// <param name="sys"></param>
-        public DirectedLine2D(double[] point0, double[] point1)
+        public Line2DVectorized(double[] point0, double[] point1)
         {
             this.A = point0;
 
@@ -65,7 +66,7 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// <param name="point1"></param>
         /// <param name="point2"></param>
         /// <returns></returns>
-        public (RelativePositionCurveCurve, double[]) IntersectPolygon(IList<double[]> nodes)
+        public IIntersectionCurve2D IntersectPolygon(IList<double[]> nodes)
         {
             //TODO: Use the results to create a new geometric object that can provide vertices for triangulation, gauss points etc. These can be empty
             //TODO: needs a fast way to eleminate most elements
@@ -92,25 +93,32 @@ namespace MGroup.XFEM.Geometry.Primitives
             // Investigate the intersection type
             if (intersections.Count == 0)
             {
-                return (RelativePositionCurveCurve.Disjoint, new double[0]);
+                return new NullCurveIntersection2D();
+                //return (RelativePositionCurveDisc.Disjoint, new double[0]);
             }
             else if (intersections.Count == 1)
             {
-                return (RelativePositionCurveCurve.Tangent, new double[] { intersections.First() });
+                return new NullCurveIntersection2D();
+                //return (RelativePositionCurveDisc.Tangent, new double[] { intersections.First() });
             }
             else if (intersections.Count == 2)
             {
-                if (conformingSegment) return (RelativePositionCurveCurve.Conforming, intersections.ToArray());
-                else return (RelativePositionCurveCurve.Intersection, intersections.ToArray());
+                double[] intersectionsLocal = intersections.ToArray();
+                double[] start = ProjectLocalToGlobal(intersectionsLocal[0]);
+                double[] end = ProjectLocalToGlobal(intersectionsLocal[1]);
+                if (conformingSegment)
+                {
+                    return new LineSegmentIntersection2D(start, end, RelativePositionCurveDisc.Conforming);
+                    //return (RelativePositionCurveDisc.Conforming, intersections.ToArray());
+                }
+                else
+                {
+                    return new LineSegmentIntersection2D(start, end, RelativePositionCurveDisc.Intersecting);
+                    //return (RelativePositionCurveDisc.Intersecting, intersections.ToArray());
+                }
             }
             else throw new Exception();
         }
-
-        public double[] LocalToGlobal(double localX)
-        {
-            return A.Add(s.Scale(localX));
-        }
-
 
         public double[] NormalVectorThrough(double[] point)
         {
@@ -141,7 +149,7 @@ namespace MGroup.XFEM.Geometry.Primitives
                 double[] P1oP2o = P2o.Subtract(P1o);
                 double[] P1oK = P1o.Add(P1oP2o.Scale(lambda));
                 double tk = P1oK.DotProduct2D(s);
-                return (RelativePositionCurveCurve.Intersection, new double[] { tk });
+                return (RelativePositionCurveCurve.Intersecting, new double[] { tk });
             }
             else
             {
@@ -154,13 +162,18 @@ namespace MGroup.XFEM.Geometry.Primitives
                 }
                 else if (proj1.Distance == 0 /*&& proj2.Distance != 0*/) // Only P1 lies on the line
                 {
-                    return (RelativePositionCurveCurve.Intersection, new double[] { t1 });
+                    return (RelativePositionCurveCurve.Intersecting, new double[] { t1 });
                 }
                 else /*(proj1.Distance != 0 && proj2.Distance == 0)*/ // Only P2 lies on the line
                 {
-                    return (RelativePositionCurveCurve.Intersection, new double[] { t2 });
+                    return (RelativePositionCurveCurve.Intersecting, new double[] { t2 });
                 }
             }
+        }
+
+        private double[] ProjectLocalToGlobal(double t)
+        {
+            return A.Add(s.Scale(t));
         }
 
         private double[] Sort(double val1, double val2)
