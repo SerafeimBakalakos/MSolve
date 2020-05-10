@@ -43,7 +43,8 @@ namespace ISAAR.MSolve.SamplesConsole
             System.Threading.Thread.Sleep(/*(procs.OwnRank+1)**/20000);
 
             #region rve material choice and manager creation and if the micro model will be solved serially or feti
-            CnstValues.exampleNo = 28;
+            //CnstValues.exampleNo = 28;
+            CnstValues.exampleNo = 46; CnstValues.parameterSet = ParameterSet.stiffLargerRve;
             CnstValues.runOnlyHexaModel = false;
             CnstValues.isInputInCode_forRVE = true;
             CnstValues.useInput_forRVE = true;
@@ -65,17 +66,17 @@ namespace ISAAR.MSolve.SamplesConsole
             mpgp.Item1.L01 = scale_factor * mpgp.Item1.L01; mpgp.Item1.L02 = scale_factor * mpgp.Item1.L02; mpgp.Item1.L03 = scale_factor * mpgp.Item1.L03;
             #endregion
 
-            //var rveBuilderSuitesparse = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
-            //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-            //var material1 = new MicrostructureDefGrad3D(rveBuilderSuitesparse,
-            //    skylinemodel => (new SuiteSparseSolver.Builder()).BuildSolver(skylinemodel), false, 1);
-            //IMaterialManager materialManager = new MaterialManagerMpi2(material1, procs);
-
-            var rveBuilderFeti = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
+            var rveBuilderSuitesparse = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-            var material1 = new MicrostructureDefGrad3DSerial(rveBuilderFeti,
-                rveBuilderFeti.GetAppropriateSolverMpi, false, 1, true, true);
+            var material1 = new MicrostructureDefGrad3D(rveBuilderSuitesparse,
+                skylinemodel => (new SuiteSparseSolver.Builder()).BuildSolver(skylinemodel), false, 1);
             IMaterialManager materialManager = new MaterialManagerMpi2(material1, procs);
+
+            //var rveBuilderFeti = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
+            //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            //var material1 = new MicrostructureDefGrad3DSerial(rveBuilderFeti,
+            //    rveBuilderFeti.GetAppropriateSolverMpi, false, 1, false, false);
+            //IMaterialManager materialManager = new MaterialManagerMpi2(material1, procs);
 
             #endregion
 
