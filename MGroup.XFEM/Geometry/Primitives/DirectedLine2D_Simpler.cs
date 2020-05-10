@@ -3,20 +3,23 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using DotNumerics.Optimization.TN;
 using ISAAR.MSolve.LinearAlgebra;
 
 namespace MGroup.XFEM.Geometry.Primitives
 {
-    public class DirectedLine2D_Simpler
+    public class DirectedLine2D_Simpler : ILine2D
     {
         /// <summary>
         /// a is the counter-clockwise angle from the global x axis to the local x axis
+        /// Transformation matrix from global to local system: Q = [cosa sina; -sina cosa ]
+        /// Transformation matrix from local to global system: Q^T = [cosa -sina; sina cosa ]
         /// </summary>
         private readonly double cosa, sina;
 
-        /// <summary>
-        /// The coordinates of the global system's origin in the local system
-        /// </summary>
+        ///// <summary>
+        ///// The coordinates of the global system's origin in the local system
+        ///// </summary>
         private readonly double[] originLocal;
 
         /// <summary>
@@ -31,7 +34,7 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// <param name="point0"></param>
         /// <param name="point1"></param>
         /// <param name="sys"></param>
-        public DirectedLine2D_Simpler(double[] point0, double[] point1, CoordinateSystem sys)
+        public DirectedLine2D_Simpler(double[] point0, double[] point1)
         {
             double dx = point1[0] - point0[0];
             double dy = point1[1] - point0[1];
@@ -39,7 +42,7 @@ namespace MGroup.XFEM.Geometry.Primitives
             cosa = dx / length;
             sina = dy / length;
 
-            var originLocal = new double[2];
+            originLocal = new double[2];
             originLocal[0] = -cosa * point0[0] - sina * point0[1];
             originLocal[1] = sina * point0[0] - cosa * point0[1];
 
@@ -54,11 +57,6 @@ namespace MGroup.XFEM.Geometry.Primitives
         public double SignedDistanceOf(double[] point)
         {
             return -sina * point[0] + cosa * point[1] + originLocal[1];
-        }
-
-        public double[] NormalVectorThrough(double[] point)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -79,7 +77,6 @@ namespace MGroup.XFEM.Geometry.Primitives
             {
                 nodesLocal[i] = ProjectToLocal(nodes[i]);
             }
-
 
             // Intersect each segment
             var intersections = new SortedSet<double>();
@@ -147,6 +144,25 @@ namespace MGroup.XFEM.Geometry.Primitives
                     return (RelativePositionCurveCurve.Intersection, new double[] { point2Local[0] });
                 }
             }
+        }
+
+
+        public double[] LocalToGlobal(double localX)
+        {
+            // xGlobal = Q^T * (xLocal - originLocal)
+            double dx = localX - originLocal[0];
+            double dy = - originLocal[1];
+            return new double[2]
+            {
+                cosa * dx - sina * dy,
+                sina * dx + cosa * dy
+            };
+        }
+
+
+        public double[] NormalVectorThrough(double[] point)
+        {
+            throw new NotImplementedException();
         }
 
         private double[] ProjectToLocal(double[] pointGlobal)

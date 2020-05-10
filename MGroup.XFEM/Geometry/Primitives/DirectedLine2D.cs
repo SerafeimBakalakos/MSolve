@@ -9,7 +9,7 @@ namespace MGroup.XFEM.Geometry.Primitives
     /// <summary>
     /// Parametric line in 2D: R(t) = <see cref="A"/> + <see cref="s"/> * t 
     /// </summary>
-    public class DirectedLine2D
+    public class DirectedLine2D : ILine2D
     {
         /// <summary>
         /// Point on the line
@@ -47,11 +47,7 @@ namespace MGroup.XFEM.Geometry.Primitives
             this.n = new double[] { -s[1], s[0] };
         }
 
-        /// <summary>
-        /// See https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Vector_formulation
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
+        
         public double SignedDistanceOf(double[] point)
         {
             PointProjection projection = new PointProjection(A, s, point);
@@ -61,12 +57,6 @@ namespace MGroup.XFEM.Geometry.Primitives
             if (PPo_n <= 0) return projection.Distance; // PPo, n have the same direction
             else return -projection.Distance; // PPo, n have opposite directions
         }
-
-        public double[] NormalVectorThrough(double[] point)
-        {
-            throw new NotImplementedException();
-        }
-
 
         /// <summary>
         /// Returns a characterization of the relative position and a list of values for the parameter t. Each value corresponds
@@ -86,7 +76,6 @@ namespace MGroup.XFEM.Geometry.Primitives
             {
                 projections[i] = new PointProjection(A, s, nodes[i]);
             }
-
 
             // Intersect each segment
             var intersections = new SortedSet<double>();
@@ -117,6 +106,17 @@ namespace MGroup.XFEM.Geometry.Primitives
             else throw new Exception();
         }
 
+        public double[] LocalToGlobal(double localX)
+        {
+            return A.Add(s.Scale(localX));
+        }
+
+
+        public double[] NormalVectorThrough(double[] point)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Returns a characterization of the relative position and a list of values for the parameter t. Each value corresponds
         /// to an intersection point: r(t) = A + t * s
@@ -136,8 +136,10 @@ namespace MGroup.XFEM.Geometry.Primitives
             {
                 // Use linear interpolation
                 double lambda = proj1.Distance / (proj1.Distance + proj2.Distance);
-                double[] P2oP1o = proj1.PoA.Subtract(proj2.PoA);
-                double[] P1oK = proj1.PoA.Add(P2oP1o.Scale(lambda));
+                double[] P1o = A.Subtract(proj1.PoA);
+                double[] P2o = A.Subtract(proj2.PoA);
+                double[] P1oP2o = P2o.Subtract(P1o);
+                double[] P1oK = P1o.Add(P1oP2o.Scale(lambda));
                 double tk = P1oK.DotProduct2D(s);
                 return (RelativePositionCurveCurve.Intersection, new double[] { tk });
             }
@@ -168,6 +170,9 @@ namespace MGroup.XFEM.Geometry.Primitives
             else throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// See https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Vector_formulation
+        /// </summary>
         private class PointProjection
         {
             /// <summary>
@@ -198,7 +203,7 @@ namespace MGroup.XFEM.Geometry.Primitives
             public PointProjection(double[] A, double[] s, double[] P)
             {
                 // Po is the closest point of the line to p
-                PA = P.Subtract2D(A);
+                PA = A.Subtract2D(P);
                 PA_s = PA.DotProduct2D(s);
                 PoA = s.Scale2D(PA_s);
                 PPo = PA.Subtract2D(PoA);
