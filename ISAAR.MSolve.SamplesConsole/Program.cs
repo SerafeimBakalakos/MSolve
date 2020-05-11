@@ -51,7 +51,7 @@ namespace ISAAR.MSolve.SamplesConsole
 
         //}
 
-        public static void Main/*MPI*/(string[] args)
+        public static void MainMPI(string[] args)
         {
             //ProfileFetiDPCantileverBeam2D.Run();
 
@@ -64,6 +64,10 @@ namespace ISAAR.MSolve.SamplesConsole
             suite.RunTests(args);
         }
 
+        public static void Main(string[] args)
+        {
+            MemoryProfilerRveExample.CheckExample46InputInCodeRAMconsumption();
+        }
         
 
         private static void printGlobalSolutionStats(double check, bool IsFetiDpSolver3d)
