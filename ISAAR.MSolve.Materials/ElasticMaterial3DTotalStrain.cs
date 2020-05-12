@@ -13,17 +13,17 @@ namespace ISAAR.MSolve.Materials
         public double[] Coordinates { get; set; }
         private double[] stressesNew = new double[6];
 
-        ElasticMaterial3DTotalStrain(double youngsModoulus, double  poissonsRation)
+        public ElasticMaterial3DTotalStrain( double  poissonsRation, double youngsModoulus)
         {
             constitutiveMatrix = GetConstitutiveMatrix(youngsModoulus, poissonsRation);
         }
 
-        ElasticMaterial3DTotalStrain(Matrix constitutiveMatrix)
+        public ElasticMaterial3DTotalStrain(Matrix constitutiveMatrix)
         {
             this.constitutiveMatrix = constitutiveMatrix;
         }
 
-        private Matrix GetConstitutiveMatrix(double youngsModoulus, double poissonsRation)
+        private Matrix GetConstitutiveMatrix( double youngsModoulus, double poissonsRation)
         {
             double fE1 = youngsModoulus / (double)(1 + poissonsRation);
             double fE2 = fE1 * poissonsRation / (double)(1 - 2 * poissonsRation);
