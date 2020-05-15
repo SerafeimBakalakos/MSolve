@@ -235,6 +235,190 @@ namespace ISAAR.MSolve.FEM.Entities
             return forces;
         }
 
+        public IVector GetRHSFromSolutionWithInitialDisplacemntsEffect(IVectorView solution, IVectorView dSolution, Dictionary<int, Node> boundaryNodes,
+            Dictionary<int, Dictionary<IDofType, double>> initialConvergedBoundaryDisplacements, Dictionary<int, Dictionary<IDofType, double>> totalBoundaryDisplacements,
+            int nIncrement, int totalIncrements, bool[] isNodeUpdated, IVectorView subdomainLinearSystemSolution, bool[] areBoundaryNodesUpdated )
+        {
+            //update part free dofs
+            foreach (var node in FreeDofOrdering.FreeDofs.GetRows())
+            {
+                if (!isNodeUpdated[node.ID])
+                {
+                    foreach(IDofType doftype in FreeDofOrdering.FreeDofs.GetColumnsOfRow(node))
+                    if (doftype == StructuralDof.TranslationX)
+                    {
+                        node.tU[0] = solution[FreeDofOrdering.FreeDofs[node,doftype]];
+                        node.tX[0] = node.oX[0] + node.tU[0];
+                    }
+                    else if (doftype == StructuralDof.TranslationY)
+                    {
+                        node.tU[1] = solution[FreeDofOrdering.FreeDofs[node, doftype]];
+                        node.tX[1] = node.oX[1] + node.tU[1];
+                    }
+                    else if (doftype == StructuralDof.TranslationZ)
+                    {
+                        node.tU[2] = solution[FreeDofOrdering.FreeDofs[node, doftype]];
+                        node.tX[2] = node.oX[2] + node.tU[2];
+                    }
+                    else if (doftype == StructuralDof.RotationX)
+                    {
+                        double ak = subdomainLinearSystemSolution[FreeDofOrdering.FreeDofs[node, doftype]];
+                        double bk = subdomainLinearSystemSolution[FreeDofOrdering.FreeDofs[node, StructuralDof.RotationY]];
+                        // add here rotation of direction vectors.
+                        RotateNodalDirectionVectors(ak, bk, node.tVn, node.tV1, node.tV2);
+                    }
+                    isNodeUpdated[node.ID] = true;
+                }
+
+            }
+
+            // update prescribed free dofs
+            if (!areBoundaryNodesUpdated[0])
+            {
+                foreach (var boundaryNode in boundaryNodes.Values)
+                {
+                    Dictionary<IDofType, double> nodalConvergedDisplacements = initialConvergedBoundaryDisplacements[boundaryNode.ID];
+                    Dictionary<IDofType, double> nodalTotalDisplacements = totalBoundaryDisplacements[boundaryNode.ID];
+
+                    foreach (IDofType doftype in nodalConvergedDisplacements.Keys)
+                    {
+                        double localsolution = nodalConvergedDisplacements[doftype] + (nodalTotalDisplacements[doftype] - nodalConvergedDisplacements[doftype]) * ((double)nIncrement / (double)totalIncrements);
+                        if (doftype == StructuralDof.TranslationX)
+                        {
+                            boundaryNode.tU[0] = localsolution;
+                            boundaryNode.tX[0] = boundaryNode.oX[0] + boundaryNode.tU[0];
+                        }
+                        else if (doftype == StructuralDof.TranslationY)
+                        {
+                            boundaryNode.tU[1] = localsolution;
+                            boundaryNode.tX[1] = boundaryNode.oX[1] + boundaryNode.tU[1];
+                        }
+                        else if (doftype == StructuralDof.TranslationZ)
+                        {
+                            boundaryNode.tU[2] = localsolution;
+                            boundaryNode.tX[2] = boundaryNode.oX[2] + boundaryNode.tU[2];
+                        }
+                    }
+
+                }
+                areBoundaryNodesUpdated[0] = true;
+            }
+
+
+            var forces = Vector.CreateZero(FreeDofOrdering.NumFreeDofs); //TODO: use Vector
+            foreach (Element element in Elements.Values)
+            {
+                var localSolution = GetLocalVectorFromGlobalWithoutPrescribedDisplacements(element, solution);
+                ImposePrescribedDisplacementsWithInitialConditionSEffect(element, localSolution, boundaryNodes, initialConvergedBoundaryDisplacements, totalBoundaryDisplacements, nIncrement, totalIncrements);
+                var localdSolution = GetLocalVectorFromGlobalWithoutPrescribedDisplacements(element, dSolution);
+                ImposePrescribed_d_DisplacementsWithInitialConditionSEffect(element, localdSolution, boundaryNodes, initialConvergedBoundaryDisplacements, totalBoundaryDisplacements, nIncrement, totalIncrements);
+                element.ElementType.CalculateStresses(element, localSolution, localdSolution);
+                if (element.ElementType.MaterialModified)
+                    element.Subdomain.StiffnessModified = true;
+                var f = element.ElementType.CalculateForces(element, localSolution, localdSolution);
+                FreeDofOrdering.AddVectorElementToSubdomain(element, f, forces);
+            }
+            return forces;
+        }
+
+        public static void RotateNodalDirectionVectors(double ak, double bk, double[] tVn, double[] tV1, double[] tV2)
+        {
+            double[,] Q = new double[3, 3];
+            double[,] Q2 = new double[3, 3];
+
+            double[] tdtVn = new double[3];
+            double[] tdtV1 = new double[3];
+            double[] tdtV2 = new double[3];
+            double[] theta_vec = new double[3];
+            double[,] s_k = new double[3, 3];
+
+            for (int j = 0; j < 3; j++)
+            {
+                theta_vec[j] = ak * tV1[j] + bk * tV2[j];
+            }
+            double theta = Math.Sqrt((theta_vec[0] * theta_vec[0]) + (theta_vec[1] * theta_vec[1]) + (theta_vec[2] * theta_vec[2]));
+            if (theta > 0)
+            {
+                s_k[0, 1] = -theta_vec[2];
+                s_k[0, 2] = theta_vec[1];
+                s_k[1, 0] = theta_vec[2];
+                s_k[1, 2] = -theta_vec[0];
+                s_k[2, 0] = -theta_vec[1];
+                s_k[2, 1] = theta_vec[0];
+
+                for (int j = 0; j < 3; j++)
+                {
+                    for (int m = 0; m < 3; m++)
+                    {
+                        Q[j, m] = (Math.Sin(theta) / theta) * s_k[j, m];
+                    }
+                }
+
+                for (int m = 0; m < 3; m++)
+                {
+                    Q[m, m] += 1;
+                }
+                double gk1 = 0.5 * ((Math.Sin(0.5 * theta) / (0.5 * theta)) * (Math.Sin(0.5 * theta) / (0.5 * theta)));
+                for (int j = 0; j < 3; j++)
+                {
+                    for (int m = 0; m < 3; m++)
+                    {
+                        for (int n = 0; n < 3; n++)
+                        { Q2[j, m] += gk1 * s_k[j, n] * s_k[n, m]; }
+                    }
+                }
+                for (int j = 0; j < 3; j++)
+                {
+                    for (int m = 0; m < 3; m++)
+                    {
+                        Q[j, m] += Q2[j, m];
+                    }
+                }
+                //
+                for (int j = 0; j < 3; j++)
+                {
+                    tdtVn[j] = 0;
+                    for (int m = 0; m < 3; m++)
+                    {
+                        tdtVn[j] += Q[j, m] * tVn[3 + m];
+                    }
+                }
+
+                for (int j = 0; j < 3; j++)
+                {
+                    tV2[j] = tdtVn[j];
+                }
+                //
+                for (int j = 0; j < 3; j++)
+                {
+                    tdtV1[j] = 0;
+                    for (int m = 0; m < 3; m++)
+                    {
+                        tdtV1[j] += Q[j, m] * tV1[m];
+                    }
+                }
+
+                for (int j = 0; j < 3; j++)
+                {
+                    tV1[j] = tdtV1[j];
+                }
+                //
+                for (int j = 0; j < 3; j++)
+                {
+                    tdtV2[j] = 0;
+                    for (int m = 0; m < 3; m++)
+                    {
+                        tdtV2[j] += Q[j, m] * tV2[m];
+                    }
+                }
+
+                for (int j = 0; j < 3; j++)
+                {
+                    tV2[j] = tdtV2[j];
+                }
+            }
+        }
+
         public double[] GetLocalVectorFromGlobalWithoutPrescribedDisplacements(Element element, IVectorView globalDisplacementVector)
         {
             double[] elementNodalDisplacements = FreeDofOrdering.ExtractVectorElementFromSubdomain(element, globalDisplacementVector);

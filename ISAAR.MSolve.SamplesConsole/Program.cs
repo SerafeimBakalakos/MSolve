@@ -66,7 +66,8 @@ namespace ISAAR.MSolve.SamplesConsole
 
         public static void Main(string[] args)
         {
-            MemoryProfilerRveExample.CheckExample46InputInCodeRAMconsumption();
+            //MemoryProfilerRveExample.CheckExample46InputInCodeRAMconsumption();
+            MemoryProfilerRveExample.CheckExample46InputInCodeRAMconsumptionV2();
         }
         
 

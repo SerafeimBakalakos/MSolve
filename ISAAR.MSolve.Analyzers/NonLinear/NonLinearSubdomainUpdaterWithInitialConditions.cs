@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ISAAR.MSolve.Analyzers.Interfaces;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.FEM.Entities;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 namespace ISAAR.MSolve.Analyzers.NonLinear
@@ -22,12 +23,23 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
 
 		public IVector GetRHSFromSolutionWithInitialDisplacemntsEffect(IVectorView solution, IVectorView dSolution, Dictionary<int, Node> boundaryNodes,
 			Dictionary<int, Dictionary<IDofType, double>> initialConvergedBoundaryDisplacements, Dictionary<int, Dictionary<IDofType, double>> totalBoundaryDisplacements,
-			int nIncrement, int totalIncrements) //TODO leave 
+			int nIncrement, int totalIncrements, bool[] isNodeUpdated, IVectorView subdomainLinearSystemSolution, bool[] areBoundaryNodesUpdated) //TODO leave 
 		{
-			return this.subdomain.GetRHSFromSolutionWithInitialDisplacemntsEffect(solution, dSolution, boundaryNodes,
-			 initialConvergedBoundaryDisplacements, totalBoundaryDisplacements,
-			 nIncrement, totalIncrements);
+			if (!CnstValues.useV2FiniteElements)
+			{
+				return this.subdomain.GetRHSFromSolutionWithInitialDisplacemntsEffect(solution, dSolution, boundaryNodes,
+				 initialConvergedBoundaryDisplacements, totalBoundaryDisplacements,
+				 nIncrement, totalIncrements);
+			}
+			else
+			{
+				return this.subdomain.GetRHSFromSolutionWithInitialDisplacemntsEffect(solution, dSolution, boundaryNodes,
+				 initialConvergedBoundaryDisplacements, totalBoundaryDisplacements,
+				 nIncrement, totalIncrements, isNodeUpdated, subdomainLinearSystemSolution, areBoundaryNodesUpdated);
+			}
 		}
+
+
 
 		public void ResetState()
 		{
