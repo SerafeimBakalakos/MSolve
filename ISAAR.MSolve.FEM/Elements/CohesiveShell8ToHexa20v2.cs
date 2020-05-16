@@ -138,7 +138,7 @@ namespace ISAAR.MSolve.FEM.Elements
             else
             {
                 for (int j = 0; j < 8; j++)
-                { ox_i[j] = element.Nodes[j].oX; }
+                { ox_i[j] = element.Nodes[j+8].oX; }
             }
 
             for (int j = 0; j < 16; j++)

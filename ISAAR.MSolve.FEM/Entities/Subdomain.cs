@@ -380,13 +380,13 @@ namespace ISAAR.MSolve.FEM.Entities
                     tdtVn[j] = 0;
                     for (int m = 0; m < 3; m++)
                     {
-                        tdtVn[j] += Q[j, m] * tVn[3 + m];
+                        tdtVn[j] += Q[j, m] * tVn[m];
                     }
                 }
 
                 for (int j = 0; j < 3; j++)
                 {
-                    tV2[j] = tdtVn[j];
+                    tVn[j] = tdtVn[j];
                 }
                 //
                 for (int j = 0; j < 3; j++)

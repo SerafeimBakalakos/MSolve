@@ -517,11 +517,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
             int elementCounter = 0;
             int subdomainID = 1;
 
-            ElasticMaterial3D material1 = new ElasticMaterial3D()
-            {
-                YoungModulus = E_disp,
-                PoissonRatio = ni_disp,
-            };
+            ElasticMaterial3DTotalStrain material1 = new ElasticMaterial3DTotalStrain(ni_disp, E_disp);
             Element e1;
             int ElementID;
             int[] globalNodeIDforlocalNode_i = new int[8];
@@ -1302,7 +1298,13 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
                 nodeCoordY = o_xsunol[6 * nNode + 1] - 0.5 * tk * o_xsunol[6 * nNode + 4];
                 nodeCoordZ = o_xsunol[6 * nNode + 2] - 0.5 * tk * o_xsunol[6 * nNode + 5];
 
-                model.NodesDictionary.Add(NodeID, new Node(id: NodeID, x: nodeCoordX, y: nodeCoordY, z: nodeCoordZ));
+                var newNode = new Node(id: NodeID, x: nodeCoordX, y: nodeCoordY, z: nodeCoordZ)
+                {
+                    oX = new double[] { nodeCoordX, nodeCoordY, nodeCoordZ },
+                    tX = new double[] { nodeCoordX, nodeCoordY, nodeCoordZ },
+                    tU = new double[3]
+                };
+                model.NodesDictionary.Add(NodeID, newNode);
                 eswterikosNodeCounter++;
             }
             //
@@ -1364,7 +1366,13 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
                 nodeCoordY = o_xsunol[6 * nNode + 1] + 0.5 * tk * o_xsunol[6 * nNode + 4];
                 nodeCoordZ = o_xsunol[6 * nNode + 2] + 0.5 * tk * o_xsunol[6 * nNode + 5];
 
-                model.NodesDictionary.Add(NodeID, new Node(id: NodeID, x: nodeCoordX, y: nodeCoordY, z: nodeCoordZ));
+                var newNode = new Node(id: NodeID, x: nodeCoordX, y: nodeCoordY, z: nodeCoordZ)
+                {
+                    oX = new double[] { nodeCoordX, nodeCoordY, nodeCoordZ },
+                    tX = new double[] { nodeCoordX, nodeCoordY, nodeCoordZ },
+                    tU = new double[3]
+                };
+                model.NodesDictionary.Add(NodeID, newNode);
                 eswterikosNodeCounter++;
             }
             //
@@ -1830,7 +1838,13 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
                 nodeCoordY = o_xsunol[6 * nNode + 1] - 0.5 * tk * o_xsunol[6 * nNode + 4];
                 nodeCoordZ = o_xsunol[6 * nNode + 2] - 0.5 * tk * o_xsunol[6 * nNode + 5];
 
-                model.NodesDictionary.Add(NodeID, new Node(id: NodeID, x: nodeCoordX, y: nodeCoordY, z: nodeCoordZ));
+                var newNode = new Node(id: NodeID, x: nodeCoordX, y: nodeCoordY, z: nodeCoordZ)
+                {
+                    oX = new double[] { nodeCoordX, nodeCoordY, nodeCoordZ },
+                    tX = new double[] { nodeCoordX, nodeCoordY, nodeCoordZ },
+                    tU = new double[3]
+                };
+                model.NodesDictionary.Add(NodeID, newNode);
                 eswterikosNodeCounter++;
             }
             //
@@ -1892,7 +1906,13 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
                 nodeCoordY = o_xsunol[6 * nNode + 1] + 0.5 * tk * o_xsunol[6 * nNode + 4];
                 nodeCoordZ = o_xsunol[6 * nNode + 2] + 0.5 * tk * o_xsunol[6 * nNode + 5];
 
-                model.NodesDictionary.Add(NodeID, new Node(id: NodeID, x: nodeCoordX, y: nodeCoordY, z: nodeCoordZ));
+                var newNode = new Node(id: NodeID, x: nodeCoordX, y: nodeCoordY, z: nodeCoordZ)
+                {
+                    oX = new double[] { nodeCoordX, nodeCoordY, nodeCoordZ },
+                    tX = new double[] { nodeCoordX, nodeCoordY, nodeCoordZ },
+                    tU = new double[3]
+                };
+                model.NodesDictionary.Add(NodeID, newNode);
                 eswterikosNodeCounter++;
             }
             //

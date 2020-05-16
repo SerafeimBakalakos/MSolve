@@ -588,6 +588,8 @@ namespace ISAAR.MSolve.FEM.Elements
 
         public Tuple<double[], double[]> CalculateStresses(Element element, double[] localTotalDisplacements, double[] localdDisplacements)
         {
+            return CalculateStresses(element);
+
             //this.UpdateCoordinateData(localTotalDisplacements, out double[][] tx_i);
             //double[][] GLvec = CalculateStrains(localTotalDisplacements, element, tx_i);
             //for (int npoint = 0; npoint < materialsAtGaussPoints.Length; npoint++)
@@ -597,7 +599,7 @@ namespace ISAAR.MSolve.FEM.Elements
             //return new Tuple<double[], double[]>(GLvec[nGaussPoints - 1],
             //    materialsAtGaussPoints[materialsAtGaussPoints.Length - 1].Stresses);
 
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
             
         }
 
