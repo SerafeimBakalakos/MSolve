@@ -9,7 +9,7 @@ namespace MGroup.XFEM.Geometry.Primitives
     /// A curve resulting from the intersection of a parent curve with a disc (the part of the plane enclosed in a closed curved).
     /// Degenerate cases are also possible: null or single point
     /// </summary>
-    public interface IIntersectionCurve3D
+    public interface IIntersectionSurface3D
     {
         RelativePositionCurveElement RelativePosition { get; }
 

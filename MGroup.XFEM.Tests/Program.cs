@@ -1,4 +1,5 @@
 ﻿using System;
+using MGroup.XFEM.Tests.Plotting;
 
 namespace MGroup.XFEM.Tests
 {
@@ -6,7 +7,8 @@ namespace MGroup.XFEM.Tests
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            //LsmBalls2DExamples.Run();
+            LsmBalls3DExamples.Run();
         }
     }
 }

@@ -13,6 +13,7 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         public SimpleLsm2D(XModel physicalModel, ICurve2D closedCurve)
         {
+            NodalValues = new double[physicalModel.Nodes.Count];
             for (int n = 0; n < physicalModel.Nodes.Count; ++n)
             {
                 double[] node = physicalModel.Nodes[n].Coordinates;

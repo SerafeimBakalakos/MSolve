@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -16,10 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MGroup.XFEM\MGroup.XFEM.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Plotting\" />
   </ItemGroup>
 
 </Project>

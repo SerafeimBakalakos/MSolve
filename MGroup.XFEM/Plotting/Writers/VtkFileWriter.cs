@@ -29,7 +29,7 @@ namespace MGroup.XFEM.Plotting.Writers
         }
 
         //TODO: Perhaps the mesh should be injected into the contructor
-        public void WriteMesh<XNode>(IOutputMesh mesh)
+        public void WriteMesh(IOutputMesh mesh)
         {
             if (writeFieldsNext) throw new InvalidOperationException("A mesh has already been written.");
 
@@ -37,7 +37,7 @@ namespace MGroup.XFEM.Plotting.Writers
             //this.numVertices = mesh.NumOutVertices;
             writer.WriteLine("DATASET UNSTRUCTURED_GRID");
             writer.WriteLine($"POINTS {mesh.NumOutVertices} double");
-            foreach (VtkPoint point in mesh.OutVertices) writer.WriteLine($"{point.X} {point.Y} 0.0");
+            foreach (VtkPoint point in mesh.OutVertices) writer.WriteLine($"{point.X} {point.Y} {point.Z}");
 
             // Cell connectivity
             int cellDataCount = 0;
@@ -59,7 +59,7 @@ namespace MGroup.XFEM.Plotting.Writers
             foreach (VtkCell cell in mesh.OutCells) writer.WriteLine(cell.Code);
         }
 
-        public void WriteScalarField<XNode>(string fieldName, IOutputMesh mesh, Func<VtkPoint, double> getScalarValue)
+        public void WriteScalarField(string fieldName, IOutputMesh mesh, Func<VtkPoint, double> getScalarValue)
         {
             WriteFieldsHeader(mesh.NumOutVertices);
             writer.WriteLine($"SCALARS {fieldName} double 1");
@@ -68,7 +68,7 @@ namespace MGroup.XFEM.Plotting.Writers
             writer.WriteLine();
         }
 
-        public void WriteScalarField<XNode>(string fieldName, IOutputMesh mesh, IEnumerable<double> scalarsAtVertices)
+        public void WriteScalarField(string fieldName, IOutputMesh mesh, IEnumerable<double> scalarsAtVertices)
         {
             WriteFieldsHeader(mesh.NumOutVertices);
             writer.WriteLine($"SCALARS {fieldName} double 1");
@@ -77,7 +77,7 @@ namespace MGroup.XFEM.Plotting.Writers
             writer.WriteLine();
         }
 
-        public void WriteTensor2DField<XNode>(string fieldName, IOutputMesh mesh, Func<VtkPoint, double[]> getTensorValue)
+        public void WriteTensor2DField(string fieldName, IOutputMesh mesh, Func<VtkPoint, double[]> getTensorValue)
         {
             WriteFieldsHeader(mesh.NumOutVertices);
 
@@ -100,7 +100,7 @@ namespace MGroup.XFEM.Plotting.Writers
             writer.WriteLine();
         }
 
-        public void WriteVector2DField<XNode>(string fieldName, IOutputMesh mesh, IEnumerable<double[]> vectorsAtVertices)
+        public void WriteVector2DField(string fieldName, IOutputMesh mesh, IEnumerable<double[]> vectorsAtVertices)
         {
             WriteFieldsHeader(mesh.NumOutVertices);
             writer.WriteLine($"VECTORS {fieldName} double");
@@ -108,7 +108,7 @@ namespace MGroup.XFEM.Plotting.Writers
             writer.WriteLine();
         }
 
-        public void WriteVector2DField<XNode>(string fieldName, IOutputMesh mesh, Func<VtkPoint, double[]> getVectorValue)
+        public void WriteVector2DField(string fieldName, IOutputMesh mesh, Func<VtkPoint, double[]> getVectorValue)
         {
             WriteFieldsHeader(mesh.NumOutVertices);
             writer.WriteLine($"VECTORS {fieldName} double");
@@ -120,7 +120,7 @@ namespace MGroup.XFEM.Plotting.Writers
             writer.WriteLine();
         }
 
-        public void WriteVector3DField<XNode>(string fieldName, IOutputMesh mesh, Func<VtkPoint, double[]> getVectorValue)
+        public void WriteVector3DField(string fieldName, IOutputMesh mesh, Func<VtkPoint, double[]> getVectorValue)
         {
             WriteFieldsHeader(mesh.NumOutVertices);
             writer.WriteLine($"VECTORS {fieldName} double");
