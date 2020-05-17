@@ -5,6 +5,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Iterative;
 using ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient;
+using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
@@ -77,19 +78,33 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             }
 
             // Solve the interface problem using PCG algorithm
-            
             Pcg.Convergence = pcgSettings.ConvergenceStrategyFactory.CreateConvergenceStrategy(globalForcesNorm);
-
             IterativeStatistics stats;
-            if (!(PreviousLambda == null))
+            if (Pcg.ReorthoCache.Directions.Count == 0)
             {
-                stats = Pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, false,
+                Pcg.Stagnation = new NullStagnationCriterion();
+                stats = Pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, PreviousLambda == null,
                   () => Vector.CreateZero(systemOrder));
             }
             else
             {
-                stats = Pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, true,
-                  () => Vector.CreateZero(systemOrder));
+                // Stored directions may cause stagnation to a suboptimal solution. Check if this happens first
+                Pcg.Stagnation = new AverageStagnationCriterion(5, 1E-2);
+                stats = Pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, PreviousLambda == null,
+                    () => Vector.CreateZero(systemOrder));
+
+                if (stats.HasStagnated)
+                {
+                    int numIterationsInitial = stats.NumIterationsRequired;
+
+                    // In this case rerun PCG without direction vectors. However use the current approximate 
+                    // solution as an initial guess
+                    Pcg.ReorthoCache.Clear();
+                    Pcg.Stagnation = new NullStagnationCriterion();
+                    stats = Pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, false, 
+                        () => Vector.CreateZero(systemOrder));
+                    stats.NumIterationsRequired += numIterationsInitial;
+                }
             }
 
             // Log statistics about PCG execution

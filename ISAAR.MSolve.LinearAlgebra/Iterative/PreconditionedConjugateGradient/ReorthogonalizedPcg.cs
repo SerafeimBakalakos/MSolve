@@ -37,6 +37,8 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
         //TODO: this could be abstracted to use a cyclic cache.
         public PcgReorthogonalizationCache ReorthoCache { get; set; } = new PcgReorthogonalizationCache();
 
+        public IStagnationCriterion Stagnation { get; set; } = new NullStagnationCriterion();
+
         /// <summary>
         /// Calculates the initial approximation to the linear system's solution vector, by using a series of conjugate direction 
         /// vectors that have been stored previously by PCG during the solution of other linear systems with the same matrix. 
@@ -115,6 +117,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
 
         protected override IterativeStatistics SolveInternal(int maxIterations, Func<IVector> zeroVectorInitializer)
         {
+            iteration = 0;
             Preconditioner.SolveLinearSystem(residual, precondResidual);
 
             // d0 = s0 = inv(M) * r0
@@ -134,6 +137,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
 
             // The convergence strategy must be initialized immediately after the first r and r*inv(M)*r are computed.
             Convergence.Initialize(this);
+            Stagnation.Initialize(this);
 
             // This is also used as output
             double residualNormRatio = double.NaN;
@@ -141,7 +145,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
             // α0 = (d0 * r0) / (d0 * q0) = (s0 * r0) / (d0 * (A * d0)) 
             stepSize = resDotPrecondRes / DirectionTimesMatrixTimesDirection;
 
-            for (int iteration = 0; iteration < maxIterations; ++iteration)
+            for (iteration = 1; iteration < maxIterations; ++iteration)
             {
                 // x = x + α * d
                 solution.AxpyIntoThis(direction, stepSize);
@@ -161,12 +165,25 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
                 /// At this point we can check if CG has converged and exit, thus avoiding the uneccesary operations that follow.
                 residualNormRatio = Convergence.EstimateResidualNormRatio(this);
                 Debug.WriteLine($"Reorthogonalized PCG iteration = {iteration}: residual norm ratio = {residualNormRatio}");
+                bool hasStagnated = Stagnation.HasStagnated(this);
+                if (hasStagnated)
+                {
+                    return new IterativeStatistics
+                    {
+                        AlgorithmName = name,
+                        HasConverged = false,
+                        HasStagnated = true,
+                        NumIterationsRequired = iteration + 1,
+                        ResidualNormRatioEstimation = residualNormRatio
+                    };
+                }
                 if (residualNormRatio <= residualTolerance)
                 {
                     return new IterativeStatistics
                     {
                         AlgorithmName = name,
                         HasConverged = true,
+                        HasStagnated = false,
                         NumIterationsRequired = iteration + 1,
                         ResidualNormRatioEstimation = residualNormRatio
                     };
@@ -191,6 +208,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
             {
                 AlgorithmName = name,
                 HasConverged = false,
+                HasStagnated = false,
                 NumIterationsRequired = maxIterations,
                 ResidualNormRatioEstimation = residualNormRatio
             };

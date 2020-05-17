@@ -32,6 +32,8 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
 
         protected override IterativeStatistics SolveInternal(int maxIterations, Func<IVector> zeroVectorInitializer)
         {
+            iteration = 0;
+
             // In contrast to the source algorithm, we initialize s here. At each iteration it will be overwritten, 
             // thus avoiding allocating & deallocating a new vector.
             precondResidual = zeroVectorInitializer();
@@ -53,7 +55,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
             // Allocate memory for other vectors, which will be reused during each iteration
             matrixTimesDirection = zeroVectorInitializer();
 
-            for (iteration = 0; iteration < maxIterations; ++iteration)
+            for (iteration = 1; iteration < maxIterations; ++iteration)
             {
                 // q = A * d
                 Matrix.Multiply(direction, matrixTimesDirection);
