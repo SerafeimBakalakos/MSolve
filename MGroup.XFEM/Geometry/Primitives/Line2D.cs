@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 using DotNumerics.Optimization.TN;
 using ISAAR.MSolve.LinearAlgebra;
 
@@ -19,18 +20,18 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// Transformation matrix from global to local system: Q = [cosa sina; -sina cosa ]
         /// Transformation matrix from local to global system: Q^T = [cosa -sina; sina cosa ]
         /// </summary>
-        private readonly double cosa, sina;
+        protected readonly double cosa, sina;
 
         ///// <summary>
         ///// The coordinates of the global system's origin in the local system
         ///// </summary>
-        private readonly double[] originLocal;
+        protected readonly double[] originLocal;
 
         /// <summary>
         /// The unit vector that is perpendicular to the segment and faces towards the positive local y axis. 
         /// It is constant for a linear segment, so caching it avoids recalculations.
         /// </summary>
-        private readonly double[] normalVector;
+        protected readonly double[] normalVector;
 
         /// <summary>
         /// Directed from <paramref name="point0"/> to <paramref name="point1"/>.
@@ -43,14 +44,22 @@ namespace MGroup.XFEM.Geometry.Primitives
             double dx = point1[0] - point0[0];
             double dy = point1[1] - point0[1];
             double length = Math.Sqrt(dx * dx + dy * dy);
-            cosa = dx / length;
-            sina = dy / length;
+            this.cosa = dx / length;
+            this.sina = dy / length;
 
-            originLocal = new double[2];
+            this.originLocal = new double[2];
             originLocal[0] = -cosa * point0[0] - sina * point0[1];
             originLocal[1] = sina * point0[0] - cosa * point0[1];
 
-            normalVector = new double[] { -sina, cosa };
+            this.normalVector = new double[] { -sina, cosa };
+        }
+
+        public Line2D(double cosa, double sina, double[] originLocal)
+        {
+            this.cosa = cosa;
+            this.sina = sina;
+            this.originLocal = originLocal;
+            this.normalVector = new double[] { -sina, cosa };
         }
 
         /// <summary>
@@ -73,7 +82,7 @@ namespace MGroup.XFEM.Geometry.Primitives
         public IIntersectionCurve2D IntersectPolygon(IList<double[]> nodes)
         {
             //TODO: Use the results to create a new geometric object that can provide vertices for triangulation, gauss points etc. These can be empty
-            //TODO: needs a fast way to eleminate most elements
+            //TODO: needs a fast way to eliminate most elements
 
             // Find the projection and perpendicular vectors of these points onto the line. See SignedDistance() for more details
             var nodesLocal = new double[nodes.Count][];
@@ -108,20 +117,21 @@ namespace MGroup.XFEM.Geometry.Primitives
             else if (intersections.Count == 2)
             {
                 double[] intersectionsLocal = intersections.ToArray();
-                double[] start = ProjectLocalToGlobal(intersectionsLocal[0]);
-                double[] end = ProjectLocalToGlobal(intersectionsLocal[1]);
-                if (conformingSegment)
-                {
-                    return new LineSegmentIntersection2D(start, end, RelativePositionCurveDisc.Conforming);
-                    //return (RelativePositionCurveDisc.Conforming, intersections.ToArray());
-                }
-                else
-                {
-                    return new LineSegmentIntersection2D(start, end, RelativePositionCurveDisc.Intersecting);
-                    //return (RelativePositionCurveDisc.Intersecting, intersections.ToArray());
-                }
+                //double[] start = ProjectLocalToGlobal(intersectionsLocal[0]);
+                //double[] end = ProjectLocalToGlobal(intersectionsLocal[1]);
+                RelativePositionCurveDisc pos = conformingSegment ? RelativePositionCurveDisc.Conforming
+                    : RelativePositionCurveDisc.Intersecting;
+                return new LineSegmentIntersection2D(pos, cosa, sina, originLocal,
+                        intersectionsLocal[0], intersectionsLocal[1]);
+                //return new LineSegmentIntersection2D(start, end, pos);
+                //return (pos, intersections.ToArray());
             }
             else throw new Exception();
+        }
+
+        public double[] NormalVectorThrough(double[] point)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -131,7 +141,7 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// <param name="point1"></param>
         /// <param name="point2"></param>
         /// <returns></returns>
-        private (RelativePositionCurveCurve, double[]) IntersectSegment(double[] point1Local, double[] point2Local)
+        protected (RelativePositionCurveCurve, double[]) IntersectSegment(double[] point1Local, double[] point2Local)
         { //TODO: Use the results to create a new geometric object that can provide vertices for triangulation, gauss points etc. These can be empty
 
             double product = point1Local[1] * point2Local[1];
@@ -163,12 +173,7 @@ namespace MGroup.XFEM.Geometry.Primitives
             }
         }
 
-        public double[] NormalVectorThrough(double[] point)
-        {
-            throw new NotImplementedException();
-        }
-
-        private double[] ProjectGlobalToLocal(double[] pointGlobal)
+        protected double[] ProjectGlobalToLocal(double[] pointGlobal)
         {
             var pointLocal = new double[2];
             pointLocal[0] = cosa * pointGlobal[0] + sina * pointGlobal[1] + originLocal[0];
@@ -176,7 +181,7 @@ namespace MGroup.XFEM.Geometry.Primitives
             return pointLocal;
         }
 
-        private double[] ProjectLocalToGlobal(double localX)
+        protected double[] ProjectLocalToGlobal(double localX)
         {
             // xGlobal = Q^T * (xLocal - originLocal)
             double dx = localX - originLocal[0];
@@ -188,7 +193,7 @@ namespace MGroup.XFEM.Geometry.Primitives
             };
         }
 
-        private double[] Sort(double val1, double val2)
+        protected double[] Sort(double val1, double val2)
         {
             if (val1 < val2) return new double[] { val1, val2 };
             else if (val1 > val2) return new double[] { val2, val1 };

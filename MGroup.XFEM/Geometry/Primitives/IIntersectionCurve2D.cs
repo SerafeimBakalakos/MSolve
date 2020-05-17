@@ -18,5 +18,7 @@ namespace MGroup.XFEM.Geometry.Primitives
         double[] End { get; }
 
         GaussPoint[] GetIntersectionPoints(int numPoints);
+
+        IList<double[]> GetPointsForTriangulation(); 
     }
 }

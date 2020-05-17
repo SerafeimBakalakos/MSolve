@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Geometry\Curves\" />
     <Folder Include="Integration\" />
   </ItemGroup>
 

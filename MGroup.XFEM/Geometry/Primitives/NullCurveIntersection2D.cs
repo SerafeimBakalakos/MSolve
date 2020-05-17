@@ -17,5 +17,10 @@ namespace MGroup.XFEM.Geometry.Primitives
         {
             return new GaussPoint[0];
         }
+
+        public IList<double[]> GetPointsForTriangulation()
+        {
+            return new double[0][];
+        }
     }
 }
