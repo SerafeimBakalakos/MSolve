@@ -7,7 +7,7 @@ namespace MGroup.XFEM.Geometry.Primitives
 {
     public class NullCurveIntersection2D : IIntersectionCurve2D
     {
-        public RelativePositionCurveDisc RelativePosition => RelativePositionCurveDisc.Disjoint;
+        public RelativePositionCurveElement RelativePosition => RelativePositionCurveElement.Disjoint;
 
         public double[] Start => null;
 

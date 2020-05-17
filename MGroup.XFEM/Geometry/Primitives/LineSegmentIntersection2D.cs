@@ -22,10 +22,10 @@ namespace MGroup.XFEM.Geometry.Primitives
         ///// </summary>
         protected readonly double[] originLocal;
 
-        public LineSegmentIntersection2D(RelativePositionCurveDisc pos, double cosa, double sina, double[] originLocal, 
+        public LineSegmentIntersection2D(RelativePositionCurveElement pos, double cosa, double sina, double[] originLocal, 
             double startLocalX, double endLocalX)
         {
-            Debug.Assert(pos == RelativePositionCurveDisc.Intersecting || pos == RelativePositionCurveDisc.Conforming);
+            Debug.Assert(pos == RelativePositionCurveElement.Intersecting || pos == RelativePositionCurveElement.Conforming);
             this.RelativePosition = pos;
             this.cosa = cosa;
             this.sina = sina;
@@ -37,9 +37,9 @@ namespace MGroup.XFEM.Geometry.Primitives
             this.End = ProjectLocalToGlobal(endLocalX);
         }
 
-        public LineSegmentIntersection2D(double[] start, double[] end, RelativePositionCurveDisc pos)
+        public LineSegmentIntersection2D(double[] start, double[] end, RelativePositionCurveElement pos)
         {
-            Debug.Assert(pos == RelativePositionCurveDisc.Intersecting || pos == RelativePositionCurveDisc.Conforming);
+            Debug.Assert(pos == RelativePositionCurveElement.Intersecting || pos == RelativePositionCurveElement.Conforming);
             this.Start = start;
             this.End = end;
             this.RelativePosition = pos;
@@ -56,7 +56,7 @@ namespace MGroup.XFEM.Geometry.Primitives
             this.originLocal[1] = sina * start[0] - cosa * start[1];
         }
 
-        public RelativePositionCurveDisc RelativePosition { get; }
+        public RelativePositionCurveElement RelativePosition { get; }
 
         public double[] Start { get; }
 

@@ -57,7 +57,7 @@ namespace MGroup.XFEM.Tests.Geometry
             else line = new Line2D(p1, p2);
             IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
 
-            Assert.True(intersection.RelativePosition == RelativePositionCurveDisc.Disjoint);
+            Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Disjoint);
             Assert.True(intersection is NullCurveIntersection2D);
         }
 
@@ -83,7 +83,7 @@ namespace MGroup.XFEM.Tests.Geometry
             else line = new Line2D(p1, p2);
             IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
 
-            Assert.True(intersection.RelativePosition == RelativePositionCurveDisc.Disjoint);
+            Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Disjoint);
             Assert.True(intersection is NullCurveIntersection2D);
 
             //Assert.True(pos == RelativePositionCurveDisc.Tangent);
@@ -116,7 +116,7 @@ namespace MGroup.XFEM.Tests.Geometry
             else line = new Line2D(p1, p2);
             IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
 
-            Assert.True(intersection.RelativePosition == RelativePositionCurveDisc.Intersecting);
+            Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Intersecting);
             Assert.True(intersection is LineSegmentIntersection2D);
 
             Assert.Equal(1.5, intersection.Start[0], 5);
@@ -148,7 +148,7 @@ namespace MGroup.XFEM.Tests.Geometry
             else line = new Line2D(p1, p2);
             IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
 
-            Assert.True(intersection.RelativePosition == RelativePositionCurveDisc.Intersecting);
+            Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Intersecting);
             Assert.True(intersection is LineSegmentIntersection2D);
 
             Assert.Equal(2, intersection.Start[0], 5);
@@ -184,7 +184,7 @@ namespace MGroup.XFEM.Tests.Geometry
             else line = new Line2D(p1, p2);
             IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
 
-            Assert.True(intersection.RelativePosition == RelativePositionCurveDisc.Conforming);
+            Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Conforming);
             Assert.True(intersection is LineSegmentIntersection2D);
 
             Assert.Equal(2, intersection.Start[0], 5);

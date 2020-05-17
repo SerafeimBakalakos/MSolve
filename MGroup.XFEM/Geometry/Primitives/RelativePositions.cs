@@ -5,7 +5,7 @@
         Disjoint, Intersecting, Tangent, Conforming
     }
 
-    public enum RelativePositionCurveDisc
+    public enum RelativePositionCurveElement
     {
         Disjoint, Intersecting, Conforming
     }

@@ -119,8 +119,8 @@ namespace MGroup.XFEM.Geometry.Primitives
                 double[] intersectionsLocal = intersections.ToArray();
                 //double[] start = ProjectLocalToGlobal(intersectionsLocal[0]);
                 //double[] end = ProjectLocalToGlobal(intersectionsLocal[1]);
-                RelativePositionCurveDisc pos = conformingSegment ? RelativePositionCurveDisc.Conforming
-                    : RelativePositionCurveDisc.Intersecting;
+                RelativePositionCurveElement pos = conformingSegment ? RelativePositionCurveElement.Conforming
+                    : RelativePositionCurveElement.Intersecting;
                 return new LineSegmentIntersection2D(pos, cosa, sina, originLocal,
                         intersectionsLocal[0], intersectionsLocal[1]);
                 //return new LineSegmentIntersection2D(start, end, pos);
