@@ -32,7 +32,7 @@ namespace MGroup.XFEM.Entities
 
         //public bool IsEnriched => Enrichments.Count > 0;
 
-        //public IPhase SurroundingPhase { get; set; }
+        public IPhase SurroundingPhase { get; set; }
 
         //public new Dictionary<int, XSubdomain> SubdomainsDictionary { get; } = new Dictionary<int, XSubdomain>();
     }

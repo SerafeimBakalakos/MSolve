@@ -16,15 +16,14 @@ namespace MGroup.XFEM.Elements
         //IBoundaryIntegration IntegrationBoundary { get; }
         //IIntegrationStrategy IntegrationVolume { get; }
 
+        //TODO: Unify 2D and 3D interpolation classes and use that one.
         IIsoparametricInterpolation2D InterpolationStandard { get; }
 
         IReadOnlyList<XNode> Nodes { get; }
 
         //Dictionary<PhaseBoundary, CurveElementIntersection> PhaseIntersections { get; }
 
-        //HashSet<IPhase> Phases { get; }
-
-        //TODO: Unify 2D and 3D interpolation classes and use that one.
+        HashSet<IPhase> Phases { get; }
 
         XSubdomain Subdomain { get; set; }
 
