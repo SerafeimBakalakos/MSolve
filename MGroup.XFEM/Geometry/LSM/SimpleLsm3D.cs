@@ -21,6 +21,8 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public double[] NodalValues { get; }
 
+        public double SignedDistanceOf(XNode node) => NodalValues[node.ID];
+
         public double SignedDistanceOf(XPoint point)
         {
             int[] nodes = point.Element.Nodes.Select(n => n.ID).ToArray();

@@ -9,7 +9,7 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public class SimpleLsm2D
+    public class SimpleLsm2D : IImplicitGeometry
     {
         public SimpleLsm2D(XModel physicalModel, ICurve2D closedCurve)
         {
@@ -21,6 +21,8 @@ namespace MGroup.XFEM.Geometry.LSM
         }
 
         public double[] NodalValues { get; }
+
+        public double SignedDistanceOf(XNode node) => NodalValues[node.ID];
 
         public double SignedDistanceOf(XPoint point)
         {
