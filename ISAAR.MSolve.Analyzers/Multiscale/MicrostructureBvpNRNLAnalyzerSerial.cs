@@ -35,7 +35,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         private int maxSteps = 1000;
         private int stepsForMatrixRebuild = 0;
         private readonly double tolerance = 1e-3;
-        private double toleranceForReortho = -1; // set this negative so it is cleared every time; 
+        //private double toleranceForReortho = -1; // set this negative so it is cleared every time; 
         private double rhsNorm;
         private INonLinearParentAnalyzer parentAnalyzer = null;
         private readonly ISolverMpi solver;
@@ -208,8 +208,9 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                 {
                     if (fetiSolver1.InterfaceProblemSolver.Pcg != null)
                     {
+                        fetiSolver1.InterfaceProblemSolver.UseStagnationCriterion = false;
                         fetiSolver1.InterfaceProblemSolver.Pcg.Clear();
-                         fetiSolver1.InterfaceProblemSolver.Pcg.ReorthoCache.Clear(); 
+                        fetiSolver1.InterfaceProblemSolver.Pcg.ReorthoCache.Clear(); 
                     }
                 }
 
@@ -230,8 +231,11 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                         if (fetiSolver.InterfaceProblemSolver.Pcg != null)
                         {
                             fetiSolver.InterfaceProblemSolver.Pcg.Clear();
-                            if (errorNorm > toleranceForReortho)
-                            { fetiSolver.InterfaceProblemSolver.Pcg.ReorthoCache.Clear(); }
+                            fetiSolver.InterfaceProblemSolver.UseStagnationCriterion = true;
+                            //if (errorNorm > toleranceForReortho)
+                            //{ 
+                            //    fetiSolver.InterfaceProblemSolver.Pcg.ReorthoCache.Clear(); 
+                            //}
                         }
                     }
                     solver.Solve();

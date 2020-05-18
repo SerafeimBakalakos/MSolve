@@ -165,7 +165,12 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                         //fetiSolver.InterfaceProblemSolver.Pcg.ReorthoCache.Clear();
                         if (k == 0)
                         {
+                            fetiSolver.InterfaceProblemSolver.UseStagnationCriterion = true;
                             //fetiSolver.InterfaceProblemSolver.Pcg.ReorthoCache.Clear();
+                        }
+                        else
+                        {
+                            fetiSolver.InterfaceProblemSolver.UseStagnationCriterion = false;
                         }
                     }
                 }

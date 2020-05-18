@@ -137,7 +137,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
 
             // The convergence strategy must be initialized immediately after the first r and r*inv(M)*r are computed.
             Convergence.Initialize(this);
-            Stagnation.Initialize(this);
+            Stagnation.StoreInitialError(Convergence.EstimateResidualNormRatio(this));
 
             // This is also used as output
             double residualNormRatio = double.NaN;
@@ -165,18 +165,8 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
                 /// At this point we can check if CG has converged and exit, thus avoiding the uneccesary operations that follow.
                 residualNormRatio = Convergence.EstimateResidualNormRatio(this);
                 Debug.WriteLine($"Reorthogonalized PCG iteration = {iteration}: residual norm ratio = {residualNormRatio}");
-                bool hasStagnated = Stagnation.HasStagnated(this);
-                if (hasStagnated)
-                {
-                    return new IterativeStatistics
-                    {
-                        AlgorithmName = name,
-                        HasConverged = false,
-                        HasStagnated = true,
-                        NumIterationsRequired = iteration + 1,
-                        ResidualNormRatioEstimation = residualNormRatio
-                    };
-                }
+                Stagnation.StoreNewError(residualNormRatio);
+                bool hasStagnated = Stagnation.HasStagnated();
                 if (residualNormRatio <= residualTolerance)
                 {
                     return new IterativeStatistics
@@ -184,6 +174,17 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
                         AlgorithmName = name,
                         HasConverged = true,
                         HasStagnated = false,
+                        NumIterationsRequired = iteration + 1,
+                        ResidualNormRatioEstimation = residualNormRatio
+                    };
+                }
+                if (hasStagnated)
+                {
+                    return new IterativeStatistics
+                    {
+                        AlgorithmName = name,
+                        HasConverged = false,
+                        HasStagnated = true,
                         NumIterationsRequired = iteration + 1,
                         ResidualNormRatioEstimation = residualNormRatio
                     };

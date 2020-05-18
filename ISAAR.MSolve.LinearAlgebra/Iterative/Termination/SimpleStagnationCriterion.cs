@@ -20,7 +20,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.Termination
             this.residualDotProductsHistory = new List<double>();
         }
 
-        public bool HasStagnated(PcgAlgorithmBase pcg)
+        public bool HasStagnated()
         {
             int numIterations = residualDotProductsHistory.Count;
             if (numIterations < iterationSpan) return false; // Not enough data yet
@@ -29,19 +29,24 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.Termination
             double relativeReduction = (oldError - newError) / oldError;
             if (relativeImprovementTolerance == -1)
             {
-                relativeImprovementTolerance = 1E-3 * CalcInitialErrorReduction(pcg);
+                relativeImprovementTolerance = 1E-3 * CalcInitialErrorReduction();
             }
             if (relativeReduction <= relativeImprovementTolerance) return true;
             else return false;
         }
 
-        public void Initialize(PcgAlgorithmBase pcg)
+        public void StoreInitialError(double initialError)
         {
             residualDotProductsHistory.Clear();
-            residualDotProductsHistory.Add(pcg.ResDotPrecondRes);
+            residualDotProductsHistory.Add(initialError);
         }
 
-        private double CalcInitialErrorReduction(PcgAlgorithmBase pcg)
+        public void StoreNewError(double currentError)
+        {
+            residualDotProductsHistory.Add(currentError);
+        }
+
+        private double CalcInitialErrorReduction()
         {
             int t = 0;
             while (t < iterationSpan)

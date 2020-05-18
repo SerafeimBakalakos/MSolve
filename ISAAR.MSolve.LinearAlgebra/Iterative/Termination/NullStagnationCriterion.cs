@@ -7,8 +7,11 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.Termination
 {
     public class NullStagnationCriterion : IStagnationCriterion
     {
-        public bool HasStagnated(PcgAlgorithmBase pcg) => false;
+        public bool HasStagnated() => false;
 
-        public void Initialize(PcgAlgorithmBase pcg) { }
+        public void StoreInitialError(double initialError) { }
+
+        public void StoreNewError(double currentError) { }
+
     }
 }

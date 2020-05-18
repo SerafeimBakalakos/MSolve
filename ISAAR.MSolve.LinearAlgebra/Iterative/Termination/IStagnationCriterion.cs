@@ -8,8 +8,11 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.Termination
 {
     public interface IStagnationCriterion
     {
-        bool HasStagnated(PcgAlgorithmBase pcg);
+        bool HasStagnated();
 
-        void Initialize(PcgAlgorithmBase pcg);
+        void StoreInitialError(double initialError);
+
+        void StoreNewError(double currentError);
+
     }
 }

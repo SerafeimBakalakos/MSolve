@@ -5,6 +5,8 @@ using ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient;
 using ISAAR.MSolve.LinearAlgebra.Reduction;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
+//ERROR: If there is one sharp increase in the error (outlier), followed by decreases then the current approach will incorrectly 
+//       detect it as stagnation.
 namespace ISAAR.MSolve.LinearAlgebra.Iterative.Termination
 {
     public class AverageStagnationCriterion : IStagnationCriterion
@@ -20,26 +22,31 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.Termination
             this.residualDotProductsHistory = new List<double>();
         }
 
-        public bool HasStagnated(PcgAlgorithmBase pcg)
+        public bool HasStagnated()
         {
-            double[] errorReductions = CalcRelativeErrorReductions(pcg);
+            double[] errorReductions = CalcRelativeErrorReductions();
             if (errorReductions == null) return false; // Not enough data yet
             double relativeImprovement = Reductions.Average(Vector.CreateFromArray(errorReductions));
             if (relativeImprovementTolerance == -1)
             {
-                relativeImprovementTolerance = 1E-3 * CalcInitialErrorReduction(pcg);
+                relativeImprovementTolerance = 1E-3 * CalcInitialErrorReduction();
             }
             if (relativeImprovement <= relativeImprovementTolerance) return true;
             else return false;
         }
 
-        public void Initialize(PcgAlgorithmBase pcg)
+        public void StoreInitialError(double initialError)
         {
             residualDotProductsHistory.Clear();
-            residualDotProductsHistory.Add(pcg.ResDotPrecondRes);
+            residualDotProductsHistory.Add(initialError);
         }
 
-        private double CalcInitialErrorReduction(PcgAlgorithmBase pcg)
+        public void StoreNewError(double currentError)
+        {
+            residualDotProductsHistory.Add(currentError);
+        }
+
+        private double CalcInitialErrorReduction()
         {
             int t = 0;
             while (t < iterationSpan)
@@ -54,17 +61,18 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.Termination
             throw new Exception("PCG diverges");
         }
 
-        private double[] CalcRelativeErrorReductions(PcgAlgorithmBase pcg)
+        private double[] CalcRelativeErrorReductions()
         {
             int numIterations = residualDotProductsHistory.Count;
             if (numIterations <= iterationSpan) return null;
 
             var relativeReductions = new double[iterationSpan];
-            for (int t = numIterations - iterationSpan; t < numIterations; ++t)
+            for (int t = 0; t < iterationSpan; ++t)
+            //for (int t = numIterations - iterationSpan - 1; t < numIterations - 1; ++t)
             {
-                double previous = residualDotProductsHistory[t - 1];
-                double current = residualDotProductsHistory[t];
-                relativeReductions[t] = (previous - current) / previous;
+                double current = residualDotProductsHistory[t + numIterations - iterationSpan - 1];
+                double next = residualDotProductsHistory[t + numIterations - iterationSpan];
+                relativeReductions[t] = (current - next) / current;
             }
 
             return relativeReductions;

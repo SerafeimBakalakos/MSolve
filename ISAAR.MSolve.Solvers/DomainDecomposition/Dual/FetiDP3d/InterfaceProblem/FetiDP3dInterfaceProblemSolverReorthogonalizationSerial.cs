@@ -71,7 +71,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             Vector lagranges;
             if (!(PreviousLambda == null))
             {
-                lagranges = PreviousLambda;
+                lagranges = PreviousLambda.Copy();
             }
             else
             {
