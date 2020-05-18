@@ -24,12 +24,12 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.Termination
         {
             double[] errorReductions = CalcRelativeErrorReductions(pcg);
             if (errorReductions == null) return false; // Not enough data yet
-            double aggregate = Reductions.Average(Vector.CreateFromArray(errorReductions));
+            double relativeImprovement = Reductions.Average(Vector.CreateFromArray(errorReductions));
             if (relativeImprovementTolerance == -1)
             {
                 relativeImprovementTolerance = 1E-3 * CalcInitialErrorReduction(pcg);
             }
-            if (aggregate <= relativeImprovementTolerance) return true;
+            if (relativeImprovement <= relativeImprovementTolerance) return true;
             else return false;
         }
 

@@ -48,6 +48,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
 
         public ReorthogonalizedPcg Pcg => null;
 
+        public bool UseStagnationCriterion { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
         public Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility,
             IFetiPreconditioner preconditioner, double globalForcesNorm, ISolverLogger logger)

@@ -55,21 +55,5 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.Termination
             // At this point PCG has made no improvement. Thus it diverges.
             throw new Exception("PCG diverges");
         }
-
-        private double[] CalcRelativeErrorReductions(PcgAlgorithmBase pcg)
-        {
-            int numIterations = residualDotProductsHistory.Count;
-            if (numIterations <= iterationSpan) return null;
-
-            var relativeReductions = new double[iterationSpan];
-            for (int t = numIterations - iterationSpan; t < numIterations; ++t)
-            {
-                double previous = residualDotProductsHistory[t - 1];
-                double current = residualDotProductsHistory[t];
-                relativeReductions[t] = (previous - current) / previous;
-            }
-
-            return relativeReductions;
-        }
     }
 }

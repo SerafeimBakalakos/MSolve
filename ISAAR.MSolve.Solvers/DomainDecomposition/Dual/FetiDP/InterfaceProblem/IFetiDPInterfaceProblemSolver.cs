@@ -20,6 +20,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         bool UsePreviousLambda { get; set; }
         ReorthogonalizedPcg Pcg { get; }
 
+        bool UseStagnationCriterion { get; set; }
+
         Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility, 
             IFetiPreconditioner preconditioner, double globalForcesNorm, ISolverLogger logger);

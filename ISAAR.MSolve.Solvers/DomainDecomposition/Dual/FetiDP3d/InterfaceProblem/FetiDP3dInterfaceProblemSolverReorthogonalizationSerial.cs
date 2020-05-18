@@ -54,6 +54,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         public Vector PreviousLambda { get; set; }
 
         public bool UsePreviousLambda { get; set; }
+        public bool UseStagnationCriterion { get; set; }
 
         public Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility,
@@ -80,7 +81,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             // Solve the interface problem using PCG algorithm
             Pcg.Convergence = pcgSettings.ConvergenceStrategyFactory.CreateConvergenceStrategy(globalForcesNorm);
             IterativeStatistics stats;
-            if (Pcg.ReorthoCache.Directions.Count == 0)
+            if (!UseStagnationCriterion || (Pcg.ReorthoCache.Directions.Count == 0))
             {
                 Pcg.Stagnation = new NullStagnationCriterion();
                 stats = Pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, PreviousLambda == null,
