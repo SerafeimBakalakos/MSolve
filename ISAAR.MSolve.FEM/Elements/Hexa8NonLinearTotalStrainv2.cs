@@ -566,7 +566,7 @@ namespace ISAAR.MSolve.FEM.Elements
                     k_element[m, n] = kl_[nGaussPoints][m, n] + knl_[nGaussPoints][m, n];
                 }
             }
-
+            // AssemblyCheck.ProcessElementStiffnessMatrix(element.ID, k_element.CopyToArray2D());
             return k_element;
         }
         

@@ -652,6 +652,7 @@ namespace ISAAR.MSolve.FEM.Elements
             }
 
             k_element_coh2 =this.MultiplyStifnessMatrixForEmbedding(k_stoixeiou_coh,element);
+            //AssemblyCheck.ProcessElementStiffnessMatrix(element.ID, k_element_coh2);
             return k_element_coh2;
         }
 

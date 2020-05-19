@@ -653,7 +653,7 @@ namespace ISAAR.MSolve.FEM.Elements
                     Kt[5 * l + 4, 5 * l + 4] += integrationCoefficient[j] * kck[j][l];
                 }
             }
-
+            //AssemblyCheck.ProcessElementStiffnessMatrix(element.ID, Kt.CopyToArray2D());
             return Kt;
         }
 

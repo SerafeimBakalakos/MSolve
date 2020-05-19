@@ -19,7 +19,7 @@ namespace ISAAR.MSolve.SamplesConsole
 {
     public static class MemoryProfilerRveExample
     {
-        public static /*(double[], double[], double[,], IVector, IVector)*/ void CheckExample46InputInCodeRAMconsumption() //palio "Check_Graphene_rve_Obje_Integration()"
+        public static (double[], double[])/* double[,], IVector, IVector)*/ CheckExample46InputInCodeRAMconsumption() //palio "Check_Graphene_rve_Obje_Integration()"
         {
             #region rve builder parameters and example choice
             CnstValues.exampleNo = 46; CnstValues.parameterSet = ParameterSet.stiffLargerRve;
@@ -44,10 +44,10 @@ namespace ISAAR.MSolve.SamplesConsole
             #endregion
 
             #region solve skyline Microstructures (with Git and GitSerial RveBuilders)                    
-            var rveBuilder3 = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
-            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-            var microstructure2Serial = new MicrostructureDefGrad3D(rveBuilder3,
-                model => (new SuiteSparseSolver.Builder()).BuildSolver(model), false, 1);
+            //var rveBuilder3 = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
+            //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            //var microstructure2Serial = new MicrostructureDefGrad3D(rveBuilder3,
+            //    model => (new SuiteSparseSolver.Builder()).BuildSolver(model), false, 1);
 
             //double[,] consCheckSerial2 = new double[6, 6];
             //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { consCheckSerial2[i1, i2] = microstructure2Serial.ConstitutiveMatrix[i1, i2]; } }
@@ -69,6 +69,12 @@ namespace ISAAR.MSolve.SamplesConsole
 
             microstructure3.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
             microstructure3.SaveState();
+            double[] sttressesFeti1 = new double[6];
+            for (int i1 = 0; i1 < 6; i1++)
+            {
+                sttressesFeti1[i1] = microstructure3.Stresses[i1];
+            }
+
             microstructure3.UpdateMaterial(new double[9] { /*1.10*/ 1.03, 1, 1, 0, 0, 0, 0, 0, 0 });
             double[] stressesFeti = microstructure3.Stresses;
             double[,] constitutiveFeti = microstructure3.ConstitutiveMatrix.CopytoArray2D();
@@ -90,10 +96,10 @@ namespace ISAAR.MSolve.SamplesConsole
             //PrintUtilities.WriteToFileVector(stressesCheck3, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\stressesCheck3.txt");
             //PrintUtilities.WriteToFile(consCheck1, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\consCheck1.txt");
 
-            //return (stressesSuitesparse, stressesFeti, constitutiveSuitesparse, uInitialFreeDOFs_state1, uInitialFreeDOFs_state2);
+            return (sttressesFeti1, stressesFeti);
         }
 
-        public static /*(double[], double[], double[,], IVector, IVector)*/ void CheckExample46InputInCodeRAMconsumptionV2() //palio "Check_Graphene_rve_Obje_Integration()"
+        public static (double[], double[])/*, double[,], IVector, IVector)*/  CheckExample46InputInCodeRAMconsumptionV2() //palio "Check_Graphene_rve_Obje_Integration()"
         {
             #region rve builder parameters and example choice
             CnstValues.exampleNo = 46; CnstValues.parameterSet = ParameterSet.stiffLargerRve;
@@ -119,10 +125,10 @@ namespace ISAAR.MSolve.SamplesConsole
             #endregion
 
             #region solve skyline Microstructures (with Git and GitSerial RveBuilders)                    
-            var rveBuilder3 = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
-            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-            var microstructure2Serial = new MicrostructureDefGrad3D(rveBuilder3,
-                model => (new SuiteSparseSolver.Builder()).BuildSolver(model), false, 1);
+            //var rveBuilder3 = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
+            //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            //var microstructure2Serial = new MicrostructureDefGrad3D(rveBuilder3,
+            //    model => (new SuiteSparseSolver.Builder()).BuildSolver(model), false, 1);
 
             //double[,] consCheckSerial2 = new double[6, 6];
             //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { consCheckSerial2[i1, i2] = microstructure2Serial.ConstitutiveMatrix[i1, i2]; } }
@@ -143,6 +149,13 @@ namespace ISAAR.MSolve.SamplesConsole
 
 
             microstructure3.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
+            double[] sttressesFeti1 = new double[6];
+            for (int i1 = 0; i1 < 6; i1++)
+            {
+                sttressesFeti1[i1] = microstructure3.Stresses[i1];
+            }
+
+
             microstructure3.SaveState();
             microstructure3.UpdateMaterial(new double[9] { /*1.10*/ 1.03, 1, 1, 0, 0, 0, 0, 0, 0 });
             double[] stressesFeti = microstructure3.Stresses;
@@ -166,6 +179,7 @@ namespace ISAAR.MSolve.SamplesConsole
             //PrintUtilities.WriteToFile(consCheck1, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\consCheck1.txt");
 
             //return (stressesSuitesparse, stressesFeti, constitutiveSuitesparse, uInitialFreeDOFs_state1, uInitialFreeDOFs_state2);
+            return (sttressesFeti1, stressesFeti);
         }
     }
 }

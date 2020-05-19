@@ -8,6 +8,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interfaces;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Logging;
 using ISAAR.MSolve.Logging.Interfaces;
@@ -201,6 +202,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                     solver.Solve();
                     errorNorm = rhsNorm != 0 ? CalculateInternalRHS(increment, step, increments) / rhsNorm : 0;//comment MS2: to subdomain.RHS lamvanei thn timh nIncrement*(externalLoads/increments)-interanalRHS me xrhsh ths fixed timhs apo to rhs[subdomain.ID]
                     if (step == 0) firstError = errorNorm;
+                    if (step == 0) AssemblyCheck.isSecondAssembly = true; //debugv2
                     if (errorNorm < tolerance) break;
 
                     //SplitResidualForcesToSubdomains();//TODOmpi scatter residuals is unenecessary and implemented wrong for ISolverMpi
@@ -208,6 +210,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                     {
                         providerReset(); // provider.Reset();
                         BuildMatrices();
+                        if (step == 0) AssemblyCheck.isSecondAssembly = false; //debugv2
                         //solver.Initialize(); //TODO: Using this needs refactoring
                     }
                 }

@@ -66,8 +66,11 @@ namespace ISAAR.MSolve.SamplesConsole
 
         public static void Main(string[] args)
         {
-            //MemoryProfilerRveExample.CheckExample46InputInCodeRAMconsumption();
-            MemoryProfilerRveExample.CheckExample46InputInCodeRAMconsumptionV2();
+            AssemblyCheck.WritingPhase = true;
+            (var sttressesFeti1, var stressesFeti) =MemoryProfilerRveExample.CheckExample46InputInCodeRAMconsumption();
+            AssemblyCheck.WritingPhase = false;
+            (var sttressesFeti12, var stressesFeti2) =MemoryProfilerRveExample.CheckExample46InputInCodeRAMconsumptionV2();
+            AssemblyCheck.ViewResults();
         }
         
 
