@@ -6,6 +6,7 @@ using System.Linq;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 //TODO: remove code that calculates rhs vector components (nodal loads, constraints, etc). It should be moved to dedicated 
@@ -237,12 +238,12 @@ namespace ISAAR.MSolve.FEM.Entities
 
         public IVector GetRHSFromSolutionWithInitialDisplacemntsEffect(IVectorView solution, IVectorView dSolution, Dictionary<int, Node> boundaryNodes,
             Dictionary<int, Dictionary<IDofType, double>> initialConvergedBoundaryDisplacements, Dictionary<int, Dictionary<IDofType, double>> totalBoundaryDisplacements,
-            int nIncrement, int totalIncrements, bool[] isNodeUpdated, IVectorView subdomainLinearSystemSolution, bool[] areBoundaryNodesUpdated )
+            int nIncrement, int totalIncrements, ref BooleanArray isNodeUpdated, IVectorView subdomainLinearSystemSolution, ref BooleanArray areBoundaryNodesUpdated )
         {
             //update part free dofs
             foreach (var node in FreeDofOrdering.FreeDofs.GetRows())
             {
-                if (!isNodeUpdated[node.ID])
+                if (!isNodeUpdated.isTrue(node.ID))
                 {
                     foreach(IDofType doftype in FreeDofOrdering.FreeDofs.GetColumnsOfRow(node))
                     if (doftype == StructuralDof.TranslationX)
@@ -267,13 +268,13 @@ namespace ISAAR.MSolve.FEM.Entities
                         // add here rotation of direction vectors.
                         RotateNodalDirectionVectors(ak, bk, node.tVn, node.tV1, node.tV2);
                     }
-                    isNodeUpdated[node.ID] = true;
+                    isNodeUpdated.SetTrue(node.ID);
                 }
 
             }
 
             // update prescribed free dofs
-            if (!areBoundaryNodesUpdated[0])
+            if (!areBoundaryNodesUpdated.isTrue(0))
             {
                 foreach (var boundaryNode in boundaryNodes.Values)
                 {
@@ -301,7 +302,7 @@ namespace ISAAR.MSolve.FEM.Entities
                     }
 
                 }
-                areBoundaryNodesUpdated[0] = true;
+                areBoundaryNodesUpdated.SetTrue(0);
             }
 
 

@@ -241,6 +241,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         private double CalculateInternalRHS(int currentIncrement, int step, int totalIncrements)
         {
             globalRhs.Clear();
+            var isNodeUpdated = new BooleanArray(model.NumNodes + 1); var areBoundaryNodesUpdated = new BooleanArray(boundaryNodes.Count + 1);
             foreach (ILinearSystemMpi linearSystem in linearSystems.Values)
             {
                 int id = linearSystem.Subdomain.ID;
@@ -259,10 +260,9 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                     uPlusdu[id].AddIntoThis(u[id]);
                     uPlusdu[id].AddIntoThis(du[id]);
                 }
-                bool[] isNodeUpdated = new bool[model.NumNodes + 1]; bool[] areBoundaryNodesUpdated = new bool[boundaryNodes.Count + 1];
                 IVector internalRhs = subdomainUpdaters[id].GetRHSFromSolutionWithInitialDisplacemntsEffect(uPlusdu[id], du[id], boundaryNodes,
                 initialConvergedBoundaryDisplacements, totalBoundaryDisplacements, currentIncrement + 1, totalIncrements,
-                isNodeUpdated, linearSystem.Solution, areBoundaryNodesUpdated);//TODOMaria this calculates the internal forces
+                ref isNodeUpdated, linearSystem.Solution, ref areBoundaryNodesUpdated);//TODOMaria this calculates the internal forces
 
                 //provider.ProcessInternalRhs(linearSystem.Subdomain, uPlusdu[id], internalRhs);//TODOMaria this does nothing
                 //(new Vector<double>(u[subdomain.ID] + du[subdomain.ID])).Data);

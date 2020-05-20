@@ -332,11 +332,13 @@ namespace ISAAR.MSolve.MultiscaleAnalysis.SupportiveClasses
 
         public static void HexaElementsOnlyRVEwithRenumbering_forMS(Model model, rveMatrixParameters mp, double[,] Dq, string renumberingVectorPath, Dictionary<int, Node> boundaryNodes)
         {
-            HexaElementsOnlyRVEwithRenumbering_forMSv1(model, mp, Dq, renumberingVectorPath, boundaryNodes);
-            HexaElementsOnlyRVEwithRenumbering_forMSv2(model, mp, Dq, renumberingVectorPath, boundaryNodes);
+            if (!CnstValues.useV2FiniteElements)
+            { HexaElementsOnlyRVEwithRenumbering_forMSv1(model, mp, Dq, renumberingVectorPath, boundaryNodes); }
+            else
+            { HexaElementsOnlyRVEwithRenumbering_forMSv2(model, mp, Dq, renumberingVectorPath, boundaryNodes); }
         }
 
-        public static void HexaElementsOnlyRVEwithRenumbering_forMSv2(Model model, rveMatrixParameters mp, double[,] Dq, string renumberingVectorPath,, Dictionary<int, Node> boundaryNodes)
+        public static void HexaElementsOnlyRVEwithRenumbering_forMSv2(Model model, rveMatrixParameters mp, double[,] Dq, string renumberingVectorPath, Dictionary<int, Node> boundaryNodes)
         {
             // Perioxh renumbering initialization 
             renumbering renumbering = new renumbering(PrintUtilities.ReadIntVector(renumberingVectorPath));

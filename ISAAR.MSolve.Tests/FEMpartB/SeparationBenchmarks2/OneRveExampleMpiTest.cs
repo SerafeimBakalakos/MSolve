@@ -23,8 +23,8 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
         public static /*(double[], double[], double[,], IVector, IVector)*/ void Check_Graphene_rve_serial() //palio "Check_Graphene_rve_Obje_Integration()"
         {
             #region rve builder parameters and example choice
-            CnstValues.exampleNo = 58;
-            CnstValues.isInputInCode_forRVE = false;
+            CnstValues.exampleNo = 28;
+            CnstValues.isInputInCode_forRVE = true;
             CnstValues.useInput_forRVE = true; //Panta prin thn getRveModelAndBoundaryNodes
             
 
@@ -91,6 +91,12 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             {
                 Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, stressesSuitesparse, 1e-5));
                 Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, new double[6] {0.23960891324046732 , 0.15427363616411638 , 0.15367112553991677, 0.00206273825793927 , - 0.00071535611890005582 , - 0.0019255939930602102, }, 1e-14));
+            }
+
+            if ((pcg_tol == 1e-5)&&CnstValues.useV2FiniteElements)
+            {
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, stressesSuitesparse, 1e-6));
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, new double[6] { 0.26492453271064831, 0.15453855006524023, 0.15333899882886506, -0.00042985695405277016, 0.00040280328057427326, -0.0017262685411263629 }, 1e-14));
             }
 
             Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(solutionSuiteSparse.CopyToArray(), SolutionFetiInSerialFormat.CopyToArray(), 1e-4));

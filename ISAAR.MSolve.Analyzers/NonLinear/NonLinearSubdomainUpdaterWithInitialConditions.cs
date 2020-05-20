@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
 
 		public IVector GetRHSFromSolutionWithInitialDisplacemntsEffect(IVectorView solution, IVectorView dSolution, Dictionary<int, Node> boundaryNodes,
 			Dictionary<int, Dictionary<IDofType, double>> initialConvergedBoundaryDisplacements, Dictionary<int, Dictionary<IDofType, double>> totalBoundaryDisplacements,
-			int nIncrement, int totalIncrements, bool[] isNodeUpdated, IVectorView subdomainLinearSystemSolution, bool[] areBoundaryNodesUpdated) //TODO leave 
+			int nIncrement, int totalIncrements, ref BooleanArray isNodeUpdated, IVectorView subdomainLinearSystemSolution, ref BooleanArray areBoundaryNodesUpdated) //TODO leave 
 		{
 			if (!CnstValues.useV2FiniteElements)
 			{
@@ -35,7 +35,7 @@ namespace ISAAR.MSolve.Analyzers.NonLinear
 			{
 				return this.subdomain.GetRHSFromSolutionWithInitialDisplacemntsEffect(solution, dSolution, boundaryNodes,
 				 initialConvergedBoundaryDisplacements, totalBoundaryDisplacements,
-				 nIncrement, totalIncrements, isNodeUpdated, subdomainLinearSystemSolution, areBoundaryNodesUpdated);
+				 nIncrement, totalIncrements, ref isNodeUpdated, subdomainLinearSystemSolution, ref areBoundaryNodesUpdated);
 			}
 		}
 
