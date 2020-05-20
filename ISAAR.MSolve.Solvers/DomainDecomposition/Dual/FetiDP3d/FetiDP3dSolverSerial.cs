@@ -314,9 +314,26 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             // Calculate the displacements of each subdomain
             Logger.StartMeasuringTime();
             displacementsCalculator.CalculateSubdomainDisplacements(lagranges, flexibility);
+            Vector globalU = GatherGlobalDisplacements();// sudomainDisplacements);
+            ScatterGLobalSolutionU(matrixManager, model, globalU);
             Logger.LogCurrentTaskDuration("Calculate displacements from lagrange multipliers");
 
             Logger.IncrementAnalysisStep();
+        }
+
+        private void ScatterGLobalSolutionU(FetiDP3dMatrixManagerSerial matrixManager, IModel model, Vector globalU)
+        {
+            foreach (var entry in model.GlobalDofOrdering.GlobalFreeDofs)
+            {
+                var node = entry.row;
+                var dofType = entry.col;
+                foreach (var subdomaain in node.SubdomainsDictionary.Values)
+                {
+                    matrixManager.GetSubdomainMatrixManager(model.GetSubdomain(subdomaain.ID)).LinearSystem.SolutionConcrete[subdomaain.FreeDofOrdering.FreeDofs[node, dofType]] = globalU[entry.val];
+
+                }
+            }
+
         }
 
         private void PrintLagrangeEqsData()
