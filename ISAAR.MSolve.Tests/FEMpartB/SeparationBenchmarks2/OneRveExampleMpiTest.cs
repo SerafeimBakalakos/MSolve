@@ -23,7 +23,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
         public static /*(double[], double[], double[,], IVector, IVector)*/ void Check_Graphene_rve_serial() //palio "Check_Graphene_rve_Obje_Integration()"
         {
             #region rve builder parameters and example choice
-            CnstValues.exampleNo = 28;
+            CnstValues.exampleNo = 58;
             CnstValues.isInputInCode_forRVE = true;
             CnstValues.useInput_forRVE = true; //Panta prin thn getRveModelAndBoundaryNodes
             
@@ -57,17 +57,19 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             double[] stressesSuitesparse = microstructure2Serial.Stresses;
             double[,] constitutiveSuitesparse = microstructure2Serial.ConstitutiveMatrix.CopytoArray2D();
 
-            var cnst = new CnstValues();
-            (new ISAAR.MSolve.LinearAlgebra.Output.Array1DWriter()).WriteToFile(solutionSuiteSparse.CopyToArray(), cnst.exampleOutputPathGen + @"\oneRveExampleTestSuitsparseSolution.txt");
-            (new ISAAR.MSolve.LinearAlgebra.Output.Array2DWriter()).WriteToFile(microstructure2Serial.ConstitutiveMatrix.CopytoArray2D(), cnst.exampleOutputPathGen + @"\oneRveExampleTestSuitsparseConstitutive.txt");
+            #region write serial solver output
+            //var cnst = new CnstValues();
+            //(new ISAAR.MSolve.LinearAlgebra.Output.Array1DWriter()).WriteToFile(solutionSuiteSparse.CopyToArray(), cnst.exampleOutputPathGen + @"\oneRveExampleTestSuitsparseSolution.txt");
+            //(new ISAAR.MSolve.LinearAlgebra.Output.Array2DWriter()).WriteToFile(microstructure2Serial.ConstitutiveMatrix.CopytoArray2D(), cnst.exampleOutputPathGen + @"\oneRveExampleTestSuitsparseConstitutive.txt");
 
-            (new ISAAR.MSolve.LinearAlgebra.Output.Array1DWriter()).WriteToFile(microstructure2Serial.Stresses, cnst.exampleOutputPathGen + @"\oneRveExampleTestSuitsparseStresses.txt");
+            //(new ISAAR.MSolve.LinearAlgebra.Output.Array1DWriter()).WriteToFile(microstructure2Serial.Stresses, cnst.exampleOutputPathGen + @"\oneRveExampleTestSuitsparseStresses.txt");
+            #endregion
 
             //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { constitutiveSuitesparse[i1, i2] = microstructure3.ConstitutiveMatrix[i1, i2]; } }
             #endregion
 
             #region solve microstructure with feti dp solver
-            CnstValues.useV2FiniteElements = true;
+            //CnstValues.useV2FiniteElements = true;
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
             var microstructure3 = new MicrostructureDefGrad3DSerial(rveBuilder,
@@ -92,26 +94,18 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             if (pcg_tol == 1e-8)
             {
                 Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, stressesSuitesparse, 1e-8));
-                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, new double[6] { 0.23960891246958088, 0.15427370249433003, 0.15367111294118058, 0.0020627411032740984, -0.00071535481277429467, -0.0019255840585553404 }, 1e-14));
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, new double[6] { 0.23960891245982407, 0.15427370248128061, 0.153671112977783, 0.0020627410983659151, -0.00071535481695788922, -0.0019255840674238048 }, 1e-14));
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(solutionSuiteSparse.CopyToArray(), SolutionFetiInSerialFormat.CopyToArray(), 1e-4));
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(constitutiveSuitesparse, constitutiveFeti, 1e-7));
             }
             else if (pcg_tol==1e-5)
             {
                 Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, stressesSuitesparse, 1e-5));
-                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, new double[6] {0.23960891324046732 , 0.15427363616411638 , 0.15367112553991677, 0.00206273825793927 , - 0.00071535611890005582 , - 0.0019255939930602102, }, 1e-14));
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, new double[6] {0.23960891248433011, 0.154273702183357, 0.15367111266616779, 0.0020627410561165154, -0.00071535523131603337, -0.0019255841128574466 }, 1e-14));
             }
-
-            if ((pcg_tol == 1e-5)&&CnstValues.useV2FiniteElements)
-            {
-                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, stressesSuitesparse, 1e-6));
-                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, new double[6] { 0.26492453271064831, 0.15453855006524023, 0.15333899882886506, -0.00042985695405277016, 0.00040280328057427326, -0.0017262685411263629 }, 1e-14));
-            }
-
-            Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(solutionSuiteSparse.CopyToArray(), SolutionFetiInSerialFormat.CopyToArray(), 1e-4));
 
             
             
-
-            Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(constitutiveSuitesparse, constitutiveFeti, 1e-7));
 
 
             //PrintUtilities.WriteToFileVector(stressesCheck3, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\stressesCheck3.txt");

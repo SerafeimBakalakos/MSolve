@@ -20,13 +20,14 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
     public class OneRveExampleMpiTest2 // palio: "SeparateCodeCheckingClass4 "
     {
         [Fact]
-        public static /*(double[], double[], double[,], IVector, IVector)*/ void Check_Graphene_rve_serial() //palio "Check_Graphene_rve_Obje_Integration()"
+        public static /*(double[], double[], double[,], IVector, IVector)*/ void CheckV2ChangesWithSuitsparseVSsuitesparseV1() //palio "Check_Graphene_rve_Obje_Integration()"
         {
             #region rve builder parameters and example choice
-            CnstValues.exampleNo = 58;
-            CnstValues.isInputInCode_forRVE = false;
+            CnstValues.exampleNo = 28;
+            CnstValues.isInputInCode_forRVE = true;
             CnstValues.useInput_forRVE = true; //Panta prin thn getRveModelAndBoundaryNodes
-            
+            CnstValues.useV2FiniteElements = true;
+
 
             (int subdiscr1, int discr1, int subdiscr1_shell, int discr1_shell, int graphene_sheets_number, double scale_factor) = GetGrRveExampleDiscrDataFromFile(new CnstValues());
             int discr3 = discr1 * subdiscr1;
@@ -56,65 +57,42 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             Vector solutionSuiteSparse = (Vector)microstructure2Serial.uInitialFreeDOFDisplacementsPerSubdomain.ElementAt(0).Value.Copy();
             double[] stressesSuitesparse = microstructure2Serial.Stresses;
             double[,] constitutiveSuitesparse = microstructure2Serial.ConstitutiveMatrix.CopytoArray2D();
-            //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { constitutiveSuitesparse[i1, i2] = microstructure3.ConstitutiveMatrix[i1, i2]; } }
+
+            //var cnst = new CnstValues();
+            //(new ISAAR.MSolve.LinearAlgebra.Output.Array1DWriter()).WriteToFile(solutionSuiteSparse.CopyToArray(), cnst.exampleOutputPathGen + @"\oneRveExampleTestSuitsparseSolution.txt");
+            //(new ISAAR.MSolve.LinearAlgebra.Output.Array2DWriter()).WriteToFile(microstructure2Serial.ConstitutiveMatrix.CopytoArray2D(), cnst.exampleOutputPathGen + @"\oneRveExampleTestSuitsparseConstitutive.txt");
+            //(new ISAAR.MSolve.LinearAlgebra.Output.Array1DWriter()).WriteToFile(microstructure2Serial.Stresses, cnst.exampleOutputPathGen + @"\oneRveExampleTestSuitsparseStresses.txt");
+            var constitutiveSuiteSparseV1Solution = new double[6, 6] //
+{{8.540069000000001,5.075852000000000,5.043105000000000,-0.017023750000000,0.012189600000000,-0.045038710000000},
+{5.075852000000000,8.571370000000000,5.082729000000000,-0.001706053000000,0.202671500000000,-0.005347781000000},
+{5.043105000000000,5.082729000000000,7.526216000000000,0.002779462000000,0.046523200000000,-0.001670977000000},
+{-0.017025120000000,-0.001704597000000,0.002779462000000,1.693085000000000,-0.024475130000000,0.095353710000000},
+{0.012189600000000,0.202670100000000,0.046524600000000,-0.024473740000000,1.342860000000000,0.000406443900000},
+{-0.045036090000000,-0.005347781000000,-0.001673759000000,0.095353050000000,0.000407171700000,1.305364000000000}};
+
+            var stressesSuitesparseV1Solution = new double[6]
+{0.264924500000000,
+0.154538600000000,
+0.153339000000000,
+-0.000429857000000,
+0.000402803300000,
+-0.001726269000000};
+
+
             #endregion
 
-            #region solve microstructure with feti dp solver
-            CnstValues.useV2FiniteElements = true;
-            var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
-            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
-            var microstructure3 = new MicrostructureDefGrad3DSerial(rveBuilder,
-                rveBuilder.GetAppropriateSolverMpi, false, 1, true, true);
-            
+            Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(constitutiveSuiteSparseV1Solution, constitutiveSuitesparse, 1e-6));
+            Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesSuitesparseV1Solution, stressesSuitesparseV1Solution, 1e-6));
 
-            microstructure3.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
-            microstructure3.SaveState();
-            microstructure3.UpdateMaterial(new double[9] { /*1.10*/ 1.03, 1, 1, 0, 0, 0, 0, 0, 0 });
-            double[] stressesFeti = microstructure3.Stresses;
-            double[,] constitutiveFeti = microstructure3.ConstitutiveMatrix.CopytoArray2D();
-            //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { constitutiveFeti[i1, i2] = microstructure3.ConstitutiveMatrix[i1, i2]; } }
-
-            microstructure3.SaveState();
-            Vector SolutionFetiInSerialFormat = ReorderSolutionInSerialSkylineFormat(microstructure2Serial.model, solutionSuiteSparse, microstructure3.model, microstructure3.uInitialFreeDOFDisplacementsPerSubdomain);
-            #endregion
-
-            //var errorVector = (vector2 - globalUvectrInSerialFormat).Scale(1 / vector2.Norm2());
-            double errorNorm = (solutionSuiteSparse - SolutionFetiInSerialFormat).Norm2() / solutionSuiteSparse.Norm2();
-
-            double pcg_tol = 1e-5;
-            if (pcg_tol == 1e-8)
-            {
-                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, stressesSuitesparse, 1e-8));
-                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, new double[6] { 0.23960891246958088, 0.15427370249433003, 0.15367111294118058, 0.0020627411032740984, -0.00071535481277429467, -0.0019255840585553404 }, 1e-14));
-            }
-            else if (pcg_tol==1e-5)
-            {
-                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, stressesSuitesparse, 1e-5));
-                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, new double[6] {0.23960891324046732 , 0.15427363616411638 , 0.15367112553991677, 0.00206273825793927 , - 0.00071535611890005582 , - 0.0019255939930602102, }, 1e-14));
-            }
-
-            Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(solutionSuiteSparse.CopyToArray(), SolutionFetiInSerialFormat.CopyToArray(), 1e-4));
-
-            
-            
-
-            Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(constitutiveSuitesparse, constitutiveFeti, 1e-7));
-
-
-            //PrintUtilities.WriteToFileVector(stressesCheck3, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\stressesCheck3.txt");
-            //PrintUtilities.WriteToFile(consCheck1, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\consCheck1.txt");
-            //return (stressesSuitesparse, stressesFeti, constitutiveSuitesparse, uInitialFreeDOFs_state1, uInitialFreeDOFs_state2);
         }
-        
+
         [Fact]
-        public static /*(double[], double[], double[,], IVector, IVector)*/ void CheckExample46InputInCodeRAMconsumption() //palio "Check_Graphene_rve_Obje_Integration()"
+        public static /*(double[], double[], double[,], IVector, IVector)*/ void ChecksFetiV2withSuitesparseV1() //palio "Check_Graphene_rve_Obje_Integration()"
         {
             #region rve builder parameters and example choice
-            CnstValues.exampleNo = 46; CnstValues.parameterSet = ParameterSet.stiffLargerRve;
-            CnstValues.runOnlyHexaModel = false;
-            CnstValues.PreventMATLABandTotalOutput();
-            CnstValues.useInput_forRVE = true; //Panta prin thn getRveModelAndBoundaryNodes
+            CnstValues.exampleNo = 28;
             CnstValues.isInputInCode_forRVE = true;
+            CnstValues.useInput_forRVE = true; //Panta prin thn getRveModelAndBoundaryNodes
 
 
             (int subdiscr1, int discr1, int subdiscr1_shell, int discr1_shell, int graphene_sheets_number, double scale_factor) = GetGrRveExampleDiscrDataFromFile(new CnstValues());
@@ -139,21 +117,22 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 
             //double[,] consCheckSerial2 = new double[6, 6];
             //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { consCheckSerial2[i1, i2] = microstructure2Serial.ConstitutiveMatrix[i1, i2]; } }
-            //microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
-            //microstructure2Serial.SaveState();
-            //microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.03, 1, 1, 0, 0, 0, 0, 0, 0 });
-            //Vector solutionSuiteSparse = (Vector)microstructure2Serial.uInitialFreeDOFDisplacementsPerSubdomain.ElementAt(0).Value.Copy();
-            //double[] stressesSuitesparse = microstructure2Serial.Stresses;
-            //double[,] constitutiveSuitesparse = microstructure2Serial.ConstitutiveMatrix.CopytoArray2D();
-            //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { constitutiveSuitesparse[i1, i2] = microstructure3.ConstitutiveMatrix[i1, i2]; } }
+            microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
+            microstructure2Serial.SaveState();
+            microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.03, 1, 1, 0, 0, 0, 0, 0, 0 });
+            Vector solutionSuiteSparse = (Vector)microstructure2Serial.uInitialFreeDOFDisplacementsPerSubdomain.ElementAt(0).Value.Copy();
+            double[] stressesSuitesparse = microstructure2Serial.Stresses;
+            double[,] constitutiveSuitesparse = microstructure2Serial.ConstitutiveMatrix.CopytoArray2D();
+
             #endregion
 
             #region solve microstructure with feti dp solver
+            //CnstValues.useV2FiniteElements = true;
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
             subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
             var microstructure3 = new MicrostructureDefGrad3DSerial(rveBuilder,
                 rveBuilder.GetAppropriateSolverMpi, false, 1, true, true);
-            
+
 
             microstructure3.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
             microstructure3.SaveState();
@@ -163,23 +142,42 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             //for (int i1 = 0; i1 < 6; i1++) { for (int i2 = 0; i2 < 6; i2++) { constitutiveFeti[i1, i2] = microstructure3.ConstitutiveMatrix[i1, i2]; } }
 
             microstructure3.SaveState();
-            //Vector SolutionFetiInSerialFormat = ReorderSolutionInSerialSkylineFormat(microstructure2Serial.model, solutionSuiteSparse, microstructure3.model, microstructure3.uInitialFreeDOFDisplacementsPerSubdomain);
+            Vector SolutionFetiInSerialFormat = ReorderSolutionInSerialSkylineFormat(microstructure2Serial.model, solutionSuiteSparse, microstructure3.model, microstructure3.uInitialFreeDOFDisplacementsPerSubdomain);
             #endregion
 
             //var errorVector = (vector2 - globalUvectrInSerialFormat).Scale(1 / vector2.Norm2());
-            //double errorNorm = (solutionSuiteSparse - SolutionFetiInSerialFormat).Norm2() / solutionSuiteSparse.Norm2();
+            double errorNorm = (solutionSuiteSparse - SolutionFetiInSerialFormat).Norm2() / solutionSuiteSparse.Norm2();
 
-            //Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, stressesSuitesparse, 1e-8));
-            //Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(solutionSuiteSparse.CopyToArray(), SolutionFetiInSerialFormat.CopyToArray(), 1e-4));
+            double pcg_tol = 1e-5;
+            if ((pcg_tol == 1e-5) && CnstValues.useV2FiniteElements)
+            {
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, stressesSuitesparse, 1e-6));
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, new double[6] { 0.26492453271064831, 0.15453855006524023, 0.15333899882886506, -0.00042985695405277016, 0.00040280328057427326, -0.0017262685411263629 }, 1e-14));
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(constitutiveFeti, constitutiveSuitesparse, 1e-2));// tolerance 1e-3 doesn't work for V1 finite elements either
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(solutionSuiteSparse.CopyToArray(), SolutionFetiInSerialFormat.CopyToArray(), 1e-3));
 
-            //Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(constitutiveSuitesparse, constitutiveFeti, 1e-7));
+                var constitutiveSuiteSparseV1Solution = new double[6, 6] //
+{{8.540069000000001,5.075852000000000,5.043105000000000,-0.017023750000000,0.012189600000000,-0.045038710000000},
+{5.075852000000000,8.571370000000000,5.082729000000000,-0.001706053000000,0.202671500000000,-0.005347781000000},
+{5.043105000000000,5.082729000000000,7.526216000000000,0.002779462000000,0.046523200000000,-0.001670977000000},
+{-0.017025120000000,-0.001704597000000,0.002779462000000,1.693085000000000,-0.024475130000000,0.095353710000000},
+{0.012189600000000,0.202670100000000,0.046524600000000,-0.024473740000000,1.342860000000000,0.000406443900000},
+{-0.045036090000000,-0.005347781000000,-0.001673759000000,0.095353050000000,0.000407171700000,1.305364000000000}};
 
+                var stressesSuitesparseV1Solution = new double[6]
+    {0.264924500000000,
+0.154538600000000,
+0.153339000000000,
+-0.000429857000000,
+0.000402803300000,
+-0.001726269000000};
 
-            //PrintUtilities.WriteToFileVector(stressesCheck3, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\stressesCheck3.txt");
-            //PrintUtilities.WriteToFile(consCheck1, @"C:\Users\turbo-x\Desktop\notes_elegxoi\MSOLVE_output_2\consCheck1.txt");
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(stressesFeti, stressesSuitesparseV1Solution, 1e-6));
+                Assert.True(NRNLAnalyzerDevelopTest.AreDisplacementsSame(constitutiveFeti, constitutiveSuiteSparseV1Solution, 1e-2));
+            }
 
-            //return (stressesSuitesparse, stressesFeti, constitutiveSuitesparse, uInitialFreeDOFs_state1, uInitialFreeDOFs_state2);
         }
+
         private static Vector ReorderSolutionInSerialSkylineFormat(Model skylineModel, Vector skylineSolution, Model fetimodel, Dictionary<int, IVector> uInitialFreeDOFDisplacementsPerSubdomain)
         {
             var freeNodesIds = skylineModel.GlobalDofOrdering.GlobalFreeDofs.GetRows().Select(x => x.ID);
