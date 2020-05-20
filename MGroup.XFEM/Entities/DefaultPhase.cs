@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
-using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Geometry.Tolerances;
 
 //TODO: Using a default phase messes up pretty much everything (avoiding it in collections, casts). Its geometry is too 
 //      different to treat it as other phases. It is imply it, than using an explit phase.

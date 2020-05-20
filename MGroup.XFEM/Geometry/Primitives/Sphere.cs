@@ -15,7 +15,7 @@ namespace MGroup.XFEM.Geometry.Primitives
         public double[] Center { get; }
         public double Radius { get; }
 
-        public IIntersectionCurve2D IntersectPolygon(IList<double[]> nodes)
+        public IElementCurveIntersection2D IntersectPolygon(IList<double[]> nodes)
         {
             throw new NotImplementedException();
         }

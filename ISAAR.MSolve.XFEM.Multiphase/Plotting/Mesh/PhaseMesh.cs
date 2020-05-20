@@ -19,7 +19,6 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Mesh
             for (int i = 1; i < model.Phases.Count; ++i)
             {
                 var phase = (ConvexPhase)(model.Phases[i]);
-                var polygonVertices = new List<VtkPoint>(phase.Boundaries.Count);
                 foreach (PhaseBoundary boundary in phase.Boundaries)
                 {
                     CartesianPoint start = boundary.Segment.Start;

@@ -7,8 +7,8 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public interface IImplictCurve2D : IImplicitGeometry
+    public interface IImplicitCurve2D : IImplicitGeometry
     {
-        IIntersectionCurve2D Intersect(IXFiniteElement element);
+        IElementCurveIntersection2D Intersect(IXFiniteElement element);
     }
 }

@@ -11,11 +11,11 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
     {
         public static void Main(string[] args)
         {
-            Multiphase.Paper1.Paper1Example2.RunParametricHomogenization();
+            //Multiphase.Paper1.Paper1Example2.RunParametricHomogenization();
             //Multiphase.Paper1.Paper1Example2.RunSingleAnalysisAndPlotting();
             //HomogenizationExamples.RunHomogenizationAnalysis();
 
-            //Multiphase.ExamplePhasesFromCsv.Run();
+            Multiphase.ExamplePhasesFromCsv.Run();
 
             //Multiphase.Singularity.Phases3Elements5.RunTest();
             //Multiphase.Singularity.AngledRectangle.RunTest();

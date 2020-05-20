@@ -6,8 +6,8 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public interface IImplictSurface3D : IImplicitGeometry
+    public interface IImplicitSurface3D : IImplicitGeometry
     {
-        IIntersectionSurface3D Intersect(IXFiniteElement element);
+        IElementSurfaceIntersection3D Intersect(IXFiniteElement element);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace MGroup.XFEM.Geometry.Primitives
+﻿namespace MGroup.XFEM.Geometry
 {
     public enum RelativePositionCurveCurve
     {

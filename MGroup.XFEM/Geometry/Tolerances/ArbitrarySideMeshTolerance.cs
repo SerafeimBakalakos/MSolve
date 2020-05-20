@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
-using MGroup.XFEM.Geometry;
 
-namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry
+namespace MGroup.XFEM.Geometry.Tolerances
 {
     public class ArbitrarySideMeshTolerance : IMeshTolerance
     {

@@ -8,6 +8,6 @@ namespace MGroup.XFEM.Geometry.Primitives
     {
         double SignedDistanceOf(double[] point);
 
-        IIntersectionCurve2D IntersectPolygon(IList<double[]> nodes);
+        IElementCurveIntersection2D IntersectPolygon(IList<double[]> nodes);
     }
 }

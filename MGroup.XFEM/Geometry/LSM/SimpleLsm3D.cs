@@ -9,7 +9,7 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public class SimpleLsm3D : IImplictSurface3D
+    public class SimpleLsm3D : IImplicitSurface3D
     {
         public SimpleLsm3D(XModel physicalModel, ISurface3D closedSurface)
         {
@@ -23,7 +23,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public double[] NodalValues { get; }
 
-        public IIntersectionSurface3D Intersect(IXFiniteElement element)
+        public IElementSurfaceIntersection3D Intersect(IXFiniteElement element)
         {
             throw new NotImplementedException();
         }

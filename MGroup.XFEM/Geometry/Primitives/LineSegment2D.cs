@@ -38,11 +38,11 @@ namespace MGroup.XFEM.Geometry.Primitives
             return new LineSegment2D(start, end, length, cosa, sina, originLocal);
         }
 
-        public IIntersectionCurve2D IntersectPolygon(IList<double[]> nodes)
+        public IElementCurveIntersection2D IntersectPolygon(IList<double[]> nodes)
         {
             //TODO: needs a fast way to eliminate most elements
 
-            IIntersectionCurve2D lineIntersection = base.IntersectPolygon(nodes);
+            IElementCurveIntersection2D lineIntersection = base.IntersectPolygon(nodes);
             if (lineIntersection is LineSegmentIntersection2D segment)
             {
                 // The intersection points may not be inside the segment. 
@@ -50,7 +50,7 @@ namespace MGroup.XFEM.Geometry.Primitives
                 double startLocalX = Math.Max(0, segment.StartLocalX);
                 double endLocalX = Math.Min(Length, segment.EndLocalX);
 
-                if (startLocalX >= endLocalX) return new NullCurveIntersection2D();
+                if (startLocalX >= endLocalX) return new NullElementCurveIntersection2D();
                 else
                 {
                     return new LineSegmentIntersection2D(segment.RelativePosition, cosa, sina, originLocal, 

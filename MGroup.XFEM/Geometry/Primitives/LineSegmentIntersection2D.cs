@@ -8,7 +8,7 @@ using ISAAR.MSolve.Discretization.Integration;
 //      Or just use LineSegment2D wrapped in a class about Intersection
 namespace MGroup.XFEM.Geometry.Primitives
 {
-    public class LineSegmentIntersection2D : IIntersectionCurve2D
+    public class LineSegmentIntersection2D : IElementCurveIntersection2D
     {
         /// <summary>
         /// a is the counter-clockwise angle from the global x axis to the local x axis
@@ -33,15 +33,15 @@ namespace MGroup.XFEM.Geometry.Primitives
             this.StartLocalX = startLocalX;
             this.EndLocalX = endLocalX;
 
-            this.Start = ProjectLocalToGlobal(startLocalX);
-            this.End = ProjectLocalToGlobal(endLocalX);
+            this.StartGlobalCartesian = ProjectLocalToGlobal(startLocalX);
+            this.EndGlobalCartesian = ProjectLocalToGlobal(endLocalX);
         }
 
         public LineSegmentIntersection2D(double[] start, double[] end, RelativePositionCurveElement pos)
         {
             Debug.Assert(pos == RelativePositionCurveElement.Intersecting || pos == RelativePositionCurveElement.Conforming);
-            this.Start = start;
-            this.End = end;
+            this.StartGlobalCartesian = start;
+            this.EndGlobalCartesian = end;
             this.RelativePosition = pos;
 
             double dx = end[0] - start[0];
@@ -58,15 +58,23 @@ namespace MGroup.XFEM.Geometry.Primitives
 
         public RelativePositionCurveElement RelativePosition { get; }
 
-        public double[] Start { get; }
+        public double[] StartGlobalCartesian { get; }
 
         public double StartLocalX { get; }
 
-        public double[] End { get; }
+        public double[] EndGlobalCartesian { get; }
 
         public double EndLocalX { get; }
 
-        public GaussPoint[] GetIntersectionPoints(int numPoints)
+        public List<double[]> ApproximateGlobalCartesian()
+        {
+            var points = new List<double[]>(2);
+            points.Add(StartGlobalCartesian);
+            points.Add(EndGlobalCartesian);
+            return points;
+        }
+
+        public GaussPoint[] GetIntegrationPoints(int numPoints)
         {
             // If conforming: halve the weights. Perhaps this can be done in the XElement
             throw new NotImplementedException();

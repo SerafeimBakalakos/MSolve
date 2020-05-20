@@ -7,8 +7,8 @@ namespace MGroup.XFEM.Tests
     {
         public static void Main(string[] args)
         {
-            //LsmBalls2DExamples.Run();
-            LsmBalls3DExamples.Run();
+            LsmBalls2DExamples.Run();
+            //LsmBalls3DExamples.Run();
         }
     }
 }

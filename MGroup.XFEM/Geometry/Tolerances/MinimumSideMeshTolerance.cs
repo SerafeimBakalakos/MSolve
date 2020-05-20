@@ -4,7 +4,7 @@ using System.Text;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 
-namespace MGroup.XFEM.Geometry
+namespace MGroup.XFEM.Geometry.Tolerances
 {
     public class MinimumSideMeshTolerance : IMeshTolerance
     {

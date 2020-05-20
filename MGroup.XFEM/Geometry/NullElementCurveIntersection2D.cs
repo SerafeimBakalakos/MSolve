@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Integration;
 
-namespace MGroup.XFEM.Geometry.Primitives
+namespace MGroup.XFEM.Geometry
 {
-    public class NullCurveIntersection2D : IIntersectionCurve2D
+    public class NullElementCurveIntersection2D : IElementCurveIntersection2D
     {
         public RelativePositionCurveElement RelativePosition => RelativePositionCurveElement.Disjoint;
 
-        public double[] Start => null;
+        public List<double[]> ApproximateGlobalCartesian() => new List<double[]>(0);
 
-        public double[] End => null;
-
-        public GaussPoint[] GetIntersectionPoints(int numPoints)
+        public GaussPoint[] GetIntegrationPoints(int numPoints)
         {
             return new GaussPoint[0];
         }

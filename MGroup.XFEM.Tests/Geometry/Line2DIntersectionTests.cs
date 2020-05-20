@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
 using Xunit;
 
@@ -55,10 +56,10 @@ namespace MGroup.XFEM.Tests.Geometry
             ICurve2D line;
             if (vectorized) line = new Line2DVectorized(p1, p2);
             else line = new Line2D(p1, p2);
-            IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
+            IElementCurveIntersection2D intersection = line.IntersectPolygon(triangle);
 
             Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Disjoint);
-            Assert.True(intersection is NullCurveIntersection2D);
+            Assert.True(intersection is NullElementCurveIntersection2D);
         }
 
         [Theory]
@@ -81,10 +82,10 @@ namespace MGroup.XFEM.Tests.Geometry
             ICurve2D line;
             if (vectorized) line = new Line2DVectorized(p1, p2);
             else line = new Line2D(p1, p2);
-            IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
+            IElementCurveIntersection2D intersection = line.IntersectPolygon(triangle);
 
             Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Disjoint);
-            Assert.True(intersection is NullCurveIntersection2D);
+            Assert.True(intersection is NullElementCurveIntersection2D);
 
             //Assert.True(pos == RelativePositionCurveDisc.Tangent);
             //Assert.Equal(1, intersection.Length);
@@ -114,16 +115,17 @@ namespace MGroup.XFEM.Tests.Geometry
             ICurve2D line;
             if (vectorized) line = new Line2DVectorized(p1, p2);
             else line = new Line2D(p1, p2);
-            IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
+            IElementCurveIntersection2D intersection = line.IntersectPolygon(triangle);
+            List<double[]> points = intersection.ApproximateGlobalCartesian();
 
             Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Intersecting);
             Assert.True(intersection is LineSegmentIntersection2D);
 
-            Assert.Equal(1.5, intersection.Start[0], 5);
-            Assert.Equal(2, intersection.Start[1], 5);
+            Assert.Equal(1.5, points[0][0], 5);
+            Assert.Equal(2, points[0][1], 5);
 
-            Assert.Equal(2.5, intersection.End[0], 5);
-            Assert.Equal(2, intersection.End[1], 5);
+            Assert.Equal(2.5, points[1][0], 5);
+            Assert.Equal(2, points[1][1], 5);
         }
 
         [Theory]
@@ -146,16 +148,17 @@ namespace MGroup.XFEM.Tests.Geometry
             ICurve2D line;
             if (vectorized) line = new Line2DVectorized(p1, p2);
             else line = new Line2D(p1, p2);
-            IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
+            IElementCurveIntersection2D intersection = line.IntersectPolygon(triangle);
+            List<double[]> points = intersection.ApproximateGlobalCartesian();
 
             Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Intersecting);
             Assert.True(intersection is LineSegmentIntersection2D);
 
-            Assert.Equal(2, intersection.Start[0], 5);
-            Assert.Equal(1, intersection.Start[1], 5);
+            Assert.Equal(2, points[0][0], 5);
+            Assert.Equal(1, points[0][1], 5);
 
-            Assert.Equal(2, intersection.End[0], 5);
-            Assert.Equal(3, intersection.End[1], 5);
+            Assert.Equal(2, points[1][0], 5);
+            Assert.Equal(3, points[1][1], 5);
         }
 
         [Theory]
@@ -182,16 +185,17 @@ namespace MGroup.XFEM.Tests.Geometry
             ICurve2D line;
             if (vectorized) line = new Line2DVectorized(p1, p2);
             else line = new Line2D(p1, p2);
-            IIntersectionCurve2D intersection = line.IntersectPolygon(triangle);
+            IElementCurveIntersection2D intersection = line.IntersectPolygon(triangle);
+            List<double[]> points = intersection.ApproximateGlobalCartesian();
 
             Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Conforming);
             Assert.True(intersection is LineSegmentIntersection2D);
 
-            Assert.Equal(2, intersection.Start[0], 5);
-            Assert.Equal(3, intersection.Start[1], 5);
+            Assert.Equal(2, points[0][0], 5);
+            Assert.Equal(3, points[0][1], 5);
 
-            Assert.Equal(3, intersection.End[0], 5);
-            Assert.Equal(1, intersection.End[1], 5);
+            Assert.Equal(3, points[1][0], 5);
+            Assert.Equal(1, points[1][1], 5);
         }
 
         private static double[][] CreateQuad()
