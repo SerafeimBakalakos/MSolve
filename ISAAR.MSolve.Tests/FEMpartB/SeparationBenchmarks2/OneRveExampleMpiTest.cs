@@ -17,7 +17,7 @@ using Xunit;
 
 namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 {
-    public class OneRveExampleMpiTestOriginalAndV2update // palio: "SeparateCodeCheckingClass4 "
+    public class OneRveExampleMpiTest // palio: "SeparateCodeCheckingClass4 "
     {
         [Fact]
         public static /*(double[], double[], double[,], IVector, IVector)*/ void Check_Graphene_rve_serial() //palio "Check_Graphene_rve_Obje_Integration()"
