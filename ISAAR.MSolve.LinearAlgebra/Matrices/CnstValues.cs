@@ -75,6 +75,8 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
         public static int analyzerNRIter { get; set; } = -1;
         public static string analyzerInfo { get; set; }
         public string incrementalPcgStatsOutputFileExtention = @"\interfaceSolver_FetiDP_3d_iterations_Per_Increment.txt";
+
+        public static bool WriteNRRelatedPcgStats { get; set; } = false;
         #endregion
 
         #region supress output

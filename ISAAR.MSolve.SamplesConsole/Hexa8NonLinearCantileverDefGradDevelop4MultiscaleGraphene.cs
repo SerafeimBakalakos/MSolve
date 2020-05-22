@@ -67,7 +67,7 @@ namespace ISAAR.MSolve.SamplesConsole
             #endregion
 
             var rveBuilderSuitesparse = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
-            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number, false);
             var material1 = new MicrostructureDefGrad3D(rveBuilderSuitesparse,
                 skylinemodel => (new SuiteSparseSolver.Builder()).BuildSolver(skylinemodel), false, 1);
             IMaterialManager materialManager = new MaterialManagerMpi2(material1, procs);

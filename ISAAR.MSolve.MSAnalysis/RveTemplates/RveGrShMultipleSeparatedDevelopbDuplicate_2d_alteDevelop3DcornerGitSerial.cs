@@ -61,6 +61,8 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         public List<List<int>> extraConstraintsNoedsAve { get; set; }
 
         private bool decomposeModel;
+
+        private bool useReorthoSolver;
         
         
         public Dictionary<int, HashSet<INode>> cornerNodes;
@@ -93,7 +95,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             fetiSolverBuilder.StiffnessDistribution = StiffnessDistributionType.HeterogeneousCondensed; //TODO
             fetiSolverBuilder.Preconditioning = new DirichletPreconditioning();
             fetiSolverBuilder.PcgSettings = pcgSettings;
-            fetiSolverBuilder.Reorthogonalization = true;
+            fetiSolverBuilder.Reorthogonalization = useReorthoSolver;
 
             //Crosspoints crosspoints = Crosspoints.FullyRedundant; //A.2
             //Crosspoints crosspoints = Crosspoints.Minimum; //A.2
@@ -135,7 +137,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
         public int[][] CornerNodesData;
 
         public RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(int RVE_id, bool decomposeModel, Tuple<rveMatrixParameters, grapheneSheetParameters> mpgp,
-            int subdiscr1, int discr1, int discr3, int subdiscr1_shell, int discr1_shell, int graphene_sheets_number)
+            int subdiscr1, int discr1, int discr3, int subdiscr1_shell, int discr1_shell, int graphene_sheets_number, bool useReorthoSolver)
         {
             this.RVE_id = RVE_id;
             this.decomposeModel = decomposeModel;
@@ -147,10 +149,11 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             this.subdiscr1_shell = subdiscr1_shell;
             this.discr1_shell = discr1_shell;
             this.graphene_sheets_number = graphene_sheets_number;
+            this.useReorthoSolver = useReorthoSolver;
 
         }
 
-        public IRVEbuilder Clone(int a) => new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(a, decomposeModel, mpgp, subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+        public IRVEbuilder Clone(int a) => new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(a, decomposeModel, mpgp, subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number, useReorthoSolver);
 
         public Tuple<Model, Dictionary<int, Node>, double> GetModelAndBoundaryNodes()
         {
