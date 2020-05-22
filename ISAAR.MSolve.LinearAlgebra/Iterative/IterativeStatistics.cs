@@ -27,6 +27,9 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative
         /// </summary>
         public bool HasConverged { get; set; }
 
+        public bool HasStagnated { get; set; }
+
+
         /// <summary>
         /// The number of iterations that were run before the algorithm terminated. 
         /// </summary>

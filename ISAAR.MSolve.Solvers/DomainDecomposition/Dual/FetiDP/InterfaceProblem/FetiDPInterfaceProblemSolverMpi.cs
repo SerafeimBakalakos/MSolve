@@ -13,6 +13,7 @@ using ISAAR.MSolve.Solvers.Logging;
 using MPI;
 using ISAAR.MSolve.LinearAlgebra.Distributed.Iterative;
 using ISAAR.MSolve.LinearAlgebra.Distributed.Vectors;
+using ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient;
 
 //TODO: Reduce the duplication between MPI and serial implementations. Most is FETI-DP specific code.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
@@ -33,6 +34,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             this.model = model;
             this.pcgSettings = pcgSettings;
         }
+
+        public Vector PreviousLambda { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public bool UsePreviousLambda { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public ReorthogonalizedPcg Pcg => throw new NotImplementedException();
+
+        public bool UseStagnationCriterion { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility, 

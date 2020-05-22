@@ -24,6 +24,13 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
         /// </summary>
         public List<IVectorView> MatrixTimesDirections { get; } = new List<IVectorView>();
 
+        public void Clear()
+        {
+            Directions.Clear();
+            MatrixTimesDirections.Clear();
+            DirectionsTimesMatrixTimesDirections.Clear();
+        }
+
         /// <summary>
         /// Discards the direction vectors and any corresponding data of the newest PCG iterations.
         /// </summary>
@@ -75,7 +82,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
         /// Stores a new direction vector and other related data. The new entries will be regarded as latest.
         /// </summary>
         /// <param name="pcg">The Preconditioned Conjugate Gradient Aglorithm that uses this object.</param>
-        public void StoreDirectionData(PcgWithReorthogonalization pcg)
+        public void StoreDirectionData(ReorthogonalizedPcg pcg)
         {
             Directions.Add(pcg.Direction.Copy());
             MatrixTimesDirections.Add(pcg.MatrixTimesDirection.Copy());

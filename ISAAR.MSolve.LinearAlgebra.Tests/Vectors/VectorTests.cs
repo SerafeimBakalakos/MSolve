@@ -36,6 +36,24 @@ namespace ISAAR.MSolve.LinearAlgebra.Tests.Vectors
 
         [Theory]
         [MemberData(nameof(TestSettings.ProvidersToTest), MemberType = typeof(TestSettings))]
+        private static void TestAddSubvectorNonContiguous(LinearAlgebraProviderChoice providers)
+        {
+            TestSettings.RunMultiproviderTest(providers, delegate ()
+            {
+                var subvector = Vector.CreateFromArray(new double[] { 11, 12, 15, 14, 13});
+                int[] subToGlobal = { 1, 3, 9, 8, 6 };
+                var globalVector = Vector.CreateZero(10);
+                var globalVectorExpected = Vector.CreateFromArray(new double[] { 0, 11, 0, 12, 0, 0, 13, 0, 14, 15 });
+
+                // AddIntoThis()
+                globalVector.AddIntoThisNonContiguouslyFrom(subToGlobal, subvector);
+                comparer.AssertEqual(globalVectorExpected, globalVector);
+            });
+        }
+
+
+        [Theory]
+        [MemberData(nameof(TestSettings.ProvidersToTest), MemberType = typeof(TestSettings))]
         private static void TestAxpy(LinearAlgebraProviderChoice providers)
         {
             TestSettings.RunMultiproviderTest(providers, delegate ()

@@ -41,7 +41,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
         private readonly IFreeDofDisplacementsCalculator displacementsCalculator;
         private readonly DofOrderer dofOrderer;
         private readonly FetiDPDofSeparatorSerial dofSeparator;
-        private readonly FetiDP3dInterfaceProblemSolverSerial interfaceProblemSolver;
+        private readonly IFetiDPInterfaceProblemSolver interfaceProblemSolver;
         private readonly LagrangeMultipliersEnumeratorSerial lagrangesEnumerator;
         private readonly FetiDP3dMatrixManagerSerial matrixManager;
         private readonly IModel model;
@@ -61,7 +61,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
         public bool usePreviousLambda { get; set; }
         public FetiDP3dSolverSerial(IModel model, ICornerNodeSelection cornerNodeSelection, IMidsideNodesSelection midsideNodesSelection, IAugmentationConstraintsFactory augmentationConstraintsFactory,
             IFetiDP3dMatrixManagerFactory matrixManagerFactory, IFetiPreconditioningOperations preconditioning,
-            ICrosspointStrategy crosspointStrategy, PcgSettings pcgSettings, StiffnessDistributionType stiffnessDistributionType)
+            ICrosspointStrategy crosspointStrategy, PcgSettings pcgSettings, StiffnessDistributionType stiffnessDistributionType,
+            bool reorthogonalization)
         {
             this.msgHeader = $"{this.GetType().Name}: ";
 
@@ -91,9 +92,18 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             this.precondFactory = new FetiPreconditionerSerial.Factory();
 
             // Interface problem
-            this.interfaceProblemSolver = new FetiDP3dInterfaceProblemSolverSerial(model, pcgSettings, augmentationConstraints);
-            this.displacementsCalculator = new FetiDP3dFreeDofDisplacementsCalculatorSerial(model, dofSeparator, lagrangesEnumerator,
-                augmentationConstraints, matrixManager);
+            if (reorthogonalization)
+            {
+                this.interfaceProblemSolver = new FetiDP3dInterfaceProblemSolverReorthogonalizationSerial(
+                    model, pcgSettings, augmentationConstraints);
+            }
+            else
+            {
+                this.interfaceProblemSolver = new FetiDP3dInterfaceProblemSolverSerial(
+                    model, pcgSettings, augmentationConstraints);
+            }
+            this.displacementsCalculator = new FetiDP3dFreeDofDisplacementsCalculatorSerial(
+                model, dofSeparator, lagrangesEnumerator,augmentationConstraints, matrixManager);
 
             // Homogeneous/heterogeneous problems
             // Homogeneous/heterogeneous problems
@@ -120,6 +130,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
         public ISolverLogger Logger { get; }
         public string Name => name;
         public INodalLoadDistributor NodalLoadDistributor => stiffnessDistribution;
+
+        public IFetiDPInterfaceProblemSolver InterfaceProblemSolver => interfaceProblemSolver;
 
         /// <summary>
         ///  builds Kff of each subdomain
@@ -303,9 +315,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             }
 
             // Solve interface problem
-            interfaceProblemSolver.previousLambda = previousLambda;
-            interfaceProblemSolver.usePreviousLambda = usePreviousLambda;
-            Vector lagranges = interfaceProblemSolver.SolveInterfaceProblem(matrixManager, lagrangesEnumerator,
+            InterfaceProblemSolver.PreviousLambda = previousLambda;
+            InterfaceProblemSolver.UsePreviousLambda = usePreviousLambda;
+            Vector lagranges = InterfaceProblemSolver.SolveInterfaceProblem(matrixManager, lagrangesEnumerator,
                 flexibility, preconditioner, globalForcesNorm, Logger);
             if (usePreviousLambda) { previousLambda = lagranges; }
             
@@ -488,6 +500,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
 
             public IFetiPreconditioningOperations Preconditioning { get; set; } = new DirichletPreconditioning();
 
+            public bool Reorthogonalization { get; set; } = false;
+
             public StiffnessDistributionType StiffnessDistribution { get; set; } = StiffnessDistributionType.Homogeneous;
 
             public FetiDP3dSolverSerial Build(IModel model, ICornerNodeSelection cornerNodeSelection,
@@ -495,7 +509,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             {
                 return new FetiDP3dSolverSerial(model, cornerNodeSelection, midsideNodesSelection, 
                     AugmentationConstraintsFactory, matrixManagerFactory, Preconditioning, CrosspointStrategy,
-                    PcgSettings, StiffnessDistribution);
+                    PcgSettings, StiffnessDistribution, Reorthogonalization);
             }
         }
     }

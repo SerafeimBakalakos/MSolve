@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Iterative;
 using ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient;
+using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.FlexibilityMatrix;
@@ -28,27 +30,31 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
     /// The interface problem is solved using PCG. The matrix of the coarse problem KccStar, namely the static condensation of 
     /// the remainder dofs onto the corner dofs is performed explicitly.
     /// </summary>
-    public class FetiDP3dInterfaceProblemSolverSerial : IFetiDPInterfaceProblemSolver
+    public class FetiDP3dInterfaceProblemSolverReorthogonalizationSerial : IFetiDPInterfaceProblemSolver
     {
         private readonly IAugmentationConstraints augmentationConstraints;
         private readonly IModel model;
         private readonly PcgSettings pcgSettings;
 
-        public FetiDP3dInterfaceProblemSolverSerial(IModel model, PcgSettings pcgSettings,
+        public FetiDP3dInterfaceProblemSolverReorthogonalizationSerial(IModel model, PcgSettings pcgSettings,
             IAugmentationConstraints augmentationConstraints)
         {
             this.model = model;
             this.pcgSettings = pcgSettings;
             this.augmentationConstraints = augmentationConstraints;
+
+            var pcgBuilder = new ReorthogonalizedPcg.Builder();
+            pcgBuilder.MaxIterationsProvider = pcgSettings.MaxIterationsProvider;
+            pcgBuilder.ResidualTolerance = pcgSettings.ConvergenceTolerance;
+            Pcg = pcgBuilder.Build();
         }
+
+        public ReorthogonalizedPcg Pcg { get; }
 
         public Vector PreviousLambda { get; set; }
 
         public bool UsePreviousLambda { get; set; }
-
-        public ReorthogonalizedPcg Pcg => null;
-
-        public bool UseStagnationCriterion { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public bool UseStagnationCriterion { get; set; }
 
         public Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility,
@@ -65,32 +71,41 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             Vector lagranges;
             if (!(PreviousLambda == null))
             {
-                lagranges = PreviousLambda;
+                lagranges = PreviousLambda.Copy();
             }
             else
             {
                 lagranges = Vector.CreateZero(systemOrder);
             }
 
-            
-
             // Solve the interface problem using PCG algorithm
-            var pcgBuilder = new PcgAlgorithm.Builder();
-            pcgBuilder.MaxIterationsProvider = pcgSettings.MaxIterationsProvider;
-            pcgBuilder.ResidualTolerance = pcgSettings.ConvergenceTolerance;
-            pcgBuilder.Convergence = pcgSettings.ConvergenceStrategyFactory.CreateConvergenceStrategy(globalForcesNorm);
-            PcgAlgorithm pcg = pcgBuilder.Build(); //TODO: perhaps use the pcg from the previous analysis if it has reorthogonalization.
-
+            Pcg.Convergence = pcgSettings.ConvergenceStrategyFactory.CreateConvergenceStrategy(globalForcesNorm);
             IterativeStatistics stats;
-            if (!(PreviousLambda == null))
+            if (!UseStagnationCriterion || (Pcg.ReorthoCache.Directions.Count == 0))
             {
-                stats = pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, false,
+                Pcg.Stagnation = new NullStagnationCriterion();
+                stats = Pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, PreviousLambda == null,
                   () => Vector.CreateZero(systemOrder));
             }
             else
             {
-                stats = pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, true,
-                  () => Vector.CreateZero(systemOrder));
+                // Stored directions may cause stagnation to a suboptimal solution. Check if this happens first
+                Pcg.Stagnation = new AverageStagnationCriterion(5, 1E-2);
+                stats = Pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, PreviousLambda == null,
+                    () => Vector.CreateZero(systemOrder));
+
+                if (stats.HasStagnated)
+                {
+                    int numIterationsInitial = stats.NumIterationsRequired;
+
+                    // In this case rerun PCG without direction vectors. However use the current approximate 
+                    // solution as an initial guess
+                    Pcg.ReorthoCache.Clear();
+                    Pcg.Stagnation = new NullStagnationCriterion();
+                    stats = Pcg.Solve(pcgMatrix, pcgPreconditioner, pcgRhs, lagranges, false, 
+                        () => Vector.CreateZero(systemOrder));
+                    stats.NumIterationsRequired += numIterationsInitial;
+                }
             }
 
             // Log statistics about PCG execution
@@ -231,8 +246,17 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             if(CnstValues.runOnlyHexaModel)
             { statsOutputPath = cnstVal.interfaceSolverStatsPath + @"\interfaceSolver_FetiDP_3d_only_hexa_stats.txt"; }
             else
-            { statsOutputPath = cnstVal.interfaceSolverStatsPath + @"\interfaceSolver_FetiDP_3d_stats.txt"; }
+            { statsOutputPath = cnstVal.interfaceSolverStatsPath + @"\interfaceSolver_FetiDP_3d_stats.txt";
+                var incrementalPcgStatsOutput = cnstVal.interfaceSolverStatsPath + cnstVal.incrementalPcgStatsOutputFileExtention ;
+                using (var writer = new StreamWriter(incrementalPcgStatsOutput, true))
+                {
+                    writer.Write(CnstValues.analyzerInfo + $" LoadStep {CnstValues.analyzerLoadingStep} nRITer {CnstValues.analyzerNRIter} : pcg Iterations= {nIter}");
+                    writer.WriteLine();
+                }
+            }
             cnstVal.WriteToFileStringArray(statsLines, statsOutputPath);
+
+
 
         }
 
