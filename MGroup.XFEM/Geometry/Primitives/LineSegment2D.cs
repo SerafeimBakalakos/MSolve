@@ -50,7 +50,7 @@ namespace MGroup.XFEM.Geometry.Primitives
                 double startLocalX = Math.Max(0, segment.StartLocalX);
                 double endLocalX = Math.Min(Length, segment.EndLocalX);
 
-                if (startLocalX >= endLocalX) return new NullElementCurveIntersection2D();
+                if (startLocalX >= endLocalX) return new NullElementIntersection2D();
                 else
                 {
                     return new LineSegmentIntersection2D(segment.RelativePosition, cosa, sina, originLocal, 

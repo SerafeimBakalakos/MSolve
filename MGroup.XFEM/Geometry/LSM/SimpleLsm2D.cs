@@ -15,15 +15,15 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         public SimpleLsm2D(XModel physicalModel, ICurve2D closedCurve)
         {
-            NodalValues = new double[physicalModel.Nodes.Count];
+            NodalLevelSets = new double[physicalModel.Nodes.Count];
             for (int n = 0; n < physicalModel.Nodes.Count; ++n)
             {
                 double[] node = physicalModel.Nodes[n].Coordinates;
-                NodalValues[n] = closedCurve.SignedDistanceOf(node);
+                NodalLevelSets[n] = closedCurve.SignedDistanceOf(node);
             }
         }
 
-        public double[] NodalValues { get; }
+        public double[] NodalLevelSets { get; }
 
         public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 
@@ -31,7 +31,7 @@ namespace MGroup.XFEM.Geometry.LSM
         {
             if (IsElementDisjoint(element)) // Check this first, since it is faster and most elements are in this category 
             {
-                return new NullElementCurveIntersection2D();
+                return new NullElementIntersection2D();
             }
 
             double tol = MeshTolerance.CalcTolerance(element);
@@ -44,8 +44,6 @@ namespace MGroup.XFEM.Geometry.LSM
                 XNode node2Cartesian = edgesCartesian[i].node2;
                 NaturalPoint node1Natural = edgesNatural[i].node1;
                 NaturalPoint node2Natural = edgesNatural[i].node2;
-
-                //TODO: Add tolerance control or modify the level sets directly when I first calculate them
                 double levelSet1 = CalcLevelSetNearZero(node1Cartesian, tol);
                 double levelSet2 = CalcLevelSetNearZero(node2Cartesian, tol);
 
@@ -79,7 +77,7 @@ namespace MGroup.XFEM.Geometry.LSM
             if (intersections.Count == 1) // Curve is tangent to the element at a single node
             {
                 //TODO: Make sure the intersection point is a node (debug only)
-                return new NullElementCurveIntersection2D();
+                return new NullElementIntersection2D();
             }
             else if (intersections.Count == 2)
             {
@@ -89,7 +87,7 @@ namespace MGroup.XFEM.Geometry.LSM
             else throw new Exception("This should not have happened");
         }
 
-        public double SignedDistanceOf(XNode node) => NodalValues[node.ID];
+        public double SignedDistanceOf(XNode node) => NodalLevelSets[node.ID];
 
         public double SignedDistanceOf(XPoint point)
         {
@@ -98,7 +96,7 @@ namespace MGroup.XFEM.Geometry.LSM
             double result = 0;
             for (int n = 0; n < nodes.Length; ++n)
             {
-                result += shapeFunctions[n] * NodalValues[n];
+                result += shapeFunctions[n] * NodalLevelSets[n];
             }
             return result;
         }
@@ -115,7 +113,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
             foreach (XNode node in element.Nodes)
             {
-                double levelSet = NodalValues[node.ID];
+                double levelSet = NodalLevelSets[node.ID];
                 if (levelSet < minLevelSet) minLevelSet = levelSet;
                 if (levelSet > maxLevelSet) maxLevelSet = levelSet;
             }
@@ -126,7 +124,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         private double CalcLevelSetNearZero(XNode node, double zeroTolerance)
         {
-            double levelSet = NodalValues[node.ID];
+            double levelSet = NodalLevelSets[node.ID];
             if (Math.Abs(levelSet) <= zeroTolerance) return 0.0;
             else return levelSet;
         }

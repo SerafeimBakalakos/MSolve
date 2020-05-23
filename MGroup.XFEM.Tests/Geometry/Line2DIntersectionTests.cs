@@ -59,7 +59,7 @@ namespace MGroup.XFEM.Tests.Geometry
             IElementCurveIntersection2D intersection = line.IntersectPolygon(triangle);
 
             Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Disjoint);
-            Assert.True(intersection is NullElementCurveIntersection2D);
+            Assert.True(intersection is NullElementIntersection2D);
         }
 
         [Theory]
@@ -85,7 +85,7 @@ namespace MGroup.XFEM.Tests.Geometry
             IElementCurveIntersection2D intersection = line.IntersectPolygon(triangle);
 
             Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Disjoint);
-            Assert.True(intersection is NullElementCurveIntersection2D);
+            Assert.True(intersection is NullElementIntersection2D);
 
             //Assert.True(pos == RelativePositionCurveDisc.Tangent);
             //Assert.Equal(1, intersection.Length);

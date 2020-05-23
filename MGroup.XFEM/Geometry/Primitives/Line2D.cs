@@ -106,12 +106,12 @@ namespace MGroup.XFEM.Geometry.Primitives
             // Investigate the intersection type
             if (intersections.Count == 0)
             {
-                return new NullElementCurveIntersection2D();
+                return new NullElementIntersection2D();
                 //return (RelativePositionCurveDisc.Disjoint, new double[0]);
             }
             else if (intersections.Count == 1)
             {
-                return new NullElementCurveIntersection2D();
+                return new NullElementIntersection2D();
                 //return (RelativePositionCurveDisc.Tangent, new double[] { intersections.First() });
             }
             else if (intersections.Count == 2)

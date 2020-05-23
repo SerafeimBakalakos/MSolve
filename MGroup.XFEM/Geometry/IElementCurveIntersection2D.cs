@@ -6,8 +6,8 @@ using ISAAR.MSolve.Discretization.Integration;
 namespace MGroup.XFEM.Geometry
 {
     /// <summary>
-    /// A curve resulting from the intersection of a parent curve with a disc (the part of the plane enclosed in a closed curved).
-    /// Degenerate cases are also possible: null or single point
+    /// A curve resulting from the intersection of a parent curve with a 2D element.
+    /// Degenerate cases are also possible: null or single point.
     /// </summary>
     public interface IElementCurveIntersection2D
     {

@@ -13,6 +13,9 @@ namespace MGroup.XFEM.Elements
         IReadOnlyList<(XNode node1, XNode node2)> EdgeNodes { get; }
         IReadOnlyList<(NaturalPoint node1, NaturalPoint node2)> EdgesNodesNatural { get; }
 
+        IReadOnlyList<ElementEdge> Edges { get; }
+        IReadOnlyList<ElementFace> Faces { get; }
+
         //IBoundaryIntegration IntegrationBoundary { get; }
         //IIntegrationStrategy IntegrationVolume { get; }
 

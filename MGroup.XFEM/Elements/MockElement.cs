@@ -86,6 +86,10 @@ namespace MGroup.XFEM.Elements
         public XSubdomain Subdomain { get; set; }
         ISubdomain IElement.Subdomain => Subdomain;
 
+        public IReadOnlyList<ElementEdge> Edges => throw new NotImplementedException();
+
+        public IReadOnlyList<ElementFace> Faces => throw new NotImplementedException();
+
         public IMatrix DampingMatrix(IElement element)
         {
             throw new NotImplementedException();

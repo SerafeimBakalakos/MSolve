@@ -10,5 +10,7 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         double SignedDistanceOf(XNode node);
         double SignedDistanceOf(XPoint point);
+
+        //TODO: Also normal vector through point/node
     }
 }

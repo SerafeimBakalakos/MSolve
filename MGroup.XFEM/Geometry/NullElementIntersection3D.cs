@@ -5,7 +5,7 @@ using ISAAR.MSolve.Discretization.Integration;
 
 namespace MGroup.XFEM.Geometry
 {
-    public class NullElementCurveIntersection2D : IElementCurveIntersection2D
+    public class NullElementIntersection3D : IElementSurfaceIntersection3D
     {
         public RelativePositionCurveElement RelativePosition => RelativePositionCurveElement.Disjoint;
 
