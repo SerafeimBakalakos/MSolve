@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Output;
 using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.Assemblers;
@@ -70,6 +71,9 @@ namespace ISAAR.MSolve.Solvers.Direct
             if (linearSystem.SolutionConcrete == null) linearSystem.SolutionConcrete = linearSystem.CreateZeroVectorConcrete();
             //else linearSystem.Solution.Clear(); // no need to waste computational time on this in a direct solver
 
+
+            var eriter = new MatlabWriter();
+            eriter.WriteToFile(linearSystem.Matrix, )
             // Factorization
             if (mustFactorize)
             {

@@ -119,7 +119,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             var microstructure2Serial = new MicrostructureDefGrad3D(rveBuilder3,
                 model => (new SuiteSparseSolver.Builder()).BuildSolver(model), false, 1);
 
-            //microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
+            microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
             //microstructure2Serial.SaveState();
             ////microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.03, 1, 1, 0, 0, 0, 0, 0, 0 });
             ////Vector solutionSuiteSparse = (Vector)microstructure2Serial.uInitialFreeDOFDisplacementsPerSubdomain.ElementAt(0).Value.Copy();
