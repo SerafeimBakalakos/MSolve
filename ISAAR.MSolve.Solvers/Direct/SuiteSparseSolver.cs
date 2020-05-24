@@ -73,7 +73,9 @@ namespace ISAAR.MSolve.Solvers.Direct
 
 
             var eriter = new MatlabWriter();
-            eriter.WriteToFile(linearSystem.Matrix, )
+            string print_path_gen = (new CnstValues()).exampleOutputPathGen + @"\subdomain_matrices_and_data\GlobalSuiteSparaseMatrixLoadStep{0}Iter{1}_.txt";
+            string print_path = string.Format(print_path_gen, CnstValues.analyzerLoadingStep, CnstValues.analyzerNRIter);
+            eriter.WriteToFile((ISparseMatrix)linearSystem.Matrix, print_path, false);
             // Factorization
             if (mustFactorize)
             {

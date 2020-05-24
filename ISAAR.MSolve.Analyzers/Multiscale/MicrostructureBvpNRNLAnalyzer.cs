@@ -188,6 +188,9 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
             UpdateInternalVectors();//TODOMaria this divides the externally applied load by the number of increments and scatters it to all subdomains and stores it in the class subdomain dictionary and total external load vector
             for (int increment = 0; increment < increments; increment++)
             {
+                #region solver parameters
+                CnstValues.analyzerLoadingStep = increment;
+                #endregion
                 double errorNorm = 0;
                 ClearIncrementalSolutionVector();//TODOMaria this sets du to 0
                 UpdateRHS(increment);//comment MS2: apo to rhs[subdomain.ID] pernaei sto subdomain.RHS h fixed timh (externalLoads/increments) (ginetai copy kai oxi add)  AFTO thewreitai RHS sthn prwth iteration
@@ -196,10 +199,18 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                 int step = 0;
                 for (step = 0; step < maxSteps; step++)
                 {
+                    #region solver parameters
+                    CnstValues.analyzerNRIter = step;
+                    CnstValues.analyzerInfo = "Solution";
+                    #endregion
                     solver.Solve();
                     errorNorm = rhsNorm != 0 ? CalculateInternalRHS(increment, step, increments) / rhsNorm : 0;//comment MS2: to subdomain.RHS lamvanei thn timh nIncrement*(externalLoads/increments)-interanalRHS me xrhsh ths fixed timhs apo to rhs[subdomain.ID]
                     if (step == 0) firstError = errorNorm;
-                    if (errorNorm < tolerance) break;
+                    if (errorNorm < tolerance)
+                    {
+                        CnstValues.analyzerInfo = "Homogenization";
+                        break;
+                    }
 
                     SplitResidualForcesToSubdomains();//TODOMaria scatter residuals to subdomains
                     if ((step + 1) % stepsForMatrixRebuild == 0)
