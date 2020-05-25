@@ -10,12 +10,12 @@ using MGroup.XFEM.Plotting.Writers;
 
 namespace MGroup.XFEM.Plotting
 {
-    public class LsmElementIntersectionsPlotter
+    public class Lsm2DElementIntersectionsPlotter
     {
         private readonly XModel model;
         private readonly IEnumerable<SimpleLsm2D> curves;
 
-        public LsmElementIntersectionsPlotter(XModel model, IEnumerable<SimpleLsm2D> curves)
+        public Lsm2DElementIntersectionsPlotter(XModel model, IEnumerable<SimpleLsm2D> curves)
         {
             this.model = model;
             this.curves = curves;

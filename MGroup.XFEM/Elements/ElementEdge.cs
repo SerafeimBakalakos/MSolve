@@ -9,6 +9,17 @@ namespace MGroup.XFEM.Elements
 {
     public class ElementEdge
     {
+        public ElementEdge()
+        {
+        }
+
+        public ElementEdge(IReadOnlyList<XNode> nodes, IReadOnlyList<NaturalPoint> nodesNatural, int start, int end)
+        {
+            CellType = CellType.Line;
+            Nodes = new XNode[] { nodes[start], nodes[end] };
+            NodesNatural = new NaturalPoint[] { nodesNatural[start], nodesNatural[end] };
+        }
+
         public CellType CellType { get; set; }
 
         /// <summary>

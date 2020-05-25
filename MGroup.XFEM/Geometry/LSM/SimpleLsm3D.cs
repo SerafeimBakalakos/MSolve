@@ -54,7 +54,7 @@ namespace MGroup.XFEM.Geometry.LSM
                     if (zeroNodes.SetEquals(face.Nodes))
                     {
                         // Intersection segment is a single cell with the same shape, nodes, etc as the face.
-                        var intersectionMesh = new IntersectionMesh();
+                        var intersectionMesh = new IntersectionMesh<NaturalPoint>();
                         intersectionMesh.AddVertices(face.NodesNatural);
                         intersectionMesh.AddCell(face.CellType, face.NodesNatural);
                     }
@@ -66,19 +66,15 @@ namespace MGroup.XFEM.Geometry.LSM
             }
             else //TODO: Perhaps I should start by going through each face directly. Allow repeated operations and finally remove all duplicate points and triangles
             {
-                // Find the intersection points of the surface with each face (if they exist).
-                var faceIntersections = new Dictionary<ElementFace, SortedSet<NaturalPoint>>();
-                var allIntersections = new SortedSet<NaturalPoint>(new Point3DComparer());
-                foreach (ElementFace face in element.Faces)
+
+                // Find the intersection points of the surface with each edge (if they exist).
+                var edgeIntersections = new Dictionary<ElementEdge, NaturalPoint[]>();
+                var allIntersections = new SortedSet<NaturalPoint>(new Point3DComparer<NaturalPoint>());
+                foreach (ElementEdge edge in element.Edges)
                 {
-                    var intersections = IntersectFace(face);
-                    if (intersections.Count == 0) continue;
-                    else if (intersections.Count == 2)
-                    {
-                        faceIntersections[face] = intersections;
-                        allIntersections.UnionWith(intersections);
-                    }
-                    else throw new NotImplementedException($"Found face with {intersections.Count} intersections points");
+                    var intersectionOfThisEdge = IntersectEdge(edge);
+                    edgeIntersections[edge] = intersectionOfThisEdge;
+                    allIntersections.UnionWith(intersectionOfThisEdge);
                 }
 
                 // Find their centroid
@@ -86,15 +82,51 @@ namespace MGroup.XFEM.Geometry.LSM
                 allIntersections.Add(centroid);
 
                 // Use the 2 intersection points of each face and the centroid to create a triangle of the intersection mesh
-                var intersectionMesh = new IntersectionMesh();
+                var intersectionMesh = new IntersectionMesh<NaturalPoint>();
                 intersectionMesh.AddVertices(allIntersections);
-                foreach (SortedSet<NaturalPoint> faceIntersection in faceIntersections.Values)
+                foreach (ElementFace face in element.Faces)
                 {
-                    var vertices = faceIntersection.ToList();
-                    vertices.Add(centroid);
-                    intersectionMesh.AddCell(CellType.Tri3, vertices);
+                    var intersectionsOfFace = new SortedSet<NaturalPoint>(new Point3DComparer<NaturalPoint>());
+                    foreach (ElementEdge edge in face.Edges)
+                    {
+                        intersectionsOfFace.UnionWith(edgeIntersections[edge]);
+                        if (intersectionsOfFace.Count == 0) continue;
+                        else if (intersectionsOfFace.Count == 2)
+                        {
+                            intersectionsOfFace.Add(centroid);
+                            intersectionMesh.AddCell(CellType.Tri3, intersectionsOfFace.ToArray());
+                        }
+                    }
                 }
                 return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element, intersectionMesh);
+
+
+                //// Find the intersection points of the surface with each face (if they exist).
+                //var faceIntersections = new Dictionary<ElementFace, SortedSet<NaturalPoint>>();
+                //foreach (ElementFace face in element.Faces)
+                //{
+                //    var intersections = IntersectFace(face);
+                //    if (intersections.Count == 0) continue;
+                //    else if (intersections.Count == 2)
+                //    {
+                //        faceIntersections[face] = intersections;
+                //        allIntersections.UnionWith(intersections);
+                //    }
+                //    else throw new NotImplementedException($"Found face with {intersections.Count} intersections points");
+                //}
+
+
+
+                //// Use the 2 intersection points of each face and the centroid to create a triangle of the intersection mesh
+                //var intersectionMesh = new IntersectionMesh<NaturalPoint>();
+                //intersectionMesh.AddVertices(allIntersections);
+                //foreach (SortedSet<NaturalPoint> faceIntersection in faceIntersections.Values)
+                //{
+                //    var vertices = faceIntersection.ToList();
+                //    vertices.Add(centroid);
+                //    intersectionMesh.AddCell(CellType.Tri3, vertices);
+                //}
+                //return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element, intersectionMesh);
             }
         }
 
@@ -203,7 +235,7 @@ namespace MGroup.XFEM.Geometry.LSM
             NaturalPoint node0 = edge.NodesNatural[0];
             NaturalPoint node1 = edge.NodesNatural[1];
 
-            if (levelSet0 * levelSet1 > 0.0) return null; // Edge is not intersected
+            if (levelSet0 * levelSet1 > 0.0) return new NaturalPoint[0]; // Edge is not intersected
             else if (levelSet0 * levelSet1 < 0.0) // Edge is intersected but not at its nodes
             {
                 // The intersection point between these nodes can be found using the linear interpolation, see 
@@ -229,42 +261,13 @@ namespace MGroup.XFEM.Geometry.LSM
 
         private SortedSet<NaturalPoint> IntersectFace(ElementFace face)
         {
-            var intersections = new SortedSet<NaturalPoint>(new Point3DComparer());
+            var intersections = new SortedSet<NaturalPoint>(new Point3DComparer<NaturalPoint>());
             foreach (ElementEdge edge in face.Edges)
             {
                 NaturalPoint[] edgeIntersections = IntersectEdge(edge);
                 intersections.UnionWith(edgeIntersections);
             }
             return intersections;
-        }
-
-
-        private class Point3DComparer : IComparer<NaturalPoint>
-        {
-            public int Compare(NaturalPoint x, NaturalPoint y)
-            {
-                if (x.Xi < y.Xi) return -1;
-                else if (x.Xi > y.Xi) return +1;
-                else
-                {
-                    if (x.Eta < y.Eta) return -1;
-                    else if (x.Eta > y.Eta) return +1;
-                    else
-                    {
-                        if (x.Zeta < y.Zeta) return -1;
-                        else if (x.Zeta > y.Zeta) return +1;
-                        else return 0;
-                    }
-                }
-            }
-
-            
-
-            public bool Equals(NaturalPoint x, NaturalPoint y)
-            {
-                if ((x.Xi == y.Xi) && (x.Eta == y.Eta) && (x.Zeta == y.Zeta)) return true;
-                else return false;
-            }
         }
     }
 }

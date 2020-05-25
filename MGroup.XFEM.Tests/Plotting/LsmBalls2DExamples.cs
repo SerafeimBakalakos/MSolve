@@ -44,7 +44,7 @@ namespace MGroup.XFEM.Tests.Plotting
             PlotInclusionLevelSets(outputDirectory, "level_set", model, lsmCurves);
 
             // Plot intersections between level set curves and elements
-            var intersectionPlotter = new LsmElementIntersectionsPlotter(model, lsmCurves);
+            var intersectionPlotter = new Lsm2DElementIntersectionsPlotter(model, lsmCurves);
             intersectionPlotter.PlotIntersections(pathIntersections);
         }
 

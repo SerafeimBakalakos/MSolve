@@ -11,10 +11,10 @@ namespace MGroup.XFEM.Geometry.LSM
 {
     public class LsmElementIntersection3D : IElementSurfaceIntersection3D
     {
-        private readonly IntersectionMesh intersectionMesh;
+        private readonly IntersectionMesh<NaturalPoint> intersectionMesh;
 
         public LsmElementIntersection3D(RelativePositionCurveElement relativePosition, IXFiniteElement element,
-            IntersectionMesh intersectionMesh)
+            IntersectionMesh<NaturalPoint> intersectionMesh)
         {
             this.RelativePosition = relativePosition;
             this.Element = element;
@@ -25,7 +25,19 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IXFiniteElement Element { get; } //TODO: Perhaps this should be defined in the interface
 
-        public IntersectionMesh ApproximateGlobalCartesian() => intersectionMesh;
+        public IntersectionMesh<CartesianPoint> ApproximateGlobalCartesian()
+        {
+            var meshCartesian = new IntersectionMesh<CartesianPoint>();
+            NaturalPoint[] verticesNatural = intersectionMesh.GetVerticesList();
+            foreach (NaturalPoint vertexNatural in verticesNatural)
+            {
+                CartesianPoint vertexCartesian = ((MockElement)Element).Interpolation3D.TransformNaturalToCartesian(
+                    Element.Nodes, vertexNatural);
+                meshCartesian.AddVertex(vertexCartesian);
+            }
+            meshCartesian.Cells = intersectionMesh.Cells;
+            return meshCartesian;
+        }
 
         public GaussPoint[] GetIntegrationPoints(int numPoints)
         {

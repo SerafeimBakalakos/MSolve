@@ -11,6 +11,7 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Plotting;
 using MGroup.XFEM.Plotting.Writers;
 
 namespace MGroup.XFEM.Tests.Plotting
@@ -19,6 +20,7 @@ namespace MGroup.XFEM.Tests.Plotting
     {
         private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\Spheres3D\";
         private const string pathMesh = outputDirectory + "conforming_mesh.vtk";
+        private const string pathIntersections = outputDirectory + "intersections.vtk";
 
         private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0, zMin = -1.0, zMax = +1.0;
 
@@ -39,6 +41,10 @@ namespace MGroup.XFEM.Tests.Plotting
 
             // Plot original mesh and level sets
             PlotInclusionLevelSets(outputDirectory, "level_set", model, lsmSurfaces);
+
+            // Plot intersections between level set curves and elements
+            var intersectionPlotter = new Lsm3DElementIntersectionsPlotter(model, lsmSurfaces);
+            intersectionPlotter.PlotIntersections(pathIntersections);
         }
 
         //public static void PlotConformingMesh()
