@@ -29,6 +29,8 @@ using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d.FlexibilityMatrix;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using System.IO;
+using ISAAR.MSolve.LinearAlgebra.Output;
+using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
 
 //TODO: Add time logging
 //TODO: Use a base class for the code that is identical between FETI-1 and FETI-DP.
@@ -248,6 +250,29 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
 
         public void Solve()
         {
+            #region output
+            if (CnstValues.printNRstiffnessMatrices && CnstValues.analyzerInfoIsSolutionForNRiters)
+            {
+                string print_path_gen = (new CnstValues()).exampleOutputPathGen + @"\subdomain_matrices_and_data\Subdomain{0}Iter{1}Loads.txt";
+                foreach (var subd in model.EnumerateSubdomains())
+                {
+                    var linearSystem = GetLinearSystem(subd); int subdId = subd.ID;
+
+                    MatlabWriter eriter = new MatlabWriter();
+                    //string print_path_gen = (new CnstValues()).exampleOutputPathGen + @"\subdomain_matrices_and_data\GlobalSuiteMatStress{0}LoadStep{1}Iter{2}_.txt";
+                    //string print_path = string.Format(print_path_gen, CnstValues.stressIncrNo, CnstValues.analyzerLoadingStep, CnstValues.analyzerNRIter);
+                    string print_path = string.Format(print_path_gen, subdId, CnstValues.analyzerNRIter);
+
+                    //var mat2 = DokColMajor.CreateFromDense(linearSystem.Matrix, 1e-14);
+
+                    eriter.WriteToFile(linearSystem.RhsVector, print_path, false);
+                    //string print_path_gen2 = (new CnstValues()).exampleOutputPathGen + @"\subdomain_matrices_and_data\GlobalSuiteRHSStress{0}LoadStep{1}Iter{2}_.txt";
+                    //string print_path2 = string.Format(print_path_gen2, CnstValues.analyzerLoadingStep, CnstValues.analyzerNRIter);
+                    //(new ISAAR.MSolve.LinearAlgebra.Output.Array1DWriter()).WriteToFile(linearSystem.RhsConcrete.CopyToArray(), print_path2);
+                }
+                
+            }
+            #endregion
             if (isStiffnessModified)
             {
                 // Separate the stiffness matrix

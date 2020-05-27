@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
 using ISAAR.MSolve.LinearAlgebra.Output;
 using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
@@ -71,11 +72,19 @@ namespace ISAAR.MSolve.Solvers.Direct
             if (linearSystem.SolutionConcrete == null) linearSystem.SolutionConcrete = linearSystem.CreateZeroVectorConcrete();
             //else linearSystem.Solution.Clear(); // no need to waste computational time on this in a direct solver
 
-
-            var eriter = new MatlabWriter();
-            string print_path_gen = (new CnstValues()).exampleOutputPathGen + @"\subdomain_matrices_and_data\GlobalSuiteSparaseMatrixLoadStep{0}Iter{1}_.txt";
-            string print_path = string.Format(print_path_gen, CnstValues.analyzerLoadingStep, CnstValues.analyzerNRIter);
-            eriter.WriteToFile((ISparseMatrix)linearSystem.Matrix, print_path, false);
+            #region output
+            if (CnstValues.printNRstiffnessMatrices && CnstValues.analyzerInfoIsSolutionForNRiters)
+            {
+                var eriter = new MatlabWriter();
+                string print_path_gen = (new CnstValues()).exampleOutputPathGen + @"\subdomain_matrices_and_data\GlobalSuiteMatStress{0}LoadStep{1}Iter{2}_.txt";
+                string print_path = string.Format(print_path_gen, CnstValues.stressIncrNo, CnstValues.analyzerLoadingStep, CnstValues.analyzerNRIter);
+                var mat2 = DokColMajor.CreateFromDense(linearSystem.Matrix, 1e-14);
+                eriter.WriteToFile(mat2, print_path, false);
+                string print_path_gen2 = (new CnstValues()).exampleOutputPathGen + @"\subdomain_matrices_and_data\GlobalSuiteRHSStress{0}LoadStep{1}Iter{2}_.txt";
+                string print_path2 = string.Format(print_path_gen2, CnstValues.analyzerLoadingStep, CnstValues.analyzerNRIter);
+                (new ISAAR.MSolve.LinearAlgebra.Output.Array1DWriter()).WriteToFile(linearSystem.RhsConcrete.CopyToArray(), print_path2);
+            }
+            #endregion
             // Factorization
             if (mustFactorize)
             {

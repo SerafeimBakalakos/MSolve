@@ -202,6 +202,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                     #region solver parameters
                     CnstValues.analyzerNRIter = step;
                     CnstValues.analyzerInfo = "Solution";
+                    CnstValues.analyzerInfoIsSolutionForNRiters = true;
                     #endregion
                     solver.Solve();
                     errorNorm = rhsNorm != 0 ? CalculateInternalRHS(increment, step, increments) / rhsNorm : 0;//comment MS2: to subdomain.RHS lamvanei thn timh nIncrement*(externalLoads/increments)-interanalRHS me xrhsh ths fixed timhs apo to rhs[subdomain.ID]
@@ -209,6 +210,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                     if (errorNorm < tolerance)
                     {
                         CnstValues.analyzerInfo = "Homogenization";
+                        CnstValues.analyzerInfoIsSolutionForNRiters = false;
                         break;
                     }
 

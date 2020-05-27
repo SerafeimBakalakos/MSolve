@@ -232,6 +232,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                     WriteOutput($"NR Iteration : {step}");
                     CnstValues.analyzerNRIter = step;
                     CnstValues.analyzerInfo = "Solution";
+                    CnstValues.analyzerInfoIsSolutionForNRiters = true;
                     if (solver is IFetiSolver fetiSolver)
                     {
                         if (fetiSolver.InterfaceProblemSolver.Pcg != null)
@@ -253,6 +254,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                     if (errorNorm < tolerance)
                     {
                         CnstValues.analyzerInfo = "Homogenization";
+                        CnstValues.analyzerInfoIsSolutionForNRiters = false;
                         break; 
                     }
 

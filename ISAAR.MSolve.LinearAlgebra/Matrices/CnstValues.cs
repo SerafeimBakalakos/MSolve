@@ -70,11 +70,17 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
 
         public static bool printInterfaceSolutionStats { get; set; } = true;
 
+        //-------------------------------------------------
         #region newtohn raphson and homogenisation pcg stats
+        public static bool printNRstiffnessMatrices { get; set; } = true;
         public static int analyzerLoadingStep { get; set; } = -1;
         public static int analyzerNRIter { get; set; } = -1;
         public static string analyzerInfo { get; set; }
+
+        public static bool analyzerInfoIsSolutionForNRiters { get; set; } = false;
         public string incrementalPcgStatsOutputFileExtention = @"\interfaceSolver_FetiDP_3d_iterations_Per_Increment.txt";
+
+        public static int stressIncrNo { get; set; } = 0;
 
         public static bool WriteNRRelatedPcgStats { get; set; } = false;
         #endregion
