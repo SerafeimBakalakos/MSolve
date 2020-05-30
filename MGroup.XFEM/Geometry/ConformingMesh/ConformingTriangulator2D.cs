@@ -50,6 +50,8 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
                 }
             }
 
+            FindIntersectionsOfIntersections();
+
             // Create Delauny triangulation
             ElementSubtriangle2D[] subtriangles = Triangulate(triangleVertices);
             return subtriangles;
@@ -82,6 +84,12 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
                 subtriangles[t] = new ElementSubtriangle2D(pointsOfTriangle);
             }
             return subtriangles;
+        }
+
+        private void FindIntersectionsOfIntersections()
+        {
+            // No need for now. We assume that level sets do not intersect.
+            throw new NotImplementedException();
         }
     }
 }

@@ -12,10 +12,10 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 {
     public class ElementSubtriangle2D
     {
-        public ElementSubtriangle2D(IEnumerable<NaturalPoint> vertices)
+        public ElementSubtriangle2D(NaturalPoint[] vertices)
         {
-            this.VerticesNatural = vertices.ToArray();
             Debug.Assert(VerticesNatural.Length == 3);
+            this.VerticesNatural = vertices;
         }
 
         public NaturalPoint[] VerticesNatural { get; }
