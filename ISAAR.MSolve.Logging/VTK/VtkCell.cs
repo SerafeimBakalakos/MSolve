@@ -57,6 +57,8 @@ namespace ISAAR.MSolve.Logging.VTK
 				//    \|         \|
 				//     4----------5
 				{ CellType.Hexa8, 12 },
+
+                {CellType.Tet4, 10 }
             };
 
         public static IReadOnlyDictionary<CellType, int> CellTypeCodes => cellTypeCodes;

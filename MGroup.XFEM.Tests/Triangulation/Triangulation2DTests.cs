@@ -23,7 +23,7 @@ namespace MGroup.XFEM.Tests.Triangulation
         public static void TestSingleIntersection()
         {
             (List<NaturalPoint> points, CellType cellType) = CreatePolygon();
-            double outlineArea = CalcPolygonArea(points);
+            double outlineArea = TriangulationUtilities.CalcPolygonArea(points);
 
             var intersections = new List<NaturalPoint>[1];
             intersections[0] = new List<NaturalPoint>();
@@ -49,14 +49,14 @@ namespace MGroup.XFEM.Tests.Triangulation
                 new double[] { 1.7, 0.3 }, new double[] { 5, 1.8 }, new double[] { 2, 0 }));
 
             double tol = 1E-7;
-            Assert.True(AreEqual(expectedTriangles, triangles, tol));
+            Assert.True(TriangulationUtilities.AreEqual(expectedTriangles, triangles, tol));
         }
 
         [Fact]
         public static void TestDoubleIntersection()
         {
             (List<NaturalPoint> points, CellType cellType) = CreatePolygon();
-            double outlineArea = CalcPolygonArea(points);
+            double outlineArea = TriangulationUtilities.CalcPolygonArea(points);
 
             // Intersection 1:
             var intersections = new List<NaturalPoint>[2];
@@ -94,14 +94,14 @@ namespace MGroup.XFEM.Tests.Triangulation
 
 
             double tol = 1E-7;
-            Assert.True(AreEqual(expectedTriangles, triangles, tol));
+            Assert.True(TriangulationUtilities.AreEqual(expectedTriangles, triangles, tol));
         }
 
         [Fact]
         public static void TestIntersectionThroughNodes()
         {
             (List<NaturalPoint> points, CellType cellType) = CreatePolygon();
-            double outlineArea = CalcPolygonArea(points);
+            double outlineArea = TriangulationUtilities.CalcPolygonArea(points);
 
             var intersections = new List<NaturalPoint>[1];
             intersections[0] = new List<NaturalPoint>();
@@ -129,70 +129,9 @@ namespace MGroup.XFEM.Tests.Triangulation
                 new double[] { 2.5, 1.9 }, new double[] { 1, 4 }, new double[] { 5, 1.8 }));
 
             double tol = 1E-7;
-            Assert.True(AreEqual(expectedTriangles, triangles, tol));
+            Assert.True(TriangulationUtilities.AreEqual(expectedTriangles, triangles, tol));
         }
-
-
-        private static bool AreEqual(double[] expected, double[] computed, double tol)
-        {
-            if (expected.Length != computed.Length) return false;
-            var comparer = new ValueComparer(tol);
-            for (int i = 0; i < expected.Length; ++i)
-            {
-                if (!comparer.AreEqual(expected[i], computed[i])) return false;
-            }
-            return true;
-        }
-
-        private static bool AreEqual(TriangleCell2D expected, TriangleCell2D computed, double tol)
-        {
-            if (expected.Vertices.Count != computed.Vertices.Count) return false;
-            foreach (double[] computedVertex in computed.Vertices)
-            {
-                bool isInExpected = false;
-                foreach (double[] expectedVertex in expected.Vertices)
-                {
-                    if (AreEqual(expectedVertex, computedVertex, tol))
-                    {
-                        isInExpected = true;
-                        break;
-                    }
-                }
-                if (!isInExpected) return false;
-            }
-            return true;
-        }
-
-        private static bool AreEqual(IList<TriangleCell2D> expected, IList<TriangleCell2D> computed, double tol)
-        {
-            if (expected.Count != computed.Count) return false;
-            foreach (TriangleCell2D computedTriangle in computed)
-            {
-                bool isInExpected = false;
-                foreach (TriangleCell2D expectedTriangle in expected)
-                {
-                    if (AreEqual(expectedTriangle, computedTriangle, tol))
-                    {
-                        isInExpected = true;
-                        break;
-                    }
-                }
-                if (!isInExpected) return false;
-            }
-            return true;
-        }
-
-        private static double CalcPolygonArea<TPoint>(List<TPoint> points) where TPoint: IPoint
-        {
-            double sum = 0.0;
-            for (int vertexIdx = 0; vertexIdx < points.Count; ++vertexIdx)
-            {
-                TPoint vertex1 = points[vertexIdx];
-                TPoint vertex2 = points[(vertexIdx + 1) % points.Count];
-                sum += vertex1.X1 * vertex2.X2 - vertex2.X1 * vertex1.X2;
-            }
-            return Math.Abs(0.5 * sum); // area would be negative if vertices were in counter-clockwise order
-        }
+        
 
         private static (List<NaturalPoint> points, CellType cellType) CreatePolygon()
         {
