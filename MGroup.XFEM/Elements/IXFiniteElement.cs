@@ -37,5 +37,7 @@ namespace MGroup.XFEM.Elements
 
         //void IdentifyDofs();
         //void IdentifyIntegrationPointsAndMaterials();
+
+        double CalcAreaOrVolume();
     }
 }

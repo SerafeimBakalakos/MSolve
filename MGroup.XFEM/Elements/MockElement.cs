@@ -4,13 +4,17 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Integration;
+using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Interpolation;
+using ISAAR.MSolve.FEM.Interpolation.Jacobians;
 using ISAAR.MSolve.Geometry.Coordinates;
+using ISAAR.MSolve.Geometry.Shapes;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry.ConformingMesh;
 
 //TODO: delete this class
 namespace MGroup.XFEM.Elements
@@ -217,6 +221,38 @@ namespace MGroup.XFEM.Elements
         public IMatrix StiffnessMatrix(IElement element)
         {
             throw new NotImplementedException();
+        }
+
+        public double CalcAreaOrVolume()
+        {
+            if (this.CellType == CellType.Tri3)
+            {
+                var triangle = new TriangleCell2D();
+                triangle.Vertices[0] = Nodes[0].Coordinates;
+                triangle.Vertices[1] = Nodes[1].Coordinates;
+                triangle.Vertices[2] = Nodes[2].Coordinates;
+                return triangle.CalcArea();
+            }
+            else if (this.CellType == CellType.Quad4)
+            {
+                return ConvexPolygon2D.CreateUnsafe(Nodes).ComputeArea();
+            }
+            else if (this.CellType == CellType.Hexa8 || this.CellType == CellType.Tet4)
+            {
+                //TODO: Use Tetrahedra and the closed formula for their volume
+
+                double volume = 0.0;
+                GaussLegendre3D quadrature = GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2);
+                IReadOnlyList<Matrix> shapeGradientsNatural =
+                    Interpolation3D.EvaluateNaturalGradientsAtGaussPoints(quadrature);
+                for (int gp = 0; gp < quadrature.IntegrationPoints.Count; ++gp)
+                {
+                    var jacobian = new IsoparametricJacobian3D(Nodes, shapeGradientsNatural[gp]);
+                    volume += jacobian.DirectDeterminant * quadrature.IntegrationPoints[gp].Weight;
+                }
+                return volume;
+            }
+            else throw new NotImplementedException();
         }
     }
 }

@@ -9,9 +9,12 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
+using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Geometry.Tolerances;
 using MGroup.XFEM.Plotting;
+using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
 
 namespace MGroup.XFEM.Tests.Plotting
@@ -19,7 +22,7 @@ namespace MGroup.XFEM.Tests.Plotting
     public static class LsmBalls2DExamples
     {
         private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\Circles2D\";
-        private const string pathMesh = outputDirectory + "conforming_mesh.vtk";
+        private const string pathConformingMesh = outputDirectory + "conforming_mesh.vtk";
         private const string pathIntersections = outputDirectory + "intersections.vtk";
 
         private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0;
@@ -44,26 +47,51 @@ namespace MGroup.XFEM.Tests.Plotting
             PlotInclusionLevelSets(outputDirectory, "level_set", model, lsmCurves);
 
             // Plot intersections between level set curves and elements
+            Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> elementIntersections 
+                = CalcIntersections(model, lsmCurves);
+            var allIntersections = new List<LsmElementIntersection2D>();
+            foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
             var intersectionPlotter = new Lsm2DElementIntersectionsPlotter(model, lsmCurves);
-            intersectionPlotter.PlotIntersections(pathIntersections);
+            intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
+
+            // Plot conforming mesh
+            Dictionary<IXFiniteElement, ElementSubtriangle2D[]> conformingMesh = CreateConformingMesh(elementIntersections);
+            PlotConformingMesh(model, conformingMesh);
         }
 
-        //public static void PlotConformingMesh()
-        //{
-        //    // Create model and LSM
-        //    (XModel model, GeometricModel2D geometricModel) = CreateModel(numElementsX, numElementsY);
-        //    InitializeLSM(model, geometricModel);
+        private static Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> CalcIntersections(
+            XModel model, List<SimpleLsm2D> curves)
+        {
+            var intersections = new Dictionary<IXFiniteElement, List<LsmElementIntersection2D>>();
+            foreach (IXFiniteElement element in model.Elements)
+            {
+                var elementIntersections = new List<LsmElementIntersection2D>();
+                foreach (IImplicitCurve2D curve in curves)
+                {
+                    IElementCurveIntersection2D intersection = curve.Intersect(element);
+                    if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
+                    {
+                        elementIntersections.Add((LsmElementIntersection2D)intersection);
+                    }
+                }
+                if (elementIntersections.Count > 0) intersections.Add(element, elementIntersections);
+            }
+            return intersections;
+        }
 
-        //    // Plot conforming mesh and level sets
-        //    using (var writer = new VtkFileWriter(pathMesh))
-        //    {
-        //        var mesh = new ConformingOutputMesh2D(geometricModel, model.Nodes, model.Elements);
-        //        writer.WriteMesh(mesh);
-        //    }
-
-        //    // Plot original mesh and level sets
-        //    Utilities.PlotInclusionLevelSets(outputDirectory, "level_set", model, geometricModel);
-        //}
+        private static Dictionary<IXFiniteElement, ElementSubtriangle2D[]> CreateConformingMesh(
+            Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> intersections)
+        {
+            var tolerance = new ArbitrarySideMeshTolerance();
+            var triangulator = new ConformingTriangulator2D();
+            var conformingMesh = new Dictionary<IXFiniteElement, ElementSubtriangle2D[]>();
+            foreach (IXFiniteElement element in intersections.Keys)
+            {
+                List<LsmElementIntersection2D> elementIntersections = intersections[element];
+                conformingMesh[element] = triangulator.FindConformingMesh(element, elementIntersections, tolerance);
+            }
+            return conformingMesh;
+        }
 
         private static XModel CreateModelQuads(int numElementsX, int numElementsY)
         {
@@ -128,6 +156,15 @@ namespace MGroup.XFEM.Tests.Plotting
                         levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
                 }
             }
+        }
+
+        internal static void PlotConformingMesh(XModel model, Dictionary<IXFiniteElement, ElementSubtriangle2D[]> triangulation)
+        {
+            var conformingMesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, triangulation);
+            using (var writer = new VtkFileWriter(pathConformingMesh))
+            {
+                writer.WriteMesh(conformingMesh);
+            }   
         }
     }
 }

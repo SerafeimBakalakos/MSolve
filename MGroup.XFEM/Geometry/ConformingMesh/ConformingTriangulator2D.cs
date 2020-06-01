@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
+using ISAAR.MSolve.Geometry.Shapes;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Geometry.Tolerances;
 using MIConvexHull;
@@ -11,6 +12,9 @@ using MIConvexHull;
 //TODO: Allow the option to specify the minimum triangle area.
 namespace MGroup.XFEM.Geometry.ConformingMesh
 {
+    /// <summary>
+    /// Does not work correctly if an element is intersected by more than one curves, which also intersect each other.
+    /// </summary>
     public class ConformingTriangulator2D
     {
         public ElementSubtriangle2D[] FindConformingMesh(IXFiniteElement element, 
@@ -19,17 +23,18 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             // Store the nodes and all intersection points in a set
             double tol = meshTolerance.CalcTolerance(element);
             var comparer = new Point2DComparer<NaturalPoint>(tol);
-            var triangleVertices = new SortedSet<NaturalPoint>(comparer);
-            triangleVertices.UnionWith(element.InterpolationStandard.NodalNaturalCoordinates);
-            
-            // Also store just the nodes elsewhere
             var nodes = new SortedSet<NaturalPoint>(comparer);
             nodes.UnionWith(element.InterpolationStandard.NodalNaturalCoordinates);
 
+            // Store the nodes and all intersection points in a different set
+            var triangleVertices = new SortedSet<NaturalPoint>(comparer);
+            triangleVertices.UnionWith(nodes);
+
+            // Add intersection points from each curve-element intersection object.
             foreach (IElementCurveIntersection2D intersection in intersections)
             {
                 // If the curve does not intersect this element (e.g. it conforms to the element edge), 
-                // there is no need to triangulate
+                // there is no need to take into account for triangulation
                 if (intersection.RelativePosition != RelativePositionCurveElement.Intersecting) continue;
 
                 IList<NaturalPoint> newVertices = intersection.GetPointsForTriangulation();
@@ -50,46 +55,15 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
                 }
             }
 
-            FindIntersectionsOfIntersections();
-
-            // Create Delauny triangulation
-            ElementSubtriangle2D[] subtriangles = Triangulate(triangleVertices);
-            return subtriangles;
-        }
-
-        //TODO: Use a wrapper for interoperability with the MIConvexHull library
-        private ElementSubtriangle2D[] Triangulate(SortedSet<NaturalPoint> trianglePoints)
-        {
-            // Gather the vertices
-            var vertices = new List<double[]>(trianglePoints.Count);
-            foreach (NaturalPoint point in trianglePoints)
+            var triangulator = new MIConvexHullTriangulator2D();
+            triangulator.MinTriangleArea = tol * element.CalcAreaOrVolume();
+            IList<TriangleCell2D> delaunyTriangles = triangulator.CreateMesh(triangleVertices);
+            var subtriangles = new ElementSubtriangle2D[delaunyTriangles.Count];
+            for (int t = 0; t < delaunyTriangles.Count; ++t)
             {
-                vertices.Add(new double[] { point.Xi, point.Eta });
-            }
-
-            // Call 3rd-party mesh generator
-            var triangleCells = Triangulation.CreateDelaunay(vertices).Cells.ToArray();
-
-            // Repackage the triangle cells
-            var subtriangles = new ElementSubtriangle2D[triangleCells.Length];
-            for (int t = 0; t < subtriangles.Length; ++t)
-            {
-                DefaultVertex[] verticesOfTriangle = triangleCells[t].Vertices;
-                Debug.Assert(verticesOfTriangle.Length == 3);
-                var pointsOfTriangle = new NaturalPoint[3];
-                for (int v = 0; v < 3; ++v)
-                {
-                    pointsOfTriangle[v] = new NaturalPoint(verticesOfTriangle[v].Position);
-                }
-                subtriangles[t] = new ElementSubtriangle2D(pointsOfTriangle);
+                subtriangles[t] = new ElementSubtriangle2D(delaunyTriangles[t]);
             }
             return subtriangles;
-        }
-
-        private void FindIntersectionsOfIntersections()
-        {
-            // No need for now. We assume that level sets do not intersect.
-            throw new NotImplementedException();
         }
     }
 }

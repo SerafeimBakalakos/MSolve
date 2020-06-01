@@ -21,9 +21,19 @@ namespace MGroup.XFEM.Plotting
             this.curves = curves;
         }
 
-        public void PlotIntersections(string path)
+        //public void PlotIntersections(string path)
+        //{
+        //    List<LsmElementIntersection2D> intersections = CalcIntersections();
+        //    var intersectionMesh = new LsmIntersectionSegmentsMesh2D(intersections);
+        //    using (var writer = new VtkFileWriter(path))
+        //    {
+        //        writer.WriteMesh(intersectionMesh);
+        //        writer.WriteScalarField("elementID", intersectionMesh, intersectionMesh.ParentElementIDsOfVertices);
+        //    }
+        //}
+
+        public void PlotIntersections(string path, IEnumerable<LsmElementIntersection2D> intersections)
         {
-            List<LsmElementIntersection2D> intersections = CalcIntersections();
             var intersectionMesh = new LsmIntersectionSegmentsMesh2D(intersections);
             using (var writer = new VtkFileWriter(path))
             {
@@ -32,22 +42,22 @@ namespace MGroup.XFEM.Plotting
             }
         }
 
-        // TODO: Perhaps these can be stored somewhere else.
-        private List<LsmElementIntersection2D> CalcIntersections()
-        {
-            var intersections = new List<LsmElementIntersection2D>();
-            foreach (IImplicitCurve2D curve in curves)
-            {
-                foreach (IXFiniteElement element in model.Elements)
-                {
-                    IElementCurveIntersection2D intersection = curve.Intersect(element);
-                    if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
-                    {
-                        intersections.Add((LsmElementIntersection2D)intersection);
-                    }
-                }
-            }
-            return intersections;
-        }
+        //// TODO: Perhaps these can be stored somewhere else.
+        //private List<LsmElementIntersection2D> CalcIntersections()
+        //{
+        //    var intersections = new List<LsmElementIntersection2D>();
+        //    foreach (IImplicitCurve2D curve in curves)
+        //    {
+        //        foreach (IXFiniteElement element in model.Elements)
+        //        {
+        //            IElementCurveIntersection2D intersection = curve.Intersect(element);
+        //            if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
+        //            {
+        //                intersections.Add((LsmElementIntersection2D)intersection);
+        //            }
+        //        }
+        //    }
+        //    return intersections;
+        //}
     }
 }
