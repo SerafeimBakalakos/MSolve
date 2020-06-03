@@ -434,6 +434,12 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices.Builders
             return (values, diagOffsets);
         }
 
+        public CsrMatrix BuildCsrMatrix()
+        {
+            var dokRowMajor = DokRowMajor.CreateFromSparseMatrix(this);
+            return dokRowMajor.BuildCsrMatrix(true);
+        }
+
         public SkylineMatrix BuildSkylineMatrix()
         {
             (double[] values, int[] diagOffsets) = BuildSkylineArrays();

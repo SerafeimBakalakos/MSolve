@@ -10,6 +10,8 @@ namespace ISAAR.MSolve.Solvers.Logging
 {
     public interface ISolverLogger
     {
+        int CurrentStep { get; }
+
         int GetNumDofs(int analysisStep, string category);
         int GetNumIterationsOfIterativeAlgorithm(int analysisStep);
         double GetResidualNormRatioOfIterativeAlgorithm(int analysisStep);

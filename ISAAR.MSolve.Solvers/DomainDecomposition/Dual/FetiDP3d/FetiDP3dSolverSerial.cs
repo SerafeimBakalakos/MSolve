@@ -106,7 +106,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
                 model, dofSeparator, lagrangesEnumerator,augmentationConstraints, matrixManager);
 
             // Homogeneous/heterogeneous problems
-            // Homogeneous/heterogeneous problems
             if (stiffnessDistributionType == StiffnessDistributionType.Homogeneous)
             {
                 this.stiffnessDistribution = new HomogeneousStiffnessDistributionSerial(model, dofSeparator,
@@ -128,6 +127,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
 
         public ICornerNodeSelection CornerNodes { get; }
         public ISolverLogger Logger { get; }
+
+        public FetiDP3dMatrixManagerSerial MatrixManager => matrixManager;
+
         public string Name => name;
         public INodalLoadDistributor NodalLoadDistributor => stiffnessDistribution;
 

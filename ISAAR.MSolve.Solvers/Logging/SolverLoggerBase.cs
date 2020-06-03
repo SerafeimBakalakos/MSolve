@@ -29,7 +29,7 @@ namespace ISAAR.MSolve.Solvers.Logging
             currentStep = 0;
         }
 
-        protected int CurrentStep => currentStep;
+        public int CurrentStep => currentStep;
 
         public int GetNumDofs(int analysisStep, string category) => numDofsPerCategory[analysisStep][category];
 
