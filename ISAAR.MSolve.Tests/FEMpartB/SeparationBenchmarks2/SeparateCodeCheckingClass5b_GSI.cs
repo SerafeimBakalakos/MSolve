@@ -265,9 +265,9 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 
             #region GSI solver
             var gsiBuilder = new GsiFetiDPSolver.Builder(fetiSolver);
-            var gsiPcgBuilder = new PcgAlgorithm.Builder();
+            var gsiPcgBuilder = new PcgAlgorithmForGsi.Builder();
             gsiPcgBuilder.MaxIterationsProvider = pcgSettings.MaxIterationsProvider;
-            gsiPcgBuilder.ResidualTolerance = 1E-5;
+            gsiPcgBuilder.ResidualTolerance = 1E-3;
             gsiBuilder.PcgAlgorithm = gsiPcgBuilder.Build();
             GsiFetiDPSolver gsiSolver = gsiBuilder.Build(model);
             #endregion

@@ -53,12 +53,12 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
         private readonly string msgHeader;
         private readonly GsiFetiDPMatrix gsiMatrix;
         private readonly GsiFetiDPPreconditioner gsiPreconditioner;
-        private readonly PcgAlgorithm pcgAlgorithm;
+        private readonly PcgAlgorithmForGsi pcgAlgorithm;
 
         //private bool factorizeInPlace = true;
         private bool isStiffnessModified = true;
 
-        public GsiFetiDPSolver(IModel model, FetiDP3dSolverSerial fetiDP, PcgAlgorithm pcgAlgorithm)
+        public GsiFetiDPSolver(IModel model, FetiDP3dSolverSerial fetiDP, PcgAlgorithmForGsi pcgAlgorithm)
         {
             this.msgHeader = $"{this.GetType().Name}: ";
 
@@ -75,6 +75,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             this.gsiPreconditioner = new GsiFetiDPPreconditioner(model, fetiDP);
         }
 
+        public FetiDP3dSolverSerial EmbeddedFetiDPSolver => fetiDP;
+
         public Vector GlobalDisplacements { get; set; }
         public Vector GlobalForces { get; set; }
 
@@ -82,6 +84,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
         public string Name => name;
 
         public INodalLoadDistributor NodalLoadDistributor => fetiDP.NodalLoadDistributor;
+
+        public PcgAlgorithmForGsi OuterPcgAlgorithm => pcgAlgorithm;
 
         /// <summary>
         ///  builds Kff of each subdomain
@@ -198,7 +202,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
                 this.fetiDP = fetiDP;
             }
 
-            public PcgAlgorithm PcgAlgorithm { get; set; } = (new PcgAlgorithm.Builder()).Build();
+            public PcgAlgorithmForGsi PcgAlgorithm { get; set; } = (new PcgAlgorithmForGsi.Builder()).Build();
 
             public GsiFetiDPSolver Build(IModel model)
             {
