@@ -22,7 +22,7 @@ namespace ISAAR.MSolve.FEM.Elements
     /// Cohesive element for modeling of delamination and debonding effects between parts modeled with shell and hexa20 elements.
     /// Authors: Gerasimos Sotiropoulos
     /// </summary>
-    public class CohesiveShell8ToHexa20 : IStructuralFiniteElement, IEmbeddedElement
+    public class CohesiveShell8ToHexa20v2 : IStructuralFiniteElement, IEmbeddedElement,IFiniteElement_v2
     {
         protected readonly static IDofType[] nodalDOFTypes = new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ };
         protected readonly static IDofType[] nodalDOFTypes2 = new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ, StructuralDof.RotationX, StructuralDof.RotationY };
@@ -35,7 +35,7 @@ namespace ISAAR.MSolve.FEM.Elements
         protected IElementDofEnumerator dofEnumerator = new GenericDofEnumerator();
 
         private int nGaussPoints;
-        public double[][] oVn_i { get; set; }
+        //public double[][] oVn_i { get; set; }
         public double[] tk { get; set; } 
 
         /// <summary>
@@ -43,8 +43,14 @@ namespace ISAAR.MSolve.FEM.Elements
         /// </summary>
         public int ShellElementSide { get; set; } 
 
-        private double[][] tU;   // dimensions: 8x6
-        private double[][] tUvec;// dimensions: 8x6
+        //private double[][] tU;   // dimensions: 8x6
+        //private double[][] tUvec;// dimensions: 8x6
+        private double[][] tVn;
+        private double[][] tV1;
+
+        private double[][] tV2;
+        private double[][] tUnew;
+        private double[][] tx_i_shell_midsurface;
 
         /// <summary>
         /// Initial coordinates of shell midsurface nodes
@@ -64,11 +70,11 @@ namespace ISAAR.MSolve.FEM.Elements
         /// <summary>
         /// Auxiliary variables for calculating rotations and updating the element's direction vectors.
         /// </summary>      
-        private double[] ak_total = new double[8];
-        private double[] bk_total = new double[8];
+        //private double[] ak_total = new double[8];
+        //private double[] bk_total = new double[8];
         public bool MatrixIsNotInitialized = true;
 
-        public CohesiveShell8ToHexa20(ICohesiveZoneMaterial3D material, IQuadrature2D quadratureForStiffness)
+        public CohesiveShell8ToHexa20v2(ICohesiveZoneMaterial3D material, IQuadrature2D quadratureForStiffness)
         {
             this.QuadratureForStiffness = quadratureForStiffness;
             this.nGaussPoints = quadratureForStiffness.IntegrationPoints.Count;
@@ -105,63 +111,94 @@ namespace ISAAR.MSolve.FEM.Elements
         
         private void GetInitialGeometricDataForMidsurface(IElement element)
         {
+            //link elementData from node data
+
             ox_i_shell_midsurface = new double[8][];
-            for (int j = 0; j < 8; j++)
-            {
-                ox_i_shell_midsurface[j] = new double[] { element.Nodes[j].X, element.Nodes[j].Y, element.Nodes[j].Z, };                               
-            }
-        }
-
-        private void UpdateCoordinateDataForDirectVectorsAndMidsurface(double[] localdisplacements, out double[][] tx_i_shell_midsurface)
-        {
-            double ak;
-            double bk;
-            tx_i_shell_midsurface = new double[8][];
-            for (int j = 0; j < 8; j++)
-            {
-                tx_i_shell_midsurface[j] = new double[3];
-            }
-
-            for (int k = 0; k < 8; k++)
-            {
-                for (int l = 0; l < 3; l++)
-                {
-                    tx_i_shell_midsurface[k][l] = ox_i_shell_midsurface[k][l] + localdisplacements[5 * k + l];
-                }
-
-                //update tU & tUvec 
-                tU[k][0] = localdisplacements[5 * k + 0];
-                tU[k][1] = localdisplacements[5 * k + 1];
-                tU[k][2] = localdisplacements[5 * k + 2];
-                ak = localdisplacements[5 * k + 3] - ak_total[k];
-                ak_total[k] = localdisplacements[5 * k + 3];
-                bk = localdisplacements[5 * k + 4] - bk_total[k];
-                bk_total[k] = localdisplacements[5 * k + 4];
-                Shell8DirectionVectorUtilities.RotateNodalDirectionVectors(ak, bk, k,  tU,  tUvec);
-            }
-        }
-
-        private void GetInitialGeometricDataAndInitializeMatrices(IElement element)
-        {
-            (tU, tUvec) = Shell8DirectionVectorUtilities.GetInitialDirectionVectorValues(oVn_i);
-            this.GetInitialGeometricDataForMidsurface(element); 
             ox_i = new double[16][];
-            if ( ShellElementSide == 0)
+            tUnew = new double[16][];
+            tVn = new double[8][];
+            tV1 = new double[8][];
+            tV2 = new double[8][];
+            tx_i_shell_midsurface = new double[8][];
+
+            for (int j = 0; j < 8; j++)
             {
-                for (int j = 0; j < 8; j++)
-                { ox_i[j] = new double[] { ox_i_shell_midsurface[j][0]-0.5* tk[j] * tU[j][3], ox_i_shell_midsurface[j][1] - 0.5 * tk[j] * tU[j][4],
-                                             ox_i_shell_midsurface[j][2]-0.5* tk[j] * tU[j][5], };}
+                ox_i_shell_midsurface[j] = element.Nodes[j].oX;
+                tx_i_shell_midsurface[j] = element.Nodes[j].tX;
+                tVn[j] = element.Nodes[j].tVn;
+                tV1[j] = element.Nodes[j].tV1;
+                tV2[j] = element.Nodes[j].tV2;
+            }
+
+            if(ShellElementSide==0)
+            {
                 for (int j = 8; j < 16; j++)
-                {ox_i[j] = new double[] { element.Nodes[j].X, element.Nodes[j].Y, element.Nodes[j].Z, };}
+                { ox_i[j] = element.Nodes[j].oX; }
             }
             else
             {
                 for (int j = 0; j < 8; j++)
-                {ox_i[j] = new double[] { element.Nodes[j + 8].X, element.Nodes[j + 8].Y, element.Nodes[j + 8].Z, };}
-                for (int j = 8; j < 16; j++)
-                {ox_i[j] = new double[] { ox_i_shell_midsurface[j-8][0]+0.5* tk[j-8] * tU[j-8][3], ox_i_shell_midsurface[j-8][1] + 0.5 * tk[j-8] * tU[j-8][4],
-                                             ox_i_shell_midsurface[j-8][2]+0.5* tk[j-8] * tU[j-8][5], };}
+                { ox_i[j] = element.Nodes[j+8].oX; }
             }
+
+            for (int j = 0; j < 16; j++)
+            {
+                tUnew[j] = element.Nodes[j].tU;
+            }
+
+
+        }
+
+        private void UpdateCoordinateDataForDirectVectorsAndMidsurface(/*double[] localdisplacements, out double[][] tx_i_shell_midsurface*/)
+        {
+            //double ak;
+            //double bk;
+            //tx_i_shell_midsurface = new double[8][];
+            //for (int j = 0; j < 8; j++)
+            //{
+            //    tx_i_shell_midsurface[j] = new double[3];
+            //}
+
+            //for (int k = 0; k < 8; k++)
+            //{
+            //    for (int l = 0; l < 3; l++)
+            //    {
+            //        tx_i_shell_midsurface[k][l] = ox_i_shell_midsurface[k][l] + localdisplacements[5 * k + l];
+            //    }
+
+            //    //update tU & tUvec 
+            //    tU[k][0] = localdisplacements[5 * k + 0];
+            //    tU[k][1] = localdisplacements[5 * k + 1];
+            //    tU[k][2] = localdisplacements[5 * k + 2];
+            //    ak = localdisplacements[5 * k + 3] - ak_total[k];
+            //    ak_total[k] = localdisplacements[5 * k + 3];
+            //    bk = localdisplacements[5 * k + 4] - bk_total[k];
+            //    bk_total[k] = localdisplacements[5 * k + 4];
+            //    Shell8DirectionVectorUtilities.RotateNodalDirectionVectors(ak, bk, k,  tU,  tUvec);
+            //}
+        }
+
+        private void GetInitialGeometricDataAndInitializeMatrices(IElement element)
+        {
+            //(tU, tUvec) = Shell8DirectionVectorUtilities.GetInitialDirectionVectorValues(oVn_i);
+            this.GetInitialGeometricDataForMidsurface(element); 
+            //ox_i = new double[16][];
+            //if ( ShellElementSide == 0)
+            //{
+            //    for (int j = 0; j < 8; j++)
+            //    { ox_i[j] = new double[] { ox_i_shell_midsurface[j][0]-0.5* tk[j] * tU[j][3], ox_i_shell_midsurface[j][1] - 0.5 * tk[j] * tU[j][4],
+            //                                 ox_i_shell_midsurface[j][2]-0.5* tk[j] * tU[j][5], };}
+            //    for (int j = 8; j < 16; j++)
+            //    {ox_i[j] = new double[] { element.Nodes[j].X, element.Nodes[j].Y, element.Nodes[j].Z, };}
+            //}
+            //else
+            //{
+            //    for (int j = 0; j < 8; j++)
+            //    {ox_i[j] = new double[] { element.Nodes[j + 8].X, element.Nodes[j + 8].Y, element.Nodes[j + 8].Z, };}
+            //    for (int j = 8; j < 16; j++)
+            //    {ox_i[j] = new double[] { ox_i_shell_midsurface[j-8][0]+0.5* tk[j-8] * tU[j-8][3], ox_i_shell_midsurface[j-8][1] + 0.5 * tk[j-8] * tU[j-8][4],
+            //                                 ox_i_shell_midsurface[j-8][2]+0.5* tk[j-8] * tU[j-8][5], };}
+            //}
 
             x_local = new double[48];
        }
@@ -200,7 +237,7 @@ namespace ISAAR.MSolve.FEM.Elements
                 R[j] = new double[3, 3];
             }
 
-            this.UpdateCoordinateDataForDirectVectorsAndMidsurface(localdisplacements,out double [][] tx_i_shell_midsurface);
+            this.UpdateCoordinateDataForDirectVectorsAndMidsurface(/*localdisplacements,out double [][] tx_i_shell_midsurface*/);
            
             // Update x_local
             if (ShellElementSide == 0)
@@ -209,7 +246,7 @@ namespace ISAAR.MSolve.FEM.Elements
                 {
                     for (int k = 0; k < 3; k++)
                     {
-                        x_local[3 * j + k] = tx_i_shell_midsurface[j][k] - 0.5 * tk[j] * tU[j][3 + k];
+                        x_local[3 * j + k] = tx_i_shell_midsurface[j][k] - 0.5 * tk[j] * tVn[j][k];//  tU[j][3 + k];
                     }
                 }
                 for (int j = 8; j < 16; j++)
@@ -233,7 +270,7 @@ namespace ISAAR.MSolve.FEM.Elements
                 {
                     for (int k = 0; k < 3; k++)
                     {
-                        x_local[3 * j + k] = tx_i_shell_midsurface[j - 8][k] + 0.5 * tk[j - 8] * tU[j - 8][3 + k];
+                        x_local[3 * j + k] = tx_i_shell_midsurface[j - 8][k] + 0.5 * tk[j - 8] * tVn[j - 8][k];// tU[j - 8][3 + k];
                     }
                 }
             }
@@ -409,8 +446,8 @@ namespace ISAAR.MSolve.FEM.Elements
                 {
                     for (int n = 0; n < 3; n++)
                     {
-                        T[3 * m + n, 5 * m + 3] = 0.5 * tk[m] * tUvec[m][3 + n];
-                        T[3 * m + n, 5 * m + 4] = -0.5 * tk[m] * tUvec[m][n];
+                        T[3 * m + n, 5 * m + 3] = 0.5 * tk[m] * tV2[m][n];// tUvec[m][3 + n];
+                        T[3 * m + n, 5 * m + 4] = -0.5 * tk[m] * tV1[m][n];// tUvec[m][n];
                     }
                 }
             }
@@ -420,8 +457,8 @@ namespace ISAAR.MSolve.FEM.Elements
                 {
                     for (int n = 0; n < 3; n++)
                     {
-                        T[3 * m + n, 5 * m + 3] = -0.5 * tk[m] * tUvec[m][3 + n];
-                        T[3 * m + n, 5 * m + 4] = +0.5 * tk[m] * tUvec[m][n];
+                        T[3 * m + n, 5 * m + 3] = -0.5 * tk[m] * tV2[m][n];// tUvec[m][3 + n];
+                        T[3 * m + n, 5 * m + 4] = +0.5 * tk[m] * tV1[m][n];// tUvec[m][n];
                     }
                 }
             }
@@ -654,6 +691,8 @@ namespace ISAAR.MSolve.FEM.Elements
             k_element_coh2 =this.MultiplyStifnessMatrixForEmbedding(k_stoixeiou_coh,element);
             //AssemblyCheck.ProcessElementStiffnessMatrix(element.ID, k_element_coh2);
             return k_element_coh2;
+
+            
         }
 
         public Tuple<double[], double[]> CalculateStresses(Element element, double[] localTotalDisplacementsSuperElement, double[] localdDisplacementsSuperElement)

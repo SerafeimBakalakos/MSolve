@@ -41,6 +41,8 @@ namespace ISAAR.MSolve.FEM.Embedding
         {
             bool validElement = element is Hexa8;
             validElement |= element is Hexa8NonLinear;
+            validElement |= element is Hexa8NonLinearTotalStrain;
+            validElement |= element is Hexa8NonLinearTotalStrainv2;
             if (!(validElement)) throw new ArgumentException("Host element is not Hexa8 or Hexa8NL.");
         }
     }

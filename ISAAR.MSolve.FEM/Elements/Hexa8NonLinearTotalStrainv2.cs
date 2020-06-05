@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.FEM.Elements
     /// Continuum finite Element for 3d problems with material and geometric nonlinearities
     /// Authors: Gerasimos Sotiropoulos
     /// </summary>
-    public class Hexa8NonLinear : IStructuralFiniteElement, IEmbeddedHostElement
+    public class Hexa8NonLinearTotalStrainv2 : IStructuralFiniteElement, IEmbeddedHostElement, IFiniteElement_v2
     {
         protected readonly static IDofType[] nodalDOFTypes = new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ };
         protected readonly static IDofType[][] dofTypes = new IDofType[][] { nodalDOFTypes, nodalDOFTypes, nodalDOFTypes,
@@ -32,18 +32,14 @@ namespace ISAAR.MSolve.FEM.Elements
         private readonly int nGaussPoints;
         private bool isInitialized = false;
 
-        private double[][] ox_i; //not defined by user. 8 arrays of 3 elements
         private double[][] tu_i;
         private double[] integrationCoeffs;
 
-        private double[][] GLvec;
-        private double[][] GLvec_last_converged;
-
-        protected Hexa8NonLinear()
+        protected Hexa8NonLinearTotalStrainv2()
         {
         }
 
-        public Hexa8NonLinear(IContinuumMaterial3D material, IQuadrature3D quadratureForStiffness)
+        public Hexa8NonLinearTotalStrainv2(IContinuumMaterial3D material, IQuadrature3D quadratureForStiffness)
         {
             this.nGaussPoints = quadratureForStiffness.IntegrationPoints.Count;
             this.QuadratureForStiffness = quadratureForStiffness;
@@ -216,9 +212,6 @@ namespace ISAAR.MSolve.FEM.Elements
 
             Matrix[] BNL1_hexa;
 
-            ox_i = new double[8][];
-            tu_i = new double[8][]; 
-
             (Matrix[] J_0inv_hexa, double[] detJ_0) = JacobianHexa8Reverse.GetJ_0invHexaAndDetJ_0(
                 shapeFunctionNaturalDerivatives, element.Nodes, nGaussPoints);
 
@@ -226,10 +219,10 @@ namespace ISAAR.MSolve.FEM.Elements
 
             BNL1_hexa = GetBNL1_hexa(J_0inv_hexa);
 
-            for (int j = 0; j < 8; j++)
-            {
-                ox_i[j] = new double[] { element.Nodes[j].X, element.Nodes[j].Y, element.Nodes[j].Z, };
-                }
+            //for (int j = 0; j < 8; j++)
+            //{
+            //    ox_i[j] = new double[] { element.Nodes[j].X, element.Nodes[j].Y, element.Nodes[j].Z, };
+            //}
 
             for (int gpoint = 0; gpoint < nGaussPoints; gpoint++)
             {
@@ -237,38 +230,32 @@ namespace ISAAR.MSolve.FEM.Elements
 
             }
 
-            tu_i = new double[8][];
-            GLvec = new double[nGaussPoints][];
-            GLvec_last_converged = new double[nGaussPoints][];
-            for (int gpoint = 0; gpoint < nGaussPoints; gpoint++)
-            {
-                GLvec[gpoint] = new double[6];
-                GLvec_last_converged[gpoint] = new double[6];
-            }
-            for (int k = 0; k < 8; k++)
-            {
-                tu_i[k] = new double[3];
-            }
+            //tu_i = new double[8][];
+            //for (int k = 0; k < 8; k++)
+            //{
+            //    tu_i[k] = new double[3];
+            //}
+
+            tu_i = element.Nodes.Select(x => x.tU).ToArray();
             isInitialized = true;
 
         }
 
-        private void UpdateCoordinateData(double[] localdisplacements, out double[][] tx_i)
+        private void UpdateCoordinateData(out double[][] tx_i,IElement element)
         {
-            tx_i = new double[8][];
-            for (int j = 0; j < 8; j++)
-            {
-                tx_i[j] = new double[3];
-                for (int k = 0; k < 3; k++)
-                {
-                    tu_i[j][k] = localdisplacements[3 * j + k];
-                    tx_i[j][k] = ox_i[j][k] + tu_i[j][k];
-                }
-            }
+            tx_i = element.Nodes.Select(x => x.tX).ToArray();
+            
         }
 
-        private void CalculateStrains(double[] localdisplacements, IElement element, double[][] tx_i) 
+        private double[][] CalculateStrains(IElement element, double[][] tx_i)
         {
+            double[][] GLvec;
+            GLvec = new double[nGaussPoints][];
+            for (int gpoint = 0; gpoint < nGaussPoints; gpoint++)
+            {
+                GLvec[gpoint] = new double[6];
+            }
+
             IReadOnlyList<Matrix> shapeFunctionNaturalDerivatives;
             shapeFunctionNaturalDerivatives = Interpolation.EvaluateNaturalGradientsAtGaussPoints(QuadratureForStiffness);
             (Matrix[] J_0inv_hexa, double[] detJ_0) = JacobianHexa8Reverse.GetJ_0invHexaAndDetJ_0(
@@ -298,7 +285,7 @@ namespace ISAAR.MSolve.FEM.Elements
                     GL[npoint][m, m] += -1;
                 }
                 GL[npoint].ScaleIntoThis(0.5);
-                
+
                 //
                 for (int m = 0; m < 3; m++)
                 {
@@ -308,7 +295,7 @@ namespace ISAAR.MSolve.FEM.Elements
                 GLvec[npoint][4] = 2 * GL[npoint][1, 2];
                 GLvec[npoint][5] = 2 * GL[npoint][2, 0];
             }
-
+            return GLvec;
         }
 
         private double[] UpdateForces(IElement element)
@@ -583,33 +570,43 @@ namespace ISAAR.MSolve.FEM.Elements
             return k_element;
         }
         
-        public Tuple<double[], double[]> CalculateStresses(Element element, double[] localTotalDisplacements, double[] localdDisplacements)
+        public Tuple<double[], double[]> CalculateStresses(Element element)
         {
-            this.UpdateCoordinateData(localTotalDisplacements, out double[][] tx_i);
-            this.CalculateStrains(localTotalDisplacements, element, tx_i);
-            double[] GLvec_strain_minus_last_converged_value = new double[6];
+            this.UpdateCoordinateData(out double[][] tx_i, element);
+            double[][] GLvec =CalculateStrains(element, tx_i);
             for (int npoint = 0; npoint < materialsAtGaussPoints.Length; npoint++)
             {
-                GLvec_strain_minus_last_converged_value = new double[6] 
-                {
-                    GLvec[npoint][0]- GLvec_last_converged[npoint][0],
-                    GLvec[npoint][1] - GLvec_last_converged[npoint][1],
-                    GLvec[npoint][2] - GLvec_last_converged[npoint][2],
-                    GLvec[npoint][3]- GLvec_last_converged[npoint][3],
-                    GLvec[npoint][4]- GLvec_last_converged[npoint][4],
-                    GLvec[npoint][5]- GLvec_last_converged[npoint][5]
-                };
-                materialsAtGaussPoints[npoint].UpdateMaterial(GLvec_strain_minus_last_converged_value); 
+                materialsAtGaussPoints[npoint].UpdateMaterial(GLvec[npoint]); 
                 //To update with total strain simplY = materialsAtGaussPoints[npoint].UpdateMaterial(GLvec[npoint]);
             }
-            return new Tuple<double[], double[]>(GLvec_strain_minus_last_converged_value, 
+            return new Tuple<double[], double[]>(GLvec[nGaussPoints-1], 
                 materialsAtGaussPoints[materialsAtGaussPoints.Length - 1].Stresses);
             //TODO return data with total strains data would be:
             //return new Tuple<double[], double[]>(GLvec[materialsAtGaussPoints.Length - 1], materialsAtGaussPoints[materialsAtGaussPoints.Length - 1].Stresses);
             //TODO: why return only the strain- stress of the gausspoint that is last on the array, Where is it needed?
         }
 
+        public Tuple<double[], double[]> CalculateStresses(Element element, double[] localTotalDisplacements, double[] localdDisplacements)
+        {
+            return CalculateStresses(element);
+
+            //this.UpdateCoordinateData(localTotalDisplacements, out double[][] tx_i);
+            //double[][] GLvec = CalculateStrains(localTotalDisplacements, element, tx_i);
+            //for (int npoint = 0; npoint < materialsAtGaussPoints.Length; npoint++)
+            //{
+            //    materialsAtGaussPoints[npoint].UpdateMaterial(GLvec[npoint]);
+            //}
+            //return new Tuple<double[], double[]>(GLvec[nGaussPoints - 1],
+            //    materialsAtGaussPoints[materialsAtGaussPoints.Length - 1].Stresses);
+
+            //throw new NotImplementedException();
+            
+        }
+
         public double[] CalculateForces(Element element, double[] localTotalDisplacements, double[] localdDisplacements) 
+            => this.UpdateForces(element);
+
+        public double[] CalculateForces(Element element)
             => this.UpdateForces(element);
 
         public double[] CalculateForcesForLogging(Element element, double[] localDisplacements) 
@@ -621,8 +618,8 @@ namespace ISAAR.MSolve.FEM.Elements
             {
                 this.CalculateInitialConfigurationData(element);
                 var localTotalDisplacements = new double[24];
-                this.UpdateCoordinateData(localTotalDisplacements, out double[][] tx_i);
-                this.CalculateStrains(localTotalDisplacements, element, tx_i);
+                this.UpdateCoordinateData(out double[][] tx_i, element);
+                this.CalculateStrains(element, tx_i);
             }
             Matrix elementStiffness = this.UpdateKmatrices(element);
             //It doesn't implement Iembedded to return dof.Enumerator.GetTransformedMatrix
@@ -642,12 +639,6 @@ namespace ISAAR.MSolve.FEM.Elements
 
         public void SaveMaterialState()
         {
-            for (int npoint = 0; npoint < materialsAtGaussPoints.Length; npoint++)
-            {
-                for (int i1 = 0; i1 < 6; i1++)
-                { GLvec_last_converged[npoint][i1] = GLvec[npoint][i1]; }
-            }
-
             foreach (IContinuumMaterial3D m in materialsAtGaussPoints) m.SaveState();
         }
 

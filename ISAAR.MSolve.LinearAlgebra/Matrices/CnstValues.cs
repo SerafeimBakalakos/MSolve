@@ -68,12 +68,22 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
 
         }
 
-        public static bool printInterfaceSolutionStats { get; set; } = false;
+        public static bool printInterfaceSolutionStats { get; set; } = true;
+
+        //-------------------------------------------------
+        #region newtohn raphson and homogenisation pcg stats
+        public static bool printNRstiffnessMatrices { get; set; } = true;
         public static int analyzerLoadingStep { get; set; } = -1;
         public static int analyzerNRIter { get; set; } = -1;
         public static string analyzerInfo { get; set; }
+
+        public static bool analyzerInfoIsSolutionForNRiters { get; set; } = false;
         public string incrementalPcgStatsOutputFileExtention = @"\interfaceSolver_FetiDP_3d_iterations_Per_Increment.txt";
 
+        public static int stressIncrNo { get; set; } = 0;
+
+        public static bool WriteNRRelatedPcgStats { get; set; } = false;
+        #endregion
 
         #region supress output
         /// <summary>
@@ -103,13 +113,15 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
         public static bool writeFetiSolutionVectors { get; set; } = true;
         
         #endregion
-        public static bool printSolver_run_overwrite_data_region { get; set; } = false;
+        public static bool printSolver_run_overwrite_data_region { get; set; } = true;
 
         public static bool printGlobalSolutionStats { get; set; } = true;
 
         public static bool printPcgMatRhsEtc_AndInterfaceProblemStats { get; set; } = false; // 
 
-        public static bool printPreconditoner { get; set; } = false; // 
+        public static bool printPreconditoner { get; set; } = false; //
+
+        public static bool printGlobalSuiteSparseMatrix { get; set; } = true;
 
         public void WriteToFileStringArray(string[] array, string path)
         {
@@ -160,5 +172,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
         #region macro model booleans and output
         public static bool writeFe2MacroscaleSolution=true;
         #endregion
+
+        public static bool useV2FiniteElements { get; set; } = false;
     }
 }

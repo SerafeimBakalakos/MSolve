@@ -75,5 +75,16 @@ namespace ISAAR.MSolve.FEM.Entities
         }
 
         public int CompareTo(INode other) => this.ID - other.ID;
+
+        public double[] tU { get; set; }
+        public double[] tX { get; set; }
+
+        public double[] oX { get; set; }
+
+        public double[] oVn { get; set; }
+        public double[] tVn { get; set; }
+        public double[] tV1 { get; set; }
+
+        public double[] tV2 { get; set; }
     }
 }

@@ -95,5 +95,19 @@ namespace ISAAR.MSolve.IGA.Entities
 			};
 		}
 
+        public double[] tU { get; set; }
+        public double[] tX { get; set; }
+
+        public double[] oX { get; set; }
+
+        double[] oVn { get; set; }
+        double[] tVn { get; set; }
+        double[] tV1 { get; set; }
+
+        double[] tV2 { get; set; }
+        double[] INode.oVn { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        double[] INode.tVn { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        double[] INode.tV1 { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        double[] INode.tV2 { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }

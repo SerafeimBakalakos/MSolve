@@ -168,7 +168,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
             //subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
             CnstValues.useInput_forRVE = true;
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
-            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number,false);
             //rveBuilder.useInput = true;
             // EPILOGH RVE
             //var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicateDevelop(1, true); //edw ginetai develop h feti dp gia provlhmata 3d
@@ -818,7 +818,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 
             CnstValues.useInput_forRVE = true;
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
-            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number,false);
             //rveBuilder.useInput = true;
 
             //var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate(1, false);

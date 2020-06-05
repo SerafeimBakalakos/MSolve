@@ -157,6 +157,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 solver.usePreviousLambda = this.UseLambdaSolutionsKff;
                 if (!(previousLambdaSolutionsKff == null)) { solver.previousLambda = previousLambdaSolutionsKff[k]; }
 
+                #region solver parameters
                 if (solver is IFetiSolver fetiSolver)
                 {
                     if (fetiSolver.InterfaceProblemSolver.Pcg != null)
@@ -174,6 +175,8 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                         }
                     }
                 }
+                #endregion
+
                 solver.Solve();
                 if (UseLambdaSolutionsKff)
                 { previousLambdaSolutionsKff[k] = solver.previousLambda.Copy(); } //TODOGer1: pithanws axrhsto to copy

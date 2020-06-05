@@ -231,5 +231,46 @@ namespace ISAAR.MSolve.FEM.Interpolation.Jacobians
             return J_1;
         }
 
+        public static Matrix[] Get_J_1v2(int nGaussPoints, double[][] tx_i, double[][] tVn, Matrix[] J_0a)
+        {
+            double[,] J_1b;
+
+            J_1b = new double[16, 3];
+            var J_1 = new Matrix[nGaussPoints];
+
+            for (int j = 0; j < nGaussPoints; j++)
+            {
+                J_1[j] = Matrix.CreateZero(3, 3);
+            }
+
+            for (int j = 0; j < 8; j++)
+            {
+                J_1b[2 * j, 0] = tx_i[j][0];
+                J_1b[2 * j + 1, 0] = tVn[j][0];
+                J_1b[2 * j, 1] = tx_i[j][1];
+                J_1b[2 * j + 1, 1] = tVn[j][1];
+                J_1b[2 * j, 2] = tx_i[j][2];
+                J_1b[2 * j + 1, 2] = tVn[j][2];
+            }
+
+            for (int j = 0; j < nGaussPoints; j++)
+            {
+                for (int k = 0; k < 3; k++)
+                {
+                    for (int l = 0; l < 3; l++)
+                    {
+                        J_1[j][k, l] = 0;
+                        for (int m = 0; m < 16; m++)
+                        {
+                            J_1[j][k, l] += J_0a[j][k, m] * J_1b[m, l];
+                        }
+
+                    }
+
+                }
+            }
+            return J_1;
+        }
+
     }
 }

@@ -43,7 +43,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 
             #region solve skyline Microstructures (with Git and GitSerial RveBuilders)                    
             var rveBuilder3 = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
-            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number,false);
             var microstructure2Serial = new MicrostructureDefGrad3D(rveBuilder3,
                 model => (new SuiteSparseSolver.Builder()).BuildSolver(model), false, 1);
 
@@ -60,7 +60,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 
             #region solve microstructure with feti dp solver
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
-            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number,false);
             var microstructure3 = new MicrostructureDefGrad3DSerial(rveBuilder,
                 rveBuilder.GetAppropriateSolverMpi, false, 1, true, true);
             
@@ -115,13 +115,13 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 
             #region solve skyline Microstructures (with Git and GitSerial RveBuilders)                    
             var rveBuilder3 = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, false, mpgp,
-            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number,false);
             var microstructure2Serial = new MicrostructureDefGrad3D(rveBuilder3,
                 model => (new SuiteSparseSolver.Builder()).BuildSolver(model), false, 1);
 
-            //microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
+            microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.01, 1, 1, 0, 0, 0, 0, 0, 0 });
             //microstructure2Serial.SaveState();
-            ////microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.03, 1, 1, 0, 0, 0, 0, 0, 0 });
+            microstructure2Serial.UpdateMaterial(new double[9] { /*1.10*/ 1.03, 1, 1, 0, 0, 0, 0, 0, 0 });
             ////Vector solutionSuiteSparse = (Vector)microstructure2Serial.uInitialFreeDOFDisplacementsPerSubdomain.ElementAt(0).Value.Copy();
             //double[] stressesSuitesparse = microstructure2Serial.Stresses;
             //double[,] constitutiveSuitesparse = microstructure2Serial.ConstitutiveMatrix.CopytoArray2D();
@@ -130,7 +130,7 @@ namespace ISAAR.MSolve.Tests.FEMpartB.SeparationBenchmarks2
 
             #region solve microstructure with feti dp solver
             var rveBuilder = new RveGrShMultipleSeparatedDevelopbDuplicate_2d_alteDevelop3DcornerGitSerial(1, true, mpgp,
-            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number);
+            subdiscr1, discr1, discr3, subdiscr1_shell, discr1_shell, graphene_sheets_number,true);
             var microstructure3 = new MicrostructureDefGrad3DSerial(rveBuilder,
                 rveBuilder.GetAppropriateSolverMpi, false, 1, true, true);
 

@@ -188,11 +188,14 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
 
         private void WriteOutput(string text)
         {
-            var cnstVal = new CnstValues();
-            var incrementalPcgStatsOutput = cnstVal.interfaceSolverStatsPath + cnstVal.incrementalPcgStatsOutputFileExtention;
-            var writer = new StreamWriter(incrementalPcgStatsOutput, true);
-            writer.WriteLine(text);
-            writer.Dispose();
+            if (CnstValues.WriteNRRelatedPcgStats)
+            {
+                var cnstVal = new CnstValues();
+                var incrementalPcgStatsOutput = cnstVal.interfaceSolverStatsPath + cnstVal.incrementalPcgStatsOutputFileExtention;
+                var writer = new StreamWriter(incrementalPcgStatsOutput, true);
+                writer.WriteLine(text);
+                writer.Dispose();
+            }
         }
 
         public void Solve()
@@ -203,6 +206,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
             UpdateInternalVectors();//TODOMaria this divides the externally applied load by the number of increments and scatters it to all subdomains and stores it in the class subdomain dictionary and total external load vector
             for (int increment = 0; increment < increments; increment++)
             {
+                #region solver parameters
                 WriteOutput($"LoadingStep: {increment} ");
                 if (solver is IFetiSolver fetiSolver1)
                 {
@@ -215,6 +219,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                 }
 
                 CnstValues.analyzerLoadingStep = increment;
+                #endregion
                 double errorNorm = 0;
                 ClearIncrementalSolutionVector();//TODOMaria this sets du to 0
                 UpdateRHS(increment);//comment MS2: apo to rhs[subdomain.ID] pernaei sto subdomain.RHS h fixed timh (externalLoads/increments) (ginetai copy kai oxi add)  AFTO thewreitai RHS sthn prwth iteration
@@ -223,28 +228,33 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                 int step = 0;
                 for (step = 0; step < maxSteps; step++)
                 {
+                    #region solver parameters
                     WriteOutput($"NR Iteration : {step}");
                     CnstValues.analyzerNRIter = step;
                     CnstValues.analyzerInfo = "Solution";
+                    CnstValues.analyzerInfoIsSolutionForNRiters = true;
                     if (solver is IFetiSolver fetiSolver)
                     {
                         if (fetiSolver.InterfaceProblemSolver.Pcg != null)
                         {
                             fetiSolver.InterfaceProblemSolver.Pcg.Clear();
-                            fetiSolver.InterfaceProblemSolver.UseStagnationCriterion = true;
+                            fetiSolver.InterfaceProblemSolver.UseStagnationCriterion = true; //prepei na einai true to stagnation criterion an den kanoume clear ta vectors kai xrhsimopoihsoume reortho
                             //if (errorNorm > toleranceForReortho)
                             //{ 
                             //    fetiSolver.InterfaceProblemSolver.Pcg.ReorthoCache.Clear(); 
                             //}
                         }
                     }
+                    #endregion
                     solver.Solve();
                     errorNorm = rhsNorm != 0 ? CalculateInternalRHS(increment, step, increments) / rhsNorm : 0;//comment MS2: to subdomain.RHS lamvanei thn timh nIncrement*(externalLoads/increments)-interanalRHS me xrhsh ths fixed timhs apo to rhs[subdomain.ID]
                     if (step == 0) firstError = errorNorm;
+                    if (step == 0) AssemblyCheck.isSecondAssembly = true; //debugv2
                     WriteOutput($"NR error norm : {increment}");
                     if (errorNorm < tolerance)
                     {
                         CnstValues.analyzerInfo = "Homogenization";
+                        CnstValues.analyzerInfoIsSolutionForNRiters = false;
                         break; 
                     }
 
@@ -253,6 +263,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                     {
                         providerReset(); // provider.Reset();
                         BuildMatrices();
+                        if (step == 0) AssemblyCheck.isSecondAssembly = false; //debugv2
                         //solver.Initialize(); //TODO: Using this needs refactoring
                     }
                 }
@@ -283,6 +294,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         private double CalculateInternalRHS(int currentIncrement, int step, int totalIncrements)
         {
             globalRhs.Clear();
+            var isNodeUpdated = new BooleanArray(model.NumNodes + 1); var areBoundaryNodesUpdated = new BooleanArray(boundaryNodes.Count + 1);
             foreach (ILinearSystemMpi linearSystem in linearSystems.Values)
             {
                 int id = linearSystem.Subdomain.ID;
@@ -302,7 +314,8 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                     uPlusdu[id].AddIntoThis(du[id]);
                 }
                 IVector internalRhs = subdomainUpdaters[id].GetRHSFromSolutionWithInitialDisplacemntsEffect(uPlusdu[id], du[id], boundaryNodes,
-                initialConvergedBoundaryDisplacements, totalBoundaryDisplacements, currentIncrement + 1, totalIncrements);//TODOMaria this calculates the internal forces
+                initialConvergedBoundaryDisplacements, totalBoundaryDisplacements, currentIncrement + 1, totalIncrements,
+                ref isNodeUpdated, linearSystem.Solution, ref areBoundaryNodesUpdated);//TODOMaria this calculates the internal forces
 
                 //provider.ProcessInternalRhs(linearSystem.Subdomain, uPlusdu[id], internalRhs);//TODOMaria this does nothing
                 //(new Vector<double>(u[subdomain.ID] + du[subdomain.ID])).Data);
