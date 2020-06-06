@@ -7,6 +7,8 @@ using ISAAR.MSolve.Discretization.Providers;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Logging.Interfaces;
 using ISAAR.MSolve.Solvers;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.GsiFetiDP;
 using ISAAR.MSolve.Solvers.LinearSystems;
 
 namespace ISAAR.MSolve.Analyzers.Multiscale
@@ -41,6 +43,9 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
 
         public void BuildMatrices()
         {
+            // This method is called at the start of each strain increment. 
+            // The child N-R analyzer only performs 1 increment and is then destroyed.
+
             solver.BuildGlobalMatrix(stiffnessProvider);
             //foreach (ILinearSystem linearSystem in linearSystems.Values)
             //{
@@ -87,6 +92,13 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         public void Solve()
         {
             if (ChildAnalyzer == null) throw new InvalidOperationException("Static analyzer must contain an embedded analyzer.");
+
+            #region solver parameters
+            if (solver is GsiFetiDPSolver gsiSolver)
+            {
+                gsiSolver.SolveCase = GsiFetiDPSolver.SolveCases.OnlyFetiDP;
+            }
+            #endregion
             BuildMatrices(); //TODO: this should be called by the class that calls model.AssignLoads() and before it. 
             ChildAnalyzer.Solve();
         }

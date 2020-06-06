@@ -43,8 +43,28 @@ using ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient;
 //      vector of GSI's PCG is stored, overwriting the force vectors. Instead the analyzer should create a global RHS directly.
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
 {
-    public class GsiFetiDPSolver : ISolverMpi
+    public class GsiFetiDPSolver : IFetiSolver
     {
+        public enum SolveCases 
+        {
+            /// <summary>
+            /// Solve only with FETI-DP solver. Only FETI-DP matrices are created.
+            /// </summary>
+            OnlyFetiDP,
+
+            /// <summary>
+            /// Solve with GSI solver and use FETI-DP solver as preconditioner. Matrices for both GSI and FETI-DP are created.
+            /// These matrices correspond to the same problem (GSI matrices are Kff and FETI-DP's Krr,Kcc are extracted from Kff).
+            /// </summary>
+            GsiFetiDPSameMatrices,
+
+            /// <summary>
+            /// Solve with GSI solver and use FETI-DP solver as preconditioner. Only GSI matrices are created.
+            /// FETI-DP uses stored matrices from the solution of nearby problems.
+            /// </summary>
+            GsiFetiDPDifferentMatrices, 
+        }
+
         internal const string name = "GEI-FETI-DP Solver"; // for error messages and logging
         private readonly DofOrderer dofOrderer;
         private readonly FetiDP3dSolverSerial fetiDP;
@@ -75,6 +95,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             this.gsiPreconditioner = new GsiFetiDPPreconditioner(model, fetiDP);
         }
 
+        public SolveCases SolveCase { get; set; } = SolveCases.OnlyFetiDP;
+
         public FetiDP3dSolverSerial EmbeddedFetiDPSolver => fetiDP;
 
         public Vector GlobalDisplacements { get; set; }
@@ -87,23 +109,45 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
 
         public PcgAlgorithmForGsi OuterPcgAlgorithm => pcgAlgorithm;
 
+        public Vector previousLambda 
+        { 
+            get => fetiDP.previousLambda;
+            set => fetiDP.previousLambda = value; 
+        }
+
+        public bool usePreviousLambda
+        {
+            get => fetiDP.usePreviousLambda;
+            set => fetiDP.usePreviousLambda = value;
+        }
+
+        public IFetiDPInterfaceProblemSolver InterfaceProblemSolver => fetiDP.InterfaceProblemSolver;
+
         /// <summary>
-        ///  builds Kff of each subdomain
+        /// Builds Kff of each subdomain
         /// </summary>
         /// <param name="elementMatrixProvider"></param>
         public void BuildGlobalMatrix(IElementMatrixProvider elementMatrixProvider)
+        {
+            if (SolveCase == SolveCases.OnlyFetiDP) fetiDP.BuildGlobalMatrix(elementMatrixProvider);
+            else if (SolveCase == SolveCases.GsiFetiDPSameMatrices) BuildGlobalMatrixBoth(elementMatrixProvider);
+            else if (SolveCase == SolveCases.GsiFetiDPDifferentMatrices) BuildGlobalMatrixOnlyGsi(elementMatrixProvider);
+            else throw new NotImplementedException();
+        }
+
+        private void BuildGlobalMatrixBoth(IElementMatrixProvider elementMatrixProvider)
         {
             HandleMatrixWillBeSet(); //TODO: temporary solution to avoid this getting called once for each linear system/observable
             fetiDP.HandleMatrixWillBeSet();
 
             Logger.StartMeasuringTime();
 
-            var assembler = new SymmetricDokAssembler();
             gsiMatrix.MatricesKff = new Dictionary<ISubdomain, CsrMatrix>();
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 Debug.WriteLine(msgHeader
                         + $" Assembling the free-free stiffness matrix of subdomain {subdomain.ID}");
+                var assembler = new SymmetricDokAssembler();
                 DokSymmetric dokKff = assembler.BuildGlobalMatrix(
                     subdomain.FreeDofOrdering, subdomain.EnumerateElements(), elementMatrixProvider);
                 fetiDP.GetLinearSystem(subdomain).Matrix = dokKff; //TODO: Therefore only SuiteSparse FETI-DP is allowed
@@ -115,21 +159,17 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             fetiDP.Initialize(); 
         }
 
-        /// <summary>
-        ///  builds Kff of each subdomain
-        /// </summary>
-        /// <param name="elementMatrixProvider"></param>
-        public void BuildGlobalMatrixOnlyGsi(IElementMatrixProvider elementMatrixProvider)
+        private void BuildGlobalMatrixOnlyGsi(IElementMatrixProvider elementMatrixProvider)
         {
             HandleMatrixWillBeSet(); //TODO: temporary solution to avoid this getting called once for each linear system/observable
             Logger.StartMeasuringTime();
 
-            var assembler = new CsrAssembler();
             gsiMatrix.MatricesKff = new Dictionary<ISubdomain, CsrMatrix>();
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 Debug.WriteLine(msgHeader
                         + $" Assembling the free-free stiffness matrix of subdomain {subdomain.ID}");
+                var assembler = new CsrAssembler();
                 CsrMatrix Kff = assembler.BuildGlobalMatrix(
                     subdomain.FreeDofOrdering, subdomain.EnumerateElements(), elementMatrixProvider);
                 gsiMatrix.MatricesKff[subdomain] = Kff;
@@ -142,15 +182,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
         public void HandleMatrixWillBeSet()
         {
             //Do nothing
-            //isStiffnessModified = true;
-            //foreach (ISubdomain subdomain in model.EnumerateSubdomains())
-            //{
-            //    if (subdomain.StiffnessModified)
-            //    {
-            //        Debug.WriteLine(msgHeader + $"Clearing saved matrices of subdomain {subdomain.ID}.");
-            //        linearSystems[subdomain].Matrix = null;
-            //    }
-            //}
         }
 
         public void Initialize()
@@ -165,20 +196,27 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
         public void PreventFromOverwrittingSystemMatrices()
         {
             // Do nothing
-            /*factorizeInPlace = false;*/
         }
 
         public void Solve()
         {
-            // Set up FETI-DP as preconditioner
-            if (isStiffnessModified)
-            {
-                Logger.StartMeasuringTime();
-                gsiPreconditioner.Update();
-                Logger.LogCurrentTaskDuration("Calculating preconditioner");
+            if (SolveCase == SolveCases.OnlyFetiDP) fetiDP.Solve();
+            else if (SolveCase == SolveCases.GsiFetiDPSameMatrices) SolveGsiFetiDP();
+            else if (SolveCase == SolveCases.GsiFetiDPDifferentMatrices) SolveGsiFetiDP();
+            else throw new NotImplementedException();
+        }
 
-                isStiffnessModified = false;
-            }
+        private void SolveGsiFetiDP()
+        {
+            //// Set up FETI-DP as preconditioner
+            //if (isStiffnessModified)
+            //{
+            //    Logger.StartMeasuringTime();
+            //    gsiPreconditioner.Update();
+            //    Logger.LogCurrentTaskDuration("Calculating preconditioner");
+
+            //    isStiffnessModified = false;
+            //}
 
             // Create global RHS vector for PCG
             Logger.StartMeasuringTime();

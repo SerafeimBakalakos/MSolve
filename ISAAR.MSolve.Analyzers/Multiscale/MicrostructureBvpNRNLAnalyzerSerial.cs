@@ -15,6 +15,7 @@ using ISAAR.MSolve.Logging;
 using ISAAR.MSolve.Logging.Interfaces;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d;
 using ISAAR.MSolve.Solvers.LinearSystems;
 
 namespace ISAAR.MSolve.Analyzers.Multiscale
@@ -210,7 +211,13 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                 WriteOutput($"LoadingStep: {increment} ");
                 if (solver is IFetiSolver fetiSolver1)
                 {
-                    if (fetiSolver1.InterfaceProblemSolver.Pcg != null)
+                    if (solver is GsiFetiDPSolver gsiSolver)
+                    {
+                        gsiSolver.EmbeddedFetiDPSolver.InterfaceProblemSolver.UseStagnationCriterion = false;
+                        gsiSolver.EmbeddedFetiDPSolver.InterfaceProblemSolver.Pcg.Clear();
+                        gsiSolver.EmbeddedFetiDPSolver.InterfaceProblemSolver.Pcg.ReorthoCache.Clear();
+                    }
+                    else if (fetiSolver1.InterfaceProblemSolver.Pcg != null)
                     {
                         fetiSolver1.InterfaceProblemSolver.UseStagnationCriterion = false;
                         fetiSolver1.InterfaceProblemSolver.Pcg.Clear();
@@ -235,7 +242,12 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                     CnstValues.analyzerInfoIsSolutionForNRiters = true;
                     if (solver is IFetiSolver fetiSolver)
                     {
-                        if (fetiSolver.InterfaceProblemSolver.Pcg != null)
+                        if (solver is GsiFetiDPSolver gsiSolver)
+                        {
+                            gsiSolver.EmbeddedFetiDPSolver.InterfaceProblemSolver.Pcg.Clear();
+                            gsiSolver.EmbeddedFetiDPSolver.InterfaceProblemSolver.UseStagnationCriterion = false;
+                        }
+                        else if (fetiSolver.InterfaceProblemSolver.Pcg != null)
                         {
                             fetiSolver.InterfaceProblemSolver.Pcg.Clear();
                             fetiSolver.InterfaceProblemSolver.UseStagnationCriterion = true; //prepei na einai true to stagnation criterion an den kanoume clear ta vectors kai xrhsimopoihsoume reortho
@@ -247,6 +259,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                     }
                     #endregion
                     solver.Solve();
+
                     errorNorm = rhsNorm != 0 ? CalculateInternalRHS(increment, step, increments) / rhsNorm : 0;//comment MS2: to subdomain.RHS lamvanei thn timh nIncrement*(externalLoads/increments)-interanalRHS me xrhsh ths fixed timhs apo to rhs[subdomain.ID]
                     if (step == 0) firstError = errorNorm;
                     if (step == 0) AssemblyCheck.isSecondAssembly = true; //debugv2
@@ -262,6 +275,14 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
                     if ((step + 1) % stepsForMatrixRebuild == 0)
                     {
                         providerReset(); // provider.Reset();
+
+                        #region solver parameters
+                        if (solver is GsiFetiDPSolver gsiSolver)
+                        {
+                            gsiSolver.SolveCase = GsiFetiDPSolver.SolveCases.GsiFetiDPDifferentMatrices;
+                        }
+                        #endregion
+
                         BuildMatrices();
                         if (step == 0) AssemblyCheck.isSecondAssembly = false; //debugv2
                         //solver.Initialize(); //TODO: Using this needs refactoring

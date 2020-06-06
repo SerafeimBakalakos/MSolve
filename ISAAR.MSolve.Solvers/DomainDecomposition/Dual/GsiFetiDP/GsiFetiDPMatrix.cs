@@ -25,6 +25,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.GsiFetiDP
 
         public void Multiply(IVectorView lhsVector, IVector rhsVector)
         {
+            rhsVector.Clear();
             foreach (ISubdomain subdomain in model.EnumerateSubdomains())
             {
                 var subdomainLhs = Vector.CreateZero(subdomain.FreeDofOrdering.NumFreeDofs);

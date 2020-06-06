@@ -41,11 +41,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.GsiFetiDP
             lhsVector.CopyFrom(fetiDP.GatherGlobalDisplacements());
         }
 
-        public void Update()
-        {
-
-        }
-
         private void DistributeForceVector(ISubdomain subdomain, IVector forceVector)
         {
             foreach ((INode node, IDofType dof, int idx) in subdomain.FreeDofOrdering.FreeDofs)

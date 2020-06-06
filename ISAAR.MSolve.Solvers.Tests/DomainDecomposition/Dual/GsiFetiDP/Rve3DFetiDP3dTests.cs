@@ -274,7 +274,7 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.GsiFetiDP
 
             // GSI-FETI solver
             var gsiBuilder = new GsiFetiDPSolver.Builder(fetiSolver);
-            var gsiPcgBuilder = new PcgAlgorithm.Builder();
+            var gsiPcgBuilder = new PcgAlgorithmForGsi.Builder();
             gsiPcgBuilder.MaxIterationsProvider = pcgSettings.MaxIterationsProvider;
             gsiPcgBuilder.ResidualTolerance = pcgSettings.ConvergenceTolerance;
             gsiBuilder.PcgAlgorithm = gsiPcgBuilder.Build();
