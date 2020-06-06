@@ -10,11 +10,12 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.FEM.Interpolation.Jacobians;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Geometry.Shapes;
+using ISAAR.MSolve.Geometry.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.ConformingMesh;
+using MGroup.XFEM.Geometry.Primitives;
 
 //TODO: delete this class
 namespace MGroup.XFEM.Elements
@@ -173,7 +174,7 @@ namespace MGroup.XFEM.Elements
 
         public int ID { get; set; }
 
-        public IIsoparametricInterpolation2D InterpolationStandard
+        public IIsoparametricInterpolation2D Interpolation2D
         {
             get
             {
@@ -227,7 +228,7 @@ namespace MGroup.XFEM.Elements
         {
             if (this.CellType == CellType.Tri3)
             {
-                var triangle = new TriangleCell2D();
+                var triangle = new Geometry.Primitives.Triangle2D();
                 triangle.Vertices[0] = Nodes[0].Coordinates;
                 triangle.Vertices[1] = Nodes[1].Coordinates;
                 triangle.Vertices[2] = Nodes[2].Coordinates;
@@ -235,11 +236,20 @@ namespace MGroup.XFEM.Elements
             }
             else if (this.CellType == CellType.Quad4)
             {
-                return ConvexPolygon2D.CreateUnsafe(Nodes).ComputeArea();
+                return ISAAR.MSolve.Geometry.Shapes.ConvexPolygon2D.CreateUnsafe(Nodes).ComputeArea();
+            }
+            else if (this.CellType == CellType.Tet4)
+            {
+                var tetra = new Tetrahedron3D();
+                tetra.Vertices[0] = Nodes[0].Coordinates;
+                tetra.Vertices[1] = Nodes[1].Coordinates;
+                tetra.Vertices[2] = Nodes[2].Coordinates;
+                tetra.Vertices[3] = Nodes[3].Coordinates;
+                return tetra.CalcVolume();
             }
             else if (this.CellType == CellType.Hexa8 || this.CellType == CellType.Tet4)
             {
-                //TODO: Use Tetrahedra and the closed formula for their volume
+                //TODO: Split it into tetrahedra and use the closed formula for their volume
 
                 double volume = 0.0;
                 GaussLegendre3D quadrature = GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2);

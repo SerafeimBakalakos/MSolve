@@ -28,8 +28,8 @@ namespace MGroup.XFEM.Geometry.LSM
         public List<double[]> ApproximateGlobalCartesian()
         {
             var points = new List<double[]>(2);
-            points.Add(Element.InterpolationStandard.TransformNaturalToCartesian(Element.Nodes, start).Coordinates);
-            points.Add(Element.InterpolationStandard.TransformNaturalToCartesian(Element.Nodes, end).Coordinates);
+            points.Add(Element.Interpolation2D.TransformNaturalToCartesian(Element.Nodes, start).Coordinates);
+            points.Add(Element.Interpolation2D.TransformNaturalToCartesian(Element.Nodes, end).Coordinates);
             return points;
         }
 

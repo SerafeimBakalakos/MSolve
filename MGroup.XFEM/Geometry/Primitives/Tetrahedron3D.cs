@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 
-namespace MGroup.XFEM.Geometry.ConformingMesh
+namespace MGroup.XFEM.Geometry.Primitives
 {
-    public class TetrahedronCell3D
+    public class Tetrahedron3D
     {
-        public TetrahedronCell3D()
+        public Tetrahedron3D()
         {
             Vertices = new double[4][];
         }
 
-        public TetrahedronCell3D(double[] point0, double[] point1, double[] point2, double[] point3)
+        public Tetrahedron3D(double[] point0, double[] point1, double[] point2, double[] point3)
         {
             Vertices = new double[4][] { point0, point1, point2, point3 };
         }
@@ -52,6 +52,21 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
             double det = matrix.CalcDeterminant();
             return det / 6.0;
+        }
+
+        internal double[] FindCentroid()
+        {
+            double numVertices = 4;
+            var centroid = new double[3];
+            for (int v = 0; v < numVertices; ++v)
+            {
+                for (int i = 0; i < 3; ++i)
+                {
+                    centroid[i] += Vertices[v][i];
+                }
+            }
+            for (int i = 0; i < 3; ++i) centroid[i] /= numVertices;
+            return centroid;
         }
     }
 }

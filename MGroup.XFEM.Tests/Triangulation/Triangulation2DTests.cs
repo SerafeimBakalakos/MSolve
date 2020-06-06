@@ -8,6 +8,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Logging.VTK;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
+using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
 using Xunit;
@@ -33,19 +34,19 @@ namespace MGroup.XFEM.Tests.Triangulation
 
             var triangulator = new MIConvexHullTriangulator2D();
             triangulator.MinTriangleArea = 1E-5 * outlineArea;
-            IList<TriangleCell2D> triangles = triangulator.CreateMesh(points);
+            IList<Triangle2D> triangles = triangulator.CreateMesh(points);
 
             //WriteConformingMesh(triangles);
             PlotIntersections(triangles, "singleIntersection", intersections);
 
-            var expectedTriangles = new List<TriangleCell2D>();
-            expectedTriangles.Add(new TriangleCell2D(
+            var expectedTriangles = new List<Triangle2D>();
+            expectedTriangles.Add(new Triangle2D(
                 new double[] { 1.95, 3.505 }, new double[] { 0, 2 }, new double[] { 1, 4 }));
-            expectedTriangles.Add(new TriangleCell2D(
+            expectedTriangles.Add(new Triangle2D(
                 new double[] { 0, 2 }, new double[] { 1.95, 3.505 }, new double[] { 1.7, 0.3 }));
-            expectedTriangles.Add(new TriangleCell2D(
+            expectedTriangles.Add(new Triangle2D(
                 new double[] { 1.7, 0.3 }, new double[] { 1.95, 3.505 }, new double[] { 5, 1.8 }));
-            expectedTriangles.Add(new TriangleCell2D(
+            expectedTriangles.Add(new Triangle2D(
                 new double[] { 1.7, 0.3 }, new double[] { 5, 1.8 }, new double[] { 2, 0 }));
 
             double tol = 1E-7;
@@ -73,23 +74,23 @@ namespace MGroup.XFEM.Tests.Triangulation
 
             var triangulator = new MIConvexHullTriangulator2D();
             triangulator.MinTriangleArea = 1E-5 * outlineArea;
-            IList<TriangleCell2D> triangles = triangulator.CreateMesh(points);
+            IList<Triangle2D> triangles = triangulator.CreateMesh(points);
 
             //WriteConformingMesh(triangles);
             PlotIntersections(triangles, "doubleIntersection", intersections);
 
-            var expectedTriangles = new List<TriangleCell2D>();
-            expectedTriangles.Add(new TriangleCell2D(
+            var expectedTriangles = new List<Triangle2D>();
+            expectedTriangles.Add(new Triangle2D(
                 new double[] { 0.4, 1.6 }, new double[] { 0, 2 }, new double[] { 1, 4 }));
-            expectedTriangles.Add(new TriangleCell2D(
+            expectedTriangles.Add(new Triangle2D(
                 new double[] { 2.75, 3.0375 }, new double[] { 0.4, 1.6 }, new double[] { 1, 4 }));
-            expectedTriangles.Add(new TriangleCell2D(
+            expectedTriangles.Add(new Triangle2D(
                 new double[] { 0.4, 1.6 }, new double[] { 2.75, 3.0375 }, new double[] { 1.6, 0.4 }));
-            expectedTriangles.Add(new TriangleCell2D(
+            expectedTriangles.Add(new Triangle2D(
                 new double[] { 3.5, 2.625 }, new double[] { 1.6, 0.4 }, new double[] { 2.75, 3.0375 }));
-            expectedTriangles.Add(new TriangleCell2D(
+            expectedTriangles.Add(new Triangle2D(
                 new double[] { 2, 0 }, new double[] { 1.6, 0.4 }, new double[] { 3.5, 2.625 }));
-            expectedTriangles.Add(new TriangleCell2D(
+            expectedTriangles.Add(new Triangle2D(
                 new double[] { 3.5, 2.625 }, new double[] { 5, 1.8 }, new double[] { 2, 0 }));
 
 
@@ -113,19 +114,19 @@ namespace MGroup.XFEM.Tests.Triangulation
 
             var triangulator = new MIConvexHullTriangulator2D();
             triangulator.MinTriangleArea = 1E-5 * outlineArea;
-            IList<TriangleCell2D> triangles = triangulator.CreateMesh(points);
+            IList<Triangle2D> triangles = triangulator.CreateMesh(points);
 
             //WriteConformingMesh(triangles);
             PlotIntersections(triangles, "intersectionThroughNodes", intersections);
 
-            var expectedTriangles = new List<TriangleCell2D>();
-            expectedTriangles.Add(new TriangleCell2D(
+            var expectedTriangles = new List<Triangle2D>();
+            expectedTriangles.Add(new Triangle2D(
                 new double[] { 2.5, 1.9 }, new double[] { 0, 2 }, new double[] { 1, 4 }));
-            expectedTriangles.Add(new TriangleCell2D(
+            expectedTriangles.Add(new Triangle2D(
                 new double[] { 2, 0 }, new double[] { 0, 2 }, new double[] { 2.5, 1.9 }));
-            expectedTriangles.Add(new TriangleCell2D(
+            expectedTriangles.Add(new Triangle2D(
                 new double[] { 2.5, 1.9 }, new double[] { 5, 1.8 }, new double[] { 2, 0 }));
-            expectedTriangles.Add(new TriangleCell2D(
+            expectedTriangles.Add(new Triangle2D(
                 new double[] { 2.5, 1.9 }, new double[] { 1, 4 }, new double[] { 5, 1.8 }));
 
             double tol = 1E-7;
@@ -143,10 +144,10 @@ namespace MGroup.XFEM.Tests.Triangulation
             return (points, CellType.Quad4);
         }
 
-        private static CustomMesh CreateConformingMesh(IList<TriangleCell2D> triangles)
+        private static CustomMesh CreateConformingMesh(IList<Triangle2D> triangles)
         {
             var mesh = new CustomMesh();
-            foreach (TriangleCell2D triangle in triangles)
+            foreach (Triangle2D triangle in triangles)
             {
                 int startPoint = mesh.NumOutVertices;
                 var pointsOfTriangle = new VtkPoint[3];
@@ -201,7 +202,7 @@ namespace MGroup.XFEM.Tests.Triangulation
 
         
 
-        private static void PlotIntersections(IList<TriangleCell2D> triangles, string outputCase,
+        private static void PlotIntersections(IList<Triangle2D> triangles, string outputCase,
             List<NaturalPoint>[] intersections)
         {
             CustomMesh originalMesh = CreateOriginalMesh();
@@ -226,12 +227,12 @@ namespace MGroup.XFEM.Tests.Triangulation
             }
         }
 
-        private static void WriteConformingMesh(IList<TriangleCell2D> triangles)
+        private static void WriteConformingMesh(IList<Triangle2D> triangles)
         {
             var builder = new StringBuilder();
             for (int t = 0; t < triangles.Count; ++t)
             {
-                TriangleCell2D triangle = triangles[t];
+                Triangle2D triangle = triangles[t];
                 builder.AppendLine($"Triangle {t}: ");
                 for (int v = 0; v < triangle.Vertices.Count; ++v)
                 {

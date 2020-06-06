@@ -4,16 +4,16 @@ using System.Drawing;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
 
-namespace MGroup.XFEM.Geometry.ConformingMesh
+namespace MGroup.XFEM.Geometry.Primitives
 {
-    public class TriangleCell2D
+    public class Triangle2D
     {
-        public TriangleCell2D()
+        public Triangle2D()
         {
             Vertices = new double[3][];
         }
 
-        public TriangleCell2D(double[] point0, double[] point1, double[] point2)
+        public Triangle2D(double[] point0, double[] point1, double[] point2)
         {
             Vertices = new double[3][] { point0, point1, point2 };
         }

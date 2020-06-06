@@ -4,6 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Geometry.ConformingMesh;
+using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Tests.Triangulation
 {
@@ -20,7 +21,7 @@ namespace MGroup.XFEM.Tests.Triangulation
             return true;
         }
 
-        internal static bool AreEqual(TriangleCell2D expected, TriangleCell2D computed, double tol)
+        internal static bool AreEqual(Triangle2D expected, Triangle2D computed, double tol)
         {
             if (expected.Vertices.Count != computed.Vertices.Count) return false;
             foreach (double[] computedVertex in computed.Vertices)
@@ -39,7 +40,7 @@ namespace MGroup.XFEM.Tests.Triangulation
             return true;
         }
 
-        internal static bool AreEqual(TetrahedronCell3D expected, TetrahedronCell3D computed, double tol)
+        internal static bool AreEqual(Tetrahedron3D expected, Tetrahedron3D computed, double tol)
         {
             if (expected.Vertices.Count != computed.Vertices.Count) return false;
             foreach (double[] computedVertex in computed.Vertices)
@@ -58,13 +59,13 @@ namespace MGroup.XFEM.Tests.Triangulation
             return true;
         }
 
-        internal static bool AreEqual(IList<TriangleCell2D> expected, IList<TriangleCell2D> computed, double tol)
+        internal static bool AreEqual(IList<Triangle2D> expected, IList<Triangle2D> computed, double tol)
         {
             if (expected.Count != computed.Count) return false;
-            foreach (TriangleCell2D computedTriangle in computed)
+            foreach (Triangle2D computedTriangle in computed)
             {
                 bool isInExpected = false;
-                foreach (TriangleCell2D expectedTriangle in expected)
+                foreach (Triangle2D expectedTriangle in expected)
                 {
                     if (AreEqual(expectedTriangle, computedTriangle, tol))
                     {
@@ -77,13 +78,13 @@ namespace MGroup.XFEM.Tests.Triangulation
             return true;
         }
 
-        internal static bool AreEqual(IList<TetrahedronCell3D> expected, IList<TetrahedronCell3D> computed, double tol)
+        internal static bool AreEqual(IList<Tetrahedron3D> expected, IList<Tetrahedron3D> computed, double tol)
         {
             if (expected.Count != computed.Count) return false;
-            foreach (TetrahedronCell3D computedTetra in computed)
+            foreach (Tetrahedron3D computedTetra in computed)
             {
                 bool isInExpected = false;
-                foreach (TetrahedronCell3D expectedTetra in expected)
+                foreach (Tetrahedron3D expectedTetra in expected)
                 {
                     if (AreEqual(expectedTetra, computedTetra, tol))
                     {

@@ -21,9 +21,19 @@ namespace MGroup.XFEM.Plotting
             this.curves = curves;
         }
 
-        public void PlotIntersections(string path)
+        //public void PlotIntersections(string path)
+        //{
+        //    List<LsmElementIntersection3D> intersections = CalcIntersections();
+        //    var intersectionMesh = new LsmIntersectionSegmentsMesh3D(intersections);
+        //    using (var writer = new VtkFileWriter(path))
+        //    {
+        //        writer.WriteMesh(intersectionMesh);
+        //        writer.WriteScalarField("elementID", intersectionMesh, intersectionMesh.ParentElementIDsOfVertices);
+        //    }
+        //}
+
+        public void PlotIntersections(string path, IEnumerable<LsmElementIntersection3D> intersections)
         {
-            List<LsmElementIntersection3D> intersections = CalcIntersections();
             var intersectionMesh = new LsmIntersectionSegmentsMesh3D(intersections);
             using (var writer = new VtkFileWriter(path))
             {
@@ -32,22 +42,22 @@ namespace MGroup.XFEM.Plotting
             }
         }
 
-        // TODO: Perhaps these can be stored somewhere else.
-        private List<LsmElementIntersection3D> CalcIntersections()
-        {
-            var intersections = new List<LsmElementIntersection3D>();
-            foreach (IImplicitSurface3D curve in curves)
-            {
-                foreach (IXFiniteElement element in model.Elements)
-                {
-                    IElementSurfaceIntersection3D intersection = curve.Intersect(element);
-                    if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
-                    {
-                        intersections.Add((LsmElementIntersection3D)intersection);
-                    }
-                }
-            }
-            return intersections;
-        }
+        //// TODO: Perhaps these can be stored somewhere else.
+        //private List<LsmElementIntersection3D> CalcIntersections()
+        //{
+        //    var intersections = new List<LsmElementIntersection3D>();
+        //    foreach (IImplicitSurface3D curve in curves)
+        //    {
+        //        foreach (IXFiniteElement element in model.Elements)
+        //        {
+        //            IElementSurfaceIntersection3D intersection = curve.Intersect(element);
+        //            if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
+        //            {
+        //                intersections.Add((LsmElementIntersection3D)intersection);
+        //            }
+        //        }
+        //    }
+        //    return intersections;
+        //}
     }
 }

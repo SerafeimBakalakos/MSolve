@@ -44,9 +44,9 @@ namespace MGroup.XFEM.Geometry.LSM
             throw new NotImplementedException();
         }
 
-        public IList<double[]> GetPointsForTriangulation()
+        public IList<NaturalPoint> GetPointsForTriangulation()
         {
-            throw new NotImplementedException();
+            return intersectionMesh.GetVerticesList();
         }
     }
 }

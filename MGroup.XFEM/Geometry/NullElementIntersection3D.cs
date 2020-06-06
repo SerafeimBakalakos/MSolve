@@ -17,9 +17,9 @@ namespace MGroup.XFEM.Geometry
             return new GaussPoint[0];
         }
 
-        public IList<double[]> GetPointsForTriangulation()
+        public IList<NaturalPoint> GetPointsForTriangulation()
         {
-            return new double[0][];
+            return new NaturalPoint[0];
         }
 
     }

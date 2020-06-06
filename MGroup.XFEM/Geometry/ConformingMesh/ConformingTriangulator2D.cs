@@ -6,6 +6,7 @@ using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using MGroup.XFEM.Elements;
+using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Geometry.Tolerances;
 using MIConvexHull;
 
@@ -24,7 +25,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             double tol = meshTolerance.CalcTolerance(element);
             var comparer = new Point2DComparer<NaturalPoint>(tol);
             var nodes = new SortedSet<NaturalPoint>(comparer);
-            nodes.UnionWith(element.InterpolationStandard.NodalNaturalCoordinates);
+            nodes.UnionWith(element.Interpolation2D.NodalNaturalCoordinates);
 
             // Store the nodes and all intersection points in a different set
             var triangleVertices = new SortedSet<NaturalPoint>(comparer);
@@ -41,7 +42,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
                 int countBeforeInsertion = triangleVertices.Count;
                 triangleVertices.UnionWith(newVertices);
 
-                if (triangleVertices.Count > countBeforeInsertion)
+                if (triangleVertices.Count == countBeforeInsertion)
                 {
                     // Corner case: the curve intersects the element at 2 opposite nodes. In this case also add the middle of their 
                     // segment to force the Delauny algorithm to conform to the segment.
@@ -57,7 +58,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
             var triangulator = new MIConvexHullTriangulator2D();
             triangulator.MinTriangleArea = tol * element.CalcAreaOrVolume();
-            IList<TriangleCell2D> delaunyTriangles = triangulator.CreateMesh(triangleVertices);
+            IList<Triangle2D> delaunyTriangles = triangulator.CreateMesh(triangleVertices);
             var subtriangles = new ElementSubtriangle2D[delaunyTriangles.Count];
             for (int t = 0; t < delaunyTriangles.Count; ++t)
             {

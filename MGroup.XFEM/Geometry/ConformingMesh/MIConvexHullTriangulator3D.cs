@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
+using MGroup.XFEM.Geometry.Primitives;
 using MIConvexHull;
 
 namespace MGroup.XFEM.Geometry.ConformingMesh
@@ -17,7 +18,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
         public double MinTetrahedronVolume { get; set; } = -1;
 
-        public IList<TetrahedronCell3D> CreateMesh(IEnumerable<IPoint> points)
+        public IList<Tetrahedron3D> CreateMesh(IEnumerable<IPoint> points)
         {
             // Gather the vertices
             var vertices = new List<double[]>();
@@ -30,12 +31,12 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             var meshCells = Triangulation.CreateDelaunay(vertices).Cells.ToArray();
 
             // Repackage the triangle cells
-            var tetrahedra = new List<TetrahedronCell3D>(meshCells.Length);
+            var tetrahedra = new List<Tetrahedron3D>(meshCells.Length);
             for (int t = 0; t < meshCells.Length; ++t)
             {
                 DefaultVertex[] verticesOfTriangle = meshCells[t].Vertices;
                 Debug.Assert(verticesOfTriangle.Length == 4);
-                var tetra = new TetrahedronCell3D();
+                var tetra = new Tetrahedron3D();
                 for (int v = 0; v < 4; ++v)
                 {
                     tetra.Vertices[v] = verticesOfTriangle[v].Position;

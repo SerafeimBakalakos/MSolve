@@ -19,6 +19,6 @@ namespace MGroup.XFEM.Geometry
 
         GaussPoint[] GetIntegrationPoints(int numPoints);
 
-        IList<double[]> GetPointsForTriangulation(); 
+        IList<NaturalPoint> GetPointsForTriangulation(); 
     }
 }

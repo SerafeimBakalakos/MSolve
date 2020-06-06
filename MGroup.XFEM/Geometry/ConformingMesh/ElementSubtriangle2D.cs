@@ -6,22 +6,24 @@ using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry.Primitives;
 
 //TODO: Perhaps it should also store it sign, store Gauss points and interpolate/extrapolate
+//TODO: Simplify the conversions Natural <-> Cartesian
 namespace MGroup.XFEM.Geometry.ConformingMesh
 {
     public class ElementSubtriangle2D
     {
-        private readonly TriangleCell2D triangleNatural;
+        private readonly Triangle2D triangleNatural;
 
-        public ElementSubtriangle2D(TriangleCell2D triangleNatural)
+        public ElementSubtriangle2D(Triangle2D triangleNatural)
         {
             this.triangleNatural = triangleNatural;
         }
 
         public (CartesianPoint centroid, double area) FindCentroidAndAreaCartesian(IXFiniteElement parentElement)
         {
-            IIsoparametricInterpolation2D interpolation = parentElement.InterpolationStandard;
+            IIsoparametricInterpolation2D interpolation = parentElement.Interpolation2D;
             if (interpolation == InterpolationQuad4.UniqueInstance || interpolation == InterpolationTri3.UniqueInstance)
             {
                 // The triangle edges will also be linear in Cartesian coordinate system, for Quad4 and Tri3 elements 
@@ -47,7 +49,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
         public CartesianPoint[] GetVerticesCartesian(IXFiniteElement parentElement)
         {
-            IIsoparametricInterpolation2D interpolation = parentElement.InterpolationStandard;
+            IIsoparametricInterpolation2D interpolation = parentElement.Interpolation2D;
             IReadOnlyList<XNode> nodes = parentElement.Nodes;
             if (interpolation == InterpolationQuad4.UniqueInstance || interpolation == InterpolationTri3.UniqueInstance)
             {

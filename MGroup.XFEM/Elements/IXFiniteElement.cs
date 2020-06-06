@@ -20,7 +20,8 @@ namespace MGroup.XFEM.Elements
         //IIntegrationStrategy IntegrationVolume { get; }
 
         //TODO: Unify 2D and 3D interpolation classes and use that one.
-        IIsoparametricInterpolation2D InterpolationStandard { get; }
+        IIsoparametricInterpolation2D Interpolation2D { get; }
+        IIsoparametricInterpolation3D Interpolation3D { get; }
 
         IReadOnlyList<XNode> Nodes { get; }
 

@@ -8,6 +8,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Logging.VTK;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
+using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
 using Xunit;
@@ -34,52 +35,52 @@ namespace MGroup.XFEM.Tests.Triangulation
 
             var triangulator = new MIConvexHullTriangulator3D();
             triangulator.MinTetrahedronVolume = 1E-5 * volume;
-            IList<TetrahedronCell3D> tetahedra = triangulator.CreateMesh(points);
+            IList<Tetrahedron3D> tetahedra = triangulator.CreateMesh(points);
 
             //WriteConformingMesh(tetahedra);
             //PlotIntersections(tetahedra, "singleIntersection", intersections);
 
-            var expectedTetrahedra = new List<TetrahedronCell3D>();
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            var expectedTetrahedra = new List<Tetrahedron3D>();
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -1, 1, -1 }, new double[] { -0.25, 1, 1 }, 
                 new double[] { 0.75, 1, -1 }, new double[] { 0.25, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0.25, -1, -1 }, new double[] { -0.25, 1, 1 }, 
                 new double[] { 0.75, 1, -1 }, new double[] { 1, 1, 1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0.25, -1, -1 }, new double[] { 1, 1, 1 }, 
                 new double[] { 0.75, 1, -1 }, new double[] { 1, -1, 1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0.25, -1, -1 }, new double[] { -1, 1, -1 }, 
                 new double[] { -0.25, 1, 1 }, new double[] { -1, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 1, -1, 1 }, new double[] { 1, 1, 1 }, 
                 new double[] { -0.25, 1, 1 }, new double[] { 0.25, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0.25, -1, -1 }, new double[] { -0.75, -1, 1 }, 
                 new double[] { -0.25, 1, 1 }, new double[] { 1, -1, 1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -0.25, 1, 1 }, new double[] { -1, 1, 1 }, 
                 new double[] { -0.75, -1, 1 }, new double[] { -1, 1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 1, -1, -1 }, new double[] { 1, 1, -1 }, 
                 new double[] { 1, -1, 1 }, new double[] { 0.75, 1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -1, -1, -1 }, new double[] { -0.75, -1, 1 }, 
                 new double[] { -0.25, 1, 1 }, new double[] { 0.25, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -1, 1, -1 }, new double[] { -1, -1, 1 }, 
                 new double[] { -1, 1, 1 }, new double[] { -0.75, -1, 1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -0.25, 1, 1 }, new double[] { -1, 1, -1 }, 
                 new double[] { -0.75, -1, 1 }, new double[] { -1, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -0.75, -1, 1 }, new double[] { -1, 1, -1 }, 
                 new double[] { -1, -1, 1 }, new double[] { -1, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0.25, -1, -1 }, new double[] { 1, -1, 1 }, 
                 new double[] { 0.75, 1, -1 }, new double[] { 1, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0.75, 1, -1 }, new double[] { 1, -1, 1 }, 
                 new double[] { 1, 1, 1 }, new double[] { 1, 1, -1 }));
 
@@ -110,61 +111,61 @@ namespace MGroup.XFEM.Tests.Triangulation
 
             var triangulator = new MIConvexHullTriangulator3D();
             triangulator.MinTetrahedronVolume = 1E-5 * volume;
-            IList<TetrahedronCell3D> tetrahedra = triangulator.CreateMesh(points);
+            IList<Tetrahedron3D> tetrahedra = triangulator.CreateMesh(points);
 
             //WriteConformingMesh(tetrahedra);
             //PlotIntersections(tetrahedra, "doubleIntersection", intersections);
 
-            var expectedTetrahedra = new List<TetrahedronCell3D>();
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            var expectedTetrahedra = new List<Tetrahedron3D>();
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -1, 0, 1 }, new double[] { -1, -1, 1 },
                 new double[] { -0.25, -1, 1 }, new double[] { -1, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -1, -1, -1 }, new double[] { 0.25, -1, -1 },
                 new double[] { -1, 0, 1 }, new double[] { -1, 1, 0 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0.25, -1, -1 }, new double[] { 1, -1, 1 },
                 new double[] { 0.75, 1, -1 }, new double[] { 1, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -1, 1, 0 }, new double[] { 0.25, -1, -1 },
                 new double[] { 0, 1, 1 }, new double[] { 0.75, 1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -1, 0, 1 }, new double[] { -0.25, -1, 1 },
                 new double[] { 0.25, -1, -1 }, new double[] { -1, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 1, -1, 1 }, new double[] { 1, 1, 1 },
                 new double[] { 0.25, 1, 1 }, new double[] { 0.75, 1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -1, 1, -1 }, new double[] { 0.75, 1, -1 },
                 new double[] { 0.25, -1, -1 }, new double[] { -1, 1, 0 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -1, -1, -1 }, new double[] { -1, 1, -1 },
                 new double[] { 0.25, -1, -1}, new double[] { -1, 1, 0 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 1, -1, -1 }, new double[] { 1, 1, -1 },
                 new double[] { 1, 1, 1 }, new double[] { 0.75, 1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -1, 1, 1 }, new double[] { -1, 0, 1 },
                 new double[] { 0, 1, 1 }, new double[] { -1, 1, 0 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0, 1, 1 }, new double[] { 0.75, 1, -1 },
                 new double[] { 0.25, -1, -1 }, new double[] { 0.25, 1, 1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -1, 1, 0 }, new double[] { -1, 0, 1 },
                 new double[] { 0, 1, 1 }, new double[] { 0.25, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0, 1, 1 }, new double[] { 0.25, -1, -1 },
                 new double[] { -1, 0, 1 }, new double[] { -0.25, -1, 1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0.75, 1, -1 }, new double[] { 1, -1, 1 },
                 new double[] { 1, 1, 1 }, new double[] { 1, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0.25, -1, -1 }, new double[] { 0.25, 1, 1 },
                 new double[] { 0.75, 1, -1 }, new double[] { 1, -1, 1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0, 1, 1 }, new double[] { 0.25, 1, 1 },
                 new double[] { 0.25, -1, -1 }, new double[] { -0.25, -1, 1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0.25, -1, -1 }, new double[] { -0.25, -1, 1},
                 new double[] { 0.25, 1, 1 }, new double[] { 1, -1, 1 }));
 
@@ -189,46 +190,46 @@ namespace MGroup.XFEM.Tests.Triangulation
 
             var triangulator = new MIConvexHullTriangulator3D();
             triangulator.MinTetrahedronVolume = 1E-5 * volume;
-            IList<TetrahedronCell3D> tetrahedra = triangulator.CreateMesh(points);
+            IList<Tetrahedron3D> tetrahedra = triangulator.CreateMesh(points);
 
             //WriteConformingMesh(tetrahedra);
             //PlotIntersections(tetrahedra, "intersectionThroughNodes", intersections);
 
-            var expectedTetrahedra = new List<TetrahedronCell3D>();
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            var expectedTetrahedra = new List<Tetrahedron3D>();
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0, 0, 0 }, new double[] { 1, 1, -1 },
                 new double[] { -1, 1, -1 }, new double[] { -1, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -1, -1, 1 }, new double[] { 1, -1, 1 },
                 new double[] { -1, 1, 1 }, new double[] { 0, 0, 0 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -1, -1, -1 }, new double[] { -1, -1, 1 },
                 new double[] { -1, 1, 1 }, new double[] { 0, 0, 0 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0, 0, 0 }, new double[] { -1, -1, 1 },
                 new double[] { 1, -1, 1 }, new double[] { -1, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 1, 1, -1 }, new double[] { -1, 1, -1 },
                 new double[] { -1, 1, 1 }, new double[] { 0, 0, 0 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 1, -1, -1 }, new double[] { 1, 1, -1 },
                 new double[] { 1, -1, 1 }, new double[] { 0, 0, 0 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { -1, -1, -1 }, new double[] { 1, -1, -1 },
                 new double[] { 1, -1, 1 }, new double[] { 0, 0, 0 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0, 0, 0 }, new double[] { 1, -1, -1 },
                 new double[] { 1, 1, -1 }, new double[] { -1, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0, 0, 0 }, new double[] { -1, 1, -1 },
                 new double[] { -1, 1, 1 }, new double[] { -1, -1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 1, -1, 1 }, new double[] { 1, 1, 1 },
                 new double[] { -1, 1, 1 }, new double[] { 0, 0, 0 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0, 0, 0 }, new double[] { 1, 1, 1 },
                 new double[] { -1, 1, 1 }, new double[] { 1, 1, -1 }));
-            expectedTetrahedra.Add(new TetrahedronCell3D(
+            expectedTetrahedra.Add(new Tetrahedron3D(
                 new double[] { 0, 0, 0 }, new double[] { 1, -1, 1 },
                 new double[] { 1, 1, 1 }, new double[] { 1, 1, -1 }));
 
@@ -253,10 +254,10 @@ namespace MGroup.XFEM.Tests.Triangulation
             return (points, CellType.Hexa8, volume);
         }
 
-        private static CustomMesh CreateConformingMesh(IList<TetrahedronCell3D> tetrahedra)
+        private static CustomMesh CreateConformingMesh(IList<Tetrahedron3D> tetrahedra)
         {
             var mesh = new CustomMesh();
-            foreach (TetrahedronCell3D tetra in tetrahedra)
+            foreach (Tetrahedron3D tetra in tetrahedra)
             {
                 int startPoint = mesh.NumOutVertices;
                 var pointsOfTriangle = new VtkPoint[4];
@@ -321,7 +322,7 @@ namespace MGroup.XFEM.Tests.Triangulation
 
 
 
-        private static void PlotIntersections(IList<TetrahedronCell3D> tetrahedra, string outputCase,
+        private static void PlotIntersections(IList<Tetrahedron3D> tetrahedra, string outputCase,
             List<NaturalPoint>[] intersections)
         {
             CustomMesh originalMesh = CreateOriginalMesh();
@@ -346,12 +347,12 @@ namespace MGroup.XFEM.Tests.Triangulation
             }
         }
 
-        private static void WriteConformingMesh(IList<TetrahedronCell3D> tetrahedra)
+        private static void WriteConformingMesh(IList<Tetrahedron3D> tetrahedra)
         {
             var builder = new StringBuilder();
             for (int t = 0; t < tetrahedra.Count; ++t)
             {
-                TetrahedronCell3D tetra = tetrahedra[t];
+                Tetrahedron3D tetra = tetrahedra[t];
                 builder.AppendLine($"Tetrahedron {t}: ");
                 for (int v = 0; v < tetra.Vertices.Count; ++v)
                 {
