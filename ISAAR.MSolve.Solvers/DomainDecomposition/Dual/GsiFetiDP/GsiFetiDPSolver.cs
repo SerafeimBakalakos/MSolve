@@ -115,6 +115,28 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             fetiDP.Initialize(); 
         }
 
+        /// <summary>
+        ///  builds Kff of each subdomain
+        /// </summary>
+        /// <param name="elementMatrixProvider"></param>
+        public void BuildGlobalMatrixOnlyGsi(IElementMatrixProvider elementMatrixProvider)
+        {
+            HandleMatrixWillBeSet(); //TODO: temporary solution to avoid this getting called once for each linear system/observable
+            Logger.StartMeasuringTime();
+
+            var assembler = new CsrAssembler();
+            gsiMatrix.MatricesKff = new Dictionary<ISubdomain, CsrMatrix>();
+            foreach (ISubdomain subdomain in model.EnumerateSubdomains())
+            {
+                Debug.WriteLine(msgHeader
+                        + $" Assembling the free-free stiffness matrix of subdomain {subdomain.ID}");
+                CsrMatrix Kff = assembler.BuildGlobalMatrix(
+                    subdomain.FreeDofOrdering, subdomain.EnumerateElements(), elementMatrixProvider);
+                gsiMatrix.MatricesKff[subdomain] = Kff;
+            }
+            Logger.LogCurrentTaskDuration("Matrix assembly");
+        }
+
         public ILinearSystemMpi GetLinearSystem(ISubdomain subdomain) => fetiDP.GetLinearSystem(subdomain);
         
         public void HandleMatrixWillBeSet()

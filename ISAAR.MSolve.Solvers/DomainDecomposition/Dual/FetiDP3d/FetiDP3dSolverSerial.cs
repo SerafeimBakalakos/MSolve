@@ -206,7 +206,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             //Define augmentation constraints and boolean matrices.
             augmentationConstraints.CalcAugmentationMappingMatrices();
 
-
             // Log dof statistics
             Logger.LogCurrentTaskDuration("Dof ordering");
             Logger.LogNumDofs("Lagrange multipliers", lagrangesEnumerator.NumLagrangeMultipliers);
