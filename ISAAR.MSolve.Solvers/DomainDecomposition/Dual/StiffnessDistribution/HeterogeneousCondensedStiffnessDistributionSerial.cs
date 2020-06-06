@@ -6,6 +6,7 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.StiffnessMatrices;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
@@ -47,6 +48,9 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 
         public double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load) 
             => loadScaling.ScaleNodalLoad(subdomain, load, boundaryDofStiffnesses);
+
+        public void ScaleFreeForceVector(ISubdomain subdomain, Vector forceVector)
+            => loadScaling.ScaleForceVectorFree(subdomain, forceVector, boundaryRelativeStiffnesses[subdomain]);
 
         public void Update()
         {

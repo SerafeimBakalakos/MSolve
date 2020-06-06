@@ -7,6 +7,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Preconditioning;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.GsiFetiDP
 {
@@ -28,7 +29,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.GsiFetiDP
             {
                 var subdomainRhs = fetiDP.GetLinearSystem(subdomain).RhsVector;
                 model.GlobalDofOrdering.ExtractVectorSubdomainFromGlobal(subdomain, rhsVector, subdomainRhs);
-                DistributeForceVector(subdomain, subdomainRhs);
+                ScaleForceVector(subdomain, subdomainRhs);
             }
 
             // Use FETI-DP as preconditioner
@@ -41,12 +42,14 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.GsiFetiDP
             lhsVector.CopyFrom(fetiDP.GatherGlobalDisplacements());
         }
 
-        private void DistributeForceVector(ISubdomain subdomain, IVector forceVector)
+        private void ScaleForceVector(ISubdomain subdomain, IVector forceVector)
         {
-            foreach ((INode node, IDofType dof, int idx) in subdomain.FreeDofOrdering.FreeDofs)
-            {
-                forceVector.Set(idx, forceVector[idx] / node.Multiplicity);
-            }
+            fetiDP.StiffnessDistribution.ScaleFreeForceVector(subdomain, (Vector)forceVector);
+
+            //foreach ((INode node, IDofType dof, int idx) in subdomain.FreeDofOrdering.FreeDofs)
+            //{
+            //    forceVector.Set(idx, forceVector[idx] / node.Multiplicity);
+            //}
         }
     }
 }

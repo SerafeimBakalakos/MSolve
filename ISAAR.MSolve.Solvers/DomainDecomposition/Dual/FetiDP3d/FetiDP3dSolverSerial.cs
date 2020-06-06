@@ -137,6 +137,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
 
         public IFetiDPInterfaceProblemSolver InterfaceProblemSolver => interfaceProblemSolver;
 
+        public IStiffnessDistribution StiffnessDistribution => stiffnessDistribution;
+
         /// <summary>
         ///  builds Kff of each subdomain
         /// </summary>

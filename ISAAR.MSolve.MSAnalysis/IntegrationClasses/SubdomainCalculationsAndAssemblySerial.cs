@@ -8,6 +8,7 @@ using ISAAR.MSolve.MultiscaleAnalysis.Interfaces;
 using ISAAR.MSolve.MultiscaleAnalysisMerge;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d;
 using ISAAR.MSolve.Solvers.LinearSystems;
 
 namespace ISAAR.MSolve.MultiscaleAnalysis
@@ -63,6 +64,23 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             }
 
             var StiffnessProvider = new StiffnessProviderSimuSerial(this);
+            #region solver parameters
+            if (solver is GsiFetiDPSolver gsiSolver)
+            {
+                // Usage instructions: Choose one of the next 2
+                bool reuseFetiDP = false;
+                if (reuseFetiDP)
+                {
+                    gsiSolver.SolveCase = GsiFetiDPSolver.SolveCases.GsiFetiDPDifferentMatrices;
+                    // Now solver.BuildGlobalMatrix() will not update FETI-DP stored matrices.
+                }
+                else
+                {
+                    gsiSolver.SolveCase = GsiFetiDPSolver.SolveCases.OnlyFetiDP;
+                    // Now solver.BuildGlobalMatrix() will update all FETI-DP data and reortho cache must be cleared.
+                }
+            }
+            #endregion
             solver.BuildGlobalMatrix(StiffnessProvider);
 
             foreach (Subdomain subdomain in model.SubdomainsDictionary.Values)

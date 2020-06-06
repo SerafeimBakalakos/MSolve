@@ -10,6 +10,7 @@ using ISAAR.MSolve.MultiscaleAnalysis.Interfaces;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.LinearSystems;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d;
 
 namespace ISAAR.MSolve.MultiscaleAnalysis
 {
@@ -162,16 +163,35 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
                 {
                     if (fetiSolver.InterfaceProblemSolver.Pcg != null)
                     {
-                        fetiSolver.InterfaceProblemSolver.Pcg.Clear();
-                        //fetiSolver.InterfaceProblemSolver.Pcg.ReorthoCache.Clear();
-                        if (k == 0)
+                        if (solver is GsiFetiDPSolver gsiSolver)
                         {
-                            fetiSolver.InterfaceProblemSolver.UseStagnationCriterion = true;
-                            //fetiSolver.InterfaceProblemSolver.Pcg.ReorthoCache.Clear();
+                            fetiSolver.InterfaceProblemSolver.Pcg.Clear();
+                            if (gsiSolver.SolveCase == GsiFetiDPSolver.SolveCases.OnlyFetiDP)
+                            {
+                                // In this case, new FETI-DP matrices are created and reorthogonalization cache must be restarted.
+                                if (k == 0)
+                                {
+                                    fetiSolver.InterfaceProblemSolver.Pcg.ReorthoCache.Clear();
+                                }
+                            }
+                            else if (gsiSolver.SolveCase == GsiFetiDPSolver.SolveCases.GsiFetiDPDifferentMatrices)
+                            {
+                                // DO NOT clear reorthogonalization cache.
+                            }
                         }
                         else
                         {
-                            fetiSolver.InterfaceProblemSolver.UseStagnationCriterion = false;
+                            fetiSolver.InterfaceProblemSolver.Pcg.Clear();
+                            //fetiSolver.InterfaceProblemSolver.Pcg.ReorthoCache.Clear();
+                            if (k == 0)
+                            {
+                                fetiSolver.InterfaceProblemSolver.UseStagnationCriterion = true;
+                                //fetiSolver.InterfaceProblemSolver.Pcg.ReorthoCache.Clear();
+                            }
+                            else
+                            {
+                                fetiSolver.InterfaceProblemSolver.UseStagnationCriterion = false;
+                            }
                         }
                     }
                 }

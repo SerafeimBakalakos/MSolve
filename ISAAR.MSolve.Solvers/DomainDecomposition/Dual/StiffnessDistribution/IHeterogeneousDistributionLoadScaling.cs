@@ -4,6 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
 {
@@ -11,5 +12,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
     {
         double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load, 
             Table<INode, IDofType, BoundaryDofLumpedStiffness> boundaryDofStiffnesses);
+
+        void ScaleForceVectorFree(ISubdomain subdomain, Vector forceVector, double[] boundaryRelativeStiffnesses);
     }
 }

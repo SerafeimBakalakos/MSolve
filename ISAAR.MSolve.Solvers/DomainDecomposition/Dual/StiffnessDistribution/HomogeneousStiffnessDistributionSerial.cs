@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Operators;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
 
@@ -38,6 +39,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         {
             return new HomogeneousStiffnessDistributionUtilities.ScalingBooleanMatrixImplicit(
                 inverseBoundaryDofMultiplicities[subdomain], boundarySignedBooleanMatrix);
+        }
+
+        public void ScaleFreeForceVector(ISubdomain subdomain, Vector forceVector)
+        {
+            throw new NotImplementedException();
         }
 
         public double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load) => loadScaling.ScaleNodalLoad(subdomain, load);

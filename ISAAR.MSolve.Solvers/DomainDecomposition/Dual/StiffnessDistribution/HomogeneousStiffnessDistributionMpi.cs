@@ -9,6 +9,7 @@ using ISAAR.MSolve.LinearAlgebra.Distributed;
 using ISAAR.MSolve.LinearAlgebra.Distributed.Transfer;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.DofSeparation;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.LagrangeMultipliers;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 // 
 namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
@@ -101,6 +102,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
             var inverse = new double[length];
             for (int i = 0; i < length; ++i) inverse[i] = 1.0 / direct[start + i];
             return inverse;
+        }
+
+        public void ScaleFreeForceVector(ISubdomain subdomain, Vector forceVector)
+        {
+            throw new NotImplementedException();
         }
     }
 }
