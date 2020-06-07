@@ -14,12 +14,19 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 {
     public class ElementSubtriangle2D
     {
-        private readonly Triangle2D triangleNatural;
+        //private readonly Triangle2D triangleNatural;
 
         public ElementSubtriangle2D(Triangle2D triangleNatural)
         {
-            this.triangleNatural = triangleNatural;
+            IList<double[]> vertices = triangleNatural.Vertices;
+            VerticesNatural = new NaturalPoint[3];
+            VerticesNatural[0] = new NaturalPoint(vertices[0][0], vertices[0][1]);
+            VerticesNatural[1] = new NaturalPoint(vertices[1][0], vertices[1][1]);
+            VerticesNatural[2] = new NaturalPoint(vertices[2][0], vertices[2][1]);
+            //this.triangleNatural = triangleNatural;
         }
+
+        public NaturalPoint[] VerticesNatural { get; }
 
         public (CartesianPoint centroid, double area) FindCentroidAndAreaCartesian(IXFiniteElement parentElement)
         {
@@ -56,9 +63,10 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
                 var verticesCartesian = new CartesianPoint[3];
                 for (int v = 0; v < 3; ++v)
                 {
-                    double[] coordsNatural = triangleNatural.Vertices[v];
-                    var pointNatural = new NaturalPoint(coordsNatural[0], coordsNatural[1]);
-                    verticesCartesian[v] = interpolation.TransformNaturalToCartesian(nodes, pointNatural);
+                    //double[] coordsNatural = triangleNatural.Vertices[v];
+                    //var pointNatural = new NaturalPoint(coordsNatural[0], coordsNatural[1]);
+                    //verticesCartesian[v] = interpolation.TransformNaturalToCartesian(nodes, pointNatural);
+                    verticesCartesian[v] = interpolation.TransformNaturalToCartesian(nodes, VerticesNatural[v]);
                 }
                 return verticesCartesian;
             }

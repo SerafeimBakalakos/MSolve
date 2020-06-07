@@ -5,11 +5,19 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry.ConformingMesh;
+using MGroup.XFEM.Integration;
 
 namespace MGroup.XFEM.Elements
 {
     public interface IXFiniteElement : IElement, IElementType, ICell<XNode>
     {
+        /// <summary>
+        /// Will be null for elements not intersected by any interfaces
+        /// </summary>
+        ElementSubtriangle2D[] ConformingSubtriangles2D { get; set; }
+
+
         IReadOnlyList<(XNode node1, XNode node2)> EdgeNodes { get; }
         IReadOnlyList<(NaturalPoint node1, NaturalPoint node2)> EdgesNodesNatural { get; }
 
@@ -17,7 +25,7 @@ namespace MGroup.XFEM.Elements
         IReadOnlyList<ElementFace> Faces { get; }
 
         //IBoundaryIntegration IntegrationBoundary { get; }
-        //IIntegrationStrategy IntegrationVolume { get; }
+        IBulkIntegration IntegrationBulk { get; }
 
         //TODO: Unify 2D and 3D interpolation classes and use that one.
         IIsoparametricInterpolation2D Interpolation2D { get; }

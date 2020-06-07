@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.Discretization.Integration;
+using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
@@ -13,6 +15,7 @@ using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Geometry.Tolerances;
+using MGroup.XFEM.Integration;
 using MGroup.XFEM.Plotting;
 using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
@@ -24,6 +27,7 @@ namespace MGroup.XFEM.Tests.Plotting
         private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\Circles2D\";
         private const string pathConformingMesh = outputDirectory + "conforming_mesh.vtk";
         private const string pathIntersections = outputDirectory + "intersections.vtk";
+        private const string pathIntegrationBulk = outputDirectory + "integration_points_bulk.vtk";
 
         private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0;
         private const double thickness = 1.0;
@@ -57,6 +61,16 @@ namespace MGroup.XFEM.Tests.Plotting
             // Plot conforming mesh
             Dictionary<IXFiniteElement, ElementSubtriangle2D[]> conformingMesh = CreateConformingMesh(elementIntersections);
             PlotConformingMesh(model, conformingMesh);
+
+            // Plot bulk integration points
+            var integrationBulk = new IntegrationWithConformingSubtriangles2D(GaussLegendre2D.GetQuadratureWithOrder(2, 2),
+                TriangleQuadratureSymmetricGaussian.Order2Points3);
+            foreach (IXFiniteElement element in model.Elements)
+            {
+                ((MockElement)element).IntegrationBulk = integrationBulk;
+            }
+            var integrationPlotter = new IntegrationPlotter2D(model);
+            integrationPlotter.PlotVolumeIntegrationPoints(pathIntegrationBulk);
         }
 
         private static Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> CalcIntersections(
@@ -88,7 +102,9 @@ namespace MGroup.XFEM.Tests.Plotting
             foreach (IXFiniteElement element in intersections.Keys)
             {
                 List<LsmElementIntersection2D> elementIntersections = intersections[element];
-                conformingMesh[element] = triangulator.FindConformingMesh(element, elementIntersections, tolerance);
+                ElementSubtriangle2D[] subtriangles = triangulator.FindConformingMesh(element, elementIntersections, tolerance);
+                conformingMesh[element] = subtriangles;
+                element.ConformingSubtriangles2D = subtriangles;
             }
             return conformingMesh;
         }

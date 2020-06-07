@@ -16,6 +16,7 @@ using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Integration;
 
 //TODO: delete this class
 namespace MGroup.XFEM.Elements
@@ -203,6 +204,9 @@ namespace MGroup.XFEM.Elements
         public IReadOnlyList<ElementEdge> Edges => edges;
 
         public IReadOnlyList<ElementFace> Faces => faces;
+
+        public IBulkIntegration IntegrationBulk { get; set; }
+        public ElementSubtriangle2D[] ConformingSubtriangles2D { get; set; }
 
         public IMatrix DampingMatrix(IElement element)
         {
