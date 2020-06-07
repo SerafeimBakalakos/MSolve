@@ -207,6 +207,7 @@ namespace MGroup.XFEM.Elements
 
         public IBulkIntegration IntegrationBulk { get; set; }
         public ElementSubtriangle2D[] ConformingSubtriangles2D { get; set; }
+        public ElementSubtetrahedron3D[] ConformingSubtetrahedra3D { get; set; }
 
         public IMatrix DampingMatrix(IElement element)
         {

@@ -70,7 +70,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 ((MockElement)element).IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter2D(model);
-            integrationPlotter.PlotVolumeIntegrationPoints(pathIntegrationBulk);
+            integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
         }
 
         private static Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> CalcIntersections(

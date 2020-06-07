@@ -6,15 +6,13 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 
-//TODO: Standardize the writer classes and their input. Also simplify them as much as possible (e.g. plot just points, without 
-//      having attached values).
 namespace MGroup.XFEM.Plotting
 {
-    public class IntegrationPlotter2D
+    public class IntegrationPlotter3D
     {
         private readonly XModel physicalModel;
 
-        public IntegrationPlotter2D(XModel physicalModel)
+        public IntegrationPlotter3D(XModel physicalModel)
         {
             this.physicalModel = physicalModel;
         }
@@ -71,7 +69,7 @@ namespace MGroup.XFEM.Plotting
                 IReadOnlyList<GaussPoint> elementGPs = element.IntegrationBulk.GenerateIntegrationPoints(element);
                 foreach (GaussPoint gp in element.IntegrationBulk.GenerateIntegrationPoints(element))
                 {
-                    CartesianPoint point = element.Interpolation2D.TransformNaturalToCartesian(element.Nodes, gp);
+                    CartesianPoint point = element.Interpolation3D.TransformNaturalToCartesian(element.Nodes, gp);
                     integrationPoints.Add(point, element.ID);
                 }
             }

@@ -17,6 +17,10 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         ElementSubtriangle2D[] ConformingSubtriangles2D { get; set; }
 
+        /// <summary>
+        /// Will be null for elements not intersected by any interfaces
+        /// </summary>
+        ElementSubtetrahedron3D[] ConformingSubtetrahedra3D { get; set; }
 
         IReadOnlyList<(XNode node1, XNode node2)> EdgeNodes { get; }
         IReadOnlyList<(NaturalPoint node1, NaturalPoint node2)> EdgesNodesNatural { get; }

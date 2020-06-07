@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
@@ -13,6 +14,7 @@ using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Geometry.Tolerances;
+using MGroup.XFEM.Integration;
 using MGroup.XFEM.Plotting;
 using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
@@ -24,12 +26,13 @@ namespace MGroup.XFEM.Tests.Plotting
         private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\Spheres3D\";
         private const string pathConformingMesh = outputDirectory + "conforming_mesh.vtk";
         private const string pathIntersections = outputDirectory + "intersections.vtk";
+        private const string pathIntegrationBulk = outputDirectory + "integration_points_bulk.vtk";
 
         private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0, zMin = -1.0, zMax = +1.0;
 
         // There are 2 or more inclusions in the same element
         private const int numElementsX = 4, numElementsY = 4, numElementsZ = 4;
-        private const int numBallsX = 2, numBallsY = 1, numBallsZ = 1;
+        private const int numBallsX = 1, numBallsY = 1, numBallsZ = 1;
         private const double ballRadius = 0.3;
 
         private const double zeroLevelSetTolerance = 1E-6;
@@ -56,6 +59,16 @@ namespace MGroup.XFEM.Tests.Plotting
             // Plot conforming mesh
             Dictionary<IXFiniteElement, ElementSubtetrahedron3D[]> conformingMesh = CreateConformingMesh(elementIntersections);
             PlotConformingMesh(model, conformingMesh);
+
+            // Plot bulk integration points
+            var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2),
+                TetrahedronQuadrature.Order2Points4);
+            foreach (IXFiniteElement element in model.Elements)
+            {
+                ((MockElement)element).IntegrationBulk = integrationBulk;
+            }
+            var integrationPlotter = new IntegrationPlotter3D(model);
+            integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
         }
 
         private static Dictionary<IXFiniteElement, List<LsmElementIntersection3D>> CalcIntersections(
@@ -87,7 +100,9 @@ namespace MGroup.XFEM.Tests.Plotting
             foreach (IXFiniteElement element in intersections.Keys)
             {
                 List<LsmElementIntersection3D> elementIntersections = intersections[element];
-                conformingMesh[element] = triangulator.FindConformingMesh(element, elementIntersections, tolerance);
+                ElementSubtetrahedron3D[] subtetra = triangulator.FindConformingMesh(element, elementIntersections, tolerance);
+                conformingMesh[element] = subtetra;
+                element.ConformingSubtetrahedra3D = subtetra;
             }
             return conformingMesh;
         }
