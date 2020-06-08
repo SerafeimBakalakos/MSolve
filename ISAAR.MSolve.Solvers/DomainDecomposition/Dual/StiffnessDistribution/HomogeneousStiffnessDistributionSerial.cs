@@ -42,9 +42,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution
         }
 
         public void ScaleFreeForceVector(ISubdomain subdomain, Vector forceVector)
-        {
-            throw new NotImplementedException();
-        }
+            => loadScaling.ScaleForceVectorFree(subdomain, forceVector);
 
         public double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load) => loadScaling.ScaleNodalLoad(subdomain, load);
 

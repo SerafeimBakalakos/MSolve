@@ -19,6 +19,11 @@ namespace ISAAR.MSolve.Solvers.Tests.DomainDecomposition.Dual.FetiDP.UnitTests.M
             ISubdomain subdomain, SignedBooleanMatrixColMajor boundarySignedBooleanMatrix)
             => new MatrixBpbr(subdomain.ID);
 
+        public void ScaleFreeForceVector(ISubdomain subdomain, Vector forceVector)
+        {
+            throw new NotImplementedException();
+        }
+
         public double ScaleNodalLoad(ISubdomain subdomain, INodalLoad load) => load.Amount / load.Node.Multiplicity;
 
         public void Update() { }

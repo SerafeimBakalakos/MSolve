@@ -45,11 +45,6 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.GsiFetiDP
         private void ScaleForceVector(ISubdomain subdomain, IVector forceVector)
         {
             fetiDP.StiffnessDistribution.ScaleFreeForceVector(subdomain, (Vector)forceVector);
-
-            //foreach ((INode node, IDofType dof, int idx) in subdomain.FreeDofOrdering.FreeDofs)
-            //{
-            //    forceVector.Set(idx, forceVector[idx] / node.Multiplicity);
-            //}
         }
     }
 }
