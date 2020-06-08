@@ -39,7 +39,7 @@ namespace MGroup.XFEM.Geometry.LSM
             return meshCartesian;
         }
 
-        public GaussPoint[] GetIntegrationPoints(int numPoints)
+        public GaussPoint[] GetIntegrationPoints(int order)
         {
             throw new NotImplementedException();
         }

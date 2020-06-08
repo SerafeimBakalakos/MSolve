@@ -4,7 +4,10 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
 
-//TODO: Perhaps this can be joined with the 2D interface
+//TODO: This must be joined with the 2D interface. An intersection mesh class should be used there as well.
+//      Furthermore intersection mesh class should be simplified. Its vertices should have IDs used by clients for adding 
+//      vertices and cells. The coordinates should be as double[] and in many systems, which will be lazily evaluated in an 
+//      accessor.
 namespace MGroup.XFEM.Geometry
 {
     /// <summary>
@@ -17,7 +20,12 @@ namespace MGroup.XFEM.Geometry
 
         IntersectionMesh<CartesianPoint> ApproximateGlobalCartesian();
 
-        GaussPoint[] GetIntegrationPoints(int numPoints);
+        /// <summary>
+        /// The weights of the returned <see cref="GaussPoint"/>s include the determinant of the Jacobian from the
+        /// natural system of the element to the global cartesian system.
+        /// </summary>
+        /// <param name="order"></param>
+        GaussPoint[] GetIntegrationPoints(int order);
 
         IList<NaturalPoint> GetPointsForTriangulation(); 
     }

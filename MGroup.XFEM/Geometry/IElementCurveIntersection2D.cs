@@ -16,7 +16,12 @@ namespace MGroup.XFEM.Geometry
 
         List<double[]> ApproximateGlobalCartesian();
 
-        GaussPoint[] GetIntegrationPoints(int numPoints);
+        /// <summary>
+        /// The weights of the returned <see cref="GaussPoint"/>s include the determinant of the Jacobian from the
+        /// natural system of the element to the global cartesian system.
+        /// </summary>
+        /// <param name="order"></param>
+        GaussPoint[] GetIntegrationPoints(int order);
 
         IList<NaturalPoint> GetPointsForTriangulation(); 
     }

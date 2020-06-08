@@ -14,6 +14,7 @@ using ISAAR.MSolve.Geometry.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
@@ -208,6 +209,10 @@ namespace MGroup.XFEM.Elements
         public IBulkIntegration IntegrationBulk { get; set; }
         public ElementSubtriangle2D[] ConformingSubtriangles2D { get; set; }
         public ElementSubtetrahedron3D[] ConformingSubtetrahedra3D { get; set; }
+
+        public List<IElementCurveIntersection2D> Intersections2D { get; } = new List<IElementCurveIntersection2D>();
+
+        public List<IElementSurfaceIntersection3D> Intersections3D { get; } = new List<IElementSurfaceIntersection3D>();
 
         public IMatrix DampingMatrix(IElement element)
         {

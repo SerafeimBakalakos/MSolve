@@ -28,6 +28,7 @@ namespace MGroup.XFEM.Tests.Plotting
         private const string pathConformingMesh = outputDirectory + "conforming_mesh.vtk";
         private const string pathIntersections = outputDirectory + "intersections.vtk";
         private const string pathIntegrationBulk = outputDirectory + "integration_points_bulk.vtk";
+        private const string pathIntegrationBoundary = outputDirectory + "integration_points_boundary.vtk";
 
         private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0;
         private const double thickness = 1.0;
@@ -40,6 +41,7 @@ namespace MGroup.XFEM.Tests.Plotting
         private const double zeroLevelSetTolerance = 1E-6;
         private const int subdomainID = 0;
 
+        private const int boundaryIntegrationOrder = 2;
 
         public static void Run()
         {
@@ -71,6 +73,9 @@ namespace MGroup.XFEM.Tests.Plotting
             }
             var integrationPlotter = new IntegrationPlotter2D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
+
+            // Plot boundary integration points
+            integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
         }
 
         private static Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> CalcIntersections(
@@ -85,6 +90,7 @@ namespace MGroup.XFEM.Tests.Plotting
                     IElementCurveIntersection2D intersection = curve.Intersect(element);
                     if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
                     {
+                        element.Intersections2D.Add(intersection);
                         elementIntersections.Add((LsmElementIntersection2D)intersection);
                     }
                 }

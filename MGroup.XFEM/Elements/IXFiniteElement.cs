@@ -5,9 +5,11 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Integration;
 
+//TODO: LSM/element interactions should probably be stored in a GeometricModel class
 namespace MGroup.XFEM.Elements
 {
     public interface IXFiniteElement : IElement, IElementType, ICell<XNode>
@@ -36,6 +38,9 @@ namespace MGroup.XFEM.Elements
         IIsoparametricInterpolation3D Interpolation3D { get; }
 
         IReadOnlyList<XNode> Nodes { get; }
+
+        List<IElementCurveIntersection2D> Intersections2D { get; }
+        List<IElementSurfaceIntersection3D> Intersections3D { get; }
 
         //Dictionary<PhaseBoundary, CurveElementIntersection> PhaseIntersections { get; }
 

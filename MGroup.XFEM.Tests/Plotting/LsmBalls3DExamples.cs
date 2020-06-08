@@ -83,6 +83,7 @@ namespace MGroup.XFEM.Tests.Plotting
                     IElementSurfaceIntersection3D intersection = surface.Intersect(element);
                     if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
                     {
+                        element.Intersections3D.Add(intersection);
                         elementIntersections.Add((LsmElementIntersection3D)intersection);
                     }
                 }
