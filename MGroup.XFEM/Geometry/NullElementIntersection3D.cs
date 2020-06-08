@@ -12,7 +12,7 @@ namespace MGroup.XFEM.Geometry
 
         public IntersectionMesh<CartesianPoint> ApproximateGlobalCartesian() => new IntersectionMesh<CartesianPoint>();
 
-        public GaussPoint[] GetIntegrationPoints(int numPoints)
+        public IList<GaussPoint> GetIntegrationPoints(int numPoints)
         {
             return new GaussPoint[0];
         }

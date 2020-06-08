@@ -5,6 +5,7 @@ using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry;
 
 namespace MGroup.XFEM.Plotting
 {
@@ -30,27 +31,26 @@ namespace MGroup.XFEM.Plotting
         //    }
         //}
 
-        //public void PlotBoundaryIntegrationPoints(string path)
-        //{
-        //    var integrationPoints = new HashSet<CartesianPoint>();
-        //    foreach (IXFiniteElement element in physicalModel.Elements)
-        //    {
-        //        foreach (CurveElementIntersection intersection in element.PhaseIntersections.Values)
-        //        {
-        //            IReadOnlyList<GaussPoint> gaussPoints = 
-        //                element.IntegrationBoundary.GenerateIntegrationPoints(element, intersection);
-        //            foreach (GaussPoint gp in gaussPoints)
-        //            {
-        //                CartesianPoint point = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, gp);
-        //                integrationPoints.Add(point);
-        //            }
-        //        }
-        //    }
-        //    using (var writer = new Logging.VTK.VtkPointWriter(path))
-        //    {
-        //        writer.WritePoints(integrationPoints);
-        //    }
-        //}
+        public void PlotBoundaryIntegrationPoints(string path, int order)
+        {
+            var integrationPoints = new Dictionary<CartesianPoint, double>();
+            foreach (IXFiniteElement element in physicalModel.Elements)
+            {
+                foreach (IElementSurfaceIntersection3D intersection in element.Intersections3D)
+                {
+                    IList<GaussPoint> gaussPoints = intersection.GetIntegrationPoints(order);
+                    foreach (GaussPoint gp in gaussPoints)
+                    {
+                        CartesianPoint point = element.Interpolation3D.TransformNaturalToCartesian(element.Nodes, gp);
+                        integrationPoints.Add(point, element.ID);
+                    }
+                }
+            }
+            using (var writer = new ISAAR.MSolve.Logging.VTK.VtkPointWriter(path))
+            {
+                writer.WriteScalarField("elem_ids_of_boundary_gauss_points", integrationPoints);
+            }
+        }
 
         //public void PlotVolumeIntegrationMesh(string path)
         //{
