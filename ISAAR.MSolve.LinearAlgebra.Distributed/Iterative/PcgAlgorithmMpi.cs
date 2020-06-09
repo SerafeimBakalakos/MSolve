@@ -90,7 +90,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Iterative
                 else residual = ExactResidual.Calculate(matrix, rhs, solution);
             }
 
-            return SolveInternal(maxIterationsProvider.GetMaxIterations(matrix.NumColumns), zeroVectorInitializer);
+            return SolveInternal(MaxIterationsProvider.GetMaxIterations(matrix.NumColumns), zeroVectorInitializer);
         }
 
         protected override IterativeStatistics SolveInternal(int maxIterations, Func<IVector> zeroVectorInitializer)
@@ -156,7 +156,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Distributed.Iterative
 
                 comm.Broadcast<double>(ref residualNormRatio, master);
                 Debug.WriteLine($"Process {comm.Rank}: PCG Iteration = {iteration}: residual norm ratio = {residualNormRatio}");
-                if (residualNormRatio <= residualTolerance)
+                if (residualNormRatio <= ResidualTolerance)
                 {
                     return new IterativeStatistics
                     {

@@ -111,7 +111,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
             direction = zeroVectorInitializer();
             matrixTimesDirection = zeroVectorInitializer();
 
-            int maxIterations = maxIterationsProvider.GetMaxIterations(matrix.NumColumns);
+            int maxIterations = MaxIterationsProvider.GetMaxIterations(matrix.NumColumns);
             return SolveInternal(maxIterations, zeroVectorInitializer);
         }
 
@@ -167,7 +167,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
                 Debug.WriteLine($"Reorthogonalized PCG iteration = {iteration}: residual norm ratio = {residualNormRatio}");
                 Stagnation.StoreNewError(residualNormRatio);
                 bool hasStagnated = Stagnation.HasStagnated();
-                if (residualNormRatio <= residualTolerance)
+                if (residualNormRatio <= ResidualTolerance)
                 {
                     return new IterativeStatistics
                     {

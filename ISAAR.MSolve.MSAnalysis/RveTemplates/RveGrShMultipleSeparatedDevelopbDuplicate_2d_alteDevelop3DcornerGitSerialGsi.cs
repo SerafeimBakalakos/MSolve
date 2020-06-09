@@ -117,6 +117,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
             gsiPcgBuilder.MaxIterationsProvider = pcgSettings.MaxIterationsProvider;
             gsiPcgBuilder.ResidualTolerance = 1E-3;
             gsiBuilder.PcgAlgorithm = gsiPcgBuilder.Build();
+            gsiBuilder.MaxFetiDPIterationsAsPrecond = 30;
             GsiFetiDPSolver gsiSolver = gsiBuilder.Build(model);
             #endregion
 

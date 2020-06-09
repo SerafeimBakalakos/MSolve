@@ -15,8 +15,6 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
     public abstract class PcgAlgorithmBase
     {
         protected readonly IPcgResidualConvergence convergence;
-        protected readonly IMaxIterationsProvider maxIterationsProvider;
-        protected readonly double residualTolerance;
         protected readonly IPcgResidualUpdater residualUpdater;
 
         protected IVector direction;
@@ -33,11 +31,15 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
         protected PcgAlgorithmBase(double residualTolerance, IMaxIterationsProvider maxIterationsProvider,
             IPcgResidualConvergence convergence, IPcgResidualUpdater residualUpdater)
         {
-            this.residualTolerance = residualTolerance;
-            this.maxIterationsProvider = maxIterationsProvider;
+            this.ResidualTolerance = residualTolerance;
+            this.MaxIterationsProvider = maxIterationsProvider;
             this.convergence = convergence;
             this.residualUpdater = residualUpdater;
         }
+
+        public IMaxIterationsProvider MaxIterationsProvider { get; set; }
+
+        public double ResidualTolerance { get; set; }
 
         /// <summary>
         /// The direction vector d, used to update the solution vector: x = x + α * d
@@ -203,7 +205,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
             // r = b - A * x
             if (initialGuessIsZero) residual = rhs.Copy();
             else residual = ExactResidual.Calculate(matrix, rhs, solution);
-            return SolveInternal(maxIterationsProvider.GetMaxIterations(matrix.NumColumns), zeroVectorInitializer);
+            return SolveInternal(MaxIterationsProvider.GetMaxIterations(matrix.NumColumns), zeroVectorInitializer);
         }
 
         protected abstract IterativeStatistics SolveInternal(int maxIterations, Func<IVector> zeroVectorInitializer);

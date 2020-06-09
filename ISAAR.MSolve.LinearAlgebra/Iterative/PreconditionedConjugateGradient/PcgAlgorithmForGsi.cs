@@ -16,14 +16,12 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
     {
         private const string name = "Preconditioned Conjugate Gradient";
         private readonly IPcgBetaParameterCalculation betaCalculation;
-        private readonly double convergenceTol;
 
         private PcgAlgorithmForGsi(double residualTolerance, IMaxIterationsProvider maxIterationsProvider,
             IPcgResidualUpdater residualUpdater, IPcgBetaParameterCalculation betaCalculation, double convergenceTol) : 
             base(residualTolerance, maxIterationsProvider, null, residualUpdater)
         {
             this.betaCalculation = betaCalculation;
-            this.convergenceTol = convergenceTol;
         }
 
         protected override IterativeStatistics SolveInternal(int maxIterations, Func<IVector> zeroVectorInitializer)
@@ -68,8 +66,8 @@ namespace ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient
 
                 // At this point we can check if CG has converged and exit, thus avoiding the uneccesary operations that follow.
                 residualNormRatio = residual.Norm2() / residualNorm0;
-                Debug.WriteLine($"PCG Iteration = {iteration}: residual norm ratio = {residualNormRatio}");
-                if (residualNormRatio <= convergenceTol)
+                Debug.WriteLine($"GSI-PCG Iteration = {iteration}: residual norm ratio = {residualNormRatio}");
+                if (residualNormRatio <= ResidualTolerance)
                 {
                     return new IterativeStatistics
                     {

@@ -56,6 +56,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
         public bool UsePreviousLambda { get; set; }
         public bool UseStagnationCriterion { get; set; }
 
+        public bool CheckConvergence { get; set; } = true;
+
         public Vector SolveInterfaceProblem(IFetiDPMatrixManager matrixManager,
             ILagrangeMultipliersEnumerator lagrangesEnumerator, IFetiDPFlexibilityMatrix flexibility,
             IFetiPreconditioner preconditioner, double globalForcesNorm, ISolverLogger logger)
@@ -109,7 +111,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem
             }
 
             // Log statistics about PCG execution
-            FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
+            if (CheckConvergence) FetiDPInterfaceProblemUtilities.CheckConvergence(stats);
             logger.LogIterativeAlgorithm(stats.NumIterationsRequired, stats.ResidualNormRatioEstimation);
 
 

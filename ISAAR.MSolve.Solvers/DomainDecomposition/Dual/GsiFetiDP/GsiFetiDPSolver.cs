@@ -78,7 +78,8 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
         //private bool factorizeInPlace = true;
         private bool isStiffnessModified = true;
 
-        public GsiFetiDPSolver(IModel model, FetiDP3dSolverSerial fetiDP, PcgAlgorithmForGsi pcgAlgorithm)
+        public GsiFetiDPSolver(IModel model, FetiDP3dSolverSerial fetiDP, PcgAlgorithmForGsi pcgAlgorithm,
+            int maxFetiDPIterations)
         {
             this.msgHeader = $"{this.GetType().Name}: ";
 
@@ -92,7 +93,7 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
             this.dofOrderer = new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
             //this.linearSystems = new Dictionary<ISubdomain, SingleSubdomainSystemMpi<DokSymmetric>>();
             this.gsiMatrix = new GsiFetiDPMatrix(model);
-            this.gsiPreconditioner = new GsiFetiDPPreconditioner(model, fetiDP);
+            this.gsiPreconditioner = new GsiFetiDPPreconditioner(model, fetiDP, maxFetiDPIterations);
         }
 
         public SolveCases SolveCase { get; set; } = SolveCases.OnlyFetiDP;
@@ -264,9 +265,11 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d
 
             public PcgAlgorithmForGsi PcgAlgorithm { get; set; } = (new PcgAlgorithmForGsi.Builder()).Build();
 
+            public int MaxFetiDPIterationsAsPrecond { get; set; } = 1;
+
             public GsiFetiDPSolver Build(IModel model)
             {
-                return new GsiFetiDPSolver(model, fetiDP, PcgAlgorithm);
+                return new GsiFetiDPSolver(model, fetiDP, PcgAlgorithm, MaxFetiDPIterationsAsPrecond);
             }
         }
     }

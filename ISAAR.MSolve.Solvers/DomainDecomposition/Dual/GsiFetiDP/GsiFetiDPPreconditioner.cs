@@ -5,7 +5,9 @@ using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Preconditioning;
+using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
+using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP.InterfaceProblem;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.FetiDP3d;
 using ISAAR.MSolve.Solvers.DomainDecomposition.Dual.StiffnessDistribution;
 
@@ -15,11 +17,13 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.GsiFetiDP
     {
         private readonly FetiDP3dSolverSerial fetiDP;
         private readonly IModel model;
+        private readonly int maxFetiDPIterations;
 
-        public GsiFetiDPPreconditioner(IModel model, FetiDP3dSolverSerial fetiDP)
+        public GsiFetiDPPreconditioner(IModel model, FetiDP3dSolverSerial fetiDP, int maxFetiDPIterations)
         {
             this.model = model;
             this.fetiDP = fetiDP;
+            this.maxFetiDPIterations = maxFetiDPIterations;
         }
 
         public void SolveLinearSystem(IVectorView rhsVector, IVector lhsVector)
@@ -33,7 +37,18 @@ namespace ISAAR.MSolve.Solvers.DomainDecomposition.Dual.GsiFetiDP
             }
 
             // Use FETI-DP as preconditioner
-            fetiDP.Solve();
+            if (fetiDP.InterfaceProblemSolver is FetiDP3dInterfaceProblemSolverReorthogonalizationSerial reorthoInterface)
+            {
+                //TODO: Allow other components to change parameters in a less hackish way.
+                bool checkConvergenceOld = reorthoInterface.CheckConvergence;
+                reorthoInterface.CheckConvergence = false;
+                IMaxIterationsProvider maxItererationsOld = reorthoInterface.Pcg.MaxIterationsProvider;
+                reorthoInterface.Pcg.MaxIterationsProvider = new FixedMaxIterationsProvider(maxFetiDPIterations);
+                fetiDP.Solve();
+                reorthoInterface.Pcg.MaxIterationsProvider = maxItererationsOld;
+                reorthoInterface.CheckConvergence = checkConvergenceOld;
+            }
+            else fetiDP.Solve();
 
             Debug.WriteLine("FETI-DP used as preconditioner for GSI. PCG iterations for current residual = " 
                 + fetiDP.Logger.GetNumIterationsOfIterativeAlgorithm(fetiDP.Logger.CurrentStep - 1));
