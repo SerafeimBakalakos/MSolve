@@ -42,9 +42,10 @@ namespace MGroup.XFEM.Elements
         List<IElementCurveIntersection2D> Intersections2D { get; }
         List<IElementSurfaceIntersection3D> Intersections3D { get; }
 
-        //Dictionary<PhaseBoundary, CurveElementIntersection> PhaseIntersections { get; }
+        //Dictionary<PhaseBoundary, IElementCurveIntersection2D> PhaseIntersections2D { get; }
+        //Dictionary<PhaseBoundary, IElementSurfaceIntersection3D> PhaseIntersections3D { get; }
 
-        HashSet<IPhase> Phases { get; }
+        //HashSet<IPhase> Phases { get; }
 
         XSubdomain Subdomain { get; set; }
 

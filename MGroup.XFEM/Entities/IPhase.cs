@@ -10,7 +10,7 @@ namespace MGroup.XFEM.Entities
 {
     public interface IPhase
     {
-        List<PhaseBoundary> Boundaries { get; }
+        List<PhaseBoundary2D> Boundaries { get; }
         HashSet<XNode> ContainedNodes { get; }
         HashSet<IXFiniteElement> ContainedElements { get; }
         int ID { get; }
@@ -19,7 +19,7 @@ namespace MGroup.XFEM.Entities
         bool Contains(XNode node);
         bool Contains(XPoint point);
 
-        //void InteractWithElements(IEnumerable<IXFiniteElement> elements, IMeshTolerance meshTolerance);
+        void InteractWithElements(IEnumerable<IXFiniteElement> elements);
         void InteractWithNodes(IEnumerable<XNode> nodes);
 
     }

@@ -29,6 +29,8 @@ namespace MGroup.XFEM.Tests.Plotting
         private const string pathIntersections = outputDirectory + "intersections.vtk";
         private const string pathIntegrationBulk = outputDirectory + "integration_points_bulk.vtk";
         private const string pathIntegrationBoundary = outputDirectory + "integration_points_boundary.vtk";
+        private const string pathPhasesOfNodes = outputDirectory + "phases_of_nodes.vtk";
+        private const string pathPhasesOfElements = outputDirectory + "phases_of_elements.vtk";
 
         private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0;
         private const double thickness = 1.0;
@@ -43,7 +45,7 @@ namespace MGroup.XFEM.Tests.Plotting
 
         private const int boundaryIntegrationOrder = 2;
 
-        public static void Run()
+        public static void PlotGeometry()
         {
             // Create model and LSM
             XModel model = CreateModelQuads(numElementsX, numElementsY);
@@ -61,8 +63,12 @@ namespace MGroup.XFEM.Tests.Plotting
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
-            Dictionary<IXFiniteElement, ElementSubtriangle2D[]> conformingMesh = CreateConformingMesh(elementIntersections);
-            PlotConformingMesh(model, conformingMesh);
+            Dictionary<IXFiniteElement, ElementSubtriangle2D[]> triangulation = CreateConformingMesh(elementIntersections);
+            var conformingMesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, triangulation);
+            using (var writer = new VtkFileWriter(pathConformingMesh))
+            {
+                writer.WriteMesh(conformingMesh);
+            }
 
             // Plot bulk integration points
             var integrationBulk = new IntegrationWithConformingSubtriangles2D(GaussLegendre2D.GetQuadratureWithOrder(2, 2),
@@ -76,6 +82,54 @@ namespace MGroup.XFEM.Tests.Plotting
 
             // Plot boundary integration points
             integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
+        }
+
+        public static void PlotGeometryAndEntities()
+        {
+            // Create physical model, LSM and phases
+            XModel model = CreateModelQuads(numElementsX, numElementsY);
+            List<SimpleLsm2D> lsmCurves = InitializeLSM(model);
+            GeometricModel2D geometricModel = CreatePhases(model, lsmCurves);
+
+            // Plot original mesh and level sets
+            PlotInclusionLevelSets(outputDirectory, "level_set", model, lsmCurves);
+
+            // Find and plot intersections between level set curves and elements
+            geometricModel.InteractWithMesh();
+
+            //TODO: The next intersections and conforming mesh should have been taken care by the geometric model. 
+            //      Read them from there.
+            Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> elementIntersections
+                = CalcIntersections(model, lsmCurves);
+            var allIntersections = new List<LsmElementIntersection2D>();
+            foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
+            var intersectionPlotter = new Lsm2DElementIntersectionsPlotter(model, lsmCurves);
+            intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
+
+            // Plot conforming mesh
+            Dictionary<IXFiniteElement, ElementSubtriangle2D[]> triangulation = CreateConformingMesh(elementIntersections);
+            var conformingMesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, triangulation);
+            using (var writer = new VtkFileWriter(pathConformingMesh))
+            {
+                writer.WriteMesh(conformingMesh);
+            }
+
+            // Plot bulk integration points
+            var integrationBulk = new IntegrationWithConformingSubtriangles2D(GaussLegendre2D.GetQuadratureWithOrder(2, 2),
+                TriangleQuadratureSymmetricGaussian.Order2Points3);
+            foreach (IXFiniteElement element in model.Elements)
+            {
+                ((MockElement)element).IntegrationBulk = integrationBulk;
+            }
+            var integrationPlotter = new IntegrationPlotter2D(model);
+            integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
+
+            // Plot boundary integration points
+            integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
+
+            var phasePlotter = new PhasePlotter2D(model, geometricModel);
+            phasePlotter.PlotNodes(pathPhasesOfNodes);
+            phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
         }
 
         private static Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> CalcIntersections(
@@ -142,6 +196,21 @@ namespace MGroup.XFEM.Tests.Plotting
         }
 
         
+        private static GeometricModel2D CreatePhases(XModel model, List<SimpleLsm2D> lsmCurves)
+        {
+            var geometricModel = new GeometricModel2D(model);
+            var defaultPhase = new DefaultPhase(0, geometricModel);
+            geometricModel.Phases.Add(defaultPhase);
+            for (int p = 0; p < lsmCurves.Count; ++p)
+            {
+                SimpleLsm2D curve = lsmCurves[p];
+                var phase = new ConvexPhase2D(p + 1, geometricModel);
+                geometricModel.Phases.Add(phase);
+                var boundary = new PhaseBoundary2D(curve, defaultPhase, phase);
+            }
+            return geometricModel;
+        }
+
         private static List<SimpleLsm2D> InitializeLSM(XModel model)
         {
             var curves = new List<SimpleLsm2D>(numBallsX * numBallsY);
@@ -178,15 +247,6 @@ namespace MGroup.XFEM.Tests.Plotting
                         levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
                 }
             }
-        }
-
-        internal static void PlotConformingMesh(XModel model, Dictionary<IXFiniteElement, ElementSubtriangle2D[]> triangulation)
-        {
-            var conformingMesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, triangulation);
-            using (var writer = new VtkFileWriter(pathConformingMesh))
-            {
-                writer.WriteMesh(conformingMesh);
-            }   
         }
     }
 }

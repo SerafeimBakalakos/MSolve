@@ -96,7 +96,7 @@ namespace MGroup.XFEM.Geometry.LSM
             double result = 0;
             for (int n = 0; n < nodes.Length; ++n)
             {
-                result += shapeFunctions[n] * NodalLevelSets[n];
+                result += shapeFunctions[n] * NodalLevelSets[nodes[n]];
             }
             return result;
         }

@@ -11,15 +11,21 @@ namespace MGroup.XFEM.Entities
 {
     public class DefaultPhase : IPhase
     {
-        public const int DefaultPhaseID = 0;
+        private readonly GeometricModel2D geometricModel;
 
-        public int ID => DefaultPhaseID;
+        public DefaultPhase(int id, GeometricModel2D geometricModel)
+        {
+            this.ID = id;
+            this.geometricModel = geometricModel;
+        }
+
+        public int ID { get; }
 
         public HashSet<XNode> ContainedNodes { get; } = new HashSet<XNode>();
 
         public HashSet<IXFiniteElement> ContainedElements { get; } = new HashSet<IXFiniteElement>();
 
-        public List<PhaseBoundary> Boundaries { get; } = new List<PhaseBoundary>();
+        public List<PhaseBoundary2D> Boundaries { get; } = new List<PhaseBoundary2D>();
 
         public HashSet<IPhase> Neighbors { get; } = new HashSet<IPhase>();
 
@@ -31,10 +37,10 @@ namespace MGroup.XFEM.Entities
         {
             foreach (XNode node in nodes)
             {
-                if (node.SurroundingPhase == null)
+                if (geometricModel.GetPhaseOfNode(node) == null)
                 {
                     ContainedNodes.Add(node);
-                    node.SurroundingPhase = this;
+                    geometricModel.AddPhaseToNode(node, this);
                 }
             }
         }
@@ -43,14 +49,14 @@ namespace MGroup.XFEM.Entities
         /// This must be called after all other phases have finished.
         /// </summary>
         /// <param name="elements"></param>
-        public void InteractWithElements(IEnumerable<IXFiniteElement> elements, IMeshTolerance meshTolerance)
+        public void InteractWithElements(IEnumerable<IXFiniteElement> elements)
         {
             foreach (IXFiniteElement element in elements)
             {
-                if (element.Phases.Count == 0)
+                if (geometricModel.GetPhasesOfElement(element).Count == 0)
                 {
                     ContainedElements.Add(element);
-                    element.Phases.Add(this);
+                    geometricModel.AddPhaseToElement(element, this);
                 }
             }
         }

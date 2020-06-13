@@ -28,6 +28,17 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
         public NaturalPoint[] VerticesNatural { get; }
 
+        public NaturalPoint FindCentroidNatural()
+        {
+            double centroidXi = 0.0, centroidEta = 0.0;
+            for (int v = 0; v < 3; ++v)
+            {
+                centroidXi += VerticesNatural[v].Xi;
+                centroidEta += VerticesNatural[v].Eta;
+            }
+            return new NaturalPoint(centroidXi / 3, centroidEta / 3);
+        }
+
         public (CartesianPoint centroid, double area) FindCentroidAndAreaCartesian(IXFiniteElement parentElement)
         {
             IIsoparametricInterpolation2D interpolation = parentElement.Interpolation2D;

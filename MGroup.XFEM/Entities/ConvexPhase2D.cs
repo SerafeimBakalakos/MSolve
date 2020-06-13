@@ -6,19 +6,22 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Geometry.Tolerances;
 
 //TODO: This probably does not work if an element is so large that it completely contains a phase
 namespace MGroup.XFEM.Entities
 {
-    public class ConvexPhase : IPhase
+    public class ConvexPhase2D : IPhase
     {
-        public ConvexPhase(int id)
+        private readonly GeometricModel2D geometricModel;
+
+        public ConvexPhase2D(int id, GeometricModel2D geometricModel)
         {
-            //if (id == DefaultPhase.DefaultPhaseID) throw new ArgumentException("Phase ID must be > 0");
             this.ID = id;
+            this.geometricModel = geometricModel;
         }
 
-        public List<PhaseBoundary> Boundaries { get; } = new List<PhaseBoundary>();
+        public List<PhaseBoundary2D> Boundaries { get; } = new List<PhaseBoundary2D>();
 
         public HashSet<XNode> ContainedNodes { get; } = new HashSet<XNode>();
 
@@ -26,13 +29,13 @@ namespace MGroup.XFEM.Entities
 
         public int ID { get; }
 
-        public HashSet<IXFiniteElement> IntersectedElements { get; } = new HashSet<IXFiniteElement>();
+        public HashSet<IXFiniteElement> BoundaryElements { get; } = new HashSet<IXFiniteElement>();
 
         public HashSet<IPhase> Neighbors { get; } = new HashSet<IPhase>();
 
         public virtual bool Contains(XNode node)
         {
-            foreach (PhaseBoundary boundary in Boundaries)
+            foreach (PhaseBoundary2D boundary in Boundaries)
             {
                 double distance = boundary.Geometry.SignedDistanceOf(node);
                 bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
@@ -44,7 +47,7 @@ namespace MGroup.XFEM.Entities
 
         public virtual bool Contains(XPoint point)
         {
-            foreach (PhaseBoundary boundary in Boundaries)
+            foreach (PhaseBoundary2D boundary in Boundaries)
             {
                 double distance = boundary.Geometry.SignedDistanceOf(point);
                 bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
@@ -62,59 +65,58 @@ namespace MGroup.XFEM.Entities
                 if (Contains(node))
                 {
                     ContainedNodes.Add(node);
-                    node.SurroundingPhase = this;
+                    geometricModel.AddPhaseToNode(node, this);
                 }
             }
         }
 
-        //public void InteractWithElements(IEnumerable<IXFiniteElement> elements, IMeshTolerance meshTolerance)
-        //{
-        //    //TODO: This does not necessarily provide correct results in coarse meshes. E.g. Scattered benchmark with 20x20 mesh
+        public void InteractWithElements(IEnumerable<IXFiniteElement> elements)
+        {
+            //TODO: This does not necessarily provide correct results in coarse meshes.
 
+            // Only process the elements near the contained nodes. Of course not all of them will be completely inside the phase.
+            IEnumerable<IXFiniteElement> nearBoundaryElements = FindNearbyElements();
+            foreach (IXFiniteElement element in nearBoundaryElements)
+            {
+                bool isInside = ContainsCompletely(element);
+                if (isInside)
+                {
+                    ContainedElements.Add(element);
+                    geometricModel.AddPhaseToElement(element, this);
+                }
+                else
+                {
+                    bool isBoundary = false;
+                    foreach (PhaseBoundary2D boundary in Boundaries)
+                    {
+                        // This boundary-element intersection may have already been calculated from the opposite phase. 
+                        if (geometricModel.GetPhaseBoundariesOfElement(element).ContainsKey(boundary))
+                        {
+                            isBoundary = true;
+                            continue;
+                        }
 
-        //    // Only process the elements near the contained nodes. Of course not all of them will be completely inside the phase.
-        //    IEnumerable<IXFiniteElement> nearbyElements = FindNearbyElements();
-        //    foreach (IXFiniteElement element in nearbyElements)
-        //    {
-        //        bool isInside = ContainsCompletely(element);
-        //        if (isInside)
-        //        {
-        //            ContainedElements.Add(element);
-        //            element.Phases.Add(this);
-        //        }
-        //        else
-        //        {
-        //            bool isIntersected = false;
-        //            foreach (PhaseBoundary boundary in Boundaries)
-        //            {
-        //                // This boundary-element intersection may have already been calculated from the opposite phase. 
-        //                if (element.PhaseIntersections.ContainsKey(boundary))
-        //                {
-        //                    isIntersected = true;
-        //                    continue;
-        //                }
-
-        //                CurveElementIntersection intersection = boundary.Segment.IntersectElement(element, meshTolerance);
-        //                if (intersection.RelativePosition == RelativePositionCurveElement.Intersection)
-        //                {
-        //                    element.Phases.Add(boundary.PositivePhase);
-        //                    element.Phases.Add(boundary.NegativePhase);
-        //                    element.PhaseIntersections.Add(boundary, intersection);
-        //                    isIntersected = true;
-        //                }
-        //                else if (intersection.RelativePosition == RelativePositionCurveElement.Tangent)
-        //                {
-        //                    throw new NotImplementedException();
-        //                }
-        //                else if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
-        //                {
-        //                    throw new NotImplementedException();
-        //                }
-        //            }
-        //            if (isIntersected) IntersectedElements.Add(element);
-        //        }
-        //    }
-        //}
+                        IElementCurveIntersection2D intersection = boundary.Geometry.Intersect(element);
+                        if (intersection.RelativePosition == RelativePositionCurveElement.Intersecting)
+                        {
+                            geometricModel.AddPhaseToElement(element, boundary.PositivePhase);
+                            geometricModel.AddPhaseToElement(element, boundary.NegativePhase);
+                            geometricModel.AddPhaseBoundaryToElement(element, boundary, intersection);
+                            isBoundary = true;
+                        }
+                        else if (intersection.RelativePosition == RelativePositionCurveElement.Conforming)
+                        {
+                            throw new NotImplementedException();
+                        }
+                        else if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
+                        {
+                            throw new Exception("This should not have happenned");
+                        }
+                    }
+                    if (isBoundary) BoundaryElements.Add(element);
+                }
+            }
+        }
 
         private bool ContainsCompletely(IXFiniteElement element)
         {
@@ -133,7 +135,7 @@ namespace MGroup.XFEM.Entities
             if (numNodesOutside == 0) return true;
             else return false;
 
-            #region faster
+            #region this is faster, but does not take into account all cases.
             //foreach (XNode node in element.Nodes)
             //{
             //    if (!ContainedNodes.Contains(node)) return false;

@@ -25,9 +25,6 @@ namespace MGroup.XFEM.Plotting.Mesh
         {
             this.outVertices = new List<VtkPoint>(originalVertices.Count);
             this.outCells = new List<VtkCell>(originalCells.Count);
-
-            //this.original2OutVertices = new Dictionary<XNode, HashSet<VtkPoint>>();
-            //foreach (XNode vertex in originalVertices) original2OutVertices[vertex] = new HashSet<VtkPoint>();
             this.original2OutCells = new Dictionary<IXFiniteElement, HashSet<VtkCell>>();
             this.originalCells2Subtriangles = new Dictionary<IXFiniteElement, HashSet<Subtriangle>>();
 
@@ -54,7 +51,7 @@ namespace MGroup.XFEM.Plotting.Mesh
                         var outCell = new VtkCell(CellType.Tri3, subvertices);
                         outCells.Add(outCell);
                         original2OutCells[originalCell].Add(outCell);
-                        originalCells2Subtriangles[originalCell].Add(new Subtriangle(triangle, subvertices));
+                        originalCells2Subtriangles[originalCell].Add(new Subtriangle(originalCell, triangle, subvertices));
                     }
                 }
                 else
@@ -64,6 +61,7 @@ namespace MGroup.XFEM.Plotting.Mesh
                     {
                         XNode originalVertex = originalCell.Nodes[i];
                         var outVertex = new VtkPoint(outVertexID++, originalVertex.X, originalVertex.Y, originalVertex.Z);
+
                         outVertices.Add(outVertex);
                         //original2OutVertices[originalVertex].Add(outVertex);
                         verticesOfCell[i] = outVertex;
@@ -108,10 +106,12 @@ namespace MGroup.XFEM.Plotting.Mesh
         //      same data.
         public class Subtriangle
         {
-            public Subtriangle(ElementSubtriangle2D originalTriangle, IReadOnlyList<VtkPoint> outVertices)
+            public Subtriangle(IXFiniteElement parentElement, ElementSubtriangle2D originalTriangle, 
+                IReadOnlyList<VtkPoint> outVertices)
             {
                 this.OriginalTriangle = originalTriangle;
                 this.OutVertices = outVertices;
+                this.ParentElement = parentElement;
             }
 
             public ElementSubtriangle2D OriginalTriangle { get; }
@@ -120,6 +120,8 @@ namespace MGroup.XFEM.Plotting.Mesh
             /// Same order as <see cref="ElementSubtriangle.VerticesNatural"/> of <see cref="OriginalTriangle"/>.
             /// </summary>
             public IReadOnlyList<VtkPoint> OutVertices { get; }
+
+            public IXFiniteElement ParentElement { get; }
         }
     }
 }
