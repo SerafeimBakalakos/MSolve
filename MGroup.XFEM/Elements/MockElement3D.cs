@@ -22,20 +22,17 @@ using MGroup.XFEM.Integration;
 //TODO: delete this class
 namespace MGroup.XFEM.Elements
 {
-    public class MockElement : IXFiniteElement
+    public class MockElement3D : IXFiniteElement3D
     {
         private readonly ElementEdge[] edges;
         private readonly ElementFace[] faces;
 
-        public MockElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
+        public MockElement3D(int id, CellType cellType, IReadOnlyList<XNode> nodes)
         {
             this.ID = id;
             this.CellType = cellType;
             this.Nodes = nodes;
 
-            if (this.CellType == CellType.Quad4)
-            {
-            }
             if (this.CellType == CellType.Hexa8)
             {
                 IReadOnlyList<NaturalPoint> nodesNatural = InterpolationHexa8.UniqueInstance.NodalNaturalCoordinates;
@@ -132,60 +129,11 @@ namespace MGroup.XFEM.Elements
             set => throw new NotImplementedException(); 
         }
 
-        public IReadOnlyList<(XNode node1, XNode node2)> EdgeNodes
-        {
-            get
-            {
-                if (Nodes.Count > 4) throw new NotImplementedException();
-                else
-                {
-                    var edges = new (XNode node1, XNode node2)[Nodes.Count];
-                    for (int i = 0; i < Nodes.Count; ++i)
-                    {
-                        XNode node1 = Nodes[i];
-                        XNode node2 = Nodes[(i + 1) % Nodes.Count];
-                        edges[i] = (node1, node2);
-                    }
-                    return edges;
-                }
-            }
-        }
-
-        public IReadOnlyList<(NaturalPoint node1, NaturalPoint node2)> EdgesNodesNatural
-        {
-            get
-            {
-                var nodesNatural = new NaturalPoint[4];
-                nodesNatural[0] = new NaturalPoint(-1.0, -1.0);
-                nodesNatural[1] = new NaturalPoint(+1.0, -1.0);
-                nodesNatural[2] = new NaturalPoint(+1.0, +1.0);
-                nodesNatural[3] = new NaturalPoint(-1.0, +1.0);
-
-                var edges = new (NaturalPoint node1, NaturalPoint node2)[4];
-                for (int i = 0; i < Nodes.Count; ++i)
-                {
-                    NaturalPoint node1 = nodesNatural[i];
-                    NaturalPoint node2 = nodesNatural[(i + 1) % Nodes.Count];
-                    edges[i] = (node1, node2);
-                }
-                return edges;
-            }
-        }
-
         public IElementType ElementType => throw new NotImplementedException();
 
         public int ID { get; set; }
 
-        public IIsoparametricInterpolation2D Interpolation2D
-        {
-            get
-            {
-                if (CellType == CellType.Quad4) return InterpolationQuad4.UniqueInstance;
-                else throw new NotImplementedException();
-            }
-        }
-
-        public IIsoparametricInterpolation3D Interpolation3D
+        public IIsoparametricInterpolation3D Interpolation
         {
             get
             {
@@ -197,7 +145,7 @@ namespace MGroup.XFEM.Elements
         public IReadOnlyList<XNode> Nodes { get; }
         IReadOnlyList<INode> IElement.Nodes => Nodes;
 
-        public HashSet<IPhase2D> Phases { get; } = new HashSet<IPhase2D>();
+        public HashSet<IPhase3D> Phases { get; } = new HashSet<IPhase3D>();
 
         public XSubdomain Subdomain { get; set; }
         ISubdomain IElement.Subdomain => Subdomain;
@@ -207,12 +155,10 @@ namespace MGroup.XFEM.Elements
         public IReadOnlyList<ElementFace> Faces => faces;
 
         public IBulkIntegration IntegrationBulk { get; set; }
-        public ElementSubtriangle2D[] ConformingSubtriangles2D { get; set; }
-        public ElementSubtetrahedron3D[] ConformingSubtetrahedra3D { get; set; }
 
-        public List<IElementCurveIntersection2D> Intersections2D { get; } = new List<IElementCurveIntersection2D>();
+        public ElementSubtetrahedron3D[] ConformingSubtetrahedra { get; set; }
 
-        public List<IElementSurfaceIntersection3D> Intersections3D { get; } = new List<IElementSurfaceIntersection3D>();
+        public List<IElementSurfaceIntersection3D> Intersections { get; } = new List<IElementSurfaceIntersection3D>();
 
         public IMatrix DampingMatrix(IElement element)
         {
@@ -234,21 +180,9 @@ namespace MGroup.XFEM.Elements
             throw new NotImplementedException();
         }
 
-        public double CalcAreaOrVolume()
+        public double CalcVolume()
         {
-            if (this.CellType == CellType.Tri3)
-            {
-                var triangle = new Geometry.Primitives.Triangle2D();
-                triangle.Vertices[0] = Nodes[0].Coordinates;
-                triangle.Vertices[1] = Nodes[1].Coordinates;
-                triangle.Vertices[2] = Nodes[2].Coordinates;
-                return triangle.CalcArea();
-            }
-            else if (this.CellType == CellType.Quad4)
-            {
-                return ISAAR.MSolve.Geometry.Shapes.ConvexPolygon2D.CreateUnsafe(Nodes).ComputeArea();
-            }
-            else if (this.CellType == CellType.Tet4)
+            if (this.CellType == CellType.Tet4)
             {
                 var tetra = new Tetrahedron3D();
                 tetra.Vertices[0] = Nodes[0].Coordinates;
@@ -257,14 +191,14 @@ namespace MGroup.XFEM.Elements
                 tetra.Vertices[3] = Nodes[3].Coordinates;
                 return tetra.CalcVolume();
             }
-            else if (this.CellType == CellType.Hexa8 || this.CellType == CellType.Tet4)
+            else if (this.CellType == CellType.Hexa8)
             {
                 //TODO: Split it into tetrahedra and use the closed formula for their volume
 
                 double volume = 0.0;
                 GaussLegendre3D quadrature = GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2);
                 IReadOnlyList<Matrix> shapeGradientsNatural =
-                    Interpolation3D.EvaluateNaturalGradientsAtGaussPoints(quadrature);
+                    Interpolation.EvaluateNaturalGradientsAtGaussPoints(quadrature);
                 for (int gp = 0; gp < quadrature.IntegrationPoints.Count; ++gp)
                 {
                     var jacobian = new IsoparametricJacobian3D(Nodes, shapeGradientsNatural[gp]);

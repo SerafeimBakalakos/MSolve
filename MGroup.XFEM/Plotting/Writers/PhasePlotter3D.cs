@@ -84,7 +84,8 @@ namespace MGroup.XFEM.Plotting.Writers
                         centroid.Element = subtetra.ParentElement;
                         centroid.Coordinates[CoordinateSystem.ElementLocal] = 
                             new double[] { centroidNatural.Xi, centroidNatural.Eta, centroidNatural.Zeta };
-                        centroid.ShapeFunctions = centroid.Element.Interpolation3D.EvaluateFunctionsAt(centroidNatural);
+                        centroid.ShapeFunctions = ((IXFiniteElement3D)centroid.Element)
+                            .Interpolation.EvaluateFunctionsAt(centroidNatural);
 
                         // Find the phase of the centroid
                         double phaseID = colorForDefaultPhase;

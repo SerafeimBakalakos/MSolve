@@ -33,6 +33,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IElementSurfaceIntersection3D Intersect(IXFiniteElement element)
         {
+            var element3D = (IXFiniteElement3D)element;
             RelativePositionCurveElement position = FindRelativePosition(element);
             if (position == RelativePositionCurveElement.Disjoint)
             {
@@ -49,7 +50,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 }
 
                 // Find which face has exactly these nodes
-                foreach (ElementFace face in element.Faces)
+                foreach (ElementFace face in element3D.Faces)
                 {
                     if (zeroNodes.SetEquals(face.Nodes))
                     {
@@ -84,7 +85,7 @@ namespace MGroup.XFEM.Geometry.LSM
                     NaturalPoint[] triangleVertices = allIntersections.ToArray();
                     intersectionMesh.AddVertices(triangleVertices);
                     intersectionMesh.AddCell(CellType.Tri3, triangleVertices);
-                    return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element, intersectionMesh);
+                    return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element3D, intersectionMesh);
                 }
                 else // General case: intersection is a mesh of triangles
                 {
@@ -94,7 +95,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
                     // Use the 2 intersection points of each face and the centroid to create a triangle of the intersection mesh
                     intersectionMesh.AddVertices(allIntersections);
-                    foreach (ElementFace face in element.Faces)
+                    foreach (ElementFace face in element3D.Faces)
                     {
                         var intersectionsOfFace = new SortedSet<NaturalPoint>(new Point3DComparer<NaturalPoint>());
                         foreach (ElementEdge edge in face.Edges)
@@ -108,12 +109,8 @@ namespace MGroup.XFEM.Geometry.LSM
                             }
                         }
                     }
-                    return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element, intersectionMesh);
+                    return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element3D, intersectionMesh);
                 }
-                
-
-
-               
             }
         }
 

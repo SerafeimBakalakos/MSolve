@@ -38,12 +38,13 @@ namespace MGroup.XFEM.Plotting
             var integrationPoints = new Dictionary<CartesianPoint, double>();
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
-                foreach (IElementCurveIntersection2D intersection in element.Intersections2D)
+                var element2D = (IXFiniteElement2D)element;
+                foreach (IElementCurveIntersection2D intersection in element2D.Intersections)
                 {
                     IReadOnlyList<GaussPoint> gaussPoints = intersection.GetIntegrationPoints(order);
                     foreach (GaussPoint gp in gaussPoints)
                     {
-                        CartesianPoint point = element.Interpolation2D.TransformNaturalToCartesian(element.Nodes, gp);
+                        CartesianPoint point = element2D.Interpolation.TransformNaturalToCartesian(element.Nodes, gp);
                         integrationPoints.Add(point, element.ID);
                     }
                 }
@@ -68,10 +69,11 @@ namespace MGroup.XFEM.Plotting
             var integrationPoints = new Dictionary<CartesianPoint, double>();
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
+                var element2D = (IXFiniteElement2D)element;
                 IReadOnlyList<GaussPoint> elementGPs = element.IntegrationBulk.GenerateIntegrationPoints(element);
                 foreach (GaussPoint gp in element.IntegrationBulk.GenerateIntegrationPoints(element))
                 {
-                    CartesianPoint point = element.Interpolation2D.TransformNaturalToCartesian(element.Nodes, gp);
+                    CartesianPoint point = element2D.Interpolation.TransformNaturalToCartesian(element.Nodes, gp);
                     integrationPoints.Add(point, element.ID);
                 }
             }

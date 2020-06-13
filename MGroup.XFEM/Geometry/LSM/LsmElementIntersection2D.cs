@@ -13,7 +13,7 @@ namespace MGroup.XFEM.Geometry.LSM
         private readonly NaturalPoint start;
         private readonly NaturalPoint end;
 
-        public LsmElementIntersection2D(RelativePositionCurveElement relativePosition, IXFiniteElement element,
+        public LsmElementIntersection2D(RelativePositionCurveElement relativePosition, IXFiniteElement2D element,
             NaturalPoint start, NaturalPoint end)
         {
             if (relativePosition == RelativePositionCurveElement.Disjoint)
@@ -28,13 +28,13 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public RelativePositionCurveElement RelativePosition { get; }
 
-        public IXFiniteElement Element { get; } //TODO: Perhaps this should be defined in the interface
+        public IXFiniteElement2D Element { get; } //TODO: Perhaps this should be defined in the interface
 
         public List<double[]> ApproximateGlobalCartesian()
         {
             var points = new List<double[]>(2);
-            points.Add(Element.Interpolation2D.TransformNaturalToCartesian(Element.Nodes, start).Coordinates);
-            points.Add(Element.Interpolation2D.TransformNaturalToCartesian(Element.Nodes, end).Coordinates);
+            points.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, start).Coordinates);
+            points.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, end).Coordinates);
             return points;
         }
 
@@ -47,8 +47,8 @@ namespace MGroup.XFEM.Geometry.LSM
             if (RelativePosition == RelativePositionCurveElement.Conforming) weightModifier = 0.5;
 
             // Absolute determinant of Jacobian of mapping from auxiliary to cartesian system. Constant for all Gauss points.
-            CartesianPoint startCartesian = Element.Interpolation2D.TransformNaturalToCartesian(Element.Nodes, start);
-            CartesianPoint endCartesian = Element.Interpolation2D.TransformNaturalToCartesian(Element.Nodes, end);
+            CartesianPoint startCartesian = Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, start);
+            CartesianPoint endCartesian = Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, end);
             double detJ = Math.Abs(0.5 * startCartesian.CalculateDistanceFrom(endCartesian));
 
             var quadrature1D = GaussLegendre1D.GetQuadratureWithOrder(order);

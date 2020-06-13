@@ -34,17 +34,18 @@ namespace MGroup.XFEM.Plotting.Mesh
             int outVertexID = 0;
             for (int c = 0; c < originalCells.Count; ++c)
             {
-                IXFiniteElement originalCell = originalCells[c];
-                CellType cellType = ((IElementType)originalCell).CellType;
-                original2OutCells[originalCell] = new HashSet<VtkCell>();
+                IXFiniteElement element = originalCells[c];
+                var element3D = (IXFiniteElement3D)element;
+                CellType cellType = ((IElementType)element).CellType;
+                original2OutCells[element] = new HashSet<VtkCell>();
 
-                bool isIntersected = triangulation.TryGetValue(originalCell, out ElementSubtetrahedron3D[] subtetrahedra);
+                bool isIntersected = triangulation.TryGetValue(element, out ElementSubtetrahedron3D[] subtetrahedra);
                 if (isIntersected)
                 {
-                    originalCells2Subtriangles[originalCell] = new HashSet<Subtetrahedron>();
+                    originalCells2Subtriangles[element] = new HashSet<Subtetrahedron>();
                     foreach (ElementSubtetrahedron3D tetra in subtetrahedra)
                     {
-                        VtkPoint[] subvertices = tetra.GetVerticesCartesian(originalCell).
+                        VtkPoint[] subvertices = tetra.GetVerticesCartesian(element3D).
                             Select(v => new VtkPoint(outVertexID++, v.X, v.Y, v.Z)).
                             ToArray();
                         outVertices.AddRange(subvertices);
@@ -53,16 +54,16 @@ namespace MGroup.XFEM.Plotting.Mesh
                         Debug.Assert(cellType == CellType.Tet4 || cellType == CellType.Hexa8);
                         var outCell = new VtkCell(CellType.Tet4, subvertices);
                         outCells.Add(outCell);
-                        original2OutCells[originalCell].Add(outCell);
-                        originalCells2Subtriangles[originalCell].Add(new Subtetrahedron(originalCell, tetra, subvertices));
+                        original2OutCells[element].Add(outCell);
+                        originalCells2Subtriangles[element].Add(new Subtetrahedron(element, tetra, subvertices));
                     }
                 }
                 else
                 {
-                    var verticesOfCell = new VtkPoint[originalCell.Nodes.Count];
-                    for (int i = 0; i < originalCell.Nodes.Count; ++i)
+                    var verticesOfCell = new VtkPoint[element.Nodes.Count];
+                    for (int i = 0; i < element.Nodes.Count; ++i)
                     {
-                        XNode originalVertex = originalCell.Nodes[i];
+                        XNode originalVertex = element.Nodes[i];
                         var outVertex = new VtkPoint(outVertexID++, originalVertex.X, originalVertex.Y, originalVertex.Z);
                         outVertices.Add(outVertex);
                         //original2OutVertices[originalVertex].Add(outVertex);
@@ -70,7 +71,7 @@ namespace MGroup.XFEM.Plotting.Mesh
                     }
                     var outCell = new VtkCell(cellType, verticesOfCell);
                     outCells.Add(outCell);
-                    original2OutCells[originalCell].Add(outCell);
+                    original2OutCells[element].Add(outCell);
                 }
             }
 

@@ -21,11 +21,13 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
         public ElementSubtriangle2D[] FindConformingMesh(IXFiniteElement element, 
             IEnumerable<IElementCurveIntersection2D> intersections, IMeshTolerance meshTolerance)
         {
+            var element2D = (IXFiniteElement2D)element;
+
             // Store the nodes and all intersection points in a set
             double tol = meshTolerance.CalcTolerance(element);
             var comparer = new Point2DComparer<NaturalPoint>(tol);
             var nodes = new SortedSet<NaturalPoint>(comparer);
-            nodes.UnionWith(element.Interpolation2D.NodalNaturalCoordinates);
+            nodes.UnionWith(element2D.Interpolation.NodalNaturalCoordinates);
 
             // Store the nodes and all intersection points in a different set
             var triangleVertices = new SortedSet<NaturalPoint>(comparer);
@@ -57,7 +59,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             }
 
             var triangulator = new MIConvexHullTriangulator2D();
-            triangulator.MinTriangleArea = tol * element.CalcAreaOrVolume();
+            triangulator.MinTriangleArea = tol * element2D.CalcArea();
             IList<Triangle2D> delaunyTriangles = triangulator.CreateMesh(triangleVertices);
             var subtriangles = new ElementSubtriangle2D[delaunyTriangles.Count];
             for (int t = 0; t < delaunyTriangles.Count; ++t)

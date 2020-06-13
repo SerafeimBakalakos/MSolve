@@ -72,7 +72,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 TetrahedronQuadrature.Order2Points4);
             foreach (IXFiniteElement element in model.Elements)
             {
-                ((MockElement)element).IntegrationBulk = integrationBulk;
+                ((MockElement3D)element).IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter3D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
@@ -120,7 +120,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 TetrahedronQuadrature.Order2Points4);
             foreach (IXFiniteElement element in model.Elements)
             {
-                ((MockElement)element).IntegrationBulk = integrationBulk;
+                ((MockElement3D)element).IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter3D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
@@ -143,13 +143,14 @@ namespace MGroup.XFEM.Tests.Plotting
             var intersections = new Dictionary<IXFiniteElement, List<LsmElementIntersection3D>>();
             foreach (IXFiniteElement element in model.Elements)
             {
+                var element3D = (IXFiniteElement3D)element;
                 var elementIntersections = new List<LsmElementIntersection3D>();
                 foreach (IImplicitSurface3D surface in surfaces)
                 {
                     IElementSurfaceIntersection3D intersection = surface.Intersect(element);
                     if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
                     {
-                        element.Intersections3D.Add(intersection);
+                        element3D.Intersections.Add(intersection);
                         elementIntersections.Add((LsmElementIntersection3D)intersection);
                     }
                 }
@@ -166,10 +167,11 @@ namespace MGroup.XFEM.Tests.Plotting
             var conformingMesh = new Dictionary<IXFiniteElement, ElementSubtetrahedron3D[]>();
             foreach (IXFiniteElement element in intersections.Keys)
             {
+                var element3D = (IXFiniteElement3D)element;
                 List<LsmElementIntersection3D> elementIntersections = intersections[element];
                 ElementSubtetrahedron3D[] subtetra = triangulator.FindConformingMesh(element, elementIntersections, tolerance);
                 conformingMesh[element] = subtetra;
-                element.ConformingSubtetrahedra3D = subtetra;
+                element3D.ConformingSubtetrahedra = subtetra;
             }
             return conformingMesh;
         }
@@ -207,7 +209,7 @@ namespace MGroup.XFEM.Tests.Plotting
             int numGaussPointsInterface = 2;
             for (int e = 0; e < cells.Count; ++e)
             {
-                var element = new MockElement(e, CellType.Hexa8, cells[e].Vertices);
+                var element = new MockElement3D(e, CellType.Hexa8, cells[e].Vertices);
                 model.Elements.Add(element);
                 model.Subdomains[subdomainID].Elements.Add(element);
             }

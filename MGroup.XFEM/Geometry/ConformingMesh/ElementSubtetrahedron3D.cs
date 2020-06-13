@@ -40,9 +40,9 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             return new NaturalPoint(centroidXi / 4.0, centroidEta / 4.0, centroidZeta / 4.0);
         }
 
-        public (CartesianPoint centroid, double volume) FindCentroidAndVolumeCartesian(IXFiniteElement parentElement)
+        public (CartesianPoint centroid, double volume) FindCentroidAndVolumeCartesian(IXFiniteElement3D parentElement)
         {
-            IIsoparametricInterpolation3D interpolation = parentElement.Interpolation3D;
+            IIsoparametricInterpolation3D interpolation = parentElement.Interpolation;
             if (interpolation == InterpolationTet4.UniqueInstance || interpolation == InterpolationHexa8.UniqueInstance)
             {
                 // The tetrahedron edges will also be linear in Cartesian coordinate system, for Tetra4 and Hexa8 elements 
@@ -66,9 +66,9 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             }
         }
 
-        public CartesianPoint[] GetVerticesCartesian(IXFiniteElement parentElement)
+        public CartesianPoint[] GetVerticesCartesian(IXFiniteElement3D parentElement)
         {
-            IIsoparametricInterpolation3D interpolation = parentElement.Interpolation3D;
+            IIsoparametricInterpolation3D interpolation = parentElement.Interpolation;
             IReadOnlyList<XNode> nodes = parentElement.Nodes;
             if (interpolation == InterpolationTet4.UniqueInstance || interpolation == InterpolationHexa8.UniqueInstance)
             {

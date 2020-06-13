@@ -61,6 +61,7 @@ namespace MGroup.XFEM.Plotting.Writers
             var field = new Dictionary<VtkPoint, double>();
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
+                var element2D = (IXFiniteElement2D)element;
                 var elementPhases = geometricModel.GetPhasesOfElement(element);
                 if (elementPhases.Count == 1)
                 {
@@ -84,7 +85,8 @@ namespace MGroup.XFEM.Plotting.Writers
                         centroid.Element = subtriangle.ParentElement;
                         centroid.Coordinates[CoordinateSystem.ElementLocal] = 
                             new double[] { centroidNatural.Xi, centroidNatural.Eta };
-                        centroid.ShapeFunctions = centroid.Element.Interpolation2D.EvaluateFunctionsAt(centroidNatural);
+                        centroid.ShapeFunctions = ((IXFiniteElement2D)centroid.Element)
+                            .Interpolation.EvaluateFunctionsAt(centroidNatural);
 
                         // Find the phase of the centroid
                         double phaseID = colorForDefaultPhase;

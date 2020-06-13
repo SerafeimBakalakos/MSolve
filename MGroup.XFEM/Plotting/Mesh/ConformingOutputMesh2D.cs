@@ -31,17 +31,18 @@ namespace MGroup.XFEM.Plotting.Mesh
             int outVertexID = 0;
             for (int c = 0; c < originalCells.Count; ++c)
             {
-                IXFiniteElement originalCell = originalCells[c];
-                CellType cellType = ((IElementType)originalCell).CellType;
-                original2OutCells[originalCell] = new HashSet<VtkCell>();
+                IXFiniteElement element = originalCells[c];
+                var element2D = (IXFiniteElement2D)element;
+                CellType cellType = ((IElementType)element).CellType;
+                original2OutCells[element] = new HashSet<VtkCell>();
 
-                bool isIntersected = triangulation.TryGetValue(originalCell, out ElementSubtriangle2D[] subtriangles);
+                bool isIntersected = triangulation.TryGetValue(element, out ElementSubtriangle2D[] subtriangles);
                 if (isIntersected)
                 {
-                    originalCells2Subtriangles[originalCell] = new HashSet<Subtriangle>();
+                    originalCells2Subtriangles[element] = new HashSet<Subtriangle>();
                     foreach (ElementSubtriangle2D triangle in subtriangles)
                     {
-                        VtkPoint[] subvertices = triangle.GetVerticesCartesian(originalCell).
+                        VtkPoint[] subvertices = triangle.GetVerticesCartesian(element2D).
                             Select(v => new VtkPoint(outVertexID++, v.X, v.Y, v.Z)).
                             ToArray();
                         outVertices.AddRange(subvertices);
@@ -50,16 +51,16 @@ namespace MGroup.XFEM.Plotting.Mesh
                         Debug.Assert(cellType == CellType.Tri3 || cellType == CellType.Quad4);
                         var outCell = new VtkCell(CellType.Tri3, subvertices);
                         outCells.Add(outCell);
-                        original2OutCells[originalCell].Add(outCell);
-                        originalCells2Subtriangles[originalCell].Add(new Subtriangle(originalCell, triangle, subvertices));
+                        original2OutCells[element].Add(outCell);
+                        originalCells2Subtriangles[element].Add(new Subtriangle(element, triangle, subvertices));
                     }
                 }
                 else
                 {
-                    var verticesOfCell = new VtkPoint[originalCell.Nodes.Count];
-                    for (int i = 0; i < originalCell.Nodes.Count; ++i)
+                    var verticesOfCell = new VtkPoint[element.Nodes.Count];
+                    for (int i = 0; i < element.Nodes.Count; ++i)
                     {
-                        XNode originalVertex = originalCell.Nodes[i];
+                        XNode originalVertex = element.Nodes[i];
                         var outVertex = new VtkPoint(outVertexID++, originalVertex.X, originalVertex.Y, originalVertex.Z);
 
                         outVertices.Add(outVertex);
@@ -68,7 +69,7 @@ namespace MGroup.XFEM.Plotting.Mesh
                     }
                     var outCell = new VtkCell(cellType, verticesOfCell);
                     outCells.Add(outCell);
-                    original2OutCells[originalCell].Add(outCell);
+                    original2OutCells[element].Add(outCell);
                 }
             }
 

@@ -21,11 +21,13 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
         public ElementSubtetrahedron3D[] FindConformingMesh(IXFiniteElement element, 
             IEnumerable<IElementSurfaceIntersection3D> intersections, IMeshTolerance meshTolerance)
         {
+            var element3D = (IXFiniteElement3D)element;
+
             // Store the nodes and all intersection points in a set
             double tol = meshTolerance.CalcTolerance(element);
             var comparer = new Point3DComparer<NaturalPoint>(tol);
             var nodes = new SortedSet<NaturalPoint>(comparer);
-            nodes.UnionWith(element.Interpolation3D.NodalNaturalCoordinates);
+            nodes.UnionWith(element3D.Interpolation.NodalNaturalCoordinates);
 
             // Store the nodes and all intersection points in a different set
             var tetraVertices = new SortedSet<NaturalPoint>(comparer);
@@ -68,7 +70,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             }
 
             var triangulator = new MIConvexHullTriangulator3D();
-            triangulator.MinTetrahedronVolume = tol * element.CalcAreaOrVolume();
+            triangulator.MinTetrahedronVolume = tol * element3D.CalcVolume();
             IList<Tetrahedron3D> delaunyTetrahedra = triangulator.CreateMesh(tetraVertices);
             var subtetrahedra = new ElementSubtetrahedron3D[delaunyTetrahedra.Count];
             for (int t = 0; t < delaunyTetrahedra.Count; ++t)

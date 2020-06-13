@@ -105,9 +105,10 @@ namespace MGroup.XFEM.Entities
             var triangulator = new ConformingTriangulator2D();
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
+                var element2D = (IXFiniteElement2D)element;
                 Dictionary<PhaseBoundary2D, IElementCurveIntersection2D> boundaries = phaseBoundariesOfElements[element.ID];
                 if (boundaries.Count == 0) continue;
-                element.ConformingSubtriangles2D = triangulator.FindConformingMesh(element, boundaries.Values, MeshTolerance);
+                element2D.ConformingSubtriangles = triangulator.FindConformingMesh(element, boundaries.Values, MeshTolerance);
             }
         }
     }

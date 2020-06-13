@@ -14,49 +14,17 @@ namespace MGroup.XFEM.Elements
 {
     public interface IXFiniteElement : IElement, IElementType, ICell<XNode>
     {
-        /// <summary>
-        /// Will be null for elements not intersected by any interfaces
-        /// </summary>
-        ElementSubtriangle2D[] ConformingSubtriangles2D { get; set; }
-
-        /// <summary>
-        /// Will be null for elements not intersected by any interfaces
-        /// </summary>
-        ElementSubtetrahedron3D[] ConformingSubtetrahedra3D { get; set; }
-
-        IReadOnlyList<(XNode node1, XNode node2)> EdgeNodes { get; }
-        IReadOnlyList<(NaturalPoint node1, NaturalPoint node2)> EdgesNodesNatural { get; }
-
         IReadOnlyList<ElementEdge> Edges { get; }
-        IReadOnlyList<ElementFace> Faces { get; }
 
-        //IBoundaryIntegration IntegrationBoundary { get; }
         IBulkIntegration IntegrationBulk { get; }
-
-        //TODO: Unify 2D and 3D interpolation classes and use that one.
-        IIsoparametricInterpolation2D Interpolation2D { get; }
-        IIsoparametricInterpolation3D Interpolation3D { get; }
 
         IReadOnlyList<XNode> Nodes { get; }
 
-        List<IElementCurveIntersection2D> Intersections2D { get; }
-        List<IElementSurfaceIntersection3D> Intersections3D { get; }
-
-        //Dictionary<PhaseBoundary, IElementCurveIntersection2D> PhaseIntersections2D { get; }
-        //Dictionary<PhaseBoundary, IElementSurfaceIntersection3D> PhaseIntersections3D { get; }
-
-        //HashSet<IPhase> Phases { get; }
-
         XSubdomain Subdomain { get; set; }
 
-        //Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)> 
-        //    GetMaterialsForBoundaryIntegration();
-
-        //(IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalMaterial>) GetMaterialsForVolumeIntegration();
+        //(IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalMaterial>) GetMaterialsForBulkIntegration();
 
         //void IdentifyDofs();
         //void IdentifyIntegrationPointsAndMaterials();
-
-        double CalcAreaOrVolume();
     }
 }

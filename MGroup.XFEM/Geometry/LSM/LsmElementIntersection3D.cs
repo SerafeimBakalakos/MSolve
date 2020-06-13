@@ -18,7 +18,7 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         private readonly IntersectionMesh<NaturalPoint> intersectionMesh;
 
-        public LsmElementIntersection3D(RelativePositionCurveElement relativePosition, IXFiniteElement element,
+        public LsmElementIntersection3D(RelativePositionCurveElement relativePosition, IXFiniteElement3D element,
             IntersectionMesh<NaturalPoint> intersectionMesh)
         {
             this.RelativePosition = relativePosition;
@@ -28,7 +28,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public RelativePositionCurveElement RelativePosition { get; }
 
-        public IXFiniteElement Element { get; } //TODO: Perhaps this should be defined in the interface
+        public IXFiniteElement3D Element { get; } //TODO: Perhaps this should be defined in the interface
 
         public IntersectionMesh<CartesianPoint> ApproximateGlobalCartesian()
         {
@@ -36,7 +36,7 @@ namespace MGroup.XFEM.Geometry.LSM
             NaturalPoint[] verticesNatural = intersectionMesh.GetVerticesList();
             foreach (NaturalPoint vertexNatural in verticesNatural)
             {
-                CartesianPoint vertexCartesian = ((MockElement)Element).Interpolation3D.TransformNaturalToCartesian(
+                CartesianPoint vertexCartesian = Element.Interpolation.TransformNaturalToCartesian(
                     Element.Nodes, vertexNatural);
                 meshCartesian.AddVertex(vertexCartesian);
             }
@@ -73,7 +73,7 @@ namespace MGroup.XFEM.Geometry.LSM
                     var verticesCartesian = new CartesianPoint[3];
                     for (int v = 0; v < 3; ++v)
                     {
-                        verticesCartesian[v] = Element.Interpolation3D.TransformNaturalToCartesian(
+                        verticesCartesian[v] = Element.Interpolation.TransformNaturalToCartesian(
                             Element.Nodes, verticesNatural[v]);
                     }
 

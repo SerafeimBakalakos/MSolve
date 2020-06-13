@@ -39,9 +39,9 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             return new NaturalPoint(centroidXi / 3, centroidEta / 3);
         }
 
-        public (CartesianPoint centroid, double area) FindCentroidAndAreaCartesian(IXFiniteElement parentElement)
+        public (CartesianPoint centroid, double area) FindCentroidAndAreaCartesian(IXFiniteElement2D parentElement)
         {
-            IIsoparametricInterpolation2D interpolation = parentElement.Interpolation2D;
+            IIsoparametricInterpolation2D interpolation = parentElement.Interpolation;
             if (interpolation == InterpolationQuad4.UniqueInstance || interpolation == InterpolationTri3.UniqueInstance)
             {
                 // The triangle edges will also be linear in Cartesian coordinate system, for Quad4 and Tri3 elements 
@@ -65,9 +65,9 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             }
         }
 
-        public CartesianPoint[] GetVerticesCartesian(IXFiniteElement parentElement)
+        public CartesianPoint[] GetVerticesCartesian(IXFiniteElement2D parentElement)
         {
-            IIsoparametricInterpolation2D interpolation = parentElement.Interpolation2D;
+            IIsoparametricInterpolation2D interpolation = parentElement.Interpolation;
             IReadOnlyList<XNode> nodes = parentElement.Nodes;
             if (interpolation == InterpolationQuad4.UniqueInstance || interpolation == InterpolationTri3.UniqueInstance)
             {

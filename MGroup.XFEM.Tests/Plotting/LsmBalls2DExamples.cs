@@ -75,7 +75,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 TriangleQuadratureSymmetricGaussian.Order2Points3);
             foreach (IXFiniteElement element in model.Elements)
             {
-                ((MockElement)element).IntegrationBulk = integrationBulk;
+                ((MockElement2D)element).IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter2D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
@@ -119,7 +119,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 TriangleQuadratureSymmetricGaussian.Order2Points3);
             foreach (IXFiniteElement element in model.Elements)
             {
-                ((MockElement)element).IntegrationBulk = integrationBulk;
+                ((MockElement2D)element).IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter2D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
@@ -139,13 +139,14 @@ namespace MGroup.XFEM.Tests.Plotting
             var intersections = new Dictionary<IXFiniteElement, List<LsmElementIntersection2D>>();
             foreach (IXFiniteElement element in model.Elements)
             {
+                var element2D = (IXFiniteElement2D)element;
                 var elementIntersections = new List<LsmElementIntersection2D>();
                 foreach (IImplicitCurve2D curve in curves)
                 {
                     IElementCurveIntersection2D intersection = curve.Intersect(element);
                     if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
                     {
-                        element.Intersections2D.Add(intersection);
+                        element2D.Intersections.Add(intersection);
                         elementIntersections.Add((LsmElementIntersection2D)intersection);
                     }
                 }
@@ -162,10 +163,11 @@ namespace MGroup.XFEM.Tests.Plotting
             var conformingMesh = new Dictionary<IXFiniteElement, ElementSubtriangle2D[]>();
             foreach (IXFiniteElement element in intersections.Keys)
             {
+                var element2D = (IXFiniteElement2D)element;
                 List<LsmElementIntersection2D> elementIntersections = intersections[element];
                 ElementSubtriangle2D[] subtriangles = triangulator.FindConformingMesh(element, elementIntersections, tolerance);
                 conformingMesh[element] = subtriangles;
-                element.ConformingSubtriangles2D = subtriangles;
+                element2D.ConformingSubtriangles = subtriangles;
             }
             return conformingMesh;
         }
@@ -187,7 +189,7 @@ namespace MGroup.XFEM.Tests.Plotting
             int numGaussPointsInterface = 2;
             for (int e = 0; e < cells.Count; ++e)
             {
-                var element = new MockElement(e, CellType.Quad4, cells[e].Vertices);
+                var element = new MockElement2D(e, CellType.Quad4, cells[e].Vertices);
                 model.Elements.Add(element);
                 model.Subdomains[subdomainID].Elements.Add(element);
             }
