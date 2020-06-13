@@ -34,7 +34,7 @@ namespace MGroup.XFEM.Tests.Plotting
         private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0, zMin = -1.0, zMax = +1.0;
 
         // There are 2 or more inclusions in the same element
-        private const int numElementsX = 45, numElementsY = 45, numElementsZ = 45;
+        private const int numElementsX = 10, numElementsY = 10, numElementsZ = 10;
         private const int numBallsX = 2, numBallsY = 1, numBallsZ = 1;
         private const double ballRadius = 0.3;
 
