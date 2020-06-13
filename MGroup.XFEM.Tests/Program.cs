@@ -7,8 +7,8 @@ namespace MGroup.XFEM.Tests
     {
         public static void Main(string[] args)
         {
-            LsmBalls2DExamples.PlotGeometryAndEntities();
-            //LsmBalls3DExamples.Run();
+            //LsmBalls2DExamples.PlotGeometryAndEntities();
+            LsmBalls3DExamples.PlotGeometryAndEntities();
         }
     }
 }

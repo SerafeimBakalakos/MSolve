@@ -197,7 +197,7 @@ namespace MGroup.XFEM.Elements
         public IReadOnlyList<XNode> Nodes { get; }
         IReadOnlyList<INode> IElement.Nodes => Nodes;
 
-        public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
+        public HashSet<IPhase2D> Phases { get; } = new HashSet<IPhase2D>();
 
         public XSubdomain Subdomain { get; set; }
         ISubdomain IElement.Subdomain => Subdomain;

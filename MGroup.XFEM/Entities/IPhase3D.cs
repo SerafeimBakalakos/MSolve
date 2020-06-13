@@ -8,13 +8,13 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Entities
 {
-    public interface IPhase
+    public interface IPhase3D
     {
-        List<PhaseBoundary2D> Boundaries { get; }
+        List<PhaseBoundary3D> Boundaries { get; }
         HashSet<XNode> ContainedNodes { get; }
         HashSet<IXFiniteElement> ContainedElements { get; }
         int ID { get; }
-        HashSet<IPhase> Neighbors { get; }
+        HashSet<IPhase3D> Neighbors { get; }
 
         bool Contains(XNode node);
         bool Contains(XPoint point);

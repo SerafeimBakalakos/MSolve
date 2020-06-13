@@ -11,17 +11,17 @@ using MGroup.XFEM.Geometry.Tolerances;
 //TODO: This probably does not work if an element is so large that it completely contains a phase
 namespace MGroup.XFEM.Entities
 {
-    public class ConvexPhase2D : IPhase2D
+    public class ConvexPhase3D : IPhase3D
     {
-        private readonly GeometricModel2D geometricModel;
+        private readonly GeometricModel3D geometricModel;
 
-        public ConvexPhase2D(int id, GeometricModel2D geometricModel)
+        public ConvexPhase3D(int id, GeometricModel3D geometricModel)
         {
             this.ID = id;
             this.geometricModel = geometricModel;
         }
 
-        public List<PhaseBoundary2D> Boundaries { get; } = new List<PhaseBoundary2D>();
+        public List<PhaseBoundary3D> Boundaries { get; } = new List<PhaseBoundary3D>();
 
         public HashSet<XNode> ContainedNodes { get; } = new HashSet<XNode>();
 
@@ -31,11 +31,11 @@ namespace MGroup.XFEM.Entities
 
         public HashSet<IXFiniteElement> BoundaryElements { get; } = new HashSet<IXFiniteElement>();
 
-        public HashSet<IPhase2D> Neighbors { get; } = new HashSet<IPhase2D>();
+        public HashSet<IPhase3D> Neighbors { get; } = new HashSet<IPhase3D>();
 
         public virtual bool Contains(XNode node)
         {
-            foreach (PhaseBoundary2D boundary in Boundaries)
+            foreach (PhaseBoundary3D boundary in Boundaries)
             {
                 double distance = boundary.Geometry.SignedDistanceOf(node);
                 bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
@@ -47,7 +47,7 @@ namespace MGroup.XFEM.Entities
 
         public virtual bool Contains(XPoint point)
         {
-            foreach (PhaseBoundary2D boundary in Boundaries)
+            foreach (PhaseBoundary3D boundary in Boundaries)
             {
                 double distance = boundary.Geometry.SignedDistanceOf(point);
                 bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
@@ -87,7 +87,7 @@ namespace MGroup.XFEM.Entities
                 else
                 {
                     bool isBoundary = false;
-                    foreach (PhaseBoundary2D boundary in Boundaries)
+                    foreach (PhaseBoundary3D boundary in Boundaries)
                     {
                         // This boundary-element intersection may have already been calculated from the opposite phase. 
                         if (geometricModel.GetPhaseBoundariesOfElement(element).ContainsKey(boundary))
@@ -96,7 +96,7 @@ namespace MGroup.XFEM.Entities
                             continue;
                         }
 
-                        IElementCurveIntersection2D intersection = boundary.Geometry.Intersect(element);
+                        IElementSurfaceIntersection3D intersection = boundary.Geometry.Intersect(element);
                         if (intersection.RelativePosition == RelativePositionCurveElement.Intersecting)
                         {
                             geometricModel.AddPhaseToElement(element, boundary.PositivePhase);

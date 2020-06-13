@@ -13,22 +13,22 @@ using MGroup.XFEM.Plotting.Mesh;
 
 namespace MGroup.XFEM.Plotting.Writers
 {
-    public class PhasePlotter2D
+    public class PhasePlotter3D
     {
         public const string vtkReaderVersion = "4.1";
 
         private readonly double colorForDefaultPhase;
-        private readonly GeometricModel2D geometricModel;
+        private readonly GeometricModel3D geometricModel;
         private readonly XModel physicalModel;
 
-        public PhasePlotter2D(XModel physicalModel, GeometricModel2D geometricModel, double colorForDefaultPhase = 0.0)
+        public PhasePlotter3D(XModel physicalModel, GeometricModel3D geometricModel, double colorForDefaultPhase = 0.0)
         {
             this.physicalModel = physicalModel;
             this.geometricModel = geometricModel;
             this.colorForDefaultPhase = colorForDefaultPhase;
         }
 
-        public void PlotElements(string path, ConformingOutputMesh2D conformingMesh)
+        public void PlotElements(string path, ConformingOutputMesh3D conformingMesh)
         {
             Dictionary<VtkPoint, double> phases = FindPhasesOfElements(conformingMesh);
             using (var writer = new Writers.VtkFileWriter(path))
@@ -46,9 +46,9 @@ namespace MGroup.XFEM.Plotting.Writers
 
                 foreach (XNode node in physicalModel.Nodes)
                 {
-                    IPhase2D phase = geometricModel.GetPhaseOfNode(node);
+                    IPhase3D phase = geometricModel.GetPhaseOfNode(node);
                     double phaseID = phase.ID;
-                    if (phase is DefaultPhase2D) phaseID = colorForDefaultPhase;
+                    if (phase is DefaultPhase3D) phaseID = colorForDefaultPhase;
                     nodalPhases[node] = phaseID;
                 }
 
@@ -56,7 +56,7 @@ namespace MGroup.XFEM.Plotting.Writers
             }
         }
 
-        private Dictionary<VtkPoint, double> FindPhasesOfElements(ConformingOutputMesh2D conformingMesh)
+        private Dictionary<VtkPoint, double> FindPhasesOfElements(ConformingOutputMesh3D conformingMesh)
         {
             var field = new Dictionary<VtkPoint, double>();
             foreach (IXFiniteElement element in physicalModel.Elements)
@@ -65,33 +65,33 @@ namespace MGroup.XFEM.Plotting.Writers
                 if (elementPhases.Count == 1)
                 {
                     double phaseID = elementPhases.First().ID;
-                    if (elementPhases.First() is DefaultPhase2D) phaseID = colorForDefaultPhase;
+                    if (elementPhases.First() is DefaultPhase3D) phaseID = colorForDefaultPhase;
                     VtkCell outCell = conformingMesh.GetOutCellsForOriginal(element).First();
                     for (int n = 0; n < element.Nodes.Count; ++n) field[outCell.Vertices[n]] = phaseID;
                 }
                 else
                 {
-                    IEnumerable<ConformingOutputMesh2D.Subtriangle> subtriangles =
-                        conformingMesh.GetSubtrianglesForOriginal(element);
-                    foreach (ConformingOutputMesh2D.Subtriangle subtriangle in subtriangles)
+                    IEnumerable<ConformingOutputMesh3D.Subtetrahedron> subtriangles =
+                        conformingMesh.GetSubtetrahedraForOriginal(element);
+                    foreach (ConformingOutputMesh3D.Subtetrahedron subtetra in subtriangles)
                     {
-                        Debug.Assert(subtriangle.OutVertices.Count == 3); //TODO: Not sure what happens for 2nd order elements
+                        Debug.Assert(subtetra.OutVertices.Count == 4); //TODO: Not sure what happens for 2nd order elements
 
                         // TODO: Perhaps I should do the next operations in the natural system of the element.
                         // Find the centroid
-                        NaturalPoint centroidNatural = subtriangle.OriginalTriangle.FindCentroidNatural();
+                        NaturalPoint centroidNatural = subtetra.OriginalTetra.FindCentroidNatural();
                         var centroid = new XPoint();
-                        centroid.Element = subtriangle.ParentElement;
+                        centroid.Element = subtetra.ParentElement;
                         centroid.Coordinates[CoordinateSystem.ElementLocal] = 
-                            new double[] { centroidNatural.Xi, centroidNatural.Eta };
-                        centroid.ShapeFunctions = centroid.Element.Interpolation2D.EvaluateFunctionsAt(centroidNatural);
+                            new double[] { centroidNatural.Xi, centroidNatural.Eta, centroidNatural.Zeta };
+                        centroid.ShapeFunctions = centroid.Element.Interpolation3D.EvaluateFunctionsAt(centroidNatural);
 
                         // Find the phase of the centroid
                         double phaseID = colorForDefaultPhase;
-                        foreach (IPhase2D phase in elementPhases)
+                        foreach (IPhase3D phase in elementPhases)
                         {
-                            if (phase is DefaultPhase2D) continue;
-                            var convexPhase = (ConvexPhase2D)phase;
+                            if (phase is DefaultPhase3D) continue;
+                            var convexPhase = (ConvexPhase3D)phase;
                             if (convexPhase.Contains(centroid))
                             {
                                 phaseID = convexPhase.ID;
@@ -100,9 +100,9 @@ namespace MGroup.XFEM.Plotting.Writers
                         }
 
                         // All vertices of the subtriangle will be assigned the same phase as the centroid
-                        for (int v = 0; v < 3; ++v)
+                        for (int v = 0; v < 4; ++v)
                         {
-                            VtkPoint vertexOut = subtriangle.OutVertices[v];
+                            VtkPoint vertexOut = subtetra.OutVertices[v];
                             field[vertexOut] = phaseID;
                         }
                     }

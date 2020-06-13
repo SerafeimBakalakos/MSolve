@@ -127,6 +127,7 @@ namespace MGroup.XFEM.Tests.Plotting
             // Plot boundary integration points
             integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
 
+            // Plot phases
             var phasePlotter = new PhasePlotter2D(model, geometricModel);
             phasePlotter.PlotNodes(pathPhasesOfNodes);
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
@@ -195,11 +196,10 @@ namespace MGroup.XFEM.Tests.Plotting
             return model;
         }
 
-        
         private static GeometricModel2D CreatePhases(XModel model, List<SimpleLsm2D> lsmCurves)
         {
             var geometricModel = new GeometricModel2D(model);
-            var defaultPhase = new DefaultPhase(0, geometricModel);
+            var defaultPhase = new DefaultPhase2D(0, geometricModel);
             geometricModel.Phases.Add(defaultPhase);
             for (int p = 0; p < lsmCurves.Count; ++p)
             {

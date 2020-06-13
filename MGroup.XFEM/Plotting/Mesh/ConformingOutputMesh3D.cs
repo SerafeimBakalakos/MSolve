@@ -54,7 +54,7 @@ namespace MGroup.XFEM.Plotting.Mesh
                         var outCell = new VtkCell(CellType.Tet4, subvertices);
                         outCells.Add(outCell);
                         original2OutCells[originalCell].Add(outCell);
-                        originalCells2Subtriangles[originalCell].Add(new Subtetrahedron(tetra, subvertices));
+                        originalCells2Subtriangles[originalCell].Add(new Subtetrahedron(originalCell, tetra, subvertices));
                     }
                 }
                 else
@@ -108,18 +108,22 @@ namespace MGroup.XFEM.Plotting.Mesh
         //      same data.
         public class Subtetrahedron
         {
-            public Subtetrahedron(ElementSubtetrahedron3D originalTriangle, IReadOnlyList<VtkPoint> outVertices)
+            public Subtetrahedron(IXFiniteElement parentElement, ElementSubtetrahedron3D originalTriangle, 
+                IReadOnlyList<VtkPoint> outVertices)
             {
-                this.OriginalTriangle = originalTriangle;
+                this.ParentElement = parentElement;
+                this.OriginalTetra = originalTriangle;
                 this.OutVertices = outVertices;
             }
 
-            public ElementSubtetrahedron3D OriginalTriangle { get; }
+            public ElementSubtetrahedron3D OriginalTetra { get; }
 
             /// <summary>
-            /// Same order as <see cref="ElementSubtriangle.VerticesNatural"/> of <see cref="OriginalTriangle"/>.
+            /// Same order as <see cref="ElementSubtriangle.VerticesNatural"/> of <see cref="OriginalTetra"/>.
             /// </summary>
             public IReadOnlyList<VtkPoint> OutVertices { get; }
+
+            public IXFiniteElement ParentElement { get; }
         }
     }
 }

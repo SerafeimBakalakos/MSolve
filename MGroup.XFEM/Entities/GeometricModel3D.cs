@@ -13,47 +13,47 @@ using MGroup.XFEM.Geometry.Tolerances;
 //TODO: Perhaps I should save the conforming mesh here as well, rather than in each element
 namespace MGroup.XFEM.Entities
 {
-    public class GeometricModel2D
+    public class GeometricModel3D
     {
         private readonly XModel physicalModel;
-        private readonly Dictionary<int, Dictionary<PhaseBoundary2D, IElementCurveIntersection2D>> phaseBoundariesOfElements;
-        private readonly Dictionary<int, HashSet<IPhase2D>> phasesOfElements;
-        private readonly Dictionary<int, IPhase2D> phasesOfNodes;
+        private readonly Dictionary<int, Dictionary<PhaseBoundary3D, IElementSurfaceIntersection3D>> phaseBoundariesOfElements;
+        private readonly Dictionary<int, HashSet<IPhase3D>> phasesOfElements;
+        private readonly Dictionary<int, IPhase3D> phasesOfNodes;
 
-        public GeometricModel2D(XModel physicalModel)
+        public GeometricModel3D(XModel physicalModel)
         {
             this.physicalModel = physicalModel;
-            phasesOfNodes = new Dictionary<int, IPhase2D>();
+            phasesOfNodes = new Dictionary<int, IPhase3D>();
 
-            phasesOfElements = new Dictionary<int, HashSet<IPhase2D>>();
+            phasesOfElements = new Dictionary<int, HashSet<IPhase3D>>();
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
-                phasesOfElements[element.ID] = new HashSet<IPhase2D>();
+                phasesOfElements[element.ID] = new HashSet<IPhase3D>();
             }
 
-            phaseBoundariesOfElements = new Dictionary<int, Dictionary<PhaseBoundary2D, IElementCurveIntersection2D>>();
+            phaseBoundariesOfElements = new Dictionary<int, Dictionary<PhaseBoundary3D, IElementSurfaceIntersection3D>>();
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
-                phaseBoundariesOfElements[element.ID] = new Dictionary<PhaseBoundary2D, IElementCurveIntersection2D>();
+                phaseBoundariesOfElements[element.ID] = new Dictionary<PhaseBoundary3D, IElementSurfaceIntersection3D>();
             }
         }
 
         public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 
-        public List<IPhase2D> Phases { get; } = new List<IPhase2D>();
+        public List<IPhase3D> Phases { get; } = new List<IPhase3D>();
 
-        public void AddPhaseBoundaryToElement(IXFiniteElement element, PhaseBoundary2D boundary, 
-            IElementCurveIntersection2D intersection) 
+        public void AddPhaseBoundaryToElement(IXFiniteElement element, PhaseBoundary3D boundary, 
+            IElementSurfaceIntersection3D intersection) 
             => phaseBoundariesOfElements[element.ID].Add(boundary, intersection);
 
-        public void AddPhaseToElement(IXFiniteElement element, IPhase2D phase) => phasesOfElements[element.ID].Add(phase);
+        public void AddPhaseToElement(IXFiniteElement element, IPhase3D phase) => phasesOfElements[element.ID].Add(phase);
         
-        public void AddPhaseToNode(XNode node, IPhase2D phase) => phasesOfNodes[node.ID] = phase;
+        public void AddPhaseToNode(XNode node, IPhase3D phase) => phasesOfNodes[node.ID] = phase;
 
         public void InteractWithMesh()
         {
             // Nodes
-            IPhase2D defaultPhase = Phases[0];
+            IPhase3D defaultPhase = Phases[0];
             for (int i = 1; i < Phases.Count; ++i)
             {
                 Phases[i].InteractWithNodes(physicalModel.Nodes);
@@ -70,13 +70,13 @@ namespace MGroup.XFEM.Entities
             FindConformingMesh();
         }
 
-        public IPhase2D FindPhaseAt(XPoint point, IXFiniteElement element)
+        public IPhase3D FindPhaseAt(XPoint point, IXFiniteElement element)
         {
-            IPhase2D defaultPhase = null;
-            foreach (IPhase2D phase in phasesOfElements[element.ID])
+            IPhase3D defaultPhase = null;
+            foreach (IPhase3D phase in phasesOfElements[element.ID])
             {
                 // Avoid searching for the point in the default phase, since its shape is higly irregular.
-                if (phase is DefaultPhase2D)
+                if (phase is DefaultPhase3D)
                 {
                     defaultPhase = phase;
                     continue;
@@ -89,12 +89,14 @@ namespace MGroup.XFEM.Entities
             return defaultPhase;
         }
 
-        public Dictionary<PhaseBoundary2D, IElementCurveIntersection2D> GetPhaseBoundariesOfElement(IXFiniteElement element) 
+        public Dictionary<PhaseBoundary3D, IElementSurfaceIntersection3D> GetPhaseBoundariesOfElement(IXFiniteElement element) 
             => phaseBoundariesOfElements[element.ID];
-        public HashSet<IPhase2D> GetPhasesOfElement(IXFiniteElement element) => phasesOfElements[element.ID];
-        public IPhase2D GetPhaseOfNode(XNode node)
+
+        public HashSet<IPhase3D> GetPhasesOfElement(IXFiniteElement element) => phasesOfElements[element.ID];
+
+        public IPhase3D GetPhaseOfNode(XNode node)
         {
-            bool exists = phasesOfNodes.TryGetValue(node.ID, out IPhase2D phase);
+            bool exists = phasesOfNodes.TryGetValue(node.ID, out IPhase3D phase);
             if (exists) return phase;
             else return null;
         }
@@ -102,12 +104,12 @@ namespace MGroup.XFEM.Entities
         //TODO: Perhaps I need a dedicated class for this
         private void FindConformingMesh()
         {
-            var triangulator = new ConformingTriangulator2D();
+            var triangulator = new ConformingTriangulator3D();
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
-                Dictionary<PhaseBoundary2D, IElementCurveIntersection2D> boundaries = phaseBoundariesOfElements[element.ID];
+                Dictionary<PhaseBoundary3D, IElementSurfaceIntersection3D> boundaries = phaseBoundariesOfElements[element.ID];
                 if (boundaries.Count == 0) continue;
-                element.ConformingSubtriangles2D = triangulator.FindConformingMesh(element, boundaries.Values, MeshTolerance);
+                element.ConformingSubtetrahedra3D = triangulator.FindConformingMesh(element, boundaries.Values, MeshTolerance);
             }
         }
     }
