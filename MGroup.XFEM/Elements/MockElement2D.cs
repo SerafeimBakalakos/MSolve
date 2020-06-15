@@ -67,8 +67,6 @@ namespace MGroup.XFEM.Elements
         public IReadOnlyList<XNode> Nodes { get; }
         IReadOnlyList<INode> IElement.Nodes => Nodes;
 
-        public HashSet<IPhase2D> Phases { get; } = new HashSet<IPhase2D>();
-
         public XSubdomain Subdomain { get; set; }
         ISubdomain IElement.Subdomain => Subdomain;
 
@@ -80,6 +78,8 @@ namespace MGroup.XFEM.Elements
         public ElementSubtriangle2D[] ConformingSubtriangles { get; set; }
 
         public List<IElementCurveIntersection2D> Intersections { get; } = new List<IElementCurveIntersection2D>();
+
+        public HashSet<int> PhaseIDs { get; } = new HashSet<int>();
 
         public IMatrix DampingMatrix(IElement element)
         {

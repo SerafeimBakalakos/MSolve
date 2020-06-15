@@ -69,7 +69,7 @@ namespace MGroup.XFEM.Elements
         public IReadOnlyList<XNode> Nodes { get; }
         IReadOnlyList<INode> IElement.Nodes => Nodes;
 
-        public HashSet<IPhase3D> Phases { get; } = new HashSet<IPhase3D>();
+        public HashSet<int> PhaseIDs { get; } = new HashSet<int>();
 
         public XSubdomain Subdomain { get; set; }
         ISubdomain IElement.Subdomain => Subdomain;

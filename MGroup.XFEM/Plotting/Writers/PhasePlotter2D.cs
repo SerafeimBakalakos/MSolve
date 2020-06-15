@@ -64,10 +64,10 @@ namespace MGroup.XFEM.Plotting.Writers
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
                 var element2D = (IXFiniteElement2D)element;
-                var elementPhases = geometricModel.GetPhasesOfElement(element);
+                var elementPhases = element.PhaseIDs;
                 if (elementPhases.Count == 1)
                 {
-                    double phaseID = elementPhases.First().ID;
+                    double phaseID = elementPhases.First();
                     if (elementPhases.First() is DefaultPhase2D) phaseID = colorForDefaultPhase;
                     VtkCell outCell = conformingMesh.GetOutCellsForOriginal(element).First();
                     for (int n = 0; n < element.Nodes.Count; ++n) field[outCell.Vertices[n]] = phaseID;
@@ -92,9 +92,10 @@ namespace MGroup.XFEM.Plotting.Writers
 
                         // Find the phase of the centroid
                         double phaseID = colorForDefaultPhase;
-                        foreach (IPhase2D phase in elementPhases)
+                        foreach (int id in elementPhases)
                         {
-                            if (phase is DefaultPhase2D) continue;
+                            if (id == defaultPhaseID) continue;
+                            IPhase2D phase = geometricModel.Phases[id];
                             var convexPhase = (ConvexPhase2D)phase;
                             if (convexPhase.Contains(centroid))
                             {

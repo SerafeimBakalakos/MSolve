@@ -17,17 +17,10 @@ namespace MGroup.XFEM.Entities
     {
         private readonly XModel physicalModel;
         private readonly Dictionary<int, Dictionary<PhaseBoundary2D, IElementCurveIntersection2D>> phaseBoundariesOfElements;
-        private readonly Dictionary<int, HashSet<IPhase2D>> phasesOfElements;
 
         public GeometricModel2D(XModel physicalModel)
         {
             this.physicalModel = physicalModel;
-
-            phasesOfElements = new Dictionary<int, HashSet<IPhase2D>>();
-            foreach (IXFiniteElement element in physicalModel.Elements)
-            {
-                phasesOfElements[element.ID] = new HashSet<IPhase2D>();
-            }
 
             phaseBoundariesOfElements = new Dictionary<int, Dictionary<PhaseBoundary2D, IElementCurveIntersection2D>>();
             foreach (IXFiniteElement element in physicalModel.Elements)
@@ -44,8 +37,6 @@ namespace MGroup.XFEM.Entities
             IElementCurveIntersection2D intersection) 
             => phaseBoundariesOfElements[element.ID].Add(boundary, intersection);
 
-        public void AddPhaseToElement(IXFiniteElement element, IPhase2D phase) => phasesOfElements[element.ID].Add(phase);
-        
         public void InteractWithMesh()
         {
             // Nodes
@@ -69,8 +60,9 @@ namespace MGroup.XFEM.Entities
         public IPhase2D FindPhaseAt(XPoint point, IXFiniteElement element)
         {
             IPhase2D defaultPhase = null;
-            foreach (IPhase2D phase in phasesOfElements[element.ID])
+            foreach (int phaseID in element.PhaseIDs)
             {
+                IPhase2D phase = Phases[phaseID];
                 // Avoid searching for the point in the default phase, since its shape is higly irregular.
                 if (phase is DefaultPhase2D)
                 {
@@ -87,7 +79,6 @@ namespace MGroup.XFEM.Entities
 
         public Dictionary<PhaseBoundary2D, IElementCurveIntersection2D> GetPhaseBoundariesOfElement(IXFiniteElement element) 
             => phaseBoundariesOfElements[element.ID];
-        public HashSet<IPhase2D> GetPhasesOfElement(IXFiniteElement element) => phasesOfElements[element.ID];
 
 
         //TODO: Perhaps I need a dedicated class for this

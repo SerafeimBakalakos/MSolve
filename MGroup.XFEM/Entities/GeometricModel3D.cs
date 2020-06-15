@@ -17,17 +17,10 @@ namespace MGroup.XFEM.Entities
     {
         private readonly XModel physicalModel;
         private readonly Dictionary<int, Dictionary<PhaseBoundary3D, IElementSurfaceIntersection3D>> phaseBoundariesOfElements;
-        private readonly Dictionary<int, HashSet<IPhase3D>> phasesOfElements;
 
         public GeometricModel3D(XModel physicalModel)
         {
             this.physicalModel = physicalModel;
-
-            phasesOfElements = new Dictionary<int, HashSet<IPhase3D>>();
-            foreach (IXFiniteElement element in physicalModel.Elements)
-            {
-                phasesOfElements[element.ID] = new HashSet<IPhase3D>();
-            }
 
             phaseBoundariesOfElements = new Dictionary<int, Dictionary<PhaseBoundary3D, IElementSurfaceIntersection3D>>();
             foreach (IXFiniteElement element in physicalModel.Elements)
@@ -44,8 +37,6 @@ namespace MGroup.XFEM.Entities
             IElementSurfaceIntersection3D intersection) 
             => phaseBoundariesOfElements[element.ID].Add(boundary, intersection);
 
-        public void AddPhaseToElement(IXFiniteElement element, IPhase3D phase) => phasesOfElements[element.ID].Add(phase);
-        
         public void InteractWithMesh()
         {
             // Nodes
@@ -69,8 +60,9 @@ namespace MGroup.XFEM.Entities
         public IPhase3D FindPhaseAt(XPoint point, IXFiniteElement element)
         {
             IPhase3D defaultPhase = null;
-            foreach (IPhase3D phase in phasesOfElements[element.ID])
+            foreach (int phaseID in element.PhaseIDs)
             {
+                IPhase3D phase = Phases[phaseID];
                 // Avoid searching for the point in the default phase, since its shape is higly irregular.
                 if (phase is DefaultPhase3D)
                 {
@@ -87,8 +79,6 @@ namespace MGroup.XFEM.Entities
 
         public Dictionary<PhaseBoundary3D, IElementSurfaceIntersection3D> GetPhaseBoundariesOfElement(IXFiniteElement element) 
             => phaseBoundariesOfElements[element.ID];
-
-        public HashSet<IPhase3D> GetPhasesOfElement(IXFiniteElement element) => phasesOfElements[element.ID];
 
         //TODO: Perhaps I need a dedicated class for this
         private void FindConformingMesh()

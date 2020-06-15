@@ -82,7 +82,7 @@ namespace MGroup.XFEM.Entities
                 if (isInside)
                 {
                     ContainedElements.Add(element);
-                    geometricModel.AddPhaseToElement(element, this);
+                    element.PhaseIDs.Add(this.ID);
                 }
                 else
                 {
@@ -99,8 +99,8 @@ namespace MGroup.XFEM.Entities
                         IElementCurveIntersection2D intersection = boundary.Geometry.Intersect(element);
                         if (intersection.RelativePosition == RelativePositionCurveElement.Intersecting)
                         {
-                            geometricModel.AddPhaseToElement(element, boundary.PositivePhase);
-                            geometricModel.AddPhaseToElement(element, boundary.NegativePhase);
+                            element.PhaseIDs.Add(boundary.PositivePhase.ID);
+                            element.PhaseIDs.Add(boundary.NegativePhase.ID);
                             geometricModel.AddPhaseBoundaryToElement(element, boundary, intersection);
                             isBoundary = true;
                         }

@@ -20,6 +20,8 @@ namespace MGroup.XFEM.Elements
 
         IReadOnlyList<XNode> Nodes { get; }
 
+        HashSet<int> PhaseIDs { get; }
+
         XSubdomain Subdomain { get; set; }
 
         //(IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalMaterial>) GetMaterialsForBulkIntegration();

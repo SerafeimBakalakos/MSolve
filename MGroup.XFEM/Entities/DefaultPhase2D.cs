@@ -53,10 +53,10 @@ namespace MGroup.XFEM.Entities
         {
             foreach (IXFiniteElement element in elements)
             {
-                if (geometricModel.GetPhasesOfElement(element).Count == 0)
+                if (element.PhaseIDs.Count == 0)
                 {
                     ContainedElements.Add(element);
-                    geometricModel.AddPhaseToElement(element, this);
+                    element.PhaseIDs.Add(this.ID);
                 }
             }
         }
