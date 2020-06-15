@@ -12,12 +12,12 @@ namespace MGroup.XFEM.Geometry
 
         public List<double[]> ApproximateGlobalCartesian() => new List<double[]>(0);
 
-        public GaussPoint[] GetIntegrationPoints(int numPoints)
+        public IList<GaussPoint> GetIntegrationPoints(int numPoints)
         {
             return new GaussPoint[0];
         }
 
-        public IList<NaturalPoint> GetPointsForTriangulation()
+        public NaturalPoint[] GetPointsForTriangulation()
         {
             return new NaturalPoint[0];
         }

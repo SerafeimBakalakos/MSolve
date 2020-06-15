@@ -19,10 +19,10 @@ namespace MGroup.XFEM.Plotting.Writers
 
         private readonly double colorForDefaultPhase;
         private readonly int defaultPhaseID;
-        private readonly GeometricModel3D geometricModel;
+        private readonly GeometricModel geometricModel;
         private readonly XModel physicalModel;
 
-        public PhasePlotter3D(XModel physicalModel, GeometricModel3D geometricModel, int defaultPhaseID, 
+        public PhasePlotter3D(XModel physicalModel, GeometricModel geometricModel, int defaultPhaseID, 
             double colorForDefaultPhase = 0.0)
         {
             this.physicalModel = physicalModel;
@@ -67,7 +67,7 @@ namespace MGroup.XFEM.Plotting.Writers
                 if (elementPhases.Count == 1)
                 {
                     double phaseID = elementPhases.First();
-                    if (elementPhases.First() is DefaultPhase3D) phaseID = colorForDefaultPhase;
+                    if (elementPhases.First() is DefaultPhase) phaseID = colorForDefaultPhase;
                     VtkCell outCell = conformingMesh.GetOutCellsForOriginal(element).First();
                     for (int n = 0; n < element.Nodes.Count; ++n) field[outCell.Vertices[n]] = phaseID;
                 }
@@ -94,8 +94,8 @@ namespace MGroup.XFEM.Plotting.Writers
                         foreach (int id in elementPhases)
                         {
                             if (id == defaultPhaseID) continue;
-                            IPhase3D phase = geometricModel.Phases[id];
-                            var convexPhase = (ConvexPhase3D)phase;
+                            IPhase phase = geometricModel.Phases[id];
+                            var convexPhase = (ConvexPhase)phase;
                             if (convexPhase.Contains(centroid))
                             {
                                 phaseID = convexPhase.ID;

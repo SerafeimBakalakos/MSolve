@@ -15,7 +15,7 @@ using MGroup.XFEM.Geometry.Tolerances;
 //TODO: Remove duplication between this and 2D case.
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public class SimpleLsm3D : IImplicitSurface3D
+    public class SimpleLsm3D : IImplicitGeometry
     {
         public SimpleLsm3D(XModel physicalModel, ISurface3D closedSurface)
         {
@@ -31,7 +31,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public double[] NodalLevelSets { get; }
 
-        public IElementSurfaceIntersection3D Intersect(IXFiniteElement element)
+        public IElementGeometryIntersection Intersect(IXFiniteElement element)
         {
             var element3D = (IXFiniteElement3D)element;
             RelativePositionCurveElement position = FindRelativePosition(element);

@@ -120,7 +120,7 @@ namespace MGroup.XFEM.Geometry.LSM
             return integrationPoints;
         }
 
-        public IList<NaturalPoint> GetPointsForTriangulation()
+        public NaturalPoint[] GetPointsForTriangulation()
         {
             return intersectionMesh.GetVerticesList();
         }

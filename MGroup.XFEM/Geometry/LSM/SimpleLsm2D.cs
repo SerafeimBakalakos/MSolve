@@ -11,7 +11,7 @@ using MGroup.XFEM.Geometry.Tolerances;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public class SimpleLsm2D : IImplicitCurve2D
+    public class SimpleLsm2D : IImplicitGeometry
     {
         public SimpleLsm2D(XModel physicalModel, ICurve2D closedCurve)
         {
@@ -27,7 +27,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 
-        public IElementCurveIntersection2D Intersect(IXFiniteElement element)
+        public IElementGeometryIntersection Intersect(IXFiniteElement element)
         {
             var element2D = (IXFiniteElement2D)element;
             if (IsElementDisjoint(element)) // Check this first, since it is faster and most elements are in this category 

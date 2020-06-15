@@ -14,19 +14,8 @@ namespace MGroup.XFEM.Geometry
     /// A surface resulting from the intersection of a parent surface with a 3D finite element.
     /// Degenerate cases are also possible: null, single point or single curve.
     /// </summary>
-    public interface IElementSurfaceIntersection3D
+    public interface IElementSurfaceIntersection3D: IElementGeometryIntersection
     {
-        RelativePositionCurveElement RelativePosition { get; }
-
         IntersectionMesh<CartesianPoint> ApproximateGlobalCartesian();
-
-        /// <summary>
-        /// The weights of the returned <see cref="GaussPoint"/>s include the determinant of the Jacobian from the
-        /// natural system of the element to the global cartesian system.
-        /// </summary>
-        /// <param name="order"></param>
-        IList<GaussPoint> GetIntegrationPoints(int order);
-
-        IList<NaturalPoint> GetPointsForTriangulation(); 
     }
 }

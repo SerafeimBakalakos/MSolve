@@ -92,7 +92,7 @@ namespace MGroup.XFEM.Tests.Plotting
             // Create model and LSM
             XModel model = CreateModelHexa(numElementsX, numElementsY, numElementsZ);
             List<SimpleLsm3D> lsmSurfaces = InitializeLSM(model);
-            GeometricModel3D geometricModel = CreatePhases(model, lsmSurfaces);
+            GeometricModel geometricModel = CreatePhases(model, lsmSurfaces);
 
             // Plot original mesh and level sets
             PlotInclusionLevelSets(outputDirectory, "level_set", model, lsmSurfaces);
@@ -147,12 +147,12 @@ namespace MGroup.XFEM.Tests.Plotting
             {
                 var element3D = (IXFiniteElement3D)element;
                 var elementIntersections = new List<LsmElementIntersection3D>();
-                foreach (IImplicitSurface3D surface in surfaces)
+                foreach (IImplicitGeometry surface in surfaces)
                 {
-                    IElementSurfaceIntersection3D intersection = surface.Intersect(element);
+                    IElementGeometryIntersection intersection = surface.Intersect(element);
                     if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
                     {
-                        element3D.Intersections.Add(intersection);
+                        element3D.Intersections.Add((IElementSurfaceIntersection3D)intersection);
                         elementIntersections.Add((LsmElementIntersection3D)intersection);
                     }
                 }
@@ -178,17 +178,17 @@ namespace MGroup.XFEM.Tests.Plotting
             return conformingMesh;
         }
 
-        private static GeometricModel3D CreatePhases(XModel model, List<SimpleLsm3D> lsmSurfaces)
+        private static GeometricModel CreatePhases(XModel model, List<SimpleLsm3D> lsmSurfaces)
         {
-            var geometricModel = new GeometricModel3D(model);
-            var defaultPhase = new DefaultPhase3D(defaultPhaseID, geometricModel);
+            var geometricModel = new GeometricModel(3, model);
+            var defaultPhase = new DefaultPhase(defaultPhaseID);
             geometricModel.Phases.Add(defaultPhase);
             for (int p = 0; p < lsmSurfaces.Count; ++p)
             {
                 SimpleLsm3D curve = lsmSurfaces[p];
-                var phase = new ConvexPhase3D(p + 1, geometricModel);
+                var phase = new ConvexPhase(p + 1, geometricModel);
                 geometricModel.Phases.Add(phase);
-                var boundary = new PhaseBoundary3D(curve, defaultPhase, phase);
+                var boundary = new PhaseBoundary(curve, defaultPhase, phase);
             }
             return geometricModel;
         }

@@ -90,7 +90,7 @@ namespace MGroup.XFEM.Tests.Plotting
             // Create physical model, LSM and phases
             XModel model = CreateModelQuads(numElementsX, numElementsY);
             List<SimpleLsm2D> lsmCurves = InitializeLSM(model);
-            GeometricModel2D geometricModel = CreatePhases(model, lsmCurves);
+            GeometricModel geometricModel = CreatePhases(model, lsmCurves);
 
             // Plot original mesh and level sets
             PlotInclusionLevelSets(outputDirectory, "level_set", model, lsmCurves);
@@ -142,12 +142,12 @@ namespace MGroup.XFEM.Tests.Plotting
             {
                 var element2D = (IXFiniteElement2D)element;
                 var elementIntersections = new List<LsmElementIntersection2D>();
-                foreach (IImplicitCurve2D curve in curves)
+                foreach (IImplicitGeometry curve in curves)
                 {
-                    IElementCurveIntersection2D intersection = curve.Intersect(element);
+                    IElementGeometryIntersection intersection = curve.Intersect(element);
                     if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
                     {
-                        element2D.Intersections.Add(intersection);
+                        element2D.Intersections.Add((IElementCurveIntersection2D)intersection);
                         elementIntersections.Add((LsmElementIntersection2D)intersection);
                     }
                 }
@@ -199,17 +199,17 @@ namespace MGroup.XFEM.Tests.Plotting
             return model;
         }
 
-        private static GeometricModel2D CreatePhases(XModel model, List<SimpleLsm2D> lsmCurves)
+        private static GeometricModel CreatePhases(XModel model, List<SimpleLsm2D> lsmCurves)
         {
-            var geometricModel = new GeometricModel2D(model);
-            var defaultPhase = new DefaultPhase2D(defaultPhaseID, geometricModel);
+            var geometricModel = new GeometricModel(2, model);
+            var defaultPhase = new DefaultPhase(defaultPhaseID);
             geometricModel.Phases.Add(defaultPhase);
             for (int p = 0; p < lsmCurves.Count; ++p)
             {
                 SimpleLsm2D curve = lsmCurves[p];
-                var phase = new ConvexPhase2D(p + 1, geometricModel);
+                var phase = new ConvexPhase(p + 1, geometricModel);
                 geometricModel.Phases.Add(phase);
-                var boundary = new PhaseBoundary2D(curve, defaultPhase, phase);
+                var boundary = new PhaseBoundary(curve, defaultPhase, phase);
             }
             return geometricModel;
         }

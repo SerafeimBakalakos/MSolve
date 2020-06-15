@@ -75,13 +75,13 @@ namespace MGroup.XFEM.Geometry.Primitives
             return points;
         }
 
-        public GaussPoint[] GetIntegrationPoints(int numPoints)
+        public IList<GaussPoint> GetIntegrationPoints(int numPoints)
         {
             // If conforming: halve the weights. Perhaps this can be done in the XElement
             throw new NotImplementedException();
         }
 
-        public IList<NaturalPoint> GetPointsForTriangulation()
+        public NaturalPoint[] GetPointsForTriangulation()
         {
             throw new NotImplementedException();
         }

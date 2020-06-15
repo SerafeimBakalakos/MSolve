@@ -9,13 +9,13 @@ using MGroup.XFEM.Entities;
 
 namespace MGroup.XFEM.Materials
 {
-    public class MatrixInclusionsMaterialField2D : IThermalMaterialField2D
+    public class MatrixInclusionsMaterialField : IThermalMaterialField
     {
         private readonly ThermalMaterial matrixMaterial, inclusionMaterial;
         private readonly double matrixInclusionInterfaceConductivity, inclusionInclusionInterfaceConductivity;
         private readonly int matrixPhaseID;
 
-        public MatrixInclusionsMaterialField2D(ThermalMaterial matrixMaterial, ThermalMaterial inclusionMaterial, 
+        public MatrixInclusionsMaterialField(ThermalMaterial matrixMaterial, ThermalMaterial inclusionMaterial, 
             double matrixInclusionInterfaceConductivity, double inclusionInclusionInterfaceConductivity, int matrixPhaseID)
         {
             this.matrixMaterial = matrixMaterial;
@@ -25,7 +25,7 @@ namespace MGroup.XFEM.Materials
             this.matrixPhaseID = matrixPhaseID;
         }
 
-        public ThermalInterfaceMaterial FindInterfaceMaterialAt(PhaseBoundary2D phaseBoundary)
+        public ThermalInterfaceMaterial FindInterfaceMaterialAt(PhaseBoundary phaseBoundary)
         {
             if ((phaseBoundary.PositivePhase.ID == matrixPhaseID) || (phaseBoundary.NegativePhase.ID == matrixPhaseID))
             {
@@ -34,7 +34,7 @@ namespace MGroup.XFEM.Materials
             else return new ThermalInterfaceMaterial(inclusionInclusionInterfaceConductivity);
         }
 
-        public ThermalMaterial FindMaterialAt(IPhase2D phase)
+        public ThermalMaterial FindMaterialAt(IPhase phase)
         {
             if (phase.ID == matrixPhaseID) return matrixMaterial.Clone();
             else return inclusionMaterial.Clone();

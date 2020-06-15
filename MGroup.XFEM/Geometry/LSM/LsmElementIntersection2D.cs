@@ -39,7 +39,7 @@ namespace MGroup.XFEM.Geometry.LSM
         }
 
         //TODO: Perhaps a dedicated IBoundaryIntegration component is needed
-        public GaussPoint[] GetIntegrationPoints(int order)
+        public IList<GaussPoint> GetIntegrationPoints(int order)
         {
             // Conforming curves intersect 2 elements, thus the integral will be computed twice. Halve the weights to avoid 
             // obtaining double the value of the integral.
@@ -67,7 +67,7 @@ namespace MGroup.XFEM.Geometry.LSM
             return integrationPoints;
         }
 
-        public IList<NaturalPoint> GetPointsForTriangulation()
+        public NaturalPoint[] GetPointsForTriangulation()
         {
             return new NaturalPoint[] { start, end };
         }

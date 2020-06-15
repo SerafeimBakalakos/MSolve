@@ -9,14 +9,11 @@ using MGroup.XFEM.Geometry.Tolerances;
 //      different to treat it as other phases. It is imply it, than using an explit phase.
 namespace MGroup.XFEM.Entities
 {
-    public class DefaultPhase3D : IPhase3D
+    public class DefaultPhase : IPhase
     {
-        private readonly GeometricModel3D geometricModel;
-
-        public DefaultPhase3D(int id, GeometricModel3D geometricModel)
+        public DefaultPhase(int id)
         {
             this.ID = id;
-            this.geometricModel = geometricModel;
         }
 
         public int ID { get; }
@@ -25,9 +22,9 @@ namespace MGroup.XFEM.Entities
 
         public HashSet<IXFiniteElement> ContainedElements { get; } = new HashSet<IXFiniteElement>();
 
-        public List<PhaseBoundary3D> Boundaries { get; } = new List<PhaseBoundary3D>();
+        public List<PhaseBoundary> Boundaries { get; } = new List<PhaseBoundary>();
 
-        public HashSet<IPhase3D> Neighbors { get; } = new HashSet<IPhase3D>();
+        public HashSet<IPhase> Neighbors { get; } = new HashSet<IPhase>();
 
         /// <summary>
         /// For best performance, call it after all other phases.

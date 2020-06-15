@@ -6,9 +6,9 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Entities
 {
-    public class PhaseBoundary3D
+    public class PhaseBoundary
     {
-        public PhaseBoundary3D(IImplicitSurface3D geometry, IPhase3D positivePhase, IPhase3D negativePhase)
+        public PhaseBoundary(IImplicitGeometry geometry, IPhase positivePhase, IPhase negativePhase)
         {
             this.Geometry = geometry;
             this.PositivePhase = positivePhase;
@@ -22,9 +22,9 @@ namespace MGroup.XFEM.Entities
 
         //public IEnrichment StepEnrichment { get; set; }
 
-        public IPhase3D NegativePhase { get; }
-        public IPhase3D PositivePhase { get; }
+        public IPhase NegativePhase { get; }
+        public IPhase PositivePhase { get; }
 
-        public IImplicitSurface3D Geometry { get; }
+        public IImplicitGeometry Geometry { get; }
     }
 }
