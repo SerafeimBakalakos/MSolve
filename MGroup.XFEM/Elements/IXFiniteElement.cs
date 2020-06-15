@@ -14,7 +14,7 @@ namespace MGroup.XFEM.Elements
 {
     public interface IXFiniteElement : IElement, IElementType, ICell<XNode>
     {
-        IReadOnlyList<ElementEdge> Edges { get; }
+        ElementEdge[] Edges { get; }
 
         IBulkIntegration IntegrationBulk { get; }
 

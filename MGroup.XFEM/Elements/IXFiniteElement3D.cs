@@ -20,7 +20,7 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         ElementSubtetrahedron3D[] ConformingSubtetrahedra { get; set; }
 
-        IReadOnlyList<ElementFace> Faces { get; }
+        ElementFace[] Faces { get; }
 
         IIsoparametricInterpolation3D Interpolation { get; }
 

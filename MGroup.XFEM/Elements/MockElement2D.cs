@@ -24,8 +24,7 @@ namespace MGroup.XFEM.Elements
 {
     public class MockElement2D : IXFiniteElement2D
     {
-        private readonly ElementEdge[] edges;
-        private readonly ElementFace[] faces;
+        private readonly IElementGeometry2D elementGeometry;
 
         public MockElement2D(int id, CellType cellType, IReadOnlyList<XNode> nodes)
         {
@@ -35,21 +34,13 @@ namespace MGroup.XFEM.Elements
 
             if (this.CellType == CellType.Tri3)
             {
-                IReadOnlyList<NaturalPoint> nodesNatural = InterpolationTri3.UniqueInstance.NodalNaturalCoordinates;
-                edges = new ElementEdge[3];
-                edges[0] = new ElementEdge(Nodes, nodesNatural, 0, 1);
-                edges[1] = new ElementEdge(Nodes, nodesNatural, 1, 2);
-                edges[2] = new ElementEdge(Nodes, nodesNatural, 2, 0);
+                elementGeometry = new ElementTri3Geometry();
             }
             else if (this.CellType == CellType.Quad4)
             {
-                IReadOnlyList<NaturalPoint> nodesNatural = InterpolationQuad4.UniqueInstance.NodalNaturalCoordinates;
-                edges = new ElementEdge[4];
-                edges[0] = new ElementEdge(Nodes, nodesNatural, 0, 1);
-                edges[1] = new ElementEdge(Nodes, nodesNatural, 1, 2);
-                edges[2] = new ElementEdge(Nodes, nodesNatural, 2, 3);
-                edges[3] = new ElementEdge(Nodes, nodesNatural, 3, 0);
+                elementGeometry = new ElementQuad4Geometry();
             }
+            Edges = elementGeometry.FindEdges(nodes);
         }
 
         public CellType CellType { get; }
@@ -81,9 +72,9 @@ namespace MGroup.XFEM.Elements
         public XSubdomain Subdomain { get; set; }
         ISubdomain IElement.Subdomain => Subdomain;
 
-        public IReadOnlyList<ElementEdge> Edges => edges;
+        public ElementEdge[] Edges { get; }
 
-        public IReadOnlyList<ElementFace> Faces => faces;
+        public ElementFace[] Faces { get; }
 
         public IBulkIntegration IntegrationBulk { get; set; }
         public ElementSubtriangle2D[] ConformingSubtriangles { get; set; }
