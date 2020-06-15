@@ -37,10 +37,10 @@ namespace MGroup.XFEM.Entities
         {
             foreach (XNode node in nodes)
             {
-                if (geometricModel.GetPhaseOfNode(node) == null)
+                if (node.PhaseID < 0)
                 {
                     ContainedNodes.Add(node);
-                    geometricModel.AddPhaseToNode(node, this);
+                    node.PhaseID = this.ID;
                 }
             }
         }

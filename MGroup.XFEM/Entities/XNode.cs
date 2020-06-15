@@ -33,5 +33,7 @@ namespace MGroup.XFEM.Entities
         //public bool IsEnriched => Enrichments.Count > 0;
 
         //public new Dictionary<int, XSubdomain> SubdomainsDictionary { get; } = new Dictionary<int, XSubdomain>();
+
+        public int PhaseID { get; set; } = -1;
     }
 }

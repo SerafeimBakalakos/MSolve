@@ -18,13 +18,16 @@ namespace MGroup.XFEM.Plotting.Writers
         public const string vtkReaderVersion = "4.1";
 
         private readonly double colorForDefaultPhase;
+        private readonly int defaultPhaseID;
         private readonly GeometricModel2D geometricModel;
         private readonly XModel physicalModel;
 
-        public PhasePlotter2D(XModel physicalModel, GeometricModel2D geometricModel, double colorForDefaultPhase = 0.0)
+        public PhasePlotter2D(XModel physicalModel, GeometricModel2D geometricModel, int defaultPhaseID, 
+            double colorForDefaultPhase = 0.0)
         {
             this.physicalModel = physicalModel;
             this.geometricModel = geometricModel;
+            this.defaultPhaseID = defaultPhaseID;
             this.colorForDefaultPhase = colorForDefaultPhase;
         }
 
@@ -46,9 +49,8 @@ namespace MGroup.XFEM.Plotting.Writers
 
                 foreach (XNode node in physicalModel.Nodes)
                 {
-                    IPhase2D phase = geometricModel.GetPhaseOfNode(node);
-                    double phaseID = phase.ID;
-                    if (phase is DefaultPhase2D) phaseID = colorForDefaultPhase;
+                    double phaseID = node.PhaseID;
+                    if (node.PhaseID == defaultPhaseID) phaseID = colorForDefaultPhase;
                     nodalPhases[node] = phaseID;
                 }
 

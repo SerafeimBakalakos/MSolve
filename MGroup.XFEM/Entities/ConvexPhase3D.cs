@@ -65,7 +65,7 @@ namespace MGroup.XFEM.Entities
                 if (Contains(node))
                 {
                     ContainedNodes.Add(node);
-                    geometricModel.AddPhaseToNode(node, this);
+                    node.PhaseID = this.ID;
                 }
             }
         }

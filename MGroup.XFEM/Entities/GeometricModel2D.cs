@@ -18,12 +18,10 @@ namespace MGroup.XFEM.Entities
         private readonly XModel physicalModel;
         private readonly Dictionary<int, Dictionary<PhaseBoundary2D, IElementCurveIntersection2D>> phaseBoundariesOfElements;
         private readonly Dictionary<int, HashSet<IPhase2D>> phasesOfElements;
-        private readonly Dictionary<int, IPhase2D> phasesOfNodes;
 
         public GeometricModel2D(XModel physicalModel)
         {
             this.physicalModel = physicalModel;
-            phasesOfNodes = new Dictionary<int, IPhase2D>();
 
             phasesOfElements = new Dictionary<int, HashSet<IPhase2D>>();
             foreach (IXFiniteElement element in physicalModel.Elements)
@@ -48,8 +46,6 @@ namespace MGroup.XFEM.Entities
 
         public void AddPhaseToElement(IXFiniteElement element, IPhase2D phase) => phasesOfElements[element.ID].Add(phase);
         
-        public void AddPhaseToNode(XNode node, IPhase2D phase) => phasesOfNodes[node.ID] = phase;
-
         public void InteractWithMesh()
         {
             // Nodes
@@ -92,12 +88,7 @@ namespace MGroup.XFEM.Entities
         public Dictionary<PhaseBoundary2D, IElementCurveIntersection2D> GetPhaseBoundariesOfElement(IXFiniteElement element) 
             => phaseBoundariesOfElements[element.ID];
         public HashSet<IPhase2D> GetPhasesOfElement(IXFiniteElement element) => phasesOfElements[element.ID];
-        public IPhase2D GetPhaseOfNode(XNode node)
-        {
-            bool exists = phasesOfNodes.TryGetValue(node.ID, out IPhase2D phase);
-            if (exists) return phase;
-            else return null;
-        }
+
 
         //TODO: Perhaps I need a dedicated class for this
         private void FindConformingMesh()

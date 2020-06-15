@@ -40,6 +40,8 @@ namespace MGroup.XFEM.Tests.Plotting
 
         private const double zeroLevelSetTolerance = 1E-6;
         private const int subdomainID = 0;
+        private const int defaultPhaseID = 0;
+        
         private const int boundaryIntegrationOrder = 2;
 
         public static void PlotGeometry()
@@ -132,7 +134,7 @@ namespace MGroup.XFEM.Tests.Plotting
             integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
 
             // Plot phases
-            var phasePlotter = new PhasePlotter3D(model, geometricModel);
+            var phasePlotter = new PhasePlotter3D(model, geometricModel, defaultPhaseID);
             phasePlotter.PlotNodes(pathPhasesOfNodes);
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
         }
@@ -179,7 +181,7 @@ namespace MGroup.XFEM.Tests.Plotting
         private static GeometricModel3D CreatePhases(XModel model, List<SimpleLsm3D> lsmSurfaces)
         {
             var geometricModel = new GeometricModel3D(model);
-            var defaultPhase = new DefaultPhase3D(0, geometricModel);
+            var defaultPhase = new DefaultPhase3D(defaultPhaseID, geometricModel);
             geometricModel.Phases.Add(defaultPhase);
             for (int p = 0; p < lsmSurfaces.Count; ++p)
             {

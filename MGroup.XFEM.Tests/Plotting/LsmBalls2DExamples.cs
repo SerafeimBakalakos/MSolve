@@ -42,6 +42,7 @@ namespace MGroup.XFEM.Tests.Plotting
 
         private const double zeroLevelSetTolerance = 1E-6;
         private const int subdomainID = 0;
+        private const int defaultPhaseID = 0;
 
         private const int boundaryIntegrationOrder = 2;
 
@@ -128,7 +129,7 @@ namespace MGroup.XFEM.Tests.Plotting
             integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
 
             // Plot phases
-            var phasePlotter = new PhasePlotter2D(model, geometricModel);
+            var phasePlotter = new PhasePlotter2D(model, geometricModel, defaultPhaseID);
             phasePlotter.PlotNodes(pathPhasesOfNodes);
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
         }
@@ -201,7 +202,7 @@ namespace MGroup.XFEM.Tests.Plotting
         private static GeometricModel2D CreatePhases(XModel model, List<SimpleLsm2D> lsmCurves)
         {
             var geometricModel = new GeometricModel2D(model);
-            var defaultPhase = new DefaultPhase2D(0, geometricModel);
+            var defaultPhase = new DefaultPhase2D(defaultPhaseID, geometricModel);
             geometricModel.Phases.Add(defaultPhase);
             for (int p = 0; p < lsmCurves.Count; ++p)
             {

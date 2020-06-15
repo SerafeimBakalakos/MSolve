@@ -18,12 +18,10 @@ namespace MGroup.XFEM.Entities
         private readonly XModel physicalModel;
         private readonly Dictionary<int, Dictionary<PhaseBoundary3D, IElementSurfaceIntersection3D>> phaseBoundariesOfElements;
         private readonly Dictionary<int, HashSet<IPhase3D>> phasesOfElements;
-        private readonly Dictionary<int, IPhase3D> phasesOfNodes;
 
         public GeometricModel3D(XModel physicalModel)
         {
             this.physicalModel = physicalModel;
-            phasesOfNodes = new Dictionary<int, IPhase3D>();
 
             phasesOfElements = new Dictionary<int, HashSet<IPhase3D>>();
             foreach (IXFiniteElement element in physicalModel.Elements)
@@ -48,8 +46,6 @@ namespace MGroup.XFEM.Entities
 
         public void AddPhaseToElement(IXFiniteElement element, IPhase3D phase) => phasesOfElements[element.ID].Add(phase);
         
-        public void AddPhaseToNode(XNode node, IPhase3D phase) => phasesOfNodes[node.ID] = phase;
-
         public void InteractWithMesh()
         {
             // Nodes
@@ -93,13 +89,6 @@ namespace MGroup.XFEM.Entities
             => phaseBoundariesOfElements[element.ID];
 
         public HashSet<IPhase3D> GetPhasesOfElement(IXFiniteElement element) => phasesOfElements[element.ID];
-
-        public IPhase3D GetPhaseOfNode(XNode node)
-        {
-            bool exists = phasesOfNodes.TryGetValue(node.ID, out IPhase3D phase);
-            if (exists) return phase;
-            else return null;
-        }
 
         //TODO: Perhaps I need a dedicated class for this
         private void FindConformingMesh()
