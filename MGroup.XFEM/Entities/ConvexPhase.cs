@@ -63,7 +63,7 @@ namespace MGroup.XFEM.Entities
                 if (Contains(node))
                 {
                     ContainedNodes.Add(node);
-                    node.PhaseID = this.ID;
+                    node.Phase = this;
                 }
             }
         }
@@ -80,7 +80,7 @@ namespace MGroup.XFEM.Entities
                 if (isInside)
                 {
                     ContainedElements.Add(element);
-                    element.PhaseIDs.Add(this.ID);
+                    element.Phases.Add(this);
                 }
                 else
                 {
@@ -88,7 +88,7 @@ namespace MGroup.XFEM.Entities
                     foreach (PhaseBoundary boundary in Boundaries)
                     {
                         // This boundary-element intersection may have already been calculated from the opposite phase. 
-                        if (geometricModel.GetPhaseBoundariesOfElement(element).ContainsKey(boundary))
+                        if (element.PhaseIntersections.ContainsKey(boundary))
                         {
                             isBoundary = true;
                             continue;
@@ -97,9 +97,9 @@ namespace MGroup.XFEM.Entities
                         IElementGeometryIntersection intersection = boundary.Geometry.Intersect(element);
                         if (intersection.RelativePosition == RelativePositionCurveElement.Intersecting)
                         {
-                            element.PhaseIDs.Add(boundary.PositivePhase.ID);
-                            element.PhaseIDs.Add(boundary.NegativePhase.ID);
-                            geometricModel.AddPhaseBoundaryToElement(element, boundary, intersection);
+                            element.Phases.Add(boundary.PositivePhase);
+                            element.Phases.Add(boundary.NegativePhase);
+                            element.PhaseIntersections[boundary] = intersection;
                             isBoundary = true;
                         }
                         else if (intersection.RelativePosition == RelativePositionCurveElement.Conforming)

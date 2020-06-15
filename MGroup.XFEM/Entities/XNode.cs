@@ -34,6 +34,6 @@ namespace MGroup.XFEM.Entities
 
         //public new Dictionary<int, XSubdomain> SubdomainsDictionary { get; } = new Dictionary<int, XSubdomain>();
 
-        public int PhaseID { get; set; } = -1;
+        public IPhase Phase { get; set; }
     }
 }

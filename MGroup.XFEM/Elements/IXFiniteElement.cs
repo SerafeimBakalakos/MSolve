@@ -20,7 +20,9 @@ namespace MGroup.XFEM.Elements
 
         IReadOnlyList<XNode> Nodes { get; }
 
-        HashSet<int> PhaseIDs { get; }
+        HashSet<IPhase> Phases { get; }
+
+        Dictionary<PhaseBoundary, IElementGeometryIntersection> PhaseIntersections { get; }
 
         XSubdomain Subdomain { get; set; }
 

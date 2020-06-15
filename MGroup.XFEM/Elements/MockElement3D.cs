@@ -69,7 +69,10 @@ namespace MGroup.XFEM.Elements
         public IReadOnlyList<XNode> Nodes { get; }
         IReadOnlyList<INode> IElement.Nodes => Nodes;
 
-        public HashSet<int> PhaseIDs { get; } = new HashSet<int>();
+        public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
+
+        public Dictionary<PhaseBoundary, IElementGeometryIntersection> PhaseIntersections { get; } 
+            = new Dictionary<PhaseBoundary, IElementGeometryIntersection>();
 
         public XSubdomain Subdomain { get; set; }
         ISubdomain IElement.Subdomain => Subdomain;

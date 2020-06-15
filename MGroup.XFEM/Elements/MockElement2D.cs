@@ -79,7 +79,10 @@ namespace MGroup.XFEM.Elements
 
         public List<IElementCurveIntersection2D> Intersections { get; } = new List<IElementCurveIntersection2D>();
 
-        public HashSet<int> PhaseIDs { get; } = new HashSet<int>();
+        public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
+
+        public Dictionary<PhaseBoundary, IElementGeometryIntersection> PhaseIntersections { get; }
+            = new Dictionary<PhaseBoundary, IElementGeometryIntersection>();
 
         public IMatrix DampingMatrix(IElement element)
         {

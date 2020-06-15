@@ -34,10 +34,10 @@ namespace MGroup.XFEM.Entities
         {
             foreach (XNode node in nodes)
             {
-                if (node.PhaseID < 0)
+                if (node.Phase == null)
                 {
                     ContainedNodes.Add(node);
-                    node.PhaseID = this.ID;
+                    node.Phase = this;
                 }
             }
         }
@@ -50,10 +50,10 @@ namespace MGroup.XFEM.Entities
         {
             foreach (IXFiniteElement element in elements)
             {
-                if (element.PhaseIDs.Count == 0)
+                if (element.Phases.Count == 0)
                 {
                     ContainedElements.Add(element);
-                    element.PhaseIDs.Add(this.ID);
+                    element.Phases.Add(this);
                 }
             }
         }
