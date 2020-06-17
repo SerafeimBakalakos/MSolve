@@ -8,14 +8,14 @@ using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
 
-namespace MGroup.XFEM.Plotting
+namespace MGroup.XFEM.Plotting.Writers
 {
-    public class Lsm3DElementIntersectionsPlotter
+    public class Lsm2DElementIntersectionsPlotter
     {
         private readonly XModel model;
-        private readonly IEnumerable<SimpleLsm3D> curves;
+        private readonly IEnumerable<SimpleLsm2D> curves;
 
-        public Lsm3DElementIntersectionsPlotter(XModel model, IEnumerable<SimpleLsm3D> curves)
+        public Lsm2DElementIntersectionsPlotter(XModel model, IEnumerable<SimpleLsm2D> curves)
         {
             this.model = model;
             this.curves = curves;
@@ -23,8 +23,8 @@ namespace MGroup.XFEM.Plotting
 
         //public void PlotIntersections(string path)
         //{
-        //    List<LsmElementIntersection3D> intersections = CalcIntersections();
-        //    var intersectionMesh = new LsmIntersectionSegmentsMesh3D(intersections);
+        //    List<LsmElementIntersection2D> intersections = CalcIntersections();
+        //    var intersectionMesh = new LsmIntersectionSegmentsMesh2D(intersections);
         //    using (var writer = new VtkFileWriter(path))
         //    {
         //        writer.WriteMesh(intersectionMesh);
@@ -32,9 +32,9 @@ namespace MGroup.XFEM.Plotting
         //    }
         //}
 
-        public void PlotIntersections(string path, IEnumerable<LsmElementIntersection3D> intersections)
+        public void PlotIntersections(string path, IEnumerable<LsmElementIntersection2D> intersections)
         {
-            var intersectionMesh = new LsmIntersectionSegmentsMesh3D(intersections);
+            var intersectionMesh = new LsmIntersectionSegmentsMesh2D(intersections);
             using (var writer = new VtkFileWriter(path))
             {
                 writer.WriteMesh(intersectionMesh);
@@ -43,17 +43,17 @@ namespace MGroup.XFEM.Plotting
         }
 
         //// TODO: Perhaps these can be stored somewhere else.
-        //private List<LsmElementIntersection3D> CalcIntersections()
+        //private List<LsmElementIntersection2D> CalcIntersections()
         //{
-        //    var intersections = new List<LsmElementIntersection3D>();
-        //    foreach (IImplicitSurface3D curve in curves)
+        //    var intersections = new List<LsmElementIntersection2D>();
+        //    foreach (IImplicitCurve2D curve in curves)
         //    {
         //        foreach (IXFiniteElement element in model.Elements)
         //        {
-        //            IElementSurfaceIntersection3D intersection = curve.Intersect(element);
+        //            IElementCurveIntersection2D intersection = curve.Intersect(element);
         //            if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
         //            {
-        //                intersections.Add((LsmElementIntersection3D)intersection);
+        //                intersections.Add((LsmElementIntersection2D)intersection);
         //            }
         //        }
         //    }

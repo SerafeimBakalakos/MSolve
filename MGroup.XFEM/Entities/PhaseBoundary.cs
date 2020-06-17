@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 
@@ -20,7 +21,7 @@ namespace MGroup.XFEM.Entities
             negativePhase.Neighbors.Add(positivePhase);
         }
 
-        //public IEnrichment StepEnrichment { get; set; }
+        public IEnrichment StepEnrichment { get; set; }
 
         public IPhase NegativePhase { get; }
         public IPhase PositivePhase { get; }

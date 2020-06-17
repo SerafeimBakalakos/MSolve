@@ -53,25 +53,6 @@ namespace MGroup.XFEM.Entities
 
             FindConformingMesh();
         }
-
-        public IPhase FindPhaseAt(XPoint point, IXFiniteElement element)
-        {
-            IPhase defaultPhase = null;
-            foreach (IPhase phase in element.Phases)
-            {
-                // Avoid searching for the point in the default phase, since its shape is higly irregular.
-                if (phase is DefaultPhase)
-                {
-                    defaultPhase = phase;
-                    continue;
-                }
-                else if (phase.Contains(point)) return phase;
-            }
-
-            // If the point is not contained in any other phases, it must be in the default phase 
-            Debug.Assert(defaultPhase != null, "The point does not belong to any phases");
-            return defaultPhase;
-        }
         
         //TODO: Perhaps I need a dedicated class for this
         private void FindConformingMesh()

@@ -8,6 +8,8 @@ using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
+using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.Enrichment.SingularityResolution;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
@@ -30,6 +32,8 @@ namespace MGroup.XFEM.Tests.Plotting
         private const string pathIntegrationBoundary = outputDirectory + "integration_points_boundary.vtk";
         private const string pathPhasesOfNodes = outputDirectory + "phases_of_nodes.vtk";
         private const string pathPhasesOfElements = outputDirectory + "phases_of_elements.vtk";
+        private const string pathStepEnrichedNodes = outputDirectory + "enriched_nodes_step.vtk";
+        //private const string pathJunctionEnrichedNodes = outputDirectory + "enriched_nodes_junction.vtk";
 
         private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0, zMin = -1.0, zMax = +1.0;
 
@@ -137,6 +141,18 @@ namespace MGroup.XFEM.Tests.Plotting
             var phasePlotter = new PhasePlotter3D(model, geometricModel, defaultPhaseID);
             phasePlotter.PlotNodes(pathPhasesOfNodes);
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
+
+            // Enrichment
+            ISingularityResolver singularityResolver = new NullSingularityResolver();
+            var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
+            nodeEnricher.ApplyEnrichments();
+            //model.UpdateDofs();
+            //model.UpdateMaterials();
+
+            double elementSize = (xMax - xMin) / numElementsX;
+            var enrichmentPlotter = new EnrichmentPlotter(model, elementSize, true);
+            enrichmentPlotter.PlotStepEnrichedNodes(pathStepEnrichedNodes);
+            //enrichmentPlotter.PlotJunctionEnrichedNodes(pathJunctionEnrichedNodes);
         }
 
         private static Dictionary<IXFiniteElement, List<LsmElementIntersection3D>> CalcIntersections(
