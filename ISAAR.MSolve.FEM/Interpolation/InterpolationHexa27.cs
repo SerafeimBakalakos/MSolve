@@ -4,6 +4,7 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interpolation.Inverse;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.Discretization.Mesh;
 
 namespace ISAAR.MSolve.FEM.Interpolation
 {
@@ -16,7 +17,7 @@ namespace ISAAR.MSolve.FEM.Interpolation
 	{
 		private static readonly InterpolationHexa27 uniqueInstance = new InterpolationHexa27();
 
-		private InterpolationHexa27() : base(27)
+		private InterpolationHexa27() : base(CellType.Hexa27, 27)
 		{
 			NodalNaturalCoordinates = new NaturalPoint[]
 			{

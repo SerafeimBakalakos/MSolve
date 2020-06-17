@@ -6,7 +6,7 @@ using MGroup.XFEM.Entities;
 
 namespace MGroup.XFEM.Elements
 {
-    interface IElementGeometry3D
+    public interface IElementGeometry3D
     {
         double CalcVolume(IReadOnlyList<XNode> nodes);
 

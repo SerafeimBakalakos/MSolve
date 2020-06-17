@@ -73,15 +73,15 @@ namespace MGroup.XFEM.Entities
             }
         }
 
-        //public void UpdateDofs()
-        //{
-        //    foreach (IXFiniteElement element in Elements) element.IdentifyDofs();
-        //}
+        public void UpdateDofs()
+        {
+            foreach (IXFiniteElement element in Elements) element.IdentifyDofs();
+        }
 
-        //public void UpdateMaterials()
-        //{
-        //    foreach (IXFiniteElement element in Elements) element.IdentifyIntegrationPointsAndMaterials();
-        //}
+        public void UpdateMaterials()
+        {
+            foreach (IXFiniteElement element in Elements) element.IdentifyIntegrationPointsAndMaterials();
+        }
 
         private void AssignConstraints()
         {

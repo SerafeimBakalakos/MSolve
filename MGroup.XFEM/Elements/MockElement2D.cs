@@ -104,21 +104,14 @@ namespace MGroup.XFEM.Elements
             throw new NotImplementedException();
         }
 
-        public double CalcArea()
+        public double CalcArea() => elementGeometry.CalcArea(Nodes);
+
+        public void IdentifyDofs()
         {
-            if (this.CellType == CellType.Tri3)
-            {
-                var triangle = new Geometry.Primitives.Triangle2D();
-                triangle.Vertices[0] = Nodes[0].Coordinates;
-                triangle.Vertices[1] = Nodes[1].Coordinates;
-                triangle.Vertices[2] = Nodes[2].Coordinates;
-                return triangle.CalcArea();
-            }
-            else if (this.CellType == CellType.Quad4)
-            {
-                return ISAAR.MSolve.Geometry.Shapes.ConvexPolygon2D.CreateUnsafe(Nodes).ComputeArea();
-            }
-            else throw new NotImplementedException();
+        }
+
+        public void IdentifyIntegrationPointsAndMaterials()
+        {
         }
     }
 }

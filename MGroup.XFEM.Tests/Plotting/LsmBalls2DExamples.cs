@@ -18,6 +18,7 @@ using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Geometry.Tolerances;
 using MGroup.XFEM.Integration;
+using MGroup.XFEM.Materials;
 using MGroup.XFEM.Plotting;
 using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
@@ -51,6 +52,10 @@ namespace MGroup.XFEM.Tests.Plotting
 
         private const int boundaryIntegrationOrder = 2;
 
+        private const double conductMatrix = 1E0, conductInclusion = 1E5;
+        private const double conductBoundaryMatrixInclusion = 1E1, conductBoundaryInclusionInclusion = 1E2;
+        private const double specialHeatCoeff = 1.0;
+
         public static void PlotGeometry()
         {
             // Create model and LSM
@@ -81,7 +86,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 TriangleQuadratureSymmetricGaussian.Order2Points3);
             foreach (IXFiniteElement element in model.Elements)
             {
-                ((MockElement2D)element).IntegrationBulk = integrationBulk;
+                if (element is MockElement2D mock) mock.IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter2D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
@@ -125,7 +130,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 TriangleQuadratureSymmetricGaussian.Order2Points3);
             foreach (IXFiniteElement element in model.Elements)
             {
-                ((MockElement2D)element).IntegrationBulk = integrationBulk;
+                if (element is MockElement2D mock) mock.IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter2D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
@@ -143,8 +148,8 @@ namespace MGroup.XFEM.Tests.Plotting
                 = new RelativeAreaResolver2D(geometricModel, singularityRelativeAreaTolerance);
             var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
-            //model.UpdateDofs();
-            //model.UpdateMaterials();
+            model.UpdateDofs();
+            model.UpdateMaterials();
 
             double elementSize = (xMax - xMin) / numElementsX;
             var enrichmentPlotter = new EnrichmentPlotter(model, elementSize, false);
@@ -204,14 +209,33 @@ namespace MGroup.XFEM.Tests.Plotting
             // Nodes
             foreach (XNode node in nodes) model.Nodes.Add(node);
 
+            // Materials
+            var matrixMaterial = new ThermalMaterial(conductMatrix, specialHeatCoeff);
+            var inclusionMaterial = new ThermalMaterial(conductInclusion, specialHeatCoeff);
+            var interfaceMaterial = new ThermalInterfaceMaterial(conductBoundaryMatrixInclusion);
+            var materialField = new MatrixInclusionsMaterialField(matrixMaterial, inclusionMaterial, 
+                conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
+
+            // Integration
+            var stdQuadrature = GaussLegendre2D.GetQuadratureWithOrder(2, 2);
+            var subcellQuadrature = TriangleQuadratureSymmetricGaussian.Order2Points3;
+            var integrationBulk = new IntegrationWithConformingSubtriangles2D(stdQuadrature, subcellQuadrature);
+
             // Elements
-            int numGaussPointsInterface = 2;
+            var elemFactory = new XThermalElement2DFactory(materialField, 1, integrationBulk, boundaryIntegrationOrder);
             for (int e = 0; e < cells.Count; ++e)
             {
-                var element = new MockElement2D(e, CellType.Quad4, cells[e].Vertices);
+                XThermalElement2D element = elemFactory.CreateElement(e, CellType.Quad4, cells[e].Vertices);
                 model.Elements.Add(element);
                 model.Subdomains[subdomainID].Elements.Add(element);
             }
+
+            //for (int e = 0; e < cells.Count; ++e)
+            //{
+            //    var element = new MockElement2D(e, CellType.Quad4, cells[e].Vertices);
+            //    model.Elements.Add(element);
+            //    model.Subdomains[subdomainID].Elements.Add(element);
+            //}
 
             model.ConnectDataStructures();
             return model;

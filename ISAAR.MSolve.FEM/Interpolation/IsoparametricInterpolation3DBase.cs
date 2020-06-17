@@ -19,8 +19,9 @@ namespace ISAAR.MSolve.FEM.Interpolation
         private readonly Dictionary<IQuadrature3D, IReadOnlyList<double[]>> cachedFunctionsAtGPs;
         private readonly Dictionary<IQuadrature3D, IReadOnlyList<Matrix>> cachedNaturalGradientsAtGPs;
 
-        public IsoparametricInterpolation3DBase(int numFunctions)
+        public IsoparametricInterpolation3DBase(CellType cellType, int numFunctions)
         {
+            this.CellType = cellType;
             this.NumFunctions = numFunctions;
             this.cachedFunctionsAtGPs = new Dictionary<IQuadrature3D, IReadOnlyList<double[]>>();
             this.cachedNaturalGradientsAtGPs = new Dictionary<IQuadrature3D, IReadOnlyList<Matrix>>();

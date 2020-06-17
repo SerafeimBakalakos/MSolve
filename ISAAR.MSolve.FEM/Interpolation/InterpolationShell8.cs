@@ -12,7 +12,7 @@ namespace ISAAR.MSolve.FEM.Interpolation
     {
         private static readonly InterpolationShell8 uniqueInstance = new InterpolationShell8();
 
-        private InterpolationShell8() : base(8)
+        private InterpolationShell8() : base(Discretization.Mesh.CellType.Quad8, 8)
         {
             NodalNaturalCoordinates = new NaturalPoint[]
             {

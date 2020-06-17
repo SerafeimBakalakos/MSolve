@@ -210,14 +210,6 @@ namespace MGroup.XFEM.Enrichment
                 if (phase is DefaultPhase) continue;
                 foreach (IXFiniteElement element in ((ConvexPhase)phase).BoundaryElements)
                 {
-                    #region debug
-                    XNode aNode = element.Nodes[4];
-                    double tol = 1E-6;
-                    if (Math.Abs(aNode.X - 0) <= tol && Math.Abs(aNode.Y - 0) <= tol && Math.Abs(aNode.Z - 0.4) <= tol)
-                    {
-                        Console.WriteLine();
-                    }
-                    #endregion
                     foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
                     {
                         // Find the nodes to potentially be enriched by this step enrichment 
@@ -251,14 +243,6 @@ namespace MGroup.XFEM.Enrichment
                 //nodesToEnrich.ExceptWith(rejectedNodes);
                 foreach (XNode node in nodesToEnrich)
                 {
-                    #region debug
-                    XNode aNode = node;
-                    double tol = 1E-6;
-                    if (Math.Abs(aNode.X - 0) <= tol && Math.Abs(aNode.Y - 0) <= tol && Math.Abs(aNode.Z - 0.4) <= tol)
-                    {
-                        Console.WriteLine();
-                    }
-                    #endregion
                     EnrichNode(node, stepEnrichment);
                 }
             }

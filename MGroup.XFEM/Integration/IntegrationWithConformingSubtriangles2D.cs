@@ -13,7 +13,7 @@ namespace MGroup.XFEM.Integration
     public class IntegrationWithConformingSubtriangles2D: IBulkIntegration
     {
         private readonly TriangleQuadratureSymmetricGaussian quadratureInSubcells;
-        private readonly IQuadrature2D standardQuadrature;
+        private readonly IQuadrature2D standardQuadrature; //TODO: This should be accessed from the element
 
         public IntegrationWithConformingSubtriangles2D(IQuadrature2D standardQuadrature, 
             TriangleQuadratureSymmetricGaussian quadratureInSubcells)

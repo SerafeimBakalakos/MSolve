@@ -4,6 +4,7 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interpolation.Inverse;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.Discretization.Mesh;
 
 namespace ISAAR.MSolve.FEM.Interpolation
 {
@@ -16,7 +17,7 @@ namespace ISAAR.MSolve.FEM.Interpolation
 	{
 		private static readonly InterpolationWedge15 uniqueInstance = new InterpolationWedge15();
 
-		private InterpolationWedge15() : base(15)
+		private InterpolationWedge15() : base(CellType.Wedge15, 15)
 		{
 			NodalNaturalCoordinates = new NaturalPoint[]
 			{

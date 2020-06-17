@@ -25,10 +25,10 @@ using MGroup.XFEM.Materials;
 //TODO: Bstd or Benr assume different order of the shape function gradient. Which is the correct one?
 namespace MGroup.XFEM.Elements
 {
-    public class XThermalElement2D : IXFiniteElement2D
+    public class XThermalElement3D : IXFiniteElement3D
     {
         private readonly int boundaryIntegrationOrder;
-        private readonly IElementGeometry2D elementGeometry;
+        private readonly IElementGeometry3D elementGeometry;
         private readonly int id;
         private readonly int numStandardDofs;
         private readonly IDofType[][] standardDofTypes;
@@ -39,7 +39,7 @@ namespace MGroup.XFEM.Elements
         private GaussPoint[] gaussPointsBulk;
 
         //TODO: this can be cached once for all standard elements of the same type
-        private EvalInterpolation2D[] evalInterpolationsAtGPsVolume;
+        private EvalInterpolation3D[] evalInterpolationsAtGPsVolume;
 
         /// <summary>
         /// In the same order as their corresponding <see cref="gaussPointsBoundary"/>.
@@ -58,14 +58,13 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         private IPhase[] phasesAtGPsVolume;
 
-        public XThermalElement2D(int id, IReadOnlyList<XNode> nodes, double thickness, IElementGeometry2D elementGeometry,
-            IThermalMaterialField materialField, IIsoparametricInterpolation2D interpolation, 
-            IGaussPointExtrapolation2D gaussPointExtrapolation, IQuadrature2D standardQuadrature, 
+        public XThermalElement3D(int id, IReadOnlyList<XNode> nodes, IElementGeometry3D elementGeometry,
+            IThermalMaterialField materialField, IIsoparametricInterpolation3D interpolation, 
+            IGaussPointExtrapolation3D gaussPointExtrapolation, IQuadrature3D standardQuadrature, 
             IBulkIntegration bulkIntegration, int boundaryIntegrationOrder)
         {
             this.id = id;
             this.Nodes = nodes;
-            this.Thickness = thickness;
             this.elementGeometry = elementGeometry;
 
             this.Interpolation = interpolation;
@@ -79,12 +78,12 @@ namespace MGroup.XFEM.Elements
             this.standardDofTypes = new IDofType[nodes.Count][];
             for (int i = 0; i < nodes.Count; ++i) this.standardDofTypes[i] = new IDofType[] { ThermalDof.Temperature };
 
-            this.Edges = elementGeometry.FindEdges(nodes);
+            (this.Edges, this.Faces) = elementGeometry.FindEdgesFaces(nodes);
         }
 
         public CellType CellType => Interpolation.CellType;
 
-        public ElementSubtriangle2D[] ConformingSubtriangles { get; set; }
+        public ElementSubtetrahedron3D[] ConformingSubtetrahedra { get; set; }
 
         public IElementDofEnumerator DofEnumerator { get; set; } = new GenericDofEnumerator();
 
@@ -92,21 +91,23 @@ namespace MGroup.XFEM.Elements
 
         public ElementEdge[] Edges { get; }
 
-        public IGaussPointExtrapolation2D GaussPointExtrapolation { get; }
+        public ElementFace[] Faces { get; }
+
+        public IGaussPointExtrapolation3D GaussPointExtrapolation { get; }
 
         public int ID { get => id; set => throw new InvalidOperationException("ID is set at constructor."); }
 
         public int IntegrationBoundaryOrder { get; set; }
 
         //TODO: This should not always be used for Kss. E.g. it doesn't work for bimaterial interface.
-        public IQuadrature2D IntegrationStandard { get; }
+        public IQuadrature3D IntegrationStandard { get; }
 
         public IBulkIntegration IntegrationBulk { get; set; }
 
         /// <summary>
         /// Common interpolation for standard and enriched nodes.
         /// </summary>
-        public IIsoparametricInterpolation2D Interpolation { get; }
+        public IIsoparametricInterpolation3D Interpolation { get; }
 
         public IThermalMaterialField MaterialField { get; }
 
@@ -116,7 +117,7 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         public IReadOnlyList<XNode> Nodes { get; }
 
-        public List<IElementCurveIntersection2D> Intersections { get; } = new List<IElementCurveIntersection2D>();
+        public List<IElementSurfaceIntersection3D> Intersections { get; } = new List<IElementSurfaceIntersection3D>();
 
         public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
 
@@ -126,9 +127,7 @@ namespace MGroup.XFEM.Elements
         ISubdomain IElement.Subdomain => this.Subdomain;
         public XSubdomain Subdomain { get; set; }
 
-        public double Thickness { get; }
-
-        public double CalcArea() => elementGeometry.CalcArea(Nodes);
+        public double CalcVolume() => elementGeometry.CalcVolume(Nodes);
 
         public IMatrix DampingMatrix(IElement element) => throw new NotImplementedException();
 
@@ -263,12 +262,12 @@ namespace MGroup.XFEM.Elements
             for (int i = 0; i < gaussPointsBulk.Length; ++i)
             {
                 GaussPoint gaussPoint = gaussPointsBulk[i];
-                EvalInterpolation2D evalInterpolation = evalInterpolationsAtGPsVolume[i];
+                EvalInterpolation3D evalInterpolation = evalInterpolationsAtGPsVolume[i];
 
                 var gaussPointAlt = new XPoint();
                 gaussPointAlt.ShapeFunctions = evalInterpolation.ShapeFunctions;
 
-                double dV = evalInterpolation.Jacobian.DirectDeterminant * Thickness;
+                double dV = evalInterpolation.Jacobian.DirectDeterminant;
 
                 // Material properties
                 double conductivity = materialsAtGPsBulk[i].ThermalConductivity;
@@ -289,34 +288,6 @@ namespace MGroup.XFEM.Elements
             return (Kee, Kse);
         }
 
-        #region delete
-        //private Matrix BuildConductivityMatrixBoundaryOLD()
-        //{
-        //    var Kii = Matrix.CreateZero(numEnrichedDofs, numEnrichedDofs);
-        //    foreach (var boundaryGaussPointsPair in gaussPointsBoundary)
-        //    {
-        //        PhaseBoundary boundary = boundaryGaussPointsPair.Key;
-        //        IReadOnlyList<GaussPoint> gaussPoints = boundaryGaussPointsPair.Value;
-        //        ThermalInterfaceMaterial[] materials = materialsAtGPsBoundary[boundary];
-
-        //        // Kii = sum(conductivity * jumpCoeff^2 * N^T * N * weight * thickness)
-        //        double phaseJumpCoeff = boundary.Enrichment.PhaseJumpCoefficient;
-        //        double commonCoeff = phaseJumpCoeff * phaseJumpCoeff * Thickness;
-        //        for (int i = 0; i < gaussPoints.Count; ++i)
-        //        {
-        //            GaussPoint gaussPoint = gaussPoints[i];
-        //            double interfaceConductivity = materials[i].InterfaceConductivity;
-        //            double scale = commonCoeff * interfaceConductivity * gaussPoint.Weight;
-
-        //            Vector N = CalculateEnrichedShapeFunctionVector(gaussPoint, boundary);
-        //            Matrix NtN = N.TensorProduct(N);
-        //            Kii.AxpyIntoThis(NtN, scale);
-        //        }
-        //    }
-        //    return Kii;
-        //}
-        #endregion
-
         private Matrix BuildConductivityMatrixBoundary()
         {
             var Kii = Matrix.CreateZero(numEnrichedDofs, numEnrichedDofs);
@@ -331,7 +302,7 @@ namespace MGroup.XFEM.Elements
                 {
                     GaussPoint gaussPoint = gaussPoints[i];
                     double interfaceConductivity = materials[i].InterfaceConductivity;
-                    double scale = Thickness * interfaceConductivity * gaussPoint.Weight;
+                    double scale = interfaceConductivity * gaussPoint.Weight;
 
                     Vector N = CalculateEnrichedShapeFunctionVector(gaussPoint, boundary);
                     Matrix NtN = N.TensorProduct(N);
@@ -349,8 +320,8 @@ namespace MGroup.XFEM.Elements
             for (int i = 0; i < gaussPointsBulk.Length; ++i)
             {
                 GaussPoint gaussPoint = gaussPointsBulk[i];
-                EvalInterpolation2D evalInterpolation = evalInterpolationsAtGPsVolume[i];
-                double dV = evalInterpolation.Jacobian.DirectDeterminant * Thickness;
+                EvalInterpolation3D evalInterpolation = evalInterpolationsAtGPsVolume[i];
+                double dV = evalInterpolation.Jacobian.DirectDeterminant;
                 //TODO: The thickness is constant per element in FEM, but what about XFEM? Different materials within the same 
                 //      element are possible. Yeah but the thickness is a geometric porperty, rather than a material one.
 
@@ -432,8 +403,9 @@ namespace MGroup.XFEM.Elements
         //}
 
         private Matrix CalculateDeformationMatrixEnriched(int numEnrichedDofs, IPhase phaseAtGaussPoint, XPoint gaussPoint,
-            EvalInterpolation2D evaluatedInterpolation)
+            EvalInterpolation3D evaluatedInterpolation)
         {
+            throw new NotImplementedException();
             // For each node and with all derivatives w.r.t. cartesian coordinates, the enrichment derivatives 
             // are: Bx = enrN,x = N,x(x,y) * [psi(x,y) - psi(node)] + N(x,y) * psi,x(x,y), where psi is the  
             // enrichment function. However in this formulation of multiphase XFEM, only piecewise constant enrichments
@@ -480,8 +452,9 @@ namespace MGroup.XFEM.Elements
             return deformationMatrix;
         }
 
-        private Matrix CalcDeformationMatrixStandard(EvalInterpolation2D evalInterpolation)
+        private Matrix CalcDeformationMatrixStandard(EvalInterpolation3D evalInterpolation)
         {
+            throw new NotImplementedException();
             // gradT = [ T,x ] = [ sum(Ni,x) * Ti ] = [ ... Ni,x ... ] * [ ... ]
             //         [ T,y ]   [ sum(Ni,y) * Ti ]   [ ... Ni,y ... ]   [  Ti ]
             //                                                           [ ... ]

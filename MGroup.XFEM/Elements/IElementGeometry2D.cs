@@ -6,7 +6,7 @@ using MGroup.XFEM.Entities;
 
 namespace MGroup.XFEM.Elements
 {
-    interface IElementGeometry2D
+    public interface IElementGeometry2D
     {
         double CalcArea(IReadOnlyList<XNode> nodes);
         ElementEdge[] FindEdges(IReadOnlyList<XNode> nodes);

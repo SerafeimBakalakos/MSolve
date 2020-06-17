@@ -26,14 +26,6 @@ namespace MGroup.XFEM.Elements
 
         List<IElementSurfaceIntersection3D> Intersections { get; }
 
-        //Dictionary<PhaseBoundary, IElementSurfaceIntersection3D> PhaseIntersections { get; }
-
-        //HashSet<IPhase3D> Phases { get; }
-
         double CalcVolume();
-
-
-        //Dictionary<PhaseBoundary3D, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)> 
-        //    GetMaterialsForBoundaryIntegration();
     }
 }

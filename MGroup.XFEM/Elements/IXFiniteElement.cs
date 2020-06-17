@@ -28,7 +28,7 @@ namespace MGroup.XFEM.Elements
 
         //(IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalMaterial>) GetMaterialsForBulkIntegration();
 
-        //void IdentifyDofs();
-        //void IdentifyIntegrationPointsAndMaterials();
+        void IdentifyDofs();
+        void IdentifyIntegrationPointsAndMaterials();
     }
 }

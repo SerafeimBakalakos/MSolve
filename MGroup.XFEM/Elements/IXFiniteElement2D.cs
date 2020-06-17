@@ -24,16 +24,7 @@ namespace MGroup.XFEM.Elements
 
         List<IElementCurveIntersection2D> Intersections { get; }
 
-        //Dictionary<PhaseBoundary, IElementCurveIntersection2D> PhaseIntersections { get; }
-
-        //HashSet<IPhase2D> Phases { get; }
-
         double CalcArea();
-
-        //Dictionary<PhaseBoundary2D, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)> 
-        //    GetMaterialsForBoundaryIntegration();
-
-        //(IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalMaterial>) GetMaterialsForBulkIntegration();
 
     }
 }

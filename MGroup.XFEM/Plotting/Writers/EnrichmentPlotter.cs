@@ -38,15 +38,6 @@ namespace MGroup.XFEM.Plotting.Writers
             var nodesToPlot = new Dictionary<CartesianPoint, double>();
             foreach (XNode node in physicalModel.Nodes)
             {
-                #region debug
-                XNode aNode = node;
-                double tol = 1E-6;
-                if (Math.Abs(aNode.X - 0) <= tol && Math.Abs(aNode.Y - 0) <= tol && Math.Abs(aNode.Z - 0.4) <= tol)
-                {
-                    Console.WriteLine();
-                }
-                #endregion
-
                 if (node.Enrichments.Count == 0) continue;
                 IEnrichment[] enrichments = node.Enrichments.Keys.Where(predicate).ToArray();
                 if (enrichments.Length == 1)

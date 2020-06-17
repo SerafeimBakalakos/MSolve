@@ -108,5 +108,13 @@ namespace MGroup.XFEM.Elements
         }
 
         public double CalcVolume() => elementGeometry.CalcVolume(Nodes);
+
+        public void IdentifyDofs()
+        {
+        }
+
+        public void IdentifyIntegrationPointsAndMaterials()
+        {
+        }
     }
 }

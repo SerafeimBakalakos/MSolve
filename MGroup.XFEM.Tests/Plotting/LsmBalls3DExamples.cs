@@ -17,6 +17,7 @@ using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Geometry.Tolerances;
 using MGroup.XFEM.Integration;
+using MGroup.XFEM.Materials;
 using MGroup.XFEM.Plotting;
 using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
@@ -48,6 +49,10 @@ namespace MGroup.XFEM.Tests.Plotting
         
         private const int boundaryIntegrationOrder = 2;
 
+        private const double conductMatrix = 1E0, conductInclusion = 1E5;
+        private const double conductBoundaryMatrixInclusion = 1E1, conductBoundaryInclusionInclusion = 1E2;
+        private const double specialHeatCoeff = 1.0;
+
         public static void PlotGeometry()
         {
             // Create model and LSM
@@ -78,7 +83,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 TetrahedronQuadrature.Order2Points4);
             foreach (IXFiniteElement element in model.Elements)
             {
-                ((MockElement3D)element).IntegrationBulk = integrationBulk;
+                if (element is MockElement3D mock) mock.IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter3D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
@@ -126,7 +131,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 TetrahedronQuadrature.Order2Points4);
             foreach (IXFiniteElement element in model.Elements)
             {
-                ((MockElement3D)element).IntegrationBulk = integrationBulk;
+                if (element is MockElement3D mock) mock.IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter3D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
@@ -146,8 +151,8 @@ namespace MGroup.XFEM.Tests.Plotting
             ISingularityResolver singularityResolver = new NullSingularityResolver();
             var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
-            //model.UpdateDofs();
-            //model.UpdateMaterials();
+            model.UpdateDofs();
+            model.UpdateMaterials();
 
             double elementSize = (xMax - xMin) / numElementsX;
             var enrichmentPlotter = new EnrichmentPlotter(model, elementSize, true);
@@ -223,14 +228,33 @@ namespace MGroup.XFEM.Tests.Plotting
             // Nodes
             foreach (XNode node in nodes) model.Nodes.Add(node);
 
+            // Materials
+            var matrixMaterial = new ThermalMaterial(conductMatrix, specialHeatCoeff);
+            var inclusionMaterial = new ThermalMaterial(conductInclusion, specialHeatCoeff);
+            var interfaceMaterial = new ThermalInterfaceMaterial(conductBoundaryMatrixInclusion);
+            var materialField = new MatrixInclusionsMaterialField(matrixMaterial, inclusionMaterial,
+                conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
+
+            // Integration
+            var stdQuadrature = GaussLegendre3D.GetQuadratureWithOrder(3, 3, 3);
+            var subcellQuadrature = TetrahedronQuadrature.Order2Points4;
+            var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(stdQuadrature, subcellQuadrature);
+
             // Elements
-            int numGaussPointsInterface = 2;
+            var elemFactory = new XThermalElement3DFactory(materialField, integrationBulk, boundaryIntegrationOrder);
             for (int e = 0; e < cells.Count; ++e)
             {
-                var element = new MockElement3D(e, CellType.Hexa8, cells[e].Vertices);
+                XThermalElement3D element = elemFactory.CreateElement(e, CellType.Hexa8, cells[e].Vertices);
                 model.Elements.Add(element);
                 model.Subdomains[subdomainID].Elements.Add(element);
             }
+
+            //for (int e = 0; e < cells.Count; ++e)
+            //{
+            //    var element = new MockElement3D(e, CellType.Hexa8, cells[e].Vertices);
+            //    model.Elements.Add(element);
+            //    model.Subdomains[subdomainID].Elements.Add(element);
+            //}
 
             model.ConnectDataStructures();
             return model;

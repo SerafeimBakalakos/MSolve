@@ -4,6 +4,7 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interpolation.Inverse;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.Discretization.Mesh;
 
 namespace ISAAR.MSolve.FEM.Interpolation
 {
@@ -16,9 +17,9 @@ namespace ISAAR.MSolve.FEM.Interpolation
     {
 	    private static readonly InterpolationTet10 uniqueInstance = new InterpolationTet10();
 
-		private InterpolationTet10() : base(10)
+		private InterpolationTet10() : base(CellType.Tet10, 10)
 	    {
-		    NodalNaturalCoordinates = new NaturalPoint[]
+			NodalNaturalCoordinates = new NaturalPoint[]
 		    {
 			    new NaturalPoint(0,0,0),
 			    new NaturalPoint(1,0,0),
