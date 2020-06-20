@@ -85,7 +85,7 @@ namespace MGroup.XFEM.Plotting.Writers
                         NaturalPoint centroidNatural = subtriangle.OriginalTriangle.FindCentroidNatural();
                         var centroid = new XPoint();
                         centroid.Element = subtriangle.ParentElement;
-                        centroid.Coordinates[CoordinateSystem.ElementLocal] = 
+                        centroid.Coordinates[CoordinateSystem.ElementNatural] = 
                             new double[] { centroidNatural.Xi, centroidNatural.Eta };
                         centroid.ShapeFunctions = ((IXFiniteElement2D)centroid.Element)
                             .Interpolation.EvaluateFunctionsAt(centroidNatural);

@@ -6,6 +6,6 @@ namespace MGroup.XFEM.Geometry.Primitives
 {
     public enum CoordinateSystem
     {
-        GlobalCartesian, ElementLocal, IntegrationSubcellLocal, CurveLocal, CrackTipCartesian, CrackTipPolar
+        GlobalCartesian, ElementNatural, IntegrationSubcellLocal, CurveLocal, CrackTipCartesian, CrackTipPolar
     }
 }

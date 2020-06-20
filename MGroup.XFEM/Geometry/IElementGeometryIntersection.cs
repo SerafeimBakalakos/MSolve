@@ -15,7 +15,7 @@ namespace MGroup.XFEM.Geometry
         /// natural system of the element to the global cartesian system.
         /// </summary>
         /// <param name="order"></param>
-        IList<GaussPoint> GetIntegrationPoints(int order);
+        IReadOnlyList<GaussPoint> GetIntegrationPoints(int order);
 
         NaturalPoint[] GetPointsForTriangulation();
     }

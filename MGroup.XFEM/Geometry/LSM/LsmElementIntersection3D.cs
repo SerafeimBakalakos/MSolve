@@ -45,7 +45,7 @@ namespace MGroup.XFEM.Geometry.LSM
         }
         //TODO: Perhaps a dedicated IBoundaryIntegration component is needed,
         //      along with dedicated concrete integrations for triangles, quads, etc
-        public IList<GaussPoint> GetIntegrationPoints(int order)
+        public IReadOnlyList<GaussPoint> GetIntegrationPoints(int order)
         {
             if ((((IElementType)Element).CellType != CellType.Hexa8) && (((IElementType)Element).CellType != CellType.Tet4))
             {

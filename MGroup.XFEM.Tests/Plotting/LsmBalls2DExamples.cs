@@ -2,12 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.Analyzers;
+using ISAAR.MSolve.Discretization;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
+using ISAAR.MSolve.Problems;
+using ISAAR.MSolve.Solvers.Direct;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Enrichment.SingularityResolution;
@@ -20,6 +25,7 @@ using MGroup.XFEM.Geometry.Tolerances;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Materials;
 using MGroup.XFEM.Plotting;
+using MGroup.XFEM.Plotting.Fields;
 using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
 
@@ -36,6 +42,11 @@ namespace MGroup.XFEM.Tests.Plotting
         private const string pathPhasesOfElements = outputDirectory + "phases_of_elements.vtk";
         private const string pathStepEnrichedNodes = outputDirectory + "enriched_nodes_step.vtk";
         //private const string pathJunctionEnrichedNodes = outputDirectory + "enriched_nodes_junction.vtk";
+        private const string pathTemperatureAtNodes = outputDirectory + "temperature_nodes.vtk";
+        private const string pathTemperatureAtGPs = outputDirectory + "temperature_integration_points.vtk";
+        private const string pathTemperatureField = outputDirectory + "temperature_field.vtk";
+        private const string pathHeatFluxAtGPs = outputDirectory + "heat_flux_integration_points.vtk";
+
 
         private const double xMin = -1.0, xMax = 1.0, yMin = -1, yMax = 1.0;
         private const double thickness = 1.0;
@@ -59,7 +70,7 @@ namespace MGroup.XFEM.Tests.Plotting
         public static void PlotGeometry()
         {
             // Create model and LSM
-            XModel model = CreateModelQuads(numElementsX, numElementsY);
+            XModel model = CreateModel(numElementsX, numElementsY);
             List<SimpleLsm2D> lsmCurves = InitializeLSM(model);
 
             // Plot original mesh and level sets
@@ -98,7 +109,7 @@ namespace MGroup.XFEM.Tests.Plotting
         public static void PlotGeometryAndEntities()
         {
             // Create physical model, LSM and phases
-            XModel model = CreateModelQuads(numElementsX, numElementsY);
+            XModel model = CreateModel(numElementsX, numElementsY);
             List<SimpleLsm2D> lsmCurves = InitializeLSM(model);
             GeometricModel geometricModel = CreatePhases(model, lsmCurves);
 
@@ -157,6 +168,94 @@ namespace MGroup.XFEM.Tests.Plotting
             //enrichmentPlotter.PlotJunctionEnrichedNodes(pathJunctionEnrichedNodes);
         }
 
+        public static void PlotSolution()
+        {
+            // Create physical model, LSM and phases
+            XModel model = CreateModel(numElementsX, numElementsY);
+            List<SimpleLsm2D> lsmCurves = InitializeLSM(model);
+            GeometricModel geometricModel = CreatePhases(model, lsmCurves);
+
+            // Plot original mesh and level sets
+            PlotInclusionLevelSets(outputDirectory, "level_set", model, lsmCurves);
+
+            // Find and plot intersections between level set curves and elements
+            geometricModel.InteractWithMesh();
+
+            //TODO: The next intersections and conforming mesh should have been taken care by the geometric model. 
+            //      Read them from there.
+            Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> elementIntersections
+                = CalcIntersections(model, lsmCurves);
+            var allIntersections = new List<LsmElementIntersection2D>();
+            foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
+            var intersectionPlotter = new Lsm2DElementIntersectionsPlotter(model, lsmCurves);
+            intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
+
+            // Plot conforming mesh
+            Dictionary<IXFiniteElement, ElementSubtriangle2D[]> triangulation = CreateConformingMesh(elementIntersections);
+            var conformingMesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, triangulation);
+            using (var writer = new VtkFileWriter(pathConformingMesh))
+            {
+                writer.WriteMesh(conformingMesh);
+            }
+
+            // Plot phases
+            var phasePlotter = new PhasePlotter2D(model, geometricModel, defaultPhaseID);
+            phasePlotter.PlotNodes(pathPhasesOfNodes);
+            phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
+
+            // Plot bulk integration points
+            model.UpdateMaterials();
+            var integrationBulk = new IntegrationWithConformingSubtriangles2D(GaussLegendre2D.GetQuadratureWithOrder(2, 2),
+                TriangleQuadratureSymmetricGaussian.Order2Points3);
+            foreach (IXFiniteElement element in model.Elements)
+            {
+                if (element is MockElement2D mock) mock.IntegrationBulk = integrationBulk;
+            }
+            var integrationPlotter = new IntegrationPlotter2D(model);
+            integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
+
+            // Plot boundary integration points
+            integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
+
+            // Enrichment
+            ISingularityResolver singularityResolver
+                = new RelativeAreaResolver2D(geometricModel, singularityRelativeAreaTolerance);
+            var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
+            nodeEnricher.ApplyEnrichments();
+            model.UpdateDofs();
+
+            double elementSize = (xMax - xMin) / numElementsX;
+            var enrichmentPlotter = new EnrichmentPlotter(model, elementSize, false);
+            enrichmentPlotter.PlotStepEnrichedNodes(pathStepEnrichedNodes);
+            //enrichmentPlotter.PlotJunctionEnrichedNodes(pathJunctionEnrichedNodes);
+
+            // Run analysis and plot temperature and heat flux
+            IVectorView solution = RunAnalysis(model);
+
+            // Plot temperature
+            using (var writer = new VtkPointWriter(pathTemperatureAtNodes))
+            {
+                var temperatureField = new TemperatureAtNodesField(model);
+                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
+            }
+            using (var writer = new VtkPointWriter(pathTemperatureAtGPs))
+            {
+                var temperatureField = new TemperatureAtGaussPointsField(model);
+                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
+            }
+            using (var writer = new VtkFileWriter(pathTemperatureField))
+            {
+                var temperatureField = new TemperatureField2D(model, conformingMesh);
+                writer.WriteMesh(conformingMesh);
+                writer.WriteScalarField("temperature", conformingMesh, temperatureField.CalcValuesAtVertices(solution));
+            }
+            using (var writer = new VtkPointWriter(pathHeatFluxAtGPs))
+            {
+                var fluxField = new HeatFluxAtGaussPointsField2D(model);
+                writer.WriteVectorField("heat_flux", fluxField.CalcValuesAtVertices(solution));
+            }
+        }
+
         private static Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> CalcIntersections(
             XModel model, List<SimpleLsm2D> curves)
         {
@@ -196,7 +295,7 @@ namespace MGroup.XFEM.Tests.Plotting
             return conformingMesh;
         }
 
-        private static XModel CreateModelQuads(int numElementsX, int numElementsY)
+        private static XModel CreateModel(int numElementsX, int numElementsY)
         {
             var model = new XModel();
             model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
@@ -237,6 +336,24 @@ namespace MGroup.XFEM.Tests.Plotting
             //    model.Subdomains[subdomainID].Elements.Add(element);
             //}
 
+
+            // Boundary conditions
+            double meshTol = 1E-7;
+
+            // Left side: T = +100
+            double minX = model.Nodes.Select(n => n.X).Min();
+            foreach (var node in model.Nodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
+            {
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = +100 });
+            }
+
+            // Right side: T = 100
+            double maxX = model.Nodes.Select(n => n.X).Max();
+            foreach (var node in model.Nodes.Where(n => Math.Abs(n.X - maxX) <= meshTol))
+            {
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = -100 });
+            }
+
             model.ConnectDataStructures();
             return model;
         }
@@ -276,7 +393,7 @@ namespace MGroup.XFEM.Tests.Plotting
             return curves;
         }
 
-        internal static void PlotInclusionLevelSets(string directoryPath, string vtkFilenamePrefix,
+        private static void PlotInclusionLevelSets(string directoryPath, string vtkFilenamePrefix,
             XModel model, IList<SimpleLsm2D> lsmCurves)
         {
             for (int c = 0; c < lsmCurves.Count; ++c)
@@ -292,6 +409,22 @@ namespace MGroup.XFEM.Tests.Plotting
                         levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
                 }
             }
+        }
+
+        private static IVectorView RunAnalysis(XModel model)
+        {
+            Console.WriteLine("Starting analysis");
+            SuiteSparseSolver solver = new SuiteSparseSolver.Builder().BuildSolver(model);
+            //SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(model);
+            var problem = new ProblemThermalSteadyState(model, solver);
+            var linearAnalyzer = new LinearAnalyzer(model, solver, problem);
+            var staticAnalyzer = new StaticAnalyzer(model, solver, problem, linearAnalyzer);
+
+            staticAnalyzer.Initialize();
+            staticAnalyzer.Solve();
+
+            Console.WriteLine("Analysis finished");
+            return solver.LinearSystems[subdomainID].Solution;
         }
     }
 }

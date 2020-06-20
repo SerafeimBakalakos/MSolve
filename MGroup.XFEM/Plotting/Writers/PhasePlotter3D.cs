@@ -84,7 +84,7 @@ namespace MGroup.XFEM.Plotting.Writers
                         NaturalPoint centroidNatural = subtetra.OriginalTetra.FindCentroidNatural();
                         var centroid = new XPoint();
                         centroid.Element = subtetra.ParentElement;
-                        centroid.Coordinates[CoordinateSystem.ElementLocal] = 
+                        centroid.Coordinates[CoordinateSystem.ElementNatural] = 
                             new double[] { centroidNatural.Xi, centroidNatural.Eta, centroidNatural.Zeta };
                         centroid.ShapeFunctions = ((IXFiniteElement3D)centroid.Element)
                             .Interpolation.EvaluateFunctionsAt(centroidNatural);

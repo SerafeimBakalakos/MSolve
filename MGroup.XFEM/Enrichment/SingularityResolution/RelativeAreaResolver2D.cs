@@ -124,7 +124,7 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
                     NaturalPoint centroidNatural = triangle.FindCentroidNatural();
                     (CartesianPoint centroidCartesian, double area) = triangle.FindCentroidAndAreaCartesian(element2D);
                     XPoint centroid = new XPoint();
-                    centroid.Coordinates[CoordinateSystem.ElementLocal] = centroidNatural.Coordinates;
+                    centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural.Coordinates;
                     element.FindPhaseAt(centroid);
 
                     if (centroid.Phase == phase1) totalArea1 += area;

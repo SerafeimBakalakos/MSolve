@@ -43,7 +43,7 @@ namespace MGroup.XFEM.Elements
 
             if (point.ShapeFunctions == null)
             {
-                bool hasNatural = point.Coordinates.TryGetValue(CoordinateSystem.ElementLocal, out double[] natural);
+                bool hasNatural = point.Coordinates.TryGetValue(CoordinateSystem.ElementNatural, out double[] natural);
                 if (!hasNatural)
                 {
                     throw new ArgumentException("Either the natural coordinates of the point or"

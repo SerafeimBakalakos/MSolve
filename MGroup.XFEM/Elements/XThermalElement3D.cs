@@ -131,8 +131,16 @@ namespace MGroup.XFEM.Elements
 
         public IMatrix DampingMatrix(IElement element) => throw new NotImplementedException();
 
-        public IReadOnlyList<IReadOnlyList<IDofType>> GetElementDofTypes(IElement element) => allDofTypes;
+        public XPoint EvaluateFunctionsAt(NaturalPoint point)
+        {
+            var result = new XPoint();
+            result.Coordinates[CoordinateSystem.ElementNatural] = point.Coordinates;
+            result.Element = this;
+            result.ShapeFunctions = Interpolation.EvaluateFunctionsAt(point);
+            return result;
+        }
 
+        public IReadOnlyList<IReadOnlyList<IDofType>> GetElementDofTypes(IElement element) => allDofTypes;
 
         public Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)>
             GetMaterialsForBoundaryIntegration()
@@ -338,70 +346,6 @@ namespace MGroup.XFEM.Elements
             return Kss;
         }
 
-        //TODO: delete
-        //private IMatrix JoinStiffnessesNodeMajor(Func<IReadOnlyList<GaussPoint>, Matrix> buildKss,
-        //    Func<(Matrix Kee, Matrix Kse)> buildKeeKse)
-        //{
-        //    //TODO: Perhaps it is more efficient to do this by just appending Kse and Kee to Kss.
-        //    if (numEnrichedDofs == 0) return buildKss(IntegrationStandard.IntegrationPoints);
-        //    else
-        //    {
-        //        // The dof order in increasing frequency of change is: node, enrichment item, enrichment function, axis.
-        //        // WARNING: The order here must match the order in OrderDofsNodeMajor() and BuildEnrichedStiffnessMatricesUpper()
-
-        //        // Find the mapping from Kss, Kse, Kee to a total matrix for the element. TODO: This could be a different method.
-        //        var stdDofIndices = new int[numStandardDofs];
-        //        var enrDofIndices = new int[numEnrichedDofs];
-        //        int enrDofCounter = 0, totDofCounter = 0;
-        //        for (int n = 0; n < Nodes.Count; ++n)
-        //        {
-        //            // Std dofs
-        //            stdDofIndices[n] = totDofCounter;           // std X
-        //            totDofCounter += 1;
-
-        //            // Enr dofs
-        //            for (int e = 0; e < Nodes[n].EnrichedDofsCount; ++e)
-        //            {
-        //                enrDofIndices[enrDofCounter++] = totDofCounter++;
-        //            }
-        //        }
-
-        //        // Copy the entries of Kss, Kse, Kee to the upper triangle of a total matrix for the element.
-        //        Matrix Kss = buildKss(IntegrationStrategy.GenerateIntegrationPoints(this));
-        //        (Matrix Kee, Matrix Kse) = buildKeeKse();
-        //        var Ktotal = SymmetricMatrix.CreateZero(numStandardDofs + numEnrichedDofs);
-
-        //        // Upper triangle of Kss
-        //        for (int stdCol = 0; stdCol < numStandardDofs; ++stdCol)
-        //        {
-        //            int totColIdx = stdDofIndices[stdCol];
-        //            for (int stdRow = 0; stdRow <= stdCol; ++stdRow)
-        //            {
-        //                Ktotal[stdDofIndices[stdRow], totColIdx] = Kss[stdRow, stdCol];
-        //            }
-        //        }
-
-        //        for (int enrCol = 0; enrCol < numEnrichedDofs; ++enrCol)
-        //        {
-        //            int totColIdx = enrDofIndices[enrCol];
-
-        //            // Whole Kse
-        //            for (int stdRow = 0; stdRow < numStandardDofs; ++stdRow)
-        //            {
-        //                Ktotal[stdDofIndices[stdRow], totColIdx] = Kse[stdRow, enrCol];
-        //            }
-
-        //            // Upper triangle of Kee
-        //            for (int enrRow = 0; enrRow <= enrCol; ++enrRow)
-        //            {
-        //                Ktotal[enrDofIndices[enrRow], totColIdx] = Kee[enrRow, enrCol];
-        //            }
-        //        }
-
-        //        return Ktotal;
-        //    }
-        //}
-
         private Matrix CalculateDeformationMatrixEnriched(int numEnrichedDofs, IPhase phaseAtGaussPoint, XPoint gaussPoint,
             EvalInterpolation3D evaluatedInterpolation)
         {
@@ -463,46 +407,6 @@ namespace MGroup.XFEM.Elements
             //                     [ N1,y N2,y N3,y ... ]
             return evalInterpolation.ShapeGradientsCartesian.Transpose();
         }
-
-        #region delete
-        ///// <summary>
-        ///// The contour integral along a phase boundary is calculated for the enriched dofs that were applied due to that 
-        ///// boundary. For example, if there are 2 boundaries and all 3 nodes of the element are enriched due to them, then the 6
-        ///// enriched dofs are [node1Boundary1, node1Boundary2, node2Boundary1, node2Boundary2, node3Boundary1, node3Boundary2].
-        ///// When integrating along boundary 1 we will compute N^T*N, where N(6x1) = [N1 0 N2 0 N3 0]. If we integrate along
-        ///// boundary 2, then N(6x1) = [0 N1 0 N2 0 N3]. 
-        ///// 
-        ///// Therefore when integrating along a specific boundary, then for every enriched dof of each node i, we need to find 
-        ///// if the enrichment was applied due to that boundary. If yes, the corresponding index of the total shape function 
-        ///// array gets the value Ni. Otherwise it remains 0. 
-        ///// 
-        ///// The whole thing also takes care of a) blending enrichments due to boundaries in other elements, 
-        ///// b) rare cases where one or more nodes were not enriched like the rest, because their nodal support was almost 
-        ///// entirely in one of the two regions.
-        ///// </summary>
-        //private Vector CalculateEnrichedShapeFunctionVectorOLD(NaturalPoint gaussPoint, PhaseBoundary boundary)
-        //{
-        //    //TODO: Optimize this: The mapping should be done once per enrichment ane reused for all Gauss points.
-        //    //      See an attempt at MapEnrichedDofIndicesToNodeIndices().
-
-        //    Vector totalShapeFunctions = Vector.CreateZero(numEnrichedDofs);
-        //    double[] N = InterpolationStandard.EvaluateFunctionsAt(gaussPoint);
-        //    int idx = 0;
-        //    for (int n = 0; n < Nodes.Count; ++n)
-        //    {
-        //        XNode node = Nodes[n];
-        //        //TODO: VERY FRAGILE CODE. This order of enrichments was used to determine the order of enriched dofs in 
-        //        //      another method. It works as of the time of writing, but this dependency must be removed. Perhaps use a 
-        //        //      DofTable.
-        //        foreach (IEnrichment enrichment in node.Enrichments.Keys) 
-        //        {
-        //            if (enrichment.IsAppliedDueTo(boundary)) totalShapeFunctions[idx] = N[n];
-        //            ++idx; // always move to the next index in the total shape function array
-        //        }
-        //    }
-        //    return totalShapeFunctions;
-        //}
-        #endregion
 
         /// <summary>
         /// The contour integral along a phase boundary is calculated for the enriched dofs that were applied due to that 

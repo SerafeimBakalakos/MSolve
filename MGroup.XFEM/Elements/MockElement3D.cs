@@ -18,6 +18,7 @@ using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
+using MGroup.XFEM.Materials;
 
 //TODO: delete this class
 namespace MGroup.XFEM.Elements
@@ -115,6 +116,21 @@ namespace MGroup.XFEM.Elements
 
         public void IdentifyIntegrationPointsAndMaterials()
         {
+        }
+
+        public XPoint EvaluateFunctionsAt(NaturalPoint point)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)> GetMaterialsForBoundaryIntegration()
+        {
+            throw new NotImplementedException();
+        }
+
+        public (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalMaterial>) GetMaterialsForBulkIntegration()
+        {
+            throw new NotImplementedException();
         }
     }
 }

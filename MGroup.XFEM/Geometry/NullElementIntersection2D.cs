@@ -12,7 +12,7 @@ namespace MGroup.XFEM.Geometry
 
         public List<double[]> ApproximateGlobalCartesian() => new List<double[]>(0);
 
-        public IList<GaussPoint> GetIntegrationPoints(int numPoints)
+        public IReadOnlyList<GaussPoint> GetIntegrationPoints(int numPoints)
         {
             return new GaussPoint[0];
         }

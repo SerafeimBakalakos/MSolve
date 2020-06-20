@@ -41,7 +41,7 @@ namespace MGroup.XFEM.Plotting
                 var element2D = (IXFiniteElement2D)element;
                 foreach (IElementCurveIntersection2D intersection in element2D.Intersections)
                 {
-                    IList<GaussPoint> gaussPoints = intersection.GetIntegrationPoints(order);
+                    IReadOnlyList<GaussPoint> gaussPoints = intersection.GetIntegrationPoints(order);
                     foreach (GaussPoint gp in gaussPoints)
                     {
                         CartesianPoint point = element2D.Interpolation.TransformNaturalToCartesian(element.Nodes, gp);

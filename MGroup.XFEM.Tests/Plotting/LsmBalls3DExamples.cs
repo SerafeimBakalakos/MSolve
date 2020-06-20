@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.Discretization;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Mesh.Generation;
@@ -56,7 +58,7 @@ namespace MGroup.XFEM.Tests.Plotting
         public static void PlotGeometry()
         {
             // Create model and LSM
-            XModel model = CreateModelHexa(numElementsX, numElementsY, numElementsZ);
+            XModel model = CreateModel(numElementsX, numElementsY, numElementsZ);
             List<SimpleLsm3D> lsmSurfaces = InitializeLSM(model);
 
             // Plot original mesh and level sets
@@ -97,9 +99,8 @@ namespace MGroup.XFEM.Tests.Plotting
 
         public static void PlotGeometryAndEntities()
         {
-
             // Create model and LSM
-            XModel model = CreateModelHexa(numElementsX, numElementsY, numElementsZ);
+            XModel model = CreateModel(numElementsX, numElementsY, numElementsZ);
             List<SimpleLsm3D> lsmSurfaces = InitializeLSM(model);
             GeometricModel geometricModel = CreatePhases(model, lsmSurfaces);
 
@@ -214,7 +215,7 @@ namespace MGroup.XFEM.Tests.Plotting
             return geometricModel;
         }
 
-        private static XModel CreateModelHexa(int numElementsX, int numElementsY, int numElementsZ)
+        private static XModel CreateModel(int numElementsX, int numElementsY, int numElementsZ)
         {
             var model = new XModel();
             model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
@@ -255,6 +256,24 @@ namespace MGroup.XFEM.Tests.Plotting
             //    model.Elements.Add(element);
             //    model.Subdomains[subdomainID].Elements.Add(element);
             //}
+
+
+            // Boundary conditions
+            double meshTol = 1E-7;
+
+            // Left side: T = +100
+            double minX = model.Nodes.Select(n => n.X).Min();
+            foreach (var node in model.Nodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
+            {
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = +100 });
+            }
+
+            // Right side: T = 100
+            double maxX = model.Nodes.Select(n => n.X).Max();
+            foreach (var node in model.Nodes.Where(n => Math.Abs(n.X - maxX) <= meshTol))
+            {
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = -100 });
+            }
 
             model.ConnectDataStructures();
             return model;
