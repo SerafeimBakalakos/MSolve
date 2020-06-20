@@ -35,8 +35,8 @@ namespace MGroup.XFEM.Elements
 
         private IDofType[][] allDofTypes;
 
-        private Dictionary<PhaseBoundary, GaussPoint[]> gaussPointsBoundary;
-        private GaussPoint[] gaussPointsBulk;
+        private Dictionary<PhaseBoundary, IReadOnlyList<GaussPoint>> gaussPointsBoundary;
+        private IReadOnlyList<GaussPoint> gaussPointsBulk;
 
         //TODO: this can be cached once for all standard elements of the same type
         private EvalInterpolation3D[] evalInterpolationsAtGPsVolume;
@@ -185,62 +185,64 @@ namespace MGroup.XFEM.Elements
 
         public void IdentifyIntegrationPointsAndMaterials()
         {
-            //// Volume integration
-            //this.gaussPointsBulk = IntegrationBulk.GenerateIntegrationPoints(this);
-            //int numPointsVolume = gaussPointsBulk.Count;
+            // Volume integration
+            this.gaussPointsBulk = IntegrationBulk.GenerateIntegrationPoints(this);
+            int numPointsVolume = gaussPointsBulk.Count;
 
-            //// Calculate and cache standard interpolation at integration points.
-            ////TODO: for all standard elements of the same type, this should be cached only once
-            //this.evalInterpolationsAtGPsVolume = new EvalInterpolation2D[numPointsVolume];
-            //for (int i = 0; i < numPointsVolume; ++i)
-            //{
-            //    evalInterpolationsAtGPsVolume[i] = Interpolation.EvaluateAllAt(Nodes, gaussPointsBulk[i]);
-            //}
+            // Calculate and cache standard interpolation at integration points.
+            //TODO: for all standard elements of the same type, this should be cached only once
+            this.evalInterpolationsAtGPsVolume = new EvalInterpolation3D[numPointsVolume];
+            for (int i = 0; i < numPointsVolume; ++i)
+            {
+                evalInterpolationsAtGPsVolume[i] = Interpolation.EvaluateAllAt(Nodes, gaussPointsBulk[i]);
+            }
 
-            //// Find and cache the phase at integration points.
-            //this.phasesAtGPsVolume = new IPhase[numPointsVolume];
-            //Debug.Assert(Phases.Count != 0);
-            //if (Phases.Count == 1)
-            //{
-            //    IPhase commonPhase = Phases.First();
-            //    for (int i = 0; i < numPointsVolume; ++i) this.phasesAtGPsVolume[i] = commonPhase;
-            //}
-            //else
-            //{
-            //    for (int i = 0; i < numPointsVolume; ++i)
-            //    {
-            //        CartesianPoint point = evalInterpolationsAtGPsVolume[i].TransformPointNaturalToGlobalCartesian();
-            //        IPhase phase = GeometricModel.FindPhaseAt(point, this);
-            //        this.phasesAtGPsVolume[i] = phase;
-            //    }
-            //}
+            // Find and cache the phase at integration points.
+            this.phasesAtGPsVolume = new IPhase[numPointsVolume];
+            Debug.Assert(Phases.Count != 0);
+            if (Phases.Count == 1)
+            {
+                IPhase commonPhase = Phases.First();
+                for (int i = 0; i < numPointsVolume; ++i) this.phasesAtGPsVolume[i] = commonPhase;
+            }
+            else
+            {
+                for (int i = 0; i < numPointsVolume; ++i)
+                {
+                    XPoint point = new XPoint();
+                    point.Element = this;
+                    point.ShapeFunctions = evalInterpolationsAtGPsVolume[i].ShapeFunctions;
+                    this.FindPhaseAt(point);
+                    this.phasesAtGPsVolume[i] = point.Phase;
+                }
+            }
 
-            //// Create and cache materials at integration points.
-            //this.materialsAtGPsBulk = new ThermalMaterial[numPointsVolume];
-            //for (int i = 0; i < numPointsVolume; ++i)
-            //{
-            //    this.materialsAtGPsBulk[i] = MaterialField.FindMaterialAt(this.phasesAtGPsVolume[i]);
-            //}
+            // Create and cache materials at integration points.
+            this.materialsAtGPsBulk = new ThermalMaterial[numPointsVolume];
+            for (int i = 0; i < numPointsVolume; ++i)
+            {
+                this.materialsAtGPsBulk[i] = MaterialField.FindMaterialAt(this.phasesAtGPsVolume[i]);
+            }
 
-            //// Create and cache materials at boundary integration points.
-            //this.gaussPointsBoundary = new Dictionary<PhaseBoundary, IReadOnlyList<GaussPoint>>();
-            //this.materialsAtGPsBoundary = new Dictionary<PhaseBoundary, ThermalInterfaceMaterial[]>();
-            //foreach (var boundaryIntersectionPair in PhaseIntersections)
-            //{
-            //    PhaseBoundary boundary = boundaryIntersectionPair.Key;
-            //    CurveElementIntersection intersection = boundaryIntersectionPair.Value;
+            // Create and cache materials at boundary integration points.
+            this.gaussPointsBoundary = new Dictionary<PhaseBoundary, IReadOnlyList<GaussPoint>>();
+            this.materialsAtGPsBoundary = new Dictionary<PhaseBoundary, ThermalInterfaceMaterial[]>();
+            foreach (var boundaryIntersectionPair in PhaseIntersections)
+            {
+                PhaseBoundary boundary = boundaryIntersectionPair.Key;
+                IElementGeometryIntersection intersection = boundaryIntersectionPair.Value;
 
-            //    IReadOnlyList<GaussPoint> gaussPoints = IntegrationBoundary.GenerateIntegrationPoints(this, intersection);
-            //    int numGaussPoints = gaussPoints.Count;
-            //    var materials = new ThermalInterfaceMaterial[numGaussPoints];
+                IReadOnlyList<GaussPoint> gaussPoints = intersection.GetIntegrationPoints(boundaryIntegrationOrder);
+                int numGaussPoints = gaussPoints.Count;
+                var materials = new ThermalInterfaceMaterial[numGaussPoints];
 
-            //    //TODO: perhaps I should have one for each Gauss point
-            //    ThermalInterfaceMaterial material = MaterialField.FindInterfaceMaterialAt(boundary);
-            //    for (int i = 0; i < numGaussPoints; ++i) materials[i] = material;
+                //TODO: perhaps I should have one for each Gauss point
+                ThermalInterfaceMaterial material = MaterialField.FindInterfaceMaterialAt(boundary);
+                for (int i = 0; i < numGaussPoints; ++i) materials[i] = material;
 
-            //    gaussPointsBoundary[boundary] = gaussPoints;
-            //    materialsAtGPsBoundary[boundary] = materials;
-            //}
+                gaussPointsBoundary[boundary] = gaussPoints;
+                materialsAtGPsBoundary[boundary] = materials;
+            }
         }
 
         public IMatrix MassMatrix(IElement element) => throw new NotImplementedException();
@@ -267,12 +269,13 @@ namespace MGroup.XFEM.Elements
         {
             var Kse = Matrix.CreateZero(numStandardDofs, numEnrichedDofs);
             var Kee = Matrix.CreateZero(numEnrichedDofs, numEnrichedDofs);
-            for (int i = 0; i < gaussPointsBulk.Length; ++i)
+            for (int i = 0; i < gaussPointsBulk.Count; ++i)
             {
                 GaussPoint gaussPoint = gaussPointsBulk[i];
                 EvalInterpolation3D evalInterpolation = evalInterpolationsAtGPsVolume[i];
 
                 var gaussPointAlt = new XPoint();
+                gaussPointAlt.Element = this;
                 gaussPointAlt.ShapeFunctions = evalInterpolation.ShapeFunctions;
 
                 double dV = evalInterpolation.Jacobian.DirectDeterminant;
@@ -325,7 +328,7 @@ namespace MGroup.XFEM.Elements
             // If the element is has more than 1 phase, then I cannot use the standard quadrature, since the material is  
             // different on each phase.
             var Kss = Matrix.CreateZero(numStandardDofs, numStandardDofs);
-            for (int i = 0; i < gaussPointsBulk.Length; ++i)
+            for (int i = 0; i < gaussPointsBulk.Count; ++i)
             {
                 GaussPoint gaussPoint = gaussPointsBulk[i];
                 EvalInterpolation3D evalInterpolation = evalInterpolationsAtGPsVolume[i];
@@ -349,9 +352,8 @@ namespace MGroup.XFEM.Elements
         private Matrix CalculateDeformationMatrixEnriched(int numEnrichedDofs, IPhase phaseAtGaussPoint, XPoint gaussPoint,
             EvalInterpolation3D evaluatedInterpolation)
         {
-            throw new NotImplementedException();
             // For each node and with all derivatives w.r.t. cartesian coordinates, the enrichment derivatives 
-            // are: Bx = enrN,x = N,x(x,y) * [psi(x,y) - psi(node)] + N(x,y) * psi,x(x,y), where psi is the  
+            // are: Bx = enrN,x = N,x(x,y,z) * [psi(x,y,z) - psi(node)] + N(x,y,z) * psi,x(x,y,z), where psi is the  
             // enrichment function. However in this formulation of multiphase XFEM, only piecewise constant enrichments
             // are used. Therefore always psi,x = 0.
 
@@ -359,12 +361,13 @@ namespace MGroup.XFEM.Elements
             //CartesianPoint cartesianPoint = evaluatedInterpolation.TransformPointNaturalToGlobalCartesian(gaussPoint);
             var uniqueEnrichments = new Dictionary<IEnrichment, double>();
 
-            var deformationMatrix = Matrix.CreateZero(2, numEnrichedDofs);
+            var deformationMatrix = Matrix.CreateZero(3, numEnrichedDofs);
             int currentColumn = 0;
             for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
             {
                 double dNdx = evaluatedInterpolation.ShapeGradientsCartesian[nodeIdx, 0];
                 double dNdy = evaluatedInterpolation.ShapeGradientsCartesian[nodeIdx, 1];
+                double dNdz = evaluatedInterpolation.ShapeGradientsCartesian[nodeIdx, 2];
 
                 foreach (var enrichmentValuePair in Nodes[nodeIdx].Enrichments)
                 {
@@ -384,12 +387,14 @@ namespace MGroup.XFEM.Elements
                     double dPsi = psi - nodalPsi;
                     double Bx = dNdx * dPsi;
                     double By = dNdy * dPsi;
+                    double Bz = dNdz * dPsi;
 
                     // This depends on the convention: node major or enrichment major. 
                     // The following is node major, since this convention is used throughout MSolve.
                     int col = currentColumn++;
                     deformationMatrix[0, col] = Bx;
                     deformationMatrix[1, col] = By;
+                    deformationMatrix[2, col] = Bz;
                 }
             }
             Debug.Assert(currentColumn == numEnrichedDofs);
@@ -398,13 +403,14 @@ namespace MGroup.XFEM.Elements
 
         private Matrix CalcDeformationMatrixStandard(EvalInterpolation3D evalInterpolation)
         {
-            throw new NotImplementedException();
             // gradT = [ T,x ] = [ sum(Ni,x) * Ti ] = [ ... Ni,x ... ] * [ ... ]
             //         [ T,y ]   [ sum(Ni,y) * Ti ]   [ ... Ni,y ... ]   [  Ti ]
-            //                                                           [ ... ]
+            //         [ T,z ]   [ sum(Ni,z) * Ti ]   [ ... Ni,z ... ]   [ ... ]
+            //
 
             // The ones stored are [ N1,x N2,x N3,x ... ]. Therefore they need transposing
             //                     [ N1,y N2,y N3,y ... ]
+            //                     [ N1,z N2,z N3,z ... ]
             return evalInterpolation.ShapeGradientsCartesian.Transpose();
         }
 

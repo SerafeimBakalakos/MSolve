@@ -64,6 +64,38 @@ namespace MGroup.XFEM.Plotting.Fields
             return gradient;
         }
 
+        internal static double[] CalcTemperatureGradientAt(XPoint point, EvalInterpolation3D evalInterpolation,
+            IXFiniteElement element, double[] nodalTemperatures)
+        {
+            var gradient = new double[3];
+            int idx = 0;
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                double dNdx = evalInterpolation.ShapeGradientsCartesian[n, 0];
+                double dNdy = evalInterpolation.ShapeGradientsCartesian[n, 1];
+                double dNdz = evalInterpolation.ShapeGradientsCartesian[n, 2];
+
+                // Standard temperatures
+                double stdTi = nodalTemperatures[idx++];
+                gradient[0] += dNdx * stdTi;
+                gradient[1] += dNdy * stdTi;
+                gradient[2] += dNdz * stdTi;
+
+                // Eniched temperatures
+                foreach (IEnrichment enrichment in element.Nodes[n].Enrichments.Keys)
+                {
+                    double psiVertex = enrichment.EvaluateAt(point);
+                    double psiNode = element.Nodes[n].Enrichments[enrichment];
+                    double enrTij = nodalTemperatures[idx++];
+
+                    gradient[0] += dNdx * (psiVertex - psiNode) * enrTij;
+                    gradient[1] += dNdy * (psiVertex - psiNode) * enrTij;
+                    gradient[2] += dNdz * (psiVertex - psiNode) * enrTij;
+                }
+            }
+            return gradient;
+        }
+
         internal static double[] ExtractNodalTemperatures(IXFiniteElement element, XSubdomain subdomain, IVectorView solution)
         {
             var nodalTemperatures = new List<double>(element.Nodes.Count);

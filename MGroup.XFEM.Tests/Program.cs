@@ -10,8 +10,8 @@ namespace MGroup.XFEM.Tests
             //START HERE
             //TODO: Split these into tests using mock elements and actual ones. For the actual ones, integration points should
             //      be created and stored as planned for the analysis, instead of being created just to plot them.
-            LsmBalls2DExamples.PlotSolution();
-            //LsmBalls3DExamples.PlotGeometryAndEntities();
+            //LsmBalls2DExamples.PlotSolution();
+            LsmBalls3DExamples.PlotSolution();
         }
     }
 }

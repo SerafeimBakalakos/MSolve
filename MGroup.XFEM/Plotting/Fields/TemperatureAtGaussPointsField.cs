@@ -41,6 +41,5 @@ namespace MGroup.XFEM.Plotting.Fields
             }
             return result;
         }
-
     }
 }
