@@ -78,10 +78,10 @@ namespace MGroup.XFEM.Geometry.LSM
                 }
 
                 //TODO: Add optimizations for 4 and 5 intersection points
-                var intersectionMesh = new IntersectionMesh<NaturalPoint>();
+                var intersectionMesh = new IntersectionMesh();
                 if (allIntersections.Count == 3) // Intersection is a single triangle
                 {
-                    NaturalPoint[] triangleVertices = allIntersections.ToArray();
+                    IList<double[]> triangleVertices = allIntersections.Select(p => p.Coordinates).ToList();
                     intersectionMesh.AddVertices(triangleVertices);
                     intersectionMesh.AddCell(CellType.Tri3, triangleVertices);
                     return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element3D, intersectionMesh);
@@ -93,7 +93,8 @@ namespace MGroup.XFEM.Geometry.LSM
                     allIntersections.Add(centroid);
 
                     // Use the 2 intersection points of each face and the centroid to create a triangle of the intersection mesh
-                    intersectionMesh.AddVertices(allIntersections);
+                    IEnumerable<double[]> vertices = allIntersections.Select(p => p.Coordinates);
+                    intersectionMesh.AddVertices(vertices);
                     foreach (ElementFace face in element3D.Faces)
                     {
                         var intersectionsOfFace = new SortedSet<NaturalPoint>(new Point3DComparer<NaturalPoint>());
@@ -104,7 +105,7 @@ namespace MGroup.XFEM.Geometry.LSM
                             else if (intersectionsOfFace.Count == 2)
                             {
                                 intersectionsOfFace.Add(centroid);
-                                intersectionMesh.AddCell(CellType.Tri3, intersectionsOfFace.ToArray());
+                                intersectionMesh.AddCell(CellType.Tri3, intersectionsOfFace.Select(p => p.Coordinates).ToArray());
                             }
                         }
                     }

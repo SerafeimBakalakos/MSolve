@@ -25,12 +25,12 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
             // Store the nodes and all intersection points in a set
             double tol = meshTolerance.CalcTolerance(element);
-            var comparer = new Point3DComparer<NaturalPoint>(tol);
-            var nodes = new SortedSet<NaturalPoint>(comparer);
+            var comparer = new Point3DComparer(tol);
+            var nodes = new SortedSet<double[]>(comparer);
             nodes.UnionWith(element3D.Interpolation.NodalNaturalCoordinates);
 
             // Store the nodes and all intersection points in a different set
-            var tetraVertices = new SortedSet<NaturalPoint>(comparer);
+            var tetraVertices = new SortedSet<double[]>(comparer);
             tetraVertices.UnionWith(nodes);
 
             // Add intersection points from each curve-element intersection object.
@@ -40,7 +40,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
                 // there is no need to take into account for triangulation
                 if (intersection.RelativePosition != RelativePositionCurveElement.Intersecting) continue;
 
-                IList<NaturalPoint> newVertices = intersection.GetPointsForTriangulation();
+                IList<double[]> newVertices = intersection.GetPointsForTriangulation();
                 int countBeforeInsertion = tetraVertices.Count;
                 tetraVertices.UnionWith(newVertices);
 
@@ -50,21 +50,23 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
                     // to force the Delauny algorithm to conform to the segment.
                     //TODO: I should use constrained Delauny in all cases and conform to the intersection segment.
                     bool areNodes = true;
-                    double xiCentroid = 0.0, etaCentroid= 0.0, zetaCentroid = 0.0;
-                    foreach (NaturalPoint vertex in newVertices)
+                    var centroid = new double[3];
+                    foreach (double[] vertex in newVertices)
                     {
                         if (!nodes.Contains(vertex)) areNodes = false;
-                        xiCentroid += vertex.Xi;
-                        etaCentroid += vertex.Eta;
-                        zetaCentroid += vertex.Zeta;
+                        for (int i = 0; i < 3; ++i)
+                        {
+                            centroid[i] += vertex[i];
+                        }
                     }
-                    xiCentroid /= newVertices.Count;
-                    etaCentroid /= newVertices.Count;
-                    zetaCentroid /= newVertices.Count;
+                    for (int i = 0; i < 3; ++i)
+                    {
+                        centroid[i] /= newVertices.Count;
+                    }
 
                     if (areNodes)
                     {
-                        tetraVertices.Add(new NaturalPoint(xiCentroid, etaCentroid, zetaCentroid));
+                        tetraVertices.Add(centroid);
                     }
                 }
             }

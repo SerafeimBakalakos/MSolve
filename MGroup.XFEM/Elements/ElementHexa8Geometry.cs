@@ -6,8 +6,9 @@ using MGroup.XFEM.Interpolation.Jacobians;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using MGroup.XFEM.Entities;
-using ISAAR.MSolve.Discretization.Integration.Quadratures;
-using ISAAR.MSolve.FEM.Interpolation;
+using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Interpolation;
+using System.Linq;
 
 namespace MGroup.XFEM.Elements
 {
@@ -23,7 +24,7 @@ namespace MGroup.XFEM.Elements
                 InterpolationHexa8.UniqueInstance.EvaluateNaturalGradientsAtGaussPoints(quadrature);
             for (int gp = 0; gp < quadrature.IntegrationPoints.Count; ++gp)
             {
-                var jacobian = new IsoparametricJacobian3D(nodes, shapeGradientsNatural[gp]);
+                var jacobian = new IsoparametricJacobian(3, nodes, shapeGradientsNatural[gp]);
                 volume += jacobian.DirectDeterminant * quadrature.IntegrationPoints[gp].Weight;
             }
             return volume;
@@ -31,7 +32,7 @@ namespace MGroup.XFEM.Elements
 
         public (ElementEdge[], ElementFace[]) FindEdgesFaces(IReadOnlyList<XNode> nodes)
         {
-            IReadOnlyList<NaturalPoint> nodesNatural = InterpolationHexa8.UniqueInstance.NodalNaturalCoordinates;
+            IReadOnlyList<NaturalPoint> nodesNatural = InterpolationHexa8.UniqueInstance.NodalNaturalCoordinates.Select(p => new NaturalPoint(p)).ToArray();
             var edges = new ElementEdge[12];
             edges[0] = new ElementEdge(nodes, nodesNatural, 0, 1);
             edges[1] = new ElementEdge(nodes, nodesNatural, 1, 2);

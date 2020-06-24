@@ -6,7 +6,8 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
-using ISAAR.MSolve.Discretization.Integration;
+using MGroup.XFEM.Integ;
+using MGroup.XFEM.Plotting.Writers;
 
 //TODO: Standardize the writer classes and their input. Also simplify them as much as possible (e.g. plot just points, without 
 //      having attached values).
@@ -36,7 +37,7 @@ namespace MGroup.XFEM.Plotting
 
         public void PlotBoundaryIntegrationPoints(string path, int order)
         {
-            var integrationPoints = new Dictionary<CartesianPoint, double>();
+            var integrationPoints = new Dictionary<double[], double>();
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
                 var element2D = (IXFiniteElement2D)element;
@@ -45,12 +46,12 @@ namespace MGroup.XFEM.Plotting
                     IReadOnlyList<GaussPoint> gaussPoints = intersection.GetIntegrationPoints(order);
                     foreach (GaussPoint gp in gaussPoints)
                     {
-                        CartesianPoint point = element2D.Interpolation.TransformNaturalToCartesian(element.Nodes, gp);
+                        double[] point = element2D.Interpolation.TransformNaturalToCartesian(element.Nodes, gp.Coordinates);
                         integrationPoints.Add(point, element.ID);
                     }
                 }
             }
-            using (var writer = new ISAAR.MSolve.Logging.VTK.VtkPointWriter(path))
+            using (var writer = new VtkPointWriter(path))
             {
                 writer.WriteScalarField("elem_ids_of_boundary_gauss_points", integrationPoints);
             }
@@ -67,18 +68,18 @@ namespace MGroup.XFEM.Plotting
 
         public void PlotBulkIntegrationPoints(string path)
         {
-            var integrationPoints = new Dictionary<CartesianPoint, double>();
+            var integrationPoints = new Dictionary<double[], double>();
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
                 var element2D = (IXFiniteElement2D)element;
                 IReadOnlyList<GaussPoint> elementGPs = element.IntegrationBulk.GenerateIntegrationPoints(element);
                 foreach (GaussPoint gp in element.IntegrationBulk.GenerateIntegrationPoints(element))
                 {
-                    CartesianPoint point = element2D.Interpolation.TransformNaturalToCartesian(element.Nodes, gp);
+                    double[] point = element2D.Interpolation.TransformNaturalToCartesian(element.Nodes, gp.Coordinates);
                     integrationPoints.Add(point, element.ID);
                 }
             }
-            using (var writer = new ISAAR.MSolve.Logging.VTK.VtkPointWriter(path))
+            using (var writer = new VtkPointWriter(path))
             {
                 writer.WriteScalarField("element_ids_of_gauss_points", integrationPoints);
             }

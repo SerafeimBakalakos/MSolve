@@ -5,7 +5,6 @@ using System.Text;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
@@ -21,6 +20,7 @@ using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Geometry.Tolerances;
+using MGroup.XFEM.Integ.Quadratures;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Materials;
 using MGroup.XFEM.Plotting;
@@ -323,7 +323,7 @@ namespace MGroup.XFEM.Tests.Plotting
             var meshGen = new UniformMeshGenerator3D<XNode>(xMin, yMin, zMin, xMax, yMax, zMax, 
                 numElementsX, numElementsY, numElementsZ);
             (IReadOnlyList<XNode> nodes, IReadOnlyList<CellConnectivity<XNode>> cells) =
-                meshGen.CreateMesh((id, x, y, z) => new XNode(id, x, y, z));
+                meshGen.CreateMesh((id, x, y, z) => new XNode(id, new double[] { x, y, z }));
 
             // Nodes
             foreach (XNode node in nodes) model.Nodes.Add(node);

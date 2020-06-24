@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Text;
 using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Discretization.Integration;
+using MGroup.XFEM.Integ;
 
 //TODO: remove duplication between this and Line2D & LineSegment2D. Why can't this inherit from LineSegment2D? 
 //      Or just use LineSegment2D wrapped in a class about Intersection
@@ -82,7 +82,7 @@ namespace MGroup.XFEM.Geometry.Primitives
             throw new NotImplementedException();
         }
 
-        public NaturalPoint[] GetPointsForTriangulation()
+        public IList<double[]> GetPointsForTriangulation()
         {
             throw new NotImplementedException();
         }

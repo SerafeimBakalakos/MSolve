@@ -9,6 +9,7 @@ using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Interpolation;
 
 namespace MGroup.XFEM.Plotting.Fields
 {
@@ -33,6 +34,37 @@ namespace MGroup.XFEM.Plotting.Fields
                 }
             }
             return sum;
+        }
+
+        internal static double[] CalcTemperatureGradientAt(XPoint point, EvalInterpolation evalInterpolation,
+            IXFiniteElement element, double[] nodalTemperatures)
+        {
+            int dimension = evalInterpolation.ShapeGradientsCartesian.NumColumns;
+            var gradient = new double[dimension];
+            int idx = 0;
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                // Standard temperatures
+                double stdTi = nodalTemperatures[idx++];
+                for (int i = 0; i < dimension; ++i)
+                {
+                    gradient[i] += evalInterpolation.ShapeGradientsCartesian[n, i] * stdTi;
+                }
+
+                // Eniched temperatures
+                foreach (IEnrichment enrichment in element.Nodes[n].Enrichments.Keys)
+                {
+                    double psiVertex = enrichment.EvaluateAt(point);
+                    double psiNode = element.Nodes[n].Enrichments[enrichment];
+                    double enrTij = nodalTemperatures[idx++];
+
+                    for (int i = 0; i < dimension; ++i)
+                    {
+                        gradient[i] += evalInterpolation.ShapeGradientsCartesian[n, i] * (psiVertex - psiNode) * enrTij;
+                    }
+                }
+            }
+            return gradient;
         }
 
         internal static double[] CalcTemperatureGradientAt(XPoint point, EvalInterpolation2D evalInterpolation,

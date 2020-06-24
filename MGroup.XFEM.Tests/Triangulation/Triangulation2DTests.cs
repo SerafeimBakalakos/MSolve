@@ -23,13 +23,13 @@ namespace MGroup.XFEM.Tests.Triangulation
         [Fact]
         public static void TestSingleIntersection()
         {
-            (List<NaturalPoint> points, CellType cellType) = CreatePolygon();
+            (List<double[]> points, CellType cellType) = CreatePolygon();
             double outlineArea = TriangulationUtilities.CalcPolygonArea(points);
 
-            var intersections = new List<NaturalPoint>[1];
-            intersections[0] = new List<NaturalPoint>();
-            intersections[0].Add(new NaturalPoint(1.95, 3.505));
-            intersections[0].Add(new NaturalPoint(1.7, 0.3));
+            var intersections = new List<double[]>[1];
+            intersections[0] = new List<double[]>();
+            intersections[0].Add(new double[] { 1.95, 3.505 });
+            intersections[0].Add(new double[] { 1.7, 0.3 });
             points.AddRange(intersections[0]);
 
             var triangulator = new MIConvexHullTriangulator2D();
@@ -56,20 +56,20 @@ namespace MGroup.XFEM.Tests.Triangulation
         [Fact]
         public static void TestDoubleIntersection()
         {
-            (List<NaturalPoint> points, CellType cellType) = CreatePolygon();
+            (List<double[]> points, CellType cellType) = CreatePolygon();
             double outlineArea = TriangulationUtilities.CalcPolygonArea(points);
 
             // Intersection 1:
-            var intersections = new List<NaturalPoint>[2];
-            intersections[0] = new List<NaturalPoint>();
-            intersections[0].Add(new NaturalPoint(0.4, 1.6));
-            intersections[0].Add(new NaturalPoint(2.75, 3.0375));
+            var intersections = new List<double[]>[2];
+            intersections[0] = new List<double[]>();
+            intersections[0].Add(new double[] { 0.4, 1.6 });
+            intersections[0].Add(new double[] { 2.75, 3.0375 });
             points.AddRange(intersections[0]);
 
             // Intersection 2:
-            intersections[1] = new List<NaturalPoint>();
-            intersections[1].Add(new NaturalPoint(1.6, 0.4));
-            intersections[1].Add(new NaturalPoint(3.5, 2.625));
+            intersections[1] = new List<double[]>();
+            intersections[1].Add(new double[] { 1.6, 0.4 });
+            intersections[1].Add(new double[] { 3.5, 2.625 });
             points.AddRange(intersections[1]);
 
             var triangulator = new MIConvexHullTriangulator2D();
@@ -101,15 +101,15 @@ namespace MGroup.XFEM.Tests.Triangulation
         [Fact]
         public static void TestIntersectionThroughNodes()
         {
-            (List<NaturalPoint> points, CellType cellType) = CreatePolygon();
+            (List<double[]> points, CellType cellType) = CreatePolygon();
             double outlineArea = TriangulationUtilities.CalcPolygonArea(points);
 
-            var intersections = new List<NaturalPoint>[1];
-            intersections[0] = new List<NaturalPoint>();
+            var intersections = new List<double[]>[1];
+            intersections[0] = new List<double[]>();
             intersections[0].Add(points[1]);
             intersections[0].Add(points[3]);
 
-            var middle = new NaturalPoint(0.5 * (points[1].Xi + points[3].Xi), 0.5 * (points[1].Eta + points[3].Eta));
+            var middle = new double[] { 0.5 * (points[1][0] + points[3][0]), 0.5 * (points[1][1] + points[3][1]) };
             points.Add(middle);
 
             var triangulator = new MIConvexHullTriangulator2D();
@@ -134,13 +134,13 @@ namespace MGroup.XFEM.Tests.Triangulation
         }
         
 
-        private static (List<NaturalPoint> points, CellType cellType) CreatePolygon()
+        private static (List<double[]> points, CellType cellType) CreatePolygon()
         {
-            var points = new List<NaturalPoint>();
-            points.Add(new NaturalPoint(2, 0));
-            points.Add(new NaturalPoint(5, 1.8));
-            points.Add(new NaturalPoint(1, 4));
-            points.Add(new NaturalPoint(0, 2));
+            var points = new List<double[]>();
+            points.Add(new double[] { 2, 0 });
+            points.Add(new double[] { 5, 1.8 });
+            points.Add(new double[] { 1, 4 });
+            points.Add(new double[] { 0, 2 });
             return (points, CellType.Quad4);
         }
 
@@ -163,7 +163,7 @@ namespace MGroup.XFEM.Tests.Triangulation
             return mesh;
         }
 
-        private static CustomMesh CreateIntersectionMesh(IList<NaturalPoint>[] intersections)
+        private static CustomMesh CreateIntersectionMesh(IList<double[]>[] intersections)
         {
             var mesh = new CustomMesh();
             int offset = 0;
@@ -171,8 +171,9 @@ namespace MGroup.XFEM.Tests.Triangulation
             {
                 for (int v = 0; v < intersections[i].Count; ++v)
                 {
-                    NaturalPoint point = intersections[i][v];
-                    mesh.Vertices.Add(new VtkPoint(offset + v, point.Xi, point.Eta, point.Zeta));
+                    double[] point = intersections[i][v];
+                    double z = point.Length == 3 ? point[2] : 0.0;
+                    mesh.Vertices.Add(new VtkPoint(offset + v, point[0], point[1], z));
                 }
 
                 for (int c = 0; c < intersections[i].Count - 1; ++c)
@@ -189,11 +190,11 @@ namespace MGroup.XFEM.Tests.Triangulation
 
         private static CustomMesh CreateOriginalMesh()
         {
-            (List<NaturalPoint> points, CellType cellType) = CreatePolygon();
+            (List<double[]> points, CellType cellType) = CreatePolygon();
             var mesh = new CustomMesh();
             for (int i = 0; i < points.Count; ++i)
             {
-                var point = new VtkPoint(i, points[i].X1, points[i].X2, 0.0);
+                var point = new VtkPoint(i, points[i][0], points[i][1], 0.0);
                 mesh.Vertices.Add(point);
             }
             mesh.Cells.Add(new VtkCell(cellType, mesh.Vertices.ToArray()));
@@ -203,7 +204,7 @@ namespace MGroup.XFEM.Tests.Triangulation
         
 
         private static void PlotIntersections(IList<Triangle2D> triangles, string outputCase,
-            List<NaturalPoint>[] intersections)
+            List<double[]>[] intersections)
         {
             CustomMesh originalMesh = CreateOriginalMesh();
             string originalMeshPath = outputDirectory + $"{outputCase}_originalMesh.vtk";

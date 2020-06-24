@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Discretization.Integration;
+using MGroup.XFEM.Integ;
 
 namespace MGroup.XFEM.Geometry
 {
@@ -18,6 +18,6 @@ namespace MGroup.XFEM.Geometry
         /// <param name="order"></param>
         IReadOnlyList<GaussPoint> GetIntegrationPoints(int order);
 
-        NaturalPoint[] GetPointsForTriangulation();
+        IList<double[]> GetPointsForTriangulation();
     }
 }

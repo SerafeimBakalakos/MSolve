@@ -21,8 +21,6 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         ElementSubtriangle2D[] ConformingSubtriangles { get; set; }
 
-        IIsoparametricInterpolation2D Interpolation { get; }
-
         List<IElementCurveIntersection2D> Intersections { get; }
 
         double CalcArea();

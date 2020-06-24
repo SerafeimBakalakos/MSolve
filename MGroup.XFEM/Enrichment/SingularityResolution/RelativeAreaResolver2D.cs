@@ -74,11 +74,11 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
         {
             var element2D = (IXFiniteElement2D)element;
             double centroidXi = 0.0, centroidEta = 0.0;
-            IReadOnlyList<NaturalPoint> nodes = element2D.Interpolation.NodalNaturalCoordinates;
-            foreach (NaturalPoint node in nodes)
+            IReadOnlyList<double[]> nodes = element2D.Interpolation.NodalNaturalCoordinates;
+            foreach (double[] node in nodes)
             {
-                centroidXi += node.Xi;
-                centroidEta += node.Eta;
+                centroidXi += node[0];
+                centroidEta += node[1];
             }
             centroidXi /= nodes.Count;
             centroidEta /= nodes.Count;
@@ -138,7 +138,7 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
             else
             {
                 // Calculate the are of the whole element and on which side it lies
-                double area = ConvexPolygon2D.CreateUnsafe(element.Nodes).ComputeArea(); //TODO: This only works for 1st order elements.
+                double area = ((IXFiniteElement2D)element).CalcArea();
                 
                 if (element.Phases.Count == 1)
                 {

@@ -16,8 +16,6 @@ namespace MGroup.XFEM.Elements
 
         ElementFace[] Faces { get; }
 
-        IIsoparametricInterpolation3D Interpolation { get; }
-
         List<IElementSurfaceIntersection3D> Intersections { get; }
 
         double CalcVolume();

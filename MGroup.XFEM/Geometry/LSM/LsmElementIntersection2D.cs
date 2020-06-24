@@ -4,18 +4,19 @@ using System.Text;
 using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
-using ISAAR.MSolve.Discretization.Integration;
-using ISAAR.MSolve.Discretization.Integration.Quadratures;
+using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Integ;
+using MGroup.XFEM.Integ.Quadratures;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
     public class LsmElementIntersection2D : IElementCurveIntersection2D
     {
-        private readonly NaturalPoint start;
-        private readonly NaturalPoint end;
+        private readonly double[] startNatural;
+        private readonly double[] endNatural;
 
         public LsmElementIntersection2D(RelativePositionCurveElement relativePosition, IXFiniteElement2D element,
-            NaturalPoint start, NaturalPoint end)
+            double[] startNatural, double[] endNatural)
         {
             if (relativePosition == RelativePositionCurveElement.Disjoint)
             {
@@ -23,8 +24,8 @@ namespace MGroup.XFEM.Geometry.LSM
             }
             this.RelativePosition = relativePosition;
             this.Element = element;
-            this.start = start;
-            this.end = end;
+            this.startNatural = startNatural;
+            this.endNatural = endNatural;
         }
 
         public RelativePositionCurveElement RelativePosition { get; }
@@ -34,8 +35,8 @@ namespace MGroup.XFEM.Geometry.LSM
         public List<double[]> ApproximateGlobalCartesian()
         {
             var points = new List<double[]>(2);
-            points.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, start).Coordinates);
-            points.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, end).Coordinates);
+            points.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, startNatural));
+            points.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, endNatural));
             return points;
         }
 
@@ -48,9 +49,9 @@ namespace MGroup.XFEM.Geometry.LSM
             if (RelativePosition == RelativePositionCurveElement.Conforming) weightModifier = 0.5;
 
             // Absolute determinant of Jacobian of mapping from auxiliary to cartesian system. Constant for all Gauss points.
-            CartesianPoint startCartesian = Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, start);
-            CartesianPoint endCartesian = Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, end);
-            double detJ = Math.Abs(0.5 * startCartesian.CalculateDistanceFrom(endCartesian));
+            double[] startCartesian = Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, startNatural);
+            double[] endCartesian = Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, endNatural);
+            double detJ = Math.Abs(0.5 * startCartesian.Distance2D(endCartesian));
 
             var quadrature1D = GaussLegendre1D.GetQuadratureWithOrder(order);
             int numIntegrationPoints = quadrature1D.IntegrationPoints.Count;
@@ -58,19 +59,19 @@ namespace MGroup.XFEM.Geometry.LSM
             for (int i = 0; i < numIntegrationPoints; ++i)
             {
                 GaussPoint gp1D = quadrature1D.IntegrationPoints[i];
-                double N0 = 0.5 * (1.0 - gp1D.Xi);
-                double N1 = 0.5 * (1.0 + gp1D.Xi);
-                double xi = N0 * start.Xi + N1 * end.Xi;
-                double eta = N0 * start.Eta + N1 * end.Eta;
-                integrationPoints[i] = new GaussPoint(xi, eta, gp1D.Weight * detJ * weightModifier);
+                double N0 = 0.5 * (1.0 - gp1D.Coordinates[0]);
+                double N1 = 0.5 * (1.0 + gp1D.Coordinates[0]);
+                double xi = N0 * startNatural[0] + N1 * endNatural[0];
+                double eta = N0 * startNatural[1] + N1 * endNatural[1];
+                integrationPoints[i] = new GaussPoint(new double[] { xi, eta }, gp1D.Weight * detJ * weightModifier);
             }
 
             return integrationPoints;
         }
 
-        public NaturalPoint[] GetPointsForTriangulation()
+        public IList<double[]> GetPointsForTriangulation()
         {
-            return new NaturalPoint[] { start, end };
+            return new double[][] { startNatural, endNatural };
         }
     }
 }

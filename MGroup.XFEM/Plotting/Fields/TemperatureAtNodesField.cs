@@ -18,18 +18,18 @@ namespace MGroup.XFEM.Plotting.Fields
             this.model = model;
         }
 
-        public Dictionary<CartesianPoint, double> CalcValuesAtVertices(IVectorView solution)
+        public Dictionary<double[], double> CalcValuesAtVertices(IVectorView solution)
         {
             if (model.Subdomains.Count != 1) throw new NotImplementedException();
             XSubdomain subdomain = model.Subdomains.First().Value;
             DofTable dofTable = subdomain.FreeDofOrdering.FreeDofs;
 
-            var result = new Dictionary<CartesianPoint, double>();
+            var result = new Dictionary<double[], double>();
             foreach (XNode node in model.Nodes)
             {
                 bool isFreeDof = dofTable.TryGetValue(node, ThermalDof.Temperature, out int stdDof);
-                if (isFreeDof) result[node] = solution[stdDof];
-                else result[node] = node.Constraints[0].Amount;
+                if (isFreeDof) result[node.Coordinates] = solution[stdDof];
+                else result[node.Coordinates] = node.Constraints[0].Amount;
             }
             return result;
         }

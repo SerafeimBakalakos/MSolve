@@ -8,6 +8,6 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 {
     public interface ITriangulator3D
     {
-        IList<Tetrahedron3D> CreateMesh(IEnumerable<IPoint> points);
+        IList<Tetrahedron3D> CreateMesh(IEnumerable<double[]> points);
     }
 }

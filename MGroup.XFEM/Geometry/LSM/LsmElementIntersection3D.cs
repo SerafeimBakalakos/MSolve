@@ -10,38 +10,38 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
-using ISAAR.MSolve.Discretization.Integration;
-using ISAAR.MSolve.Discretization.Integration.Quadratures;
+using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integ;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
     public class LsmElementIntersection3D : IElementSurfaceIntersection3D
     {
-        private readonly IntersectionMesh<NaturalPoint> intersectionMesh;
+        private readonly IntersectionMesh intersectionMeshNatural;
 
         public LsmElementIntersection3D(RelativePositionCurveElement relativePosition, IXFiniteElement3D element,
-            IntersectionMesh<NaturalPoint> intersectionMesh)
+            IntersectionMesh intersectionMeshNatural)
         {
             this.RelativePosition = relativePosition;
             this.Element = element;
-            this.intersectionMesh = intersectionMesh;
+            this.intersectionMeshNatural = intersectionMeshNatural;
         }
 
         public RelativePositionCurveElement RelativePosition { get; }
 
         public IXFiniteElement3D Element { get; } //TODO: Perhaps this should be defined in the interface
 
-        public IntersectionMesh<CartesianPoint> ApproximateGlobalCartesian()
+        public IntersectionMesh ApproximateGlobalCartesian()
         {
-            var meshCartesian = new IntersectionMesh<CartesianPoint>();
-            NaturalPoint[] verticesNatural = intersectionMesh.GetVerticesList();
-            foreach (NaturalPoint vertexNatural in verticesNatural)
+            var meshCartesian = new IntersectionMesh();
+            IList<double[]> verticesNatural = intersectionMeshNatural.GetVerticesList();
+            foreach (double[] vertexNatural in verticesNatural)
             {
-                CartesianPoint vertexCartesian = Element.Interpolation.TransformNaturalToCartesian(
+                double[] vertexCartesian = Element.Interpolation.TransformNaturalToCartesian(
                     Element.Nodes, vertexNatural);
                 meshCartesian.AddVertex(vertexCartesian);
             }
-            meshCartesian.Cells = intersectionMesh.Cells;
+            meshCartesian.Cells = intersectionMeshNatural.Cells;
             return meshCartesian;
         }
         //TODO: Perhaps a dedicated IBoundaryIntegration component is needed,
@@ -59,19 +59,19 @@ namespace MGroup.XFEM.Geometry.LSM
             if (RelativePosition == RelativePositionCurveElement.Conforming) weightModifier = 0.5;
 
             var integrationPoints = new List<GaussPoint>();
-            NaturalPoint[] allVertices = intersectionMesh.GetVerticesList();
-            foreach ((CellType cellType, int[] cellConnectivity) in intersectionMesh.Cells)
+            IList<double[]> allVertices = intersectionMeshNatural.GetVerticesList();
+            foreach ((CellType cellType, int[] cellConnectivity) in intersectionMeshNatural.Cells)
             {
                 if (cellType == CellType.Tri3)
                 {
                     // Vertices of triangle in natural system
-                    var verticesNatural = new NaturalPoint[]
+                    var verticesNatural = new double[][]
                     {
                         allVertices[cellConnectivity[0]], allVertices[cellConnectivity[1]], allVertices[cellConnectivity[2]]
                     };
 
                     // Vertices of triangle in cartesian system
-                    var verticesCartesian = new CartesianPoint[3];
+                    var verticesCartesian = new double[3][];
                     for (int v = 0; v < 3; ++v)
                     {
                         verticesCartesian[v] = Element.Interpolation.TransformNaturalToCartesian(
@@ -82,34 +82,37 @@ namespace MGroup.XFEM.Geometry.LSM
                     // This is possible because the mappings auxiliary -> natural and natural -> cartesian are both affine.
                     // Therefore the normalized triangle in auxiliary system will be projected onto a triangle in global 
                     // cartesian system.
-                    double[] side0 =
+                    var side0 = new double[3];
+                    for (int i = 0; i < 3; ++i)
                     {
-                        verticesCartesian[1].X - verticesCartesian[0].X,
-                        verticesCartesian[1].Y - verticesCartesian[0].Y,
-                        verticesCartesian[1].Z - verticesCartesian[0].Z
-                    };
-                    double[] side1 =
+                        side0[i] = verticesCartesian[1][i] - verticesCartesian[0][i];
+                    }
+                    var side1 = new double[3];
+                    for (int i = 0; i < 3; ++i)
                     {
-                        verticesCartesian[2].X - verticesCartesian[0].X,
-                        verticesCartesian[2].Y - verticesCartesian[0].Y,
-                        verticesCartesian[2].Z - verticesCartesian[0].Z
-                    };
+                        side0[i] = verticesCartesian[2][i] - verticesCartesian[0][i];
+                    }
                     double triangleArea = 0.5 * side0.CrossProduct(side1).Norm2();
                     double detJAuxiliaryNatural = 2 * triangleArea;
 
                     TriangleQuadratureSymmetricGaussian quadrature = ChooseQuadrature(order);
                     foreach (GaussPoint gpAuxiliary in quadrature.IntegrationPoints)
                     {
-                        double N0 = (1 - gpAuxiliary.Xi - gpAuxiliary.Eta);
-                        double N1 = gpAuxiliary.Xi;
-                        double N2 = gpAuxiliary.Eta;
-
-                        double xi = N0 * verticesNatural[0].Xi + N1 * verticesNatural[1].Xi + N2 * verticesNatural[2].Xi;
-                        double eta = N0 * verticesNatural[0].Eta + N1 * verticesNatural[1].Eta + N2 * verticesNatural[2].Eta;
-                        double zeta = N0 * verticesNatural[0].Zeta + N1 * verticesNatural[1].Zeta + N2 * verticesNatural[2].Zeta;
+                        var shapeFuncs = new double[3];
+                        shapeFuncs[0] = 1 - gpAuxiliary.Coordinates[0] - gpAuxiliary.Coordinates[1];
+                        shapeFuncs[0] = gpAuxiliary.Coordinates[0];
+                        shapeFuncs[0] = gpAuxiliary.Coordinates[1];
+                        var gpNatural = new double[3];
+                        for (int n = 0; n < shapeFuncs.Length; ++n)
+                        {
+                            for (int i = 0; i < 3; ++i)
+                            {
+                                gpNatural[i] += shapeFuncs[n] * verticesNatural[n][i];
+                            }
+                        }
 
                         double weight = gpAuxiliary.Weight * detJAuxiliaryNatural * weightModifier;
-                        integrationPoints.Add(new GaussPoint(xi, eta, zeta, weight));
+                        integrationPoints.Add(new GaussPoint(gpNatural, weight));
                     }
 
                 }
@@ -121,9 +124,9 @@ namespace MGroup.XFEM.Geometry.LSM
             return integrationPoints;
         }
 
-        public NaturalPoint[] GetPointsForTriangulation()
+        public IList<double[]> GetPointsForTriangulation()
         {
-            return intersectionMesh.GetVerticesList();
+            return intersectionMeshNatural.GetVerticesList();
         }
 
         private TriangleQuadratureSymmetricGaussian ChooseQuadrature(int order)

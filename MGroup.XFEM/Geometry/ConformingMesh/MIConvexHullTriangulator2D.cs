@@ -18,14 +18,10 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
         public double MinTriangleArea { get; set; } = -1;
 
-        public IList<Triangle2D> CreateMesh(IEnumerable<IPoint> points)
+        public IList<Triangle2D> CreateMesh(IEnumerable<double[]> points)
         {
             // Gather the vertices
-            var vertices = new List<double[]>();
-            foreach (IPoint point in points)
-            {
-                vertices.Add(new double[] { point.X1, point.X2 });
-            }
+            List<double[]> vertices = points.ToList();
 
             // Call 3rd-party mesh generator
             var meshCells = Triangulation.CreateDelaunay(vertices).Cells.ToArray();

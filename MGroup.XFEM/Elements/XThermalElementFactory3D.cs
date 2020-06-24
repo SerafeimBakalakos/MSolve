@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.FEM.Interpolation;
-using ISAAR.MSolve.FEM.Interpolation.GaussPointExtrapolation;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Integ.Quadratures;
 using MGroup.XFEM.Integration;
+using MGroup.XFEM.Interpolation;
+using MGroup.XFEM.Interpolation.GaussPointExtrapolation;
 using MGroup.XFEM.Materials;
 
 namespace MGroup.XFEM.Elements
@@ -12,10 +12,10 @@ namespace MGroup.XFEM.Elements
     public class XThermalElement3DFactory
     {
         private static readonly IReadOnlyDictionary<CellType, IElementGeometry3D> elementGeometries;
-        private static readonly IReadOnlyDictionary<CellType, IGaussPointExtrapolation3D> extrapolations;
-        private static readonly IReadOnlyDictionary<CellType, IQuadrature3D> standardIntegrationsForConductivity;
+        private static readonly IReadOnlyDictionary<CellType, IGaussPointExtrapolation> extrapolations;
+        private static readonly IReadOnlyDictionary<CellType, IQuadrature> standardIntegrationsForConductivity;
         //private static readonly IReadOnlyDictionary<CellType, IQuadrature3D> integrationsForMass;
-        private static readonly IReadOnlyDictionary<CellType, IIsoparametricInterpolation3D> interpolations;
+        private static readonly IReadOnlyDictionary<CellType, IIsoparametricInterpolation> interpolations;
 
         private readonly int integrationBoundaryOrder;
         private readonly IBulkIntegration integrationbulk;
@@ -27,10 +27,10 @@ namespace MGroup.XFEM.Elements
             // of full rank (and symmetric positive definite)
 
             // Collections' declarations
-            var interpolations = new Dictionary<CellType, IIsoparametricInterpolation3D>();
-            var standardIntegrationsForConductivity = new Dictionary<CellType, IQuadrature3D>();
+            var interpolations = new Dictionary<CellType, IIsoparametricInterpolation>();
+            var standardIntegrationsForConductivity = new Dictionary<CellType, IQuadrature>();
             //var integrationsForMass = new Dictionary<CellType, IQuadrature3D>();
-            var extrapolations = new Dictionary<CellType, IGaussPointExtrapolation3D>();
+            var extrapolations = new Dictionary<CellType, IGaussPointExtrapolation>();
             var elementGeometries = new Dictionary<CellType, IElementGeometry3D>();
 
             // Hexa8

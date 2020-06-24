@@ -52,13 +52,11 @@ namespace MGroup.XFEM.Elements
 
                 if (element is IXFiniteElement2D element2D)
                 {
-                    var pointNatural = new NaturalPoint(natural[0], natural[1]);
-                    point.ShapeFunctions = element2D.Interpolation.EvaluateFunctionsAt(pointNatural);
+                    point.ShapeFunctions = element2D.Interpolation.EvaluateFunctionsAt(natural);
                 }
                 else if (element is IXFiniteElement3D element3D)
                 {
-                    var pointNatural = new NaturalPoint(natural[0], natural[1], natural[2]);
-                    point.ShapeFunctions = element3D.Interpolation.EvaluateFunctionsAt(pointNatural);
+                    point.ShapeFunctions = element3D.Interpolation.EvaluateFunctionsAt(natural);
                 }
             }
         }

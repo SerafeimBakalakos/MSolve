@@ -47,7 +47,7 @@ namespace MGroup.XFEM.Integ.Quadratures
                     foreach (var pointXi in quadratureXi.IntegrationPoints)
                     {
                         points3D.Add(new GaussPoint(
-                            new double[] { pointXi.Coordinates[0], pointEta.Coordinates[0] * pointZeta.Coordinates[0] },
+                            new double[] { pointXi.Coordinates[0], pointEta.Coordinates[0], pointZeta.Coordinates[0] },
                             pointXi.Weight * pointEta.Weight * pointZeta.Weight));
                     }
                 }

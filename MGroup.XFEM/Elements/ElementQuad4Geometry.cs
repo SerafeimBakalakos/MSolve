@@ -12,7 +12,14 @@ namespace MGroup.XFEM.Elements
     {
         public double CalcArea(IReadOnlyList<XNode> nodes)
         {
-            return ConvexPolygon2D.CreateUnsafe(nodes).ComputeArea();
+            double area = 0.0;
+            for (int vertexIdx = 0; vertexIdx < nodes.Count; ++vertexIdx)
+            {
+                double[] vertex1 = nodes[vertexIdx].Coordinates;
+                double[] vertex2 = nodes[(vertexIdx + 1) % nodes.Count].Coordinates;
+                area += vertex1[0] * vertex2[1] - vertex2[0] * vertex1[1];
+            }
+            return Math.Abs(0.5 * area); // area would be negative if vertices were in counter-clockwise order
         }
 
         public ElementEdge[] FindEdges(IReadOnlyList<XNode> nodes)

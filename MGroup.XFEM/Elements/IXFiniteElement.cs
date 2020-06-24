@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
-using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Integ;
 using MGroup.XFEM.Integration;
+using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Materials;
 
 //TODO: LSM/element interactions should probably be stored in a GeometricModel class
@@ -18,6 +19,8 @@ namespace MGroup.XFEM.Elements
 
         IBulkIntegration IntegrationBulk { get; }
 
+        IIsoparametricInterpolation Interpolation { get; }
+
         IReadOnlyList<XNode> Nodes { get; }
 
         HashSet<IPhase> Phases { get; }
@@ -26,7 +29,8 @@ namespace MGroup.XFEM.Elements
 
         XSubdomain Subdomain { get; set; }
 
-        XPoint EvaluateFunctionsAt(NaturalPoint point);
+        XPoint EvaluateFunctionsAt(double[] naturalPoint);
+
 
         Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)>
             GetMaterialsForBoundaryIntegration();

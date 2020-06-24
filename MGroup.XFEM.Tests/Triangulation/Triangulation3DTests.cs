@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.Mesh;
@@ -23,14 +24,14 @@ namespace MGroup.XFEM.Tests.Triangulation
         [Fact]
         public static void TestSingleIntersection()
         {
-            (List<NaturalPoint> points, CellType cellType, double volume) = CreateHexa8();
+            (List<double[]> points, CellType cellType, double volume) = CreateHexa8();
 
-            var intersections = new List<NaturalPoint>[1];
-            intersections[0] = new List<NaturalPoint>();
-            intersections[0].Add(new NaturalPoint(-0.75, -1.00, +1.00));
-            intersections[0].Add(new NaturalPoint(-0.25, +1.00, +1.00));
-            intersections[0].Add(new NaturalPoint(+0.75, +1.00, -1.00));
-            intersections[0].Add(new NaturalPoint(+0.25, -1.00, -1.00));
+            var intersections = new List<double[]>[1];
+            intersections[0] = new List<double[]>();
+            intersections[0].Add(new double[] { -0.75, -1.00, +1.00 });
+            intersections[0].Add(new double[] { -0.25, +1.00, +1.00 });
+            intersections[0].Add(new double[] { +0.75, +1.00, -1.00 });
+            intersections[0].Add(new double[] { +0.25, -1.00, -1.00 });
             points.AddRange(intersections[0]);
 
             var triangulator = new MIConvexHullTriangulator3D();
@@ -91,22 +92,22 @@ namespace MGroup.XFEM.Tests.Triangulation
         [Fact]
         public static void TestDoubleIntersection()
         {
-            (List<NaturalPoint> points, CellType cellType, double volume) = CreateHexa8();
+            (List<double[]> points, CellType cellType, double volume) = CreateHexa8();
 
             // Intersection 1:
-            var intersections = new List<NaturalPoint>[2];
-            intersections[0] = new List<NaturalPoint>();
-            intersections[0].Add(new NaturalPoint(-0.25, -1.00, +1.00));
-            intersections[0].Add(new NaturalPoint(+0.25, +1.00, +1.00));
-            intersections[0].Add(new NaturalPoint(+0.75, +1.00, -1.00));
-            intersections[0].Add(new NaturalPoint(+0.25, -1.00, -1.00));
+            var intersections = new List<double[]>[2];
+            intersections[0] = new List<double[]>();
+            intersections[0].Add(new double[] { -0.25, -1.00, +1.00 });
+            intersections[0].Add(new double[] { +0.25, +1.00, +1.00 });
+            intersections[0].Add(new double[] { +0.75, +1.00, -1.00 });
+            intersections[0].Add(new double[] { +0.25, -1.00, -1.00 });
             points.AddRange(intersections[0]);
 
             // Intersection 2:
-            intersections[1] = new List<NaturalPoint>();
-            intersections[1].Add(new NaturalPoint(-1.00, +0.00, +1.00));
-            intersections[1].Add(new NaturalPoint(+0.00, +1.00, +1.00));
-            intersections[1].Add(new NaturalPoint(-1.00, +1.00, +0.00));
+            intersections[1] = new List<double[]>();
+            intersections[1].Add(new double[] { -1.00, +0.00, +1.00 });
+            intersections[1].Add(new double[] { +0.00, +1.00, +1.00 });
+            intersections[1].Add(new double[] { -1.00, +1.00, +0.00 });
             points.AddRange(intersections[1]);
 
             var triangulator = new MIConvexHullTriangulator3D();
@@ -176,16 +177,16 @@ namespace MGroup.XFEM.Tests.Triangulation
         [Fact]
         public static void TestIntersectionThroughNodes()
         {
-            (List<NaturalPoint> points, CellType cellType, double volume) = CreateHexa8();
+            (List<double[]> points, CellType cellType, double volume) = CreateHexa8();
 
-            var intersections = new List<NaturalPoint>[1];
-            intersections[0] = new List<NaturalPoint>();
+            var intersections = new List<double[]>[1];
+            intersections[0] = new List<double[]>();
             intersections[0].Add(points[4]);
             intersections[0].Add(points[5]);
             intersections[0].Add(points[2]);
             intersections[0].Add(points[3]);
 
-            var centroid = new NaturalPoint(0, 0, 0);
+            var centroid = new double[] { 0, 0, 0 };
             points.Add(centroid);
 
             var triangulator = new MIConvexHullTriangulator3D();
@@ -238,17 +239,17 @@ namespace MGroup.XFEM.Tests.Triangulation
         }
 
 
-        private static (List<NaturalPoint> points, CellType cellType, double volume) CreateHexa8()
+        private static (List<double[]> points, CellType cellType, double volume) CreateHexa8()
         {
-            var points = new List<NaturalPoint>();
-            points.Add(new NaturalPoint(-1, -1, -1));
-            points.Add(new NaturalPoint(+1, -1, -1));
-            points.Add(new NaturalPoint(+1, +1, -1));
-            points.Add(new NaturalPoint(-1, +1, -1));
-            points.Add(new NaturalPoint(-1, -1, +1));
-            points.Add(new NaturalPoint(+1, -1, +1));
-            points.Add(new NaturalPoint(+1, +1, +1));
-            points.Add(new NaturalPoint(-1, +1, +1));
+            var points = new List<double[]>();
+            points.Add(new double[] { -1, -1, -1});
+            points.Add(new double[] { +1, -1, -1});
+            points.Add(new double[] { +1, +1, -1});
+            points.Add(new double[] { -1, +1, -1});
+            points.Add(new double[] { -1, -1, +1});
+            points.Add(new double[] { +1, -1, +1});
+            points.Add(new double[] { +1, +1, +1});
+            points.Add(new double[] { -1, +1, +1 });
 
             double volume = 8;
             return (points, CellType.Hexa8, volume);
@@ -273,13 +274,13 @@ namespace MGroup.XFEM.Tests.Triangulation
             return mesh;
         }
 
-        private static CustomMesh CreateIntersectionMesh(IList<NaturalPoint>[] intersections)
+        private static CustomMesh CreateIntersectionMesh(IList<double[]>[] intersections)
         {
             var mesh = new CustomMesh();
             int offset = 0;
             for (int i = 0; i < intersections.Length; ++i)
             {
-                IList<NaturalPoint> cell = intersections[i];
+                IList<double[]> cell = intersections[i];
                 CellType cellType;
                 if (cell.Count == 3)
                 {
@@ -294,8 +295,8 @@ namespace MGroup.XFEM.Tests.Triangulation
                 var verticesOfCell = new List<VtkPoint>();
                 for (int v = 0; v < cell.Count; ++v)
                 {
-                    NaturalPoint point = intersections[i][v];
-                    var vertex = new VtkPoint(offset + v, point.Xi, point.Eta, point.Zeta);
+                    double[] point = intersections[i][v];
+                    var vertex = new VtkPoint(offset + v, point[0], point[1], point[2]);
                     verticesOfCell.Add(vertex);
                     mesh.Vertices.Add(vertex);
                 }
@@ -309,11 +310,11 @@ namespace MGroup.XFEM.Tests.Triangulation
 
         private static CustomMesh CreateOriginalMesh()
         {
-            (List<NaturalPoint> points, CellType cellType, double volume) = CreateHexa8();
+            (List<double[]> points, CellType cellType, double volume) = CreateHexa8();
             var mesh = new CustomMesh();
             for (int i = 0; i < points.Count; ++i)
             {
-                var point = new VtkPoint(i, points[i].X1, points[i].X2, points[i].X3);
+                var point = new VtkPoint(i, points[i][0], points[i][1], points[i][2]);
                 mesh.Vertices.Add(point);
             }
             mesh.Cells.Add(new VtkCell(cellType, mesh.Vertices.ToArray()));
@@ -323,7 +324,7 @@ namespace MGroup.XFEM.Tests.Triangulation
 
 
         private static void PlotIntersections(IList<Tetrahedron3D> tetrahedra, string outputCase,
-            List<NaturalPoint>[] intersections)
+            List<double[]>[] intersections)
         {
             CustomMesh originalMesh = CreateOriginalMesh();
             string originalMeshPath = outputDirectory + $"{outputCase}_originalMesh.vtk";

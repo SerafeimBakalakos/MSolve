@@ -97,14 +97,14 @@ namespace MGroup.XFEM.Tests.Triangulation
             return true;
         }
 
-        internal static double CalcPolygonArea<TPoint>(List<TPoint> points) where TPoint : IPoint
+        internal static double CalcPolygonArea(List<double[]> points)
         {
             double sum = 0.0;
             for (int vertexIdx = 0; vertexIdx < points.Count; ++vertexIdx)
             {
-                TPoint vertex1 = points[vertexIdx];
-                TPoint vertex2 = points[(vertexIdx + 1) % points.Count];
-                sum += vertex1.X1 * vertex2.X2 - vertex2.X1 * vertex1.X2;
+                double[] vertex1 = points[vertexIdx];
+                double[] vertex2 = points[(vertexIdx + 1) % points.Count];
+                sum += vertex1[0] * vertex2[1] - vertex2[0] * vertex1[1];
             }
             return Math.Abs(0.5 * sum); // area would be negative if vertices were in counter-clockwise order
         }

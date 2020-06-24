@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Interpolation;
 
 //TODO: Perhaps it should also store it sign, store Gauss points and interpolate/extrapolate
 namespace MGroup.XFEM.Geometry.ConformingMesh
@@ -42,7 +42,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
         public (CartesianPoint centroid, double volume) FindCentroidAndVolumeCartesian(IXFiniteElement3D parentElement)
         {
-            IIsoparametricInterpolation3D interpolation = parentElement.Interpolation;
+            IIsoparametricInterpolation interpolation = parentElement.Interpolation;
             if (interpolation == InterpolationTet4.UniqueInstance || interpolation == InterpolationHexa8.UniqueInstance)
             {
                 // The tetrahedron edges will also be linear in Cartesian coordinate system, for Tetra4 and Hexa8 elements 
@@ -68,7 +68,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
         public CartesianPoint[] GetVerticesCartesian(IXFiniteElement3D parentElement)
         {
-            IIsoparametricInterpolation3D interpolation = parentElement.Interpolation;
+            IIsoparametricInterpolation interpolation = parentElement.Interpolation;
             IReadOnlyList<XNode> nodes = parentElement.Nodes;
             if (interpolation == InterpolationTet4.UniqueInstance || interpolation == InterpolationHexa8.UniqueInstance)
             {
@@ -78,7 +78,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
                     //double[] coordsNatural = tetraNatural.Vertices[v];
                     //var pointNatural = new NaturalPoint(coordsNatural[0], coordsNatural[1], coordsNatural[2]);
                     //verticesCartesian[v] = interpolation.TransformNaturalToCartesian(nodes, pointNatural);
-                    verticesCartesian[v] = interpolation.TransformNaturalToCartesian(nodes, VerticesNatural[v]);
+                    verticesCartesian[v] = new CartesianPoint(interpolation.TransformNaturalToCartesian(nodes, VerticesNatural[v].Coordinates));
                 }
                 return verticesCartesian;
             }

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Elements;
-using ISAAR.MSolve.Discretization.Integration;
+using MGroup.XFEM.Integ;
 
 namespace MGroup.XFEM.Integration
 {

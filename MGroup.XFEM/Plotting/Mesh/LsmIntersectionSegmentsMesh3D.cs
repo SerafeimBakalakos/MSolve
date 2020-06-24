@@ -24,13 +24,13 @@ namespace MGroup.XFEM.Plotting.Mesh
             foreach (LsmElementIntersection3D intersection in intersections)
             {
                 // Vertices of the intersection mesh
-                IntersectionMesh<CartesianPoint> intersectionMesh = intersection.ApproximateGlobalCartesian();
-                CartesianPoint[] intersectionPoints = intersectionMesh.GetVerticesList();
+                IntersectionMesh intersectionMesh = intersection.ApproximateGlobalCartesian();
+                IList<double[]> intersectionPoints = intersectionMesh.GetVerticesList();
                 var verticesOfIntersection = new List<VtkPoint>();
-                for (int v = 0; v < intersectionPoints.Length; ++v)
+                for (int v = 0; v < intersectionPoints.Count; ++v)
                 {
-                    CartesianPoint point = intersectionPoints[v];
-                    var vertex = new VtkPoint(vertexID++, point.X, point.Y, point.Z);
+                    double[] point = intersectionPoints[v];
+                    var vertex = new VtkPoint(vertexID++, point[0], point[1], point[2]);
                     vertices.Add(vertex);
                     verticesOfIntersection.Add(vertex);
                     ParentElementIDsOfVertices.Add(intersection.Element.ID);

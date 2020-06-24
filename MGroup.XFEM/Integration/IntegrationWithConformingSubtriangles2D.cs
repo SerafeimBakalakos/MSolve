@@ -4,8 +4,8 @@ using System.Diagnostics;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Geometry.ConformingMesh;
-using ISAAR.MSolve.Discretization.Integration.Quadratures;
-using ISAAR.MSolve.Discretization.Integration;
+using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integ;
 
 //TODO: Perhaps avoid integration in triangles with very small area. Or should that be handled, by not creating those in the 
 //      first place? The former, would interfere with the code that decides whether to not enrich nodes to avoid singularities.
@@ -14,9 +14,9 @@ namespace MGroup.XFEM.Integration
     public class IntegrationWithConformingSubtriangles2D: IBulkIntegration
     {
         private readonly TriangleQuadratureSymmetricGaussian quadratureInSubcells;
-        private readonly IQuadrature2D standardQuadrature; //TODO: This should be accessed from the element
+        private readonly IQuadrature standardQuadrature; //TODO: This should be accessed from the element
 
-        public IntegrationWithConformingSubtriangles2D(IQuadrature2D standardQuadrature, 
+        public IntegrationWithConformingSubtriangles2D(IQuadrature standardQuadrature, 
             TriangleQuadratureSymmetricGaussian quadratureInSubcells)
         {
             this.standardQuadrature = standardQuadrature;
@@ -63,19 +63,20 @@ namespace MGroup.XFEM.Integration
                 GaussPoint triangleGP = triangleGaussPoints[i];
 
                 // Linear shape functions evaluated at the Gauss point's coordinates in the triangle's natural system.
-                double N0 = 1.0 - triangleGP.Xi - triangleGP.Eta;
-                double N1 = triangleGP.Xi;
-                double N2 = triangleGP.Eta;
+                double N0 = 1.0 - triangleGP.Coordinates[0] - triangleGP.Coordinates[1];
+                double N1 = triangleGP.Coordinates[0];
+                double N2 = triangleGP.Coordinates[1];
 
                 // Coordinates of the same gauss point in the element's natural system
-                double elementXi = N0 * xi0 + N1 * xi1 + N2 * xi2;
-                double elementEta = N0 * eta0 + N1 * eta1 + N2 * eta2;
+                var naturalCoords = new double[3];
+                naturalCoords[0] = N0 * xi0 + N1 * xi1 + N2 * xi2;
+                naturalCoords[1] = N0 * eta0 + N1 * eta1 + N2 * eta2;
 
                 // The integral would need to be multiplied with |detJ|. 
                 // It is simpler for the caller to have it already included in the weight.
                 double elementWeight = triangleGP.Weight * jacobian;
 
-                elementGaussPoints[i] = new GaussPoint(elementXi, elementEta, elementWeight);
+                elementGaussPoints[i] = new GaussPoint(naturalCoords, elementWeight);
             }
 
             return elementGaussPoints;

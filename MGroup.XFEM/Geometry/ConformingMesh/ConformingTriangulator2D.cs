@@ -25,12 +25,12 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
             // Store the nodes and all intersection points in a set
             double tol = meshTolerance.CalcTolerance(element);
-            var comparer = new Point2DComparer<NaturalPoint>(tol);
-            var nodes = new SortedSet<NaturalPoint>(comparer);
+            var comparer = new Point2DComparer(tol);
+            var nodes = new SortedSet<double[]>(comparer);
             nodes.UnionWith(element2D.Interpolation.NodalNaturalCoordinates);
 
             // Store the nodes and all intersection points in a different set
-            var triangleVertices = new SortedSet<NaturalPoint>(comparer);
+            var triangleVertices = new SortedSet<double[]>(comparer);
             triangleVertices.UnionWith(nodes);
 
             // Add intersection points from each curve-element intersection object.
@@ -40,7 +40,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
                 // there is no need to take into account for triangulation
                 if (intersection.RelativePosition != RelativePositionCurveElement.Intersecting) continue;
 
-                IList<NaturalPoint> newVertices = intersection.GetPointsForTriangulation();
+                IList<double[]> newVertices = intersection.GetPointsForTriangulation();
                 int countBeforeInsertion = triangleVertices.Count;
                 triangleVertices.UnionWith(newVertices);
 
@@ -49,11 +49,11 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
                     // Corner case: the curve intersects the element at 2 opposite nodes. In this case also add the middle of their 
                     // segment to force the Delauny algorithm to conform to the segment.
                     //TODO: I should use constrained Delauny in all cases and conform to the intersection segment.
-                    NaturalPoint p0 = newVertices[0];
-                    NaturalPoint p1 = newVertices[1];
+                    double[] p0 = newVertices[0];
+                    double[] p1 = newVertices[1];
                     if (nodes.Contains(p0) && nodes.Contains(p1))
                     {
-                        triangleVertices.Add(new NaturalPoint(05 * (p0.Xi + p1.Xi), 0.5 * (p0.Eta + p1.Eta)));
+                        triangleVertices.Add(new double[] { 0.5 * (p0[0] + p1[0]), 0.5 * (p0[1] + p1[1]) });
                     }
                 }
             }

@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using MGroup.XFEM.Integration;
-
-using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Integ;
+using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Materials;
-using ISAAR.MSolve.Discretization.Integration;
-using ISAAR.MSolve.FEM.Interpolation;
 
 //TODO: Also calculate heat flux at nodes. It needs averaging over the elements. It also needs to specify the material since it 
 //      is not explicitly stored as in elements.
@@ -46,8 +42,8 @@ namespace MGroup.XFEM.Plotting.Fields
                 for (int i = 0; i < gaussPoints.Count; ++i)
                 {
                     GaussPoint pointNatural = gaussPoints[i];
-                    EvalInterpolation2D evalInterpolation =
-                        element2D.Interpolation.EvaluateAllAt(element.Nodes, pointNatural);
+                    EvalInterpolation evalInterpolation =
+                        element2D.Interpolation.EvaluateAllAt(element.Nodes, pointNatural.Coordinates);
                     double[] coordsCartesian = 
                         Utilities.TransformNaturalToCartesian(evalInterpolation.ShapeFunctions, element.Nodes);
                     var point = new XPoint();

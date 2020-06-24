@@ -63,7 +63,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 {
                     //TODO: also check (DEBUG only) that all other edges are not intersected unless its is at these 2 nodes
                     return new LsmElementIntersection2D(RelativePositionCurveElement.Conforming, element2D,
-                        node0Natural, node1Natural);
+                        node0Natural.Coordinates, node1Natural.Coordinates);
                 }
                 else if ((levelSet0 == 0) && (levelSet1 != 0)) // Curve runs through a node. Not sure if it is tangent yet.
                 {
@@ -83,7 +83,8 @@ namespace MGroup.XFEM.Geometry.LSM
             else if (intersections.Count == 2)
             {
                 NaturalPoint[] points = intersections.ToArray();
-                return new LsmElementIntersection2D(RelativePositionCurveElement.Intersecting, element2D, points[0], points[1]);
+                return new LsmElementIntersection2D(RelativePositionCurveElement.Intersecting, element2D, 
+                    new double[] { points[0].Xi, points[0].Eta }, new double[] { points[1].Xi, points[1].Eta });
             }
             else throw new Exception("This should not have happened");
         }

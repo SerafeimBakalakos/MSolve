@@ -4,12 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.Discretization.Integration;
-using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.FEM.Interpolation;
-using ISAAR.MSolve.FEM.Interpolation.GaussPointExtrapolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
@@ -19,8 +15,10 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Integ;
+using MGroup.XFEM.Integ.Quadratures;
 using MGroup.XFEM.Integration;
-
+using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Interpolation.GaussPointExtrapolation;
 using MGroup.XFEM.Materials;
 
@@ -41,7 +39,7 @@ namespace MGroup.XFEM.Elements
         private IReadOnlyList<GaussPoint> gaussPointsBulk;
 
         //TODO: this can be cached once for all standard elements of the same type
-        private EvalInterpolation3D[] evalInterpolationsAtGPsVolume;
+        private EvalInterpolation[] evalInterpolationsAtGPsVolume;
 
         /// <summary>
         /// In the same order as their corresponding <see cref="gaussPointsBoundary"/>.
@@ -61,8 +59,8 @@ namespace MGroup.XFEM.Elements
         private IPhase[] phasesAtGPsVolume;
 
         public XThermalElement3D(int id, IReadOnlyList<XNode> nodes, IElementGeometry3D elementGeometry,
-            IThermalMaterialField materialField, IIsoparametricInterpolation3D interpolation, 
-            IGaussPointExtrapolation3D gaussPointExtrapolation, IQuadrature3D standardQuadrature, 
+            IThermalMaterialField materialField, IIsoparametricInterpolation interpolation, 
+            IGaussPointExtrapolation gaussPointExtrapolation, IQuadrature standardQuadrature, 
             IBulkIntegration bulkIntegration, int boundaryIntegrationOrder)
         {
             this.id = id;
@@ -95,21 +93,21 @@ namespace MGroup.XFEM.Elements
 
         public ElementFace[] Faces { get; }
 
-        public IGaussPointExtrapolation3D GaussPointExtrapolation { get; }
+        public IGaussPointExtrapolation GaussPointExtrapolation { get; }
 
         public int ID { get => id; set => throw new InvalidOperationException("ID is set at constructor."); }
 
         public int IntegrationBoundaryOrder { get; set; }
 
         //TODO: This should not always be used for Kss. E.g. it doesn't work for bimaterial interface.
-        public IQuadrature3D IntegrationStandard { get; }
+        public IQuadrature IntegrationStandard { get; }
 
         public IBulkIntegration IntegrationBulk { get; set; }
 
         /// <summary>
         /// Common interpolation for standard and enriched nodes.
         /// </summary>
-        public IIsoparametricInterpolation3D Interpolation { get; }
+        public IIsoparametricInterpolation Interpolation { get; }
 
         public IThermalMaterialField MaterialField { get; }
 
@@ -133,12 +131,12 @@ namespace MGroup.XFEM.Elements
 
         public IMatrix DampingMatrix(IElement element) => throw new NotImplementedException();
 
-        public XPoint EvaluateFunctionsAt(NaturalPoint point)
+        public XPoint EvaluateFunctionsAt(double[] naturalPoint)
         {
             var result = new XPoint();
-            result.Coordinates[CoordinateSystem.ElementNatural] = point.Coordinates;
+            result.Coordinates[CoordinateSystem.ElementNatural] = naturalPoint;
             result.Element = this;
-            result.ShapeFunctions = Interpolation.EvaluateFunctionsAt(point);
+            result.ShapeFunctions = Interpolation.EvaluateFunctionsAt(naturalPoint);
             return result;
         }
 
@@ -193,10 +191,10 @@ namespace MGroup.XFEM.Elements
 
             // Calculate and cache standard interpolation at integration points.
             //TODO: for all standard elements of the same type, this should be cached only once
-            this.evalInterpolationsAtGPsVolume = new EvalInterpolation3D[numPointsVolume];
+            this.evalInterpolationsAtGPsVolume = new EvalInterpolation[numPointsVolume];
             for (int i = 0; i < numPointsVolume; ++i)
             {
-                evalInterpolationsAtGPsVolume[i] = Interpolation.EvaluateAllAt(Nodes, gaussPointsBulk[i]);
+                evalInterpolationsAtGPsVolume[i] = Interpolation.EvaluateAllAt(Nodes, gaussPointsBulk[i].Coordinates);
             }
 
             // Find and cache the phase at integration points.
@@ -274,7 +272,7 @@ namespace MGroup.XFEM.Elements
             for (int i = 0; i < gaussPointsBulk.Count; ++i)
             {
                 GaussPoint gaussPoint = gaussPointsBulk[i];
-                EvalInterpolation3D evalInterpolation = evalInterpolationsAtGPsVolume[i];
+                EvalInterpolation evalInterpolation = evalInterpolationsAtGPsVolume[i];
 
                 var gaussPointAlt = new XPoint();
                 gaussPointAlt.Element = this;
@@ -317,7 +315,7 @@ namespace MGroup.XFEM.Elements
                     double interfaceConductivity = materials[i].InterfaceConductivity;
                     double scale = interfaceConductivity * gaussPoint.Weight;
 
-                    Vector N = CalculateEnrichedShapeFunctionVector(gaussPoint, boundary);
+                    Vector N = CalculateEnrichedShapeFunctionVector(gaussPoint.Coordinates, boundary);
                     Matrix NtN = N.TensorProduct(N);
                     Kii.AxpyIntoThis(NtN, scale);
                 }
@@ -333,7 +331,7 @@ namespace MGroup.XFEM.Elements
             for (int i = 0; i < gaussPointsBulk.Count; ++i)
             {
                 GaussPoint gaussPoint = gaussPointsBulk[i];
-                EvalInterpolation3D evalInterpolation = evalInterpolationsAtGPsVolume[i];
+                EvalInterpolation evalInterpolation = evalInterpolationsAtGPsVolume[i];
                 double dV = evalInterpolation.Jacobian.DirectDeterminant;
                 //TODO: The thickness is constant per element in FEM, but what about XFEM? Different materials within the same 
                 //      element are possible. Yeah but the thickness is a geometric porperty, rather than a material one.
@@ -352,7 +350,7 @@ namespace MGroup.XFEM.Elements
         }
 
         private Matrix CalculateDeformationMatrixEnriched(int numEnrichedDofs, IPhase phaseAtGaussPoint, XPoint gaussPoint,
-            EvalInterpolation3D evaluatedInterpolation)
+            EvalInterpolation evaluatedInterpolation)
         {
             // For each node and with all derivatives w.r.t. cartesian coordinates, the enrichment derivatives 
             // are: Bx = enrN,x = N,x(x,y,z) * [psi(x,y,z) - psi(node)] + N(x,y,z) * psi,x(x,y,z), where psi is the  
@@ -403,7 +401,7 @@ namespace MGroup.XFEM.Elements
             return deformationMatrix;
         }
 
-        private Matrix CalcDeformationMatrixStandard(EvalInterpolation3D evalInterpolation)
+        private Matrix CalcDeformationMatrixStandard(EvalInterpolation evalInterpolation)
         {
             // gradT = [ T,x ] = [ sum(Ni,x) * Ti ] = [ ... Ni,x ... ] * [ ... ]
             //         [ T,y ]   [ sum(Ni,y) * Ti ]   [ ... Ni,y ... ]   [  Ti ]
@@ -431,7 +429,7 @@ namespace MGroup.XFEM.Elements
         /// b) rare cases where one or more nodes were not enriched like the rest, because their nodal support was almost 
         /// entirely in one of the two regions.
         /// </summary>
-        private Vector CalculateEnrichedShapeFunctionVector(NaturalPoint gaussPoint, PhaseBoundary boundary)
+        private Vector CalculateEnrichedShapeFunctionVector(double[] gaussPoint, PhaseBoundary boundary)
         {
             //TODO: Optimize this: The mapping should be done once per enrichment ane reused for all Gauss points.
             //      See an attempt at MapEnrichedDofIndicesToNodeIndices().

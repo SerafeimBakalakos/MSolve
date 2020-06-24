@@ -74,14 +74,14 @@ namespace MGroup.XFEM.Plotting.Fields
             for (int v = 0; v < subtetra.VerticesNatural.Length; ++v)
             {
                 NaturalPoint vertex = subtetra.VerticesNatural[v];
-                shapeFunctionsAtVertices.Add(element.Interpolation.EvaluateFunctionsAt(vertex));
+                shapeFunctionsAtVertices.Add(element.Interpolation.EvaluateFunctionsAt(vertex.Coordinates));
             }
 
             // Locate centroid
             NaturalPoint centroidNatural = subtetra.FindCentroidNatural();
             var centroid = new XPoint();
             centroid.Element = element;
-            centroid.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(centroidNatural);
+            centroid.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(centroidNatural.Coordinates);
             //CartesianPoint centroid = element.Interpolation.TransformNaturalToCartesian(element.Nodes, centroidNatural);
             //double[] shapeFunctionsAtCentroid = element.InterpolationStandard.EvaluateFunctionsAt(centroid);
 

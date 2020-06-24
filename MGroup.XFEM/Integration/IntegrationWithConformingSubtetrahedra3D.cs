@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using ISAAR.MSolve.Discretization.Integration;
-using ISAAR.MSolve.Discretization.Integration.Quadratures;
-using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Geometry.ConformingMesh;
+using MGroup.XFEM.Integ;
+using MGroup.XFEM.Integ.Quadratures;
 
 namespace MGroup.XFEM.Integration
 {
     public class IntegrationWithConformingSubtetrahedra3D : IBulkIntegration
     {
         private readonly TetrahedronQuadrature quadratureInSubcells;
-        private readonly IQuadrature3D standardQuadrature;
+        private readonly IQuadrature standardQuadrature;
 
-        public IntegrationWithConformingSubtetrahedra3D(IQuadrature3D standardQuadrature, 
+        public IntegrationWithConformingSubtetrahedra3D(IQuadrature standardQuadrature, 
             TetrahedronQuadrature quadratureInSubcells)
         {
             this.standardQuadrature = standardQuadrature;
@@ -80,20 +79,21 @@ namespace MGroup.XFEM.Integration
                 GaussPoint tetraGP = triangleGaussPoints[i];
 
                 // Linear shape functions evaluated at the Gauss point's coordinates in the triangle's natural system.
-                double N0 = 1.0 - tetraGP.Xi - tetraGP.Eta - tetraGP.Zeta;
-                double N1 = tetraGP.Xi;
-                double N2 = tetraGP.Eta;
-                double N3 = tetraGP.Zeta;
+                double N0 = 1.0 - tetraGP.Coordinates[0] - tetraGP.Coordinates[1] - tetraGP.Coordinates[2];
+                double N1 = tetraGP.Coordinates[0];
+                double N2 = tetraGP.Coordinates[1];
+                double N3 = tetraGP.Coordinates[2];
 
                 // Coordinates of the same gauss point in the element's natural system
-                double elementXi = N0 * xi0 + N1 * xi1 + N2 * xi2 + N3 * xi3;
-                double elementEta = N0 * eta0 + N1 * eta1 + N2 * eta2 + N3 * eta3;
-                double elementZeta = N0 * zeta0 + N1 * zeta1 + N2 * zeta2 + N3 * zeta3;
+                var naturalCoords = new double[3];
+                naturalCoords[0] = N0 * xi0 + N1 * xi1 + N2 * xi2 + N3 * xi3;
+                naturalCoords[1] = N0 * eta0 + N1 * eta1 + N2 * eta2 + N3 * eta3;
+                naturalCoords[2] = N0 * zeta0 + N1 * zeta1 + N2 * zeta2 + N3 * zeta3;
 
                 // The integral would need to be multiplied with |detJ|. 
                 // It is simpler for the caller to have it already included in the weight.
-                double elementWeight = tetraGP.Weight * detJ;
-                elementGaussPoints[i] = new GaussPoint(elementXi, elementEta, elementZeta, elementWeight);
+                double naturalWeight = tetraGP.Weight * detJ;
+                elementGaussPoints[i] = new GaussPoint(naturalCoords, naturalWeight);
             }
 
             return elementGaussPoints;

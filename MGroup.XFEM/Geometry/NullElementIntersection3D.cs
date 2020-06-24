@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Discretization.Integration;
+using MGroup.XFEM.Integ;
 
 namespace MGroup.XFEM.Geometry
 {
@@ -11,16 +11,16 @@ namespace MGroup.XFEM.Geometry
     {
         public RelativePositionCurveElement RelativePosition => RelativePositionCurveElement.Disjoint;
 
-        public IntersectionMesh<CartesianPoint> ApproximateGlobalCartesian() => new IntersectionMesh<CartesianPoint>();
+        public IntersectionMesh ApproximateGlobalCartesian() => new IntersectionMesh();
 
         public IReadOnlyList<GaussPoint> GetIntegrationPoints(int numPoints)
         {
             return new GaussPoint[0];
         }
 
-        public NaturalPoint[] GetPointsForTriangulation()
+        public IList<double[]> GetPointsForTriangulation()
         {
-            return new NaturalPoint[0];
+            return new double[0][];
         }
 
     }

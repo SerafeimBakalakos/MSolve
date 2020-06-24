@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Discretization.Integration;
+using MGroup.XFEM.Integ;
 
 namespace MGroup.XFEM.Geometry
 {
@@ -18,9 +18,9 @@ namespace MGroup.XFEM.Geometry
             return new GaussPoint[0];
         }
 
-        public NaturalPoint[] GetPointsForTriangulation()
+        public IList<double[]> GetPointsForTriangulation()
         {
-            return new NaturalPoint[0];
+            return new double[0][];
         }
     }
 }

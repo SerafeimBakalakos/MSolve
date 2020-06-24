@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Integ;
 using MGroup.XFEM.Integration;
+using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Materials;
 
 //TODO: delete this class
@@ -50,7 +50,7 @@ namespace MGroup.XFEM.Elements
 
         public int ID { get; set; }
 
-        public IIsoparametricInterpolation2D Interpolation
+        public IIsoparametricInterpolation Interpolation
         {
             get
             {
@@ -109,7 +109,7 @@ namespace MGroup.XFEM.Elements
         {
         }
 
-        public XPoint EvaluateFunctionsAt(NaturalPoint point)
+        public XPoint EvaluateFunctionsAt(double[] naturalPoint)
         {
             throw new NotImplementedException();
         }
