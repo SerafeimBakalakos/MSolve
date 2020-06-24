@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
 
-namespace MGroup.XFEM.Integ
+namespace MGroup.XFEM.Integration
 {
     /// <summary>
     /// Integration point (coordinates & weight) defined in the 1D, 2D or 3D natural coordinate system of a finite element.

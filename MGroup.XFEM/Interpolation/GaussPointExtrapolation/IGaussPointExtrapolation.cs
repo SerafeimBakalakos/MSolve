@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Commons;
-using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integration.Quadratures;
 
 //TODO: Vector2 and Tensor2D instead of double[]. Either that or always use double[], in which case vectors and tensors are 
 //      covered by the same method.

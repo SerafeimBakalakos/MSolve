@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Integration;
 
-namespace MGroup.XFEM.Integ.Quadratures
+namespace MGroup.XFEM.Integration.Quadratures
 {
     /// <summary>
     /// Enum class with the 2D integration rules for triangles of varying orders. These are not tensor product of 

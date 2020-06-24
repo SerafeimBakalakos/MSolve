@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Integration;
 
-namespace MGroup.XFEM.Integ.Quadratures
+namespace MGroup.XFEM.Integration.Quadratures
 {
 	//TODO: Include theory.
 	/// <summary>

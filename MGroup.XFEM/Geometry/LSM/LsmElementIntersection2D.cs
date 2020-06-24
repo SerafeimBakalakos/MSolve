@@ -5,8 +5,8 @@ using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Geometry.Primitives;
-using MGroup.XFEM.Integ;
-using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integration;
+using MGroup.XFEM.Integration.Quadratures;
 
 namespace MGroup.XFEM.Geometry.LSM
 {

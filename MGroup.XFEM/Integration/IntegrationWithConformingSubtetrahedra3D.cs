@@ -4,8 +4,8 @@ using System.Diagnostics;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Geometry.ConformingMesh;
-using MGroup.XFEM.Integ;
-using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integration;
+using MGroup.XFEM.Integration.Quadratures;
 
 namespace MGroup.XFEM.Integration
 {

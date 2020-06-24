@@ -20,7 +20,7 @@ using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Geometry.Tolerances;
-using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Materials;
 using MGroup.XFEM.Plotting;

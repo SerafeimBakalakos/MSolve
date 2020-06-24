@@ -5,7 +5,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
-using MGroup.XFEM.Integ;
+using MGroup.XFEM.Integration;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Materials;

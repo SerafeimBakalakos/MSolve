@@ -5,7 +5,7 @@ using MGroup.XFEM.Interpolation.Inverse;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Interfaces;
 
 namespace MGroup.XFEM.Interpolation

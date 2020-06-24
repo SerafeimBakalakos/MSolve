@@ -9,7 +9,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
-using MGroup.XFEM.Integ;
+using MGroup.XFEM.Integration;
 
 namespace MGroup.XFEM.Plotting.Fields
 {

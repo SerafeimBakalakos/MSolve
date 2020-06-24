@@ -4,9 +4,9 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Interfaces;
-using MGroup.XFEM.Integ;
+using MGroup.XFEM.Integration;
 
 // Truss nodes:
 // 0 -- 1

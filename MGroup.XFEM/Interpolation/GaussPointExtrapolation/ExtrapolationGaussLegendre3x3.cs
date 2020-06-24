@@ -1,5 +1,5 @@
 ﻿using ISAAR.MSolve.Geometry.Coordinates;
-using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integration.Quadratures;
 using System;
 using System.Collections.Generic;
 using System.Text;

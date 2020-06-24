@@ -5,7 +5,7 @@ using MGroup.XFEM.Integration;
 
 //TODO: perhaps I should compute them instead of having them hardcoded.
 //TODO: investigate if this is threadsafe. What about running on distributed systems?
-namespace MGroup.XFEM.Integ.Quadratures
+namespace MGroup.XFEM.Integration.Quadratures
 {
     /// <summary>
     /// Enum class with the 1D Gauss-Legendre integration rules of varying orders. 

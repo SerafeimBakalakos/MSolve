@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Mesh;
 using MGroup.XFEM.Entities;
-using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Interpolation.GaussPointExtrapolation;

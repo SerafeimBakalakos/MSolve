@@ -6,7 +6,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
-using MGroup.XFEM.Integ;
+using MGroup.XFEM.Integration;
 using MGroup.XFEM.Plotting.Writers;
 
 //TODO: Standardize the writer classes and their input. Also simplify them as much as possible (e.g. plot just points, without 

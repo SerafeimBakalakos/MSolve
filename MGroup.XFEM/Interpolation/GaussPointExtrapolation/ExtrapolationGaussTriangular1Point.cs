@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Commons;
-using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integration.Quadratures;
 
 namespace MGroup.XFEM.Interpolation.GaussPointExtrapolation
 {

@@ -6,7 +6,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
-using MGroup.XFEM.Integ;
+using MGroup.XFEM.Integration;
 using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Materials;
 

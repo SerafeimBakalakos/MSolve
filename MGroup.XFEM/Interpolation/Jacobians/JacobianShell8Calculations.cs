@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integration.Quadratures;
 
 //J_0a and ll1 can only be calculated during initialization (at the first configuration) and then cached
 namespace MGroup.XFEM.Interpolation.Jacobians

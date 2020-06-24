@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Geometry.Coordinates;
-using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integration.Quadratures;
 
 //TODO: Perhaps I should use dictionaries for matching input and output at nodes or at least gauss points.
 //TODO: Perhaps I should use generic methods when the same thing is done for scalar, vector, tensor fields. However that would 

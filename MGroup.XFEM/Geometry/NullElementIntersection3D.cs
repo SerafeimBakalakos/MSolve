@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
-using MGroup.XFEM.Integ;
+using MGroup.XFEM.Integration;
 
 namespace MGroup.XFEM.Geometry
 {

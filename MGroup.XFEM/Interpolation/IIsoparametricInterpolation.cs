@@ -4,7 +4,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Discretization.Interfaces;
-using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integration.Quadratures;
 
 //TODO: perhaps I should return lists instead of Dictionaries with Gauss points as keys. It would be faster. The order of GPs is
 //      defined by the interpolation anyway.

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Elements;
-using MGroup.XFEM.Integ;
+using MGroup.XFEM.Integration;
 
 namespace MGroup.XFEM.Integration
 {

@@ -6,7 +6,7 @@ using MGroup.XFEM.Interpolation.Jacobians;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using MGroup.XFEM.Entities;
-using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Interpolation;
 using System.Linq;
 

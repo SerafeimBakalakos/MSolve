@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using MGroup.XFEM.Integration;
 
-namespace MGroup.XFEM.Integ.Quadratures
+namespace MGroup.XFEM.Integration.Quadratures
 {
     /// <summary>
     /// Enum class with the 3D integration rules for tetrahedra of varying orders. These are not tensor product of

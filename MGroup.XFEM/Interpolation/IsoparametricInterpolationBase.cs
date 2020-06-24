@@ -6,9 +6,9 @@ using MGroup.XFEM.Interpolation.Jacobians;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using MGroup.XFEM.Integ.Quadratures;
+using MGroup.XFEM.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Interfaces;
-using MGroup.XFEM.Integ;
+using MGroup.XFEM.Integration;
 using System.Diagnostics;
 
 namespace MGroup.XFEM.Interpolation

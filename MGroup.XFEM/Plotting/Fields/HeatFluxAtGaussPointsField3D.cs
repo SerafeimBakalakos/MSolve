@@ -11,7 +11,7 @@ using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Materials;
-using MGroup.XFEM.Integ;
+using MGroup.XFEM.Integration;
 using MGroup.XFEM.Interpolation;
 
 //TODO: Also calculate heat flux at nodes. It needs averaging over the elements. It also needs to specify the material since it 

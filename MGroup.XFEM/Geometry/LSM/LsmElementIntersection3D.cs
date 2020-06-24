@@ -10,8 +10,8 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
-using MGroup.XFEM.Integ.Quadratures;
-using MGroup.XFEM.Integ;
+using MGroup.XFEM.Integration.Quadratures;
+using MGroup.XFEM.Integration;
 
 namespace MGroup.XFEM.Geometry.LSM
 {

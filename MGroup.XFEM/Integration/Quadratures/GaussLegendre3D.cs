@@ -5,7 +5,7 @@ using MGroup.XFEM.Integration;
 //TODO: A thread safe Table3D is needed with an atomic method: 
 //      GetOrAddNew(int orderXi, int orderEta, int orderZeta Func<int, int, int, GaussLegendre3D> createFunc). This quadrature  
 //      class should also be thread safe. What about distributed systems?
-namespace MGroup.XFEM.Integ.Quadratures
+namespace MGroup.XFEM.Integration.Quadratures
 {
     /// <summary>
     /// Contains the 3D Gauss-Legendre integration rules of varying orders. These are created as tensor products of 
