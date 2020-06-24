@@ -138,7 +138,7 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
             else
             {
                 // Calculate the are of the whole element and on which side it lies
-                double area = ((IXFiniteElement2D)element).CalcArea();
+                double area = ((IXFiniteElement2D)element).CalcBulkSize();
                 
                 if (element.Phases.Count == 1)
                 {

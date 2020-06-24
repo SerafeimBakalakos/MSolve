@@ -8,9 +8,9 @@ using MGroup.XFEM.Entities;
 
 namespace MGroup.XFEM.Elements
 {
-    public class ElementTri3Geometry : IElementGeometry2D
+    public class ElementTri3Geometry : IElementGeometry
     {
-        public double CalcArea(IReadOnlyList<XNode> nodes)
+        public double CalcBulkSize(IReadOnlyList<XNode> nodes)
         {
             var triangle = new Geometry.Primitives.Triangle2D();
             triangle.Vertices[0] = new double[] { nodes[0].X, nodes[0].Y};
@@ -19,14 +19,14 @@ namespace MGroup.XFEM.Elements
             return triangle.CalcArea();
         }
 
-        public ElementEdge[] FindEdges(IReadOnlyList<XNode> nodes)
+        public (ElementEdge[], ElementFace[]) FindEdgesFaces(IReadOnlyList<XNode> nodes)
         {
             IReadOnlyList<NaturalPoint> nodesNatural = InterpolationTri3.UniqueInstance.NodalNaturalCoordinates;
             var edges = new ElementEdge[3];
             edges[0] = new ElementEdge(nodes, nodesNatural, 0, 1);
             edges[1] = new ElementEdge(nodes, nodesNatural, 1, 2);
             edges[2] = new ElementEdge(nodes, nodesNatural, 2, 0);
-            return edges;
+            return (edges, new ElementFace[0]);
         }
     }
 }

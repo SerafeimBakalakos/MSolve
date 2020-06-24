@@ -17,17 +17,25 @@ using MGroup.XFEM.Materials;
 //TODO: delete this class
 namespace MGroup.XFEM.Elements
 {
-    public class MockElement3D : IXFiniteElement3D
+    public class MockElement : IXFiniteElement2D, IXFiniteElement3D
     {
-        private readonly IElementGeometry3D elementGeometry;
+        private readonly IElementGeometry elementGeometry;
 
-        public MockElement3D(int id, CellType cellType, IReadOnlyList<XNode> nodes)
+        public MockElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
         {
             this.ID = id;
             this.CellType = cellType;
             this.Nodes = nodes;
 
-            if (this.CellType == CellType.Tet4)
+            if (this.CellType == CellType.Tri3)
+            {
+                elementGeometry = new ElementTri3Geometry();
+            }
+            else if (this.CellType == CellType.Quad4)
+            {
+                elementGeometry = new ElementQuad4Geometry();
+            }
+            else if (this.CellType == CellType.Tet4)
             {
                 elementGeometry = new ElementTet4Geometry();
             }
@@ -56,7 +64,8 @@ namespace MGroup.XFEM.Elements
         {
             get
             {
-                if (CellType == CellType.Hexa8) return InterpolationHexa8.UniqueInstance;
+                if (CellType == CellType.Quad4) return InterpolationQuad4.UniqueInstance;
+                else if (CellType == CellType.Hexa8) return InterpolationHexa8.UniqueInstance;
                 else throw new NotImplementedException();
             }
         }
@@ -78,9 +87,11 @@ namespace MGroup.XFEM.Elements
 
         public IBulkIntegration IntegrationBulk { get; set; }
 
+        public ElementSubtriangle2D[] ConformingSubtriangles { get; set; }
         public ElementSubtetrahedron3D[] ConformingSubtetrahedra { get; set; }
 
-        public List<IElementSurfaceIntersection3D> Intersections { get; } = new List<IElementSurfaceIntersection3D>();
+        List<IElementCurveIntersection2D> IXFiniteElement2D.Intersections { get; } = new List<IElementCurveIntersection2D>();
+        List<IElementSurfaceIntersection3D> IXFiniteElement3D.Intersections { get; } = new List<IElementSurfaceIntersection3D>();
 
         public IMatrix DampingMatrix(IElement element)
         {
@@ -102,7 +113,7 @@ namespace MGroup.XFEM.Elements
             throw new NotImplementedException();
         }
 
-        public double CalcVolume() => elementGeometry.CalcVolume(Nodes);
+        public double CalcBulkSize() => elementGeometry.CalcBulkSize(Nodes);
 
         public void IdentifyDofs()
         {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MGroup.XFEM.Integration;
 
 //TODO: perhaps I should compute them instead of having them hardcoded.
 //TODO: investigate if this is threadsafe. What about running on distributed systems?

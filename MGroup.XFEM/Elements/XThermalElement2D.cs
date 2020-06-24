@@ -28,7 +28,7 @@ namespace MGroup.XFEM.Elements
     public class XThermalElement2D : IXFiniteElement2D
     {
         private readonly int boundaryIntegrationOrder;
-        private readonly IElementGeometry2D elementGeometry;
+        private readonly IElementGeometry elementGeometry;
         private readonly int id;
         private readonly int numStandardDofs;
         private readonly IDofType[][] standardDofTypes;
@@ -58,7 +58,7 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         private IPhase[] phasesAtGPsVolume;
 
-        public XThermalElement2D(int id, IReadOnlyList<XNode> nodes, double thickness, IElementGeometry2D elementGeometry,
+        public XThermalElement2D(int id, IReadOnlyList<XNode> nodes, double thickness, IElementGeometry elementGeometry,
             IThermalMaterialField materialField, IIsoparametricInterpolation interpolation, 
             IGaussPointExtrapolation gaussPointExtrapolation, IQuadrature standardQuadrature, 
             IBulkIntegration bulkIntegration, int boundaryIntegrationOrder)
@@ -79,7 +79,7 @@ namespace MGroup.XFEM.Elements
             this.standardDofTypes = new IDofType[nodes.Count][];
             for (int i = 0; i < nodes.Count; ++i) this.standardDofTypes[i] = new IDofType[] { ThermalDof.Temperature };
 
-            this.Edges = elementGeometry.FindEdges(nodes);
+            (this.Edges, this.Faces) = elementGeometry.FindEdgesFaces(nodes);
         }
 
         public CellType CellType => Interpolation.CellType;
@@ -92,11 +92,11 @@ namespace MGroup.XFEM.Elements
 
         public ElementEdge[] Edges { get; }
 
+        public ElementFace[] Faces { get; }
+
         public IGaussPointExtrapolation GaussPointExtrapolation { get; }
 
         public int ID { get => id; set => throw new InvalidOperationException("ID is set at constructor."); }
-
-        public int IntegrationBoundaryOrder { get; set; }
 
         //TODO: This should not always be used for Kss. E.g. it doesn't work for bimaterial interface.
         public IQuadrature IntegrationStandard { get; }
@@ -128,7 +128,7 @@ namespace MGroup.XFEM.Elements
 
         public double Thickness { get; }
 
-        public double CalcArea() => elementGeometry.CalcArea(Nodes);
+        public double CalcBulkSize() => elementGeometry.CalcBulkSize(Nodes);
 
         public IMatrix DampingMatrix(IElement element) => throw new NotImplementedException();
 

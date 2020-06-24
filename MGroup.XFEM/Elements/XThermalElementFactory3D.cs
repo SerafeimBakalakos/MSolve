@@ -11,7 +11,7 @@ namespace MGroup.XFEM.Elements
 {
     public class XThermalElement3DFactory
     {
-        private static readonly IReadOnlyDictionary<CellType, IElementGeometry3D> elementGeometries;
+        private static readonly IReadOnlyDictionary<CellType, IElementGeometry> elementGeometries;
         private static readonly IReadOnlyDictionary<CellType, IGaussPointExtrapolation> extrapolations;
         private static readonly IReadOnlyDictionary<CellType, IQuadrature> standardIntegrationsForConductivity;
         //private static readonly IReadOnlyDictionary<CellType, IQuadrature3D> integrationsForMass;
@@ -31,7 +31,7 @@ namespace MGroup.XFEM.Elements
             var standardIntegrationsForConductivity = new Dictionary<CellType, IQuadrature>();
             //var integrationsForMass = new Dictionary<CellType, IQuadrature3D>();
             var extrapolations = new Dictionary<CellType, IGaussPointExtrapolation>();
-            var elementGeometries = new Dictionary<CellType, IElementGeometry3D>();
+            var elementGeometries = new Dictionary<CellType, IElementGeometry>();
 
             // Hexa8
             interpolations.Add(CellType.Hexa8, InterpolationHexa8.UniqueInstance);

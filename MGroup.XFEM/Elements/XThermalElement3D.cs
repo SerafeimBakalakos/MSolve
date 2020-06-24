@@ -28,7 +28,7 @@ namespace MGroup.XFEM.Elements
     public class XThermalElement3D : IXFiniteElement3D
     {
         private readonly int boundaryIntegrationOrder;
-        private readonly IElementGeometry3D elementGeometry;
+        private readonly IElementGeometry elementGeometry;
         private readonly int id;
         private readonly int numStandardDofs;
         private readonly IDofType[][] standardDofTypes;
@@ -58,7 +58,7 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         private IPhase[] phasesAtGPsVolume;
 
-        public XThermalElement3D(int id, IReadOnlyList<XNode> nodes, IElementGeometry3D elementGeometry,
+        public XThermalElement3D(int id, IReadOnlyList<XNode> nodes, IElementGeometry elementGeometry,
             IThermalMaterialField materialField, IIsoparametricInterpolation interpolation, 
             IGaussPointExtrapolation gaussPointExtrapolation, IQuadrature standardQuadrature, 
             IBulkIntegration bulkIntegration, int boundaryIntegrationOrder)
@@ -97,8 +97,6 @@ namespace MGroup.XFEM.Elements
 
         public int ID { get => id; set => throw new InvalidOperationException("ID is set at constructor."); }
 
-        public int IntegrationBoundaryOrder { get; set; }
-
         //TODO: This should not always be used for Kss. E.g. it doesn't work for bimaterial interface.
         public IQuadrature IntegrationStandard { get; }
 
@@ -127,7 +125,7 @@ namespace MGroup.XFEM.Elements
         ISubdomain IElement.Subdomain => this.Subdomain;
         public XSubdomain Subdomain { get; set; }
 
-        public double CalcVolume() => elementGeometry.CalcVolume(Nodes);
+        public double CalcBulkSize() => elementGeometry.CalcBulkSize(Nodes);
 
         public IMatrix DampingMatrix(IElement element) => throw new NotImplementedException();
 

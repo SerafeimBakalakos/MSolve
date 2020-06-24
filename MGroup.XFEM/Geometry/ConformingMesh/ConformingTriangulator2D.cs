@@ -59,7 +59,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             }
 
             var triangulator = new MIConvexHullTriangulator2D();
-            triangulator.MinTriangleArea = tol * element2D.CalcArea();
+            triangulator.MinTriangleArea = tol * element2D.CalcBulkSize();
             IList<Triangle2D> delaunyTriangles = triangulator.CreateMesh(triangleVertices);
             var subtriangles = new ElementSubtriangle2D[delaunyTriangles.Count];
             for (int t = 0; t < delaunyTriangles.Count; ++t)

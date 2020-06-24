@@ -22,8 +22,5 @@ namespace MGroup.XFEM.Elements
         ElementSubtriangle2D[] ConformingSubtriangles { get; set; }
 
         List<IElementCurveIntersection2D> Intersections { get; }
-
-        double CalcArea();
-
     }
 }

@@ -6,9 +6,13 @@ using MGroup.XFEM.Entities;
 
 namespace MGroup.XFEM.Elements
 {
-    public interface IElementGeometry3D
+    public interface IElementGeometry
     {
-        double CalcVolume(IReadOnlyList<XNode> nodes);
+        /// <summary>
+        /// 1D: calculates length. 2D: calculates area. 3D: calculates volume
+        /// </summary>
+        /// <param name="nodes"></param>
+        double CalcBulkSize(IReadOnlyList<XNode> nodes);
 
         (ElementEdge[], ElementFace[]) FindEdgesFaces(IReadOnlyList<XNode> nodes);
     }

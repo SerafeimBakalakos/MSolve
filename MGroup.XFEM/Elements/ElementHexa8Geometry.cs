@@ -12,9 +12,9 @@ using System.Linq;
 
 namespace MGroup.XFEM.Elements
 {
-    public class ElementHexa8Geometry : IElementGeometry3D
+    public class ElementHexa8Geometry : IElementGeometry
     {
-        public double CalcVolume(IReadOnlyList<XNode> nodes)
+        public double CalcBulkSize(IReadOnlyList<XNode> nodes)
         {
             //TODO: Split it into tetrahedra and use the closed formula for their volume
 

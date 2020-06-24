@@ -93,7 +93,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 TetrahedronQuadrature.Order2Points4);
             foreach (IXFiniteElement element in model.Elements)
             {
-                if (element is MockElement3D mock) mock.IntegrationBulk = integrationBulk;
+                if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter3D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
@@ -140,7 +140,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 TetrahedronQuadrature.Order2Points4);
             foreach (IXFiniteElement element in model.Elements)
             {
-                if (element is MockElement3D mock) mock.IntegrationBulk = integrationBulk;
+                if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter3D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
@@ -209,7 +209,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 TetrahedronQuadrature.Order2Points4);
             foreach (IXFiniteElement element in model.Elements)
             {
-                if (element is MockElement3D mock) mock.IntegrationBulk = integrationBulk;
+                if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter3D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);

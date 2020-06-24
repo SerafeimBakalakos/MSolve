@@ -6,9 +6,9 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Elements
 {
-    public class ElementTet4Geometry : IElementGeometry3D
+    public class ElementTet4Geometry : IElementGeometry
     {
-        public double CalcVolume(IReadOnlyList<XNode> nodes)
+        public double CalcBulkSize(IReadOnlyList<XNode> nodes)
         {
             var tetra = new Tetrahedron3D();
             tetra.Vertices[0] = nodes[0].Coordinates;

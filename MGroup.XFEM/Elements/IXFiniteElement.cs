@@ -17,6 +17,8 @@ namespace MGroup.XFEM.Elements
     {
         ElementEdge[] Edges { get; }
 
+        ElementFace[] Faces { get; }
+
         IBulkIntegration IntegrationBulk { get; }
 
         IIsoparametricInterpolation Interpolation { get; }
@@ -29,8 +31,9 @@ namespace MGroup.XFEM.Elements
 
         XSubdomain Subdomain { get; set; }
 
-        XPoint EvaluateFunctionsAt(double[] naturalPoint);
+        double CalcBulkSize();
 
+        XPoint EvaluateFunctionsAt(double[] naturalPoint);
 
         Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)>
             GetMaterialsForBoundaryIntegration();

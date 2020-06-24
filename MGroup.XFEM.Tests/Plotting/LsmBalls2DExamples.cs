@@ -96,7 +96,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 TriangleQuadratureSymmetricGaussian.Order2Points3);
             foreach (IXFiniteElement element in model.Elements)
             {
-                if (element is MockElement2D mock) mock.IntegrationBulk = integrationBulk;
+                if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter2D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
@@ -140,7 +140,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 TriangleQuadratureSymmetricGaussian.Order2Points3);
             foreach (IXFiniteElement element in model.Elements)
             {
-                if (element is MockElement2D mock) mock.IntegrationBulk = integrationBulk;
+                if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter2D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
@@ -208,7 +208,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 TriangleQuadratureSymmetricGaussian.Order2Points3);
             foreach (IXFiniteElement element in model.Elements)
             {
-                if (element is MockElement2D mock) mock.IntegrationBulk = integrationBulk;
+                if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
             }
             var integrationPlotter = new IntegrationPlotter2D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);

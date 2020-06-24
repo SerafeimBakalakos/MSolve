@@ -72,7 +72,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             }
 
             var triangulator = new MIConvexHullTriangulator3D();
-            triangulator.MinTetrahedronVolume = tol * element3D.CalcVolume();
+            triangulator.MinTetrahedronVolume = tol * element3D.CalcBulkSize();
             IList<Tetrahedron3D> delaunyTetrahedra = triangulator.CreateMesh(tetraVertices);
             var subtetrahedra = new ElementSubtetrahedron3D[delaunyTetrahedra.Count];
             for (int t = 0; t < delaunyTetrahedra.Count; ++t)

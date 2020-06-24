@@ -11,7 +11,7 @@ namespace MGroup.XFEM.Elements
 {
     public class XThermalElement2DFactory
     {
-        private static readonly IReadOnlyDictionary<CellType, IElementGeometry2D> elementGeometries;
+        private static readonly IReadOnlyDictionary<CellType, IElementGeometry> elementGeometries;
         private static readonly IReadOnlyDictionary<CellType, IGaussPointExtrapolation> extrapolations;
         private static readonly IReadOnlyDictionary<CellType, IQuadrature> standardIntegrationsForConductivity;
         //private static readonly IReadOnlyDictionary<CellType, IQuadrature2D> integrationsForMass;
@@ -32,7 +32,7 @@ namespace MGroup.XFEM.Elements
             var standardIntegrationsForConductivity = new Dictionary<CellType, IQuadrature>();
             //var integrationsForMass = new Dictionary<CellType, IQuadrature2D>();
             var extrapolations = new Dictionary<CellType, IGaussPointExtrapolation>();
-            var elementGeometries = new Dictionary<CellType, IElementGeometry2D>();
+            var elementGeometries = new Dictionary<CellType, IElementGeometry>();
 
             // Quad4
             interpolations.Add(CellType.Quad4, InterpolationQuad4.UniqueInstance);

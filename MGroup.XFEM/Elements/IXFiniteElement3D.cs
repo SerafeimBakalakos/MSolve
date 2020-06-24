@@ -14,10 +14,6 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         ElementSubtetrahedron3D[] ConformingSubtetrahedra { get; set; }
 
-        ElementFace[] Faces { get; }
-
         List<IElementSurfaceIntersection3D> Intersections { get; }
-
-        double CalcVolume();
     }
 }
