@@ -90,7 +90,7 @@ namespace MGroup.XFEM.Geometry.LSM
                     var side1 = new double[3];
                     for (int i = 0; i < 3; ++i)
                     {
-                        side0[i] = verticesCartesian[2][i] - verticesCartesian[0][i];
+                        side1[i] = verticesCartesian[2][i] - verticesCartesian[0][i];
                     }
                     double triangleArea = 0.5 * side0.CrossProduct(side1).Norm2();
                     double detJAuxiliaryNatural = 2 * triangleArea;
@@ -100,8 +100,8 @@ namespace MGroup.XFEM.Geometry.LSM
                     {
                         var shapeFuncs = new double[3];
                         shapeFuncs[0] = 1 - gpAuxiliary.Coordinates[0] - gpAuxiliary.Coordinates[1];
-                        shapeFuncs[0] = gpAuxiliary.Coordinates[0];
-                        shapeFuncs[0] = gpAuxiliary.Coordinates[1];
+                        shapeFuncs[1] = gpAuxiliary.Coordinates[0];
+                        shapeFuncs[2] = gpAuxiliary.Coordinates[1];
                         var gpNatural = new double[3];
                         for (int n = 0; n < shapeFuncs.Length; ++n)
                         {
