@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using ISAAR.MSolve.FEM.Interpolation;
+
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
@@ -41,7 +41,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
         public (CartesianPoint centroid, double area) FindCentroidAndAreaCartesian(IXFiniteElement2D parentElement)
         {
-            IIsoparametricInterpolation2D interpolation = parentElement.Interpolation;
+            IIsoparametricInterpolation interpolation = parentElement.Interpolation;
             if (interpolation == InterpolationQuad4.UniqueInstance || interpolation == InterpolationTri3.UniqueInstance)
             {
                 // The triangle edges will also be linear in Cartesian coordinate system, for Quad4 and Tri3 elements 
@@ -67,7 +67,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
         public CartesianPoint[] GetVerticesCartesian(IXFiniteElement2D parentElement)
         {
-            IIsoparametricInterpolation2D interpolation = parentElement.Interpolation;
+            IIsoparametricInterpolation interpolation = parentElement.Interpolation;
             IReadOnlyList<XNode> nodes = parentElement.Nodes;
             if (interpolation == InterpolationQuad4.UniqueInstance || interpolation == InterpolationTri3.UniqueInstance)
             {

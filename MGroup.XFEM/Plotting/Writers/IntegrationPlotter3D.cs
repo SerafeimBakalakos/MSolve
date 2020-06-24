@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.Discretization.Integration;
+using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
+using ISAAR.MSolve.Discretization.Integration;
 
 namespace MGroup.XFEM.Plotting
 {

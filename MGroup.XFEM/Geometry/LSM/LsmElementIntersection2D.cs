@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.Discretization.Integration;
-using ISAAR.MSolve.Discretization.Integration.Quadratures;
+using MGroup.XFEM.Integration;
+using MGroup.XFEM.Integration.Quadratures;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 

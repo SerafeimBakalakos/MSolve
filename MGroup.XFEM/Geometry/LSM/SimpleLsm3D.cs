@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;

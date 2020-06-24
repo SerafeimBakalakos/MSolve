@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.FEM.Entities;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;

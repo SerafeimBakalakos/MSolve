@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.Discretization.Integration;
-using ISAAR.MSolve.FEM.Interpolation;
+using MGroup.XFEM.Integration;
+
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Materials;
+using ISAAR.MSolve.Discretization.Integration;
+using ISAAR.MSolve.FEM.Interpolation;
 
 //TODO: Also calculate heat flux at nodes. It needs averaging over the elements. It also needs to specify the material since it 
 //      is not explicitly stored as in elements.

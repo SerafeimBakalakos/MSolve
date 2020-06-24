@@ -2,11 +2,9 @@
 using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
-using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Materials;

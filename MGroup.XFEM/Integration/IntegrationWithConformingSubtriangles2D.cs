@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using ISAAR.MSolve.Discretization.Integration;
-using ISAAR.MSolve.Discretization.Integration.Quadratures;
+using MGroup.XFEM.Integration;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Geometry.ConformingMesh;
+using ISAAR.MSolve.Discretization.Integration.Quadratures;
+using ISAAR.MSolve.Discretization.Integration;
 
 //TODO: Perhaps avoid integration in triangles with very small area. Or should that be handled, by not creating those in the 
 //      first place? The former, would interfere with the code that decides whether to not enrich nodes to avoid singularities.

@@ -205,7 +205,7 @@ namespace MGroup.XFEM.Tests.Plotting
 
             // Plot bulk integration points
             model.UpdateMaterials();
-            var integrationBulk = new IntegrationWithConformingSubtriangles2D(GaussLegendre2D.GetQuadratureWithOrder(2, 2),
+            var integrationBulk = new Integration.IntegrationWithConformingSubtriangles2D(GaussLegendre2D.GetQuadratureWithOrder(2, 2),
                 TriangleQuadratureSymmetricGaussian.Order2Points3);
             foreach (IXFiniteElement element in model.Elements)
             {
@@ -318,7 +318,7 @@ namespace MGroup.XFEM.Tests.Plotting
             // Integration
             var stdQuadrature = GaussLegendre2D.GetQuadratureWithOrder(2, 2);
             var subcellQuadrature = TriangleQuadratureSymmetricGaussian.Order2Points3;
-            var integrationBulk = new IntegrationWithConformingSubtriangles2D(stdQuadrature, subcellQuadrature);
+            var integrationBulk = new Integration.IntegrationWithConformingSubtriangles2D(stdQuadrature, subcellQuadrature);
 
             // Elements
             var elemFactory = new XThermalElement2DFactory(materialField, 1, integrationBulk, boundaryIntegrationOrder);

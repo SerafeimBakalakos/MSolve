@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.FEM.Interpolation;
+
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
 

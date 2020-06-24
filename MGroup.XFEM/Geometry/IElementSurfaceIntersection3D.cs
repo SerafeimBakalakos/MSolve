@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.Discretization.Integration;
+using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
 
 //TODO: This must be joined with the 2D interface. An intersection mesh class should be used there as well.

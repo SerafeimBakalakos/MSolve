@@ -34,13 +34,15 @@ namespace MGroup.XFEM.Entities
 
         public List<NodalLoad> NodalLoads { get; private set; } = new List<NodalLoad>();
 
-        public IList<IMassAccelerationHistoryLoad> MassAccelerationHistoryLoads => throw new NotImplementedException();
-
         IReadOnlyList<INode> IStructuralModel.Nodes => Nodes;
         public List<XNode> Nodes { get; } = new List<XNode>();
 
         IReadOnlyList<ISubdomain> IStructuralModel.Subdomains => Subdomains.Values.ToList();
         public Dictionary<int, XSubdomain> Subdomains { get; } = new Dictionary<int, XSubdomain>();
+
+        public IList<IMassAccelerationHistoryLoad> MassAccelerationHistoryLoads => throw new NotImplementedException();
+
+        IList<IMassAccelerationHistoryLoad> IStructuralModel.MassAccelerationHistoryLoads => throw new NotImplementedException();
 
         public void AssignLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
         {

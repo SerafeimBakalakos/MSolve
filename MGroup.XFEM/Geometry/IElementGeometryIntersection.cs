@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.Discretization.Integration;
+using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
+using ISAAR.MSolve.Discretization.Integration;
 
 namespace MGroup.XFEM.Geometry
 {
