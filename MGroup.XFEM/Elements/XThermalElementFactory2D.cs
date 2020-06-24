@@ -2,9 +2,9 @@
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Interpolation;
+using ISAAR.MSolve.FEM.Interpolation.GaussPointExtrapolation;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Integration;
-using MGroup.XFEM.Interpolation.GaussPointExtrapolation;
 using MGroup.XFEM.Materials;
 
 namespace MGroup.XFEM.Elements

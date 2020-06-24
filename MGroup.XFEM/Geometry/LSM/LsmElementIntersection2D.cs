@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Integration;
-using MGroup.XFEM.Integration.Quadratures;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
+using ISAAR.MSolve.Discretization.Integration;
+using ISAAR.MSolve.Discretization.Integration.Quadratures;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
