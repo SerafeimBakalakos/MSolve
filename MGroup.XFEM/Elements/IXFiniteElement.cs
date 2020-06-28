@@ -35,6 +35,8 @@ namespace MGroup.XFEM.Elements
 
         XPoint EvaluateFunctionsAt(double[] naturalPoint);
 
+        double[] FindCentroidCartesian();
+
         Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)>
             GetMaterialsForBoundaryIntegration();
 

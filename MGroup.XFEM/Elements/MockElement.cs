@@ -20,6 +20,7 @@ namespace MGroup.XFEM.Elements
     public class MockElement : IXFiniteElement2D, IXFiniteElement3D
     {
         private readonly IElementGeometry elementGeometry;
+        private readonly int dimension;
 
         public MockElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
         {
@@ -29,18 +30,22 @@ namespace MGroup.XFEM.Elements
 
             if (this.CellType == CellType.Tri3)
             {
+                dimension = 2;
                 elementGeometry = new ElementTri3Geometry();
             }
             else if (this.CellType == CellType.Quad4)
             {
+                dimension = 2;
                 elementGeometry = new ElementQuad4Geometry();
             }
             else if (this.CellType == CellType.Tet4)
             {
+                dimension = 3;
                 elementGeometry = new ElementTet4Geometry();
             }
             else if (this.CellType == CellType.Hexa8)
             {
+                dimension = 3;
                 elementGeometry = new ElementHexa8Geometry();
             }
 
@@ -137,5 +142,7 @@ namespace MGroup.XFEM.Elements
         {
             throw new NotImplementedException();
         }
+
+        public double[] FindCentroidCartesian() => elementGeometry.FindCentroidCartesian(dimension, Nodes);
     }
 }
