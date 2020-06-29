@@ -69,5 +69,10 @@ namespace MGroup.XFEM.Entities
             throw new InvalidOperationException(
                 "Call this method in every other valid phase. If none contains the point, then this phase does");
         }
+
+        public bool UnionWith(IPhase otherPhase)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

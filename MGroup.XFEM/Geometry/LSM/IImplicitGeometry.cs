@@ -15,5 +15,7 @@ namespace MGroup.XFEM.Geometry.LSM
         double SignedDistanceOf(XPoint point);
 
         //TODO: Also normal vector through point/node
+
+        void UnionWith(IImplicitGeometry otherGeometry);
     }
 }

@@ -130,5 +130,21 @@ namespace MGroup.XFEM.Geometry.LSM
             if (Math.Abs(levelSet) <= zeroTolerance) return 0.0;
             else return levelSet;
         }
+
+        public void UnionWith(IImplicitGeometry otherGeometry)
+        {
+            if (otherGeometry is SimpleLsm2D otherLsm)
+            {
+                if (this.NodalLevelSets.Length != otherLsm.NodalLevelSets.Length)
+                {
+                    throw new ArgumentException("Incompatible Level Set geometry");
+                }
+                for (int i = 0; i < this.NodalLevelSets.Length; ++i)
+                {
+                    this.NodalLevelSets[i] = Math.Min(this.NodalLevelSets[i], otherLsm.NodalLevelSets[i]);
+                }
+            }
+            else throw new ArgumentException("Incompatible Level Set geometry");
+        }
     }
 }

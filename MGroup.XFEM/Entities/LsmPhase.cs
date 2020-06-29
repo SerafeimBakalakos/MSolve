@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Logging;
@@ -10,11 +11,11 @@ using MGroup.XFEM.Geometry.Tolerances;
 
 namespace MGroup.XFEM.Entities
 {
-    public class ConvexPhase : IPhase
+    public class LsmPhase : IPhase
     {
         private readonly GeometricModel geometricModel;
 
-        public ConvexPhase(int id, GeometricModel geometricModel)
+        public LsmPhase(int id, GeometricModel geometricModel)
         {
             this.ID = id;
             this.geometricModel = geometricModel;
@@ -34,25 +35,23 @@ namespace MGroup.XFEM.Entities
 
         public virtual bool Contains(XNode node)
         {
-            foreach (PhaseBoundary boundary in Boundaries)
-            {
-                double distance = boundary.Geometry.SignedDistanceOf(node);
-                bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
-                sameSide |= (distance < 0) && (boundary.NegativePhase == this);
-                if (!sameSide) return false;
-            }
+            Debug.Assert(Boundaries.Count == 1);
+            PhaseBoundary boundary = Boundaries[0];
+            double distance = boundary.Geometry.SignedDistanceOf(node);
+            bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
+            sameSide |= (distance < 0) && (boundary.NegativePhase == this);
+            if (!sameSide) return false;
             return true;
         }
 
         public virtual bool Contains(XPoint point)
         {
-            foreach (PhaseBoundary boundary in Boundaries)
-            {
-                double distance = boundary.Geometry.SignedDistanceOf(point);
-                bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
-                sameSide |= (distance < 0) && (boundary.NegativePhase == this);
-                if (!sameSide) return false;
-            }
+            Debug.Assert(Boundaries.Count == 1);
+            PhaseBoundary boundary = Boundaries[0];
+            double distance = boundary.Geometry.SignedDistanceOf(point);
+            bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
+            sameSide |= (distance < 0) && (boundary.NegativePhase == this);
+            if (!sameSide) return false;
             return true;
         }
 
@@ -71,6 +70,9 @@ namespace MGroup.XFEM.Entities
 
         public void InteractWithElements(IEnumerable<IXFiniteElement> elements)
         {
+            Debug.Assert(Boundaries.Count == 1);
+            PhaseBoundary boundary = Boundaries[0];
+
             //TODO: This does not necessarily provide correct results in coarse meshes.
 
             // Only process the elements near the contained nodes. Of course not all of them will be completely inside the phase.
@@ -86,31 +88,28 @@ namespace MGroup.XFEM.Entities
                 else
                 {
                     bool isBoundary = false;
-                    foreach (PhaseBoundary boundary in Boundaries)
+                    // This boundary-element intersection may have already been calculated from the opposite phase. 
+                    if (element.PhaseIntersections.ContainsKey(boundary))
                     {
-                        // This boundary-element intersection may have already been calculated from the opposite phase. 
-                        if (element.PhaseIntersections.ContainsKey(boundary))
-                        {
-                            isBoundary = true;
-                            continue;
-                        }
+                        isBoundary = true;
+                        continue;
+                    }
 
-                        IElementGeometryIntersection intersection = boundary.Geometry.Intersect(element);
-                        if (intersection.RelativePosition == RelativePositionCurveElement.Intersecting)
-                        {
-                            element.Phases.Add(boundary.PositivePhase);
-                            element.Phases.Add(boundary.NegativePhase);
-                            element.PhaseIntersections[boundary] = intersection;
-                            isBoundary = true;
-                        }
-                        else if (intersection.RelativePosition == RelativePositionCurveElement.Conforming)
-                        {
-                            throw new NotImplementedException();
-                        }
-                        else if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
-                        {
-                            throw new Exception("This should not have happenned");
-                        }
+                    IElementGeometryIntersection intersection = boundary.Geometry.Intersect(element);
+                    if (intersection.RelativePosition == RelativePositionCurveElement.Intersecting)
+                    {
+                        element.Phases.Add(boundary.PositivePhase);
+                        element.Phases.Add(boundary.NegativePhase);
+                        element.PhaseIntersections[boundary] = intersection;
+                        isBoundary = true;
+                    }
+                    else if (intersection.RelativePosition == RelativePositionCurveElement.Conforming)
+                    {
+                        throw new NotImplementedException();
+                    }
+                    else if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
+                    {
+                        throw new Exception("This should not have happenned");
                     }
                     if (isBoundary) BoundaryElements.Add(element);
                 }
@@ -119,15 +118,17 @@ namespace MGroup.XFEM.Entities
 
         public bool UnionWith(IPhase otherPhase)
         {
-            if (otherPhase is ConvexPhase otherConvex)
+            
+
+            if (otherPhase is LsmPhase otherLsmPhase)
             {
 
                 if (this.Overlaps(otherPhase))
                 {
-                    // TODO: implement more complex cases.
+                    // TODO: These should be enforced by this class.
                     if ((this.Boundaries.Count != 1) && (otherPhase.Boundaries.Count != 1))
                     {
-                        throw new NotImplementedException();
+                        throw new InvalidOperationException();
                     }
                     if (this.Boundaries[0].NegativePhase != this) throw new NotImplementedException();
                     if (otherPhase.Boundaries[0].NegativePhase != otherPhase) throw new NotImplementedException();
@@ -155,7 +156,7 @@ namespace MGroup.XFEM.Entities
                     }
 
                     // Join elements
-                    if ((this.BoundaryElements.Count != 0) && (otherConvex.BoundaryElements.Count != 0))
+                    if ((this.BoundaryElements.Count != 0) && (otherLsmPhase.BoundaryElements.Count != 0))
                     {
                         throw new NotImplementedException();
                     }

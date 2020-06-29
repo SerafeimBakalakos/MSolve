@@ -33,28 +33,8 @@ namespace MGroup.XFEM.Entities
 
         public List<IPhase> Phases { get; } = new List<IPhase>();
 
-        public void InteractWithMesh()
-        {
-            // Nodes
-            IPhase defaultPhase = Phases[0];
-            for (int i = 1; i < Phases.Count; ++i)
-            {
-                Phases[i].InteractWithNodes(physicalModel.Nodes);
-            }
-            defaultPhase.InteractWithNodes(physicalModel.Nodes);
-
-            // Elements
-            for (int i = 1; i < Phases.Count; ++i)
-            {
-                Phases[i].InteractWithElements(physicalModel.Elements);
-            }
-            defaultPhase.InteractWithElements(physicalModel.Elements);
-
-            FindConformingMesh();
-        }
-        
         //TODO: Perhaps I need a dedicated class for this
-        private void FindConformingMesh()
+        public void FindConformingMesh()
         {
             if (Dimension == 2)
             {
@@ -78,6 +58,68 @@ namespace MGroup.XFEM.Entities
                     element3D.ConformingSubtetrahedra = triangulator.FindConformingMesh(element, boundaries, MeshTolerance);
                 }
             }
+        }
+
+        public void InteractWithNodes()
+        {
+            // Nodes
+            IPhase defaultPhase = Phases[0];
+            for (int i = 1; i < Phases.Count; ++i)
+            {
+                Phases[i].InteractWithNodes(physicalModel.Nodes);
+            }
+            defaultPhase.InteractWithNodes(physicalModel.Nodes);
+        }
+
+        public void InteractWithElements()
+        {
+            // Elements
+            IPhase defaultPhase = Phases[0];
+            for (int i = 1; i < Phases.Count; ++i)
+            {
+                Phases[i].InteractWithElements(physicalModel.Elements);
+            }
+            defaultPhase.InteractWithElements(physicalModel.Elements);
+
+        }
+
+        public void UnifyOverlappingPhases(bool ignoreDefaultPhase)
+        {
+            var unifiedPhases = new List<IPhase>();
+            IPhase defaultPhase = null;
+            foreach (IPhase phase in Phases)
+            {
+                if (phase is DefaultPhase && ignoreDefaultPhase)
+                {
+                    defaultPhase = phase;
+                    continue;
+                }
+                unifiedPhases.Add(phase);
+            }
+
+            int i = 0;
+            while (i < unifiedPhases.Count - 1)
+            {
+                bool unionFound = false;
+                for (int j = i + 1; j < unifiedPhases.Count; ++j)
+                {
+                    bool areJoined = unifiedPhases[i].UnionWith(unifiedPhases[j]);
+                    if (areJoined)
+                    {
+                        unifiedPhases.RemoveAt(j);
+                        unionFound = true;
+                        break;
+                    }
+                }
+                if (!unionFound)
+                {
+                    ++i;
+                }
+            }
+
+            Phases.Clear();
+            if (defaultPhase != null) Phases.Add(defaultPhase);
+            Phases.AddRange(unifiedPhases);
         }
     }
 }

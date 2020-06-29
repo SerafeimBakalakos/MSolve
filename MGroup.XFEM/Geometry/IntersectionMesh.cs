@@ -11,7 +11,7 @@ namespace MGroup.XFEM.Geometry
     public class IntersectionMesh
     {
         private readonly SortedDictionary<double[], int> vertices
-            = new SortedDictionary<double[], int>(new Point3DComparer());
+            = new SortedDictionary<double[], int>(new Point3DComparer(1E-3));
 
         public IList<(CellType, int[])> Cells { get; set; } = new List<(CellType, int[])>();
 
@@ -34,7 +34,7 @@ namespace MGroup.XFEM.Geometry
             var vertexIds = new int[vertices.Count];
             for (int i = 0; i < vertices.Count; ++i)
             {
-                vertexIds[i] = this.vertices[vertices[i]];
+                vertexIds[i] = this.vertices[vertices[i]]; //TODO: This not robust at all!
             }
             Cells.Add((cellType, vertexIds));
         }

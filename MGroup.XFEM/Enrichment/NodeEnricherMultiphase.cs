@@ -168,11 +168,11 @@ namespace MGroup.XFEM.Enrichment
             {
                 return new StepEnrichment(id, boundary.NegativePhase, boundary.PositivePhase);
             }
-            else if (boundary.PositivePhase is HollowPhase && boundary.NegativePhase is ConvexPhase)
+            else if (/*boundary.PositivePhase is HollowPhase &&*/ boundary.NegativePhase is ConvexPhase)
             {
                 return new StepEnrichment(id, boundary.NegativePhase, boundary.PositivePhase);
             }
-            else if (boundary.NegativePhase is HollowPhase && boundary.PositivePhase is ConvexPhase)
+            else if (/*boundary.NegativePhase is HollowPhase &&*/ boundary.PositivePhase is ConvexPhase)
             {
                 return new StepEnrichment(id, boundary.PositivePhase, boundary.NegativePhase);
             }
