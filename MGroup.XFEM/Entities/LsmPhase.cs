@@ -15,28 +15,40 @@ namespace MGroup.XFEM.Entities
     {
         private readonly GeometricModel geometricModel;
 
-        public LsmPhase(int id, GeometricModel geometricModel)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="geometricModel"></param>
+        /// <param name="mergeLevel">Negative values will cause this phase to be unmergable</param>
+        public LsmPhase(int id, GeometricModel geometricModel, int mergeLevel)
         {
             this.ID = id;
             this.geometricModel = geometricModel;
+            this.MergeLevel = mergeLevel;
         }
 
-        public List<PhaseBoundary> Boundaries { get; } = new List<PhaseBoundary>();
+
+        public HashSet<IXFiniteElement> BoundaryElements { get; } = new HashSet<IXFiniteElement>();
 
         public HashSet<XNode> ContainedNodes { get; } = new HashSet<XNode>();
 
         public HashSet<IXFiniteElement> ContainedElements { get; } = new HashSet<IXFiniteElement>();
 
+        public List<PhaseBoundary> ExternalBoundaries { get; } = new List<PhaseBoundary>();
+
         public int ID { get; }
 
-        public HashSet<IXFiniteElement> BoundaryElements { get; } = new HashSet<IXFiniteElement>();
+
+        public int MergeLevel { get; }
 
         public HashSet<IPhase> Neighbors { get; } = new HashSet<IPhase>();
 
+
         public virtual bool Contains(XNode node)
         {
-            Debug.Assert(Boundaries.Count == 1);
-            PhaseBoundary boundary = Boundaries[0];
+            Debug.Assert(ExternalBoundaries.Count == 1);
+            PhaseBoundary boundary = ExternalBoundaries[0];
             double distance = boundary.Geometry.SignedDistanceOf(node);
             bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
             sameSide |= (distance < 0) && (boundary.NegativePhase == this);
@@ -46,8 +58,8 @@ namespace MGroup.XFEM.Entities
 
         public virtual bool Contains(XPoint point)
         {
-            Debug.Assert(Boundaries.Count == 1);
-            PhaseBoundary boundary = Boundaries[0];
+            Debug.Assert(ExternalBoundaries.Count == 1);
+            PhaseBoundary boundary = ExternalBoundaries[0];
             double distance = boundary.Geometry.SignedDistanceOf(point);
             bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
             sameSide |= (distance < 0) && (boundary.NegativePhase == this);
@@ -60,6 +72,16 @@ namespace MGroup.XFEM.Entities
             ContainedNodes.Clear();
             foreach (XNode node in nodes)
             {
+                #region debug
+                double dx = Math.Abs(node.X - 0.333333333);
+                double dy = Math.Abs(node.Y - 0.333333333);
+                double tol = 1E-4;
+                if (dx < tol && dy < tol)
+                {
+                    Console.WriteLine();
+                }
+                #endregion
+
                 if (Contains(node))
                 {
                     ContainedNodes.Add(node);
@@ -70,8 +92,8 @@ namespace MGroup.XFEM.Entities
 
         public void InteractWithElements(IEnumerable<IXFiniteElement> elements)
         {
-            Debug.Assert(Boundaries.Count == 1);
-            PhaseBoundary boundary = Boundaries[0];
+            Debug.Assert(ExternalBoundaries.Count == 1);
+            PhaseBoundary boundary = ExternalBoundaries[0];
 
             //TODO: This does not necessarily provide correct results in coarse meshes.
 
@@ -116,46 +138,48 @@ namespace MGroup.XFEM.Entities
             }
         }
 
-        public bool UnionWith(IPhase otherPhase)
+        public virtual bool UnionWith(IPhase otherPhase)
         {
-            
+            if (this.MergeLevel < 0) return false;
+            if (this.MergeLevel != otherPhase.MergeLevel) return false;
 
             if (otherPhase is LsmPhase otherLsmPhase)
             {
-
                 if (this.Overlaps(otherPhase))
                 {
                     // TODO: These should be enforced by this class.
-                    if ((this.Boundaries.Count != 1) && (otherPhase.Boundaries.Count != 1))
+                    if ((this.ExternalBoundaries.Count != 1) && (otherPhase.ExternalBoundaries.Count != 1))
                     {
                         throw new InvalidOperationException();
                     }
-                    if (this.Boundaries[0].NegativePhase != this) throw new NotImplementedException();
-                    if (otherPhase.Boundaries[0].NegativePhase != otherPhase) throw new NotImplementedException();
-                    IPhase externalPhase = this.Boundaries[0].PositivePhase;
-                    if (externalPhase != otherPhase.Boundaries[0].PositivePhase)
+                    if (this.ExternalBoundaries[0].NegativePhase != this) throw new NotImplementedException();
+                    if (otherPhase.ExternalBoundaries[0].NegativePhase != otherPhase) throw new NotImplementedException();
+                    IPhase externalPhase = this.ExternalBoundaries[0].PositivePhase;
+                    if (externalPhase != otherPhase.ExternalBoundaries[0].PositivePhase)
                     {
                         throw new NotImplementedException();
                     }
 
-                    // Join level sets
-                    this.Boundaries[0].Geometry.UnionWith(otherPhase.Boundaries[0].Geometry);
+                    // Merge level sets
+                    this.ExternalBoundaries[0].Geometry.UnionWith(otherPhase.ExternalBoundaries[0].Geometry);
 
-                    // Join boundaries
-                    externalPhase.Boundaries.Remove(this.Boundaries[0]);
-                    externalPhase.Boundaries.Remove(otherPhase.Boundaries[0]);
-                    externalPhase.Neighbors.Remove(this);
+                    // Merge boundaries
+                    //TODO: Perhaps PhaseBoundary should contain this functionality: Bind, Unbind
+                    externalPhase.ExternalBoundaries.Remove(otherPhase.ExternalBoundaries[0]);
                     externalPhase.Neighbors.Remove(otherPhase);
-                    var unifiedBoundary = new PhaseBoundary(this.Boundaries[0].Geometry, externalPhase, this);
+                    externalPhase.ExternalBoundaries.Add(this.ExternalBoundaries[0]);
+                    externalPhase.Neighbors.Add(this);
+                    this.Neighbors.Add(externalPhase);
 
-                    // Join nodes
+
+                    // Merge nodes
                     foreach (XNode node in otherPhase.ContainedNodes)
                     {
                         this.ContainedNodes.Add(node);
                         node.Phase = this;
                     }
 
-                    // Join elements
+                    // Merge elements
                     if ((this.BoundaryElements.Count != 0) && (otherLsmPhase.BoundaryElements.Count != 0))
                     {
                         throw new NotImplementedException();

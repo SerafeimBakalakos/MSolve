@@ -18,13 +18,18 @@ namespace MGroup.XFEM.Entities
 
         public int ID { get; }
 
+        public HashSet<IXFiniteElement> BoundaryElements => throw new NotImplementedException();
+
         public HashSet<XNode> ContainedNodes { get; } = new HashSet<XNode>();
 
         public HashSet<IXFiniteElement> ContainedElements { get; } = new HashSet<IXFiniteElement>();
 
-        public List<PhaseBoundary> Boundaries { get; } = new List<PhaseBoundary>();
+        public List<PhaseBoundary> ExternalBoundaries { get; } = new List<PhaseBoundary>();
+
+        public int MergeLevel => -1;
 
         public HashSet<IPhase> Neighbors { get; } = new HashSet<IPhase>();
+
 
         /// <summary>
         /// For best performance, call it after all other phases.
@@ -72,7 +77,7 @@ namespace MGroup.XFEM.Entities
 
         public bool UnionWith(IPhase otherPhase)
         {
-            throw new NotImplementedException();
+            throw new InvalidOperationException();
         }
     }
 }

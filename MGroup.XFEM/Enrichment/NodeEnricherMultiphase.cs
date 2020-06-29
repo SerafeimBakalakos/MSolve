@@ -60,7 +60,7 @@ namespace MGroup.XFEM.Enrichment
             int id = idStart;
             for (int p = 1; p < geometricModel.Phases.Count; ++p)
             {
-                var phase = (ConvexPhase)(geometricModel.Phases[p]);
+                IPhase phase = geometricModel.Phases[p];
                 foreach (IXFiniteElement element in phase.BoundaryElements)
                 {
                     // This element has already been processed when looking at another phase
@@ -123,7 +123,7 @@ namespace MGroup.XFEM.Enrichment
             int id = idStart;
             for (int p = 1; p < geometricModel.Phases.Count; ++p)
             {
-                foreach (PhaseBoundary boundary in geometricModel.Phases[p].Boundaries)
+                foreach (PhaseBoundary boundary in geometricModel.Phases[p].ExternalBoundaries)
                 {
                     // It may have been processed when iterating the boundaries of the opposite phase.
                     if (boundary.StepEnrichment != null) continue;
@@ -208,7 +208,7 @@ namespace MGroup.XFEM.Enrichment
             foreach (IPhase phase in geometricModel.Phases)
             {
                 if (phase is DefaultPhase) continue;
-                foreach (IXFiniteElement element in ((ConvexPhase)phase).BoundaryElements)
+                foreach (IXFiniteElement element in phase.BoundaryElements)
                 {
                     foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
                     {

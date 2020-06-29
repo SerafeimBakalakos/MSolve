@@ -59,8 +59,7 @@ namespace MGroup.XFEM.Tests.Unions
         {
             // Create physical model, LSM and phases
             XModel model = CreateModel();
-            List<SimpleLsm2D> lsmCurves = InitializeLSM(model);
-            GeometricModel geometricModel = CreatePhases(model, lsmCurves);
+            GeometricModel geometricModel = CreatePhases(model);
 
             // Plot original mesh and level sets
             PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
@@ -177,17 +176,26 @@ namespace MGroup.XFEM.Tests.Unions
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField);
         }
 
-        private static GeometricModel CreatePhases(XModel model, List<SimpleLsm2D> lsmCurves)
+        private static GeometricModel CreatePhases(XModel model)
         {
+            var balls = new Circle2D[2];
+            balls[0] = new Circle2D(-0.3, 0, 0.5);
+            balls[1] = new Circle2D(+0.3, 0, 0.4);
+
             var geometricModel = new GeometricModel(2, model);
             var defaultPhase = new DefaultPhase(defaultPhaseID);
             geometricModel.Phases.Add(defaultPhase);
-            for (int p = 0; p < lsmCurves.Count; ++p)
+            for (int p = 0; p < 2; ++p)
             {
-                SimpleLsm2D curve = lsmCurves[p];
-                var phase = new LsmPhase(p + 1, geometricModel);
+                var lsm = new SimpleLsm2D(model, balls[p]);
+                var phase = new LsmPhase(p + 1, geometricModel, 0);
                 geometricModel.Phases.Add(phase);
-                var boundary = new PhaseBoundary(curve, defaultPhase, phase);
+
+                var boundary = new PhaseBoundary(lsm, defaultPhase, phase);
+                defaultPhase.ExternalBoundaries.Add(boundary);
+                defaultPhase.Neighbors.Add(phase);
+                phase.ExternalBoundaries.Add(boundary);
+                phase.Neighbors.Add(defaultPhase);
             }
             return geometricModel;
         }
@@ -198,22 +206,12 @@ namespace MGroup.XFEM.Tests.Unions
             foreach (IPhase phase in geometricModel.Phases)
             {
                 if (phase is DefaultPhase) continue;
-                foreach (PhaseBoundary boundary in phase.Boundaries)
+                foreach (PhaseBoundary boundary in phase.ExternalBoundaries)
                 {
                     lsmCurves.Add((SimpleLsm2D)(boundary.Geometry));
                 }
             }
             return lsmCurves.ToArray();
-        }
-
-        private static List<SimpleLsm2D> InitializeLSM(XModel model)
-        {
-            var curves = new List<SimpleLsm2D>();
-            var circle0 = new Circle2D(-0.3, 0, 0.5);
-            var circle1 = new Circle2D(+0.3, 0, 0.4);
-            curves.Add(new SimpleLsm2D(model, circle0));
-            curves.Add(new SimpleLsm2D(model, circle1));
-            return curves;
         }
 
         private static void PlotInclusionLevelSets(string directoryPath, string vtkFilenamePrefix,

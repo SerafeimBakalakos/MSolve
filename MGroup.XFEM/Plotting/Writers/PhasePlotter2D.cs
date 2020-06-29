@@ -95,10 +95,9 @@ namespace MGroup.XFEM.Plotting.Writers
                         foreach (IPhase phase in elementPhases)
                         {
                             if (phase.ID == defaultPhaseID) continue;
-                            var convexPhase = (ConvexPhase)phase;
-                            if (convexPhase.Contains(centroid))
+                            if (phase.Contains(centroid))
                             {
-                                phaseID = convexPhase.ID;
+                                phaseID = phase.ID;
                                 break;
                             }
                         }

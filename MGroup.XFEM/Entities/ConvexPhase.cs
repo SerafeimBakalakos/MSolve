@@ -20,7 +20,7 @@ namespace MGroup.XFEM.Entities
             this.geometricModel = geometricModel;
         }
 
-        public List<PhaseBoundary> Boundaries { get; } = new List<PhaseBoundary>();
+        public List<PhaseBoundary> ExternalBoundaries { get; } = new List<PhaseBoundary>();
 
         public HashSet<XNode> ContainedNodes { get; } = new HashSet<XNode>();
 
@@ -32,9 +32,11 @@ namespace MGroup.XFEM.Entities
 
         public HashSet<IPhase> Neighbors { get; } = new HashSet<IPhase>();
 
+        public int MergeLevel => -1;
+
         public virtual bool Contains(XNode node)
         {
-            foreach (PhaseBoundary boundary in Boundaries)
+            foreach (PhaseBoundary boundary in ExternalBoundaries)
             {
                 double distance = boundary.Geometry.SignedDistanceOf(node);
                 bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
@@ -46,7 +48,7 @@ namespace MGroup.XFEM.Entities
 
         public virtual bool Contains(XPoint point)
         {
-            foreach (PhaseBoundary boundary in Boundaries)
+            foreach (PhaseBoundary boundary in ExternalBoundaries)
             {
                 double distance = boundary.Geometry.SignedDistanceOf(point);
                 bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
@@ -86,7 +88,7 @@ namespace MGroup.XFEM.Entities
                 else
                 {
                     bool isBoundary = false;
-                    foreach (PhaseBoundary boundary in Boundaries)
+                    foreach (PhaseBoundary boundary in ExternalBoundaries)
                     {
                         // This boundary-element intersection may have already been calculated from the opposite phase. 
                         if (element.PhaseIntersections.ContainsKey(boundary))
@@ -119,51 +121,7 @@ namespace MGroup.XFEM.Entities
 
         public bool UnionWith(IPhase otherPhase)
         {
-            if (otherPhase is ConvexPhase otherConvex)
-            {
-
-                if (this.Overlaps(otherPhase))
-                {
-                    // TODO: implement more complex cases.
-                    if ((this.Boundaries.Count != 1) && (otherPhase.Boundaries.Count != 1))
-                    {
-                        throw new NotImplementedException();
-                    }
-                    if (this.Boundaries[0].NegativePhase != this) throw new NotImplementedException();
-                    if (otherPhase.Boundaries[0].NegativePhase != otherPhase) throw new NotImplementedException();
-                    IPhase externalPhase = this.Boundaries[0].PositivePhase;
-                    if (externalPhase != otherPhase.Boundaries[0].PositivePhase)
-                    {
-                        throw new NotImplementedException();
-                    }
-
-                    // Join level sets
-                    this.Boundaries[0].Geometry.UnionWith(otherPhase.Boundaries[0].Geometry);
-
-                    // Join boundaries
-                    externalPhase.Boundaries.Remove(this.Boundaries[0]);
-                    externalPhase.Boundaries.Remove(otherPhase.Boundaries[0]);
-                    externalPhase.Neighbors.Remove(this);
-                    externalPhase.Neighbors.Remove(otherPhase);
-                    var unifiedBoundary = new PhaseBoundary(this.Boundaries[0].Geometry, externalPhase, this);
-
-                    // Join nodes
-                    foreach (XNode node in otherPhase.ContainedNodes)
-                    {
-                        this.ContainedNodes.Add(node);
-                        node.Phase = this;
-                    }
-
-                    // Join elements
-                    if ((this.BoundaryElements.Count != 0) && (otherConvex.BoundaryElements.Count != 0))
-                    {
-                        throw new NotImplementedException();
-                    }
-
-                    return true;
-                }
-            }
-            return false;
+            throw new InvalidOperationException();
         }
 
         private bool ContainsCompletely(IXFiniteElement element)

@@ -18,14 +18,15 @@ using MGroup.XFEM.Plotting;
 using MGroup.XFEM.Plotting.Fields;
 using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
+using System.Diagnostics;
 using Xunit;
 using MGroup.XFEM.Tests.Utilities;
 
-namespace MGroup.XFEM.Tests.Plotting
+namespace MGroup.XFEM.Tests.Unions
 {
-    public static class UnionTwoBalls3D
+    public static class UnionTwoHollowBalls2D
     {
-        private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\UnionTwoBalls3D\";
+        private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\UnionTwoHollowBalls2D\";
         private const string pathConformingMesh = outputDirectory + "conforming_mesh.vtk";
         private const string pathIntersections = outputDirectory + "intersections.vtk";
         private const string pathIntegrationBulk = outputDirectory + "integration_points_bulk.vtk";
@@ -39,14 +40,16 @@ namespace MGroup.XFEM.Tests.Plotting
         private const string pathTemperatureField = outputDirectory + "temperature_field.vtk";
         private const string pathHeatFluxAtGPs = outputDirectory + "heat_flux_integration_points.vtk";
 
-        private static readonly double[] minCoords = { -1.0, -1.0, -1.0 };
-        private static readonly double[] maxCoords = { +1.0, +1.0, +1.0 };
-        private static readonly int[] numElements = { 20, 20, 20 };
+        private static readonly double[] minCoords = { -1.0, -1.0 };
+        private static readonly double[] maxCoords = { +1.0, +1.0 };
+        private const double thickness = 1.0;
+        private static readonly int[] numElements = { 15, 15 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 
         private const double zeroLevelSetTolerance = 1E-6;
+        private const double singularityRelativeAreaTolerance = 1E-8;
         private const int defaultPhaseID = 0;
-        
+
 
         private const double conductMatrix = 1E0, conductInclusion = 1E5;
         private const double conductBoundaryMatrixInclusion = 1E1, conductBoundaryInclusionInclusion = 1E2;
@@ -54,7 +57,7 @@ namespace MGroup.XFEM.Tests.Plotting
 
         public static void PlotGeometryAndEntities()
         {
-            // Create model and LSM
+            // Create physical model, LSM and phases
             XModel model = CreateModel();
             GeometricModel geometricModel = CreatePhases(model);
 
@@ -63,9 +66,9 @@ namespace MGroup.XFEM.Tests.Plotting
 
             // Find and plot intersections between level set curves and elements
             geometricModel.InteractWithNodes();
-            Assert.Equal(3, geometricModel.Phases.Count);
+            Assert.Equal(5, geometricModel.Phases.Count);
             geometricModel.UnifyOverlappingPhases(true);
-            Assert.Equal(2, geometricModel.Phases.Count);
+            Assert.Equal(4, geometricModel.Phases.Count);
             PlotInclusionLevelSets(outputDirectory, "level_set_after_union", model, geometricModel);
 
             geometricModel.InteractWithElements();
@@ -73,71 +76,69 @@ namespace MGroup.XFEM.Tests.Plotting
 
             //TODO: The next intersections and conforming mesh should have been taken care by the geometric model. 
             //      Read them from there.
-            Dictionary<IXFiniteElement, List<LsmElementIntersection3D>> elementIntersections
+            Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> elementIntersections
                 = CalcIntersections(model, geometricModel);
-            var allIntersections = new List<LsmElementIntersection3D>();
+            var allIntersections = new List<LsmElementIntersection2D>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
-            var intersectionPlotter = new Lsm3DElementIntersectionsPlotter(model, FindCurvesOf(geometricModel));
+            var intersectionPlotter = new Lsm2DElementIntersectionsPlotter(model, FindCurvesOf(geometricModel));
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
-            Dictionary<IXFiniteElement, ElementSubtetrahedron3D[]> triangulation = CreateConformingMesh(elementIntersections);
-            var conformingMesh = new ConformingOutputMesh3D(model.Nodes, model.Elements, triangulation);
+            Dictionary<IXFiniteElement, ElementSubtriangle2D[]> triangulation = CreateConformingMesh(elementIntersections);
+            var conformingMesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathConformingMesh))
             {
                 writer.WriteMesh(conformingMesh);
             }
 
             // Plot bulk integration points
-            var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2),
-                TetrahedronQuadrature.Order2Points4);
+            var integrationBulk = new IntegrationWithConformingSubtriangles2D(GaussLegendre2D.GetQuadratureWithOrder(2, 2),
+                TriangleQuadratureSymmetricGaussian.Order2Points3);
             foreach (IXFiniteElement element in model.Elements)
             {
                 if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
             }
-            var integrationPlotter = new IntegrationPlotter3D(model);
+            var integrationPlotter = new IntegrationPlotter2D(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
 
             // Plot boundary integration points
             integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
 
-            // Plot boundary integration points
-            integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
-
             // Plot phases
-            var phasePlotter = new PhasePlotter3D(model, geometricModel, defaultPhaseID);
+            var phasePlotter = new PhasePlotter2D(model, geometricModel, defaultPhaseID);
             phasePlotter.PlotNodes(pathPhasesOfNodes);
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
 
             // Enrichment
-            ISingularityResolver singularityResolver = new NullSingularityResolver();
+            ISingularityResolver singularityResolver 
+                = new RelativeAreaResolver2D(geometricModel, singularityRelativeAreaTolerance);
             var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
             model.UpdateMaterials();
 
             double elementSize = (maxCoords[0] - minCoords[0]) / numElements[0];
-            var enrichmentPlotter = new EnrichmentPlotter(model, elementSize, true);
+            var enrichmentPlotter = new EnrichmentPlotter(model, elementSize, false);
             enrichmentPlotter.PlotStepEnrichedNodes(pathStepEnrichedNodes);
             //enrichmentPlotter.PlotJunctionEnrichedNodes(pathJunctionEnrichedNodes);
         }
 
-        private static Dictionary<IXFiniteElement, List<LsmElementIntersection3D>> CalcIntersections(
+        private static Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> CalcIntersections(
             XModel model, GeometricModel geometricModel)
         {
-            SimpleLsm3D[] surfaces = FindCurvesOf(geometricModel);
-            var intersections = new Dictionary<IXFiniteElement, List<LsmElementIntersection3D>>();
+            IImplicitGeometry[] curves = FindCurvesOf(geometricModel); 
+            var intersections = new Dictionary<IXFiniteElement, List<LsmElementIntersection2D>>();
             foreach (IXFiniteElement element in model.Elements)
             {
-                var element3D = (IXFiniteElement3D)element;
-                var elementIntersections = new List<LsmElementIntersection3D>();
-                foreach (IImplicitGeometry surface in surfaces)
+                var element2D = (IXFiniteElement2D)element;
+                var elementIntersections = new List<LsmElementIntersection2D>();
+                foreach (IImplicitGeometry curve in curves)
                 {
-                    IElementGeometryIntersection intersection = surface.Intersect(element);
+                    IElementGeometryIntersection intersection = curve.Intersect(element);
                     if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
                     {
-                        element3D.Intersections.Add((IElementSurfaceIntersection3D)intersection);
-                        elementIntersections.Add((LsmElementIntersection3D)intersection);
+                        element2D.Intersections.Add((IElementCurveIntersection2D)intersection);
+                        elementIntersections.Add((LsmElementIntersection2D)intersection);
                     }
                 }
                 if (elementIntersections.Count > 0) intersections.Add(element, elementIntersections);
@@ -145,45 +146,21 @@ namespace MGroup.XFEM.Tests.Plotting
             return intersections;
         }
 
-        private static Dictionary<IXFiniteElement, ElementSubtetrahedron3D[]> CreateConformingMesh(
-            Dictionary<IXFiniteElement, List<LsmElementIntersection3D>> intersections)
+        private static Dictionary<IXFiniteElement, ElementSubtriangle2D[]> CreateConformingMesh(
+            Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> intersections)
         {
             var tolerance = new ArbitrarySideMeshTolerance();
-            var triangulator = new ConformingTriangulator3D();
-            var conformingMesh = new Dictionary<IXFiniteElement, ElementSubtetrahedron3D[]>();
+            var triangulator = new ConformingTriangulator2D();
+            var conformingMesh = new Dictionary<IXFiniteElement, ElementSubtriangle2D[]>();
             foreach (IXFiniteElement element in intersections.Keys)
             {
-                var element3D = (IXFiniteElement3D)element;
-                List<LsmElementIntersection3D> elementIntersections = intersections[element];
-                ElementSubtetrahedron3D[] subtetra = triangulator.FindConformingMesh(element, elementIntersections, tolerance);
-                conformingMesh[element] = subtetra;
-                element3D.ConformingSubtetrahedra = subtetra;
+                var element2D = (IXFiniteElement2D)element;
+                List<LsmElementIntersection2D> elementIntersections = intersections[element];
+                ElementSubtriangle2D[] subtriangles = triangulator.FindConformingMesh(element, elementIntersections, tolerance);
+                conformingMesh[element] = subtriangles;
+                element2D.ConformingSubtriangles = subtriangles;
             }
             return conformingMesh;
-        }
-
-        private static GeometricModel CreatePhases(XModel model)
-        {
-            var balls = new Sphere[2];
-            balls[0] = new Sphere(-0.25, 0, 0, 0.5);
-            balls[1] = new Sphere(+0.25, 0, 0, 0.4);
-
-            var geometricModel = new GeometricModel(3, model);
-            var defaultPhase = new DefaultPhase(defaultPhaseID);
-            geometricModel.Phases.Add(defaultPhase);
-            for (int p = 0; p < 2; ++p)
-            {
-                var lsm = new SimpleLsm3D(model, balls[p]);
-                var phase = new LsmPhase(p + 1, geometricModel, 0);
-                geometricModel.Phases.Add(phase);
-
-                var boundary = new PhaseBoundary(lsm, defaultPhase, phase);
-                defaultPhase.ExternalBoundaries.Add(boundary);
-                defaultPhase.Neighbors.Add(phase);
-                phase.ExternalBoundaries.Add(boundary);
-                phase.Neighbors.Add(defaultPhase);
-            }
-            return geometricModel;
         }
 
         private static XModel CreateModel()
@@ -195,19 +172,58 @@ namespace MGroup.XFEM.Tests.Plotting
             var materialField = new MatrixInclusionsMaterialField(matrixMaterial, inclusionMaterial,
                 conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
 
-            return Models.CreateHexa8Model(minCoords, maxCoords, numElements, 
+            return Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements, 
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField);
         }
 
-        private static SimpleLsm3D[] FindCurvesOf(GeometricModel geometricModel)
+        private static GeometricModel CreatePhases(XModel model)
         {
-            var lsmCurves = new HashSet<SimpleLsm3D>();
+            var ballsInternal = new Circle2D[2];
+            ballsInternal[0] = new Circle2D(-0.3, 0, 0.15);
+            ballsInternal[1] = new Circle2D(+0.3, 0, 0.1);
+
+            var ballsExternal = new Circle2D[2];
+            ballsExternal[0] = new Circle2D(-0.3, 0, 0.5);
+            ballsExternal[1] = new Circle2D(+0.3, 0, 0.4);
+
+            var geometricModel = new GeometricModel(2, model);
+            var defaultPhase = new DefaultPhase(defaultPhaseID);
+            geometricModel.Phases.Add(defaultPhase);
+            for (int b = 0; b < 2; ++b)
+            {
+                var externalLsm = new SimpleLsm2D(model, ballsExternal[b]);
+                var externalPhase = new HollowLsmPhase(2 * b + 1, geometricModel, 0);
+                geometricModel.Phases.Add(externalPhase);
+
+                var externalBoundary = new PhaseBoundary(externalLsm, defaultPhase, externalPhase);
+                defaultPhase.ExternalBoundaries.Add(externalBoundary);
+                defaultPhase.Neighbors.Add(externalPhase);
+                externalPhase.ExternalBoundaries.Add(externalBoundary);
+                externalPhase.Neighbors.Add(defaultPhase);
+
+                var internalLsm = new SimpleLsm2D(model, ballsInternal[b]);
+                var internalPhase = new LsmPhase(2 * b + 2, geometricModel, -1);
+                geometricModel.Phases.Add(internalPhase);
+
+                var internalBoundary = new PhaseBoundary(internalLsm, externalPhase, internalPhase);
+                externalPhase.InternalBoundaries.Add(internalBoundary);
+                externalPhase.InternalPhases.Add(internalPhase);
+                externalPhase.Neighbors.Add(internalPhase);
+                internalPhase.ExternalBoundaries.Add(internalBoundary);
+                internalPhase.Neighbors.Add(externalPhase);
+            }
+            return geometricModel;
+        }
+
+        private static SimpleLsm2D[] FindCurvesOf(GeometricModel geometricModel)
+        {
+            var lsmCurves = new HashSet<SimpleLsm2D>();
             foreach (IPhase phase in geometricModel.Phases)
             {
                 if (phase is DefaultPhase) continue;
                 foreach (PhaseBoundary boundary in phase.ExternalBoundaries)
                 {
-                    lsmCurves.Add((SimpleLsm3D)(boundary.Geometry));
+                    lsmCurves.Add((SimpleLsm2D)(boundary.Geometry));
                 }
             }
             return lsmCurves.ToArray();

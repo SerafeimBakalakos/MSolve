@@ -8,16 +8,26 @@ namespace MGroup.XFEM.Entities
 {
     public interface IPhase
     {
-        List<PhaseBoundary> Boundaries { get; }
+        HashSet<IXFiniteElement> BoundaryElements { get; }
+
         HashSet<XNode> ContainedNodes { get; }
+
         HashSet<IXFiniteElement> ContainedElements { get; }
+
+        List<PhaseBoundary> ExternalBoundaries { get; }
+
         int ID { get; }
+
+        int MergeLevel { get; }
+
         HashSet<IPhase> Neighbors { get; }
 
         bool Contains(XNode node);
+
         bool Contains(XPoint point);
 
         void InteractWithElements(IEnumerable<IXFiniteElement> elements);
+
         void InteractWithNodes(IEnumerable<XNode> nodes);
 
         /// <summary>

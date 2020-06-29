@@ -14,18 +14,13 @@ namespace MGroup.XFEM.Entities
             this.Geometry = geometry;
             this.PositivePhase = positivePhase;
             this.NegativePhase = negativePhase;
-
-            positivePhase.Boundaries.Add(this);
-            positivePhase.Neighbors.Add(negativePhase);
-            negativePhase.Boundaries.Add(this);
-            negativePhase.Neighbors.Add(positivePhase);
         }
 
         public IEnrichment StepEnrichment { get; set; }
 
-        public IPhase NegativePhase { get; }
-        public IPhase PositivePhase { get; }
+        public IPhase NegativePhase { get; set; }
+        public IPhase PositivePhase { get; set; }
 
-        public IImplicitGeometry Geometry { get; }
+        public IImplicitGeometry Geometry { get; set; }
     }
 }

@@ -311,7 +311,12 @@ namespace MGroup.XFEM.Tests.Plotting
                 SimpleLsm3D curve = lsmSurfaces[p];
                 var phase = new ConvexPhase(p + 1, geometricModel);
                 geometricModel.Phases.Add(phase);
+
                 var boundary = new PhaseBoundary(curve, defaultPhase, phase);
+                defaultPhase.ExternalBoundaries.Add(boundary);
+                defaultPhase.Neighbors.Add(phase);
+                phase.ExternalBoundaries.Add(boundary);
+                phase.Neighbors.Add(defaultPhase);
             }
             return geometricModel;
         }

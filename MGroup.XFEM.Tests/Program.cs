@@ -15,7 +15,11 @@ namespace MGroup.XFEM.Tests
             //LsmBalls3DExamples.PlotSolution();
 
             //UnionTwoBalls2D.PlotGeometryAndEntities();
-            UnionTwoBalls3D.PlotGeometryAndEntities();
+            //UnionTwoBalls3D.PlotGeometryAndEntities();
+
+            //UnionTwoHollowBalls2D.PlotGeometryAndEntities();
+            UnionTwoHollowBalls3D.PlotGeometryAndEntities();
+
         }
     }
 }

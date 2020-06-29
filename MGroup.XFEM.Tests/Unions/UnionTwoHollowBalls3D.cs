@@ -23,9 +23,9 @@ using MGroup.XFEM.Tests.Utilities;
 
 namespace MGroup.XFEM.Tests.Plotting
 {
-    public static class UnionTwoBalls3D
+    public static class UnionTwoHollowBalls3D
     {
-        private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\UnionTwoBalls3D\";
+        private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\UnionTwoHollowBalls3D\";
         private const string pathConformingMesh = outputDirectory + "conforming_mesh.vtk";
         private const string pathIntersections = outputDirectory + "intersections.vtk";
         private const string pathIntegrationBulk = outputDirectory + "integration_points_bulk.vtk";
@@ -63,9 +63,9 @@ namespace MGroup.XFEM.Tests.Plotting
 
             // Find and plot intersections between level set curves and elements
             geometricModel.InteractWithNodes();
-            Assert.Equal(3, geometricModel.Phases.Count);
+            Assert.Equal(5, geometricModel.Phases.Count);
             geometricModel.UnifyOverlappingPhases(true);
-            Assert.Equal(2, geometricModel.Phases.Count);
+            Assert.Equal(4, geometricModel.Phases.Count);
             PlotInclusionLevelSets(outputDirectory, "level_set_after_union", model, geometricModel);
 
             geometricModel.InteractWithElements();
@@ -164,24 +164,39 @@ namespace MGroup.XFEM.Tests.Plotting
 
         private static GeometricModel CreatePhases(XModel model)
         {
-            var balls = new Sphere[2];
-            balls[0] = new Sphere(-0.25, 0, 0, 0.5);
-            balls[1] = new Sphere(+0.25, 0, 0, 0.4);
+            var ballsInternal = new Sphere[2];
+            ballsInternal[0] = new Sphere(-0.25, 0, 0, 0.2);
+            ballsInternal[1] = new Sphere(+0.25, 0, 0, 0.1);
+
+            var ballsExternal = new Sphere[2];
+            ballsExternal[0] = new Sphere(-0.25, 0, 0, 0.5);
+            ballsExternal[1] = new Sphere(+0.25, 0, 0, 0.4);
 
             var geometricModel = new GeometricModel(3, model);
             var defaultPhase = new DefaultPhase(defaultPhaseID);
             geometricModel.Phases.Add(defaultPhase);
-            for (int p = 0; p < 2; ++p)
+            for (int b = 0; b < 2; ++b)
             {
-                var lsm = new SimpleLsm3D(model, balls[p]);
-                var phase = new LsmPhase(p + 1, geometricModel, 0);
-                geometricModel.Phases.Add(phase);
+                var externalLsm = new SimpleLsm3D(model, ballsExternal[b]);
+                var externalPhase = new HollowLsmPhase(2 * b + 1, geometricModel, 0);
+                geometricModel.Phases.Add(externalPhase);
 
-                var boundary = new PhaseBoundary(lsm, defaultPhase, phase);
-                defaultPhase.ExternalBoundaries.Add(boundary);
-                defaultPhase.Neighbors.Add(phase);
-                phase.ExternalBoundaries.Add(boundary);
-                phase.Neighbors.Add(defaultPhase);
+                var externalBoundary = new PhaseBoundary(externalLsm, defaultPhase, externalPhase);
+                defaultPhase.ExternalBoundaries.Add(externalBoundary);
+                defaultPhase.Neighbors.Add(externalPhase);
+                externalPhase.ExternalBoundaries.Add(externalBoundary);
+                externalPhase.Neighbors.Add(defaultPhase);
+
+                var internalLsm = new SimpleLsm3D(model, ballsInternal[b]);
+                var internalPhase = new LsmPhase(2 * b + 2, geometricModel, -1);
+                geometricModel.Phases.Add(internalPhase);
+
+                var internalBoundary = new PhaseBoundary(internalLsm, externalPhase, internalPhase);
+                externalPhase.InternalBoundaries.Add(internalBoundary);
+                externalPhase.InternalPhases.Add(internalPhase);
+                externalPhase.Neighbors.Add(internalPhase);
+                internalPhase.ExternalBoundaries.Add(internalBoundary);
+                internalPhase.Neighbors.Add(externalPhase);
             }
             return geometricModel;
         }
