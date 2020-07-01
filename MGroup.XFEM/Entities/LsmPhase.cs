@@ -72,16 +72,6 @@ namespace MGroup.XFEM.Entities
             ContainedNodes.Clear();
             foreach (XNode node in nodes)
             {
-                #region debug
-                double dx = Math.Abs(node.X - 0.333333333);
-                double dy = Math.Abs(node.Y - 0.333333333);
-                double tol = 1E-4;
-                if (dx < tol && dy < tol)
-                {
-                    Console.WriteLine();
-                }
-                #endregion
-
                 if (Contains(node))
                 {
                     ContainedNodes.Add(node);

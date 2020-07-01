@@ -1,4 +1,5 @@
 ﻿using System;
+using MGroup.XFEM.Tests.EpoxyAg;
 using MGroup.XFEM.Tests.Plotting;
 using MGroup.XFEM.Tests.Unions;
 
@@ -18,8 +19,10 @@ namespace MGroup.XFEM.Tests
             //UnionTwoBalls3D.PlotGeometryAndEntities();
 
             //UnionTwoHollowBalls2D.PlotGeometryAndEntities();
-            UnionTwoHollowBalls3D.PlotGeometryAndEntities();
+            //UnionTwoHollowBalls3D.PlotGeometryAndEntities();
 
+            //ExampleUniformThickness2D.PlotGeometryAndEntities();
+            ExampleUniformThickness2D.PlotSolution();
         }
     }
 }

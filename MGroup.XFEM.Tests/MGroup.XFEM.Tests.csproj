@@ -19,8 +19,4 @@
     <ProjectReference Include="..\MGroup.XFEM\MGroup.XFEM.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="EpoxyAg\" />
-  </ItemGroup>
-
 </Project>
