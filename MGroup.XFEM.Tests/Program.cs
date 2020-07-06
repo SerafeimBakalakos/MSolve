@@ -22,7 +22,10 @@ namespace MGroup.XFEM.Tests
             //UnionTwoHollowBalls3D.PlotGeometryAndEntities();
 
             //ExampleUniformThickness2D.PlotGeometryAndEntities();
-            ExampleUniformThickness2D.PlotSolution();
+            //ExampleUniformThickness2D.PlotSolution();
+
+            ExampleUniformThickness3D.PlotGeometryAndEntities();
+            //ExampleUniformThickness3D.PlotSolution();
         }
     }
 }

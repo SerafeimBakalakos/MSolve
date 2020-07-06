@@ -83,7 +83,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 {
                     IList<double[]> triangleVertices = allIntersections.Select(p => p.Coordinates).ToList();
                     intersectionMesh.AddVertices(triangleVertices);
-                    intersectionMesh.AddCell(CellType.Tri3, triangleVertices);
+                    intersectionMesh.AddCell(CellType.Tet4, triangleVertices);
                     return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element3D, intersectionMesh);
                 }
                 else // General case: intersection is a mesh of triangles
@@ -105,7 +105,7 @@ namespace MGroup.XFEM.Geometry.LSM
                             else if (intersectionsOfFace.Count == 2)
                             {
                                 intersectionsOfFace.Add(centroid);
-                                intersectionMesh.AddCell(CellType.Tri3, intersectionsOfFace.Select(p => p.Coordinates).ToArray());
+                                intersectionMesh.AddCell(CellType.Tet4, intersectionsOfFace.Select(p => p.Coordinates).ToArray());
                             }
                         }
                     }
