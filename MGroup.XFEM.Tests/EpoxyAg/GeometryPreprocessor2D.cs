@@ -94,7 +94,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
         {
             for (int i = 0; i < ballsInternal.Count; ++i)
             {
-                double centerDistance = newBallInternal.Center.Distance2D(ballsInternal[i].Center);
+                double centerDistance = XFEM.Geometry.Utilities.Distance2D(newBallInternal.Center, ballsInternal[i].Center);
                 if (newBallExternal.Radius + ballsInternal[i].Radius >= centerDistance) return true;
                 if (newBallInternal.Radius + ballsExternal[i].Radius >= centerDistance) return true;
             }

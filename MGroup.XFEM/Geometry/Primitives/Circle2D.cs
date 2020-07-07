@@ -20,9 +20,6 @@ namespace MGroup.XFEM.Geometry.Primitives
             throw new NotImplementedException();
         }
 
-        public double SignedDistanceOf(double[] point)
-        {
-            return point.Distance2D(Center) - Radius;
-        }
+        public double SignedDistanceOf(double[] point) => Utilities.Distance2D(Center, point) - Radius;
     }
 }

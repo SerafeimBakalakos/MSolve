@@ -138,7 +138,7 @@ namespace MGroup.XFEM.Elements
             return result;
         }
 
-        public double[] FindCentroidCartesian() => elementGeometry.FindCentroidCartesian(3, Nodes);
+        public double[] FindCentroidCartesian() => Utilities.FindCentroidCartesian(3, Nodes);
 
         public IReadOnlyList<IReadOnlyList<IDofType>> GetElementDofTypes(IElement element) => allDofTypes;
 

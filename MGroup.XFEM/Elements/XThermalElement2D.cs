@@ -143,7 +143,7 @@ namespace MGroup.XFEM.Elements
             return result;
         }
 
-        public double[] FindCentroidCartesian() => elementGeometry.FindCentroidCartesian(2, Nodes);
+        public double[] FindCentroidCartesian() => Utilities.FindCentroidCartesian(2, Nodes);
 
 
         public Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)>

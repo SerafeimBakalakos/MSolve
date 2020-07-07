@@ -31,35 +31,18 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
         public NaturalPoint[] VerticesNatural { get; }
 
-        public NaturalPoint FindCentroidNatural()
-        {
-            double centroidXi = 0.0, centroidEta = 0.0, centroidZeta = 0.0;
-            for (int v = 0; v < 4; ++v)
-            {
-                centroidXi += VerticesNatural[v].Xi;
-                centroidEta += VerticesNatural[v].Eta;
-                centroidZeta += VerticesNatural[v].Zeta;
-            }
-            return new NaturalPoint(centroidXi / 4.0, centroidEta / 4.0, centroidZeta / 4.0);
-        }
+        public NaturalPoint FindCentroidNatural() => Utilities.FindCentroidNatural(2, VerticesNatural);
 
-        public (CartesianPoint centroid, double bulkSize) FindCentroidAndBulkSizeCartesian(IXFiniteElement parentElement)
+        public (double[] centroid, double bulkSize) FindCentroidAndBulkSizeCartesian(IXFiniteElement parentElement)
         {
             IIsoparametricInterpolation interpolation = parentElement.Interpolation;
             if (interpolation == InterpolationTet4.UniqueInstance || interpolation == InterpolationHexa8.UniqueInstance)
             {
                 // The tetrahedron edges will also be linear in Cartesian coordinate system, for Tetra4 and Hexa8 elements 
-                CartesianPoint[] vertices = FindVerticesCartesian(parentElement);
-
-                var tetraCertesian = new Tetrahedron3D();
-                for (int v = 0; v < 4; ++v)
-                {
-                    tetraCertesian.Vertices[v] = vertices[v].Coordinates;
-                }
-                double volume = tetraCertesian.CalcVolume();
-                double[] centroid = tetraCertesian.FindCentroid();
-
-                return (new CartesianPoint(centroid), volume);
+                IList<double[]> vertices = FindVerticesCartesian(parentElement);
+                double[] centroid = Utilities.FindCentroid(vertices);
+                double volume = Utilities.CalcTetrahedronVolume(vertices);
+                return (centroid, volume);
             }
             else
             {
@@ -69,19 +52,19 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             }
         }
 
-        public CartesianPoint[] FindVerticesCartesian(IXFiniteElement parentElement)
+        public IList<double[]> FindVerticesCartesian(IXFiniteElement parentElement)
         {
             IIsoparametricInterpolation interpolation = parentElement.Interpolation;
             IReadOnlyList<XNode> nodes = parentElement.Nodes;
             if (interpolation == InterpolationTet4.UniqueInstance || interpolation == InterpolationHexa8.UniqueInstance)
             {
-                var verticesCartesian = new CartesianPoint[4];
+                var verticesCartesian = new double[4][];
                 for (int v = 0; v < 4; ++v)
                 {
                     //double[] coordsNatural = tetraNatural.Vertices[v];
                     //var pointNatural = new NaturalPoint(coordsNatural[0], coordsNatural[1], coordsNatural[2]);
                     //verticesCartesian[v] = interpolation.TransformNaturalToCartesian(nodes, pointNatural);
-                    verticesCartesian[v] = new CartesianPoint(interpolation.TransformNaturalToCartesian(nodes, VerticesNatural[v].Coordinates));
+                    verticesCartesian[v] = interpolation.TransformNaturalToCartesian(nodes, VerticesNatural[v].Coordinates);
                 }
                 return verticesCartesian;
             }

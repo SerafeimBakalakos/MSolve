@@ -141,6 +141,6 @@ namespace MGroup.XFEM.Elements
             throw new NotImplementedException();
         }
 
-        public double[] FindCentroidCartesian() => elementGeometry.FindCentroidCartesian(dimension, Nodes);
+        public double[] FindCentroidCartesian() => Utilities.FindCentroidCartesian(dimension, Nodes);
     }
 }

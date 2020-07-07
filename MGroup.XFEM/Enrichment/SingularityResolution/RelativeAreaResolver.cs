@@ -106,7 +106,7 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
                     //IPhase phase = GeometricModel.FindPhaseAt(centroid, element);
 
                     NaturalPoint centroidNatural = subcell.FindCentroidNatural();
-                    (CartesianPoint centroidCartesian, double bulkSize) = subcell.FindCentroidAndBulkSizeCartesian(element);
+                    (double[] centroidCartesian, double bulkSize) = subcell.FindCentroidAndBulkSizeCartesian(element);
                     XPoint centroid = new XPoint();
                     centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural.Coordinates;
                     element.FindPhaseAt(centroid);

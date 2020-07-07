@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.FEM.Entities;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Geometry.Primitives;
@@ -58,11 +59,11 @@ namespace MGroup.XFEM.Entities
         {
             if (Coordinates.Length == 2)
             {
-                return this.Coordinates.Distance2D(other.Coordinates);
+                return Geometry.Utilities.Distance2D(this.Coordinates, other.Coordinates);
             }
             else if (Coordinates.Length == 3)
             {
-                return this.Coordinates.Distance3D(other.Coordinates);
+                return Geometry.Utilities.Distance3D(this.Coordinates, other.Coordinates);
             }
             else throw new NotImplementedException();
         }

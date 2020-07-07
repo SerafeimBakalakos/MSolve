@@ -41,8 +41,7 @@ namespace MGroup.XFEM.Plotting.Mesh
                     foreach (IElementSubcell subcell in subcells)
                     {
                         VtkPoint[] subvertices = subcell.FindVerticesCartesian(element).
-                            Select(v => new VtkPoint(outVertexID++, v.Coordinates)).
-                            ToArray();
+                            Select(v => new VtkPoint(outVertexID++, v)).ToArray();
                         outVertices.AddRange(subvertices);
 
                         //TODO: The resulting triangle is Tri3 only for 1st order elements. Extend this.

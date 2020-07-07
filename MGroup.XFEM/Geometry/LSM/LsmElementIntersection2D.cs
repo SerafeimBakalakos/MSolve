@@ -56,7 +56,7 @@ namespace MGroup.XFEM.Geometry.LSM
             // Absolute determinant of Jacobian of mapping from auxiliary to cartesian system. Constant for all Gauss points.
             double[] startCartesian = Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, startNatural);
             double[] endCartesian = Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, endNatural);
-            double detJ = Math.Abs(0.5 * startCartesian.Distance2D(endCartesian));
+            double detJ = Math.Abs(0.5 * Utilities.Distance2D(startCartesian, endCartesian));
 
             var quadrature1D = GaussLegendre1D.GetQuadratureWithOrder(order);
             int numIntegrationPoints = quadrature1D.IntegrationPoints.Count;

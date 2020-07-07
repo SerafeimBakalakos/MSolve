@@ -22,21 +22,6 @@ namespace MGroup.XFEM.Geometry.Primitives
             };
         }
 
-        public static double Distance2D(this double[] thisPoint, double[] otherPoint)
-        {
-            double dx0 = otherPoint[0] - thisPoint[0];
-            double dx1 = otherPoint[1] - thisPoint[1];
-            return Math.Sqrt(dx0 * dx0 + dx1 * dx1);
-        }
-
-        public static double Distance3D(this double[] thisPoint, double[] otherPoint)
-        {
-            double dx0 = otherPoint[0] - thisPoint[0];
-            double dx1 = otherPoint[1] - thisPoint[1];
-            double dx2 = otherPoint[2] - thisPoint[2];
-            return Math.Sqrt(dx0 * dx0 + dx1 * dx1 + dx2 * dx2);
-        }
-
         public static double DotProduct2D(this double[] thisVector, double[] otherVector)
         {
             return thisVector[0] * otherVector[0] + thisVector[1] * otherVector[1];

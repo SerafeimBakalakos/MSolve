@@ -31,34 +31,19 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
         public NaturalPoint[] VerticesNatural { get; }
 
-        public NaturalPoint FindCentroidNatural()
-        {
-            double centroidXi = 0.0, centroidEta = 0.0;
-            for (int v = 0; v < 3; ++v)
-            {
-                centroidXi += VerticesNatural[v].Xi;
-                centroidEta += VerticesNatural[v].Eta;
-            }
-            return new NaturalPoint(centroidXi / 3, centroidEta / 3);
-        }
+        public NaturalPoint FindCentroidNatural() => Utilities.FindCentroidNatural(2, VerticesNatural);
 
-        public (CartesianPoint centroid, double bulkSize) FindCentroidAndBulkSizeCartesian(IXFiniteElement parentElement)
+        public (double[] centroid, double bulkSize) FindCentroidAndBulkSizeCartesian(IXFiniteElement parentElement)
         {
             IIsoparametricInterpolation interpolation = parentElement.Interpolation;
             if (interpolation == InterpolationQuad4.UniqueInstance || interpolation == InterpolationTri3.UniqueInstance)
             {
                 // The triangle edges will also be linear in Cartesian coordinate system, for Quad4 and Tri3 elements 
-                CartesianPoint[] vertices = FindVerticesCartesian(parentElement);
+                IList<double[]> vertices = FindVerticesCartesian(parentElement);
 
-                CartesianPoint v0 = vertices[0];
-                CartesianPoint v1 = vertices[1];
-                CartesianPoint v2 = vertices[2];
-
-                double x = (v0.X + v1.X + v2.X) / 3.0;
-                double y = (v0.Y + v1.Y + v2.Y) / 3.0;
-                double area = 0.5 * Math.Abs(v0.X * (v1.Y - v2.Y) + v1.X * (v2.Y - v0.Y) + v2.X * (v0.Y - v1.Y));
-
-                return (new CartesianPoint(x, y), area);
+                double[] centroid = Utilities.FindCentroid(vertices);
+                double area = Utilities.CalcPolygonArea(vertices);
+                return (centroid, area);
             }
             else
             {
@@ -68,20 +53,19 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             }
         }
 
-        public CartesianPoint[] FindVerticesCartesian(IXFiniteElement parentElement)
+        public IList<double[]> FindVerticesCartesian(IXFiniteElement parentElement)
         {
             IIsoparametricInterpolation interpolation = parentElement.Interpolation;
             IReadOnlyList<XNode> nodes = parentElement.Nodes;
             if (interpolation == InterpolationQuad4.UniqueInstance || interpolation == InterpolationTri3.UniqueInstance)
             {
-                var verticesCartesian = new CartesianPoint[3];
+                var verticesCartesian = new double[3][];
                 for (int v = 0; v < 3; ++v)
                 {
                     //double[] coordsNatural = triangleNatural.Vertices[v];
                     //var pointNatural = new NaturalPoint(coordsNatural[0], coordsNatural[1]);
                     //verticesCartesian[v] = interpolation.TransformNaturalToCartesian(nodes, pointNatural);
-                    double[] p = interpolation.TransformNaturalToCartesian(nodes, VerticesNatural[v].Coordinates);
-                    verticesCartesian[v] = new CartesianPoint(p[0], p[1]);
+                    verticesCartesian[v] = interpolation.TransformNaturalToCartesian(nodes, VerticesNatural[v].Coordinates);
                 }
                 return verticesCartesian;
             }

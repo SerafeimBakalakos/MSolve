@@ -18,8 +18,8 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
         NaturalPoint FindCentroidNatural();
 
-        (CartesianPoint centroid, double bulkSize) FindCentroidAndBulkSizeCartesian(IXFiniteElement parentElement);
+        (double[] centroid, double bulkSize) FindCentroidAndBulkSizeCartesian(IXFiniteElement parentElement);
 
-        CartesianPoint[] FindVerticesCartesian(IXFiniteElement parentElement);
+        IList<double[]> FindVerticesCartesian(IXFiniteElement parentElement);
     }
 }
