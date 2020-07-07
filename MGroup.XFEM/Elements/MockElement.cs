@@ -95,8 +95,7 @@ namespace MGroup.XFEM.Elements
         public ElementSubtriangle2D[] ConformingSubtriangles { get; set; }
         public ElementSubtetrahedron3D[] ConformingSubtetrahedra { get; set; }
 
-        List<IElementCurveIntersection2D> IXFiniteElement2D.Intersections { get; } = new List<IElementCurveIntersection2D>();
-        List<IElementSurfaceIntersection3D> IXFiniteElement3D.Intersections { get; } = new List<IElementSurfaceIntersection3D>();
+        public List<IElementGeometryIntersection> Intersections { get; } = new List<IElementGeometryIntersection>();
 
         public IMatrix DampingMatrix(IElement element)
         {

@@ -6,19 +6,17 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 
-//TODO: Clean up the data structures. Also use double[] to avoid generics.
-//TODO: Facilitate the transformation from natural -> cartesian
 namespace MGroup.XFEM.Geometry
 {
-    public class IntersectionMesh3D : IIntersectionMesh
+    public class IntersectionMesh : IIntersectionMesh
     {
-        public IntersectionMesh3D()
+        public IntersectionMesh()
         {
         }
 
-        public static IntersectionMesh3D CreateMultiCellMesh(Dictionary<double[], HashSet<ElementFace>> intersectionPoints)
+        public static IntersectionMesh CreateMultiCellMesh3D(Dictionary<double[], HashSet<ElementFace>> intersectionPoints)
         {
-            var mesh = new IntersectionMesh3D();
+            var mesh = new IntersectionMesh();
             if (intersectionPoints.Count < 3) throw new ArgumentException("There must be at least 3 points");
             else if (intersectionPoints.Count == 3)
             {
@@ -27,7 +25,7 @@ namespace MGroup.XFEM.Geometry
             }
             else
             {
-                List<double[]> orderedPoints = OrderPoints(intersectionPoints);
+                List<double[]> orderedPoints = OrderPoints3D(intersectionPoints);
                 foreach (double[] point in orderedPoints) mesh.Vertices.Add(point);
 
                 // Create triangles that contain the first points and 2 others
@@ -39,9 +37,9 @@ namespace MGroup.XFEM.Geometry
             return mesh;
         }
 
-        public static IntersectionMesh3D CreateSingleCellMesh(CellType cellType, IList<double[]> intersectionPoints)
+        public static IntersectionMesh CreateSingleCellMesh(CellType cellType, IList<double[]> intersectionPoints)
         {
-            var mesh = new IntersectionMesh3D();
+            var mesh = new IntersectionMesh();
             for (int i = 0; i < intersectionPoints.Count; ++i)
             {
                 mesh.Vertices.Add(intersectionPoints[i]);
@@ -55,7 +53,7 @@ namespace MGroup.XFEM.Geometry
 
         public IList<double[]> Vertices { get; } = new List<double[]>();
 
-        private static List<double[]> OrderPoints(Dictionary<double[], HashSet<ElementFace>> facesOfPoints)
+        private static List<double[]> OrderPoints3D(Dictionary<double[], HashSet<ElementFace>> facesOfPoints)
         {
             var orderedPoints = new List<double[]>();
             List<double[]> leftoverPoints = facesOfPoints.Keys.ToList();

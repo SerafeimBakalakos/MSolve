@@ -15,12 +15,16 @@ using MGroup.XFEM.Integration;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public class LsmElementIntersection3D : IElementSurfaceIntersection3D
+    /// <summary>
+    /// A surface resulting from the intersection of a parent surface with a 3D finite element.
+    /// Degenerate cases are also possible: null, single point or single curve.
+    /// </summary>
+    public class LsmElementIntersection3D : IElementGeometryIntersection
     {
-        private readonly IntersectionMesh3D intersectionMeshNatural;
+        private readonly IntersectionMesh intersectionMeshNatural;
 
         public LsmElementIntersection3D(RelativePositionCurveElement relativePosition, IXFiniteElement3D element,
-            IntersectionMesh3D intersectionMeshNatural)
+            IntersectionMesh intersectionMeshNatural)
         {
             this.RelativePosition = relativePosition;
             this.Element = element;
@@ -29,11 +33,11 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public RelativePositionCurveElement RelativePosition { get; }
 
-        public IXFiniteElement3D Element { get; } //TODO: Perhaps this should be defined in the interface
+        public IXFiniteElement Element { get; } //TODO: Perhaps this should be defined in the interface
 
-        public IntersectionMesh3D ApproximateGlobalCartesian()
+        public IIntersectionMesh ApproximateGlobalCartesian()
         {
-            var meshCartesian = new IntersectionMesh3D();
+            var meshCartesian = new IntersectionMesh();
             foreach (double[] vertexNatural in intersectionMeshNatural.Vertices)
             {
                 double[] vertexCartesian = Element.Interpolation.TransformNaturalToCartesian(

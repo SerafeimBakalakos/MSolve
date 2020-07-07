@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Logging.VTK;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 

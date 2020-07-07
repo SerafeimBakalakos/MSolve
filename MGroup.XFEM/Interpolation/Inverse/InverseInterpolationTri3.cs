@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Interfaces;
-using ISAAR.MSolve.FEM.Entities;
-using ISAAR.MSolve.Geometry.Coordinates;
 
 namespace MGroup.XFEM.Interpolation.Inverse
 {

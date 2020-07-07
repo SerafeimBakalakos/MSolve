@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Logging.VTK;
+using MGroup.XFEM.Plotting.Mesh;
 
 namespace MGroup.XFEM.Plotting.Writers
 {
@@ -43,7 +43,8 @@ namespace MGroup.XFEM.Plotting.Writers
             writer.WriteLine($"POINTS {points.Count()} double");
             foreach (VtkPoint point in points)
             {
-                writer.WriteLine($"{point.X} {point.Y} {point.Z}");
+                double[] coords = point.Get3DCoordinates();
+                writer.WriteLine($"{coords[0]} {coords[1]} {coords[2]}");
             }
         }
 

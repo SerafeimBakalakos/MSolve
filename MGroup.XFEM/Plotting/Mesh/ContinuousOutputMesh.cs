@@ -2,7 +2,6 @@
 using System.Linq;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Logging.VTK;
 using MGroup.XFEM.Entities;
 
 namespace MGroup.XFEM.Plotting.Mesh
@@ -22,7 +21,7 @@ namespace MGroup.XFEM.Plotting.Mesh
             this.outVertices = new List<VtkPoint>();
             foreach (XNode vertex in originalVertices)
             {
-                var outVertex = new VtkPoint(vertex.ID, vertex.X, vertex.Y, vertex.Z);
+                var outVertex = new VtkPoint(vertex.ID, vertex.Coordinates);
                 outVertices.Add(outVertex);
                 original2OutVertices[vertex] = outVertex;
             }

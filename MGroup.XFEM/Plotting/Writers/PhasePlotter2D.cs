@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Logging.VTK;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
@@ -43,7 +42,7 @@ namespace MGroup.XFEM.Plotting.Writers
 
         public void PlotNodes(string path)
         {
-            using (var writer = new ISAAR.MSolve.Logging.VTK.VtkPointWriter(path))
+            using (var writer = new VtkPointWriter(path))
             {
                 var nodalPhases = new Dictionary<INode, double>();
 

@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using ISAAR.MSolve.FEM.Entities;
-using MGroup.XFEM.Interpolation.Inverse;
-using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.LinearAlgebra.Matrices;
-using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Mesh;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
+using MGroup.XFEM.Interpolation.Inverse;
 
 namespace MGroup.XFEM.Interpolation
 {
-    /// <summary>
-    /// Isoparamteric interpolation of a wedge finite element with 15 nodes. Quadratic shape functions.
-    /// Implements singleton pattern.
-    /// </summary>
-    public class InterpolationWedge15 : IsoparametricInterpolationBase
+	/// <summary>
+	/// Isoparamteric interpolation of a wedge finite element with 15 nodes. Quadratic shape functions.
+	/// Implements singleton pattern.
+	/// </summary>
+	public class InterpolationWedge15 : IsoparametricInterpolationBase
 	{
 		private static readonly InterpolationWedge15 uniqueInstance = new InterpolationWedge15();
 

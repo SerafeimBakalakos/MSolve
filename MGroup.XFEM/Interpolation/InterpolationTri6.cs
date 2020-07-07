@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using ISAAR.MSolve.FEM.Entities;
-using MGroup.XFEM.Interpolation.Inverse;
-using ISAAR.MSolve.Geometry.Coordinates;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using ISAAR.MSolve.Discretization.Interfaces;
+using MGroup.XFEM.Interpolation.Inverse;
 
 // Tri6 nodes:
 // 1

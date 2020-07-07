@@ -36,7 +36,7 @@ namespace MGroup.XFEM.Geometry.LSM
             RelativePositionCurveElement position = FindRelativePosition(element);
             if (position == RelativePositionCurveElement.Disjoint)
             {
-                return new NullElementIntersection3D();
+                return new NullElementIntersection(element);
             }
             else if (position == RelativePositionCurveElement.Conforming)
             {
@@ -55,7 +55,7 @@ namespace MGroup.XFEM.Geometry.LSM
                     {
                         // Intersection segment is a single cell with the same shape, nodes, etc as the face.
                         List<double[]> nodesOfFace = face.NodesNatural.Select(p => p.Coordinates).ToList();
-                        var intersectionMesh = IntersectionMesh3D.CreateSingleCellMesh(face.CellType, nodesOfFace);
+                        var intersectionMesh = IntersectionMesh.CreateSingleCellMesh(face.CellType, nodesOfFace);
                         return new LsmElementIntersection3D(RelativePositionCurveElement.Conforming, element3D, intersectionMesh);
                     }
                 }
@@ -93,7 +93,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 }
 
                 // Create mesh
-                var intersectionMesh = IntersectionMesh3D.CreateMultiCellMesh(intersectionPoints);
+                var intersectionMesh = IntersectionMesh.CreateMultiCellMesh3D(intersectionPoints);
                 return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element3D, intersectionMesh);
             }
         }

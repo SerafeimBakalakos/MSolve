@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using ISAAR.MSolve.FEM.Entities;
-using MGroup.XFEM.Interpolation.Inverse;
-using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.LinearAlgebra.Matrices;
-using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Mesh;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
+using MGroup.XFEM.Interpolation.Inverse;
 
 namespace MGroup.XFEM.Interpolation
 {
-    /// <summary>
-    /// Isoparametric interpolation of a wedge finite element with 6 nodes. Linear shape functions.
-    /// Implements singleton pattern.
-    /// Authors: Dimitris Tsapetis
-    /// </summary>
-    public class InterpolationWedge6 : IsoparametricInterpolationBase
+	/// <summary>
+	/// Isoparametric interpolation of a wedge finite element with 6 nodes. Linear shape functions.
+	/// Implements singleton pattern.
+	/// Authors: Dimitris Tsapetis
+	/// </summary>
+	public class InterpolationWedge6 : IsoparametricInterpolationBase
     {
 		private static readonly InterpolationWedge6 uniqueInstance= new InterpolationWedge6();
 

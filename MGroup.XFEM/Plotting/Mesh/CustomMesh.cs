@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.Logging.VTK;
 
 namespace MGroup.XFEM.Plotting.Mesh
 {

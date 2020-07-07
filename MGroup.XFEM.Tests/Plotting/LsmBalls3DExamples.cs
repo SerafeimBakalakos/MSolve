@@ -75,7 +75,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 = CalcIntersections(model, lsmSurfaces);
             var allIntersections = new List<LsmElementIntersection3D>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
-            var intersectionPlotter = new Lsm3DElementIntersectionsPlotter(model, lsmSurfaces);
+            var intersectionPlotter = new LsmElementIntersectionsPlotter();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
@@ -124,7 +124,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 = CalcIntersections(model, lsmSurfaces);
             var allIntersections = new List<LsmElementIntersection3D>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
-            var intersectionPlotter = new Lsm3DElementIntersectionsPlotter(model, lsmSurfaces);
+            var intersectionPlotter = new LsmElementIntersectionsPlotter();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
@@ -190,7 +190,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 = CalcIntersections(model, lsmSurfaces);
             var allIntersections = new List<LsmElementIntersection3D>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
-            var intersectionPlotter = new Lsm3DElementIntersectionsPlotter(model, lsmSurfaces);
+            var intersectionPlotter = new LsmElementIntersectionsPlotter();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
@@ -275,7 +275,7 @@ namespace MGroup.XFEM.Tests.Plotting
                     IElementGeometryIntersection intersection = surface.Intersect(element);
                     if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
                     {
-                        element3D.Intersections.Add((IElementSurfaceIntersection3D)intersection);
+                        element3D.Intersections.Add(intersection);
                         elementIntersections.Add((LsmElementIntersection3D)intersection);
                     }
                 }

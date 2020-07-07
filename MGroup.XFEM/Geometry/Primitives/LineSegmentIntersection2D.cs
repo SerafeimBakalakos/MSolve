@@ -5,12 +5,14 @@ using System.Text;
 using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Integration;
+using ISAAR.MSolve.Discretization.Mesh;
+using MGroup.XFEM.Elements;
 
 //TODO: remove duplication between this and Line2D & LineSegment2D. Why can't this inherit from LineSegment2D? 
 //      Or just use LineSegment2D wrapped in a class about Intersection
 namespace MGroup.XFEM.Geometry.Primitives
 {
-    public class LineSegmentIntersection2D : IElementCurveIntersection2D
+    public class LineSegmentIntersection2D : IElementGeometryIntersection
     {
         /// <summary>
         /// a is the counter-clockwise angle from the global x axis to the local x axis
@@ -39,11 +41,12 @@ namespace MGroup.XFEM.Geometry.Primitives
             this.EndGlobalCartesian = ProjectLocalToGlobal(endLocalX);
         }
 
-        public LineSegmentIntersection2D(double[] start, double[] end, RelativePositionCurveElement pos)
+        public LineSegmentIntersection2D(double[] start, double[] end, IXFiniteElement element, RelativePositionCurveElement pos)
         {
             Debug.Assert(pos == RelativePositionCurveElement.Intersecting || pos == RelativePositionCurveElement.Conforming);
             this.StartGlobalCartesian = start;
             this.EndGlobalCartesian = end;
+            this.Element = element;
             this.RelativePosition = pos;
 
             double dx = end[0] - start[0];
@@ -68,12 +71,15 @@ namespace MGroup.XFEM.Geometry.Primitives
 
         public double EndLocalX { get; }
 
-        public List<double[]> ApproximateGlobalCartesian()
+        public IXFiniteElement Element { get; }
+
+        public IIntersectionMesh ApproximateGlobalCartesian()
         {
-            var points = new List<double[]>(2);
-            points.Add(StartGlobalCartesian);
-            points.Add(EndGlobalCartesian);
-            return points;
+            var meshCartesian = new IntersectionMesh();
+            meshCartesian.Vertices.Add(StartGlobalCartesian);
+            meshCartesian.Vertices.Add(EndGlobalCartesian);
+            meshCartesian.Cells.Add((CellType.Line, new int[] { 0, 1 }));
+            return meshCartesian;
         }
 
         public IReadOnlyList<GaussPoint> GetIntegrationPoints(int numPoints)

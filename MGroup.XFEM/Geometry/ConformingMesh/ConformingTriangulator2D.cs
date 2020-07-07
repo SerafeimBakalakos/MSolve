@@ -19,7 +19,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
     public class ConformingTriangulator2D
     {
         public ElementSubtriangle2D[] FindConformingMesh(IXFiniteElement element, 
-            IEnumerable<IElementCurveIntersection2D> intersections, IMeshTolerance meshTolerance)
+            IEnumerable<IElementGeometryIntersection> intersections, IMeshTolerance meshTolerance)
         {
             var element2D = (IXFiniteElement2D)element;
 
@@ -34,7 +34,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             triangleVertices.UnionWith(nodes);
 
             // Add intersection points from each curve-element intersection object.
-            foreach (IElementCurveIntersection2D intersection in intersections)
+            foreach (IElementGeometryIntersection intersection in intersections)
             {
                 // If the curve does not intersect this element (e.g. it conforms to the element edge), 
                 // there is no need to take into account for triangulation

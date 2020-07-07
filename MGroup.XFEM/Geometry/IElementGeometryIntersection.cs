@@ -4,12 +4,17 @@ using System.Text;
 using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Integration;
+using MGroup.XFEM.Elements;
 
 namespace MGroup.XFEM.Geometry
 {
     public interface IElementGeometryIntersection
     {
+        IXFiniteElement Element { get; }
+
         RelativePositionCurveElement RelativePosition { get; }
+
+        IIntersectionMesh ApproximateGlobalCartesian();
 
         /// <summary>
         /// The weights of the returned <see cref="GaussPoint"/>s include the determinant of the Jacobian from the

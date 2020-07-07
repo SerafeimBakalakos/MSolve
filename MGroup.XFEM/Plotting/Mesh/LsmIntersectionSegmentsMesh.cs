@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Logging.VTK;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
@@ -13,24 +12,24 @@ using MGroup.XFEM.Geometry.LSM;
 
 namespace MGroup.XFEM.Plotting.Mesh
 {
-    public class LsmIntersectionSegmentsMesh3D : IOutputMesh
+    public class LsmIntersectionSegmentsMesh : IOutputMesh
     {
-        public LsmIntersectionSegmentsMesh3D(IEnumerable<LsmElementIntersection3D> intersections)
+        public LsmIntersectionSegmentsMesh(IEnumerable<IElementGeometryIntersection> intersections)
         {
             var vertices = new List<VtkPoint>();
             this.ParentElementIDsOfVertices = new List<double>();
             var cells = new List<VtkCell>();
             int vertexID = 0;
-            foreach (LsmElementIntersection3D intersection in intersections)
+            foreach (IElementGeometryIntersection intersection in intersections)
             {
                 // Vertices of the intersection mesh
-                IntersectionMesh3D intersectionMesh = intersection.ApproximateGlobalCartesian();
+                IIntersectionMesh intersectionMesh = intersection.ApproximateGlobalCartesian();
                 IList<double[]> intersectionPoints = intersectionMesh.Vertices;
                 var verticesOfIntersection = new List<VtkPoint>();
                 for (int v = 0; v < intersectionPoints.Count; ++v)
                 {
                     double[] point = intersectionPoints[v];
-                    var vertex = new VtkPoint(vertexID++, point[0], point[1], point[2]);
+                    var vertex = new VtkPoint(vertexID++, point);
                     vertices.Add(vertex);
                     verticesOfIntersection.Add(vertex);
                     ParentElementIDsOfVertices.Add(intersection.Element.ID);

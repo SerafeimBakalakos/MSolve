@@ -1,12 +1,9 @@
 ﻿using System.Collections.Generic;
-using MGroup.XFEM.Integration;
-using ISAAR.MSolve.FEM.Entities;
-using ISAAR.MSolve.Geometry.Coordinates;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using MGroup.XFEM.Integration.Quadratures;
-using ISAAR.MSolve.Discretization.Interfaces;
 using MGroup.XFEM.Integration;
+using MGroup.XFEM.Integration.Quadratures;
 
 // Truss nodes:
 // 0 -- 1

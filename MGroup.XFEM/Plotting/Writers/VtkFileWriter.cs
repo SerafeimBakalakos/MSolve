@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using ISAAR.MSolve.Logging.VTK;
 using MGroup.XFEM.Plotting.Mesh;
 
 namespace MGroup.XFEM.Plotting.Writers
@@ -37,7 +36,11 @@ namespace MGroup.XFEM.Plotting.Writers
             //this.numVertices = mesh.NumOutVertices;
             writer.WriteLine("DATASET UNSTRUCTURED_GRID");
             writer.WriteLine($"POINTS {mesh.NumOutVertices} double");
-            foreach (VtkPoint point in mesh.OutVertices) writer.WriteLine($"{point.X} {point.Y} {point.Z}");
+            foreach (VtkPoint point in mesh.OutVertices)
+            {
+                double[] coords = point.Get3DCoordinates();
+                writer.WriteLine($"{coords[0]} {coords[1]} {coords[2]}");
+            }
 
             // Cell connectivity
             int cellDataCount = 0;

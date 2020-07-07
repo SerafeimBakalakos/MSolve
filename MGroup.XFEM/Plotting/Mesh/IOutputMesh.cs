@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using ISAAR.MSolve.Logging.VTK;
 
 //TODO: Perhaps I should use IDs for vertices, cells and avoid any generics.
 //TODO: Remove generics

@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using ISAAR.MSolve.FEM.Entities;
-using MGroup.XFEM.Interpolation.Inverse;
-using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.LinearAlgebra.Matrices;
-using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Mesh;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
+using MGroup.XFEM.Interpolation.Inverse;
 
 namespace MGroup.XFEM.Interpolation
 {
-    /// <summary>
-    /// Isoparametric interpolation of a tetrahedral finite element with 10 nodes. Quadratic shape function.
-    /// Implements singleton pattern.
-    /// </summary>
-    public class InterpolationTet10 : IsoparametricInterpolationBase
+	/// <summary>
+	/// Isoparametric interpolation of a tetrahedral finite element with 10 nodes. Quadratic shape function.
+	/// Implements singleton pattern.
+	/// </summary>
+	public class InterpolationTet10 : IsoparametricInterpolationBase
     {
 	    private static readonly InterpolationTet10 uniqueInstance = new InterpolationTet10();
 

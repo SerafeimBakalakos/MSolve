@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
@@ -67,66 +66,66 @@ namespace MGroup.XFEM.Plotting.Fields
             return gradient;
         }
 
-        internal static double[] CalcTemperatureGradientAt(XPoint point, EvalInterpolation2D evalInterpolation,
-            IXFiniteElement element, double[] nodalTemperatures)
-        {
-            var gradient = new double[2];
-            int idx = 0;
-            for (int n = 0; n < element.Nodes.Count; ++n)
-            {
-                double dNdx = evalInterpolation.ShapeGradientsCartesian[n, 0];
-                double dNdy = evalInterpolation.ShapeGradientsCartesian[n, 1];
+        //internal static double[] CalcTemperatureGradientAt(XPoint point, EvalInterpolation2D evalInterpolation,
+        //    IXFiniteElement element, double[] nodalTemperatures)
+        //{
+        //    var gradient = new double[2];
+        //    int idx = 0;
+        //    for (int n = 0; n < element.Nodes.Count; ++n)
+        //    {
+        //        double dNdx = evalInterpolation.ShapeGradientsCartesian[n, 0];
+        //        double dNdy = evalInterpolation.ShapeGradientsCartesian[n, 1];
 
-                // Standard temperatures
-                double stdTi = nodalTemperatures[idx++];
-                gradient[0] += dNdx * stdTi;
-                gradient[1] += dNdy * stdTi;
+        //        // Standard temperatures
+        //        double stdTi = nodalTemperatures[idx++];
+        //        gradient[0] += dNdx * stdTi;
+        //        gradient[1] += dNdy * stdTi;
 
-                // Eniched temperatures
-                foreach (IEnrichment enrichment in element.Nodes[n].Enrichments.Keys)
-                {
-                    double psiVertex = enrichment.EvaluateAt(point);
-                    double psiNode = element.Nodes[n].Enrichments[enrichment];
-                    double enrTij = nodalTemperatures[idx++];
+        //        // Eniched temperatures
+        //        foreach (IEnrichment enrichment in element.Nodes[n].Enrichments.Keys)
+        //        {
+        //            double psiVertex = enrichment.EvaluateAt(point);
+        //            double psiNode = element.Nodes[n].Enrichments[enrichment];
+        //            double enrTij = nodalTemperatures[idx++];
 
-                    gradient[0] += dNdx * (psiVertex - psiNode) * enrTij;
-                    gradient[1] += dNdy * (psiVertex - psiNode) * enrTij;
-                }
-            }
-            return gradient;
-        }
+        //            gradient[0] += dNdx * (psiVertex - psiNode) * enrTij;
+        //            gradient[1] += dNdy * (psiVertex - psiNode) * enrTij;
+        //        }
+        //    }
+        //    return gradient;
+        //}
 
-        internal static double[] CalcTemperatureGradientAt(XPoint point, EvalInterpolation3D evalInterpolation,
-            IXFiniteElement element, double[] nodalTemperatures)
-        {
-            var gradient = new double[3];
-            int idx = 0;
-            for (int n = 0; n < element.Nodes.Count; ++n)
-            {
-                double dNdx = evalInterpolation.ShapeGradientsCartesian[n, 0];
-                double dNdy = evalInterpolation.ShapeGradientsCartesian[n, 1];
-                double dNdz = evalInterpolation.ShapeGradientsCartesian[n, 2];
+        //internal static double[] CalcTemperatureGradientAt(XPoint point, EvalInterpolation3D evalInterpolation,
+        //    IXFiniteElement element, double[] nodalTemperatures)
+        //{
+        //    var gradient = new double[3];
+        //    int idx = 0;
+        //    for (int n = 0; n < element.Nodes.Count; ++n)
+        //    {
+        //        double dNdx = evalInterpolation.ShapeGradientsCartesian[n, 0];
+        //        double dNdy = evalInterpolation.ShapeGradientsCartesian[n, 1];
+        //        double dNdz = evalInterpolation.ShapeGradientsCartesian[n, 2];
 
-                // Standard temperatures
-                double stdTi = nodalTemperatures[idx++];
-                gradient[0] += dNdx * stdTi;
-                gradient[1] += dNdy * stdTi;
-                gradient[2] += dNdz * stdTi;
+        //        // Standard temperatures
+        //        double stdTi = nodalTemperatures[idx++];
+        //        gradient[0] += dNdx * stdTi;
+        //        gradient[1] += dNdy * stdTi;
+        //        gradient[2] += dNdz * stdTi;
 
-                // Eniched temperatures
-                foreach (IEnrichment enrichment in element.Nodes[n].Enrichments.Keys)
-                {
-                    double psiVertex = enrichment.EvaluateAt(point);
-                    double psiNode = element.Nodes[n].Enrichments[enrichment];
-                    double enrTij = nodalTemperatures[idx++];
+        //        // Eniched temperatures
+        //        foreach (IEnrichment enrichment in element.Nodes[n].Enrichments.Keys)
+        //        {
+        //            double psiVertex = enrichment.EvaluateAt(point);
+        //            double psiNode = element.Nodes[n].Enrichments[enrichment];
+        //            double enrTij = nodalTemperatures[idx++];
 
-                    gradient[0] += dNdx * (psiVertex - psiNode) * enrTij;
-                    gradient[1] += dNdy * (psiVertex - psiNode) * enrTij;
-                    gradient[2] += dNdz * (psiVertex - psiNode) * enrTij;
-                }
-            }
-            return gradient;
-        }
+        //            gradient[0] += dNdx * (psiVertex - psiNode) * enrTij;
+        //            gradient[1] += dNdy * (psiVertex - psiNode) * enrTij;
+        //            gradient[2] += dNdz * (psiVertex - psiNode) * enrTij;
+        //        }
+        //    }
+        //    return gradient;
+        //}
 
         internal static double[] ExtractNodalTemperatures(IXFiniteElement element, XSubdomain subdomain, IVectorView solution)
         {

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Logging.VTK;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.ConformingMesh;
@@ -46,7 +45,7 @@ namespace MGroup.XFEM.Plotting.Mesh
                     foreach (ElementSubtetrahedron3D tetra in subtetrahedra)
                     {
                         VtkPoint[] subvertices = tetra.GetVerticesCartesian(element3D).
-                            Select(v => new VtkPoint(outVertexID++, v.X, v.Y, v.Z)).
+                            Select(v => new VtkPoint(outVertexID++, v.Coordinates)).
                             ToArray();
                         outVertices.AddRange(subvertices);
 
@@ -64,7 +63,7 @@ namespace MGroup.XFEM.Plotting.Mesh
                     for (int i = 0; i < element.Nodes.Count; ++i)
                     {
                         XNode originalVertex = element.Nodes[i];
-                        var outVertex = new VtkPoint(outVertexID++, originalVertex.X, originalVertex.Y, originalVertex.Z);
+                        var outVertex = new VtkPoint(outVertexID++, originalVertex.Coordinates);
                         outVertices.Add(outVertex);
                         //original2OutVertices[originalVertex].Add(outVertex);
                         verticesOfCell[i] = outVertex;

@@ -116,7 +116,7 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         public IReadOnlyList<XNode> Nodes { get; }
 
-        public List<IElementCurveIntersection2D> Intersections { get; } = new List<IElementCurveIntersection2D>();
+        public List<IElementGeometryIntersection> Intersections { get; } = new List<IElementGeometryIntersection>();
 
         public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
 

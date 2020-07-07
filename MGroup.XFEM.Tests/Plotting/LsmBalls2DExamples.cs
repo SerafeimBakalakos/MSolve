@@ -80,7 +80,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 = CalcIntersections(model, lsmCurves);
             var allIntersections = new List<LsmElementIntersection2D>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
-            var intersectionPlotter = new Lsm2DElementIntersectionsPlotter(model, lsmCurves);
+            var intersectionPlotter = new LsmElementIntersectionsPlotter();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
@@ -126,7 +126,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 = CalcIntersections(model, lsmCurves);
             var allIntersections = new List<LsmElementIntersection2D>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
-            var intersectionPlotter = new Lsm2DElementIntersectionsPlotter(model, lsmCurves);
+            var intersectionPlotter = new LsmElementIntersectionsPlotter();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
@@ -190,7 +190,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 = CalcIntersections(model, lsmCurves);
             var allIntersections = new List<LsmElementIntersection2D>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
-            var intersectionPlotter = new Lsm2DElementIntersectionsPlotter(model, lsmCurves);
+            var intersectionPlotter = new LsmElementIntersectionsPlotter();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
@@ -272,7 +272,7 @@ namespace MGroup.XFEM.Tests.Plotting
                     IElementGeometryIntersection intersection = curve.Intersect(element);
                     if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
                     {
-                        element2D.Intersections.Add((IElementCurveIntersection2D)intersection);
+                        element2D.Intersections.Add(intersection);
                         elementIntersections.Add((LsmElementIntersection2D)intersection);
                     }
                 }

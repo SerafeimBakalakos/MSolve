@@ -41,7 +41,7 @@ namespace MGroup.XFEM.Plotting
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
                 var element2D = (IXFiniteElement2D)element;
-                foreach (IElementCurveIntersection2D intersection in element2D.Intersections)
+                foreach (IElementGeometryIntersection intersection in element2D.Intersections)
                 {
                     IReadOnlyList<GaussPoint> gaussPoints = intersection.GetIntegrationPoints(order);
                     foreach (GaussPoint gp in gaussPoints)

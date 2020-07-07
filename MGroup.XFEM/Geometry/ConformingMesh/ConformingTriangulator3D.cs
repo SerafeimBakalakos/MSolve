@@ -19,7 +19,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
     public class ConformingTriangulator3D
     {
         public ElementSubtetrahedron3D[] FindConformingMesh(IXFiniteElement element, 
-            IEnumerable<IElementSurfaceIntersection3D> intersections, IMeshTolerance meshTolerance)
+            IEnumerable<IElementGeometryIntersection> intersections, IMeshTolerance meshTolerance)
         {
             var element3D = (IXFiniteElement3D)element;
 
@@ -34,7 +34,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             tetraVertices.UnionWith(nodes);
 
             // Add intersection points from each curve-element intersection object.
-            foreach (IElementSurfaceIntersection3D intersection in intersections)
+            foreach (IElementGeometryIntersection intersection in intersections)
             {
                 // If the curve does not intersect this element (e.g. it conforms to the element edge), 
                 // there is no need to take into account for triangulation

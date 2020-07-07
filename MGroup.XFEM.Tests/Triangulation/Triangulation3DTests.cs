@@ -6,7 +6,6 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Logging.VTK;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
@@ -265,7 +264,7 @@ namespace MGroup.XFEM.Tests.Triangulation
                 for (int v = 0; v < 4; ++v)
                 {
                     double[] vertex = tetra.Vertices[v];
-                    var point = new VtkPoint(startPoint + v, vertex[0], vertex[1], vertex[2]);
+                    var point = new VtkPoint(startPoint + v, vertex);
                     pointsOfTriangle[v] = point;
                     mesh.Vertices.Add(point);
                 }
@@ -296,7 +295,7 @@ namespace MGroup.XFEM.Tests.Triangulation
                 for (int v = 0; v < cell.Count; ++v)
                 {
                     double[] point = intersections[i][v];
-                    var vertex = new VtkPoint(offset + v, point[0], point[1], point[2]);
+                    var vertex = new VtkPoint(offset + v, point);
                     verticesOfCell.Add(vertex);
                     mesh.Vertices.Add(vertex);
                 }
@@ -314,7 +313,7 @@ namespace MGroup.XFEM.Tests.Triangulation
             var mesh = new CustomMesh();
             for (int i = 0; i < points.Count; ++i)
             {
-                var point = new VtkPoint(i, points[i][0], points[i][1], points[i][2]);
+                var point = new VtkPoint(i, points[i]);
                 mesh.Vertices.Add(point);
             }
             mesh.Cells.Add(new VtkCell(cellType, mesh.Vertices.ToArray()));

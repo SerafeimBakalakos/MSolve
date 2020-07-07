@@ -42,7 +42,7 @@ namespace MGroup.XFEM.Entities
                 foreach (IXFiniteElement element in physicalModel.Elements)
                 {
                     var element2D = (IXFiniteElement2D)element;
-                    var boundaries = element.PhaseIntersections.Values.Cast<IElementCurveIntersection2D>();
+                    var boundaries = element.PhaseIntersections.Values.Cast<IElementGeometryIntersection>();
                     if (boundaries.Count() == 0) continue;
                     element2D.ConformingSubtriangles = triangulator.FindConformingMesh(element, boundaries, MeshTolerance);
                 }
@@ -53,7 +53,7 @@ namespace MGroup.XFEM.Entities
                 foreach (IXFiniteElement element in physicalModel.Elements)
                 {
                     var element3D = (IXFiniteElement3D)element;
-                    var boundaries = element.PhaseIntersections.Values.Cast<IElementSurfaceIntersection3D>();
+                    var boundaries = element.PhaseIntersections.Values.Cast<IElementGeometryIntersection>();
                     if (boundaries.Count() == 0) continue;
                     element3D.ConformingSubtetrahedra = triangulator.FindConformingMesh(element, boundaries, MeshTolerance);
                 }

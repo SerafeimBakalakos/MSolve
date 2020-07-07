@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.Logging;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
-using MGroup.XFEM.Geometry.Tolerances;
 
 namespace MGroup.XFEM.Entities
 {

@@ -5,12 +5,16 @@ using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Geometry.Primitives;
-using MGroup.XFEM.Integration;
 using MGroup.XFEM.Integration.Quadratures;
+using ISAAR.MSolve.Discretization.Mesh;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public class LsmElementIntersection2D : IElementCurveIntersection2D
+    /// <summary>
+    /// A curve resulting from the intersection of a parent curve with a 2D element.
+    /// Degenerate cases are also possible: null or single point.
+    /// </summary>
+    public class LsmElementIntersection2D : IElementGeometryIntersection
     {
         private readonly double[] startNatural;
         private readonly double[] endNatural;
@@ -30,14 +34,15 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public RelativePositionCurveElement RelativePosition { get; }
 
-        public IXFiniteElement2D Element { get; } //TODO: Perhaps this should be defined in the interface
+        public IXFiniteElement Element { get; } //TODO: Perhaps this should be defined in the interface
 
-        public List<double[]> ApproximateGlobalCartesian()
+        public IIntersectionMesh ApproximateGlobalCartesian()
         {
-            var points = new List<double[]>(2);
-            points.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, startNatural));
-            points.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, endNatural));
-            return points;
+            var meshCartesian = new IntersectionMesh();
+            meshCartesian.Vertices.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, startNatural));
+            meshCartesian.Vertices.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, endNatural));
+            meshCartesian.Cells.Add((CellType.Line, new int[] { 0, 1 }));
+            return meshCartesian;
         }
 
         //TODO: Perhaps a dedicated IBoundaryIntegration component is needed

@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using ISAAR.MSolve.FEM.Entities;
-using MGroup.XFEM.Interpolation.Inverse;
-using ISAAR.MSolve.Geometry.Coordinates;
+﻿using System;
+using System.Collections.Generic;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using System;
-using ISAAR.MSolve.Discretization.Interfaces;
+using MGroup.XFEM.Interpolation.Inverse;
 
 // Quad4 nodes:
 // 3 -- 2

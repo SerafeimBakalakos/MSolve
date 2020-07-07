@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using ISAAR.MSolve.FEM.Entities;
-using MGroup.XFEM.Interpolation.Inverse;
-using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.LinearAlgebra.Matrices;
-using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Mesh;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
+using MGroup.XFEM.Interpolation.Inverse;
 
 namespace MGroup.XFEM.Interpolation
 {
-    /// <summary>
-    /// Isoparamateric interpolation of a pyramid finite element with 14 nodes. Quadratic shape functions.
-    /// Implements singleton pattern.
-    /// Authors: Dimitris Tsapetis
-    /// </summary>
-    public class InterpolationPyra14 : IsoparametricInterpolationBase
+	/// <summary>
+	/// Isoparamateric interpolation of a pyramid finite element with 14 nodes. Quadratic shape functions.
+	/// Implements singleton pattern.
+	/// Authors: Dimitris Tsapetis
+	/// </summary>
+	public class InterpolationPyra14 : IsoparametricInterpolationBase
     {
 		private static readonly InterpolationPyra14 uniqueInstance=new InterpolationPyra14();
 

@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using ISAAR.MSolve.FEM.Entities;
-using MGroup.XFEM.Interpolation.Inverse;
-using ISAAR.MSolve.Geometry.Coordinates;
-using ISAAR.MSolve.LinearAlgebra.Matrices;
-using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Mesh;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
+using MGroup.XFEM.Interpolation.Inverse;
 
 namespace MGroup.XFEM.Interpolation
 {
-    /// <summary>
-    /// Isoparametric interpolation of pyramid finite element with 5 nodes. Linear shape functions.
-    /// Implements singleton pattern.
-    /// Authors: Dimitris Tsapetis
-    /// </summary>
-    public class InterpolationPyra5 : IsoparametricInterpolationBase
+	/// <summary>
+	/// Isoparametric interpolation of pyramid finite element with 5 nodes. Linear shape functions.
+	/// Implements singleton pattern.
+	/// Authors: Dimitris Tsapetis
+	/// </summary>
+	public class InterpolationPyra5 : IsoparametricInterpolationBase
     {
 		private static  readonly InterpolationPyra5 uniqueInstance= new InterpolationPyra5();
 

@@ -79,7 +79,7 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// <param name="point1"></param>
         /// <param name="point2"></param>
         /// <returns></returns>
-        public IElementCurveIntersection2D IntersectPolygon(IList<double[]> nodes)
+        public IElementGeometryIntersection IntersectPolygon(IList<double[]> nodes)
         {
             //TODO: Use the results to create a new geometric object that can provide vertices for triangulation, gauss points etc. These can be empty
             //TODO: needs a fast way to eliminate most elements
@@ -106,12 +106,12 @@ namespace MGroup.XFEM.Geometry.Primitives
             // Investigate the intersection type
             if (intersections.Count == 0)
             {
-                return new NullElementIntersection2D();
+                return new NullElementIntersection(null);
                 //return (RelativePositionCurveDisc.Disjoint, new double[0]);
             }
             else if (intersections.Count == 1)
             {
-                return new NullElementIntersection2D();
+                return new NullElementIntersection(null);
                 //return (RelativePositionCurveDisc.Tangent, new double[] { intersections.First() });
             }
             else if (intersections.Count == 2)

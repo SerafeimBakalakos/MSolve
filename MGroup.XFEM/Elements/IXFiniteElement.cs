@@ -27,6 +27,8 @@ namespace MGroup.XFEM.Elements
 
         HashSet<IPhase> Phases { get; }
 
+        List<IElementGeometryIntersection> Intersections { get; }
+
         Dictionary<PhaseBoundary, IElementGeometryIntersection> PhaseIntersections { get; }
 
         XSubdomain Subdomain { get; set; }
