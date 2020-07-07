@@ -80,8 +80,6 @@ namespace MGroup.XFEM.Plotting.Fields
             var centroid = new XPoint();
             centroid.Element = element;
             centroid.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(centroidNatural.Coordinates);
-            //CartesianPoint centroid = element.Interpolation.TransformNaturalToCartesian(element.Nodes, centroidNatural);
-            //double[] shapeFunctionsAtCentroid = element.InterpolationStandard.EvaluateFunctionsAt(centroid);
 
             // Evaluate enrichment functions at triangle centroid and assume it also holds for its vertices
             var enrichments = new HashSet<IEnrichment>();

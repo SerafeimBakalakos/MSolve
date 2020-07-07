@@ -357,8 +357,6 @@ namespace MGroup.XFEM.Elements
             // enrichment function. However in this formulation of multiphase XFEM, only piecewise constant enrichments
             // are used. Therefore always psi,x = 0.
 
-
-            //CartesianPoint cartesianPoint = evaluatedInterpolation.TransformPointNaturalToGlobalCartesian(gaussPoint);
             var uniqueEnrichments = new Dictionary<IEnrichment, double>();
 
             var deformationMatrix = Matrix.CreateZero(3, numEnrichedDofs);

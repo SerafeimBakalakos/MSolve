@@ -7,7 +7,6 @@ using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
-using MGroup.XFEM.Integration;
 using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Materials;
 

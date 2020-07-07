@@ -34,22 +34,22 @@ namespace MGroup.XFEM.Plotting.Writers
 
         private void PlotEnrichedNodesCategory(Func<IEnrichment, bool> predicate, string path, string categoryName)
         {
-            var nodesToPlot = new Dictionary<CartesianPoint, double>();
+            var nodesToPlot = new Dictionary<double[], double>();
             foreach (XNode node in physicalModel.Nodes)
             {
                 if (node.Enrichments.Count == 0) continue;
                 IEnrichment[] enrichments = node.Enrichments.Keys.Where(predicate).ToArray();
                 if (enrichments.Length == 1)
                 {
-                    var point = new CartesianPoint(node.X, node.Y, node.Z);
+                    var point = node.Coordinates;
                     nodesToPlot[point] = enrichments[0].ID;
                 }
                 else
                 {
-                    CartesianPoint[] nodeInstances = DuplicateNodeForBetterViewing(node, enrichments.Length);
+                    double[][] nodeInstances = DuplicateNodeForBetterViewing(node, enrichments.Length);
                     for (int e = 0; e < enrichments.Length; ++e)
                     {
-                        CartesianPoint point = nodeInstances[e];
+                        double[] point = nodeInstances[e];
                         nodesToPlot[point] = enrichments[e].ID;
                     }
                 }
@@ -61,35 +61,35 @@ namespace MGroup.XFEM.Plotting.Writers
             }
         }
 
-        private CartesianPoint[] DuplicateNodeForBetterViewing(XNode node, int numInstances)
+        private double[][] DuplicateNodeForBetterViewing(XNode node, int numInstances)
         {
             //TODO: Add more.
 
-            CartesianPoint[] possibilites = new CartesianPoint[4]; // The further ones apart go to top
+            double[][] possibilites; // The further ones apart go to top
             if (!plot3D)
             {
-                possibilites = new CartesianPoint[4]; // The further ones apart go to top
+                possibilites = new double[4][]; // The further ones apart go to top
                 double offset = 0.05 * elementSize;
-                possibilites[0] = new CartesianPoint(node.X - offset, node.Y - offset);
-                possibilites[1] = new CartesianPoint(node.X + offset, node.Y + offset);
-                possibilites[2] = new CartesianPoint(node.X + offset, node.Y - offset);
-                possibilites[3] = new CartesianPoint(node.X - offset, node.Y + offset);
+                possibilites[0] = new double[] { node.X - offset, node.Y - offset };
+                possibilites[1] = new double[] { node.X + offset, node.Y + offset };
+                possibilites[2] = new double[] { node.X + offset, node.Y - offset };
+                possibilites[3] = new double[] { node.X - offset, node.Y + offset };
             }
             else
             {
-                possibilites = new CartesianPoint[8];
+                possibilites = new double[8][];
                 double offset = 0.05 * elementSize;
-                possibilites[0] = new CartesianPoint(node.X - offset, node.Y - offset, node.Z - offset);
-                possibilites[1] = new CartesianPoint(node.X + offset, node.Y + offset, node.Z - offset);
-                possibilites[2] = new CartesianPoint(node.X + offset, node.Y - offset, node.Z - offset);
-                possibilites[3] = new CartesianPoint(node.X - offset, node.Y + offset, node.Z - offset);
-                possibilites[4] = new CartesianPoint(node.X - offset, node.Y - offset, node.Z + offset);
-                possibilites[5] = new CartesianPoint(node.X + offset, node.Y + offset, node.Z + offset);
-                possibilites[6] = new CartesianPoint(node.X + offset, node.Y - offset, node.Z + offset);
-                possibilites[7] = new CartesianPoint(node.X - offset, node.Y + offset, node.Z + offset);
+                possibilites[0] = new double[] { node.X - offset, node.Y - offset, node.Z - offset };
+                possibilites[1] = new double[] { node.X + offset, node.Y + offset, node.Z - offset };
+                possibilites[2] = new double[] { node.X + offset, node.Y - offset, node.Z - offset };
+                possibilites[3] = new double[] { node.X - offset, node.Y + offset, node.Z - offset };
+                possibilites[4] = new double[] { node.X - offset, node.Y - offset, node.Z + offset };
+                possibilites[5] = new double[] { node.X + offset, node.Y + offset, node.Z + offset };
+                possibilites[6] = new double[] { node.X + offset, node.Y - offset, node.Z + offset };
+                possibilites[7] = new double[] { node.X - offset, node.Y + offset, node.Z + offset };
             }
 
-            var instances = new CartesianPoint[numInstances];
+            var instances = new double[numInstances][];
             for (int i = 0; i < numInstances; ++i) instances[i] = possibilites[i];
             return instances;
         }

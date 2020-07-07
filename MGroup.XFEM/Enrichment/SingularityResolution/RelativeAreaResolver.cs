@@ -100,11 +100,6 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
                 foreach (IElementSubcell subcell in subcells)
                 {
                     // Calculate their areas and on which side they lie, based on their centroids
-
-                    // This was for explicit geometries
-                    //(CartesianPoint centroid, double area) = triangle.FindCentroidAndAreaCartesian(element2D);
-                    //IPhase phase = GeometricModel.FindPhaseAt(centroid, element);
-
                     NaturalPoint centroidNatural = subcell.FindCentroidNatural();
                     (double[] centroidCartesian, double bulkSize) = subcell.FindCentroidAndBulkSizeCartesian(element);
                     XPoint centroid = new XPoint();

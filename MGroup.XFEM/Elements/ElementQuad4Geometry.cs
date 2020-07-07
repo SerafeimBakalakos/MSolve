@@ -1,24 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry;
 
 namespace MGroup.XFEM.Elements
 {
     public class ElementQuad4Geometry : IElementGeometry
     {
-        public double CalcBulkSize(IReadOnlyList<XNode> nodes)
-        {
-            double area = 0.0;
-            for (int vertexIdx = 0; vertexIdx < nodes.Count; ++vertexIdx)
-            {
-                double[] vertex1 = nodes[vertexIdx].Coordinates;
-                double[] vertex2 = nodes[(vertexIdx + 1) % nodes.Count].Coordinates;
-                area += vertex1[0] * vertex2[1] - vertex2[0] * vertex1[1];
-            }
-            return Math.Abs(0.5 * area); // area would be negative if vertices were in counter-clockwise order
-        }
+        public double CalcBulkSize(IReadOnlyList<XNode> nodes) 
+            => Utilities.CalcPolygonArea(nodes.Select(n => n.Coordinates).ToArray());
 
         public (ElementEdge[], ElementFace[]) FindEdgesFaces(IReadOnlyList<XNode> nodes)
         {

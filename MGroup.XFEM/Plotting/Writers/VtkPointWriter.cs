@@ -27,16 +27,6 @@ namespace MGroup.XFEM.Plotting.Writers
             if (writer != null) writer.Dispose();
         }
 
-        public void WritePoints(IEnumerable<CartesianPoint> points)
-        {
-            writer.WriteLine("DATASET UNSTRUCTURED_GRID");
-            writer.WriteLine($"POINTS {points.Count()} double");
-            foreach (CartesianPoint point in points)
-            {
-                writer.WriteLine($"{point.X} {point.Y} {point.Z}");
-            }
-        }
-
         public void WritePoints(IEnumerable<VtkPoint> points)
         {
             writer.WriteLine("DATASET UNSTRUCTURED_GRID");
@@ -70,53 +60,6 @@ namespace MGroup.XFEM.Plotting.Writers
                 writer.WriteLine(value);
             }
             writer.WriteLine();
-        }
-
-        public void WriteScalarField(string fieldName, IReadOnlyDictionary<CartesianPoint, double> pointValues)
-        {
-            // Points
-            writer.WriteLine("DATASET UNSTRUCTURED_GRID");
-            writer.WriteLine($"POINTS {pointValues.Count} double");
-            foreach (CartesianPoint point in pointValues.Keys)
-            {
-                writer.WriteLine($"{point.X} {point.Y} {point.Z}");
-            }
-
-            // Values
-            writer.Write("\n\n");
-            writer.WriteLine($"POINT_DATA {pointValues.Count}");
-            writer.WriteLine($"SCALARS {fieldName} double 1");
-            writer.WriteLine("LOOKUP_TABLE default");
-            foreach (double value in pointValues.Values)
-            {
-                writer.WriteLine(value);
-            }
-            writer.WriteLine();
-        }
-
-        public void WriteScalarFields(string[] fieldNames, IReadOnlyDictionary<CartesianPoint, double[]> pointValues)
-        {
-            // Points
-            writer.WriteLine("DATASET UNSTRUCTURED_GRID");
-            writer.WriteLine($"POINTS {pointValues.Count} double");
-            foreach (var point in pointValues.Keys)
-            {
-                writer.WriteLine($"{point.X} {point.Y} {point.Z}");
-            }
-
-            // Values
-            for (int i = 0; i < fieldNames.Length; ++i)
-            {
-                writer.Write("\n\n");
-                writer.WriteLine($"POINT_DATA {pointValues.Count}");
-                writer.WriteLine($"SCALARS {fieldNames[i]} double 1");
-                writer.WriteLine("LOOKUP_TABLE default");
-                foreach (double[] values in pointValues.Values)
-                {
-                    writer.WriteLine(values[i]);
-                }
-                writer.WriteLine();
-            }
         }
 
         //TODO: Avoid the duplication.
@@ -166,29 +109,5 @@ namespace MGroup.XFEM.Plotting.Writers
             }
             writer.WriteLine();
         }
-
-        public void WriteVectorField(string fieldName, IReadOnlyDictionary<CartesianPoint, double[]> pointVectors)
-        {
-            // Points
-            writer.WriteLine("DATASET UNSTRUCTURED_GRID");
-            writer.WriteLine($"POINTS {pointVectors.Count} double");
-            foreach (CartesianPoint point in pointVectors.Keys)
-            {
-                writer.WriteLine($"{point.X} {point.Y} {point.Z}");
-            }
-
-            // Values
-            writer.Write("\n\n");
-            writer.WriteLine($"POINT_DATA {pointVectors.Count}");
-            writer.WriteLine($"VECTORS {fieldName} double");
-            foreach (double[] vector in pointVectors.Values)
-            {
-                if (vector.Length == 2) writer.WriteLine($"{vector[0]} {vector[1]} 0.0");
-                else if (vector.Length == 3) writer.WriteLine($"{vector[0]} {vector[1]} {vector[2]}");
-                else throw new NotImplementedException();
-            }
-            writer.WriteLine();
-        }
-
     }
 }

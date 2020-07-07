@@ -1,20 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry;
 
 namespace MGroup.XFEM.Elements
 {
     public class ElementTri3Geometry : IElementGeometry
     {
-        public double CalcBulkSize(IReadOnlyList<XNode> nodes)
-        {
-            var triangle = new Geometry.Primitives.Triangle2D();
-            triangle.Vertices[0] = new double[] { nodes[0].X, nodes[0].Y};
-            triangle.Vertices[1] = new double[] { nodes[1].X, nodes[1].Y };
-            triangle.Vertices[2] = new double[] { nodes[2].X, nodes[2].Y };
-            return triangle.CalcArea();
-        }
+        public double CalcBulkSize(IReadOnlyList<XNode> nodes) 
+            => Utilities.CalcPolygonArea(nodes.Select(n => n.Coordinates).ToArray());
 
         public (ElementEdge[], ElementFace[]) FindEdgesFaces(IReadOnlyList<XNode> nodes)
         {
