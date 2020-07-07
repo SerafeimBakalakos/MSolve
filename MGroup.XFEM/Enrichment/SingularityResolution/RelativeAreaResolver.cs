@@ -100,10 +100,10 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
                 foreach (IElementSubcell subcell in subcells)
                 {
                     // Calculate their areas and on which side they lie, based on their centroids
-                    NaturalPoint centroidNatural = subcell.FindCentroidNatural();
+                    double[] centroidNatural = subcell.FindCentroidNatural();
                     (double[] centroidCartesian, double bulkSize) = subcell.FindCentroidAndBulkSizeCartesian(element);
                     XPoint centroid = new XPoint();
-                    centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural.Coordinates;
+                    centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural;
                     element.FindPhaseAt(centroid);
 
                     if (centroid.Phase == phase1) totalBulkSize1 += bulkSize;

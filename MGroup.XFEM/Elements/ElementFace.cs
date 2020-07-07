@@ -9,6 +9,8 @@ namespace MGroup.XFEM.Elements
 {
     public class ElementFace
     {
+        public int ID { get; set; }
+
         public CellType CellType { get; set; }
 
         /// <summary>
@@ -19,7 +21,7 @@ namespace MGroup.XFEM.Elements
         /// <summary>
         /// Their order is the same as defined in <see cref="CellType"/>.
         /// </summary>
-        public NaturalPoint[] NodesNatural { get; set; }
+        public IReadOnlyList<double[]> NodesNatural { get; set; }
 
         public ElementEdge[] Edges { get; set; }
     }

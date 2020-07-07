@@ -103,6 +103,13 @@ namespace MGroup.XFEM.Entities
                         continue;
                     }
 
+                    #region debug
+                    //if (this.ID == 12 && element.ID == 63216)
+                    //{
+                    //    Console.WriteLine();
+                    //}
+                    #endregion
+
                     IElementGeometryIntersection intersection = boundary.Geometry.Intersect(element);
                     if (intersection.RelativePosition == RelativePositionCurveElement.Intersecting)
                     {

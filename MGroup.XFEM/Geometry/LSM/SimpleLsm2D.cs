@@ -34,16 +34,14 @@ namespace MGroup.XFEM.Geometry.LSM
             }
 
             double tol = MeshTolerance.CalcTolerance(element);
-            var intersections = new HashSet<NaturalPoint>();
+            var intersections = new HashSet<double[]>();
             IReadOnlyList<ElementEdge> edges = element.Edges;
-            //IReadOnlyList<(XNode node1, XNode node2)> edgesCartesian = element.EdgeNodes;
-            //IReadOnlyList<(NaturalPoint node1, NaturalPoint node2)> edgesNatural = element.EdgesNodesNatural;
             for (int i = 0; i < edges.Count; ++i)
             {
                 XNode node0Cartesian = edges[i].Nodes[0];
                 XNode node1Cartesian = edges[i].Nodes[1];
-                NaturalPoint node0Natural = edges[i].NodesNatural[0];
-                NaturalPoint node1Natural = edges[i].NodesNatural[1];
+                double[] node0Natural = edges[i].NodesNatural[0];
+                double[] node1Natural = edges[i].NodesNatural[1];
                 double levelSet0 = CalcLevelSetNearZero(node0Cartesian, tol);
                 double levelSet1 = CalcLevelSetNearZero(node1Cartesian, tol);
 
@@ -53,16 +51,16 @@ namespace MGroup.XFEM.Geometry.LSM
                     // The intersection point between these nodes can be found using the linear interpolation, see 
                     // Sukumar 2001
                     double k = -levelSet0 / (levelSet1 - levelSet0);
-                    double xi = node0Natural.Xi + k * (node1Natural.Xi - node0Natural.Xi);
-                    double eta = node0Natural.Eta + k * (node1Natural.Eta - node0Natural.Eta);
+                    double xi = node0Natural[0] + k * (node1Natural[0] - node0Natural[0]);
+                    double eta = node0Natural[1] + k * (node1Natural[1] - node0Natural[1]);
 
-                    intersections.Add(new NaturalPoint(xi, eta));
+                    intersections.Add(new double[] { xi, eta });
                 }
                 else if ((levelSet0 == 0) && (levelSet1 == 0)) // Curve is tangent to the element. Edge lies on the curve.
                 {
                     //TODO: also check (DEBUG only) that all other edges are not intersected unless its is at these 2 nodes
                     return new LsmElementIntersection2D(RelativePositionCurveElement.Conforming, element,
-                        node0Natural.Coordinates, node1Natural.Coordinates);
+                        node0Natural, node1Natural);
                 }
                 else if ((levelSet0 == 0) && (levelSet1 != 0)) // Curve runs through a node. Not sure if it is tangent yet.
                 {
@@ -81,9 +79,8 @@ namespace MGroup.XFEM.Geometry.LSM
             }
             else if (intersections.Count == 2)
             {
-                NaturalPoint[] points = intersections.ToArray();
-                return new LsmElementIntersection2D(RelativePositionCurveElement.Intersecting, element, 
-                    new double[] { points[0].Xi, points[0].Eta }, new double[] { points[1].Xi, points[1].Eta });
+                double[][] points = intersections.ToArray();
+                return new LsmElementIntersection2D(RelativePositionCurveElement.Intersecting, element, points[0], points[1]);
             }
             else throw new Exception("This should not have happened");
         }

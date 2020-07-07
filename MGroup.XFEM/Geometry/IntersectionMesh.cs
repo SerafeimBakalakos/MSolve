@@ -37,7 +37,7 @@ namespace MGroup.XFEM.Geometry
             return mesh;
         }
 
-        public static IntersectionMesh CreateSingleCellMesh(CellType cellType, IList<double[]> intersectionPoints)
+        public static IntersectionMesh CreateSingleCellMesh(CellType cellType, IReadOnlyList<double[]> intersectionPoints)
         {
             var mesh = new IntersectionMesh();
             for (int i = 0; i < intersectionPoints.Count; ++i)

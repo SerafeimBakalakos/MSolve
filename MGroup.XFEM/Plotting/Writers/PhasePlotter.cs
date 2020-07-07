@@ -79,12 +79,11 @@ namespace MGroup.XFEM.Plotting.Writers
 
                         // TODO: Perhaps I should do the next operations in the natural system of the element.
                         // Find the centroid
-                        NaturalPoint centroidNatural = subcell.OriginalSubcell.FindCentroidNatural();
+                        double[] centroidNatural = subcell.OriginalSubcell.FindCentroidNatural();
                         var centroid = new XPoint();
                         centroid.Element = subcell.ParentElement;
-                        centroid.Coordinates[CoordinateSystem.ElementNatural] = 
-                            new double[] { centroidNatural.Xi, centroidNatural.Eta, centroidNatural.Zeta };
-                        centroid.ShapeFunctions = centroid.Element.Interpolation.EvaluateFunctionsAt(centroidNatural.Coordinates);
+                        centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural;
+                        centroid.ShapeFunctions = centroid.Element.Interpolation.EvaluateFunctionsAt(centroidNatural);
 
                         // Find the phase of the centroid
                         double phaseID = colorForDefaultPhase;

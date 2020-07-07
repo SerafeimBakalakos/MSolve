@@ -9,18 +9,22 @@ namespace MGroup.XFEM.Elements
 {
     public class ElementEdge
     {
-        public ElementEdge()
+        public ElementEdge(int id)
         {
+            this.ID = id;
         }
 
-        public ElementEdge(IReadOnlyList<XNode> nodes, IReadOnlyList<NaturalPoint> nodesNatural, int start, int end)
+        public ElementEdge(int id, IReadOnlyList<XNode> nodes, IReadOnlyList<double[]> nodesNatural, int start, int end)
         {
+            this.ID = id;
             CellType = CellType.Line;
             Nodes = new XNode[] { nodes[start], nodes[end] };
-            NodesNatural = new NaturalPoint[] { nodesNatural[start], nodesNatural[end] };
+            NodesNatural = nodesNatural;
         }
 
         public CellType CellType { get; set; }
+
+        public int ID { get; }
 
         /// <summary>
         /// Their order is the same as defined in <see cref="CellType"/>.
@@ -30,6 +34,6 @@ namespace MGroup.XFEM.Elements
         /// <summary>
         /// Their order is the same as defined in <see cref="CellType"/>.
         /// </summary>
-        public NaturalPoint[] NodesNatural { get; set; }
+        public IReadOnlyList<double[]> NodesNatural { get; set; }
     }
 }

@@ -68,18 +68,18 @@ namespace MGroup.XFEM.Plotting.Fields
             double[] nodalTemperatures)
         {
             // Evaluate shape functions
-            var shapeFunctionsAtVertices = new List<double[]>(subcell.VerticesNatural.Length);
-            for (int v = 0; v < subcell.VerticesNatural.Length; ++v)
+            var shapeFunctionsAtVertices = new List<double[]>(subcell.VerticesNatural.Count);
+            for (int v = 0; v < subcell.VerticesNatural.Count; ++v)
             {
-                NaturalPoint vertex = subcell.VerticesNatural[v];
-                shapeFunctionsAtVertices.Add(element.Interpolation.EvaluateFunctionsAt(vertex.Coordinates));
+                double[] vertex = subcell.VerticesNatural[v];
+                shapeFunctionsAtVertices.Add(element.Interpolation.EvaluateFunctionsAt(vertex));
             }
 
             // Locate centroid
-            NaturalPoint centroidNatural = subcell.FindCentroidNatural();
+            double[] centroidNatural = subcell.FindCentroidNatural();
             var centroid = new XPoint();
             centroid.Element = element;
-            centroid.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(centroidNatural.Coordinates);
+            centroid.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(centroidNatural);
 
             // Evaluate enrichment functions at triangle centroid and assume it also holds for its vertices
             var enrichments = new HashSet<IEnrichment>();
@@ -93,8 +93,8 @@ namespace MGroup.XFEM.Plotting.Fields
             }
 
             // t(x) = sum_over_nodes(Ni(x) * t_i) + sum_over_enriched_nodes( N_j(x) * (psi(x) - psi_j)*a_j )
-            var temperaturesAtVertices = new double[subcell.VerticesNatural.Length];
-            for (int v = 0; v < subcell.VerticesNatural.Length; ++v)
+            var temperaturesAtVertices = new double[subcell.VerticesNatural.Count];
+            for (int v = 0; v < subcell.VerticesNatural.Count; ++v)
             {
                 double[] N = shapeFunctionsAtVertices[v];
                 double sum = 0.0;

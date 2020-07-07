@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.Interfaces;
-using ISAAR.MSolve.FEM.Entities;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
-using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Entities
 {

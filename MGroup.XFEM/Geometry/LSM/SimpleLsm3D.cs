@@ -32,7 +32,8 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IElementGeometryIntersection Intersect(IXFiniteElement element)
         {
-            RelativePositionCurveElement position = FindRelativePosition(element);
+            Dictionary<int, double> levelSetSubset = FindLevelSetsOfElementNodes(element);
+            RelativePositionCurveElement position = FindRelativePosition(element, levelSetSubset);
             if (position == RelativePositionCurveElement.Disjoint)
             {
                 return new NullElementIntersection(element);
@@ -53,8 +54,7 @@ namespace MGroup.XFEM.Geometry.LSM
                     if (zeroNodes.SetEquals(face.Nodes))
                     {
                         // Intersection segment is a single cell with the same shape, nodes, etc as the face.
-                        List<double[]> nodesOfFace = face.NodesNatural.Select(p => p.Coordinates).ToList();
-                        var intersectionMesh = IntersectionMesh.CreateSingleCellMesh(face.CellType, nodesOfFace);
+                        var intersectionMesh = IntersectionMesh.CreateSingleCellMesh(face.CellType, face.NodesNatural);
                         return new LsmElementIntersection3D(RelativePositionCurveElement.Conforming, element, intersectionMesh);
                     }
                 }
@@ -83,7 +83,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 // Find intersection points that lie on element edges, excluding nodes
                 foreach (ElementEdge edge in element.Edges)
                 {
-                    double[] intersection = IntersectEdgeExcludingNodes(edge);
+                    double[] intersection = IntersectEdgeExcludingNodes(edge, levelSetSubset);
                     if (intersection != null)
                     {
                         HashSet<ElementFace> facesOfEdge = edge.FindFacesOfEdge(allFaces);
@@ -127,14 +127,24 @@ namespace MGroup.XFEM.Geometry.LSM
             else throw new ArgumentException("Incompatible Level Set geometry");
         }
 
-        private RelativePositionCurveElement FindRelativePosition(IXFiniteElement element)
+        private Dictionary<int, double> FindLevelSetsOfElementNodes(IXFiniteElement element)
+        {
+            var levelSetSubset = new Dictionary<int, double>();
+            foreach (XNode node in element.Nodes)
+            {
+                levelSetSubset[node.ID] = NodalLevelSets[node.ID];
+            }
+            return levelSetSubset;
+        }
+
+        private RelativePositionCurveElement FindRelativePosition(IXFiniteElement element, Dictionary<int, double> levelSetSubset)
         {
             int numPositiveNodes = 0;
             int numNegativeNodes = 0;
             int numZeroNodes = 0;
             foreach (XNode node in element.Nodes)
             {
-                double levelSet = NodalLevelSets[node.ID];
+                double levelSet = levelSetSubset[node.ID];
                 if (levelSet > 0) ++numPositiveNodes;
                 else if (levelSet < 0) ++numNegativeNodes;
                 else ++numZeroNodes;
@@ -163,23 +173,24 @@ namespace MGroup.XFEM.Geometry.LSM
             }
         }
         
-        private double[] IntersectEdgeExcludingNodes(ElementEdge edge)
+        private double[] IntersectEdgeExcludingNodes(ElementEdge edge, Dictionary<int, double> levelSetSubset)
         {
-            double levelSet0 = NodalLevelSets[edge.Nodes[0].ID];
-            double levelSet1 = NodalLevelSets[edge.Nodes[1].ID];
-            NaturalPoint node0 = edge.NodesNatural[0];
-            NaturalPoint node1 = edge.NodesNatural[1];
+            double levelSet0 = levelSetSubset[edge.Nodes[0].ID];
+            double levelSet1 = levelSetSubset[edge.Nodes[1].ID];
+            double[] node0 = edge.NodesNatural[0];
+            double[] node1 = edge.NodesNatural[1];
 
             if (levelSet0 * levelSet1 < 0.0) // Edge is intersected but not at its nodes
             {
                 // The intersection point between these nodes can be found using the linear interpolation, see 
                 // Sukumar 2001
                 double k = -levelSet0 / (levelSet1 - levelSet0);
-                double xi = node0.Xi + k * (node1.Xi - node0.Xi);
-                double eta = node0.Eta + k * (node1.Eta - node0.Eta);
-                double zeta = node0.Zeta + k * (node1.Zeta - node0.Zeta);
-
-                return new double[] { xi, eta, zeta };
+                var intersection = new double[3];
+                for (int d = 0; d < 3; ++d)
+                {
+                    intersection[d] = node0[d] + k * (node1[d] - node0[d]);
+                }
+                return intersection;
             }
             else return null;
         }

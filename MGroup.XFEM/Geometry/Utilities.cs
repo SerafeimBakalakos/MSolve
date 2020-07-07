@@ -108,34 +108,6 @@ namespace MGroup.XFEM.Geometry
             return centroid;
         }
 
-        public static NaturalPoint FindCentroidNatural(int dim, IReadOnlyList<NaturalPoint> vertices)
-        {
-            if (dim == 2)
-            {
-                double centroidXi = 0.0, centroidEta = 0.0;
-                for (int v = 0; v < vertices.Count; ++v)
-                {
-                    centroidXi += vertices[v].Xi;
-                    centroidEta += vertices[v].Eta;
-                }
-                return new NaturalPoint(centroidXi / vertices.Count, centroidEta / vertices.Count);
-            }
-            else if (dim == 3)
-            {
-                double centroidXi = 0.0, centroidEta = 0.0, centroidZeta = 0.0;
-                for (int v = 0; v < vertices.Count; ++v)
-                {
-                    centroidXi += vertices[v].Xi;
-                    centroidEta += vertices[v].Eta;
-                    centroidZeta += vertices[v].Zeta;
-                }
-                return new NaturalPoint(centroidXi / vertices.Count, centroidEta / vertices.Count, centroidZeta / vertices.Count);
-            }
-            else throw new NotImplementedException();
-        }
-
-        
-
         public static double[] FindCentroidCartesian(int dimension, IReadOnlyList<XNode> nodes)
         {
             var centroid = new double[dimension];

@@ -14,9 +14,9 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
     {
         CellType CellType { get; }
 
-        NaturalPoint[] VerticesNatural { get; }
+        IList<double[]> VerticesNatural { get; }
 
-        NaturalPoint FindCentroidNatural();
+        double[] FindCentroidNatural();
 
         (double[] centroid, double bulkSize) FindCentroidAndBulkSizeCartesian(IXFiniteElement parentElement);
 
