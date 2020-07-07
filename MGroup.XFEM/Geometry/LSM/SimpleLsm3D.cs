@@ -54,9 +54,9 @@ namespace MGroup.XFEM.Geometry.LSM
                     if (zeroNodes.SetEquals(face.Nodes))
                     {
                         // Intersection segment is a single cell with the same shape, nodes, etc as the face.
-                        var intersectionMesh = new IntersectionMesh<NaturalPoint>();
-                        intersectionMesh.AddVertices(face.NodesNatural);
-                        intersectionMesh.AddCell(face.CellType, face.NodesNatural);
+                        List<double[]> nodesOfFace = face.NodesNatural.Select(p => p.Coordinates).ToList();
+                        var intersectionMesh = IntersectionMesh3D.CreateSingleCellMesh(face.CellType, nodesOfFace);
+                        return new LsmElementIntersection3D(RelativePositionCurveElement.Conforming, element3D, intersectionMesh);
                     }
                 }
 
@@ -66,51 +66,35 @@ namespace MGroup.XFEM.Geometry.LSM
             }
             else //TODO: Perhaps I should start by going through each face directly. Allow repeated operations and finally remove all duplicate points and triangles
             {
+                ElementEdge[] allEdges = element.Edges;
+                ElementFace[] allFaces = element.Faces;
+                var intersectionPoints = new Dictionary<double[], HashSet<ElementFace>>();
 
-                // Find the intersection points of the surface with each edge (if they exist).
-                var edgeIntersections = new Dictionary<ElementEdge, NaturalPoint[]>();
-                var allIntersections = new SortedSet<NaturalPoint>(new Point3DComparer<NaturalPoint>());
+                // Find any nodes that may lie on the LSM geometry
+                for (int n = 0; n < element.Nodes.Count; ++n)
+                {
+                    XNode node = element.Nodes[n];
+                    if (NodalLevelSets[node.ID] == 0)
+                    {
+                        HashSet<ElementFace> facesOfNode = node.FindFacesOfNode(allFaces);
+                        intersectionPoints.Add(element.Interpolation.NodalNaturalCoordinates[n], facesOfNode);
+                    }
+                }
+
+                // Find intersection points that lie on element edges, excluding nodes
                 foreach (ElementEdge edge in element.Edges)
                 {
-                    var intersectionOfThisEdge = IntersectEdge(edge);
-                    edgeIntersections[edge] = intersectionOfThisEdge;
-                    allIntersections.UnionWith(intersectionOfThisEdge);
-                }
-
-                //TODO: Add optimizations for 4 and 5 intersection points
-                var intersectionMesh = new IntersectionMesh();
-                if (allIntersections.Count == 3) // Intersection is a single triangle
-                {
-                    IList<double[]> triangleVertices = allIntersections.Select(p => p.Coordinates).ToList();
-                    intersectionMesh.AddVertices(triangleVertices);
-                    intersectionMesh.AddCell(CellType.Tet4, triangleVertices);
-                    return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element3D, intersectionMesh);
-                }
-                else // General case: intersection is a mesh of triangles
-                {
-                    // Find their centroid
-                    NaturalPoint centroid = FindIntersectionCentroid(allIntersections);
-                    allIntersections.Add(centroid);
-
-                    // Use the 2 intersection points of each face and the centroid to create a triangle of the intersection mesh
-                    IEnumerable<double[]> vertices = allIntersections.Select(p => p.Coordinates);
-                    intersectionMesh.AddVertices(vertices);
-                    foreach (ElementFace face in element3D.Faces)
+                    double[] intersection = IntersectEdgeExcludingNodes(edge);
+                    if (intersection != null)
                     {
-                        var intersectionsOfFace = new SortedSet<NaturalPoint>(new Point3DComparer<NaturalPoint>());
-                        foreach (ElementEdge edge in face.Edges)
-                        {
-                            intersectionsOfFace.UnionWith(edgeIntersections[edge]);
-                            if (intersectionsOfFace.Count == 0) continue;
-                            else if (intersectionsOfFace.Count == 2)
-                            {
-                                intersectionsOfFace.Add(centroid);
-                                intersectionMesh.AddCell(CellType.Tet4, intersectionsOfFace.Select(p => p.Coordinates).ToArray());
-                            }
-                        }
+                        HashSet<ElementFace> facesOfEdge = edge.FindFacesOfEdge(allFaces);
+                        intersectionPoints.Add(intersection, facesOfEdge);
                     }
-                    return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element3D, intersectionMesh);
                 }
+
+                // Create mesh
+                var intersectionMesh = IntersectionMesh3D.CreateMultiCellMesh(intersectionPoints);
+                return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element3D, intersectionMesh);
             }
         }
 
@@ -142,46 +126,6 @@ namespace MGroup.XFEM.Geometry.LSM
                 }
             }
             else throw new ArgumentException("Incompatible Level Set geometry");
-        }
-
-        /// <summary>
-        /// Optimization for most elements.
-        /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
-        private bool IsElementDisjoint(IXFiniteElement element)
-        {
-            double minLevelSet = double.MaxValue;
-            double maxLevelSet = double.MinValue;
-
-            foreach (XNode node in element.Nodes)
-            {
-                double levelSet = NodalLevelSets[node.ID];
-                if (levelSet < minLevelSet) minLevelSet = levelSet;
-                if (levelSet > maxLevelSet) maxLevelSet = levelSet;
-            }
-
-            if (minLevelSet * maxLevelSet > 0.0) return true;
-            else return false;
-        }
-
-        private NaturalPoint FindIntersectionCentroid(IEnumerable<NaturalPoint> intersectionPoints)
-        {
-            int count = 0;
-            double centroidXi = 0;
-            double centroidEta = 0;
-            double centroidZeta = 0;
-            foreach (NaturalPoint point in intersectionPoints)
-            {
-                ++count;
-                centroidXi += point.Xi;
-                centroidEta += point.Eta;
-                centroidZeta += point.Zeta;
-            }
-            return new NaturalPoint(centroidXi / count, centroidEta / count, centroidZeta / count);
-            
-            //TODO: Unfortunately this centroid does not always lie on the surface. 
-            //      For better accuracy, find the projection of this centroid onto the surface.
         }
 
         private RelativePositionCurveElement FindRelativePosition(IXFiniteElement element)
@@ -219,24 +163,15 @@ namespace MGroup.XFEM.Geometry.LSM
                 return RelativePositionCurveElement.Conforming;
             }
         }
-
-        //TODO: Use this everywhere in this class. Alternatively, modify the nodal level sets before storing them
-        private double CalcLevelSetNearZero(XNode node, double zeroTolerance) 
-        {
-            double levelSet = NodalLevelSets[node.ID];
-            if (Math.Abs(levelSet) <= zeroTolerance) return 0.0;
-            else return levelSet;
-        }
-
-        private NaturalPoint[] IntersectEdge(ElementEdge edge)
+        
+        private double[] IntersectEdgeExcludingNodes(ElementEdge edge)
         {
             double levelSet0 = NodalLevelSets[edge.Nodes[0].ID];
             double levelSet1 = NodalLevelSets[edge.Nodes[1].ID];
             NaturalPoint node0 = edge.NodesNatural[0];
             NaturalPoint node1 = edge.NodesNatural[1];
 
-            if (levelSet0 * levelSet1 > 0.0) return new NaturalPoint[0]; // Edge is not intersected
-            else if (levelSet0 * levelSet1 < 0.0) // Edge is intersected but not at its nodes
+            if (levelSet0 * levelSet1 < 0.0) // Edge is intersected but not at its nodes
             {
                 // The intersection point between these nodes can be found using the linear interpolation, see 
                 // Sukumar 2001
@@ -245,29 +180,9 @@ namespace MGroup.XFEM.Geometry.LSM
                 double eta = node0.Eta + k * (node1.Eta - node0.Eta);
                 double zeta = node0.Zeta + k * (node1.Zeta - node0.Zeta);
 
-                return new NaturalPoint[] { new NaturalPoint(xi, eta, zeta) };
+                return new double[] { xi, eta, zeta };
             }
-            else
-            {
-                // The surface runs through one or both of the nodes.
-                if ((levelSet0 == 0) && (levelSet1 == 0))
-                {
-                    return new NaturalPoint[] { node0, node1 };
-                }
-                else if (levelSet0 == 0) return new NaturalPoint[] { node0 };
-                else/* (levelSet1 == 0)*/ return new NaturalPoint[] { node1 };
-            }
-        }
-
-        private SortedSet<NaturalPoint> IntersectFace(ElementFace face)
-        {
-            var intersections = new SortedSet<NaturalPoint>(new Point3DComparer<NaturalPoint>());
-            foreach (ElementEdge edge in face.Edges)
-            {
-                NaturalPoint[] edgeIntersections = IntersectEdge(edge);
-                intersections.UnionWith(edgeIntersections);
-            }
-            return intersections;
+            else return null;
         }
     }
 }

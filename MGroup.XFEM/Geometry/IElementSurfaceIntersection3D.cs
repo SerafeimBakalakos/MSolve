@@ -16,6 +16,6 @@ namespace MGroup.XFEM.Geometry
     /// </summary>
     public interface IElementSurfaceIntersection3D: IElementGeometryIntersection
     {
-        IntersectionMesh ApproximateGlobalCartesian();
+        IntersectionMesh3D ApproximateGlobalCartesian();
     }
 }

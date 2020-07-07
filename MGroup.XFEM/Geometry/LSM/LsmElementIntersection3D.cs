@@ -17,10 +17,10 @@ namespace MGroup.XFEM.Geometry.LSM
 {
     public class LsmElementIntersection3D : IElementSurfaceIntersection3D
     {
-        private readonly IntersectionMesh intersectionMeshNatural;
+        private readonly IntersectionMesh3D intersectionMeshNatural;
 
         public LsmElementIntersection3D(RelativePositionCurveElement relativePosition, IXFiniteElement3D element,
-            IntersectionMesh intersectionMeshNatural)
+            IntersectionMesh3D intersectionMeshNatural)
         {
             this.RelativePosition = relativePosition;
             this.Element = element;
@@ -31,19 +31,22 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IXFiniteElement3D Element { get; } //TODO: Perhaps this should be defined in the interface
 
-        public IntersectionMesh ApproximateGlobalCartesian()
+        public IntersectionMesh3D ApproximateGlobalCartesian()
         {
-            var meshCartesian = new IntersectionMesh();
-            IList<double[]> verticesNatural = intersectionMeshNatural.GetVerticesList();
-            foreach (double[] vertexNatural in verticesNatural)
+            var meshCartesian = new IntersectionMesh3D();
+            foreach (double[] vertexNatural in intersectionMeshNatural.Vertices)
             {
                 double[] vertexCartesian = Element.Interpolation.TransformNaturalToCartesian(
                     Element.Nodes, vertexNatural);
-                meshCartesian.AddVertex(vertexCartesian);
+                meshCartesian.Vertices.Add(vertexCartesian);
             }
-            meshCartesian.Cells = intersectionMeshNatural.Cells;
+            foreach ((CellType cellType, int[] connectivity) in intersectionMeshNatural.Cells)
+            {
+                meshCartesian.Cells.Add((cellType, connectivity));
+            }
             return meshCartesian;
         }
+
         //TODO: Perhaps a dedicated IBoundaryIntegration component is needed,
         //      along with dedicated concrete integrations for triangles, quads, etc
         public IReadOnlyList<GaussPoint> GetIntegrationPoints(int order)
@@ -59,7 +62,7 @@ namespace MGroup.XFEM.Geometry.LSM
             if (RelativePosition == RelativePositionCurveElement.Conforming) weightModifier = 0.5;
 
             var integrationPoints = new List<GaussPoint>();
-            IList<double[]> allVertices = intersectionMeshNatural.GetVerticesList();
+            IList<double[]> allVertices = intersectionMeshNatural.Vertices;
             foreach ((CellType cellType, int[] cellConnectivity) in intersectionMeshNatural.Cells)
             {
                 if (cellType == CellType.Tri3)
@@ -126,7 +129,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IList<double[]> GetPointsForTriangulation()
         {
-            return intersectionMeshNatural.GetVerticesList();
+            return intersectionMeshNatural.Vertices;
         }
 
         private TriangleQuadratureSymmetricGaussian ChooseQuadrature(int order)

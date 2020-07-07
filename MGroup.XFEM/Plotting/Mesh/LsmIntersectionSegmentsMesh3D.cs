@@ -24,8 +24,8 @@ namespace MGroup.XFEM.Plotting.Mesh
             foreach (LsmElementIntersection3D intersection in intersections)
             {
                 // Vertices of the intersection mesh
-                IntersectionMesh intersectionMesh = intersection.ApproximateGlobalCartesian();
-                IList<double[]> intersectionPoints = intersectionMesh.GetVerticesList();
+                IntersectionMesh3D intersectionMesh = intersection.ApproximateGlobalCartesian();
+                IList<double[]> intersectionPoints = intersectionMesh.Vertices;
                 var verticesOfIntersection = new List<VtkPoint>();
                 for (int v = 0; v < intersectionPoints.Count; ++v)
                 {

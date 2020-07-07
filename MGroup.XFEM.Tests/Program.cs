@@ -24,8 +24,8 @@ namespace MGroup.XFEM.Tests
             //ExampleUniformThickness2D.PlotGeometryAndEntities();
             //ExampleUniformThickness2D.PlotSolution();
 
-            ExampleUniformThickness3D.PlotGeometryAndEntities();
-            //ExampleUniformThickness3D.PlotSolution();
+            //ExampleUniformThickness3D.PlotGeometryAndEntities();
+            ExampleUniformThickness3D.PlotSolution();
         }
     }
 }

@@ -11,7 +11,7 @@ namespace MGroup.XFEM.Geometry
     {
         public RelativePositionCurveElement RelativePosition => RelativePositionCurveElement.Disjoint;
 
-        public IntersectionMesh ApproximateGlobalCartesian() => new IntersectionMesh();
+        public IntersectionMesh3D ApproximateGlobalCartesian() => new IntersectionMesh3D();
 
         public IReadOnlyList<GaussPoint> GetIntegrationPoints(int numPoints)
         {

@@ -62,6 +62,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
         public static void PlotGeometryAndEntities()
         {
             // Create physical model, LSM and phases
+            Console.WriteLine("Creating physical and geometric models");
             (XModel model, BiMaterialField materialField) = CreateModel();
             GeometricModel geometricModel = CreatePhases(model, materialField);
 
@@ -69,6 +70,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
 
             // Find and plot intersections between level set curves and elements
+            Console.WriteLine("Identifying interactions between physical and geometric models");
             geometricModel.InteractWithNodes();
             geometricModel.UnifyOverlappingPhases(true);
             PlotInclusionLevelSets(outputDirectory, "level_set_after_union", model, geometricModel);
@@ -112,6 +114,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
 
             // Enrichment
+            Console.WriteLine("Applying enrichments");
             var nodeEnricher = new NodeEnricherMultiphase(geometricModel, null);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
@@ -126,23 +129,26 @@ namespace MGroup.XFEM.Tests.EpoxyAg
         public static void PlotSolution()
         {
             // Create physical model, LSM and phases
+            Console.WriteLine("Creating physical and geometric models");
             (XModel model, BiMaterialField materialField) = CreateModel();
             GeometricModel geometricModel = CreatePhases(model, materialField);
 
             // Prepare for analysis
+            Console.WriteLine("Identifying interactions between physical and geometric models");
             geometricModel.InteractWithNodes();
             geometricModel.UnifyOverlappingPhases(true);
             geometricModel.InteractWithElements();
             geometricModel.FindConformingMesh();
-            model.UpdateMaterials();
-
 
             // Enrichment
+            Console.WriteLine("Applying enrichments");
             var nodeEnricher = new NodeEnricherMultiphase(geometricModel, null);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
+            model.UpdateMaterials();
 
             // Run analysis and plot temperature and heat flux
+            Console.WriteLine("Running XFEM analysis");
             IVectorView solution = Analysis.RunStaticAnalysis(model);
 
             // Plot temperature
