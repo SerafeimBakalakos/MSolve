@@ -36,27 +36,16 @@ namespace MGroup.XFEM.Entities
         //TODO: Perhaps I need a dedicated class for this
         public void FindConformingMesh()
         {
-            if (Dimension == 2)
+            IConformingTriangulator triangulator;
+            if (Dimension == 2) triangulator = new ConformingTriangulator2D();
+            else if (Dimension == 3) triangulator = new ConformingTriangulator3D();
+            else throw new NotImplementedException();
+
+            foreach (IXFiniteElement element in physicalModel.Elements)
             {
-                var triangulator = new ConformingTriangulator2D();
-                foreach (IXFiniteElement element in physicalModel.Elements)
-                {
-                    var element2D = (IXFiniteElement2D)element;
-                    var boundaries = element.PhaseIntersections.Values.Cast<IElementGeometryIntersection>();
-                    if (boundaries.Count() == 0) continue;
-                    element2D.ConformingSubtriangles = triangulator.FindConformingMesh(element, boundaries, MeshTolerance);
-                }
-            }
-            else if (Dimension == 3)
-            {
-                var triangulator = new ConformingTriangulator3D();
-                foreach (IXFiniteElement element in physicalModel.Elements)
-                {
-                    var element3D = (IXFiniteElement3D)element;
-                    var boundaries = element.PhaseIntersections.Values.Cast<IElementGeometryIntersection>();
-                    if (boundaries.Count() == 0) continue;
-                    element3D.ConformingSubtetrahedra = triangulator.FindConformingMesh(element, boundaries, MeshTolerance);
-                }
+                var boundaries = element.PhaseIntersections.Values.Cast<IElementGeometryIntersection>();
+                if (boundaries.Count() == 0) continue;
+                element.ConformingSubcells = triangulator.FindConformingMesh(element, boundaries, MeshTolerance);
             }
         }
 

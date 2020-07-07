@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
@@ -11,7 +12,7 @@ using MGroup.XFEM.Interpolation;
 //TODO: Perhaps it should also store it sign, store Gauss points and interpolate/extrapolate
 namespace MGroup.XFEM.Geometry.ConformingMesh
 {
-    public class ElementSubtetrahedron3D
+    public class ElementSubtetrahedron3D : IElementSubcell
     {
         //private readonly Tetrahedron3D tetraNatural;
 
@@ -25,6 +26,8 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             VerticesNatural[3] = new NaturalPoint(vertices[3][0], vertices[3][1], vertices[3][2]);
             //this.tetraNatural = tetraNatural;
         }
+
+        public CellType CellType => CellType.Tet4;
 
         public NaturalPoint[] VerticesNatural { get; }
 
@@ -40,13 +43,13 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             return new NaturalPoint(centroidXi / 4.0, centroidEta / 4.0, centroidZeta / 4.0);
         }
 
-        public (CartesianPoint centroid, double volume) FindCentroidAndVolumeCartesian(IXFiniteElement3D parentElement)
+        public (CartesianPoint centroid, double bulkSize) FindCentroidAndBulkSizeCartesian(IXFiniteElement parentElement)
         {
             IIsoparametricInterpolation interpolation = parentElement.Interpolation;
             if (interpolation == InterpolationTet4.UniqueInstance || interpolation == InterpolationHexa8.UniqueInstance)
             {
                 // The tetrahedron edges will also be linear in Cartesian coordinate system, for Tetra4 and Hexa8 elements 
-                CartesianPoint[] vertices = GetVerticesCartesian(parentElement);
+                CartesianPoint[] vertices = FindVerticesCartesian(parentElement);
 
                 var tetraCertesian = new Tetrahedron3D();
                 for (int v = 0; v < 4; ++v)
@@ -66,7 +69,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             }
         }
 
-        public CartesianPoint[] GetVerticesCartesian(IXFiniteElement3D parentElement)
+        public CartesianPoint[] FindVerticesCartesian(IXFiniteElement parentElement)
         {
             IIsoparametricInterpolation interpolation = parentElement.Interpolation;
             IReadOnlyList<XNode> nodes = parentElement.Nodes;

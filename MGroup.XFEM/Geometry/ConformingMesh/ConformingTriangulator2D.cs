@@ -16,18 +16,20 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
     /// <summary>
     /// Does not work correctly if an element is intersected by more than one curves, which also intersect each other.
     /// </summary>
-    public class ConformingTriangulator2D
+    public class ConformingTriangulator2D : IConformingTriangulator
     {
+        IElementSubcell[] IConformingTriangulator.FindConformingMesh(
+            IXFiniteElement element, IEnumerable<IElementGeometryIntersection> intersections, IMeshTolerance meshTolerance)
+            => FindConformingMesh(element, intersections, meshTolerance);
+
         public ElementSubtriangle2D[] FindConformingMesh(IXFiniteElement element, 
             IEnumerable<IElementGeometryIntersection> intersections, IMeshTolerance meshTolerance)
         {
-            var element2D = (IXFiniteElement2D)element;
-
             // Store the nodes and all intersection points in a set
             double tol = meshTolerance.CalcTolerance(element);
             var comparer = new Point2DComparer(tol);
             var nodes = new SortedSet<double[]>(comparer);
-            nodes.UnionWith(element2D.Interpolation.NodalNaturalCoordinates);
+            nodes.UnionWith(element.Interpolation.NodalNaturalCoordinates);
 
             // Store the nodes and all intersection points in a different set
             var triangleVertices = new SortedSet<double[]>(comparer);
@@ -59,7 +61,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             }
 
             var triangulator = new MIConvexHullTriangulator2D();
-            triangulator.MinTriangleArea = tol * element2D.CalcBulkSize();
+            triangulator.MinTriangleArea = tol * element.CalcBulkSize();
             IList<Triangle2D> delaunyTriangles = triangulator.CreateMesh(triangleVertices);
             var subtriangles = new ElementSubtriangle2D[delaunyTriangles.Count];
             for (int t = 0; t < delaunyTriangles.Count; ++t)

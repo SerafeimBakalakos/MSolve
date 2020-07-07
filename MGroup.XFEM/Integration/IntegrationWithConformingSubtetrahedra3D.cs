@@ -24,12 +24,11 @@ namespace MGroup.XFEM.Integration
         public IReadOnlyList<GaussPoint> GenerateIntegrationPoints(IXFiniteElement element)
         {
             // Standard elements
-            var element3D = (IXFiniteElement3D)element;
-            if (element3D.ConformingSubtetrahedra == null) return standardQuadrature.IntegrationPoints;
+            if (element.ConformingSubcells == null) return standardQuadrature.IntegrationPoints;
 
             // Create integration points for all subtriangles
             var integrationPoints = new List<GaussPoint>();
-            foreach (ElementSubtetrahedron3D tetra in element3D.ConformingSubtetrahedra)
+            foreach (ElementSubtetrahedron3D tetra in element.ConformingSubcells)
             {
                 integrationPoints.AddRange(GenerateIntegrationPointsOfSubtriangle(tetra));
             }

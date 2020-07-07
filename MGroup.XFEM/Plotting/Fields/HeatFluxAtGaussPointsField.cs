@@ -14,11 +14,11 @@ using MGroup.XFEM.Materials;
 //      is not explicitly stored as in elements.
 namespace MGroup.XFEM.Plotting.Fields
 {
-    public class HeatFluxAtGaussPointsField2D
+    public class HeatFluxAtGaussPointsField
     {
         private readonly XModel model;
 
-        public HeatFluxAtGaussPointsField2D(XModel model)
+        public HeatFluxAtGaussPointsField(XModel model)
         {
             this.model = model;
         }
@@ -32,10 +32,6 @@ namespace MGroup.XFEM.Plotting.Fields
             var result = new Dictionary<double[], double[]>();
             foreach (IXFiniteElement element in model.Elements)
             {
-                var element2D = (IXFiniteElement2D)element;
-                //#region debug
-                //if (element.PhaseIntersections.Count >= 1) continue;
-                //#endregion
                 (IReadOnlyList<GaussPoint> gaussPoints, IReadOnlyList<ThermalMaterial> materials)
                     = element.GetMaterialsForBulkIntegration();
                 double[] nodalTemperatures = Utilities.ExtractNodalTemperatures(element, subdomain, solution);
@@ -43,7 +39,7 @@ namespace MGroup.XFEM.Plotting.Fields
                 {
                     GaussPoint pointNatural = gaussPoints[i];
                     EvalInterpolation evalInterpolation =
-                        element2D.Interpolation.EvaluateAllAt(element.Nodes, pointNatural.Coordinates);
+                        element.Interpolation.EvaluateAllAt(element.Nodes, pointNatural.Coordinates);
                     double[] coordsCartesian = 
                         Utilities.TransformNaturalToCartesian(evalInterpolation.ShapeFunctions, element.Nodes);
                     var point = new XPoint();
@@ -54,8 +50,10 @@ namespace MGroup.XFEM.Plotting.Fields
                         Utilities.CalcTemperatureGradientAt(point, evalInterpolation, element, nodalTemperatures);
 
                     double conductivity = materials[i].ThermalConductivity;
-                    gradientTemperature[0] *= -conductivity;
-                    gradientTemperature[1] *= -conductivity;
+                    for (int d = 0; d < gradientTemperature.Length; d++)
+                    {
+                        gradientTemperature[d] *= -conductivity;
+                    }
                     result[coordsCartesian] = gradientTemperature;
                 }
             }

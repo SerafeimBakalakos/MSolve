@@ -23,7 +23,7 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         private readonly IntersectionMesh intersectionMeshNatural;
 
-        public LsmElementIntersection3D(RelativePositionCurveElement relativePosition, IXFiniteElement3D element,
+        public LsmElementIntersection3D(RelativePositionCurveElement relativePosition, IXFiniteElement element,
             IntersectionMesh intersectionMeshNatural)
         {
             this.RelativePosition = relativePosition;

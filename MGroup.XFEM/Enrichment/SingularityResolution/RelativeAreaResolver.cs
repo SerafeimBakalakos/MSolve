@@ -13,12 +13,12 @@ using MGroup.XFEM.Geometry.Primitives;
 //      ElementSubtriangle should store that data.
 namespace MGroup.XFEM.Enrichment.SingularityResolution
 {
-    public class RelativeAreaResolver2D : ISingularityResolver
+    public class RelativeAreaResolver : ISingularityResolver
     {
         private readonly GeometricModel geometricModel;
         private readonly double relativeAreaTolerance;
 
-        public RelativeAreaResolver2D(GeometricModel geometricModel, double relativeAreaTolerance = 1E-4)
+        public RelativeAreaResolver(GeometricModel geometricModel, double relativeAreaTolerance = 1E-4)
         {
             this.geometricModel = geometricModel;
             this.relativeAreaTolerance = relativeAreaTolerance;
@@ -70,30 +70,14 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
             return nodesToRemove;
         }
 
-        private NaturalPoint FindElementCentroid2D(IXFiniteElement element)
-        {
-            var element2D = (IXFiniteElement2D)element;
-            double centroidXi = 0.0, centroidEta = 0.0;
-            IReadOnlyList<double[]> nodes = element2D.Interpolation.NodalNaturalCoordinates;
-            foreach (double[] node in nodes)
-            {
-                centroidXi += node[0];
-                centroidEta += node[1];
-            }
-            centroidXi /= nodes.Count;
-            centroidEta /= nodes.Count;
-            return new NaturalPoint(centroidXi, centroidEta);
-        }
-
         // TODO: I should really cache these somehow, so that they can be accessible from the crack object. They are used at various points.
         private (double totalArea1, double totalArea2) FindSignedAreasOfElement(IXFiniteElement element, 
             StepEnrichment enrichment)
         {
-            var element2D = (IXFiniteElement2D)element;
             IPhase phase1 = enrichment.Phases[0];
             IPhase phase2 = enrichment.Phases[1];
-            double totalArea1 = 0.0;
-            double totalArea2 = 0.0;
+            double totalBulkSize1 = 0.0;
+            double totalBulkSize2 = 0.0;
 
             // Determine if the element is intersected by the boundary of this step enrichment
             bool isIntersectedByBoundary = false;
@@ -108,12 +92,12 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
 
             if (isIntersectedByBoundary)
             {
-                ElementSubtriangle2D[] subtriangles = element2D.ConformingSubtriangles;
+                IElementSubcell[] subcells = element.ConformingSubcells;
 
                 // We assume that these triangles will be in one of the 2 phases of the boundary. This does not hold if the 
                 // element is intersected by 2 or more boundaries. However in that case, its nodes would be enriched with
                 // junction function, not step function.
-                foreach (ElementSubtriangle2D triangle in subtriangles)
+                foreach (IElementSubcell subcell in subcells)
                 {
                     // Calculate their areas and on which side they lie, based on their centroids
 
@@ -121,33 +105,33 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
                     //(CartesianPoint centroid, double area) = triangle.FindCentroidAndAreaCartesian(element2D);
                     //IPhase phase = GeometricModel.FindPhaseAt(centroid, element);
 
-                    NaturalPoint centroidNatural = triangle.FindCentroidNatural();
-                    (CartesianPoint centroidCartesian, double area) = triangle.FindCentroidAndAreaCartesian(element2D);
+                    NaturalPoint centroidNatural = subcell.FindCentroidNatural();
+                    (CartesianPoint centroidCartesian, double bulkSize) = subcell.FindCentroidAndBulkSizeCartesian(element);
                     XPoint centroid = new XPoint();
                     centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural.Coordinates;
                     element.FindPhaseAt(centroid);
 
-                    if (centroid.Phase == phase1) totalArea1 += area;
+                    if (centroid.Phase == phase1) totalBulkSize1 += bulkSize;
                     else
                     {
                         Debug.Assert(centroid.Phase == phase2, "Found subtriangle whose centroid lies on a discontinuity");
-                        totalArea2 += area;
+                        totalBulkSize2 += bulkSize;
                     }
                 }
             }
             else
             {
-                // Calculate the are of the whole element and on which side it lies
-                double area = ((IXFiniteElement2D)element).CalcBulkSize();
+                // Calculate the area/volume of the whole element and on which side it lies
+                double bulkSize = element.CalcBulkSize();
                 
                 if (element.Phases.Count == 1)
                 {
                     IPhase phase = element.Phases.First();
-                    if (phase == phase1) totalArea1 += area;
+                    if (phase == phase1) totalBulkSize1 += bulkSize;
                     else
                     {
                         Debug.Assert(phase == phase2, "Found element without a surrounding phase");
-                        totalArea2 += area;
+                        totalBulkSize2 += bulkSize;
                     }
                 }
                 else 
@@ -171,13 +155,13 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
                     }
 
                     Debug.Assert(phase != null);
-                    if (phase == phase1) totalArea1 += area;
-                    else totalArea2 += area;
+                    if (phase == phase1) totalBulkSize1 += bulkSize;
+                    else totalBulkSize2 += bulkSize;
                 }
 
             }
 
-            return (totalArea1, totalArea2);
+            return (totalBulkSize1, totalBulkSize2);
         }
     }
 }

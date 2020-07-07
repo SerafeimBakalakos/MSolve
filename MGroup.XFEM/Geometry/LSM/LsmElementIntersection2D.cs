@@ -19,7 +19,7 @@ namespace MGroup.XFEM.Geometry.LSM
         private readonly double[] startNatural;
         private readonly double[] endNatural;
 
-        public LsmElementIntersection2D(RelativePositionCurveElement relativePosition, IXFiniteElement2D element,
+        public LsmElementIntersection2D(RelativePositionCurveElement relativePosition, IXFiniteElement element,
             double[] startNatural, double[] endNatural)
         {
             if (relativePosition == RelativePositionCurveElement.Disjoint)

@@ -32,7 +32,6 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IElementGeometryIntersection Intersect(IXFiniteElement element)
         {
-            var element3D = (IXFiniteElement3D)element;
             RelativePositionCurveElement position = FindRelativePosition(element);
             if (position == RelativePositionCurveElement.Disjoint)
             {
@@ -49,14 +48,14 @@ namespace MGroup.XFEM.Geometry.LSM
                 }
 
                 // Find which face has exactly these nodes
-                foreach (ElementFace face in element3D.Faces)
+                foreach (ElementFace face in element.Faces)
                 {
                     if (zeroNodes.SetEquals(face.Nodes))
                     {
                         // Intersection segment is a single cell with the same shape, nodes, etc as the face.
                         List<double[]> nodesOfFace = face.NodesNatural.Select(p => p.Coordinates).ToList();
                         var intersectionMesh = IntersectionMesh.CreateSingleCellMesh(face.CellType, nodesOfFace);
-                        return new LsmElementIntersection3D(RelativePositionCurveElement.Conforming, element3D, intersectionMesh);
+                        return new LsmElementIntersection3D(RelativePositionCurveElement.Conforming, element, intersectionMesh);
                     }
                 }
 
@@ -94,7 +93,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
                 // Create mesh
                 var intersectionMesh = IntersectionMesh.CreateMultiCellMesh3D(intersectionPoints);
-                return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element3D, intersectionMesh);
+                return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element, intersectionMesh);
             }
         }
 

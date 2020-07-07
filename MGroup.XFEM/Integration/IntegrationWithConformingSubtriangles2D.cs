@@ -26,12 +26,11 @@ namespace MGroup.XFEM.Integration
         public IReadOnlyList<GaussPoint> GenerateIntegrationPoints(IXFiniteElement element)
         {
             // Standard elements
-            var element2D = (IXFiniteElement2D)element;
-            if (element2D.ConformingSubtriangles == null) return standardQuadrature.IntegrationPoints;
+            if (element.ConformingSubcells == null) return standardQuadrature.IntegrationPoints;
 
             // Create integration points for all subtriangles
             var integrationPoints = new List<GaussPoint>();
-            foreach (ElementSubtriangle2D triangle in element2D.ConformingSubtriangles)
+            foreach (ElementSubtriangle2D triangle in element.ConformingSubcells)
             {
                 integrationPoints.AddRange(GenerateIntegrationPointsOfSubtriangle(triangle));
             }

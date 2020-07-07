@@ -49,15 +49,7 @@ namespace MGroup.XFEM.Elements
                     throw new ArgumentException("Either the natural coordinates of the point or"
                         + " the shape functions of the element evaluated at it must be provided.");
                 }
-
-                if (element is IXFiniteElement2D element2D)
-                {
-                    point.ShapeFunctions = element2D.Interpolation.EvaluateFunctionsAt(natural);
-                }
-                else if (element is IXFiniteElement3D element3D)
-                {
-                    point.ShapeFunctions = element3D.Interpolation.EvaluateFunctionsAt(natural);
-                }
+                point.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(natural);
             }
         }
     }

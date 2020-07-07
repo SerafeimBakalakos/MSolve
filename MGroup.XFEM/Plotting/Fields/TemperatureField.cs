@@ -14,12 +14,12 @@ using MGroup.XFEM.Plotting.Mesh;
 
 namespace MGroup.XFEM.Plotting.Fields
 {
-    public class TemperatureField2D
+    public class TemperatureField
     {
         private readonly XModel model;
-        private readonly ConformingOutputMesh2D outMesh;
+        private readonly ConformingOutputMesh outMesh;
 
-        public TemperatureField2D(XModel model, ConformingOutputMesh2D outMesh)
+        public TemperatureField(XModel model, ConformingOutputMesh outMesh)
         {
             this.model = model;
             this.outMesh = outMesh;
@@ -31,11 +31,10 @@ namespace MGroup.XFEM.Plotting.Fields
             XSubdomain subdomain = model.Subdomains.First().Value;
 
             var outTemperatures = new Dictionary<VtkPoint, double>();
-            foreach (IXFiniteElement e in subdomain.Elements)
+            foreach (IXFiniteElement element in subdomain.Elements)
             {
-                var element = (IXFiniteElement2D)e;
 
-                IEnumerable<ConformingOutputMesh2D.Subtriangle> subtriangles = outMesh.GetSubtrianglesForOriginal(element);
+                IEnumerable<ConformingOutputMesh.Subcell> subtriangles = outMesh.GetSubcellsForOriginal(element);
                 if (subtriangles.Count() == 0)
                 {
                     double[] nodalTemperatures = Utilities.ExtractNodalTemperaturesStandard(element, subdomain, systemSolution);
@@ -46,17 +45,17 @@ namespace MGroup.XFEM.Plotting.Fields
                 else
                 {
                     double[] nodalTemperatures = Utilities.ExtractNodalTemperatures(element, subdomain, systemSolution);
-                    foreach (ConformingOutputMesh2D.Subtriangle subtriangle in subtriangles)
+                    foreach (ConformingOutputMesh.Subcell subcell in subtriangles)
                     {
-                        Debug.Assert(subtriangle.OutVertices.Count == 3); //TODO: Not sure what happens for 2nd order elements
+                        Debug.Assert(subcell.OutVertices.Count == 3 || subcell.OutVertices.Count == 4); //TODO: Not sure what happens for 2nd order elements
 
                         // We must interpolate the nodal values, taking into account the enrichements.
                         double[] temperatureAtVertices = CalcTemperatureFieldInSubtriangle(element,
-                            subtriangle.OriginalTriangle, nodalTemperatures);
+                            subcell.OriginalSubcell, nodalTemperatures);
 
-                        for (int v = 0; v < 3; ++v)
+                        for (int v = 0; v < subcell.OutVertices.Count; ++v)
                         {
-                            VtkPoint vertexOut = subtriangle.OutVertices[v];
+                            VtkPoint vertexOut = subcell.OutVertices[v];
                             outTemperatures[vertexOut] = temperatureAtVertices[v];
                         }
                     }
@@ -65,19 +64,19 @@ namespace MGroup.XFEM.Plotting.Fields
             return outMesh.OutVertices.Select(v => outTemperatures[v]);
         }
 
-        private double[] CalcTemperatureFieldInSubtriangle(IXFiniteElement2D element, ElementSubtriangle2D subtriangle,
+        private double[] CalcTemperatureFieldInSubtriangle(IXFiniteElement element, IElementSubcell subcell,
             double[] nodalTemperatures)
         {
             // Evaluate shape functions
-            var shapeFunctionsAtVertices = new List<double[]>(subtriangle.VerticesNatural.Length);
-            for (int v = 0; v < subtriangle.VerticesNatural.Length; ++v)
+            var shapeFunctionsAtVertices = new List<double[]>(subcell.VerticesNatural.Length);
+            for (int v = 0; v < subcell.VerticesNatural.Length; ++v)
             {
-                NaturalPoint vertex = subtriangle.VerticesNatural[v];
+                NaturalPoint vertex = subcell.VerticesNatural[v];
                 shapeFunctionsAtVertices.Add(element.Interpolation.EvaluateFunctionsAt(vertex.Coordinates));
             }
 
             // Locate centroid
-            NaturalPoint centroidNatural = subtriangle.FindCentroidNatural();
+            NaturalPoint centroidNatural = subcell.FindCentroidNatural();
             var centroid = new XPoint();
             centroid.Element = element;
             centroid.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(centroidNatural.Coordinates);
@@ -96,8 +95,8 @@ namespace MGroup.XFEM.Plotting.Fields
             }
 
             // t(x) = sum_over_nodes(Ni(x) * t_i) + sum_over_enriched_nodes( N_j(x) * (psi(x) - psi_j)*a_j )
-            var temperaturesAtVertices = new double[subtriangle.VerticesNatural.Length];
-            for (int v = 0; v < subtriangle.VerticesNatural.Length; ++v)
+            var temperaturesAtVertices = new double[subcell.VerticesNatural.Length];
+            for (int v = 0; v < subcell.VerticesNatural.Length; ++v)
             {
                 double[] N = shapeFunctionsAtVertices[v];
                 double sum = 0.0;

@@ -16,18 +16,20 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
     /// <summary>
     /// Does not work correctly if an element is intersected by more than one curves, which also intersect each other.
     /// </summary>
-    public class ConformingTriangulator3D
+    public class ConformingTriangulator3D : IConformingTriangulator
     {
+        IElementSubcell[] IConformingTriangulator.FindConformingMesh(
+            IXFiniteElement element, IEnumerable<IElementGeometryIntersection> intersections, IMeshTolerance meshTolerance)
+            => FindConformingMesh(element, intersections, meshTolerance); 
+
         public ElementSubtetrahedron3D[] FindConformingMesh(IXFiniteElement element, 
             IEnumerable<IElementGeometryIntersection> intersections, IMeshTolerance meshTolerance)
         {
-            var element3D = (IXFiniteElement3D)element;
-
             // Store the nodes and all intersection points in a set
             double tol = meshTolerance.CalcTolerance(element);
             var comparer = new Point3DComparer(tol);
             var nodes = new SortedSet<double[]>(comparer);
-            nodes.UnionWith(element3D.Interpolation.NodalNaturalCoordinates);
+            nodes.UnionWith(element.Interpolation.NodalNaturalCoordinates);
 
             // Store the nodes and all intersection points in a different set
             var tetraVertices = new SortedSet<double[]>(comparer);
@@ -72,7 +74,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             }
 
             var triangulator = new MIConvexHullTriangulator3D();
-            triangulator.MinTetrahedronVolume = tol * element3D.CalcBulkSize();
+            triangulator.MinTetrahedronVolume = tol * element.CalcBulkSize();
             IList<Tetrahedron3D> delaunyTetrahedra = triangulator.CreateMesh(tetraVertices);
             var subtetrahedra = new ElementSubtetrahedron3D[delaunyTetrahedra.Count];
             for (int t = 0; t < delaunyTetrahedra.Count; ++t)

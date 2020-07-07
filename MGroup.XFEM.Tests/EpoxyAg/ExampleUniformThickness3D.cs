@@ -67,33 +67,34 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             GeometricModel geometricModel = CreatePhases(model, materialField);
 
             // Plot original mesh and level sets
-            PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
+            Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
 
             // Find and plot intersections between level set curves and elements
             Console.WriteLine("Identifying interactions between physical and geometric models");
             geometricModel.InteractWithNodes();
             geometricModel.UnifyOverlappingPhases(true);
-            PlotInclusionLevelSets(outputDirectory, "level_set_after_union", model, geometricModel);
+            Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_after_union", model, geometricModel);
 
             geometricModel.InteractWithElements();
             geometricModel.FindConformingMesh();
 
             // Plot phases
-            var phasePlotter = new PhasePlotter3D(model, geometricModel, defaultPhaseID);
+            var phasePlotter = new PhasePlotter(model, geometricModel, defaultPhaseID);
             phasePlotter.PlotNodes(pathPhasesOfNodes);
 
             //TODO: The next intersections and conforming mesh should have been taken care by the geometric model. 
             //      Read them from there.
-            Dictionary<IXFiniteElement, List<LsmElementIntersection3D>> elementIntersections
-                = CalcIntersections(model, geometricModel);
-            var allIntersections = new List<LsmElementIntersection3D>();
+            Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> elementIntersections
+                = Utilities.Plotting.CalcIntersections(model, geometricModel);
+            var allIntersections = new List<IElementGeometryIntersection>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
             var intersectionPlotter = new LsmElementIntersectionsPlotter();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
-            Dictionary<IXFiniteElement, ElementSubtetrahedron3D[]> triangulation = CreateConformingMesh(elementIntersections);
-            var conformingMesh = new ConformingOutputMesh3D(model.Nodes, model.Elements, triangulation);
+            Dictionary<IXFiniteElement, IElementSubcell[]> triangulation =
+                Utilities.Plotting.CreateConformingMesh(3, elementIntersections);
+            var conformingMesh = new ConformingOutputMesh(model.Nodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathConformingMesh))
             {
                 writer.WriteMesh(conformingMesh);
@@ -107,7 +108,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             {
                 if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
             }
-            var integrationPlotter = new IntegrationPlotter3D(model);
+            var integrationPlotter = new IntegrationPlotter(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
 
             // Plot boundary integration points
@@ -163,19 +164,20 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
             }
 
-            Dictionary<IXFiniteElement, List<LsmElementIntersection3D>> elementIntersections
-                = CalcIntersections(model, geometricModel);
-            Dictionary<IXFiniteElement, ElementSubtetrahedron3D[]> triangulation = CreateConformingMesh(elementIntersections);
-            var conformingMesh = new ConformingOutputMesh3D(model.Nodes, model.Elements, triangulation);
+            Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> elementIntersections
+                = Utilities.Plotting.CalcIntersections(model, geometricModel);
+            Dictionary<IXFiniteElement, IElementSubcell[]> triangulation =
+                Utilities.Plotting.CreateConformingMesh(3, elementIntersections);
+            var conformingMesh = new ConformingOutputMesh(model.Nodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathTemperatureField))
             {
-                var temperatureField = new TemperatureField3D(model, conformingMesh);
+                var temperatureField = new TemperatureField(model, conformingMesh);
                 writer.WriteMesh(conformingMesh);
                 writer.WriteScalarField("temperature", conformingMesh, temperatureField.CalcValuesAtVertices(solution));
             }
             using (var writer = new VtkPointWriter(pathHeatFluxAtGPs))
             {
-                var fluxField = new HeatFluxAtGaussPointsField3D(model);
+                var fluxField = new HeatFluxAtGaussPointsField(model);
                 writer.WriteVectorField("heat_flux", fluxField.CalcValuesAtVertices(solution));
             }
         }
@@ -197,46 +199,6 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             return preprocessor.GeometricModel;
         }
 
-        private static Dictionary<IXFiniteElement, List<LsmElementIntersection3D>> CalcIntersections(
-            XModel model, GeometricModel geometricModel)
-        {
-            SimpleLsm3D[] surfaces = FindCurvesOf(geometricModel).Values.ToArray();
-            var intersections = new Dictionary<IXFiniteElement, List<LsmElementIntersection3D>>();
-            foreach (IXFiniteElement element in model.Elements)
-            {
-                var element3D = (IXFiniteElement3D)element;
-                var elementIntersections = new List<LsmElementIntersection3D>();
-                foreach (IImplicitGeometry surface in surfaces)
-                {
-                    IElementGeometryIntersection intersection = surface.Intersect(element);
-                    if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
-                    {
-                        element3D.Intersections.Add(intersection);
-                        elementIntersections.Add((LsmElementIntersection3D)intersection);
-                    }
-                }
-                if (elementIntersections.Count > 0) intersections.Add(element, elementIntersections);
-            }
-            return intersections;
-        }
-
-        private static Dictionary<IXFiniteElement, ElementSubtetrahedron3D[]> CreateConformingMesh(
-            Dictionary<IXFiniteElement, List<LsmElementIntersection3D>> intersections)
-        {
-            var tolerance = new ArbitrarySideMeshTolerance();
-            var triangulator = new ConformingTriangulator3D();
-            var conformingMesh = new Dictionary<IXFiniteElement, ElementSubtetrahedron3D[]>();
-            foreach (IXFiniteElement element in intersections.Keys)
-            {
-                var element3D = (IXFiniteElement3D)element;
-                List<LsmElementIntersection3D> elementIntersections = intersections[element];
-                ElementSubtetrahedron3D[] subtetra = triangulator.FindConformingMesh(element, elementIntersections, tolerance);
-                conformingMesh[element] = subtetra;
-                element3D.ConformingSubtetrahedra = subtetra;
-            }
-            return conformingMesh;
-        }
-
         private static (XModel, BiMaterialField) CreateModel()
         {
             // Materials
@@ -246,39 +208,6 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
             return (Models.CreateHexa8Model(minCoords, maxCoords, numElements,
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField), materialField);
-        }
-
-        private static Dictionary<int, SimpleLsm3D> FindCurvesOf(GeometricModel geometricModel)
-        {
-            var lsmCurves = new Dictionary<int, SimpleLsm3D>();
-            foreach (IPhase phase in geometricModel.Phases)
-            {
-                if (phase is DefaultPhase) continue;
-                Debug.Assert(phase.ExternalBoundaries.Count == 1);
-                lsmCurves[phase.ID] = (SimpleLsm3D)(phase.ExternalBoundaries[0].Geometry);
-            }
-            return lsmCurves;
-        }
-
-        private static void PlotInclusionLevelSets(string directoryPath, string vtkFilenamePrefix,
-            XModel model, GeometricModel geometricModel)
-        {
-            Dictionary<int, SimpleLsm3D> lsmCurves = FindCurvesOf(geometricModel);
-            foreach (var pair in lsmCurves)
-            {
-                int phaseId = pair.Key;
-                SimpleLsm3D geometry = pair.Value;
-                directoryPath = directoryPath.Trim('\\');
-                string suffix = (lsmCurves.Count == 1) ? "" : String.Format("{0:000}", phaseId);
-                string file = $"{directoryPath}\\{vtkFilenamePrefix}{suffix}.vtk";
-                using (var writer = new VtkFileWriter(file))
-                {
-                    var levelSetField = new LevelSetField(model, geometry);
-                    writer.WriteMesh(levelSetField.Mesh);
-                    writer.WriteScalarField($"inclusion{suffix}_level_set",
-                        levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
-                }
-            }
         }
     }
 }

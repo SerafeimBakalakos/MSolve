@@ -25,7 +25,7 @@ using MGroup.XFEM.Materials;
 //TODO: Bstd or Benr assume different order of the shape function gradient. Which is the correct one?
 namespace MGroup.XFEM.Elements
 {
-    public class XThermalElement2D : IXFiniteElement2D
+    public class XThermalElement2D : IXFiniteElement
     {
         private readonly int boundaryIntegrationOrder;
         private readonly IElementGeometry elementGeometry;
@@ -84,7 +84,7 @@ namespace MGroup.XFEM.Elements
 
         public CellType CellType => Interpolation.CellType;
 
-        public ElementSubtriangle2D[] ConformingSubtriangles { get; set; }
+        public IElementSubcell[] ConformingSubcells { get; set; }
 
         public IElementDofEnumerator DofEnumerator { get; set; } = new GenericDofEnumerator();
 

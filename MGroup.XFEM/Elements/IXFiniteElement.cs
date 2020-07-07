@@ -4,6 +4,7 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
+using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Integration;
@@ -15,6 +16,11 @@ namespace MGroup.XFEM.Elements
 {
     public interface IXFiniteElement : IElement, IElementType, ICell<XNode>
     {
+        /// <summary>
+        /// Will be null for elements not intersected by any interfaces
+        /// </summary>
+        IElementSubcell[] ConformingSubcells { get; set; }
+
         ElementEdge[] Edges { get; }
 
         ElementFace[] Faces { get; }

@@ -76,16 +76,17 @@ namespace MGroup.XFEM.Tests.Plotting
             PlotInclusionLevelSets(outputDirectory, "level_set", model, lsmCurves);
 
             // Plot intersections between level set curves and elements
-            Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> elementIntersections 
-                = CalcIntersections(model, lsmCurves);
-            var allIntersections = new List<LsmElementIntersection2D>();
+            Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> elementIntersections 
+                = Utilities.Plotting.CalcIntersections(model, lsmCurves);
+            var allIntersections = new List<IElementGeometryIntersection>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
             var intersectionPlotter = new LsmElementIntersectionsPlotter();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
-            Dictionary<IXFiniteElement, ElementSubtriangle2D[]> triangulation = CreateConformingMesh(elementIntersections);
-            var conformingMesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, triangulation);
+            Dictionary<IXFiniteElement, IElementSubcell[]> triangulation = 
+                Utilities.Plotting.CreateConformingMesh(2, elementIntersections);
+            var conformingMesh = new ConformingOutputMesh(model.Nodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathConformingMesh))
             {
                 writer.WriteMesh(conformingMesh);
@@ -98,7 +99,7 @@ namespace MGroup.XFEM.Tests.Plotting
             {
                 if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
             }
-            var integrationPlotter = new IntegrationPlotter2D(model);
+            var integrationPlotter = new IntegrationPlotter(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
 
             // Plot boundary integration points
@@ -122,16 +123,17 @@ namespace MGroup.XFEM.Tests.Plotting
 
             //TODO: The next intersections and conforming mesh should have been taken care by the geometric model. 
             //      Read them from there.
-            Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> elementIntersections
-                = CalcIntersections(model, lsmCurves);
-            var allIntersections = new List<LsmElementIntersection2D>();
+            Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> elementIntersections
+                 = Utilities.Plotting.CalcIntersections(model, lsmCurves);
+            var allIntersections = new List<IElementGeometryIntersection>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
             var intersectionPlotter = new LsmElementIntersectionsPlotter();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
-            Dictionary<IXFiniteElement, ElementSubtriangle2D[]> triangulation = CreateConformingMesh(elementIntersections);
-            var conformingMesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, triangulation);
+            Dictionary<IXFiniteElement, IElementSubcell[]> triangulation =
+                Utilities.Plotting.CreateConformingMesh(2, elementIntersections);
+            var conformingMesh = new ConformingOutputMesh(model.Nodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathConformingMesh))
             {
                 writer.WriteMesh(conformingMesh);
@@ -144,20 +146,20 @@ namespace MGroup.XFEM.Tests.Plotting
             {
                 if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
             }
-            var integrationPlotter = new IntegrationPlotter2D(model);
+            var integrationPlotter = new IntegrationPlotter(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
 
             // Plot boundary integration points
             integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
 
             // Plot phases
-            var phasePlotter = new PhasePlotter2D(model, geometricModel, defaultPhaseID);
+            var phasePlotter = new PhasePlotter(model, geometricModel, defaultPhaseID);
             phasePlotter.PlotNodes(pathPhasesOfNodes);
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
 
             // Enrichment
             ISingularityResolver singularityResolver 
-                = new RelativeAreaResolver2D(geometricModel, singularityRelativeAreaTolerance);
+                = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
             var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
@@ -186,23 +188,24 @@ namespace MGroup.XFEM.Tests.Plotting
 
             //TODO: The next intersections and conforming mesh should have been taken care by the geometric model. 
             //      Read them from there.
-            Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> elementIntersections
-                = CalcIntersections(model, lsmCurves);
-            var allIntersections = new List<LsmElementIntersection2D>();
+            Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> elementIntersections
+                = Utilities.Plotting.CalcIntersections(model, lsmCurves);
+            var allIntersections = new List<IElementGeometryIntersection>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
             var intersectionPlotter = new LsmElementIntersectionsPlotter();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
-            Dictionary<IXFiniteElement, ElementSubtriangle2D[]> triangulation = CreateConformingMesh(elementIntersections);
-            var conformingMesh = new ConformingOutputMesh2D(model.Nodes, model.Elements, triangulation);
+            Dictionary<IXFiniteElement, IElementSubcell[]> triangulation =
+                Utilities.Plotting.CreateConformingMesh(2, elementIntersections);
+            var conformingMesh = new ConformingOutputMesh(model.Nodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathConformingMesh))
             {
                 writer.WriteMesh(conformingMesh);
             }
 
             // Plot phases
-            var phasePlotter = new PhasePlotter2D(model, geometricModel, defaultPhaseID);
+            var phasePlotter = new PhasePlotter(model, geometricModel, defaultPhaseID);
             phasePlotter.PlotNodes(pathPhasesOfNodes);
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
 
@@ -214,7 +217,7 @@ namespace MGroup.XFEM.Tests.Plotting
             {
                 if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
             }
-            var integrationPlotter = new IntegrationPlotter2D(model);
+            var integrationPlotter = new IntegrationPlotter(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
 
             // Plot boundary integration points
@@ -222,7 +225,7 @@ namespace MGroup.XFEM.Tests.Plotting
 
             // Enrichment
             ISingularityResolver singularityResolver
-                = new RelativeAreaResolver2D(geometricModel, singularityRelativeAreaTolerance);
+                = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
             var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
@@ -248,55 +251,17 @@ namespace MGroup.XFEM.Tests.Plotting
             }
             using (var writer = new VtkFileWriter(pathTemperatureField))
             {
-                var temperatureField = new TemperatureField2D(model, conformingMesh);
+                var temperatureField = new TemperatureField(model, conformingMesh);
                 writer.WriteMesh(conformingMesh);
                 writer.WriteScalarField("temperature", conformingMesh, temperatureField.CalcValuesAtVertices(solution));
             }
             using (var writer = new VtkPointWriter(pathHeatFluxAtGPs))
             {
-                var fluxField = new HeatFluxAtGaussPointsField2D(model);
+                var fluxField = new HeatFluxAtGaussPointsField(model);
                 writer.WriteVectorField("heat_flux", fluxField.CalcValuesAtVertices(solution));
             }
         }
-
-        private static Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> CalcIntersections(
-            XModel model, List<SimpleLsm2D> curves)
-        {
-            var intersections = new Dictionary<IXFiniteElement, List<LsmElementIntersection2D>>();
-            foreach (IXFiniteElement element in model.Elements)
-            {
-                var element2D = (IXFiniteElement2D)element;
-                var elementIntersections = new List<LsmElementIntersection2D>();
-                foreach (IImplicitGeometry curve in curves)
-                {
-                    IElementGeometryIntersection intersection = curve.Intersect(element);
-                    if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
-                    {
-                        element2D.Intersections.Add(intersection);
-                        elementIntersections.Add((LsmElementIntersection2D)intersection);
-                    }
-                }
-                if (elementIntersections.Count > 0) intersections.Add(element, elementIntersections);
-            }
-            return intersections;
-        }
-
-        private static Dictionary<IXFiniteElement, ElementSubtriangle2D[]> CreateConformingMesh(
-            Dictionary<IXFiniteElement, List<LsmElementIntersection2D>> intersections)
-        {
-            var tolerance = new ArbitrarySideMeshTolerance();
-            var triangulator = new ConformingTriangulator2D();
-            var conformingMesh = new Dictionary<IXFiniteElement, ElementSubtriangle2D[]>();
-            foreach (IXFiniteElement element in intersections.Keys)
-            {
-                var element2D = (IXFiniteElement2D)element;
-                List<LsmElementIntersection2D> elementIntersections = intersections[element];
-                ElementSubtriangle2D[] subtriangles = triangulator.FindConformingMesh(element, elementIntersections, tolerance);
-                conformingMesh[element] = subtriangles;
-                element2D.ConformingSubtriangles = subtriangles;
-            }
-            return conformingMesh;
-        }
+        
 
         private static XModel CreateModel()
         {

@@ -12,7 +12,7 @@ using MGroup.XFEM.Plotting.Mesh;
 
 namespace MGroup.XFEM.Plotting.Writers
 {
-    public class PhasePlotter3D
+    public class PhasePlotter
     {
         public const string vtkReaderVersion = "4.1";
 
@@ -21,7 +21,7 @@ namespace MGroup.XFEM.Plotting.Writers
         private readonly GeometricModel geometricModel;
         private readonly XModel physicalModel;
 
-        public PhasePlotter3D(XModel physicalModel, GeometricModel geometricModel, int defaultPhaseID, 
+        public PhasePlotter(XModel physicalModel, GeometricModel geometricModel, int defaultPhaseID, 
             double colorForDefaultPhase = 0.0)
         {
             this.physicalModel = physicalModel;
@@ -30,7 +30,7 @@ namespace MGroup.XFEM.Plotting.Writers
             this.colorForDefaultPhase = colorForDefaultPhase;
         }
 
-        public void PlotElements(string path, ConformingOutputMesh3D conformingMesh)
+        public void PlotElements(string path, ConformingOutputMesh conformingMesh)
         {
             Dictionary<VtkPoint, double> phases = FindPhasesOfElements(conformingMesh);
             using (var writer = new Writers.VtkFileWriter(path))
@@ -57,7 +57,7 @@ namespace MGroup.XFEM.Plotting.Writers
             }
         }
 
-        private Dictionary<VtkPoint, double> FindPhasesOfElements(ConformingOutputMesh3D conformingMesh)
+        private Dictionary<VtkPoint, double> FindPhasesOfElements(ConformingOutputMesh conformingMesh)
         {
             var field = new Dictionary<VtkPoint, double>();
             foreach (IXFiniteElement element in physicalModel.Elements)
@@ -72,21 +72,19 @@ namespace MGroup.XFEM.Plotting.Writers
                 }
                 else
                 {
-                    IEnumerable<ConformingOutputMesh3D.Subtetrahedron> subtriangles =
-                        conformingMesh.GetSubtetrahedraForOriginal(element);
-                    foreach (ConformingOutputMesh3D.Subtetrahedron subtetra in subtriangles)
+                    IEnumerable<ConformingOutputMesh.Subcell> subcells = conformingMesh.GetSubcellsForOriginal(element);
+                    foreach (ConformingOutputMesh.Subcell subcell in subcells)
                     {
-                        Debug.Assert(subtetra.OutVertices.Count == 4); //TODO: Not sure what happens for 2nd order elements
+                        Debug.Assert(subcell.OutVertices.Count == 3 || subcell.OutVertices.Count == 4); //TODO: Not sure what happens for 2nd order elements
 
                         // TODO: Perhaps I should do the next operations in the natural system of the element.
                         // Find the centroid
-                        NaturalPoint centroidNatural = subtetra.OriginalTetra.FindCentroidNatural();
+                        NaturalPoint centroidNatural = subcell.OriginalSubcell.FindCentroidNatural();
                         var centroid = new XPoint();
-                        centroid.Element = subtetra.ParentElement;
+                        centroid.Element = subcell.ParentElement;
                         centroid.Coordinates[CoordinateSystem.ElementNatural] = 
                             new double[] { centroidNatural.Xi, centroidNatural.Eta, centroidNatural.Zeta };
-                        centroid.ShapeFunctions = ((IXFiniteElement3D)centroid.Element)
-                            .Interpolation.EvaluateFunctionsAt(centroidNatural.Coordinates);
+                        centroid.ShapeFunctions = centroid.Element.Interpolation.EvaluateFunctionsAt(centroidNatural.Coordinates);
 
                         // Find the phase of the centroid
                         double phaseID = colorForDefaultPhase;
@@ -100,10 +98,10 @@ namespace MGroup.XFEM.Plotting.Writers
                             }
                         }
 
-                        // All vertices of the subtriangle will be assigned the same phase as the centroid
-                        for (int v = 0; v < 4; ++v)
+                        // All vertices of the subceel will be assigned the same phase as the centroid
+                        for (int v = 0; v < subcell.OutVertices.Count; ++v)
                         {
-                            VtkPoint vertexOut = subtetra.OutVertices[v];
+                            VtkPoint vertexOut = subcell.OutVertices[v];
                             field[vertexOut] = phaseID;
                         }
                     }

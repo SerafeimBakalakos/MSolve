@@ -28,7 +28,6 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IElementGeometryIntersection Intersect(IXFiniteElement element)
         {
-            var element2D = (IXFiniteElement2D)element;
             if (IsElementDisjoint(element)) // Check this first, since it is faster and most elements are in this category 
             {
                 return new NullElementIntersection(element);
@@ -62,7 +61,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 else if ((levelSet0 == 0) && (levelSet1 == 0)) // Curve is tangent to the element. Edge lies on the curve.
                 {
                     //TODO: also check (DEBUG only) that all other edges are not intersected unless its is at these 2 nodes
-                    return new LsmElementIntersection2D(RelativePositionCurveElement.Conforming, element2D,
+                    return new LsmElementIntersection2D(RelativePositionCurveElement.Conforming, element,
                         node0Natural.Coordinates, node1Natural.Coordinates);
                 }
                 else if ((levelSet0 == 0) && (levelSet1 != 0)) // Curve runs through a node. Not sure if it is tangent yet.
@@ -83,7 +82,7 @@ namespace MGroup.XFEM.Geometry.LSM
             else if (intersections.Count == 2)
             {
                 NaturalPoint[] points = intersections.ToArray();
-                return new LsmElementIntersection2D(RelativePositionCurveElement.Intersecting, element2D, 
+                return new LsmElementIntersection2D(RelativePositionCurveElement.Intersecting, element, 
                     new double[] { points[0].Xi, points[0].Eta }, new double[] { points[1].Xi, points[1].Eta });
             }
             else throw new Exception("This should not have happened");

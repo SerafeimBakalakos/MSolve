@@ -17,7 +17,7 @@ using MGroup.XFEM.Materials;
 //TODO: delete this class
 namespace MGroup.XFEM.Elements
 {
-    public class MockElement : IXFiniteElement2D, IXFiniteElement3D
+    public class MockElement : IXFiniteElement
     {
         private readonly IElementGeometry elementGeometry;
         private readonly int dimension;
@@ -92,8 +92,7 @@ namespace MGroup.XFEM.Elements
 
         public IBulkIntegration IntegrationBulk { get; set; }
 
-        public ElementSubtriangle2D[] ConformingSubtriangles { get; set; }
-        public ElementSubtetrahedron3D[] ConformingSubtetrahedra { get; set; }
+        public IElementSubcell[] ConformingSubcells { get; set; }
 
         public List<IElementGeometryIntersection> Intersections { get; } = new List<IElementGeometryIntersection>();
 
