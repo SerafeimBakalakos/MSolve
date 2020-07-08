@@ -24,16 +24,40 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
         public GeometricModel GeometricModel { get; set; }
 
-        public List<int> EpoxyPhases { get; set; } = new List<int>();
+        public string MatrixPhaseName { get; } = "matrix";
 
-        public List<int> SilverPhases { get; set; } = new List<int>();
+        public int MatrixPhaseID { get; set; }
+
+        public string EpoxyPhaseName { get; } = "epoxy";
+
+        public List<int> EpoxyPhaseIDs { get; set; } = new List<int>();
+
+        public string SilverPhaseName { get; } = "silver";
+
+        public List<int> SilverPhaseIDs { get; set; } = new List<int>();
+
+        public Dictionary<string, double> CalcPhaseVolumes()
+        {
+            var volumes = new Dictionary<string, double>();
+            Dictionary<int, double> phaseVolumes = GeometricModel.CalcBulkSizeOfEachPhase();
+
+            volumes[MatrixPhaseName] = phaseVolumes[MatrixPhaseID];
+
+            volumes[EpoxyPhaseName] = 0;
+            foreach (int phaseID in EpoxyPhaseIDs) volumes[EpoxyPhaseName] = phaseVolumes[phaseID];
+
+            volumes[SilverPhaseName] = 0;
+            foreach (int phaseID in SilverPhaseIDs) volumes[SilverPhaseName] = phaseVolumes[phaseID];
+
+            return volumes;
+        }
 
         public void GeneratePhases(XModel physicalModel)
         {
             GeometricModel = new GeometricModel(2, physicalModel);
             var defaultPhase = new DefaultPhase(0);
             GeometricModel.Phases.Add(defaultPhase);
-            EpoxyPhases.Add(0);
+            MatrixPhaseID = 0;
 
             double margin = ThicknessSilverPhase;
             var minCoordsExtended = new double[2];
@@ -63,20 +87,20 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 // Create phases
                 var phaseInternal = new LsmPhase(GeometricModel.Phases.Count, GeometricModel, -1);
                 GeometricModel.Phases.Add(phaseInternal);
-                EpoxyPhases.Add(phaseInternal.ID);
+                EpoxyPhaseIDs.Add(phaseInternal.ID);
                 var phaseExternal = new HollowLsmPhase(GeometricModel.Phases.Count, GeometricModel, 0);
                 GeometricModel.Phases.Add(phaseExternal);
-                SilverPhases.Add(phaseExternal.ID);
+                SilverPhaseIDs.Add(phaseExternal.ID);
 
                 // Create phase boundaries
-                var lsmExternal = new SimpleLsm2D(physicalModel, newBallExternal);
+                var lsmExternal = new SimpleLsm2D(phaseExternal.ID, physicalModel, newBallExternal);
                 var boundaryExternal = new PhaseBoundary(lsmExternal, defaultPhase, phaseExternal);
                 defaultPhase.ExternalBoundaries.Add(boundaryExternal);
                 defaultPhase.Neighbors.Add(phaseExternal);
                 phaseExternal.ExternalBoundaries.Add(boundaryExternal);
                 phaseExternal.Neighbors.Add(defaultPhase);
 
-                var lsmInternal = new SimpleLsm2D(physicalModel, newBallInternal);
+                var lsmInternal = new SimpleLsm2D(phaseInternal.ID, physicalModel, newBallInternal);
                 var boundaryInternal = new PhaseBoundary(lsmInternal, phaseExternal, phaseInternal);
                 phaseExternal.InternalBoundaries.Add(boundaryInternal);
                 phaseExternal.Neighbors.Add(phaseInternal);

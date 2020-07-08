@@ -307,6 +307,7 @@ namespace MGroup.XFEM.Tests.Plotting
             double dx = (xMax - xMin) / (numBallsX + 1);
             double dy = (yMax - yMin) / (numBallsY + 1);
             double dz = (zMax - zMin) / (numBallsZ + 1);
+            int id = 1;
             for (int i = 0; i < numBallsX; ++i)
             {
                 double centerX = xMin + (i + 1) * dx;
@@ -317,7 +318,7 @@ namespace MGroup.XFEM.Tests.Plotting
                     {
                         double centerZ = zMin + (k + 1) * dz;
                         var sphere = new Sphere(centerX, centerY, centerZ, ballRadius);
-                        var lsm = new SimpleLsm3D(model, sphere);
+                        var lsm = new SimpleLsm3D(id++, model, sphere);
                         surfaces.Add(lsm);
                     }
                 }

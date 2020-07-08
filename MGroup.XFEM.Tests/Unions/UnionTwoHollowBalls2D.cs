@@ -152,7 +152,7 @@ namespace MGroup.XFEM.Tests.Unions
             geometricModel.Phases.Add(defaultPhase);
             for (int b = 0; b < 2; ++b)
             {
-                var externalLsm = new SimpleLsm2D(model, ballsExternal[b]);
+                var externalLsm = new SimpleLsm2D(2 * b + 1, model, ballsExternal[b]);
                 var externalPhase = new HollowLsmPhase(2 * b + 1, geometricModel, 0);
                 geometricModel.Phases.Add(externalPhase);
 
@@ -162,7 +162,7 @@ namespace MGroup.XFEM.Tests.Unions
                 externalPhase.ExternalBoundaries.Add(externalBoundary);
                 externalPhase.Neighbors.Add(defaultPhase);
 
-                var internalLsm = new SimpleLsm2D(model, ballsInternal[b]);
+                var internalLsm = new SimpleLsm2D(2 * b + 2, model, ballsInternal[b]);
                 var internalPhase = new LsmPhase(2 * b + 2, geometricModel, -1);
                 geometricModel.Phases.Add(internalPhase);
 

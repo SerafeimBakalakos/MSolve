@@ -60,7 +60,8 @@ namespace MGroup.XFEM.Tests.EpoxyAg
         {
             // Create physical model, LSM and phases
             (XModel model, BiMaterialField materialField) = CreateModel();
-            GeometricModel geometricModel = CreatePhases(model, materialField);
+            GeometryPreprocessor2D preprocessor = CreatePhases(model, materialField);
+            GeometricModel geometricModel = preprocessor.GeometricModel;
 
             // Plot original mesh and level sets
             Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
@@ -72,7 +73,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
             geometricModel.InteractWithElements();
             geometricModel.FindConformingMesh();
-
+            
             // Plot phases
             var phasePlotter = new PhasePlotter(model, geometricModel, defaultPhaseID);
             phasePlotter.PlotNodes(pathPhasesOfNodes);
@@ -121,13 +122,17 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             var enrichmentPlotter = new EnrichmentPlotter(model, elementSize, false);
             enrichmentPlotter.PlotStepEnrichedNodes(pathStepEnrichedNodes);
             //enrichmentPlotter.PlotJunctionEnrichedNodes(pathJunctionEnrichedNodes);
+
+            // Write volume fractions
+            PrintVolumes(preprocessor);
         }
 
         public static void PlotSolution()
         {
             // Create physical model, LSM and phases
             (XModel model, BiMaterialField materialField) = CreateModel();
-            GeometricModel geometricModel = CreatePhases(model, materialField);
+            GeometryPreprocessor2D preprocessor = CreatePhases(model, materialField);
+            GeometricModel geometricModel = preprocessor.GeometricModel;
 
             // Prepare for analysis
             geometricModel.InteractWithNodes();
@@ -143,6 +148,9 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
+
+            // Write volume fractions
+            PrintVolumes(preprocessor);
 
             // Run analysis and plot temperature and heat flux
             IVectorView solution = Analysis.RunStaticAnalysis(model);
@@ -177,7 +185,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             }
         }
 
-        private static GeometricModel CreatePhases(XModel model, BiMaterialField materialField)
+        private static GeometryPreprocessor2D CreatePhases(XModel model, BiMaterialField materialField)
         {
             var preprocessor = new GeometryPreprocessor2D();
             preprocessor.MinCoordinates = minCoords;
@@ -188,10 +196,10 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             preprocessor.ThicknessSilverPhase = silverPhaseThickness;
 
             preprocessor.GeneratePhases(model);
-            foreach (int p in preprocessor.EpoxyPhases) materialField.PhasesWithMaterial0.Add(p);
-            foreach (int p in preprocessor.SilverPhases) materialField.PhasesWithMaterial1.Add(p);
+            foreach (int p in preprocessor.EpoxyPhaseIDs) materialField.PhasesWithMaterial0.Add(p);
+            foreach (int p in preprocessor.SilverPhaseIDs) materialField.PhasesWithMaterial1.Add(p);
 
-            return preprocessor.GeometricModel;
+            return preprocessor;
         }
 
         private static (XModel, BiMaterialField) CreateModel()
@@ -203,6 +211,18 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
             return (Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField), materialField);
+        }
+
+        private static void PrintVolumes(GeometryPreprocessor2D preprocessor)
+        {
+            Dictionary<string, double> volumes = preprocessor.CalcPhaseVolumes();
+            Console.WriteLine();
+            Console.Write("Total areas of each material: ");
+            foreach (string phase in volumes.Keys)
+            {
+                Console.Write($"{phase} phase : {volumes[phase]}, ");
+            }
+            Console.WriteLine();
         }
     }
 }

@@ -9,6 +9,8 @@ namespace MGroup.XFEM.Geometry.LSM
 {
     public interface IImplicitGeometry
     {
+        int ID { get; }
+
         IElementGeometryIntersection Intersect(IXFiniteElement element);
 
         double SignedDistanceOf(XNode node);

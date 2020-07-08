@@ -16,8 +16,15 @@ namespace MGroup.XFEM.Geometry.LSM
 {
     public class SimpleLsm3D : IImplicitGeometry
     {
-        public SimpleLsm3D(XModel physicalModel, ISurface3D closedSurface)
+        public SimpleLsm3D(int id, double[] nodalLevelSets)
         {
+            this.ID = id;
+            this.NodalLevelSets = nodalLevelSets;
+        }
+
+        public SimpleLsm3D(int id, XModel physicalModel, ISurface3D closedSurface)
+        {
+            this.ID = id;
             NodalLevelSets = new double[physicalModel.Nodes.Count];
             for (int n = 0; n < physicalModel.Nodes.Count; ++n)
             {
@@ -26,11 +33,13 @@ namespace MGroup.XFEM.Geometry.LSM
             }
         }
 
+        public int ID { get; }
+
         public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 
         public double[] NodalLevelSets { get; }
 
-        public IElementGeometryIntersection Intersect(IXFiniteElement element)
+        public virtual IElementGeometryIntersection Intersect(IXFiniteElement element)
         {
             Dictionary<int, double> levelSetSubset = FindLevelSetsOfElementNodes(element);
             RelativePositionCurveElement position = FindRelativePosition(element, levelSetSubset);
@@ -111,7 +120,7 @@ namespace MGroup.XFEM.Geometry.LSM
             return result;
         }
 
-        public void UnionWith(IImplicitGeometry otherGeometry)
+        public virtual void UnionWith(IImplicitGeometry otherGeometry)
         {
             if (otherGeometry is SimpleLsm3D otherLsm)
             {

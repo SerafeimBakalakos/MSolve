@@ -12,8 +12,15 @@ namespace MGroup.XFEM.Geometry.LSM
 {
     public class SimpleLsm2D : IImplicitGeometry
     {
-        public SimpleLsm2D(XModel physicalModel, ICurve2D closedCurve)
+        public SimpleLsm2D(int id, double[] nodalLevelSets)
         {
+            this.ID = id;
+            this.NodalLevelSets = nodalLevelSets;
+        }
+
+        public SimpleLsm2D(int id, XModel physicalModel, ICurve2D closedCurve)
+        {
+            this.ID = id;
             NodalLevelSets = new double[physicalModel.Nodes.Count];
             for (int n = 0; n < physicalModel.Nodes.Count; ++n)
             {
@@ -22,11 +29,13 @@ namespace MGroup.XFEM.Geometry.LSM
             }
         }
 
+        public int ID { get; }
+
         public double[] NodalLevelSets { get; }
 
         public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 
-        public IElementGeometryIntersection Intersect(IXFiniteElement element)
+        public virtual IElementGeometryIntersection Intersect(IXFiniteElement element)
         {
             if (IsElementDisjoint(element)) // Check this first, since it is faster and most elements are in this category 
             {
@@ -99,6 +108,22 @@ namespace MGroup.XFEM.Geometry.LSM
             return result;
         }
 
+        public virtual void UnionWith(IImplicitGeometry otherGeometry)
+        {
+            if (otherGeometry is SimpleLsm2D otherLsm)
+            {
+                if (this.NodalLevelSets.Length != otherLsm.NodalLevelSets.Length)
+                {
+                    throw new ArgumentException("Incompatible Level Set geometry");
+                }
+                for (int i = 0; i < this.NodalLevelSets.Length; ++i)
+                {
+                    this.NodalLevelSets[i] = Math.Min(this.NodalLevelSets[i], otherLsm.NodalLevelSets[i]);
+                }
+            }
+            else throw new ArgumentException("Incompatible Level Set geometry");
+        }
+
         /// <summary>
         /// Optimization for most elements.
         /// </summary>
@@ -125,22 +150,6 @@ namespace MGroup.XFEM.Geometry.LSM
             double levelSet = NodalLevelSets[node.ID];
             if (Math.Abs(levelSet) <= zeroTolerance) return 0.0;
             else return levelSet;
-        }
-
-        public void UnionWith(IImplicitGeometry otherGeometry)
-        {
-            if (otherGeometry is SimpleLsm2D otherLsm)
-            {
-                if (this.NodalLevelSets.Length != otherLsm.NodalLevelSets.Length)
-                {
-                    throw new ArgumentException("Incompatible Level Set geometry");
-                }
-                for (int i = 0; i < this.NodalLevelSets.Length; ++i)
-                {
-                    this.NodalLevelSets[i] = Math.Min(this.NodalLevelSets[i], otherLsm.NodalLevelSets[i]);
-                }
-            }
-            else throw new ArgumentException("Incompatible Level Set geometry");
         }
     }
 }

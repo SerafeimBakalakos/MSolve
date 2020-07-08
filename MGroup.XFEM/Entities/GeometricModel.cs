@@ -33,6 +33,31 @@ namespace MGroup.XFEM.Entities
 
         public List<IPhase> Phases { get; } = new List<IPhase>();
 
+        public Dictionary<int, double> CalcBulkSizeOfEachPhase()
+        {
+            var bulkSizes = new Dictionary<int, double>();
+            foreach (IPhase phase in Phases) bulkSizes[phase.ID] = 0.0;
+
+            foreach (IXFiniteElement element in physicalModel.Elements)
+            {
+                foreach (IElementSubcell subcell in element.ConformingSubcells)
+                {
+                    var centroid = new XPoint();
+                    centroid.Coordinates[CoordinateSystem.ElementNatural] = subcell.FindCentroidNatural();
+                    centroid.ShapeFunctions = 
+                        element.Interpolation.EvaluateFunctionsAt(centroid.Coordinates[CoordinateSystem.ElementNatural]);
+                    element.FindPhaseAt(centroid);
+                    IPhase phase = centroid.Phase;
+
+                    (_, double subcellBulk) = subcell.FindCentroidAndBulkSizeCartesian(element);
+
+                    bulkSizes[phase.ID] += subcellBulk;
+                }
+            }
+
+            return bulkSizes;
+        }
+
         //TODO: Perhaps I need a dedicated class for this
         public void FindConformingMesh()
         {
