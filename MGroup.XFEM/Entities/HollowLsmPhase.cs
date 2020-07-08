@@ -62,6 +62,13 @@ namespace MGroup.XFEM.Entities
             if (this.MergeLevel < 0) return false;
             if (this.MergeLevel != otherPhase.MergeLevel) return false;
 
+            #region debug
+            if (this.ID == 12 && otherPhase.ID == 16)
+            {
+                Console.WriteLine();
+            }
+            #endregion
+
             if (otherPhase is HollowLsmPhase otherHollowPhase)
             {
                 if (this.Overlaps(otherPhase))
@@ -85,7 +92,10 @@ namespace MGroup.XFEM.Entities
                     // Merge external boundaries
                     externalPhase.ExternalBoundaries.Remove(otherPhase.ExternalBoundaries[0]);
                     externalPhase.Neighbors.Remove(otherPhase);
-                    externalPhase.ExternalBoundaries.Add(this.ExternalBoundaries[0]);
+                    if (!externalPhase.ExternalBoundaries.Contains(this.ExternalBoundaries[0]))
+                    {
+                        externalPhase.ExternalBoundaries.Add(this.ExternalBoundaries[0]);
+                    }
                     externalPhase.Neighbors.Add(this);
                     this.Neighbors.Add(externalPhase);
 
@@ -95,6 +105,7 @@ namespace MGroup.XFEM.Entities
                     {
                         if (boundary.NegativePhase == otherHollowPhase) boundary.NegativePhase = this;
                         else boundary.PositivePhase = this;
+                        this.InternalBoundaries.Add(boundary);
                     }
 
                     // Merge nodes
