@@ -19,7 +19,7 @@ namespace MGroup.XFEM.Elements
             this.ID = id;
             CellType = CellType.Line;
             Nodes = new XNode[] { nodes[start], nodes[end] };
-            NodesNatural = nodesNatural;
+            NodesNatural = new double[][] { nodesNatural[start], nodesNatural[end] };
         }
 
         public CellType CellType { get; set; }

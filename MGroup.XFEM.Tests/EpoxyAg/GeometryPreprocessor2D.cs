@@ -47,7 +47,17 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             foreach (int phaseID in EpoxyPhaseIDs) volumes[EpoxyPhaseName] = phaseVolumes[phaseID];
 
             volumes[SilverPhaseName] = 0;
-            foreach (int phaseID in SilverPhaseIDs) volumes[SilverPhaseName] = phaseVolumes[phaseID];
+            foreach (int phaseID in SilverPhaseIDs)
+            {
+                try
+                {
+                    volumes[SilverPhaseName] = phaseVolumes[phaseID];
+                }
+                catch (KeyNotFoundException)
+                {
+                    // This phase has been merged into another one. Nothing more to do here.
+                }
+            }
 
             return volumes;
         }

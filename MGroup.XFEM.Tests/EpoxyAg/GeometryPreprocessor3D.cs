@@ -110,7 +110,17 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             foreach (int phaseID in EpoxyPhaseIDs) volumes[EpoxyPhaseName] = phaseVolumes[phaseID];
 
             volumes[SilverPhaseName] = 0;
-            foreach (int phaseID in SilverPhaseIDs) volumes[SilverPhaseName] = phaseVolumes[phaseID];
+            foreach (int phaseID in SilverPhaseIDs)
+            {
+                try
+                {
+                    volumes[SilverPhaseName] = phaseVolumes[phaseID];
+                }
+                catch (KeyNotFoundException)
+                {
+                    // This phase has been merged into another one. Nothing more to do here.
+                }
+            }
 
             return volumes;
         }
@@ -120,7 +130,10 @@ namespace MGroup.XFEM.Tests.EpoxyAg
         {
             for (int i = 0; i < ballsInternal.Count; ++i)
             {
-                double centerDistance = XFEM.Geometry.Utilities.Distance3D(newBallInternal.Center, ballsInternal[i].Center);
+                #region debug
+                //double centerDistance = XFEM.Geometry.Utilities.Distance3D(newBallInternal.Center, ballsInternal[i].Center);
+                double centerDistance = XFEM.Geometry.Utilities.Distance2D(newBallInternal.Center, ballsInternal[i].Center);
+                #endregion
                 if (newBallExternal.Radius + ballsInternal[i].Radius >= centerDistance) return true;
                 if (newBallInternal.Radius + ballsExternal[i].Radius >= centerDistance) return true;
             }

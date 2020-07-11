@@ -40,18 +40,29 @@ namespace MGroup.XFEM.Entities
 
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
-                foreach (IElementSubcell subcell in element.ConformingSubcells)
+                if ((element.ConformingSubcells == null) || (element.ConformingSubcells.Length == 0))
                 {
-                    var centroid = new XPoint();
-                    centroid.Coordinates[CoordinateSystem.ElementNatural] = subcell.FindCentroidNatural();
-                    centroid.ShapeFunctions = 
-                        element.Interpolation.EvaluateFunctionsAt(centroid.Coordinates[CoordinateSystem.ElementNatural]);
-                    element.FindPhaseAt(centroid);
-                    IPhase phase = centroid.Phase;
+                    Debug.Assert(element.Phases.Count == 1);
+                    IPhase phase = element.Phases.First();
+                    double elementBulkSize = element.CalcBulkSize();
+                    bulkSizes[phase.ID] += elementBulkSize;
+                }
+                else
+                {
+                    foreach (IElementSubcell subcell in element.ConformingSubcells)
+                    {
+                        var centroid = new XPoint();
+                        centroid.Coordinates[CoordinateSystem.ElementNatural] = subcell.FindCentroidNatural();
+                        centroid.Element = element;
+                        centroid.ShapeFunctions =
+                            element.Interpolation.EvaluateFunctionsAt(centroid.Coordinates[CoordinateSystem.ElementNatural]);
+                        element.FindPhaseAt(centroid);
+                        IPhase phase = centroid.Phase;
 
-                    (_, double subcellBulk) = subcell.FindCentroidAndBulkSizeCartesian(element);
+                        (_, double subcellBulk) = subcell.FindCentroidAndBulkSizeCartesian(element);
 
-                    bulkSizes[phase.ID] += subcellBulk;
+                        bulkSizes[phase.ID] += subcellBulk;
+                    }
                 }
             }
 

@@ -196,6 +196,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             preprocessor.ThicknessSilverPhase = silverPhaseThickness;
 
             preprocessor.GeneratePhases(model);
+            materialField.PhasesWithMaterial0.Add(preprocessor.MatrixPhaseID);
             foreach (int p in preprocessor.EpoxyPhaseIDs) materialField.PhasesWithMaterial0.Add(p);
             foreach (int p in preprocessor.SilverPhaseIDs) materialField.PhasesWithMaterial1.Add(p);
 
