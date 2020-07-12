@@ -74,20 +74,24 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             try
             {
                 // Create physical model, LSM and phases
+                Console.WriteLine("Creating physical and geometric models");
                 (XModel model, BiMaterialField materialField) = CreateModel();
                 GeometryPreprocessor3D preprocessor = CreatePhases(model, materialField);
                 GeometricModel geometricModel = preprocessor.GeometricModel;
 
                 // Geometric interactions
+                Console.WriteLine("Identifying interactions between physical and geometric models");
                 geometricModel.InteractWithNodes();
                 geometricModel.UnifyOverlappingPhases(true);
                 geometricModel.InteractWithElements();
                 geometricModel.FindConformingMesh();
 
                 // Materials
+                Console.WriteLine("Creating materials");
                 model.UpdateMaterials();
 
                 // Enrichment
+                Console.WriteLine("Applying enrichments");
                 ISingularityResolver singularityResolver = new NullSingularityResolver();
                 var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
                 nodeEnricher.ApplyEnrichments();

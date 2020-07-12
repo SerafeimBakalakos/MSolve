@@ -5,6 +5,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
+using MGroup.XFEM.Exceptions;
 
 namespace MGroup.XFEM.Geometry
 {
@@ -53,6 +54,22 @@ namespace MGroup.XFEM.Geometry
 
         public IList<double[]> Vertices { get; } = new List<double[]>();
 
+        /// <summary>
+        /// This method just gathers all cells and renumbers the vertices accordingly, 
+        /// without taking intersecting cells into account. 
+        /// </summary>
+        /// <param name="other"></param>
+        public void MergeWith(IntersectionMesh other)
+        {
+            int offset = this.Vertices.Count;
+            foreach (double[] vertex in other.Vertices) this.Vertices.Add(vertex);
+            foreach ((CellType cellType, int[] originalConnectivity) in other.Cells)
+            {
+                int[] offsetConnectivity = OffsetArray(originalConnectivity, offset);
+                this.Cells.Add((cellType, offsetConnectivity));
+            }
+        }
+
         private static List<double[]> OrderPoints3D(Dictionary<double[], HashSet<ElementFace>> facesOfPoints)
         {
             var orderedPoints = new List<double[]>();
@@ -75,7 +92,8 @@ namespace MGroup.XFEM.Geometry
                 }
                 else
                 {
-                    throw new Exception("No other intersection point lies on the same face as the current point");
+                    throw new InvalidElementGeometryIntersectionException(
+                        "No other intersection point lies on the same face as the current point");
                 }
             }
 
@@ -84,7 +102,7 @@ namespace MGroup.XFEM.Geometry
             var facesLast = facesOfPoints[orderedPoints[orderedPoints.Count - 1]];
             if (!HaveCommonEntries(facesFirst, facesLast))
             {
-                throw new Exception("The first and last point do not lie on the same face");
+                throw new InvalidElementGeometryIntersectionException("The first and last point do not lie on the same face");
             }
 
             return orderedPoints;
@@ -108,6 +126,16 @@ namespace MGroup.XFEM.Geometry
                 if (facesSet1.Contains(entry)) return true;
             }
             return false;
+        }
+
+        private static int[] OffsetArray(int[] original, int offset)
+        {
+            var result = new int[original.Length];
+            for (int i = 0; i < original.Length; i++)
+            {
+                result[i] = original[i] + offset;
+            }
+            return result;
         }
     }
 }

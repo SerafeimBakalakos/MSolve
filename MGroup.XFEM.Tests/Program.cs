@@ -25,10 +25,10 @@ namespace MGroup.XFEM.Tests
             //ExampleUniformThickness2D.PlotSolution();
 
             //ExampleUniformThickness3D.PlotGeometryAndEntities();
-            //ExampleUniformThickness3D.PlotSolution();
+            ExampleUniformThickness3D.PlotSolution();
 
             //ExampleStochastic2D.RunAll();
-            ExampleStochastic3D.RunAll();
+            //ExampleStochastic3D.RunAll();
         }
     }
 }

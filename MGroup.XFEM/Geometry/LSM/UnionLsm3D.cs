@@ -1,89 +1,91 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using ISAAR.MSolve.Geometry.Coordinates;
-//using MGroup.XFEM.Elements;
-//using MGroup.XFEM.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using ISAAR.MSolve.Geometry.Coordinates;
+using MGroup.XFEM.Elements;
+using MGroup.XFEM.Entities;
+using MGroup.XFEM.Exceptions;
 
-//namespace MGroup.XFEM.Geometry.LSM
-//{
-//    public class UnionLsm3D : SimpleLsm3D
-//    {
-//        private readonly List<SimpleLsm3D> mergedLsms;
+namespace MGroup.XFEM.Geometry.LSM
+{
+    public class UnionLsm3D : SimpleLsm3D
+    {
+        private readonly List<SimpleLsm3D> mergedLsms;
 
-//        public UnionLsm3D(int id, XModel physicalModel, SimpleLsm3D starterLsm) : base(id, starterLsm.NodalLevelSets)
-//        {
-//            this.mergedLsms = new List<SimpleLsm3D>();
-//            mergedLsms.Add(starterLsm);
-//        }
+        public UnionLsm3D(int id, XModel physicalModel, SimpleLsm3D starterLsm) : base(id, starterLsm.NodalLevelSets)
+        {
+            this.mergedLsms = new List<SimpleLsm3D>();
+            mergedLsms.Add(starterLsm);
+        }
 
-//        public override IElementGeometryIntersection Intersect(IXFiniteElement element)
-//        {
-//            // If thre are more than 2 intersection points, take the intersection of each merged level sets
-//            throw new NotImplementedException();
-//        }
+        public override IElementGeometryIntersection Intersect(IXFiniteElement element)
+        {
+            try
+            {
+                return base.Intersect(element);
+            }
+            catch (InvalidElementGeometryIntersectionException)
+            {
+                var unionIntersectionMesh = new IntersectionMesh();
+                foreach (SimpleLsm3D lsm in mergedLsms)
+                {
+                    Dictionary<int, double> levelSetSubset = FindLevelSetsOfElementNodes(element, lsm.NodalLevelSets);
+                    RelativePositionCurveElement position = FindRelativePosition(element, levelSetSubset);
+                    if (position == RelativePositionCurveElement.Disjoint) continue;
+                    else if (position == RelativePositionCurveElement.Conforming)
+                    {
+                        throw new InvalidElementGeometryIntersectionException(
+                            "If one merged LSM is conforming, then no other one must intersect the element");
+                    }
+                    else
+                    {
+                        var intersectionMesh = FindIntersectionIntersecting(element, levelSetSubset);
+                        unionIntersectionMesh.MergeWith(intersectionMesh);
+                    }
+                }
+                if (unionIntersectionMesh.Vertices.Count > 0)
+                {
+                    return new LsmElementIntersection3D(
+                        RelativePositionCurveElement.Intersecting, element, unionIntersectionMesh);
+                }
+                else throw new InvalidElementGeometryIntersectionException("None merged LSM intersects the element");
+            }
+            
+        }
 
-//        //public double SignedDistanceOf(XNode node)
-//        //{
-//        //    double min = mergedLsms[0].SignedDistanceOf(node);
-//        //    for (int i = 1; i < mergedLsms.Count; ++i)
-//        //    {
-//        //        min = Math.Min(min, mergedLsms[i].SignedDistanceOf(node));
-//        //    }
-//        //    return min;
-//        //}
+        public override void UnionWith(IImplicitGeometry otherGeometry)
+        {
+            // If there is only one level set array, clone it, as to not corrupt the already merged curve
+            if (mergedLsms.Count == 1)
+            {
+                var clone = new double[this.NodalLevelSets.Length];
+                Array.Copy(this.NodalLevelSets, clone, this.NodalLevelSets.Length);
+            }
 
-//        //public double SignedDistanceOf(XPoint point)
-//        //{
-//        //    IReadOnlyList<XNode> nodes = point.Element.Nodes;
-//        //    var nodalLevelSets = new double[nodes.Count];
-//        //    for (int n = 0; n < nodes.Count; ++n)
-//        //    {
-//        //        nodalLevelSets[n] = SignedDistanceOf(nodes[n]);
-//        //    }
+            if (otherGeometry is UnionLsm3D otherUnionLsm)
+            {
+                MergeNodalLevelSets(otherUnionLsm.NodalLevelSets);
+                this.mergedLsms.AddRange(otherUnionLsm.mergedLsms);
+            }
+            else if (otherGeometry is SimpleLsm3D otherLsm)
+            {
+                MergeNodalLevelSets(otherLsm.NodalLevelSets);
+                mergedLsms.Add(otherLsm);
+            }
+            else throw new ArgumentException("Incompatible Level Set geometry");
+        }
 
-//        //    double[] shapeFunctions = point.ShapeFunctions;
-//        //    double result = 0;
-//        //    for (int n = 0; n < nodes.Count; ++n)
-//        //    {
-//        //        result += shapeFunctions[n] * nodalLevelSets[n];
-//        //    }
-//        //    return result;
-//        //}
-
-//        public override void UnionWith(IImplicitGeometry otherGeometry)
-//        {
-//            // If there is only one level set array, clone it, as to not corrupt the already merged curve
-//            if (mergedLsms.Count == 1)
-//            {
-//                var clone = new double[this.NodalLevelSets.Length];
-//                Array.Copy(this.NodalLevelSets, clone, this.NodalLevelSets.Length);
-//            }
-
-//            if (otherGeometry is UnionLsm3D otherUnionLsm)
-//            {
-//                MergeNodalLevelSets(otherUnionLsm.NodalLevelSets);
-//                this.mergedLsms.AddRange(otherUnionLsm.mergedLsms);
-//            }
-//            else if (otherGeometry is SimpleLsm3D otherLsm)
-//            {
-//                MergeNodalLevelSets(otherLsm.NodalLevelSets);
-//                mergedLsms.Add(otherLsm);
-//            }
-//            else throw new ArgumentException("Incompatible Level Set geometry");
-//        }
-
-//        private void MergeNodalLevelSets(double[] otherNodalLevelSets)
-//        {
-//            if (this.NodalLevelSets.Length != otherNodalLevelSets.Length)
-//            {
-//                throw new ArgumentException("Incompatible Level Set geometry");
-//            }
-//            for (int i = 0; i < this.NodalLevelSets.Length; ++i)
-//            {
-//                this.NodalLevelSets[i] = Math.Min(this.NodalLevelSets[i], otherNodalLevelSets[i]);
-//            }
-//        }
-//    }
-//}
+        private void MergeNodalLevelSets(double[] otherNodalLevelSets)
+        {
+            if (this.NodalLevelSets.Length != otherNodalLevelSets.Length)
+            {
+                throw new ArgumentException("Incompatible Level Set geometry");
+            }
+            for (int i = 0; i < this.NodalLevelSets.Length; ++i)
+            {
+                this.NodalLevelSets[i] = Math.Min(this.NodalLevelSets[i], otherNodalLevelSets[i]);
+            }
+        }
+    }
+}
