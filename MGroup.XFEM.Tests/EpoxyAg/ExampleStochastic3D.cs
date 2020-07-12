@@ -31,21 +31,22 @@ namespace MGroup.XFEM.Tests.EpoxyAg
         private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\EpoxyAG\Stochastic3D\";
         private const string pathResults = outputDirectory + "results.txt";
 
-        private static readonly double[] minCoords = { -1.0, -1.0, -1.0 };
-        private static readonly double[] maxCoords = { +1.0, +1.0, +1.0 };
-        private static readonly int[] numElements = { 45, 45, 45 };
+        private static readonly double[] minCoords = { -5000.0, -5000.0, -5000.0 };
+        private static readonly double[] maxCoords = { +5000.0, +5000.0, +5000.0 };
+        private static readonly int[] numElements = { 15, 15, 15 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 
         private const double singularityRelativeAreaTolerance = 1E-8;
         private const int defaultPhaseID = 0;
 
-        private const int numBalls = 8;
-        private const double epoxyPhaseRadius = 0.2, silverPhaseThickness = 0.1;
+        private const int numBalls = 5;
+        
+        // These are hard-coded in GeometryPreprocessor
+        //private const double epoxyPhaseRadius = 0.2, silverPhaseThickness = 0.1;
 
-        private const double conductEpoxy = 1E0, conductSilver = 1E2;
-        private const double conductBoundaryEpoxySilver = 1E1;
+        private const double conductEpoxy = 0.25, conductSilver = 429;
+        private const double conductBoundaryEpoxySilver = conductEpoxy;
         private const double specialHeatCoeff = 1.0;
-
 
         private readonly int rngSeed;
 
@@ -76,7 +77,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 // Create physical model, LSM and phases
                 Console.WriteLine("Creating physical and geometric models");
                 (XModel model, BiMaterialField materialField) = CreateModel();
-                GeometryPreprocessor3D preprocessor = CreatePhases(model, materialField);
+                GeometryPreprocessor3DRandom preprocessor = CreatePhases(model, materialField);
                 GeometricModel geometricModel = preprocessor.GeometricModel;
 
                 // Geometric interactions
@@ -130,15 +131,17 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             }
         }
 
-        private GeometryPreprocessor3D CreatePhases(XModel model, BiMaterialField materialField)
+        private GeometryPreprocessor3DRandom CreatePhases(XModel model, BiMaterialField materialField)
         {
-            var preprocessor = new GeometryPreprocessor3D();
+            var preprocessor = new GeometryPreprocessor3DRandom();
             preprocessor.MinCoordinates = minCoords;
             preprocessor.MaxCoordinates = maxCoords;
             preprocessor.NumBalls = numBalls;
             preprocessor.RngSeed = rngSeed;
-            preprocessor.RadiusEpoxyPhase = epoxyPhaseRadius;
-            preprocessor.ThicknessSilverPhase = silverPhaseThickness;
+
+            // These are hardcoded
+            //preprocessor.RadiusEpoxyPhase = epoxyPhaseRadius;
+            //preprocessor.ThicknessSilverPhase = silverPhaseThickness;
 
             preprocessor.GeneratePhases(model);
             materialField.PhasesWithMaterial0.Add(preprocessor.MatrixPhaseID);

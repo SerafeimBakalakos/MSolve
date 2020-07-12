@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
@@ -24,9 +25,9 @@ using Xunit;
 
 namespace MGroup.XFEM.Tests.EpoxyAg
 {
-    public static class ExampleUniformThickness3D
+    public static class ExampleRandom3D
     {
-        private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\EpoxyAG\UniformThickness3D\";
+        private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\EpoxyAG\Random3D\";
         private const string pathConformingMesh = outputDirectory + "conforming_mesh.vtk";
         private const string pathIntersections = outputDirectory + "intersections.vtk";
         private const string pathIntegrationBulk = outputDirectory + "integration_points_bulk.vtk";
@@ -39,9 +40,9 @@ namespace MGroup.XFEM.Tests.EpoxyAg
         private const string pathTemperatureField = outputDirectory + "temperature_field.vtk";
         private const string pathHeatFluxAtGPs = outputDirectory + "heat_flux_integration_points.vtk";
 
-        private static readonly double[] minCoords = { -1.0, -1.0, -1.0 };
-        private static readonly double[] maxCoords = { +1.0, +1.0, +1.0 };
-        private static readonly int[] numElements = { 45, 45, 45 };
+        private static readonly double[] minCoords = { -1000.0, -1000.0, -1000.0 };
+        private static readonly double[] maxCoords = { +1000.0, +1000.0, +1000.0 };
+        private static readonly int[] numElements = { 25, 25, 25 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 
         private const double singularityRelativeAreaTolerance = 1E-8;
@@ -50,11 +51,11 @@ namespace MGroup.XFEM.Tests.EpoxyAg
         //private const int numBalls = 8, rngSeed = 33; //problems in intersection mesh
         //private const int numBalls = 8, rngSeed = 13;//problems in intersection mesh
         //private const int numBalls = 8, rngSeed = 17;
-        private const int numBalls = 8, rngSeed = 1;
-        private const double epoxyPhaseRadius = 0.2, silverPhaseThickness = 0.1;
+        private const int numBalls = 5, rngSeed = 1;
+        //private const double epoxyPhaseRadius = 0.2, silverPhaseThickness = 0.1;
 
-        private const double conductEpoxy = 1E0, conductSilver = 1E2;
-        private const double conductBoundaryEpoxySilver = 1E1;
+        private const double conductEpoxy = 0.25, conductSilver = 429;
+        private const double conductBoundaryEpoxySilver = conductEpoxy;
         private const double specialHeatCoeff = 1.0;
 
         public static void PlotGeometryAndEntities()
@@ -62,7 +63,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             // Create physical model, LSM and phases
             Console.WriteLine("Creating physical and geometric models");
             (XModel model, BiMaterialField materialField) = CreateModel();
-            GeometryPreprocessor3DUniform preprocessor = CreatePhases(model, materialField);
+            GeometryPreprocessor3DRandom preprocessor = CreatePhases(model, materialField);
             GeometricModel geometricModel = preprocessor.GeometricModel;
 
             // Plot original mesh and level sets
@@ -134,7 +135,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             // Create physical model, LSM and phases
             Console.WriteLine("Creating physical and geometric models");
             (XModel model, BiMaterialField materialField) = CreateModel();
-            GeometryPreprocessor3DUniform preprocessor = CreatePhases(model, materialField);
+            GeometryPreprocessor3DRandom preprocessor = CreatePhases(model, materialField);
             GeometricModel geometricModel = preprocessor.GeometricModel;
 
             // Prepare for analysis
@@ -188,15 +189,50 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             }
         }
 
-        private static GeometryPreprocessor3DUniform CreatePhases(XModel model, BiMaterialField materialField)
+        public static void RunHomogenization()
         {
-            var preprocessor = new GeometryPreprocessor3DUniform();
+            // Create physical model, LSM and phases
+            Console.WriteLine("Creating physical and geometric models");
+            (XModel model, BiMaterialField materialField) = CreateModel();
+            GeometryPreprocessor3DRandom preprocessor = CreatePhases(model, materialField);
+            GeometricModel geometricModel = preprocessor.GeometricModel;
+
+            // Geometric interactions
+            Console.WriteLine("Identifying interactions between physical and geometric models");
+            geometricModel.InteractWithNodes();
+            geometricModel.UnifyOverlappingPhases(true);
+            geometricModel.InteractWithElements();
+            geometricModel.FindConformingMesh();
+
+            // Materials
+            Console.WriteLine("Creating materials");
+            model.UpdateMaterials();
+
+            // Enrichment
+            Console.WriteLine("Applying enrichments");
+            ISingularityResolver singularityResolver = new NullSingularityResolver();
+            var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
+            nodeEnricher.ApplyEnrichments();
+            model.UpdateDofs();
+
+            // Calculate volumes of each phase
+            Dictionary<string, double> volumes = preprocessor.CalcPhaseVolumes();
+
+            // Run homogenization analysis
+            IMatrix conductivity = Analysis.RunHomogenizationAnalysis3D(model, minCoords, maxCoords);
+            Console.WriteLine(
+                $"conductivity = [ {conductivity[0, 0]} {conductivity[0, 1]} {conductivity[0, 2]};"
+                + $" {conductivity[1, 0]} {conductivity[1, 1]} {conductivity[1, 2]};"
+                + $" {conductivity[2, 0]} {conductivity[2, 1]} {conductivity[2, 2]} ]");
+        }
+
+        private static GeometryPreprocessor3DRandom CreatePhases(XModel model, BiMaterialField materialField)
+        {
+            var preprocessor = new GeometryPreprocessor3DRandom();
             preprocessor.MinCoordinates = minCoords;
             preprocessor.MaxCoordinates = maxCoords;
             preprocessor.NumBalls = numBalls;
             preprocessor.RngSeed = rngSeed;
-            preprocessor.RadiusEpoxyPhase = epoxyPhaseRadius;
-            preprocessor.ThicknessSilverPhase = silverPhaseThickness;
 
             preprocessor.GeneratePhases(model);
             materialField.PhasesWithMaterial0.Add(preprocessor.MatrixPhaseID);
@@ -217,7 +253,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField), materialField);
         }
 
-        private static void PrintVolumes(GeometryPreprocessor3DUniform preprocessor)
+        private static void PrintVolumes(GeometryPreprocessor3DRandom preprocessor)
         {
             Dictionary<string, double> volumes = preprocessor.CalcPhaseVolumes();
             Console.WriteLine();

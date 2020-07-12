@@ -7,12 +7,10 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Tests.EpoxyAg
 {
-    public class GeometryPreprocessor3D
+    public class GeometryPreprocessor3DUniform
     {
         public double[] MinCoordinates { get; set; } = { -1.0, -1.0, -1.0};
         public double[] MaxCoordinates { get; set; } = { +1.0, +1.0, +1.0 };
-
-        public double Thickness { get; set; } = 1.0;
 
         public int RngSeed { get; set; } = 33;
 

@@ -35,12 +35,10 @@ namespace MGroup.XFEM.Tests.Utilities
 
         public static IMatrix RunHomogenizationAnalysis3D(XModel model, double[] minCoords, double[] maxCoords)
         {
-            throw new NotImplementedException();
-            Vector2 temperatureGradient = Vector2.Create(200, 0);
+            Console.WriteLine("Starting homogenization analysis");
             var solver = (new SuiteSparseSolver.Builder()).BuildSolver(model);
             var provider = new ProblemThermalSteadyState(model, solver);
-            var rve = new ThermalSquareRve(model, Vector2.Create(minCoords[0], minCoords[1]),
-                Vector2.Create(maxCoords[0], maxCoords[1]), 1.0, temperatureGradient);
+            var rve = new ThermalCubicRve(model, minCoords, maxCoords);
             var homogenization = new HomogenizationAnalyzer(model, solver, provider, rve);
 
             homogenization.Initialize();
