@@ -41,11 +41,9 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
         private static readonly double[] minCoords = { -1.0, -1.0, -1.0 };
         private static readonly double[] maxCoords = { +1.0, +1.0, +1.0 };
-        private const double thickness = 1.0;
         private static readonly int[] numElements = { 45, 45, 45 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 
-        private const double zeroLevelSetTolerance = 1E-6;
         private const double singularityRelativeAreaTolerance = 1E-8;
         private const int defaultPhaseID = 0;
 

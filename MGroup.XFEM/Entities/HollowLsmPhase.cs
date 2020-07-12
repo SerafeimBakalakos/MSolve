@@ -63,10 +63,10 @@ namespace MGroup.XFEM.Entities
             if (this.MergeLevel != otherPhase.MergeLevel) return false;
 
             #region debug
-            if (this.ID == 12 && otherPhase.ID == 16)
-            {
-                Console.WriteLine();
-            }
+            //if (this.ID == 12 && otherPhase.ID == 16)
+            //{
+            //    Console.WriteLine();
+            //}
             #endregion
 
             if (otherPhase is HollowLsmPhase otherHollowPhase)
