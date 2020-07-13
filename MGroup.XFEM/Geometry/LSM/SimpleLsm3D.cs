@@ -37,7 +37,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 
-        public double[] NodalLevelSets { get; }
+        public double[] NodalLevelSets { get; protected set; }
 
         public virtual IElementGeometryIntersection Intersect(IXFiniteElement element)
         {

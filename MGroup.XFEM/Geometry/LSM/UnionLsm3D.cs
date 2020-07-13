@@ -61,6 +61,7 @@ namespace MGroup.XFEM.Geometry.LSM
             {
                 var clone = new double[this.NodalLevelSets.Length];
                 Array.Copy(this.NodalLevelSets, clone, this.NodalLevelSets.Length);
+                this.NodalLevelSets = clone;
             }
 
             if (otherGeometry is UnionLsm3D otherUnionLsm)
