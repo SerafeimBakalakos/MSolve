@@ -5,7 +5,7 @@ using ISAAR.MSolve.Discretization.Mesh;
 
 namespace MGroup.XFEM.Geometry.Mesh
 {
-    public class UniformMesh3D
+    public class UniformMesh3D : IStructuredMesh
     {
         private const int dim = 3;
         private readonly double[] dx;
