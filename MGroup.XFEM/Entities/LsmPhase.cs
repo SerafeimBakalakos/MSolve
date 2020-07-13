@@ -84,10 +84,23 @@ namespace MGroup.XFEM.Entities
             //TODO: This does not necessarily provide correct results in coarse meshes.
 
             // Only process the elements near the contained nodes. Of course not all of them will be completely inside the phase.
-            IEnumerable<IXFiniteElement> nearBoundaryElements = FindNearbyElements();
-            foreach (IXFiniteElement element in nearBoundaryElements)
+            IEnumerable<IXFiniteElement> elementsToCheck = geometricModel.EnableOptimizations ? FindNearbyElements() : elements;
+            foreach (IXFiniteElement element in elementsToCheck)
             {
                 bool isInside = ContainsCompletely(element);
+
+                #region debug
+                //if (this.ID == 6 && element.ID == 5973)
+                //{
+                //    Console.WriteLine();
+                //}
+
+                //if (this.ID == 6 && element.Nodes[0].ID == 5973)
+                //{
+                //    Console.WriteLine();
+                //}
+                #endregion
+
                 if (isInside)
                 {
                     ContainedElements.Add(element);
@@ -102,18 +115,6 @@ namespace MGroup.XFEM.Entities
                         isBoundary = true;
                         continue;
                     }
-
-                    #region debug
-                    //if (this.ID == 12 && element.ID == 63216)
-                    //{
-                    //    Console.WriteLine();
-                    //}
-
-                    //if (this.ID == 1 && element.Nodes[0].ID == 84)
-                    //{
-                    //    Console.WriteLine();
-                    //}
-                    #endregion
 
                     IElementGeometryIntersection intersection = boundary.Geometry.Intersect(element);
                     if (intersection.RelativePosition == RelativePositionCurveElement.Intersecting)

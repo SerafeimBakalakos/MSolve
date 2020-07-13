@@ -125,7 +125,9 @@ namespace MGroup.XFEM.Elements
         ISubdomain IElement.Subdomain => this.Subdomain;
         public XSubdomain Subdomain { get; set; }
 
-        public double CalcBulkSize() => elementGeometry.CalcBulkSize(Nodes);
+        public double CalcBulkSizeCartesian() => elementGeometry.CalcBulkSizeCartesian(Nodes);
+
+        public double CalcBulkSizeNatural() => elementGeometry.CalcBulkSizeNatural();
 
         public IMatrix DampingMatrix(IElement element) => throw new NotImplementedException();
 
@@ -211,6 +213,7 @@ namespace MGroup.XFEM.Elements
                 {
                     XPoint point = new XPoint();
                     point.Element = this;
+                    point.Coordinates[CoordinateSystem.ElementNatural] = gaussPointsBulk[i].Coordinates;
                     point.ShapeFunctions = evalInterpolationsAtGPsVolume[i].ShapeFunctions;
                     this.FindPhaseAt(point);
                     this.phasesAtGPsVolume[i] = point.Phase;

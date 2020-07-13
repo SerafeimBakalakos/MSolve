@@ -26,9 +26,10 @@ namespace MGroup.XFEM.Tests
 
             //ExampleUniformThickness3D.PlotGeometryAndEntities();
             //ExampleUniformThickness3D.PlotSolution();
-            //ExampleRandom3D.PlotGeometryAndEntities();
+
+            ExampleRandom3D.PlotGeometryAndEntities();
             //ExampleRandom3D.PlotSolution();
-            ExampleRandom3D.RunHomogenization();
+            //ExampleRandom3D.RunHomogenization();
 
             //ExampleStochastic2D.RunAll();
             //ExampleStochastic3D.RunAll();

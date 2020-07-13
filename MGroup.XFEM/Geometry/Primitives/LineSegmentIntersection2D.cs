@@ -41,9 +41,11 @@ namespace MGroup.XFEM.Geometry.Primitives
             this.EndGlobalCartesian = ProjectLocalToGlobal(endLocalX);
         }
 
-        public LineSegmentIntersection2D(double[] start, double[] end, IXFiniteElement element, RelativePositionCurveElement pos)
+        public LineSegmentIntersection2D(int parentGeometryID, double[] start, double[] end, IXFiniteElement element, 
+            RelativePositionCurveElement pos)
         {
             Debug.Assert(pos == RelativePositionCurveElement.Intersecting || pos == RelativePositionCurveElement.Conforming);
+            this.ParentGeometryID = parentGeometryID;
             this.StartGlobalCartesian = start;
             this.EndGlobalCartesian = end;
             this.Element = element;
@@ -60,6 +62,8 @@ namespace MGroup.XFEM.Geometry.Primitives
             this.originLocal[0] = -cosa * start[0] - sina * start[1];
             this.originLocal[1] = sina * start[0] - cosa * start[1];
         }
+
+        public int ParentGeometryID { get; }
 
         public RelativePositionCurveElement RelativePosition { get; }
 

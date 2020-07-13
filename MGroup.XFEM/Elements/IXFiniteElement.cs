@@ -38,7 +38,9 @@ namespace MGroup.XFEM.Elements
 
         XSubdomain Subdomain { get; set; }
 
-        double CalcBulkSize();
+        double CalcBulkSizeCartesian();
+
+        double CalcBulkSizeNatural();
 
         XPoint EvaluateFunctionsAt(double[] naturalPoint);
 

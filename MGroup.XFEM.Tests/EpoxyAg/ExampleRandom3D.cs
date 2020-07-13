@@ -40,9 +40,9 @@ namespace MGroup.XFEM.Tests.EpoxyAg
         private const string pathTemperatureField = outputDirectory + "temperature_field.vtk";
         private const string pathHeatFluxAtGPs = outputDirectory + "heat_flux_integration_points.vtk";
 
-        private static readonly double[] minCoords = { -1000.0, -1000.0, -1000.0 };
-        private static readonly double[] maxCoords = { +1000.0, +1000.0, +1000.0 };
-        private static readonly int[] numElements = { 25, 25, 25 };
+        private static readonly double[] minCoords = { -2000.0, -2000.0, -2000.0 };
+        private static readonly double[] maxCoords = { +2000.0, +2000.0, +2000.0 };
+        private static readonly int[] numElements = { 100, 100, 100 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 
         private const double singularityRelativeAreaTolerance = 1E-8;
@@ -51,7 +51,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
         //private const int numBalls = 8, rngSeed = 33; //problems in intersection mesh
         //private const int numBalls = 8, rngSeed = 13;//problems in intersection mesh
         //private const int numBalls = 8, rngSeed = 17;
-        private const int numBalls = 5, rngSeed = 1;
+        private const int numBalls = 50, rngSeed = 33;
         //private const double epoxyPhaseRadius = 0.2, silverPhaseThickness = 0.1;
 
         private const double conductEpoxy = 0.25, conductSilver = 429;
@@ -65,15 +65,16 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             (XModel model, BiMaterialField materialField) = CreateModel();
             GeometryPreprocessor3DRandom preprocessor = CreatePhases(model, materialField);
             GeometricModel geometricModel = preprocessor.GeometricModel;
+            geometricModel.EnableOptimizations = false;
 
             // Plot original mesh and level sets
-            Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
+            //Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
 
             // Find and plot intersections between level set curves and elements
             Console.WriteLine("Identifying interactions between physical and geometric models");
             geometricModel.InteractWithNodes();
             geometricModel.UnifyOverlappingPhases(true);
-            Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_after_union", model, geometricModel);
+            //Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_after_union", model, geometricModel);
 
             geometricModel.InteractWithElements();
             geometricModel.FindConformingMesh();
@@ -88,31 +89,31 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 = Utilities.Plotting.CalcIntersections(model, geometricModel);
             var allIntersections = new List<IElementGeometryIntersection>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
-            var intersectionPlotter = new LsmElementIntersectionsPlotter();
+            var intersectionPlotter = new LsmElementIntersectionsPlotter(false);
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
             Dictionary<IXFiniteElement, IElementSubcell[]> triangulation =
                 Utilities.Plotting.CreateConformingMesh(3, elementIntersections);
             var conformingMesh = new ConformingOutputMesh(model.Nodes, model.Elements, triangulation);
-            using (var writer = new VtkFileWriter(pathConformingMesh))
-            {
-                writer.WriteMesh(conformingMesh);
-            }
+            //using (var writer = new VtkFileWriter(pathConformingMesh))
+            //{
+            //    writer.WriteMesh(conformingMesh);
+            //}
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
 
             // Plot bulk integration points
-            var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2),
-                TetrahedronQuadrature.Order2Points4);
-            foreach (IXFiniteElement element in model.Elements)
-            {
-                if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
-            }
-            var integrationPlotter = new IntegrationPlotter(model);
-            integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
+            //var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2),
+            //    TetrahedronQuadrature.Order2Points4);
+            //foreach (IXFiniteElement element in model.Elements)
+            //{
+            //    if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
+            //}
+            //var integrationPlotter = new IntegrationPlotter(model);
+            //integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
 
             // Plot boundary integration points
-            integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
+            //integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
 
             // Enrichment
             Console.WriteLine("Applying enrichments");
@@ -121,9 +122,9 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             model.UpdateDofs();
             model.UpdateMaterials();
 
-            double elementSize = (maxCoords[0] - minCoords[0]) / numElements[0];
-            var enrichmentPlotter = new EnrichmentPlotter(model, elementSize, false);
-            enrichmentPlotter.PlotStepEnrichedNodes(pathStepEnrichedNodes);
+            //double elementSize = (maxCoords[0] - minCoords[0]) / numElements[0];
+            //var enrichmentPlotter = new EnrichmentPlotter(model, elementSize, false);
+            //enrichmentPlotter.PlotStepEnrichedNodes(pathStepEnrichedNodes);
             //enrichmentPlotter.PlotJunctionEnrichedNodes(pathJunctionEnrichedNodes);
 
             // Write volume fractions

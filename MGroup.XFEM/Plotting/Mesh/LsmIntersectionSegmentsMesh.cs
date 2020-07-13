@@ -18,6 +18,7 @@ namespace MGroup.XFEM.Plotting.Mesh
         {
             var vertices = new List<VtkPoint>();
             this.ParentElementIDsOfVertices = new List<double>();
+            this.ParentGeometryIDsOfVertices = new List<double>();
             var cells = new List<VtkCell>();
             int vertexID = 0;
             foreach (IElementGeometryIntersection intersection in intersections)
@@ -33,6 +34,7 @@ namespace MGroup.XFEM.Plotting.Mesh
                     vertices.Add(vertex);
                     verticesOfIntersection.Add(vertex);
                     ParentElementIDsOfVertices.Add(intersection.Element.ID);
+                    ParentGeometryIDsOfVertices.Add(intersection.ParentGeometryID);
                 }
                 
                 // Cells of the intersection mesh
@@ -62,5 +64,7 @@ namespace MGroup.XFEM.Plotting.Mesh
         public IEnumerable<VtkPoint> OutVertices { get; }
 
         public List<double> ParentElementIDsOfVertices { get; }
+
+        public List<double> ParentGeometryIDsOfVertices { get; }
     }
 }

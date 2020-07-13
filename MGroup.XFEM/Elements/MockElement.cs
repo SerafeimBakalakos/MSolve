@@ -116,7 +116,9 @@ namespace MGroup.XFEM.Elements
             throw new NotImplementedException();
         }
 
-        public double CalcBulkSize() => elementGeometry.CalcBulkSize(Nodes);
+        public double CalcBulkSizeCartesian() => elementGeometry.CalcBulkSizeCartesian(Nodes);
+
+        public double CalcBulkSizeNatural() => elementGeometry.CalcBulkSizeNatural();
 
         public void IdentifyDofs()
         {

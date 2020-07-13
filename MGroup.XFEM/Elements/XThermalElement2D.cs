@@ -128,7 +128,9 @@ namespace MGroup.XFEM.Elements
 
         public double Thickness { get; }
 
-        public double CalcBulkSize() => elementGeometry.CalcBulkSize(Nodes);
+        public double CalcBulkSizeCartesian() => elementGeometry.CalcBulkSizeCartesian(Nodes);
+
+        public double CalcBulkSizeNatural() => elementGeometry.CalcBulkSizeNatural();
 
         public IMatrix DampingMatrix(IElement element) => throw new NotImplementedException();
 

@@ -19,9 +19,10 @@ namespace MGroup.XFEM.Geometry.LSM
         private readonly double[] startNatural;
         private readonly double[] endNatural;
 
-        public LsmElementIntersection2D(RelativePositionCurveElement relativePosition, IXFiniteElement element,
-            double[] startNatural, double[] endNatural)
+        public LsmElementIntersection2D(int parentGeometryID, RelativePositionCurveElement relativePosition, 
+            IXFiniteElement element, double[] startNatural, double[] endNatural)
         {
+            this.ParentGeometryID = parentGeometryID;
             if (relativePosition == RelativePositionCurveElement.Disjoint)
             {
                 throw new ArgumentException("There is no intersection between the curve and element");
@@ -35,6 +36,8 @@ namespace MGroup.XFEM.Geometry.LSM
         public RelativePositionCurveElement RelativePosition { get; }
 
         public IXFiniteElement Element { get; } //TODO: Perhaps this should be defined in the interface
+
+        public int ParentGeometryID { get; }
 
         public IIntersectionMesh ApproximateGlobalCartesian()
         {

@@ -23,13 +23,15 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         private readonly IntersectionMesh intersectionMeshNatural;
 
-        public LsmElementIntersection3D(RelativePositionCurveElement relativePosition, IXFiniteElement element,
-            IntersectionMesh intersectionMeshNatural)
+        public LsmElementIntersection3D(int parentGeometryID, RelativePositionCurveElement relativePosition, 
+            IXFiniteElement element, IntersectionMesh intersectionMeshNatural)
         {
+            this.ParentGeometryID = parentGeometryID;
             this.RelativePosition = relativePosition;
             this.Element = element;
             this.intersectionMeshNatural = intersectionMeshNatural;
         }
+        public int ParentGeometryID { get; }
 
         public RelativePositionCurveElement RelativePosition { get; }
 

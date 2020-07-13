@@ -10,8 +10,10 @@ namespace MGroup.XFEM.Elements
 {
     public class ElementQuad4Geometry : IElementGeometry
     {
-        public double CalcBulkSize(IReadOnlyList<XNode> nodes) 
+        public double CalcBulkSizeCartesian(IReadOnlyList<XNode> nodes) 
             => Utilities.CalcPolygonArea(nodes.Select(n => n.Coordinates).ToArray());
+
+        public double CalcBulkSizeNatural() => 4.0;
 
         public (ElementEdge[], ElementFace[]) FindEdgesFaces(IReadOnlyList<XNode> nodes)
         {

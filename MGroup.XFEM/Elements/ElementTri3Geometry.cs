@@ -9,8 +9,10 @@ namespace MGroup.XFEM.Elements
 {
     public class ElementTri3Geometry : IElementGeometry
     {
-        public double CalcBulkSize(IReadOnlyList<XNode> nodes) 
+        public double CalcBulkSizeCartesian(IReadOnlyList<XNode> nodes) 
             => Utilities.CalcPolygonArea(nodes.Select(n => n.Coordinates).ToArray());
+
+        public double CalcBulkSizeNatural() => 0.5;
 
         public (ElementEdge[], ElementFace[]) FindEdgesFaces(IReadOnlyList<XNode> nodes)
         {

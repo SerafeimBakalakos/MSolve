@@ -93,12 +93,12 @@ namespace MGroup.XFEM.Geometry.Primitives
             // Investigate the intersection type
             if (intersections.Count == 0)
             {
-                return new NullElementIntersection(null);
+                return new NullElementIntersection(-1, null);
                 //return (RelativePositionCurveDisc.Disjoint, new double[0]);
             }
             else if (intersections.Count == 1)
             {
-                return new NullElementIntersection(null);
+                return new NullElementIntersection(-1, null);
                 //return (RelativePositionCurveDisc.Tangent, new double[] { intersections.First() });
             }
             else if (intersections.Count == 2)
@@ -108,12 +108,12 @@ namespace MGroup.XFEM.Geometry.Primitives
                 double[] end = ProjectLocalToGlobal(intersectionsLocal[1]);
                 if (conformingSegment)
                 {
-                    return new LineSegmentIntersection2D(start, end, null, RelativePositionCurveElement.Conforming);
+                    return new LineSegmentIntersection2D(-1, start, end, null, RelativePositionCurveElement.Conforming);
                     //return (RelativePositionCurveDisc.Conforming, intersections.ToArray());
                 }
                 else
                 {
-                    return new LineSegmentIntersection2D(start, end, null, RelativePositionCurveElement.Intersecting);
+                    return new LineSegmentIntersection2D(-1, start, end, null, RelativePositionCurveElement.Intersecting);
                     //return (RelativePositionCurveDisc.Intersecting, intersections.ToArray());
                 }
             }

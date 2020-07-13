@@ -39,7 +39,7 @@ namespace MGroup.XFEM.Geometry.LSM
         {
             if (IsElementDisjoint(element)) // Check this first, since it is faster and most elements are in this category 
             {
-                return new NullElementIntersection(element);
+                return new NullElementIntersection(ID, element);
             }
 
             double tol = MeshTolerance.CalcTolerance(element);
@@ -68,7 +68,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 else if ((levelSet0 == 0) && (levelSet1 == 0)) // Curve is tangent to the element. Edge lies on the curve.
                 {
                     //TODO: also check (DEBUG only) that all other edges are not intersected unless its is at these 2 nodes
-                    return new LsmElementIntersection2D(RelativePositionCurveElement.Conforming, element,
+                    return new LsmElementIntersection2D(ID, RelativePositionCurveElement.Conforming, element,
                         node0Natural, node1Natural);
                 }
                 else if ((levelSet0 == 0) && (levelSet1 != 0)) // Curve runs through a node. Not sure if it is tangent yet.
@@ -84,12 +84,13 @@ namespace MGroup.XFEM.Geometry.LSM
             if (intersections.Count == 1) // Curve is tangent to the element at a single node
             {
                 //TODO: Make sure the intersection point is a node (debug only)
-                return new NullElementIntersection(element);
+                return new NullElementIntersection(ID, element);
             }
             else if (intersections.Count == 2)
             {
                 double[][] points = intersections.ToArray();
-                return new LsmElementIntersection2D(RelativePositionCurveElement.Intersecting, element, points[0], points[1]);
+                return new LsmElementIntersection2D(ID, RelativePositionCurveElement.Intersecting, 
+                    element, points[0], points[1]);
             }
             else throw new Exception("This should not have happened");
         }

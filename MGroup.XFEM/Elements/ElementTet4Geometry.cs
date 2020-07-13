@@ -10,8 +10,11 @@ namespace MGroup.XFEM.Elements
 {
     public class ElementTet4Geometry : IElementGeometry
     {
-        public double CalcBulkSize(IReadOnlyList<XNode> nodes)
+        public double CalcBulkSizeCartesian(IReadOnlyList<XNode> nodes)
             => Utilities.CalcTetrahedronVolume(nodes.Select(n => n.Coordinates).ToArray());
+
+        public double CalcBulkSizeNatural() => 1.0 / 6;
+
 
         public (ElementEdge[], ElementFace[]) FindEdgesFaces(IReadOnlyList<XNode> nodes)
         {

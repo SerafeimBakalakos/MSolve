@@ -11,7 +11,7 @@ namespace MGroup.XFEM.Elements
 {
     public class ElementHexa8Geometry : IElementGeometry
     {
-        public double CalcBulkSize(IReadOnlyList<XNode> nodes)
+        public double CalcBulkSizeCartesian(IReadOnlyList<XNode> nodes)
         {
             //TODO: Split it into tetrahedra and use the closed formula for their volume
 
@@ -26,6 +26,7 @@ namespace MGroup.XFEM.Elements
             }
             return volume;
         }
+        public double CalcBulkSizeNatural() => 8.0;
 
         public (ElementEdge[], ElementFace[]) FindEdgesFaces(IReadOnlyList<XNode> nodes)
         {

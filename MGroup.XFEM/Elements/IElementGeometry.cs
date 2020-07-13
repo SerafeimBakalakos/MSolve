@@ -12,7 +12,13 @@ namespace MGroup.XFEM.Elements
         /// 1D: calculates length. 2D: calculates area. 3D: calculates volume
         /// </summary>
         /// <param name="nodes"></param>
-        double CalcBulkSize(IReadOnlyList<XNode> nodes);
+        double CalcBulkSizeCartesian(IReadOnlyList<XNode> nodes);
+
+        /// <summary>
+        /// 1D: calculates length. 2D: calculates area. 3D: calculates volume
+        /// </summary>
+        /// <param name="nodes"></param>
+        double CalcBulkSizeNatural();
 
         (ElementEdge[], ElementFace[]) FindEdgesFaces(IReadOnlyList<XNode> nodes);
     }

@@ -29,6 +29,8 @@ namespace MGroup.XFEM.Entities
 
         public int Dimension { get; set; }
 
+        public bool EnableOptimizations { get; set; } = true;
+
         public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 
         public List<IPhase> Phases { get; } = new List<IPhase>();
@@ -44,7 +46,7 @@ namespace MGroup.XFEM.Entities
                 {
                     Debug.Assert(element.Phases.Count == 1);
                     IPhase phase = element.Phases.First();
-                    double elementBulkSize = element.CalcBulkSize();
+                    double elementBulkSize = element.CalcBulkSizeCartesian();
                     bulkSizes[phase.ID] += elementBulkSize;
                 }
                 else
@@ -79,8 +81,9 @@ namespace MGroup.XFEM.Entities
 
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
-                var boundaries = element.PhaseIntersections.Values.Cast<IElementGeometryIntersection>();
-                if (boundaries.Count() == 0) continue;
+                if (element.Phases.Count == 1) continue;
+                IEnumerable<IElementGeometryIntersection> boundaries = element.PhaseIntersections.Values;
+                Debug.Assert(boundaries.Count() != 0);
                 element.ConformingSubcells = triangulator.FindConformingMesh(element, boundaries, MeshTolerance);
             }
         }

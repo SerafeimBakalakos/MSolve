@@ -117,7 +117,7 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
             else
             {
                 // Calculate the area/volume of the whole element and on which side it lies
-                double bulkSize = element.CalcBulkSize();
+                double bulkSize = element.CalcBulkSizeCartesian();
                 
                 if (element.Phases.Count == 1)
                 {

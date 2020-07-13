@@ -45,17 +45,17 @@ namespace MGroup.XFEM.Geometry.LSM
             RelativePositionCurveElement position = FindRelativePosition(element, levelSetSubset);
             if (position == RelativePositionCurveElement.Disjoint)
             {
-                return new NullElementIntersection(element);
+                return new NullElementIntersection(ID, element);
             }
             else if (position == RelativePositionCurveElement.Conforming)
             {
                 IntersectionMesh intersectionMesh = FindIntersectionConforming(element);
-                return new LsmElementIntersection3D(RelativePositionCurveElement.Conforming, element, intersectionMesh);
+                return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Conforming, element, intersectionMesh);
             }
             else 
             {
                 var intersectionMesh = FindIntersectionIntersecting(element, levelSetSubset);
-                return new LsmElementIntersection3D(RelativePositionCurveElement.Intersecting, element, intersectionMesh);
+                return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Intersecting, element, intersectionMesh);
             }
         }
 

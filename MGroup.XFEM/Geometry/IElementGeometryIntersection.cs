@@ -12,6 +12,8 @@ namespace MGroup.XFEM.Geometry
     {
         IXFiniteElement Element { get; }
 
+        int ParentGeometryID { get; }
+
         RelativePositionCurveElement RelativePosition { get; }
 
         IIntersectionMesh ApproximateGlobalCartesian();

@@ -10,10 +10,13 @@ namespace MGroup.XFEM.Geometry
 {
     public class NullElementIntersection : IElementGeometryIntersection
     {
-        public NullElementIntersection(IXFiniteElement element)
+        public NullElementIntersection(int parentGeometryID, IXFiniteElement element)
         {
+            this.ParentGeometryID = parentGeometryID;
             this.Element = element;
         }
+
+        public int ParentGeometryID { get; }
 
         public RelativePositionCurveElement RelativePosition => RelativePositionCurveElement.Disjoint;
 
