@@ -74,7 +74,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 #region debug
                 //double radiusExternal = Math.Pow(1 + densityEpoxy / densitySilver * weightFraction, 1.0 / 3) * radiusEpoxyPhase + 100;
                 //double radiusExternal = radiusEpoxyPhase + 10;
-                double radiusExternal = radiusEpoxyPhase + 100;
+                double radiusExternal = radiusEpoxyPhase + 50;
                 #endregion
 
                 var newBallInternal = new Sphere(newCenter[0], newCenter[1], newCenter[2], radiusEpoxyPhase);
@@ -85,12 +85,6 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 ballsExternal.Add(newBallExternal);
 
                 // Create phases
-                #region debug
-                //if (GeometricModel.Phases.Count == 5)
-                //{
-                //    Console.WriteLine();
-                //}
-                #endregion
                 var phaseInternal = new LsmPhase(GeometricModel.Phases.Count, GeometricModel, -1);
                 GeometricModel.Phases.Add(phaseInternal);
                 EpoxyPhaseIDs.Add(phaseInternal.ID);
@@ -154,9 +148,9 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             for (int i = 0; i < ballsInternal.Count; ++i)
             {
                 double centerDistance = XFEM.Geometry.Utilities.Distance3D(newBallInternal.Center, ballsInternal[i].Center);
-                //if (newBallInternal.Radius + ballsInternal[i].Radius >= centerDistance) return true;
-                if (newBallExternal.Radius + ballsInternal[i].Radius >= centerDistance) return true;
-                if (newBallInternal.Radius + ballsExternal[i].Radius >= centerDistance) return true;
+                if (newBallInternal.Radius + ballsInternal[i].Radius >= centerDistance) return true;
+                //if (newBallExternal.Radius + ballsInternal[i].Radius >= centerDistance) return true;
+                //if (newBallInternal.Radius + ballsExternal[i].Radius >= centerDistance) return true;
             }
             return false;
         }
