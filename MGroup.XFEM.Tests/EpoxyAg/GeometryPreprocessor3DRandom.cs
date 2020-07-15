@@ -124,14 +124,14 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             volumes[MatrixPhaseName] = phaseVolumes[MatrixPhaseID];
 
             volumes[EpoxyPhaseName] = 0;
-            foreach (int phaseID in EpoxyPhaseIDs) volumes[EpoxyPhaseName] = phaseVolumes[phaseID];
+            foreach (int phaseID in EpoxyPhaseIDs) volumes[EpoxyPhaseName] += phaseVolumes[phaseID];
 
             volumes[SilverPhaseName] = 0;
             foreach (int phaseID in SilverPhaseIDs)
             {
                 try
                 {
-                    volumes[SilverPhaseName] = phaseVolumes[phaseID];
+                    volumes[SilverPhaseName] += phaseVolumes[phaseID];
                 }
                 catch (KeyNotFoundException)
                 {

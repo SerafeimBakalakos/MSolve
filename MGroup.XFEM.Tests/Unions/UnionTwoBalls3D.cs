@@ -110,6 +110,10 @@ namespace MGroup.XFEM.Tests.Plotting
             phasePlotter.PlotNodes(pathPhasesOfNodes);
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
 
+            // Volumes
+            var volumes = geometricModel.CalcBulkSizeOfEachPhase();
+            Console.WriteLine(Utilities.Printing.PrintVolumes(volumes));
+
             // Enrichment
             ISingularityResolver singularityResolver = new NullSingularityResolver();
             var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);

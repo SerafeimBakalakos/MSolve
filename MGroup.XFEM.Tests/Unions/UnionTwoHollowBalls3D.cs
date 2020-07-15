@@ -89,6 +89,15 @@ namespace MGroup.XFEM.Tests.Plotting
                 writer.WriteMesh(conformingMesh);
             }
 
+            // Plot phases
+            var phasePlotter = new PhasePlotter(model, geometricModel, defaultPhaseID);
+            phasePlotter.PlotNodes(pathPhasesOfNodes);
+            phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
+
+            // Volumes
+            var volumes = geometricModel.CalcBulkSizeOfEachPhase();
+            Console.WriteLine(Utilities.Printing.PrintVolumes(volumes));
+
             // Plot bulk integration points
             var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2),
                 TetrahedronQuadrature.Order2Points4);
@@ -104,11 +113,6 @@ namespace MGroup.XFEM.Tests.Plotting
 
             // Plot boundary integration points
             integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
-
-            // Plot phases
-            var phasePlotter = new PhasePlotter(model, geometricModel, defaultPhaseID);
-            phasePlotter.PlotNodes(pathPhasesOfNodes);
-            phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
 
             // Enrichment
             ISingularityResolver singularityResolver = new NullSingularityResolver();

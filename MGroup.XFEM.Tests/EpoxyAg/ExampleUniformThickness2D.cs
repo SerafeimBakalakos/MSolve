@@ -94,6 +94,9 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             }
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
 
+            // Write volume fractions
+            PrintVolumes(preprocessor);
+
             // Plot bulk integration points
             var integrationBulk = new IntegrationWithConformingSubtriangles2D(GaussLegendre2D.GetQuadratureWithOrder(2, 2),
                 TriangleQuadratureSymmetricGaussian.Order2Points3);
@@ -119,9 +122,6 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             var enrichmentPlotter = new EnrichmentPlotter(model, elementSize, false);
             enrichmentPlotter.PlotStepEnrichedNodes(pathStepEnrichedNodes);
             //enrichmentPlotter.PlotJunctionEnrichedNodes(pathJunctionEnrichedNodes);
-
-            // Write volume fractions
-            PrintVolumes(preprocessor);
         }
 
         public static void PlotSolution()

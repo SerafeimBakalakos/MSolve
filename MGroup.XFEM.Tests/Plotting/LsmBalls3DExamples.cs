@@ -209,6 +209,10 @@ namespace MGroup.XFEM.Tests.Plotting
             phasePlotter.PlotNodes(pathPhasesOfNodes);
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
 
+            // Volumes
+            var volumes = geometricModel.CalcBulkSizeOfEachPhase();
+            Console.WriteLine(Utilities.Printing.PrintVolumes(volumes));
+
             // Plot bulk integration points
             var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2),
                 TetrahedronQuadrature.Order2Points4);

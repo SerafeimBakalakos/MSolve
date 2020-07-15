@@ -81,6 +81,10 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             var phasePlotter = new PhasePlotter(model, geometricModel, defaultPhaseID);
             phasePlotter.PlotNodes(pathPhasesOfNodes);
 
+
+            // Write volumes
+            PrintVolumes(preprocessor);
+
             //TODO: The next intersections and conforming mesh should have been taken care by the geometric model. 
             //      Read them from there.
             Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> elementIntersections
@@ -125,8 +129,6 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             enrichmentPlotter.PlotStepEnrichedNodes(pathStepEnrichedNodes);
             //enrichmentPlotter.PlotJunctionEnrichedNodes(pathJunctionEnrichedNodes);
 
-            // Write volume fractions
-            PrintVolumes(preprocessor);
         }
 
         public static void PlotSolution()
