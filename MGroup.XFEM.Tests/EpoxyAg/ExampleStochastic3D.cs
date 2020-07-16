@@ -31,15 +31,14 @@ namespace MGroup.XFEM.Tests.EpoxyAg
         private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\EpoxyAG\Stochastic3D\";
         private const string pathResults = outputDirectory + "results.txt";
 
-        private static readonly double[] minCoords = { -5000.0, -5000.0, -5000.0 };
-        private static readonly double[] maxCoords = { +5000.0, +5000.0, +5000.0 };
-        private static readonly int[] numElements = { 15, 15, 15 };
+        private static readonly double[] minCoords = { -2000.0, -2000.0, -2000.0 };
+        private static readonly double[] maxCoords = { +2000.0, +2000.0, +2000.0 };
+        private static readonly int[] numElements = { 40, 40, 40 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 
         private const double singularityRelativeAreaTolerance = 1E-8;
         private const int defaultPhaseID = 0;
 
-        private const int numBalls = 5;
         
         // These are hard-coded in GeometryPreprocessor
         //private const double epoxyPhaseRadius = 0.2, silverPhaseThickness = 0.1;
@@ -57,27 +56,27 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
         public static void RunAll()
         {
-            int numRealizations = 10;
-            int initialSeed = 33;
-            var rng = new Random(initialSeed);
+            int numRealizations = 1000;
+            var rng = new Random();
             for (int i = 0; i < numRealizations; i++)
             {
+                int numBalls = rng.Next(0, 101);
                 Console.WriteLine();
                 Console.WriteLine("Realization " + i);
                 int realizationSeed = rng.Next();
-                var realization = new ExampleStochastic3D(realizationSeed);
-                realization.Run();
+                var realizationExample = new ExampleStochastic3D(realizationSeed);
+                realizationExample.Run(numBalls);
             }
         }
 
-        public void Run()
+        public void Run(int numBalls)
         {
             try
             {
                 // Create physical model, LSM and phases
                 Console.WriteLine("Creating physical and geometric models");
                 (XModel model, BiMaterialField materialField) = CreateModel();
-                GeometryPreprocessor3DRandom preprocessor = CreatePhases(model, materialField);
+                GeometryPreprocessor3DRandom preprocessor = CreatePhases(model, materialField, numBalls);
                 GeometricModel geometricModel = preprocessor.GeometricModel;
 
                 // Geometric interactions
@@ -111,6 +110,8 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                     writer.WriteLine("#################################################################");
                     writer.WriteLine("Date = " + DateTime.Now);
                     writer.WriteLine("Realization with seed = " + rngSeed);
+                    writer.WriteLine($"Conductivity epoxy={conductEpoxy}, conductivity Ag={conductSilver}," +
+                        $" conductivity interface={conductBoundaryEpoxySilver}");
                     string volumesString = Utilities.Printing.PrintVolumes(volumes);
                     writer.WriteLine(volumesString);
                     writer.WriteLine(
@@ -119,19 +120,22 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                         + $" {conductivity[2, 0]} {conductivity[2, 1]} {conductivity[2, 2]} ]");
                 }
             }
-            catch(Exception)
+            catch(Exception ex)
             {
                 using (var writer = new StreamWriter(pathResults, true))
                 {
                     writer.WriteLine();
                     writer.WriteLine("#################################################################");
                     writer.WriteLine("Realization with seed = " + rngSeed);
+                    writer.WriteLine($"Conductivity epoxy={conductEpoxy}, conductivity Ag={conductSilver}," +
+                        $" conductivity interface={conductBoundaryEpoxySilver}");
                     writer.WriteLine("Analysis failed!");
+                    writer.WriteLine(ex.Message);
                 }
             }
         }
 
-        private GeometryPreprocessor3DRandom CreatePhases(XModel model, BiMaterialField materialField)
+        private GeometryPreprocessor3DRandom CreatePhases(XModel model, BiMaterialField materialField, int numBalls)
         {
             var preprocessor = new GeometryPreprocessor3DRandom();
             preprocessor.MinCoordinates = minCoords;

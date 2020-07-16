@@ -216,8 +216,8 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
 
-            // Calculate volumes of each phase
-            Dictionary<string, double> volumes = preprocessor.CalcPhaseVolumes();
+            // Write volume fractions
+            Console.WriteLine(PrintVolumes(preprocessor));
 
             // Run homogenization analysis
             IMatrix conductivity = Analysis.RunHomogenizationAnalysis3D(model, minCoords, maxCoords);
