@@ -128,7 +128,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             //enrichmentPlotter.PlotJunctionEnrichedNodes(pathJunctionEnrichedNodes);
 
             // Write volume fractions
-            PrintVolumes(preprocessor);
+            Console.WriteLine(PrintVolumes(preprocessor));
         }
 
         public static void PlotSolution()
@@ -154,7 +154,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             model.UpdateMaterials();
 
             // Write volume fractions
-            PrintVolumes(preprocessor);
+            Console.WriteLine(PrintVolumes(preprocessor));
 
             // Run analysis and plot temperature and heat flux
             Console.WriteLine("Running XFEM analysis");
@@ -254,16 +254,32 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField), materialField);
         }
 
-        private static void PrintVolumes(GeometryPreprocessor3DRandom preprocessor)
+        private static string PrintVolumes(GeometryPreprocessor3DRandom preprocessor)
         {
+            var stringBuilder = new StringBuilder();
             Dictionary<string, double> volumes = preprocessor.CalcPhaseVolumes();
-            Console.WriteLine();
-            Console.Write("Total areas of each material: ");
+            stringBuilder.AppendLine();
+            stringBuilder.Append("Volumes of each material: ");
             foreach (string phase in volumes.Keys)
             {
-                Console.Write($"{phase} phase : {volumes[phase]}, ");
+                stringBuilder.Append($"{phase} phase : {volumes[phase]}, ");
             }
-            Console.WriteLine();
+            stringBuilder.AppendLine();
+
+            double totalVolume = 0;
+            foreach (string phase in volumes.Keys)
+            {
+                totalVolume += volumes[phase];
+            }
+            stringBuilder.AppendLine($"Total volume: {totalVolume}");
+
+            double volFracAg = volumes[preprocessor.SilverPhaseName] / totalVolume;
+            stringBuilder.AppendLine($"Volume fraction Ag: {volFracAg}");
+            double volFracInclusions = 
+                (volumes[preprocessor.SilverPhaseName] + volumes[preprocessor.EpoxyPhaseName]) / totalVolume;
+            stringBuilder.AppendLine($"Volume fraction inclusions: {volFracInclusions}");
+
+            return stringBuilder.ToString();
         }
     }
 }
