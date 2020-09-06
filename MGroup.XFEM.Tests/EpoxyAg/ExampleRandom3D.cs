@@ -42,7 +42,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
         private static readonly double[] minCoords = { -2000.0, -2000.0, -2000.0 };
         private static readonly double[] maxCoords = { +2000.0, +2000.0, +2000.0 };
-        private static readonly int[] numElements = { 50, 50, 50 };
+        private static readonly int[] numElements = { 40, 40, 40 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 
         private const double singularityRelativeAreaTolerance = 1E-8;
@@ -51,7 +51,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
         //private const int numBalls = 8, rngSeed = 33; //problems in intersection mesh
         //private const int numBalls = 8, rngSeed = 13;//problems in intersection mesh
         //private const int numBalls = 8, rngSeed = 17;
-        private const int numBalls = 100, rngSeed = 33;
+        private const int numBalls = 28, rngSeed = 33;
         //private const double epoxyPhaseRadius = 0.2, silverPhaseThickness = 0.1;
 
         private const double conductEpoxy = 0.25, conductSilver = 429;
@@ -197,6 +197,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             (XModel model, BiMaterialField materialField) = CreateModel();
             GeometryPreprocessor3DRandom preprocessor = CreatePhases(model, materialField);
             GeometricModel geometricModel = preprocessor.GeometricModel;
+            geometricModel.EnableOptimizations = false;
 
             // Geometric interactions
             Console.WriteLine("Identifying interactions between physical and geometric models");

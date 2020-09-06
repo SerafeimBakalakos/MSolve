@@ -74,7 +74,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 #region debug
                 //double radiusExternal = Math.Pow(1 + densityEpoxy / densitySilver * weightFraction, 1.0 / 3) * radiusEpoxyPhase + 100;
                 //double radiusExternal = radiusEpoxyPhase + 10;
-                double radiusExternal = radiusEpoxyPhase + 15;
+                double radiusExternal = radiusEpoxyPhase + 20;
                 #endregion
 
                 var newBallInternal = new Sphere(newCenter[0], newCenter[1], newCenter[2], radiusEpoxyPhase);

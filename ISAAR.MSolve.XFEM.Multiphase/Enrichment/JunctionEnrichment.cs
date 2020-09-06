@@ -9,7 +9,7 @@ using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
 
 namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
 {
-    public class JunctionEnrichment : IEnrichment
+    public class JunctionEnrichment : IJunctionEnrichment
     {
         private readonly IPhase[] descendingPhases;
         private readonly int[] descendingPhaseCoeffs;

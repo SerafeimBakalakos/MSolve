@@ -126,6 +126,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 {
                     writer.WriteLine();
                     writer.WriteLine("#################################################################");
+                    writer.WriteLine("Date = " + DateTime.Now);
                     writer.WriteLine("Realization with seed = " + rngSeed);
                     writer.WriteLine($"Conductivity epoxy={conductEpoxy}, conductivity Ag={conductSilver}," +
                         $" conductivity interface={conductBoundaryEpoxySilver}");

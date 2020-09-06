@@ -28,27 +28,26 @@ using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Writers;
 
 namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
 {
-    public static class ThreePhasesBenchmark
+    public static class JunctionSingularityBenchmark
     {
         private const int subdomainID = 0;
         private const double minX = 0.0, minY = 0.0, maxX = 2.0, maxY = 2.0;
         private const double thickness = 1.0;
         private const double specialHeatCoeff = 1.0;
+        private const bool hardcodedJunctionEnrichment = true;
 
         public static void RunTest()
         {
             // Parameters
-            int numElements = 41;
+            int numElements = 17;
             //int numElements = 41;
             int numElementsX = numElements, numElementsY = numElements;
             double elementSize = (maxX - minX) / numElementsX;
             bool integrationWithSubtriangles = true;
-            double conductivity0 = 100/*1E1*/ , conductivity1 = 1000/*1E2*/, conductivity2 = 1/*1E3*/;
-            double interface01Conductivity = 100, interface02Conductivity = 10/*1E10*/, interface12Conductivity = 1000/*1E10*/;
-            bool daux = false;
-            int numJunctions = 2;
+            double conductivity0 = 1, conductivity1 = 1000, conductivity2 = 1000;
+            double interface01Conductivity = 10, interface02Conductivity = 10, interface12Conductivity = 100;
             double singularityRelativeAreaTolerance = 1E-4;
-            string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\ThreePhases";
+            string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\JunctionSingularity";
 
             // Geometry
             GeometricModel geometricModel = CreatePhases(numElementsX);
@@ -72,14 +71,15 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
             XModel physicalModel = CreatePhysicalModel(geometricModel, integrationWithSubtriangles, numElementsX, numElementsY,
                 materialField);
 
-            // Analysis
-            PrepareForAnalysis(physicalModel, geometricModel, daux, numJunctions, singularityRelativeAreaTolerance);
-            IVectorView solution = RunAnalysis(physicalModel);
-
-            //Plots
+            // Prepare analysis
             var paths = new OutputPaths();
             paths.FillAllForDirectory(outputDirectory);
-            PlotPhasesInteractions(geometricModel, physicalModel, paths, elementSize, solution);
+            PrepareForAnalysis(physicalModel, geometricModel, singularityRelativeAreaTolerance);
+            PlotGeometryEnrichments(geometricModel, physicalModel, paths, elementSize);
+
+            // Analysis
+            IVectorView solution = RunAnalysis(physicalModel);
+            PlotSolution(geometricModel, physicalModel, paths, solution);
         }
 
         private static void ApplyBoundaryConditions(XModel physicalModel)
@@ -106,32 +106,45 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
 
         private static GeometricModel CreatePhases(int numElementsPerAxis)
         {
-            // --------C--------
-            // |       |       |
-            // |       |   1   |
-            // |       |       |
-            // |   0   B-------D
-            // |       |       |
-            // |       |   2   |
-            // |       |       |
-            // --------A--------
+            //
+            //
+            //   1|---------|2
+            //    |   4 5   |
+            //   3|---/\----|6  
+            //     7 /  \
+            //       \   \
+            //        \   \ 8
+            //         \  /
+            //          \/
+            //          9
 
-            double middleX = 0.5 * (minX + maxX);
-            double middleY = 0.5 * (minY + maxY);
-            var A = new CartesianPoint(middleX, minY);
-            var B = new CartesianPoint(middleX, middleY);
-            var C = new CartesianPoint(middleX, maxY);
-            var D = new CartesianPoint(maxX, middleY);
+            var P1 = new CartesianPoint(0.50, 1.20);
+            var P2 = new CartesianPoint(1.50, 1.20);
+            var P3 = new CartesianPoint(0.50, 1.00);
+            var P4 = new CartesianPoint(0.95, 1.00);
+            var P5 = new CartesianPoint(1.05, 1.00);
+            var P6 = new CartesianPoint(1.50, 1.00);
+            var P7 = new CartesianPoint(0.90, 0.82);
+            var P8 = new CartesianPoint(1.63, 0.80);
+            var P9 = new CartesianPoint(1.56, 0.58);
 
             // Define phases
-            var phase0 = new ConvexPhase(0);
+            var phase0 = new DefaultPhase();
             var phase1 = new ConvexPhase(1);
             var phase2 = new ConvexPhase(2);
 
             // Create boundaries and associate them with their phases
-            var AB = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(A, B), phase0, phase2);
-            var BC = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(B, C), phase0, phase1);
-            var BD = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(B, D), phase1, phase2);
+            var P1P2 = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(P1, P2), phase0, phase1);
+            var P3P1 = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(P3, P1), phase0, phase1);
+            var P3P4 = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(P3, P4), phase1, phase0);
+            var P4P5 = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(P4, P5), phase1, phase2);
+            var P5P6 = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(P5, P6), phase1, phase0);
+            var P6P2 = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(P6, P2), phase1, phase0);
+
+            var P4P7 = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(P4, P7), phase2, phase0);
+            var P7P9 = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(P7, P9), phase2, phase0);
+            var P9P8 = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(P9, P8), phase2, phase0);
+            var P8P5 = new PhaseBoundary(new XFEM_OLD.Multiphase.Geometry.LineSegment2D(P8, P5), phase2, phase0);
 
             // Initialize model
             var geometricModel = new GeometricModel();
@@ -188,8 +201,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
             return physicalModel;
         }
 
-        private static void PlotPhasesInteractions(GeometricModel geometricModel, XModel physicalModel, OutputPaths paths,
-            double elementSize, IVectorView solution)
+        private static void PlotGeometryEnrichments(GeometricModel geometricModel, XModel physicalModel, OutputPaths paths,
+            double elementSize)
         {
 
             var feMesh = new ContinuousOutputMesh<XNode>(physicalModel.Nodes, physicalModel.Elements);
@@ -227,8 +240,12 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
             materialPlotter.PlotVolumeMaterials(paths.volumeIntegrationMaterials);
             materialPlotter.PlotBoundaryMaterials(paths.boundaryIntegrationMaterials);
             //materialPlotter.PlotBoundaryPhaseJumpCoefficients(paths.boundaryIntegrationPhaseJumps);
+        }
 
-            // Plot temperature
+        private static void PlotSolution(GeometricModel geometricModel, XModel physicalModel, OutputPaths paths,
+            IVectorView solution)
+        {
+            var conformingMesh = new ConformingOutputMesh2D(geometricModel, physicalModel.Nodes, physicalModel.Elements);
             using (var writer = new Logging.VTK.VtkPointWriter(paths.temperatureAtNodes))
             {
                 var temperatureField = new TemperatureAtNodesField(physicalModel);
@@ -252,7 +269,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
             }
         }
 
-        private static void PrepareForAnalysis(XModel physicalModel, GeometricModel geometricModel, bool daux, int numJunctions,
+        private static void PrepareForAnalysis(XModel physicalModel, GeometricModel geometricModel,
             double singularityRelativeAreaTolerance)
         {
             physicalModel.ConnectDataStructures();
@@ -266,6 +283,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
             //var nodeEnricher = new NodeEnricherOLD(geometricModel, singularityResolver);
             var nodeEnricher = new NodeEnricher2Junctions(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
+            if (hardcodedJunctionEnrichment) ApplyJunctionEnrichments(physicalModel, geometricModel);
             physicalModel.UpdateDofs();
             physicalModel.UpdateMaterials();
         }
@@ -288,6 +306,24 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
             #endregion
 
             return solver.LinearSystems[subdomainID].Solution;
+        }
+
+        private static void ApplyJunctionEnrichments(XModel physicalModel, GeometricModel geometricModel)
+        {
+            var junction0 = new JunctionEnrichment_v2(4, geometricModel.Phases[0], geometricModel.Phases[1]);
+            var junction1 = new JunctionEnrichment_v2(5, geometricModel.Phases[0], geometricModel.Phases[2]);
+            foreach (XNode node in physicalModel.Nodes)
+            {
+                foreach (IEnrichment enrichment in node.Enrichments.Keys.ToList())
+                {
+                    if (enrichment is IJunctionEnrichment)
+                    {
+                        node.Enrichments.Remove(enrichment);
+                        node.Enrichments[junction0] = junction0.EvaluateAt(node);
+                        node.Enrichments[junction1] = junction1.EvaluateAt(node);
+                    }
+                }
+            }
         }
     }
 }

@@ -29,7 +29,7 @@ namespace MGroup.XFEM.Entities
 
         public int Dimension { get; set; }
 
-        public bool EnableOptimizations { get; set; } = true;
+        public bool EnableOptimizations { get; set; } = false;
 
         public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 

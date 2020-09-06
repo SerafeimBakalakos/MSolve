@@ -33,7 +33,9 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 {
     public static class Paper1Example2
     {
-        private const int numElementsX = 400, numElementsY = 400;
+        private const int numElements = 200;
+        //private const int numElements = 400;
+        private const int numElementsX = numElements, numElementsY = numElements;
         private const int subdomainID = 0;
         private const double minX = 0, minY = 0, maxX = 2000, maxY = 2000;
         //private const double minX = -1.0, minY = -1.0, maxX = 1.0, maxY = 1.0;

@@ -46,6 +46,14 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
             ContainedNodes.Clear();
             foreach (XNode node in nodes)
             {
+                //#region debug
+                //double tol = 1E-2;
+                //if (Math.Abs(node.X - 0.5366) < tol && Math.Abs(node.Y - 1.1707) < tol)
+                //{
+                //    Console.WriteLine();
+                //}
+                //#endregion
+
                 if (Contains(node))
                 {
                     ContainedNodes.Add(node);

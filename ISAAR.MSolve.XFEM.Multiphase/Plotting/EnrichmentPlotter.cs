@@ -22,7 +22,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Enrichments
         public void PlotJunctionEnrichedNodes(string path)
         {
             PlotEnrichedNodesCategory(
-                enr => (enr is JunctionEnrichmentOLD) || (enr is DauxJunctionEnrichment) || (enr is JunctionEnrichment), 
+                enr => (enr is JunctionEnrichmentOLD) || (enr is DauxJunctionEnrichment) || (enr is IJunctionEnrichment), 
             path, "junction_enriched_nodes");
         }
 
