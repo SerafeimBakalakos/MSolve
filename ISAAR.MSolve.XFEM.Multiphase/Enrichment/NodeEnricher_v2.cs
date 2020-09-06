@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
@@ -13,16 +14,18 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
     public class NodeEnricher_v2
     {
         private readonly GeometricModel geometricModel;
+        private readonly XModel physicalModel;
         private readonly ISingularityResolver singularityResolver;
 
-        public NodeEnricher_v2(GeometricModel geometricModel, ISingularityResolver singularityResolver)
+        public NodeEnricher_v2(XModel physicalModel, GeometricModel geometricModel, ISingularityResolver singularityResolver)
         {
+            this.physicalModel = physicalModel;
             this.geometricModel = geometricModel;
             this.singularityResolver = singularityResolver;
-            this.JunctionElements = new Dictionary<IXFiniteElement, HashSet<JunctionEnrichment>>();
+            this.JunctionElements = new Dictionary<IXFiniteElement, HashSet<IJunctionEnrichment>>();
         }
 
-        public Dictionary<IXFiniteElement, HashSet<JunctionEnrichment>> JunctionElements { get; }
+        public Dictionary<IXFiniteElement, HashSet<IJunctionEnrichment>> JunctionElements { get; }
 
         public void ApplyEnrichments()
         {
@@ -59,53 +62,24 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
             var junctionEnrichments = new Dictionary<PhaseBoundary, JunctionEnrichment>();
 
             int id = idStart;
-            #region default phase
-            //foreach (IPhase phase in geometricModel.Phases)
-            #endregion
-            for (int p = 1; p < geometricModel.Phases.Count; ++p)
+            foreach (IXFiniteElement element in physicalModel.Elements)
             {
-                var phase = (ConvexPhase)(geometricModel.Phases[p]);
-                foreach (IXFiniteElement element in phase.IntersectedElements)
+                // Check if the element contains a junction point: > 2 phases
+                if (element.Phases.Count <= 2) continue;
+
+                // It is possible that there are > 2 phases, but their boundaries do not intersect
+                else if (!VerifyJunction(element)) continue;
+
+                if (element.Phases.Count > 3) throw new NotImplementedException();
+                List<(IPhase phase0, IPhase phase1)> phaseNeighbors = FindPhaseNeighbors(element);
+
+                var elementJunctions = new HashSet<IJunctionEnrichment>();
+                JunctionElements[element] = elementJunctions;
+                for (int i = 0; i < phaseNeighbors.Count - 1; ++i) // n-1 enrichments for n boundaries
                 {
-                    // This element has already been processed when looking at another phase
-                    if (JunctionElements.ContainsKey(element)) continue;
-
-                    // Check if the element contains a junction point
-                    //TODO: Shouldn't the boundaries intersect?
-                    if (element.Phases.Count <= 2) continue; // Not a junction element
-                    else
-                    {
-                        var uniquePhaseSeparators = new Dictionary<int, HashSet<int>>();
-                        foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
-                        {
-                            (IPhase minPhase, IPhase maxPhase) = FindMinMaxPhases(boundary.PositivePhase, boundary.NegativePhase);
-                            bool exists = uniquePhaseSeparators.TryGetValue(minPhase.ID, out HashSet<int> neighbors);
-                            if (!exists)
-                            {
-                                neighbors = new HashSet<int>();
-                                uniquePhaseSeparators[minPhase.ID] = neighbors;
-                            }
-                            neighbors.Add(maxPhase.ID);
-                        }
-
-                        int numUniqueSeparators = 0;
-                        foreach (HashSet<int> neighbors in uniquePhaseSeparators.Values) numUniqueSeparators += neighbors.Count;
-
-                        if (numUniqueSeparators <= 2) continue; // 3 or more phases, but the boundaries do not intersect
-                    }
-
-                    // Create a new junction enrichment
-                    // If there are n boundaries intersecting, then use n-1 junctions
-                    PhaseBoundary[] boundaries = element.PhaseIntersections.Keys.ToArray();
-                    var elementJunctions = new HashSet<JunctionEnrichment>();
-                    JunctionElements[element] = elementJunctions;
-                    for (int i = 0; i < boundaries.Length - 1; ++i) 
-                    {
-                        PhaseBoundary boundary = boundaries[i];
-                        var junction = new JunctionEnrichment(id, boundary, element.Phases);
-                        ++id;
-                        elementJunctions.Add(junction);
-                    }
+                    var junction = new JunctionEnrichment_v2(id, phaseNeighbors[i].phase0, phaseNeighbors[i].phase1);
+                    ++id;
+                    elementJunctions.Add(junction);
                 }
             }
             return id - idStart;
@@ -181,7 +155,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
             foreach (var elementJunctionPair in JunctionElements)
             {
                 IXFiniteElement element = elementJunctionPair.Key;
-                foreach (JunctionEnrichment junctionEnrichment in elementJunctionPair.Value)
+                foreach (IJunctionEnrichment junctionEnrichment in elementJunctionPair.Value)
                 {
                     foreach (XNode node in element.Nodes) EnrichNode(node, junctionEnrichment);
                 }
@@ -232,20 +206,66 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
             }
         }
 
-        
+        private List<(IPhase phase0, IPhase phase1)> FindPhaseNeighbors(IXFiniteElement element)
+        {
+            var remainderPhases = new HashSet<IPhase>(element.Phases);
+            var phaseNeighbors = new List<(IPhase phase0, IPhase phase1)>();
+            foreach (IPhase phase in element.Phases)
+            {
+                remainderPhases.Remove(phase);
+                foreach (IPhase otherPhase in remainderPhases)
+                {
+                    // Make sure there is a common boundary
+                    bool areNeighbors = false;
+                    foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
+                    {
+                        if ((boundary.PositivePhase.ID == phase.ID && boundary.NegativePhase.ID == otherPhase.ID)
+                            || (boundary.NegativePhase.ID == phase.ID && boundary.PositivePhase.ID == otherPhase.ID))
+                        {
+                            areNeighbors = true;
+                            break;
+                        }
+                    }
+                    if (areNeighbors) phaseNeighbors.Add((phase, otherPhase));
+                }
+            }
+            return phaseNeighbors;
+        }
 
         private bool HasCorrespondingJunction(XNode node, IEnrichment stepEnrichment)
         {
             foreach (IEnrichment enrichment in node.Enrichments.Keys)
             {
-                if (enrichment is JunctionEnrichment junctionEnrichment)
+                if (enrichment is JunctionEnrichment_v2 junctionEnrichment)
                 {
                     // Also make sure the junction and step enrichment refer to the same phases.
-                    var junctionPhases = new HashSet<IPhase>(junctionEnrichment.Phases);
-                    if (junctionPhases.IsSupersetOf(stepEnrichment.Phases)) return true;
+                    Debug.Assert(stepEnrichment.Phases.Count == 2); // Perhaps IEnrichment.Phases should be removed.
+                    if (junctionEnrichment.IntroducesJumpBetween(stepEnrichment.Phases[0], stepEnrichment.Phases[1])) return true;
                 }
             }
             return false;
+        }
+
+        private bool VerifyJunction(IXFiniteElement element)
+        {
+            var uniquePhaseSeparators = new Dictionary<int, HashSet<int>>();
+            foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
+            {
+                (IPhase minPhase, IPhase maxPhase) = FindMinMaxPhases(boundary.PositivePhase, boundary.NegativePhase);
+                bool exists = uniquePhaseSeparators.TryGetValue(minPhase.ID, out HashSet<int> neighbors);
+                if (!exists)
+                {
+                    neighbors = new HashSet<int>();
+                    uniquePhaseSeparators[minPhase.ID] = neighbors;
+                }
+                neighbors.Add(maxPhase.ID);
+            }
+
+            int numUniqueSeparators = 0;
+            foreach (HashSet<int> neighbors in uniquePhaseSeparators.Values) numUniqueSeparators += neighbors.Count;
+
+            if (numUniqueSeparators <= 2) return false; // 3 or more phases, but the boundaries do not intersect
+            return true;
         }
     }
 }

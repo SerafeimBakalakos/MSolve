@@ -30,11 +30,13 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
 {
     public static class JunctionSingularityBenchmark
     {
+        private enum JunctionEnrichmentMethod { Old, New, Hardcoded }
+
         private const int subdomainID = 0;
         private const double minX = 0.0, minY = 0.0, maxX = 2.0, maxY = 2.0;
         private const double thickness = 1.0;
         private const double specialHeatCoeff = 1.0;
-        private const bool hardcodedJunctionEnrichment = true;
+        private const JunctionEnrichmentMethod junctionEnrichment = JunctionEnrichmentMethod.New;
 
         public static void RunTest()
         {
@@ -278,12 +280,25 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
             geometricModel.AssociatePhasesElements(physicalModel);
             geometricModel.FindConformingMesh(physicalModel);
 
-
             ISingularityResolver singularityResolver = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
-            //var nodeEnricher = new NodeEnricherOLD(geometricModel, singularityResolver);
-            var nodeEnricher = new NodeEnricher2Junctions(geometricModel, singularityResolver);
-            nodeEnricher.ApplyEnrichments();
-            if (hardcodedJunctionEnrichment) ApplyJunctionEnrichments(physicalModel, geometricModel);
+            if (junctionEnrichment == JunctionEnrichmentMethod.Old)
+            {
+                var nodeEnricher = new NodeEnricher2Junctions(geometricModel, singularityResolver);
+                nodeEnricher.ApplyEnrichments();
+            }
+            else if (junctionEnrichment == JunctionEnrichmentMethod.Hardcoded)
+            {
+                //var nodeEnricher = new NodeEnricherOLD(geometricModel, singularityResolver);
+                var nodeEnricher = new NodeEnricher2Junctions(geometricModel, singularityResolver);
+                nodeEnricher.ApplyEnrichments();
+                ApplyJunctionEnrichments(physicalModel, geometricModel);
+            }
+            else if (junctionEnrichment == JunctionEnrichmentMethod.New)
+            {
+                var nodeEnricher = new NodeEnricher_v2(physicalModel, geometricModel, singularityResolver);
+                nodeEnricher.ApplyEnrichments();
+            }
+            else throw new NotImplementedException();
             physicalModel.UpdateDofs();
             physicalModel.UpdateMaterials();
         }

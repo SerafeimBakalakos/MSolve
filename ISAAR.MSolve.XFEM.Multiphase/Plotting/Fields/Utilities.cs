@@ -35,6 +35,27 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Fields
             return sum;
         }
 
+        internal static double CalcTemperatureAt(IPhase phaseAtPoint, double[] shapeFunctionsAtPoint,
+            IXFiniteElement element, double[] nodalTemperatures)
+        {
+            double sum = 0.0;
+            int idx = 0;
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                // Standard temperatures
+                sum += shapeFunctionsAtPoint[n] * nodalTemperatures[idx++];
+
+                // Eniched temperatures
+                foreach (IEnrichment enrichment in element.Nodes[n].Enrichments.Keys)
+                {
+                    double psiVertex = enrichment.EvaluateAt(phaseAtPoint);
+                    double psiNode = element.Nodes[n].Enrichments[enrichment];
+                    sum += shapeFunctionsAtPoint[n] * (psiVertex - psiNode) * nodalTemperatures[idx++];
+                }
+            }
+            return sum;
+        }
+
         internal static double[] CalcTemperatureGradientAt(CartesianPoint point, EvalInterpolation2D evalInterpolation,
             IXFiniteElement element, double[] nodalTemperatures)
         {
@@ -54,6 +75,35 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Fields
                 foreach (IEnrichment enrichment in element.Nodes[n].Enrichments.Keys)
                 {
                     double psiVertex = enrichment.EvaluateAt(point);
+                    double psiNode = element.Nodes[n].Enrichments[enrichment];
+                    double enrTij = nodalTemperatures[idx++];
+
+                    gradient[0] += dNdx * (psiVertex - psiNode) * enrTij;
+                    gradient[1] += dNdy * (psiVertex - psiNode) * enrTij;
+                }
+            }
+            return gradient;
+        }
+
+        internal static double[] CalcTemperatureGradientAt(IPhase phaseAtPoint, EvalInterpolation2D evalInterpolation,
+            IXFiniteElement element, double[] nodalTemperatures)
+        {
+            var gradient = new double[2];
+            int idx = 0;
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                double dNdx = evalInterpolation.ShapeGradientsCartesian[n, 0];
+                double dNdy = evalInterpolation.ShapeGradientsCartesian[n, 1];
+
+                // Standard temperatures
+                double stdTi = nodalTemperatures[idx++];
+                gradient[0] += dNdx * stdTi;
+                gradient[1] += dNdy * stdTi;
+
+                // Eniched temperatures
+                foreach (IEnrichment enrichment in element.Nodes[n].Enrichments.Keys)
+                {
+                    double psiVertex = enrichment.EvaluateAt(phaseAtPoint);
                     double psiNode = element.Nodes[n].Enrichments[enrichment];
                     double enrTij = nodalTemperatures[idx++];
 

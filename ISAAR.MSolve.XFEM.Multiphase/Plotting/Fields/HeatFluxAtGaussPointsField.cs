@@ -45,8 +45,9 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Fields
                     EvalInterpolation2D evalInterpolation = 
                         element.InterpolationStandard.EvaluateAllAt(element.Nodes, pointNatural);
                     CartesianPoint pointCartesian = evalInterpolation.TransformPointNaturalToGlobalCartesian();
+                    IPhase phaseAtPoint = GeometricModel.FindPhaseAt(pointCartesian, element);
                     double[] gradientTemperature = 
-                        Utilities.CalcTemperatureGradientAt(pointCartesian, evalInterpolation, element, nodalTemperatures);
+                        Utilities.CalcTemperatureGradientAt(phaseAtPoint, evalInterpolation, element, nodalTemperatures);
 
                     double conductivity = materials[i].ThermalConductivity;
                     gradientTemperature[0] *= -conductivity;

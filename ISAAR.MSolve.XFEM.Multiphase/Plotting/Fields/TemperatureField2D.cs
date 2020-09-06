@@ -85,6 +85,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Fields
             }
             NaturalPoint centroidNatural = new NaturalPoint(centroidXi / 3.0, centroidEta / 3.0, centroidZeta / 3.0);
             CartesianPoint centroid = element.InterpolationStandard.TransformNaturalToCartesian(element.Nodes, centroidNatural);
+            IPhase phaseAtCentroid = GeometricModel.FindPhaseAt(centroid, element);
             //double[] shapeFunctionsAtCentroid = element.InterpolationStandard.EvaluateFunctionsAt(centroid);
 
             // Evaluate enrichment functions at triangle centroid and assume it also holds for its vertices
@@ -93,7 +94,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Fields
             var enrichmentValues = new Dictionary<IEnrichment, double>();
             foreach (IEnrichment enrichment in enrichments)
             {
-                enrichmentValues[enrichment] = enrichment.EvaluateAt(centroid);
+                enrichmentValues[enrichment] = enrichment.EvaluateAt(phaseAtCentroid);
                 //enrichmentValues[enrichment] = EvaluateFunctionsAtSubtriangleVertices(
                 //    element, shapeFunctionsAtVertices, shapeFunctionsAtCentroid);
             }

@@ -35,7 +35,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Fields
                 {
                     double[] shapeFunctions = element.InterpolationStandard.EvaluateFunctionsAt(pointNatural);
                     CartesianPoint pointCartesian = Utilities.TransformNaturalToCartesian(shapeFunctions, element.Nodes);
-                    double temperature = Utilities.CalcTemperatureAt(pointCartesian, shapeFunctions, element, nodalTemperatures);
+                    IPhase phaseAtPoint = GeometricModel.FindPhaseAt(pointCartesian, element);
+                    double temperature = Utilities.CalcTemperatureAt(phaseAtPoint, shapeFunctions, element, nodalTemperatures);
                     result[pointCartesian] = temperature;
                 }
             }
