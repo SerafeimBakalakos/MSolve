@@ -108,6 +108,9 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
 
         private static GeometricModel CreatePhases(int numElementsPerAxis)
         {
+            double dx = 0.1;
+            double dy = 0.0;
+
             //
             //
             //   1|---------|2
@@ -120,15 +123,15 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
             //          \/
             //          9
 
-            var P1 = new CartesianPoint(0.50, 1.20);
-            var P2 = new CartesianPoint(1.50, 1.20);
-            var P3 = new CartesianPoint(0.50, 1.00);
-            var P4 = new CartesianPoint(0.95, 1.00);
-            var P5 = new CartesianPoint(1.05, 1.00);
-            var P6 = new CartesianPoint(1.50, 1.00);
-            var P7 = new CartesianPoint(0.90, 0.82);
-            var P8 = new CartesianPoint(1.63, 0.80);
-            var P9 = new CartesianPoint(1.56, 0.58);
+            var P1 = new CartesianPoint(0.50 + dx, 1.20 + dy);
+            var P2 = new CartesianPoint(1.50 + dx, 1.20 + dy);
+            var P3 = new CartesianPoint(0.50 + dx, 1.00 + dy);
+            var P4 = new CartesianPoint(0.95 + dx, 1.00 + dy);
+            var P5 = new CartesianPoint(1.05 + dx, 1.00 + dy);
+            var P6 = new CartesianPoint(1.50 + dx, 1.00 + dy);
+            var P7 = new CartesianPoint(0.90 + dx, 0.82 + dy);
+            var P8 = new CartesianPoint(1.63 + dx, 0.80 + dy);
+            var P9 = new CartesianPoint(1.56 + dx, 0.58 + dy);
 
             // Define phases
             var phase0 = new DefaultPhase();

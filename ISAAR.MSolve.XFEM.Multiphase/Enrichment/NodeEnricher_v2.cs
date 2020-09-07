@@ -71,13 +71,31 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
                 else if (!VerifyJunction(element)) continue;
 
                 if (element.Phases.Count > 3) throw new NotImplementedException();
-                List<(IPhase phase0, IPhase phase1)> phaseNeighbors = FindPhaseNeighbors(element);
 
+                // Based on these interactions, we will apply junction enrichments
+                List<(IPhase phase0, IPhase phase1)> phaseInteractions = FindPhaseInteractions(element);
                 var elementJunctions = new HashSet<IJunctionEnrichment>();
                 JunctionElements[element] = elementJunctions;
-                for (int i = 0; i < phaseNeighbors.Count - 1; ++i) // n-1 enrichments for n boundaries
+
+                // If there are common nodes with another junction element and the 2 junctions involve the same phases,
+                // then adding similar junction will lead to singularities. Identify the common phase interactions.
+                HashSet<IXFiniteElement> junctionNeighbors = FindElementJunctionNeighbors(element);
+                foreach (IXFiniteElement otherElement in junctionNeighbors)
                 {
-                    var junction = new JunctionEnrichment_v2(id, phaseNeighbors[i].phase0, phaseNeighbors[i].phase1);
+                    List<(IPhase phase0, IPhase phase1)> phaseInteractionsOther = FindPhaseInteractions(otherElement);
+                    bool overlapped = false;
+                    (phaseInteractions, overlapped) = FindDistinctPhaseInteractions(phaseInteractions, phaseInteractionsOther);
+                    if (overlapped)
+                    {
+                        //Debug.Assert(JunctionElements[otherElement].Count == 1);
+                        elementJunctions.UnionWith(JunctionElements[otherElement]);
+                    }
+                }
+
+                // For all interactions except the last, apply a junction enrichment
+                for (int i = 0; i < phaseInteractions.Count - 1; ++i) // n-1 enrichments for n boundaries
+                {
+                    var junction = new JunctionEnrichment_v2(id, phaseInteractions[i].phase0, phaseInteractions[i].phase1);
                     ++id;
                     elementJunctions.Add(junction);
                 }
@@ -206,10 +224,58 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
             }
         }
 
-        private List<(IPhase phase0, IPhase phase1)> FindPhaseNeighbors(IXFiniteElement element)
+        /// <summary>
+        /// Find the subset of <paramref name="interactions"/> that does not exist in <paramref name="otherInteractions"/>.
+        /// </summary>
+        /// <param name="interactions"></param>
+        /// <param name="otherInteractions"></param>
+        private (List<(IPhase, IPhase)>, bool overlapped) FindDistinctPhaseInteractions(
+            List<(IPhase, IPhase)> interactions, List<(IPhase, IPhase)> otherInteractions)
+        {
+            bool overlapped = false;
+            var distinctInteractions = new List<(IPhase, IPhase)>();
+            foreach ((IPhase p0, IPhase p1) in interactions)
+            {
+                bool interactionExists = false;
+                foreach ((IPhase p2, IPhase p3) in otherInteractions)
+                {
+                    bool sameInteraction = false;
+                    sameInteraction |= (p0.ID == p2.ID) && (p1.ID == p3.ID);
+                    sameInteraction |= (p1.ID == p2.ID) && (p0.ID == p3.ID);
+
+                    if (!sameInteraction)
+                    {
+                        interactionExists = true;
+                        break;
+                    }
+                }
+                if (!interactionExists) distinctInteractions.Add((p0, p1));
+                else overlapped = true;
+            }
+            return (distinctInteractions, overlapped);
+        }
+
+        private HashSet<IXFiniteElement> FindElementJunctionNeighbors(IXFiniteElement element)
+        {
+            var neighbors = new HashSet<IXFiniteElement>();
+            foreach (XNode node in element.Nodes)
+            {
+                neighbors.UnionWith(node.ElementsDictionary.Values);
+            }
+            neighbors.Remove(element);
+
+            var junctionNeighbors = new HashSet<IXFiniteElement>();
+            foreach (IXFiniteElement neighbor in neighbors)
+            {
+                if (JunctionElements.ContainsKey(neighbor)) junctionNeighbors.Add(neighbor);
+            }
+            return junctionNeighbors;
+        }
+
+        private List<(IPhase phase0, IPhase phase1)> FindPhaseInteractions(IXFiniteElement element)
         {
             var remainderPhases = new HashSet<IPhase>(element.Phases);
-            var phaseNeighbors = new List<(IPhase phase0, IPhase phase1)>();
+            var phaseInteractions = new List<(IPhase phase0, IPhase phase1)>();
             foreach (IPhase phase in element.Phases)
             {
                 remainderPhases.Remove(phase);
@@ -226,10 +292,10 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
                             break;
                         }
                     }
-                    if (areNeighbors) phaseNeighbors.Add((phase, otherPhase));
+                    if (areNeighbors) phaseInteractions.Add((phase, otherPhase));
                 }
             }
-            return phaseNeighbors;
+            return phaseInteractions;
         }
 
         private bool HasCorrespondingJunction(XNode node, IEnrichment stepEnrichment)
