@@ -11,6 +11,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
         public string phasesGeometry;
         public string nodalPhases;
         public string elementPhases;
+        public string junctionElements;
         public string stepEnrichedNodes;
         public string junctionEnrichedNodes;
         public string volumeIntegrationPoints;
@@ -36,6 +37,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
             this.phasesGeometry = directory + "phases_geometry.vtk";
             this.nodalPhases = directory + "nodal_phases.vtk";
             this.elementPhases = directory + "element_phases.vtk";
+            this.junctionElements = directory + "junction_elements.vtk";
             this.stepEnrichedNodes = directory + "step_enriched_nodes.vtk";
             this.junctionEnrichedNodes = directory + "junction_enriched_nodes.vtk";
             this.volumeIntegrationPoints = directory + "volume_integration_points.vtk";

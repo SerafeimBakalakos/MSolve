@@ -60,5 +60,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
             throw new InvalidOperationException(
                 "Call this method in every other valid phase. If none contains the point, then this phase does");
         }
+
+        public int CompareTo(IPhase other) => other.ID - this.ID;
     }
 }

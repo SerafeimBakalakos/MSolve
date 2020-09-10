@@ -64,13 +64,23 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
             int id = idStart;
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
+                #region debug
+                double xTarget = 1571.43;
+                double yTarget = 628.571;
+                double tol = 1E-2;
+                if (Math.Abs(element.Nodes[0].X - xTarget) < tol && Math.Abs(element.Nodes[0].Y - yTarget) < tol)
+                {
+                    Console.WriteLine();
+                }
+                #endregion
+
                 // Check if the element contains a junction point: > 2 phases
                 if (element.Phases.Count <= 2) continue;
 
                 // It is possible that there are > 2 phases, but their boundaries do not intersect
                 else if (!VerifyJunction(element)) continue;
 
-                if (element.Phases.Count > 3) throw new NotImplementedException();
+                //if (element.Phases.Count > 3) throw new NotImplementedException();
 
                 // Based on these interactions, we will apply junction enrichments
                 List<(IPhase phase0, IPhase phase1)> phaseInteractions = FindPhaseInteractions(element);

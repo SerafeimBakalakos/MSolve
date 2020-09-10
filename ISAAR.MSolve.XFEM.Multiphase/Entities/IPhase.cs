@@ -7,7 +7,7 @@ using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
 
 namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
 {
-    public interface IPhase
+    public interface IPhase : IComparable<IPhase>
     {
         List<PhaseBoundary> Boundaries { get; }
         HashSet<XNode> ContainedNodes { get; }

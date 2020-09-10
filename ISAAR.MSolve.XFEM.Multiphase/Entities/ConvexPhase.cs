@@ -29,6 +29,9 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
 
         public HashSet<IPhase> Neighbors { get; } = new HashSet<IPhase>();
 
+        public int CompareTo(IPhase other) => other.ID - this.ID;
+
+
         public virtual bool Contains(CartesianPoint point)
         {
             foreach (PhaseBoundary boundary in Boundaries)

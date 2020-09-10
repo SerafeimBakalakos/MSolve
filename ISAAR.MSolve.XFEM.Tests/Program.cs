@@ -57,6 +57,22 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
             //ThermalInclusionCNTsNottingham.PlotTemperatureAndFlux();
 
             //ThreewayJunction2D.PlotLevelSetsAndEnrichments();
+
+            //ComboTest();
+        }
+
+        private static void ComboTest()
+        {
+            int[] options = { 5, 0, 23, 17, 36 };
+            IEnumerable<int[]> combos = ISAAR.MSolve.XFEM_OLD.Multiphase.Utilities.Combinations.FindAllCombos(options, 3);
+            foreach (int[] combo in combos)
+            {
+                for (int i = 0; i < combo.Length; ++i)
+                {
+                    Console.Write(combo[i] + " ");
+                }
+                Console.WriteLine();
+            }
         }
     }
 }

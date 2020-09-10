@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 {
     public static class Paper1Example2
     {
-        private const int numElements = 200;
+        private const int numElements = 70;
         //private const int numElements = 400;
         private const int numElementsX = numElements, numElementsY = numElements;
         private const int subdomainID = 0;
@@ -46,6 +46,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
         
         private const double specialHeatCoeff = 1.0;
         private const double singularityRelativeAreaTolerance = 1E-8;
+        private const bool fixedEnrichment = true;
 
         public static void RunSingleAnalysisAndPlotting()
         {
@@ -420,12 +421,23 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 
             geometricModel.AssossiatePhasesNodes(physicalModel);
             geometricModel.AssociatePhasesElements(physicalModel);
+            geometricModel.FindJunctions(physicalModel);
             geometricModel.FindConformingMesh(physicalModel);
 
             ISingularityResolver singularityResolver = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
             //var nodeEnricher = new NodeEnricherOLD(geometricModel, singularityResolver);
-            var nodeEnricher = new NodeEnricher2Junctions(geometricModel, singularityResolver);
-            nodeEnricher.ApplyEnrichments();
+            if (fixedEnrichment)
+            {
+                var nodeEnricher = new NodeEnricher_v2(physicalModel, geometricModel, singularityResolver);
+                nodeEnricher.ApplyEnrichments();
+
+            }
+            else
+            {
+                var nodeEnricher = new NodeEnricher2Junctions(geometricModel, singularityResolver);
+                nodeEnricher.ApplyEnrichments();
+            }
+
 
             physicalModel.UpdateDofs();
             physicalModel.UpdateMaterials();

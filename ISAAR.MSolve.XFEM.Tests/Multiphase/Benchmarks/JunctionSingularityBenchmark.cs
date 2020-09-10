@@ -37,6 +37,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
         private const double thickness = 1.0;
         private const double specialHeatCoeff = 1.0;
         private const JunctionEnrichmentMethod junctionEnrichment = JunctionEnrichmentMethod.New;
+        private const bool junctionsInSameElement = true;
 
         public static void RunTest()
         {
@@ -108,8 +109,12 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
 
         private static GeometricModel CreatePhases(int numElementsPerAxis)
         {
-            double dx = 0.1;
-            double dy = 0.0;
+            double dx = 0.0, dy = 0.0;
+            if (!junctionsInSameElement)
+            {
+                dx = 0.1;
+                dy = 0.0;
+            }
 
             //
             //
@@ -228,6 +233,10 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
             phasePlotter.PlotNodes(paths.nodalPhases);
             phasePlotter.PlotElements(paths.elementPhases, conformingMesh);
 
+            // Junctions
+            var junctionPlotter = new JunctionPlotter(physicalModel, geometricModel, elementSize);
+            junctionPlotter.PlotJunctionElements(paths.junctionElements);
+
             // Enrichment
             var enrichmentPlotter = new EnrichmentPlotter(physicalModel, elementSize);
             enrichmentPlotter.PlotStepEnrichedNodes(paths.stepEnrichedNodes);
@@ -281,6 +290,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
 
             geometricModel.AssossiatePhasesNodes(physicalModel);
             geometricModel.AssociatePhasesElements(physicalModel);
+            geometricModel.FindJunctions(physicalModel);
             geometricModel.FindConformingMesh(physicalModel);
 
             ISingularityResolver singularityResolver = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
