@@ -13,7 +13,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
         {
 
             //Multiphase.Paper1.Paper1Example2.RunParametricHomogenization();
-            //Multiphase.Paper1.Paper1Example2.RunSingleAnalysisAndPlotting();
+            Multiphase.Paper1.Paper1Example2.RunSingleAnalysisAndPlotting();
             //HomogenizationExamples.RunHomogenizationAnalysis();
 
             //Multiphase.ExamplePhasesFromCsv.Run();
@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
             //ThreePhasesBenchmark.RunTest();
             //ThreePhasesBenchmarkHardcoded.RunTest();
 
-            JunctionSingularityBenchmark.RunTest();
+            //JunctionSingularityBenchmark.RunTest();
 
             //HollowPhasePlots.PlotHollowPhasesInteractionsFromCSV();
             //HollowPhasePlots.PlotHollowPhasesInteractions();

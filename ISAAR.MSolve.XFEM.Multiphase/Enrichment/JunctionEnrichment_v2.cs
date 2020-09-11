@@ -57,6 +57,13 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
             return false;
         }
 
+        public bool HasSamePhasesAs(JunctionEnrichment_v2 other)
+        {
+            var thisPhases = new HashSet<IPhase>(this.phases);
+            if (thisPhases.SetEquals(other.phases)) return true;
+            else return false;
+        }
+
         //TODO: Keep either this or IsAppliedDueTo(PhaseBoundary phaseBoundary) 
         public bool IntroducesJumpBetween(IPhase phase0, IPhase phase1) 
         {

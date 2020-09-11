@@ -141,6 +141,5 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Input
 
             return model;
         }
-
     }
 }

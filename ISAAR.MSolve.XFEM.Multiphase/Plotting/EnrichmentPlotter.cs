@@ -65,12 +65,17 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Enrichments
         private CartesianPoint[] DuplicateNodeForBetterViewing(XNode node, int numInstances)
         {
             //TODO: Add more.
-            var possibilites = new CartesianPoint[4]; // The further ones apart go to top
+            var possibilites = new CartesianPoint[8]; // The further ones apart go to top
             double offset = 0.05 * elementSize;
             possibilites[0] = new CartesianPoint(node.X - offset, node.Y - offset);
             possibilites[1] = new CartesianPoint(node.X + offset, node.Y + offset);
             possibilites[2] = new CartesianPoint(node.X + offset, node.Y - offset);
             possibilites[3] = new CartesianPoint(node.X - offset, node.Y + offset);
+
+            possibilites[4] = new CartesianPoint(node.X - 2.0 * offset, node.Y - 2.0 * offset);
+            possibilites[5] = new CartesianPoint(node.X + 2.0 * offset, node.Y + 2.0 * offset);
+            possibilites[6] = new CartesianPoint(node.X + 2.0 * offset, node.Y - 2.0 * offset);
+            possibilites[7] = new CartesianPoint(node.X - 2.0 * offset, node.Y + 2.0 * offset);
 
             var instances = new CartesianPoint[numInstances];
             for (int i = 0; i < numInstances; ++i) instances[i] = possibilites[i];

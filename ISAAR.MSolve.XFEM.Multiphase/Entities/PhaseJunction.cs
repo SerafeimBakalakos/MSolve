@@ -9,8 +9,19 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
     {
         public int ID { get; set; }
 
-        public SortedSet<IPhase> Phases { get; } = new SortedSet<IPhase>();
+        /// <summary>
+        /// The order is import and represents the chain of phases each having a common boundary with 2 others 
+        /// (previous - current- next)
+        /// </summary>
+        public List<IPhase> Phases { get; set; }
 
         public IXFiniteElement Element { get; set; }
+
+        public bool HasSamePhasesAs(PhaseJunction other)
+        {
+            var thisPhases = new HashSet<IPhase>(this.Phases);
+            if (thisPhases.SetEquals(other.Phases)) return true;
+            else return false;
+        }
     }
 }

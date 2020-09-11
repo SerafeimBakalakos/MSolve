@@ -61,6 +61,17 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
             int id = 0;
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
+                #region debug
+                //double x = element.Nodes[0].X;
+                //double y = element.Nodes[0].Y;
+                //double xTarget = 457.143, yTarget = 1485.71;
+                //double tol = 1E-2;
+                //if ((Math.Abs(x - xTarget) < tol) && (Math.Abs(y - yTarget) < tol))
+                //{
+                //    Console.WriteLine();
+                //}
+                #endregion
+
                 if (element.Phases.Count < 3) continue;
                 Dictionary<IPhase, SortedSet<IPhase>> phaseInteractions = FindPhaseInteractions(element);
                 RemoveNonJunctionPhases(element, phaseInteractions);
@@ -68,13 +79,13 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
 
                 foreach (IPhase[] junctionCandidates in FindCandidatePhasesForJunction(phaseInteractions))
                 {
-                    bool isJunction = PhasesFormJunction(junctionCandidates, phaseInteractions);
-                    if (isJunction)
+                    IEnumerable<List<IPhase>> phaseChains = PhasesFormJunction(junctionCandidates, phaseInteractions);
+                    foreach (List<IPhase> junctionPhases in phaseChains)
                     {
                         var junction = new PhaseJunction();
                         junction.ID = id++;
                         junction.Element = element;
-                        junction.Phases.UnionWith(junctionCandidates);
+                        junction.Phases = junctionPhases;
                         Junctions.Add(junction);
                     }
                 }
@@ -152,7 +163,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
             return phaseInteractions;
         }
 
-        private bool PhasesFormJunction(IEnumerable<IPhase> candidatePhases, 
+        // TODO: This only works for 1 junction per element
+        private IEnumerable<List<IPhase>> PhasesFormJunction(IEnumerable<IPhase> candidatePhases, 
             Dictionary<IPhase, SortedSet<IPhase>> phaseInteractions)
         {
             // Phases of the junction will be arranged in a chain: each phase will be be between its 2 neighbors
@@ -178,14 +190,14 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
                 }
 
                 // Broken chain => No junction
-                if (!foundNext) return false;
+                if (!foundNext) return new List<IPhase>[0];
             }
 
             // Make sure the first and last phases are neighbors
             IPhase first = phasesChain[0];
             IPhase last = phasesChain[phasesChain.Count - 1];
-            if (phaseInteractions[last].Contains(first)) return true;
-            else return false; // Broken chain => No junction
+            if (phaseInteractions[last].Contains(first)) return new List<IPhase>[] { phasesChain };
+            else return new List<IPhase>[0]; // Broken chain => No junction
         }
 
         private void RemoveNonJunctionPhases(IXFiniteElement element, Dictionary<IPhase, SortedSet<IPhase>> phaseInteractions)

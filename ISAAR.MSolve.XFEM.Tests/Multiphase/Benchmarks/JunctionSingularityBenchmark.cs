@@ -37,7 +37,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
         private const double thickness = 1.0;
         private const double specialHeatCoeff = 1.0;
         private const JunctionEnrichmentMethod junctionEnrichment = JunctionEnrichmentMethod.New;
-        private const bool junctionsInSameElement = true;
+        private const bool junctionsInSameElement = false;
 
         public static void RunTest()
         {
@@ -308,7 +308,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
             }
             else if (junctionEnrichment == JunctionEnrichmentMethod.New)
             {
-                var nodeEnricher = new NodeEnricher_v2(physicalModel, geometricModel, singularityResolver);
+                var nodeEnricher = new NodeEnricher_v3(physicalModel, geometricModel, singularityResolver);
                 nodeEnricher.ApplyEnrichments();
             }
             else throw new NotImplementedException();

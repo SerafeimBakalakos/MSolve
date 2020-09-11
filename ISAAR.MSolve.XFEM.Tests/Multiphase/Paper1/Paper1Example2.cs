@@ -33,7 +33,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 {
     public static class Paper1Example2
     {
-        private const int numElements = 70;
+        private const int numElements = 35;
         //private const int numElements = 400;
         private const int numElementsX = numElements, numElementsY = numElements;
         private const int subdomainID = 0;
@@ -48,6 +48,18 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
         private const double singularityRelativeAreaTolerance = 1E-8;
         private const bool fixedEnrichment = true;
 
+        private static int[][] phasesToKeep =
+        {
+            new int[] { 2, 102, 30, 130, 36, 136 },
+            new int[] { 30, 130, 11, 111, 25, 125, 16, 116 },
+            new int[] { 38,138, 21,121, 15,115 },
+            new int[] { 3,103, 7,107, 40,140 },
+            new int[] { 7,107, 20,120, 33,133 },
+            new int[] { 18,118, 12,112, 14,114 },
+            new int[] { 6,106, 35,135, 37,137 },
+            new int[] { 26,126, 8,108, 39,139 }
+        };
+
         public static void RunSingleAnalysisAndPlotting()
         {
             var phaseReader = new PhaseReader(true, 0);
@@ -55,6 +67,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
             string matrixLayersFile = directory + "boundaries.txt";
             string inclusionsFile = directory + "CNTnodes.txt";
             GeometricModel geometricModel = phaseReader.ReadPhasesFromFile(matrixLayersFile, inclusionsFile);
+            //KeepOnlyPhases(geometricModel, phasesToKeep[5]);
             var paths = new OutputPaths();
             paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example2");
             PlotPhasesInteractions(() => geometricModel, paths);
@@ -281,6 +294,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
             XModel physicalModel = CreatePhysicalModel(geometricModel, conductivities);
             PrepareForAnalysis(physicalModel, geometricModel);
             
+            // Plot stuff
             var feMesh = new ContinuousOutputMesh<XNode>(physicalModel.Nodes, physicalModel.Elements);
             using (var writer = new VtkFileWriter(paths.finiteElementMesh))
             {
@@ -298,6 +312,10 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 
             phasePlotter.PlotNodes(paths.nodalPhases);
             phasePlotter.PlotElements(paths.elementPhases, conformingMesh);
+
+            var junctionPlotter = new JunctionPlotter(physicalModel, geometricModel, elementSize);
+            junctionPlotter.PlotJunctionElements(paths.junctionElements);
+
 
             // Enrichment
             var enrichmentPlotter = new EnrichmentPlotter(physicalModel, elementSize);
@@ -428,7 +446,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
             //var nodeEnricher = new NodeEnricherOLD(geometricModel, singularityResolver);
             if (fixedEnrichment)
             {
-                var nodeEnricher = new NodeEnricher_v2(physicalModel, geometricModel, singularityResolver);
+                //var nodeEnricher = new NodeEnricher_v2(physicalModel, geometricModel, singularityResolver);
+                var nodeEnricher = new NodeEnricher_v3(physicalModel, geometricModel, singularityResolver);
                 nodeEnricher.ApplyEnrichments();
 
             }
@@ -459,6 +478,58 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 
 
             return solver.LinearSystems[subdomainID].Solution;
+        }
+
+        private static void KeepOnlyPhases(GeometricModel geometricModel, int[] phasesToKeep)
+        {
+            IPhase defaultPhase = geometricModel.Phases[0];
+            var phases = new HashSet<int>(phasesToKeep);
+            phases.Add(0);
+            foreach (IPhase phase in geometricModel.Phases.ToArray())
+            {
+                if (phases.Contains(phase.ID))
+                {
+                    foreach (IPhase neighbor in phase.Neighbors.ToArray())
+                    {
+                        if (!phases.Contains(neighbor.ID)) phase.Neighbors.Remove(neighbor);
+                    }
+
+                    foreach (PhaseBoundary boundary in phase.Boundaries.ToArray())
+                    {
+                        
+                        if (boundary.PositivePhase == phase)
+                        {
+                            if (!phases.Contains(boundary.NegativePhase.ID))
+                            {
+                                phase.Boundaries.Remove(boundary);
+                                if (phase.ID != 0)
+                                {
+                                    new PhaseBoundary(boundary.Segment, phase, defaultPhase);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (!phases.Contains(boundary.PositivePhase.ID))
+                            {
+                                phase.Boundaries.Remove(boundary);
+                                if (phase.ID != 0)
+                                {
+                                    new PhaseBoundary(boundary.Segment, defaultPhase, phase);
+                                }
+                            }
+                        }
+
+                        bool keep = phases.Contains(boundary.PositivePhase.ID);
+                        keep &= phases.Contains(boundary.NegativePhase.ID);
+                        if (!keep) phase.Boundaries.Remove(boundary);
+                    }
+                }
+                else
+                {
+                    geometricModel.Phases.Remove(phase);
+                }
+            }
         }
 
         private class Conductivities
