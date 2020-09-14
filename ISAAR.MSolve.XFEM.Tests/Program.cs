@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.XFEM_OLD.Tests.HeatOLD.Plotting;
 using ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Homogenization;
+using ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Multigrain;
 using ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting;
 
 namespace ISAAR.MSolve.XFEM_OLD.Tests
@@ -11,9 +12,11 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
     {
         public static void Main(string[] args)
         {
+            VoronoiTests.ReadVoronoi();
+
 
             //Multiphase.Paper1.Paper1Example2.RunParametricHomogenization();
-            Multiphase.Paper1.Paper1Example2.RunSingleAnalysisAndPlotting();
+            //Multiphase.Paper1.Paper1Example2.RunSingleAnalysisAndPlotting();
             //HomogenizationExamples.RunHomogenizationAnalysis();
 
             //Multiphase.ExamplePhasesFromCsv.Run();
