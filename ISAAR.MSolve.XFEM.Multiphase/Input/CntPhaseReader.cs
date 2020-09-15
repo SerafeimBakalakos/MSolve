@@ -8,12 +8,12 @@ using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry;
 
 namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Input
 {
-    public class PhaseReader
+    public class CntPhaseReader
     {
         private readonly bool defaultPhase;
         private readonly int defaultPhaseID;
 
-        public PhaseReader(bool defaultPhase, int defaultPhaseID)
+        public CntPhaseReader(bool defaultPhase, int defaultPhaseID)
         {
             this.defaultPhase = defaultPhase;
             this.defaultPhaseID = defaultPhase ? defaultPhaseID : int.MinValue;

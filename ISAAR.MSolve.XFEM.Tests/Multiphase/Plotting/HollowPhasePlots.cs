@@ -45,7 +45,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
 
         public static void RunPaper1Example2()
         {
-            var phaseReader = new PhaseReader(true, 0);
+            var phaseReader = new CntPhaseReader(true, 0);
             string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example2\";
             string matrixLayersFile = directory + "boundaries.txt";
             string inclusionsFile = directory + "CNTnodes.txt";
@@ -57,7 +57,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
 
         public static void PlotHollowPhasesInteractionsFromCSV()
         {
-            var phaseReader = new PhaseReader(true, 0);
+            var phaseReader = new CntPhaseReader(true, 0);
             string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\HollowFromCSV\";
             string matrixLayersFile = directory + "boundaries.txt";
             string inclusionsFile = directory + "CNTnodes.txt";

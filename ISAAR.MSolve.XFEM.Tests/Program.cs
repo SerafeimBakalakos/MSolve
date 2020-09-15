@@ -12,7 +12,9 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
     {
         public static void Main(string[] args)
         {
-            VoronoiTests.ReadVoronoi();
+            //VoronoiTests.ReadVoronoi();
+
+            Multiphase.Paper1.Paper1Example1.RunSingleAnalysisAndPlotting();
 
 
             //Multiphase.Paper1.Paper1Example2.RunParametricHomogenization();

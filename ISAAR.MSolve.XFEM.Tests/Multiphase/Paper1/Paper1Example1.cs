@@ -10,6 +10,7 @@ using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
+using ISAAR.MSolve.LinearAlgebra.Exceptions;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
@@ -18,6 +19,7 @@ using ISAAR.MSolve.XFEM_OLD.Multiphase.Elements;
 using ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment;
 using ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment.SingularityResolution;
 using ISAAR.MSolve.XFEM_OLD.Multiphase.Entities;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry.Voronoi;
 using ISAAR.MSolve.XFEM_OLD.Multiphase.Input;
 using ISAAR.MSolve.XFEM_OLD.Multiphase.Integration;
 using ISAAR.MSolve.XFEM_OLD.Multiphase.Materials;
@@ -28,37 +30,52 @@ using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Mesh;
 using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Writers;
 using ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting;
 
-namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase
+namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 {
-    public static class ExamplePhasesFromCsv
+    public static class Paper1Example1
     {
-        private const int numElementsX = 400, numElementsY = 400;
+        private const int numElements = 30;
+        private const int numElementsX = numElements, numElementsY = numElements;
         private const int subdomainID = 0;
+        private const double minX = -2.4, minY = -1.74, maxX = 1.26, maxY = 2.1;
+        private const double elementSize = (maxX - minX) / numElementsX;
         private const double thickness = 1.0;
         private const bool integrationWithSubtriangles = true;
-        private const double matrixConductivity = 1E0/*1*/, inclusionConductivity = 1E4 /*4*/;
-        private const double matrixInclusionInterfaceConductivity = 1E2/*2*/, inclusionInclusionInterfaceConductivity = 1E3/*3*/;
+        
         private const double specialHeatCoeff = 1.0;
         private const double singularityRelativeAreaTolerance = 1E-8;
-        private const string inputFile = @"C:\Users\Serafeim\Desktop\HEAT\Paper\InputCsv\boundaries.csv";
-        private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\InputCsv";
+        private const bool fixedEnrichment = true;
 
-        public static void Run()
+
+        public static void RunSingleAnalysisAndPlotting()
         {
             var phaseReader = new CntPhaseReader(true, 0);
-            GeometricModel geometricModel = phaseReader.ReadPhasesFromFile(inputFile);
-            double elementSize = (phaseReader.MaxX - phaseReader.MinX) / numElementsX;
-            XModel physicalModel = CreatePhysicalModel(geometricModel, 
-                phaseReader.MinX, phaseReader.MinY, phaseReader.MaxX, phaseReader.MaxY);
-
-            physicalModel.ConnectDataStructures();
-            geometricModel.AssossiatePhasesNodes(physicalModel);
-            geometricModel.AssociatePhasesElements(physicalModel);
-            geometricModel.FindConformingMesh(physicalModel);
-
-
+            string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example1\input\";
+            string pathVoronoiSeeds = directory + "voronoi_seeds.txt";
+            string pathVoronoiVertices = directory + "voronoi_vertices.txt";
+            string pathVoronoiCells = directory + "voronoi_cells.txt";
+            var voronoiReader = new VoronoiReader2D();
+            VoronoiDiagram2D voronoi = 
+                voronoiReader.ReadMatlabVoronoiDiagram(pathVoronoiSeeds, pathVoronoiVertices, pathVoronoiCells);
+            GeometricModel geometricModel = new MultigrainPhaseReader().CreatePhasesFromVoronoi(voronoi);
             var paths = new OutputPaths();
-            paths.FillAllForDirectory(outputDirectory);
+            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example1");
+            PlotPhasesInteractions(() => geometricModel, paths);
+        }
+
+        private static void PlotPhasesInteractions(Func<GeometricModel> genPhases, OutputPaths paths)
+        {
+            var conductivities = new Conductivities
+            {
+                Grain = 41, // Paper: 41 W/mK
+                Boundary = 2.46E9, // Paper: 2.46E9 W/m^2K
+            };
+
+            GeometricModel geometricModel = genPhases();
+            XModel physicalModel = CreatePhysicalModel(geometricModel, conductivities);
+            PrepareForAnalysis(physicalModel, geometricModel);
+            
+            // Plot stuff
             var feMesh = new ContinuousOutputMesh<XNode>(physicalModel.Nodes, physicalModel.Elements);
             using (var writer = new VtkFileWriter(paths.finiteElementMesh))
             {
@@ -73,15 +90,13 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase
             {
                 writer.WriteMesh(conformingMesh);
             }
+
             phasePlotter.PlotNodes(paths.nodalPhases);
             phasePlotter.PlotElements(paths.elementPhases, conformingMesh);
 
-            ISingularityResolver singularityResolver = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
-            //var nodeEnricher = new NodeEnricherOLD(geometricModel, singularityResolver);
-            var nodeEnricher = new NodeEnricher2Junctions(geometricModel, singularityResolver);
-            nodeEnricher.ApplyEnrichments();
-            physicalModel.UpdateDofs();
-            physicalModel.UpdateMaterials();
+            var junctionPlotter = new JunctionPlotter(physicalModel, geometricModel, elementSize);
+            junctionPlotter.PlotJunctionElements(paths.junctionElements);
+
 
             // Enrichment
             var enrichmentPlotter = new EnrichmentPlotter(physicalModel, elementSize);
@@ -99,6 +114,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase
             var materialPlotter = new MaterialPlotter(physicalModel);
             materialPlotter.PlotVolumeMaterials(paths.volumeIntegrationMaterials);
             materialPlotter.PlotBoundaryMaterials(paths.boundaryIntegrationMaterials);
+            //materialPlotter.PlotBoundaryPhaseJumpCoefficients(paths.boundaryIntegrationPhaseJumps);
 
             // Analysis
             IVectorView solution = RunAnalysis(physicalModel);
@@ -125,13 +141,9 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase
                 var fluxField = new HeatFluxAtGaussPointsField(physicalModel);
                 writer.WriteVector2DField("heat_flux", fluxField.CalcValuesAtVertices(solution));
             }
-
-            // Homogenization
-            //RunHomogenization(physicalModel, phaseReader.MinX, phaseReader.MinY, phaseReader.MaxX, phaseReader.MaxY);
         }
 
-        private static XModel CreatePhysicalModel(GeometricModel geometricModel, 
-            double minX, double minY, double maxX, double maxY)
+        private static XModel CreatePhysicalModel(GeometricModel geometricModel, Conductivities conductivities)
         {
             var physicalModel = new XModel();
             physicalModel.Subdomains[subdomainID] = new XSubdomain(subdomainID);
@@ -160,10 +172,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase
             IBoundaryIntegration boundaryIntegration = new LinearBoundaryIntegration(GaussLegendre1D.GetQuadratureWithOrder(3));
 
             // Materials
-            var matrixMaterial = new ThermalMaterial(matrixConductivity, specialHeatCoeff);
-            var inclusionMaterial = new ThermalMaterial(inclusionConductivity, specialHeatCoeff);
-            var materialField = new MatrixInclusionsMaterialField(matrixMaterial, inclusionMaterial,
-                matrixInclusionInterfaceConductivity, inclusionInclusionInterfaceConductivity, DefaultPhase.DefaultPhaseID);
+            var materialField = new MultigrainMaterialField(conductivities.Grain, conductivities.Boundary, specialHeatCoeff);
 
             // Elements
             var factory = new XThermalElement2DFactory(materialField, thickness, volumeIntegration, boundaryIntegration);
@@ -184,25 +193,52 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase
         {
             double meshTol = 1E-7;
 
-            // Left side: T = +100
+            // Left side: T = +315
             double minX = physicalModel.Nodes.Select(n => n.X).Min();
             foreach (var node in physicalModel.Nodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
             {
-                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = +100 });
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = +315 });
             }
 
-            // Right side: T = 100
+            // Right side: T = +285
             double maxX = physicalModel.Nodes.Select(n => n.X).Max();
             foreach (var node in physicalModel.Nodes.Where(n => Math.Abs(n.X - maxX) <= meshTol))
             {
-                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = -100 });
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = +285 });
             }
+        }
+
+        private static void PrepareForAnalysis(XModel physicalModel, GeometricModel geometricModel)
+        {
+            physicalModel.ConnectDataStructures();
+
+            geometricModel.AssossiatePhasesNodes(physicalModel);
+            geometricModel.AssociatePhasesElements(physicalModel);
+            geometricModel.FindJunctions(physicalModel);
+            geometricModel.FindConformingMesh(physicalModel);
+
+            ISingularityResolver singularityResolver = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+            //var nodeEnricher = new NodeEnricherOLD(geometricModel, singularityResolver);
+            if (fixedEnrichment)
+            {
+                var nodeEnricher = new NodeEnricher_v3(physicalModel, geometricModel, singularityResolver);
+                nodeEnricher.ApplyEnrichments();
+            }
+            else
+            {
+                var nodeEnricher = new NodeEnricher2Junctions(geometricModel, singularityResolver);
+                nodeEnricher.ApplyEnrichments();
+            }
+
+            physicalModel.UpdateDofs();
+            physicalModel.UpdateMaterials();
         }
 
         private static IVectorView RunAnalysis(XModel physicalModel)
         {
-            //SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(physicalModel);
+            Console.WriteLine("Starting analysis");
             SuiteSparseSolver solver = new SuiteSparseSolver.Builder().BuildSolver(physicalModel);
+            //SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(physicalModel);
             var problem = new ProblemThermalSteadyState(physicalModel, solver);
             var linearAnalyzer = new LinearAnalyzer(physicalModel, solver, problem);
             var staticAnalyzer = new StaticAnalyzer(physicalModel, solver, problem, linearAnalyzer);
@@ -210,26 +246,16 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase
             staticAnalyzer.Initialize();
             staticAnalyzer.Solve();
 
+            Console.WriteLine("Analysis finished");
+
+
             return solver.LinearSystems[subdomainID].Solution;
         }
 
-        private static void RunHomogenization(XModel physicalModel, double minX, double minY, double maxX, double maxY)
+        private class Conductivities
         {
-            // Analysis
-            //Vector2 temperatureGradient = Vector2.Create(200, 0);
-            Vector2 temperatureGradient = Vector2.Create(0, 0);
-            //var solver = (new SkylineSolver.Builder()).BuildSolver(physicalModel);
-            SuiteSparseSolver solver = new SuiteSparseSolver.Builder().BuildSolver(physicalModel);
-            var provider = new ProblemThermalSteadyState(physicalModel, solver);
-            var rve = new ThermalSquareRve(physicalModel, Vector2.Create(minX, minY), Vector2.Create(maxX, maxY), thickness,
-                temperatureGradient);
-            var homogenization = new HomogenizationAnalyzer(physicalModel, solver, provider, rve);
-
-            homogenization.Initialize();
-            homogenization.Solve();
-
-            IMatrix conductivity = homogenization.EffectiveConstitutiveTensors[subdomainID];
-            Console.WriteLine($"C = [ {conductivity[0, 0]} {conductivity[0, 1]}; {conductivity[1, 0]} {conductivity[1, 1]} ]");
+            public double Grain { get; set; }
+            public double Boundary { get; set; }
         }
     }
 }

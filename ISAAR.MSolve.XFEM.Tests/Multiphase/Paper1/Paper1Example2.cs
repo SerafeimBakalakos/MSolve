@@ -62,7 +62,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 
         public static void RunSingleAnalysisAndPlotting()
         {
-            var phaseReader = new PhaseReader(true, 0);
+            var phaseReader = new CntPhaseReader(true, 0);
             string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example2\";
             string matrixLayersFile = directory + "boundaries.txt";
             string inclusionsFile = directory + "CNTnodes.txt";
@@ -255,7 +255,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
             string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example2\";
             string matrixLayersFile = directory + "boundaries.txt";
             string inclusionsFile = directory + "CNTnodes.txt";
-            var phaseReader = new PhaseReader(true, 0);
+            var phaseReader = new CntPhaseReader(true, 0);
             GeometricModel geometricModel = phaseReader.ReadPhasesFromFile(matrixLayersFile, inclusionsFile);
 
             XModel physicalModel = CreatePhysicalModel(geometricModel, conductivities);

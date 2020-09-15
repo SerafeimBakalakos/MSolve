@@ -11,6 +11,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry.Voronoi
 {
     public class VoronoiDiagram2D
     {
+        public const int externalSpaceIndex = int.MinValue;
+
         public VoronoiDiagram2D(List<CartesianPoint> seeds, List<CartesianPoint> vertices, List<int[]> cells)
         {
             // Remove infinity vertex
@@ -184,9 +186,9 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry.Voronoi
         {
             public int[] Vertices { get; set; }
 
-            public int CellNegative { get; set; } = -1;
+            public int CellNegative { get; set; } = externalSpaceIndex;
 
-            public int CellPositive { get; set; } = -1;
+            public int CellPositive { get; set; } = externalSpaceIndex;
         }
     }
 }
