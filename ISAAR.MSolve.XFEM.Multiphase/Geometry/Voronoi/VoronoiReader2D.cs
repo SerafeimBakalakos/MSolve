@@ -9,13 +9,29 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry.Voronoi
 {
     public class VoronoiReader2D
     {
-        public VoronoiDiagram2D ReadMatlabVoronoiDiagram(string pathVertices, string pathCells)
+        public VoronoiDiagram2D ReadMatlabVoronoiDiagram(string pathSeeds, string pathVertices, string pathCells)
         {
+            // Seeds
+            var seeds = new List<CartesianPoint>();
+            using (var reader = new StreamReader(pathSeeds))
+            {
+                string line = null;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    string[] words = line.Split(',');
+                    Debug.Assert(words.Length == 2);
+                    double x = double.Parse(words[0]);
+                    double y = double.Parse(words[1]);
+                    seeds.Add(new CartesianPoint(x, y));
+                }
+            }
+
             // Vertices
             var vertices = new List<CartesianPoint>();
             using (var reader = new StreamReader(pathVertices))
             {
-                string line = reader.ReadLine(); // Discard the first line, since it contains infinity
+                string line = reader.ReadLine(); // The first line contains infinity
+                vertices.Add(new CartesianPoint(double.PositiveInfinity, double.PositiveInfinity));
                 while ((line = reader.ReadLine()) != null)
                 {
                     string[] words = line.Split(',');
@@ -35,29 +51,18 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry.Voronoi
                 {
                     string[] words = line.Trim(' ').Split(' ');
                     Debug.Assert(words.Length > 2);
-                    bool hasInfinityVertex = false;
                     var cell = new int[words.Length];
                     for (int i = 0; i < words.Length; ++i)
                     {
                         int index = int.Parse(words[i]);
-                        if (index >= 2)
-                        {
-                            cell[i] = index - 2;
-                        }
-                        else
-                        {
-                            hasInfinityVertex = true;
-                            break;
-                        }
+                        Debug.Assert(index > 0);
+                        cell[i] = index - 1;
                     }
-                    if (!hasInfinityVertex)
-                    {
-                        cells.Add(cell);
-                    }
+                    cells.Add(cell);
                 }
             }
 
-            return new VoronoiDiagram2D(vertices, cells);
+            return new VoronoiDiagram2D(seeds, vertices, cells);
         }
     }
 }
