@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ISAAR.MSolve.XFEM_OLD.Multiphase.Utilities;
 using ISAAR.MSolve.XFEM_OLD.Tests.HeatOLD.Plotting;
 using ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Homogenization;
 using ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Multigrain;
@@ -12,14 +13,14 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
     {
         public static void Main(string[] args)
         {
-            //VoronoiTests.ReadVoronoi();
-
-            Multiphase.Paper1.Paper1Example1.RunSingleAnalysisAndPlotting();
-
+            //Multiphase.Paper1.Paper1Example1.RunSingleAnalysisAndPlotting();
 
             //Multiphase.Paper1.Paper1Example2.RunParametricHomogenization();
             //Multiphase.Paper1.Paper1Example2.RunSingleAnalysisAndPlotting();
             //HomogenizationExamples.RunHomogenizationAnalysis();
+
+            //VoronoiTests.ReadVoronoi();
+            //Multiphase.Multigrain.MultigrainExample1.RunSingleAnalysisAndPlotting();
 
             //Multiphase.ExamplePhasesFromCsv.Run();
 
@@ -64,6 +65,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
             //ThreewayJunction2D.PlotLevelSetsAndEnrichments();
 
             //ComboTest();
+            ComboTreeTest();
         }
 
         private static void ComboTest()
@@ -78,6 +80,12 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
                 }
                 Console.WriteLine();
             }
+        }
+
+        private static void ComboTreeTest()
+        {
+            var tree = new CombinationTree(6);
+            Console.WriteLine(tree);
         }
     }
 }

@@ -44,6 +44,40 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry.Voronoi
 
         public List<CartesianPoint> Vertices { get; }
 
+        public void CenterAround(double[] coordinates)
+        {
+            var oldCenter = new double[2];
+            foreach (CartesianPoint vertex in Vertices)
+            {
+                oldCenter[0] += vertex.X;
+                oldCenter[1] += vertex.Y;
+            }
+            oldCenter[0] /= Vertices.Count;
+            oldCenter[1] /= Vertices.Count;
+
+            double[] dx = { coordinates[0] - oldCenter[0], coordinates[1] - oldCenter[1] };
+            Translate(dx);
+        }
+
+        public void Translate(double[] dx)
+        {
+            // Seeds
+            for (int s = 0; s < Seeds.Count; ++s)
+            {
+                double x = Seeds[s].X + dx[0];
+                double y = Seeds[s].X + dx[1];
+                Seeds[s] = new CartesianPoint(x, y);
+            }
+
+            // Vertices
+            for (int v = 0; v < Vertices.Count; ++v)
+            {
+                double x = Vertices[v].X + dx[0];
+                double y = Vertices[v].X + dx[1];
+                Vertices[v] = new CartesianPoint(x, y);
+            }
+        }
+
         [Conditional("DEBUG")]
         private static void CheckSeedsCells(List<CartesianPoint> seeds, List<CartesianPoint> vertices, List<int[]> cells)
         {

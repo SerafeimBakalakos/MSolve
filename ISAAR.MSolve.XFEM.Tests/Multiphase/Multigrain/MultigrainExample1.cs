@@ -30,20 +30,18 @@ using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Mesh;
 using ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Writers;
 using ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting;
 
-namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
+namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Multigrain
 {
-    public static class Paper1Example1
+    public static class MultigrainExample1
     {
-        private const int numElements = 200;
+        private const int numElements = 30;
         private const int numElementsX = numElements, numElementsY = numElements;
         private const int subdomainID = 0;
-        private const double minX = -1.0, minY = -1.0, maxX = 1.0, maxY = 1.0;
+        private const double minX = -2.4, minY = -1.74, maxX = 1.26, maxY = 2.1;
         private const double elementSize = (maxX - minX) / numElementsX;
         private const double thickness = 1.0;
         private const bool integrationWithSubtriangles = true;
-
-        private const double conductivityGrainBulk = 41; // Paper: 41 W/mK 
-        private const double conductivityGrainBoundary = 2.46E3; // Paper: 2.46E9 W/m^2K
+        
         private const double specialHeatCoeff = 1.0;
         private const double singularityRelativeAreaTolerance = 1E-8;
         private const bool fixedEnrichment = true;
@@ -52,7 +50,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
         public static void RunSingleAnalysisAndPlotting()
         {
             var phaseReader = new CntPhaseReader(true, 0);
-            string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example1\input\";
+            string directory = @"C:\Users\Serafeim\Desktop\HEAT\VoronoiExample\input\";
             string pathVoronoiSeeds = directory + "voronoi_seeds.txt";
             string pathVoronoiVertices = directory + "voronoi_vertices.txt";
             string pathVoronoiCells = directory + "voronoi_cells.txt";
@@ -61,7 +59,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
                 voronoiReader.ReadMatlabVoronoiDiagram(pathVoronoiSeeds, pathVoronoiVertices, pathVoronoiCells);
             GeometricModel geometricModel = new MultigrainPhaseReader().CreatePhasesFromVoronoi(voronoi);
             var paths = new OutputPaths();
-            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example1");
+            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\VoronoiExample1");
             PlotPhasesInteractions(() => geometricModel, paths);
         }
 
@@ -69,8 +67,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
         {
             var conductivities = new Conductivities
             {
-                Grain = conductivityGrainBulk,
-                Boundary = conductivityGrainBoundary
+                Grain = 41, // Paper: 41 W/mK
+                Boundary = 2.46E9, // Paper: 2.46E9 W/m^2K
             };
 
             GeometricModel geometricModel = genPhases();
