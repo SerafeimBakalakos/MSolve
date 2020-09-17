@@ -13,7 +13,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
     {
         public static void Main(string[] args)
         {
-            //Multiphase.Paper1.Paper1Example1.RunSingleAnalysisAndPlotting();
+            Multiphase.Paper1.Paper1Example1.RunSingleAnalysisAndPlotting();
 
             //Multiphase.Paper1.Paper1Example2.RunParametricHomogenization();
             //Multiphase.Paper1.Paper1Example2.RunSingleAnalysisAndPlotting();
@@ -65,7 +65,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
             //ThreewayJunction2D.PlotLevelSetsAndEnrichments();
 
             //ComboTest();
-            ComboTreeTest();
+            //ComboTreeTest();
         }
 
         private static void ComboTest()
@@ -85,7 +85,21 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
         private static void ComboTreeTest()
         {
             var tree = new CombinationTree(6);
+            Console.WriteLine("All combinations:");
             Console.WriteLine(tree);
+            Console.WriteLine();
+
+            Console.WriteLine("Combinations until sum >= 2");
+            int maxSum = 2;
+            var builder = new StringBuilder();
+            tree.Root.RecurseDownwardsUntil(node =>
+            {
+                int sum = 0;
+                foreach (int number in node.Combination) sum += number;
+                builder.AppendLine(node.ToString());
+                return sum >= maxSum;
+            });
+            Console.WriteLine(builder.ToString());
         }
     }
 }

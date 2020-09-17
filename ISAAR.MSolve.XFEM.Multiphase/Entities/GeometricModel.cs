@@ -18,7 +18,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
 
         private Dictionary<IXFiniteElement, IReadOnlyList<ElementSubtriangle>> ConformingMesh { get; set; }
 
-        public List<PhaseJunction> Junctions { get; } = new List<PhaseJunction>();
+        public List<PhaseJunction> Junctions { get; set; }
 
         public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 
@@ -56,40 +56,11 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
             }
         }
 
+        //TODO: Move this to another class that inherits from IJunctionLocator
         public void FindJunctions(XModel physicalModel)
         {
-            int id = 0;
-            foreach (IXFiniteElement element in physicalModel.Elements)
-            {
-                #region debug
-                //double x = element.Nodes[0].X;
-                //double y = element.Nodes[0].Y;
-                //double xTarget = -0.98, yTarget = 0.88;
-                //double tol = 1E-3;
-                //if ((Math.Abs(x - xTarget) < tol) && (Math.Abs(y - yTarget) < tol))
-                //{
-                //    Console.WriteLine();
-                //}
-                #endregion
-
-                if (element.Phases.Count < 3) continue;
-                Dictionary<IPhase, SortedSet<IPhase>> phaseInteractions = FindPhaseInteractions(element);
-                RemoveNonJunctionPhases(element, phaseInteractions);
-                if (phaseInteractions.Count < 3) continue;
-
-                foreach (IPhase[] junctionCandidates in FindCandidatePhasesForJunction(phaseInteractions))
-                {
-                    List<IPhase> phaseChain = PhasesFormJunction(junctionCandidates, phaseInteractions);
-                    if (phaseChain != null)
-                    {
-                        var junction = new PhaseJunction();
-                        junction.ID = id++;
-                        junction.Element = element;
-                        junction.Phases = phaseChain;
-                        Junctions.Add(junction);
-                    }
-                }
-            }
+            var junctionLocator = new GeneralJunctionLocator();
+            Junctions = junctionLocator.FindJunctions(physicalModel);
         }
 
         public static IPhase FindPhaseAt(CartesianPoint point, IXFiniteElement element)
@@ -116,104 +87,5 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
             Debug.Assert(ConformingMesh != null);
             return ConformingMesh[element];
         }
-
-        private IEnumerable<IPhase[]> FindCandidatePhasesForJunction(Dictionary<IPhase, SortedSet<IPhase>> phaseInteractions)
-        {
-            var phases = new Dictionary<int, IPhase>();
-            foreach (IPhase phase in phaseInteractions.Keys) phases[phase.ID] = phase;
-            int[] allOptions = phases.Keys.ToArray();
-            Array.Sort(allOptions);
-            int minJunctionSize = 3;
-            IEnumerable<int[]> idCombos = Utilities.Combinations.FindAllCombos(allOptions, minJunctionSize);
-            var phaseCombos = new List<IPhase[]>();
-            foreach (int[] idCombo in idCombos)
-            {
-                var phaseCombo = new IPhase[idCombo.Length];
-                for (int i = 0; i < idCombo.Length; ++i)
-                {
-                    phaseCombo[i] = phases[idCombo[i]];
-                }
-                phaseCombos.Add(phaseCombo);
-            }
-            return phaseCombos;
-        }
-
-        private Dictionary<IPhase, SortedSet<IPhase>> FindPhaseInteractions(IXFiniteElement element)
-        {
-            var phaseInteractions = new Dictionary<IPhase, SortedSet<IPhase>>();
-            foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
-            {
-                bool existsPos = phaseInteractions.TryGetValue(boundary.PositivePhase, out SortedSet<IPhase> neighborsPos);
-                if (!existsPos)
-                {
-                    neighborsPos = new SortedSet<IPhase>();
-                    phaseInteractions[boundary.PositivePhase] = neighborsPos;
-                }
-                neighborsPos.Add(boundary.NegativePhase);
-
-                bool existsNeg = phaseInteractions.TryGetValue(boundary.NegativePhase, out SortedSet<IPhase> neighborsNeg);
-                if (!existsNeg)
-                {
-                    neighborsNeg = new SortedSet<IPhase>();
-                    phaseInteractions[boundary.NegativePhase] = neighborsNeg;
-                }
-                neighborsNeg.Add(boundary.PositivePhase);
-            }
-
-            return phaseInteractions;
-        }
-
-        //TODO: If phases == 4 check that each triplet does not form a junction on its own. Similarly for 5 or more phases
-        private List<IPhase> PhasesFormJunction(IEnumerable<IPhase> candidatePhases, 
-            Dictionary<IPhase, SortedSet<IPhase>> phaseInteractions)
-        {
-            // Phases of the junction will be arranged in a chain: each phase will be be between its 2 neighbors
-            var phasesChain = new List<IPhase>();
-            var remainderPhases = new HashSet<IPhase>(candidatePhases);
-            phasesChain.Add(remainderPhases.First());
-            remainderPhases.Remove(phasesChain[0]);
-            while (remainderPhases.Count > 0)
-            {
-                IPhase current = phasesChain[phasesChain.Count - 1];
-                bool foundNext = false;
-
-                // Find the next phase in the chain
-                foreach (IPhase phase in remainderPhases)
-                {
-                    if (phaseInteractions[current].Contains(phase))
-                    {
-                        foundNext = true;
-                        phasesChain.Add(phase);
-                        remainderPhases.Remove(phase);
-                        break;
-                    }
-                }
-
-                // Broken chain => No junction
-                if (!foundNext) return null;
-            }
-
-            // Make sure the first and last phases are neighbors
-            IPhase first = phasesChain[0];
-            IPhase last = phasesChain[phasesChain.Count - 1];
-            if (phaseInteractions[last].Contains(first)) return phasesChain;
-            else return null; // Broken chain => No junction
-        }
-
-        private void RemoveNonJunctionPhases(IXFiniteElement element, Dictionary<IPhase, SortedSet<IPhase>> phaseInteractions)
-        {
-            foreach (IPhase phase in element.Phases)
-            {
-                //Debug.Assert(phaseInteractions[phase].Count >= 1);
-                if (phaseInteractions[phase].Count == 1)
-                {
-                    IPhase neighbor = phaseInteractions[phase].First();
-                    phaseInteractions.Remove(phase);
-                    phaseInteractions[neighbor].Remove(phase);
-                }
-            }
-        }
-
-
     }
 }

@@ -64,16 +64,25 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Utilities
 
             public Node Parent { get; }
 
-            public void RecurseDownwards(Action<Node> action)
+            public void RecurseDownwards(Action<Node> callback)
             {
-                action(this);
-                foreach (Node node in Children) node.RecurseDownwards(action);
+                callback(this);
+                foreach (Node node in Children) node.RecurseDownwards(callback);
             }
 
-            public void RecurseUpwards(Action<Node> action)
+            public void RecurseDownwardsUntil(Func<Node, bool> callback)
             {
-                foreach (Node node in Children) node.RecurseDownwards(action);
-                action(this);
+                bool success = callback(this);
+                if (!success)
+                {
+                    foreach (Node node in Children) node.RecurseDownwardsUntil(callback);
+                }
+            }
+
+            public void RecurseUpwards(Action<Node> callback)
+            {
+                foreach (Node node in Children) node.RecurseDownwards(callback);
+                callback(this);
             }
 
             public override string ToString()
