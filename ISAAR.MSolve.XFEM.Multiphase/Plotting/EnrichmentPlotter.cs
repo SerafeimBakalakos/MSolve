@@ -65,7 +65,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Enrichments
         private CartesianPoint[] DuplicateNodeForBetterViewing(XNode node, int numInstances)
         {
             //TODO: Add more.
-            var possibilites = new CartesianPoint[8]; // The further ones apart go to top
+            var possibilites = new CartesianPoint[20]; // The further ones apart go to top
             double offset = 0.05 * elementSize;
             possibilites[0] = new CartesianPoint(node.X - offset, node.Y - offset);
             possibilites[1] = new CartesianPoint(node.X + offset, node.Y + offset);
@@ -76,6 +76,21 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Plotting.Enrichments
             possibilites[5] = new CartesianPoint(node.X + 2.0 * offset, node.Y + 2.0 * offset);
             possibilites[6] = new CartesianPoint(node.X + 2.0 * offset, node.Y - 2.0 * offset);
             possibilites[7] = new CartesianPoint(node.X - 2.0 * offset, node.Y + 2.0 * offset);
+
+            possibilites[8] = new CartesianPoint(node.X - 3.0 * offset, node.Y - 3.0 * offset);
+            possibilites[9] = new CartesianPoint(node.X + 3.0 * offset, node.Y + 3.0 * offset);
+            possibilites[10] = new CartesianPoint(node.X + 3.0 * offset, node.Y - 3.0 * offset);
+            possibilites[11] = new CartesianPoint(node.X - 3.0 * offset, node.Y + 3.0 * offset);
+
+            possibilites[12] = new CartesianPoint(node.X - 4.0 * offset, node.Y - 4.0 * offset);
+            possibilites[13] = new CartesianPoint(node.X + 4.0 * offset, node.Y + 4.0 * offset);
+            possibilites[14] = new CartesianPoint(node.X + 4.0 * offset, node.Y - 4.0 * offset);
+            possibilites[15] = new CartesianPoint(node.X - 4.0 * offset, node.Y + 4.0 * offset);
+
+            possibilites[16] = new CartesianPoint(node.X - 5.0 * offset, node.Y - 5.0 * offset);
+            possibilites[17] = new CartesianPoint(node.X + 5.0 * offset, node.Y + 5.0 * offset);
+            possibilites[18] = new CartesianPoint(node.X + 5.0 * offset, node.Y - 5.0 * offset);
+            possibilites[19] = new CartesianPoint(node.X - 5.0 * offset, node.Y + 5.0 * offset);
 
             var instances = new CartesianPoint[numInstances];
             for (int i = 0; i < numInstances; ++i) instances[i] = possibilites[i];

@@ -43,7 +43,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
         private const bool integrationWithSubtriangles = true;
 
         private const double conductivityGrainBulk = 41; // Paper: 41 W/mK 
-        private const double conductivityGrainBoundary = 2.46E3; // Paper: 2.46E9 W/m^2K
+        private const double conductivityGrainBoundary = 2.46E0; // Paper: 2.46E9 W/m^2K
         private const double specialHeatCoeff = 1.0;
         private const double singularityRelativeAreaTolerance = 1E-8;
         private const bool fixedEnrichment = true;

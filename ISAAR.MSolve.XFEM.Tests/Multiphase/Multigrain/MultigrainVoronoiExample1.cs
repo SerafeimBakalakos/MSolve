@@ -32,7 +32,7 @@ using ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting;
 
 namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Multigrain
 {
-    public static class MultigrainExample1
+    public static class MultigrainVoronoiExample1
     {
         private const int numElements = 30;
         private const int numElementsX = numElements, numElementsY = numElements;
