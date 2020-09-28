@@ -35,7 +35,10 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
             int numStepEnrichments = DefineStepEnrichments(0);
             int numJunctionEnrichments = DefineJunctionEnrichments(numStepEnrichments);
             EnrichNodes();
+            RemoveRedundantJunctions();
         }
+
+        
 
         private int DefineJunctionEnrichments(int idStart)
         {
@@ -224,6 +227,38 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
                 }
             }
             return false;
+        }
+
+        //TODO: This implementation works if there is only 1 redundant enrichment. If there are more, care should be take to
+        //      choose the correct one.
+        private void RemoveRedundantJunctions()
+        {
+            foreach (XNode node in physicalModel.Nodes)
+            {
+                var phasesOfNode = new HashSet<IPhase>();
+                foreach (IXFiniteElement element in node.ElementsDictionary.Values)
+                {
+                    foreach (IPhase phase in element.Phases)
+                    {
+                        phasesOfNode.Add(phase);
+                    }
+                }
+
+                int numJunctions = 0;
+                foreach (IEnrichment enrichment in node.Enrichments.Keys)
+                {
+                    if (enrichment is JunctionEnrichment_v2) ++numJunctions;
+                }
+
+                if (numJunctions == phasesOfNode.Count)
+                {
+                    node.Enrichments.Remove(node.Enrichments.Keys.Last());
+                }
+                else if (numJunctions > phasesOfNode.Count)
+                {
+                    throw new NotImplementedException();
+                }
+            }
         }
     }
 }

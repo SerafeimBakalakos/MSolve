@@ -78,7 +78,15 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
             }
 
             // If the point is not contained in any other phases, it must be in the default phase 
+            #region debug
+            // Hack for multigrain example.DELETE THIS ASAP
+            if (defaultPhase == null)
+            {
+                return element.Phases.First();
+            }
+            #endregion
             Debug.Assert(defaultPhase != null, "The point does not belong to any phases");
+
             return defaultPhase;
         }
 

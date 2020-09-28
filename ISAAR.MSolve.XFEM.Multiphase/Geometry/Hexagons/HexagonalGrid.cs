@@ -31,11 +31,14 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry.Hexagons
             CreateVertices();
             CreateCells();
             CreateEdges();
+            CreateCentroids();
         }
 
         public List<Edge> Edges { get; private set; }
 
         public List<int[]> Cells { get; private set; }
+
+        public List<CartesianPoint> Centroids { get; private set; }
 
         public List<CartesianPoint> Vertices { get; private set; }
 
@@ -61,6 +64,16 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Geometry.Hexagons
                     connectivity[5] = vertexRows[1] * numVerticesX + i + 1;            // upper right vertex
                     Cells.Add(connectivity);
                 }
+            }
+        }
+        private void CreateCentroids()
+        {
+            Centroids = new List<CartesianPoint>(Cells.Count);
+            foreach (int[] cell in Cells)
+            {
+                CartesianPoint top = Vertices[cell[0]];
+                var centroid = new CartesianPoint(top.X, top.Y - hexSize);
+                Centroids.Add(centroid);
             }
         }
 

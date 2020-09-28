@@ -14,16 +14,23 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
         public static void Main(string[] args)
         {
             //Multiphase.Paper1.Paper1Example1.RunSingleAnalysisAndPlotting();
+            Multiphase.Paper1.Paper1Example1.RunHomogenization();
 
             //Multiphase.Paper1.Paper1Example2.RunParametricHomogenization();
             //Multiphase.Paper1.Paper1Example2.RunSingleAnalysisAndPlotting();
             //HomogenizationExamples.RunHomogenizationAnalysis();
 
-            //HexagonalTests.PlotHexagonalGrid();
-            MultigrainHexagonalExample1.RunSingleAnalysisAndPlotting();
-            //MultigrainHexagonalExample1.RunHomogenization();
+            //HexagonalTests.GenerateVoronoiSeeds();
             //VoronoiTests.ReadVoronoi();
+
+            //HexagonalTests.PlotHexagonalGrid();
+            //MultigrainHexagonalExample1.RunSingleAnalysisAndPlotting();
+            //MultigrainHexagonalExample1.RunHomogenization();
             //Multiphase.Multigrain.MultigrainExample1.RunSingleAnalysisAndPlotting();
+
+            //MultigrainVoronoiExample1.RunSingleAnalysisAndPlotting();
+            //MultigrainVoronoiExample1.RunHomogenization();
+
 
             //Multiphase.ExamplePhasesFromCsv.Run();
 

@@ -34,47 +34,203 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 {
     public static class Paper1Example1
     {
-        private const int numElements = 200;
-        private const int numElementsX = numElements, numElementsY = numElements;
+        private const string ioPath = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example1\";
         private const int subdomainID = 0;
-        private const double minX = -1.0, minY = -1.0, maxX = 1.0, maxY = 1.0;
-        private const double elementSize = (maxX - minX) / numElementsX;
-        private const double thickness = 1.0;
         private const bool integrationWithSubtriangles = true;
 
-        private const double conductivityGrainBulk = 41; // Paper: 41 W/mK 
-        private const double conductivityGrainBoundary = 2.46E0; // Paper: 2.46E9 W/m^2K
         private const double specialHeatCoeff = 1.0;
         private const double singularityRelativeAreaTolerance = 1E-8;
         private const bool fixedEnrichment = true;
 
+        public static void RunHomogenization()
+        {
+            var input = new ProblemInput();
+
+            #region sample input
+            input.NumElements = new int[] { 200, 200 };
+            input.MinCoords = new double[] { -1, -1 };
+            input.MaxCoords = new double[] { 1, 1 };
+            input.Thickness = 1.0;
+            input.PhasesInputDirectoryPath = ioPath + @"input\sample\";
+            input.GrainSize = double.NaN;
+            input.GrainConductivity = 41;
+            input.BoundaryConductivity = 2.46;
+            #endregion
+
+            #region grain size = 1nm
+            //input.NumElements = new int[] { 200, 200 };
+            //input.MinCoords = new double[] { 0, 0 };
+            //input.MaxCoords = new double[] { 30, 30 };
+            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
+            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size1\";
+            //input.GrainSize = 1;
+            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
+            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
+            #endregion
+
+            #region grain size = 2nm
+            //input.NumElements = new int[] { 200, 200 };
+            //input.MinCoords = new double[] { 0, 0 };
+            //input.MaxCoords = new double[] { 60, 60 };
+            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
+            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size2\";
+            //input.GrainSize = 2;
+            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
+            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
+            #endregion
+
+            #region grain size = 5nm
+            //input.NumElements = new int[] { 200, 200 };
+            //input.MinCoords = new double[] { 0, 0 };
+            //input.MaxCoords = new double[] { 150, 150 };
+            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
+            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size5\";
+            //input.GrainSize = 5;
+            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
+            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
+            #endregion
+
+            #region grain size = 10nm
+            //input.NumElements = new int[] { 200, 200 };
+            //input.MinCoords = new double[] { 0, 0 };
+            //input.MaxCoords = new double[] { 300, 300 };
+            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
+            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size10\";
+            //input.GrainSize = 10;
+            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
+            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
+            #endregion
+
+            #region grain size = 20nm
+            //input.NumElements = new int[] { 200, 200 };
+            //input.MinCoords = new double[] { 0, 0 };
+            //input.MaxCoords = new double[] { 600, 600 };
+            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
+            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size20\";
+            //input.GrainSize = 20;
+            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
+            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
+            #endregion
+
+            #region grain size = 50nm
+            //input.NumElements = new int[] { 200, 200 };
+            //input.MinCoords = new double[] { 0, 0 };
+            //input.MaxCoords = new double[] { 1500, 1500 };
+            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
+            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size50\";
+            //input.GrainSize = 10;
+            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
+            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
+            #endregion
+
+            #region grain size = 100nm
+            //input.NumElements = new int[] { 200, 200 };
+            //input.MinCoords = new double[] { 0, 0 };
+            //input.MaxCoords = new double[] { 3000, 3000 };
+            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
+            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size100\";
+            //input.GrainSize = 100;
+            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
+            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
+            #endregion
+
+            #region grain size = 200nm
+            //input.NumElements = new int[] { 200, 200 };
+            //input.MinCoords = new double[] { 0, 0 };
+            //input.MaxCoords = new double[] { 6000, 6000 };
+            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
+            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size200\";
+            //input.GrainSize = 20;
+            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
+            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
+            #endregion
+
+            #region grain size = 500nm
+            //input.NumElements = new int[] { 200, 200 };
+            //input.MinCoords = new double[] { 0, 0 };
+            //input.MaxCoords = new double[] { 15000, 15000 };
+            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
+            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size500\";
+            //input.GrainSize = 500;
+            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
+            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
+            #endregion
+
+            #region grain size = 1000nm
+            //input.NumElements = new int[] { 200, 200 };
+            //input.MinCoords = new double[] { 0, 0 };
+            //input.MaxCoords = new double[] { 30000, 30000 };
+            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
+            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size1000\";
+            //input.GrainSize = 1000;
+            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
+            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
+            #endregion
+
+            RunHomogenization(input);
+        }
+
+        private static void RunHomogenization(ProblemInput input)
+        {
+            string pathVoronoiSeeds = input.PhasesInputDirectoryPath + "voronoi_seeds.txt";
+            string pathVoronoiVertices = input.PhasesInputDirectoryPath + "voronoi_vertices.txt";
+            string pathVoronoiCells = input.PhasesInputDirectoryPath + "voronoi_cells.txt";
+
+            var voronoiReader = new VoronoiReader2D();
+            VoronoiDiagram2D voronoi =
+                voronoiReader.ReadMatlabVoronoiDiagram(pathVoronoiSeeds, pathVoronoiVertices, pathVoronoiCells);
+            GeometricModel geometricModel = new MultigrainPhaseReader().CreatePhasesFromVoronoi(voronoi);
+
+            XModel physicalModel = CreatePhysicalModel(geometricModel, input);
+            PrepareForAnalysis(physicalModel, geometricModel);
+
+            // Analysis
+            Vector2 temperatureGradient = Vector2.Create(0, 0);
+            //var solver = (new SkylineSolver.Builder()).BuildSolver(physicalModel);
+            SuiteSparseSolver solver = new SuiteSparseSolver.Builder().BuildSolver(physicalModel);
+            var provider = new ProblemThermalSteadyState(physicalModel, solver);
+            var rve = new ThermalSquareRve(physicalModel, Vector2.CreateFromArray(input.MinCoords),
+                Vector2.CreateFromArray(input.MaxCoords), input.Thickness, temperatureGradient);
+            var homogenization = new HomogenizationAnalyzer(physicalModel, solver, provider, rve);
+
+            homogenization.Initialize();
+            homogenization.Solve();
+            int numDofs = solver.LinearSystems[0].Matrix.NumRows;
+            solver.Dispose();
+            IMatrix Keff = homogenization.EffectiveConstitutiveTensors[subdomainID];
+
+            Console.Write($"grain size = {input.GrainSize} - numDofs = {numDofs}");
+            Console.WriteLine($" - Keff = [{Keff[0, 0]}, {Keff[0, 1]} ; {Keff[1, 0]}, {Keff[1, 1]}]");
+        }
 
         public static void RunSingleAnalysisAndPlotting()
         {
-            var phaseReader = new CntPhaseReader(true, 0);
-            string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example1\input\";
-            string pathVoronoiSeeds = directory + "voronoi_seeds.txt";
-            string pathVoronoiVertices = directory + "voronoi_vertices.txt";
-            string pathVoronoiCells = directory + "voronoi_cells.txt";
+            var input = new ProblemInput();
+            input.NumElements = new int[] { 200, 200 };
+            input.MinCoords = new double[] { -1, -1 };
+            input.MaxCoords = new double[] { 1, 1 };
+            input.Thickness = 1.0;
+            input.PhasesInputDirectoryPath = ioPath + @"input\sample\";
+            input.GrainConductivity = 41;
+            input.BoundaryConductivity = 2.46E9;
+
+            string pathVoronoiSeeds = input.PhasesInputDirectoryPath + "voronoi_seeds.txt";
+            string pathVoronoiVertices = input.PhasesInputDirectoryPath + "voronoi_vertices.txt";
+            string pathVoronoiCells = input.PhasesInputDirectoryPath + "voronoi_cells.txt";
             var voronoiReader = new VoronoiReader2D();
             VoronoiDiagram2D voronoi = 
                 voronoiReader.ReadMatlabVoronoiDiagram(pathVoronoiSeeds, pathVoronoiVertices, pathVoronoiCells);
             GeometricModel geometricModel = new MultigrainPhaseReader().CreatePhasesFromVoronoi(voronoi);
             var paths = new OutputPaths();
-            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example1");
-            PlotPhasesInteractions(() => geometricModel, paths);
+            paths.FillAllForDirectory(ioPath + @"output");
+
+            PlotPhasesInteractions(() => geometricModel, paths, input);
         }
 
-        private static void PlotPhasesInteractions(Func<GeometricModel> genPhases, OutputPaths paths)
+        private static void PlotPhasesInteractions(Func<GeometricModel> genPhases, OutputPaths paths, ProblemInput input)
         {
-            var conductivities = new Conductivities
-            {
-                Grain = conductivityGrainBulk,
-                Boundary = conductivityGrainBoundary
-            };
-
             GeometricModel geometricModel = genPhases();
-            XModel physicalModel = CreatePhysicalModel(geometricModel, conductivities);
+            XModel physicalModel = CreatePhysicalModel(geometricModel, input);
             PrepareForAnalysis(physicalModel, geometricModel);
             
             // Plot stuff
@@ -96,6 +252,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
             phasePlotter.PlotNodes(paths.nodalPhases);
             phasePlotter.PlotElements(paths.elementPhases, conformingMesh);
 
+            double elementSize = (input.MaxCoords[0] - input.MinCoords[0]) / input.NumElements[0];
             var junctionPlotter = new JunctionPlotter(physicalModel, geometricModel, elementSize);
             junctionPlotter.PlotJunctionElements(paths.junctionElements);
 
@@ -145,13 +302,16 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
             }
         }
 
-        private static XModel CreatePhysicalModel(GeometricModel geometricModel, Conductivities conductivities)
+
+
+        private static XModel CreatePhysicalModel(GeometricModel geometricModel, ProblemInput input)
         {
             var physicalModel = new XModel();
             physicalModel.Subdomains[subdomainID] = new XSubdomain(subdomainID);
 
             // Mesh generation
-            var meshGen = new UniformMeshGenerator2D<XNode>(minX, minY, maxX, maxY, numElementsX, numElementsY);
+            var meshGen = new UniformMeshGenerator2D<XNode>(input.MinCoords[0], input.MinCoords[1], 
+                input.MaxCoords[0], input.MaxCoords[1], input.NumElements[0], input.NumElements[1]);
             (IReadOnlyList<XNode> nodes, IReadOnlyList<CellConnectivity<XNode>> cells) =
                 meshGen.CreateMesh((id, x, y, z) => new XNode(id, x, y));
 
@@ -174,10 +334,10 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
             IBoundaryIntegration boundaryIntegration = new LinearBoundaryIntegration(GaussLegendre1D.GetQuadratureWithOrder(3));
 
             // Materials
-            var materialField = new MultigrainMaterialField(conductivities.Grain, conductivities.Boundary, specialHeatCoeff);
+            var materialField = new MultigrainMaterialField(input.GrainConductivity, input.BoundaryConductivity, specialHeatCoeff);
 
             // Elements
-            var factory = new XThermalElement2DFactory(materialField, thickness, volumeIntegration, boundaryIntegration);
+            var factory = new XThermalElement2DFactory(materialField, input.Thickness, volumeIntegration, boundaryIntegration);
             for (int e = 0; e < cells.Count; ++e)
             {
                 XThermalElement2D element = factory.CreateElement(e, CellType.Quad4, cells[e].Vertices);
@@ -254,10 +414,23 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
             return solver.LinearSystems[subdomainID].Solution;
         }
 
-        private class Conductivities
+        private class ProblemInput
         {
-            public double Grain { get; set; }
-            public double Boundary { get; set; }
+            public double GrainConductivity { get; set; } = double.NaN; // Paper: 41 W/mK 
+
+            public double BoundaryConductivity { get; set; } = double.NaN; // Paper: 2.46E9 W/m^2K
+
+            public int[] NumElements { get; set; }
+
+            public double[] MinCoords { get; set; }
+
+            public double[] MaxCoords { get; set; }
+
+            public double Thickness { get; set; } = double.NaN;
+
+            public double GrainSize { get; set; } = double.NaN;
+
+            public string PhasesInputDirectoryPath { get; set; }
         }
     }
 }

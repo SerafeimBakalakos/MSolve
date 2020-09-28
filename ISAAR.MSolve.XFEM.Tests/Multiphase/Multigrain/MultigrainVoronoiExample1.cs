@@ -34,10 +34,10 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Multigrain
 {
     public static class MultigrainVoronoiExample1
     {
-        private const int numElements = 30;
+        private const int numElements = 400;
         private const int numElementsX = numElements, numElementsY = numElements;
         private const int subdomainID = 0;
-        private const double minX = -2.4, minY = -1.74, maxX = 1.26, maxY = 2.1;
+        private const double minX = 10, minY = -10, maxX = 100, maxY = 80;
         private const double elementSize = (maxX - minX) / numElementsX;
         private const double thickness = 1.0;
         private const bool integrationWithSubtriangles = true;
@@ -49,8 +49,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Multigrain
 
         public static void RunSingleAnalysisAndPlotting()
         {
-            var phaseReader = new CntPhaseReader(true, 0);
-            string directory = @"C:\Users\Serafeim\Desktop\HEAT\VoronoiExample\input\";
+            string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\VoronoiExample1\input\";
             string pathVoronoiSeeds = directory + "voronoi_seeds.txt";
             string pathVoronoiVertices = directory + "voronoi_vertices.txt";
             string pathVoronoiCells = directory + "voronoi_cells.txt";
@@ -59,28 +58,66 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Multigrain
                 voronoiReader.ReadMatlabVoronoiDiagram(pathVoronoiSeeds, pathVoronoiVertices, pathVoronoiCells);
             GeometricModel geometricModel = new MultigrainPhaseReader().CreatePhasesFromVoronoi(voronoi);
             var paths = new OutputPaths();
-            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\VoronoiExample1");
+            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\VoronoiExample1");
             PlotPhasesInteractions(() => geometricModel, paths);
+        }
+
+        public static void RunHomogenization()
+        {
+            string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\VoronoiExample1\input\";
+            string pathVoronoiSeeds = directory + "voronoi_seeds.txt";
+            string pathVoronoiVertices = directory + "voronoi_vertices.txt";
+            string pathVoronoiCells = directory + "voronoi_cells.txt";
+            var voronoiReader = new VoronoiReader2D();
+            VoronoiDiagram2D voronoi =
+                voronoiReader.ReadMatlabVoronoiDiagram(pathVoronoiSeeds, pathVoronoiVertices, pathVoronoiCells);
+            GeometricModel geometricModel = new MultigrainPhaseReader().CreatePhasesFromVoronoi(voronoi);
+
+            var conductivities = new Conductivities
+            {
+                Grain = 41E-9, // W/nm K  Paper: 41 W/mK
+                Boundary = 2.46E-9, // W/nm^2K Paper: 2.46E9 W/m^2K
+            };
+            XModel physicalModel = CreatePhysicalModel(geometricModel, conductivities);
+            PrepareForAnalysis(physicalModel, geometricModel);
+
+            // Analysis
+            Vector2 temperatureGradient = Vector2.Create(0, 0);
+            //var solver = (new SkylineSolver.Builder()).BuildSolver(physicalModel);
+            SuiteSparseSolver solver = new SuiteSparseSolver.Builder().BuildSolver(physicalModel);
+            var provider = new ProblemThermalSteadyState(physicalModel, solver);
+            var rve = new ThermalSquareRve(physicalModel, Vector2.Create(minX, minY), Vector2.Create(maxX, maxY), thickness,
+                temperatureGradient);
+            var homogenization = new HomogenizationAnalyzer(physicalModel, solver, provider, rve);
+
+            homogenization.Initialize();
+            homogenization.Solve();
+
+            solver.Dispose();
+            IMatrix Keff = homogenization.EffectiveConstitutiveTensors[subdomainID];
+            Console.WriteLine($"[{Keff[0, 0]}, {Keff[0, 1]} ; {Keff[1, 0]}, {Keff[1, 1]}]");
         }
 
         private static void PlotPhasesInteractions(Func<GeometricModel> genPhases, OutputPaths paths)
         {
             var conductivities = new Conductivities
             {
-                Grain = 41, // Paper: 41 W/mK
-                Boundary = 2.46E9, // Paper: 2.46E9 W/m^2K
+                Grain = 41E-9, // W/nm K  Paper: 41 W/mK
+                Boundary = 2.46E-9, // W/nm^2K Paper: 2.46E9 W/m^2K
             };
 
             GeometricModel geometricModel = genPhases();
             XModel physicalModel = CreatePhysicalModel(geometricModel, conductivities);
-            PrepareForAnalysis(physicalModel, geometricModel);
-            
+
             // Plot stuff
             var feMesh = new ContinuousOutputMesh<XNode>(physicalModel.Nodes, physicalModel.Elements);
             using (var writer = new VtkFileWriter(paths.finiteElementMesh))
             {
                 writer.WriteMesh(feMesh);
             }
+
+            PrepareForAnalysis(physicalModel, geometricModel);
+            
 
             var phasePlotter = new PhasePlotter(physicalModel, geometricModel, -10);
             phasePlotter.PlotPhases(paths.phasesGeometry);
