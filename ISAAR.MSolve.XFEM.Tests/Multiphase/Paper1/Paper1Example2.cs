@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Analyzers;
@@ -33,8 +34,12 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 {
     public static class Paper1Example2
     {
+        private const string inputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example2\";
+        private const string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example2\";
+
+
         //private const int numElements = 350;
-        private const int numElements = 400;
+        private const int numElements = 200;
         private const int numElementsX = numElements, numElementsY = numElements;
         private const int subdomainID = 0;
         private const double minX = 0, minY = 0, maxX = 2000, maxY = 2000;
@@ -65,13 +70,12 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
         public static void RunSingleAnalysisAndPlotting()
         {
             var phaseReader = new CntPhaseReader(true, 0);
-            string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example2\";
-            string matrixLayersFile = directory + "boundaries.txt";
-            string inclusionsFile = directory + "CNTnodes.txt";
+            string matrixLayersFile = inputDirectory + "boundaries.txt";
+            string inclusionsFile = inputDirectory + "CNTnodes.txt";
             GeometricModel geometricModel = phaseReader.ReadPhasesFromFile(matrixLayersFile, inclusionsFile);
             //KeepOnlyPhases(geometricModel, phasesToKeep[5]);
             var paths = new OutputPaths();
-            paths.FillAllForDirectory(@"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example2");
+            paths.FillAllForDirectory(outputDirectory);
             PlotPhasesInteractions(() => geometricModel, paths);
         }
 
@@ -120,9 +124,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
                 1E5,
             };
 
-
-            Console.WriteLine();
-            Console.WriteLine("layer conductivity | matrix-layer conductivity | inclusion-layer conductivity | effective conductivity XX");
+            //Console.WriteLine();
+            //Console.WriteLine("layer conductivity | matrix-layer conductivity | inclusion-layer conductivity | effective conductivity XX");
             for (int i = 0; i < layerBulkCondictivities.Length; ++i)
             {
                 for (int j = 0; j < matrixLayerInterfaceCondictivities.Length; ++j)
@@ -139,20 +142,35 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
                             InclusionLayerInterface = inclusionLayerInterfaceCondictivities[k],
                         };
 
-                        string msgDescr = layerBulkCondictivities[i] + "\t\t" + matrixLayerInterfaceCondictivities[j] +
-                                "\t\t" + inclusionLayerInterfaceCondictivities[k] + "\t\t";
+                        string filePath = outputDirectory + "parametric_homogenization.txt";
+                        string msgInput = "layer conductivity = " + layerBulkCondictivities[i]
+                            + "\t" + ", matrix-layer conductivity = " + matrixLayerInterfaceCondictivities[j]
+                            + "\t" + ", inclusion-layer conductivity = " + inclusionLayerInterfaceCondictivities[k]
+                            + "\t" + ", effective conductivity = ";
+                        Console.WriteLine("Now processing: " + msgInput);
                         try
                         {
                             IMatrix effectiveConductivity = RunHomogenization(conductivities);
-                            Console.WriteLine(msgDescr + effectiveConductivity[0, 0]);
+                            using (var writer = new StreamWriter(filePath, true))
+                            {
+                                writer.WriteLine(DateTime.Now + "\t" + msgInput + effectiveConductivity[0, 0]);
+                            }
+
                         }
                         catch (IndefiniteMatrixException ex)
                         {
-                            Console.WriteLine(msgDescr + "singular matrix exception");
+                            using (var writer = new StreamWriter(filePath, true))
+                            {
+                                writer.WriteLine(DateTime.Now + "\t" + msgInput + "singular matrix exception");
+                            }
+                            
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine(msgDescr + "something else happenned");
+                            using (var writer = new StreamWriter(filePath, true))
+                            {
+                                writer.WriteLine(DateTime.Now + "\t" + msgInput + "something else happenned");
+                            }
                         }
                     }
                 }
@@ -207,9 +225,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 
         private static IMatrix RunHomogenization(Conductivities conductivities)
         {
-            string directory = @"C:\Users\Serafeim\Desktop\HEAT\Paper\Paper1Example2\";
-            string matrixLayersFile = directory + "boundaries.txt";
-            string inclusionsFile = directory + "CNTnodes.txt";
+            string matrixLayersFile = inputDirectory + "boundaries.txt";
+            string inclusionsFile = inputDirectory + "CNTnodes.txt";
             var phaseReader = new CntPhaseReader(true, 0);
             GeometricModel geometricModel = phaseReader.ReadPhasesFromFile(matrixLayersFile, inclusionsFile);
 
