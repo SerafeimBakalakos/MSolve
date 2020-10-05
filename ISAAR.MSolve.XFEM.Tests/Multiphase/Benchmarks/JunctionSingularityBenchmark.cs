@@ -338,8 +338,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Plotting
 
         private static void ApplyJunctionEnrichments(XModel physicalModel, GeometricModel geometricModel)
         {
-            var junction0 = new JunctionEnrichment_v2(4, geometricModel.Phases[0], geometricModel.Phases[1]);
-            var junction1 = new JunctionEnrichment_v2(5, geometricModel.Phases[0], geometricModel.Phases[2]);
+            var junction0 = new JunctionEnrichment_v2(4, null, geometricModel.Phases[0], geometricModel.Phases[1]);
+            var junction1 = new JunctionEnrichment_v2(5, null, geometricModel.Phases[0], geometricModel.Phases[2]);
             foreach (XNode node in physicalModel.Nodes)
             {
                 foreach (IEnrichment enrichment in node.Enrichments.Keys.ToList())

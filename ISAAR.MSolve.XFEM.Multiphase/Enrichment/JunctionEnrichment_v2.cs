@@ -11,9 +11,10 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
     {
         private readonly IPhase[] phases;
 
-        public JunctionEnrichment_v2(int id, IPhase positivePhase, IPhase negativePhase)
+        public JunctionEnrichment_v2(int id, PhaseJunction junction, IPhase positivePhase, IPhase negativePhase)
         {
             this.ID = id;
+            this.Junction = junction;
             this.PositivePhase = positivePhase;
             this.NegativePhase = negativePhase;
             this.Dof = new EnrichedDof(this, ThermalDof.Temperature);
@@ -23,6 +24,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
         public EnrichedDof Dof { get; }
 
         public int ID { get; }
+
+        public PhaseJunction Junction { get; }
 
         public IReadOnlyList<IPhase> Phases => throw new NotImplementedException("The third region can be made of many phases");
 

@@ -111,6 +111,12 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Input
             {
                 // Define geometry of inclusion phase
                 int phaseID = (int)inclusionsData[i, 8];
+                #region debug
+                //if (phaseID == 106)
+                //{
+                //    Console.WriteLine();
+                //}
+                #endregion
                 var inclusionPhase = new ConvexPhase(phaseID);
                 model.Phases.Add(inclusionPhase);
                 var inclusionVertices = new CartesianPoint[numPointsPerInclusion];
@@ -124,6 +130,12 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Input
                 // Find in which layer phase this inclusion is located.
                 foreach (HollowConvexPhase layerPhase in layerPhases)
                 {
+                    #region debug
+                    //if (layerPhase.ID == 6)
+                    //{
+                    //    Console.WriteLine();
+                    //}
+                    #endregion
                     if (layerPhase.Contains(inclusionVertices))
                     {
                         //WARNING: This assumes that the vertices of the inclusion are in clockwise order.

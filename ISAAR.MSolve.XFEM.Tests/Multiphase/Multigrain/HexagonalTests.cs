@@ -54,9 +54,10 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Multigrain
         public static void GenerateVoronoiSeeds()
         {
             // Create the hexagonal grid
+            double grainSize = 1000.0;
+            double hexagonSize = 0.6204032 * grainSize;
             var minCoords = new double[] { 0, 0 };
-            var maxCoords = new double[] { 93, 93 };
-            double hexagonSize = 3.1;
+            var maxCoords = new double[] { 30 * hexagonSize, 30 * hexagonSize };
             var numHexagons = new int[] { 25, 25 };
             var hexGridUpperLeftCoords = new double[]
             {

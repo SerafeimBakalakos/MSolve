@@ -105,7 +105,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
                 // For all interactions except the last, apply a junction enrichment
                 for (int i = 0; i < phaseInteractions.Count - 1; ++i) // n-1 enrichments for n boundaries
                 {
-                    var junction = new JunctionEnrichment_v2(id, phaseInteractions[i].phase0, phaseInteractions[i].phase1);
+                    var junction = new JunctionEnrichment_v2(id, null, phaseInteractions[i].phase0, phaseInteractions[i].phase1);
                     ++id;
                     elementJunctions.Add(junction);
                 }

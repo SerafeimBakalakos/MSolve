@@ -14,9 +14,9 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
         public static void Main(string[] args)
         {
             //Multiphase.Paper1.Paper1Example1.RunSingleAnalysisAndPlotting();
-            Multiphase.Paper1.Paper1Example1.RunHomogenization();
+            //Multiphase.Paper1.Paper1Example1.RunHomogenization();
 
-            //Multiphase.Paper1.Paper1Example2.RunParametricHomogenization();
+            Multiphase.Paper1.Paper1Example2.RunParametricHomogenization();
             //Multiphase.Paper1.Paper1Example2.RunSingleAnalysisAndPlotting();
             //HomogenizationExamples.RunHomogenizationAnalysis();
 

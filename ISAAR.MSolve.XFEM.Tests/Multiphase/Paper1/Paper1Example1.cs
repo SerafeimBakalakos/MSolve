@@ -47,125 +47,25 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
             var input = new ProblemInput();
 
             #region sample input
-            input.NumElements = new int[] { 200, 200 };
-            input.MinCoords = new double[] { -1, -1 };
-            input.MaxCoords = new double[] { 1, 1 };
-            input.Thickness = 1.0;
-            input.PhasesInputDirectoryPath = ioPath + @"input\sample\";
-            input.GrainSize = double.NaN;
-            input.GrainConductivity = 41;
-            input.BoundaryConductivity = 2.46;
+            //input.NumElements = new int[] { 200, 200 };
+            //input.MinCoords = new double[] { -1, -1 };
+            //input.MaxCoords = new double[] { 1, 1 };
+            //input.Thickness = 1.0;
+            //input.PhasesInputDirectoryPath = ioPath + @"input\sample\";
+            //input.GrainSize = double.NaN;
+            //input.GrainConductivity = 41;
+            //input.BoundaryConductivity = 2.46;
             #endregion
 
-            #region grain size = 1nm
-            //input.NumElements = new int[] { 200, 200 };
-            //input.MinCoords = new double[] { 0, 0 };
-            //input.MaxCoords = new double[] { 30, 30 };
-            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
-            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size1\";
-            //input.GrainSize = 1;
-            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
-            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
-            #endregion
+            input.GrainSize = 500; // Choose between 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000
+            input.NumElements = new int[] { 400, 400 }; // Choose between 50, 75, 100, 150, 200, 250, 300, 350, 400, 450, 500
 
-            #region grain size = 2nm
-            //input.NumElements = new int[] { 200, 200 };
-            //input.MinCoords = new double[] { 0, 0 };
-            //input.MaxCoords = new double[] { 60, 60 };
-            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
-            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size2\";
-            //input.GrainSize = 2;
-            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
-            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
-            #endregion
-
-            #region grain size = 5nm
-            //input.NumElements = new int[] { 200, 200 };
-            //input.MinCoords = new double[] { 0, 0 };
-            //input.MaxCoords = new double[] { 150, 150 };
-            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
-            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size5\";
-            //input.GrainSize = 5;
-            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
-            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
-            #endregion
-
-            #region grain size = 10nm
-            //input.NumElements = new int[] { 200, 200 };
-            //input.MinCoords = new double[] { 0, 0 };
-            //input.MaxCoords = new double[] { 300, 300 };
-            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
-            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size10\";
-            //input.GrainSize = 10;
-            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
-            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
-            #endregion
-
-            #region grain size = 20nm
-            //input.NumElements = new int[] { 200, 200 };
-            //input.MinCoords = new double[] { 0, 0 };
-            //input.MaxCoords = new double[] { 600, 600 };
-            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
-            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size20\";
-            //input.GrainSize = 20;
-            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
-            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
-            #endregion
-
-            #region grain size = 50nm
-            //input.NumElements = new int[] { 200, 200 };
-            //input.MinCoords = new double[] { 0, 0 };
-            //input.MaxCoords = new double[] { 1500, 1500 };
-            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
-            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size50\";
-            //input.GrainSize = 10;
-            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
-            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
-            #endregion
-
-            #region grain size = 100nm
-            //input.NumElements = new int[] { 200, 200 };
-            //input.MinCoords = new double[] { 0, 0 };
-            //input.MaxCoords = new double[] { 3000, 3000 };
-            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
-            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size100\";
-            //input.GrainSize = 100;
-            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
-            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
-            #endregion
-
-            #region grain size = 200nm
-            //input.NumElements = new int[] { 200, 200 };
-            //input.MinCoords = new double[] { 0, 0 };
-            //input.MaxCoords = new double[] { 6000, 6000 };
-            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
-            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size200\";
-            //input.GrainSize = 20;
-            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
-            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
-            #endregion
-
-            #region grain size = 500nm
-            //input.NumElements = new int[] { 200, 200 };
-            //input.MinCoords = new double[] { 0, 0 };
-            //input.MaxCoords = new double[] { 15000, 15000 };
-            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
-            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size500\";
-            //input.GrainSize = 500;
-            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
-            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
-            #endregion
-
-            #region grain size = 1000nm
-            //input.NumElements = new int[] { 200, 200 };
-            //input.MinCoords = new double[] { 0, 0 };
-            //input.MaxCoords = new double[] { 30000, 30000 };
-            //input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
-            //input.PhasesInputDirectoryPath = ioPath + @"input\grain_size1000\";
-            //input.GrainSize = 1000;
-            //input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
-            //input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
-            #endregion
+            input.MinCoords = new double[] { 1 * input.GrainSize, -3 * input.GrainSize };
+            input.MaxCoords = new double[] { 21 * input.GrainSize, 17 * input.GrainSize };
+            input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
+            input.PhasesInputDirectoryPath = ioPath + @"input\grain_size" + (int)input.GrainSize + "\\";
+            input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
+            input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
 
             RunHomogenization(input);
         }
@@ -206,13 +106,14 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
         public static void RunSingleAnalysisAndPlotting()
         {
             var input = new ProblemInput();
-            input.NumElements = new int[] { 200, 200 };
-            input.MinCoords = new double[] { -1, -1 };
-            input.MaxCoords = new double[] { 1, 1 };
-            input.Thickness = 1.0;
-            input.PhasesInputDirectoryPath = ioPath + @"input\sample\";
-            input.GrainConductivity = 41;
-            input.BoundaryConductivity = 2.46E9;
+            input.GrainSize = 50;
+            input.NumElements = new int[] { 100, 100 };
+            input.MinCoords = new double[] { 1 * input.GrainSize, -3 * input.GrainSize };
+            input.MaxCoords = new double[] { 21 * input.GrainSize, 17 * input.GrainSize };
+            input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
+            input.PhasesInputDirectoryPath = ioPath + @"input\grain_size" + (int)input.GrainSize + "\\";
+            input.GrainConductivity = 41E-9; // 41E-9 W/nm K // Paper: 41 W/mK 
+            input.BoundaryConductivity = 2.46E-9; // 2.46E-9 W/nm^2 K// Paper: 2.46E9 W/m^2K
 
             string pathVoronoiSeeds = input.PhasesInputDirectoryPath + "voronoi_seeds.txt";
             string pathVoronoiVertices = input.PhasesInputDirectoryPath + "voronoi_vertices.txt";

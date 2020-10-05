@@ -62,7 +62,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
                     junctionEnrichments = new HashSet<JunctionEnrichment_v2>();
                     for (int i = 0; i < junction.Phases.Count - 1; ++i)
                     {
-                        var enrichment = new JunctionEnrichment_v2(id++, junction.Phases[i], junction.Phases[i + 1]);
+                        var enrichment = new JunctionEnrichment_v2(id++, junction, junction.Phases[i], junction.Phases[i + 1]);
                         junctionEnrichments.Add(enrichment);
                     }
                 }
@@ -235,6 +235,14 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
         {
             foreach (XNode node in physicalModel.Nodes)
             {
+                #region debug
+                //double x0 = 3.13333, y0 = -1.13333, tol = 1E-3;
+                //if (Math.Abs(node.X - x0) < tol && Math.Abs(node.Y - y0) < tol)
+                //{
+                //    tol /= 2;
+                //}
+                #endregion
+
                 var phasesOfNode = new HashSet<IPhase>();
                 foreach (IXFiniteElement element in node.ElementsDictionary.Values)
                 {
@@ -255,8 +263,40 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Enrichment
                     node.Enrichments.Remove(node.Enrichments.Keys.Last());
                 }
                 else if (numJunctions > phasesOfNode.Count)
-                {
-                    throw new NotImplementedException();
+                {// TODO: perhaps this is the correct solution in all cases
+                    // Keep 2 enrichments for 1st junction and 1 enrichmet per junction after that
+                    IEnrichment firstEnrichment = node.Enrichments.Keys.First(enr => enr is JunctionEnrichment_v2);
+                    PhaseJunction firstJunction = ((JunctionEnrichment_v2)firstEnrichment).Junction;
+                    var numEnrichmentsPerJunction = new Dictionary<PhaseJunction, int>();
+                    var enrichmentsToRemove = new HashSet<IEnrichment>();
+                    foreach (IEnrichment enrichment in node.Enrichments.Keys)
+                    {
+                        if (enrichment is JunctionEnrichment_v2 junctionEnrichment)
+                        {
+                            PhaseJunction junction = junctionEnrichment.Junction;
+                            bool exists = numEnrichmentsPerJunction.TryGetValue(junction, out int count);
+                            if (!exists)
+                            {
+                                numEnrichmentsPerJunction[junction] = 1;
+                            }
+                            else
+                            {
+                                if (junction == firstJunction)
+                                {
+                                    if (count >= 2) enrichmentsToRemove.Add(junctionEnrichment);
+                                    else ++numEnrichmentsPerJunction[junction];
+                                }
+                                else
+                                {
+                                    if (count >= 1) enrichmentsToRemove.Add(junctionEnrichment);
+                                    else ++numEnrichmentsPerJunction[junction];
+                                }
+                            }
+                        }
+                    }
+                    foreach (IEnrichment enrichment in enrichmentsToRemove) node.Enrichments.Remove(enrichment);
+
+                    //throw new NotImplementedException();
                 }
             }
         }

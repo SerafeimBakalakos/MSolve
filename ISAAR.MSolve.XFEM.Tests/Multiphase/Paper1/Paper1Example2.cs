@@ -33,8 +33,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 {
     public static class Paper1Example2
     {
-        private const int numElements = 70;
-        //private const int numElements = 400;
+        //private const int numElements = 350;
+        private const int numElements = 400;
         private const int numElementsX = numElements, numElementsY = numElements;
         private const int subdomainID = 0;
         private const double minX = 0, minY = 0, maxX = 2000, maxY = 2000;
@@ -48,17 +48,19 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
         private const double singularityRelativeAreaTolerance = 1E-8;
         private const bool fixedEnrichment = true;
 
-        private static int[][] phasesToKeep =
-        {
-            new int[] { 2, 102, 30, 130, 36, 136 },
-            new int[] { 30, 130, 11, 111, 25, 125, 16, 116 },
-            new int[] { 38,138, 21,121, 15,115 },
-            new int[] { 3,103, 7,107, 40,140 },
-            new int[] { 7,107, 20,120, 33,133 },
-            new int[] { 18,118, 12,112, 14,114 },
-            new int[] { 6,106, 35,135, 37,137 },
-            new int[] { 26,126, 8,108, 39,139 }
-        };
+        #region debug
+        //private static int[][] phasesToKeep =
+        //{
+        //    new int[] { 2, 102, 30, 130, 36, 136 },
+        //    new int[] { 30, 130, 11, 111, 25, 125, 16, 116 },
+        //    new int[] { 38,138, 21,121, 15,115 },
+        //    new int[] { 3,103, 7,107, 40,140 },
+        //    new int[] { 7,107, 20,120, 33,133 },
+        //    new int[] { 18,118, 12,112, 14,114 },
+        //    new int[] { 6,106, 35,135, 37,137 },
+        //    new int[] { 26,126, 8,108, 39,139 }
+        //};
+        #endregion
 
         public static void RunSingleAnalysisAndPlotting()
         {
@@ -75,80 +77,106 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 
         public static void RunParametricHomogenization()
         {
-            double[] inclusionLayerInterfaceCondictivities =
+            double[] layerBulkCondictivities =
             {
-                1E-5,
-                1E-4,
-                1E-3,
-                1E-2,
-                //1E-1,
-                0.099,
-                1E0,
-                //1E1,
-                9.99,
-                1E2,
-                1E3,
-                //1E4,
-                //9999,
-                //1E5,
+                0.2,
+                2,
+                20,
+                200,
+                2000
             };
             double[] matrixLayerInterfaceCondictivities =
             {
                 1E-5,
                 1E-4,
                 1E-3,
-                //1E-2,
-                0.009,
+                1E-2,
+                //0.009,
                 1E-1,
                 1E0,
                 1E1,
                 1E2,
                 1E3,
-                //1E4,
+                1E4,
                 //9999,
-                //1E5,
+                1E5,
                 //99999
+            };
+            double[] inclusionLayerInterfaceCondictivities =
+            {
+                1E-5,
+                1E-4,
+                1E-3,
+                1E-2,
+                1E-1,
+                //0.099,
+                1E0,
+                1E1,
+                //9.99,
+                1E2,
+                1E3,
+                1E4,
+                //9999,
+                1E5,
             };
 
 
             Console.WriteLine();
-            Console.WriteLine("matrix-layer conductivity | inclusion-layer conductivity | effective conductivity XX");
-            for (int i = 0; i < matrixLayerInterfaceCondictivities.Length; ++i)
+            Console.WriteLine("layer conductivity | matrix-layer conductivity | inclusion-layer conductivity | effective conductivity XX");
+            for (int i = 0; i < layerBulkCondictivities.Length; ++i)
             {
-                for (int j = 0; j < inclusionLayerInterfaceCondictivities.Length; ++j)
+                for (int j = 0; j < matrixLayerInterfaceCondictivities.Length; ++j)
                 {
-                    var conductivities = new Conductivities
+                    for (int k = 0; k < inclusionLayerInterfaceCondictivities.Length; ++k)
                     {
-                        Matrix = 0.2,
-                        Inclusion = 2000,
-                        Layer = 0.3,
-                        MatrixLayerInterface = matrixLayerInterfaceCondictivities[i],
-                        LayerLayerInterface = 1E3,
-                        InclusionLayerInterface = inclusionLayerInterfaceCondictivities[j],
-                    };
+                        var conductivities = new Conductivities
+                        {
+                            Matrix = 0.2,
+                            Inclusion = 2000,
+                            Layer = layerBulkCondictivities[i],
+                            MatrixLayerInterface = matrixLayerInterfaceCondictivities[j],
+                            LayerLayerInterface = 1E3,
+                            InclusionLayerInterface = inclusionLayerInterfaceCondictivities[k],
+                        };
 
-                    try
-                    {
-                        IMatrix effectiveConductivity = RunHomogenization(conductivities);
-                        Console.WriteLine(matrixLayerInterfaceCondictivities[i] + "\t\t" +
-                            inclusionLayerInterfaceCondictivities[j] + "\t\t" + effectiveConductivity[0, 0]);
-                    }
-                    catch (IndefiniteMatrixException ex)
-                    {
-                        Console.WriteLine(matrixLayerInterfaceCondictivities[i] + " " +
-                            inclusionLayerInterfaceCondictivities[j] + " singular matrix exception");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(matrixLayerInterfaceCondictivities[i] + " " +
-                            inclusionLayerInterfaceCondictivities[j] + " something else happenned");
+                        string msgDescr = layerBulkCondictivities[i] + "\t\t" + matrixLayerInterfaceCondictivities[j] +
+                                "\t\t" + inclusionLayerInterfaceCondictivities[k] + "\t\t";
+                        try
+                        {
+                            IMatrix effectiveConductivity = RunHomogenization(conductivities);
+                            Console.WriteLine(msgDescr + effectiveConductivity[0, 0]);
+                        }
+                        catch (IndefiniteMatrixException ex)
+                        {
+                            Console.WriteLine(msgDescr + "singular matrix exception");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(msgDescr + "something else happenned");
+                        }
                     }
                 }
             }
 
+            #region layer-layer interface conductivity
+            //double[] layerLayerInterfaceCondictivities = 
+            //{
+            //    1E-5,
+            //    1E-4,
+            //    1E-3,
+            //    1E-2,
+            //    1E-1,
+            //    1E0,
+            //    1E1,
+            //    1E2,
+            //    1E3,
+            //    1E4,
+            //    1E5,
+            //    99999
+            //};
             //Console.WriteLine();
-            //Console.WriteLine("inclusion-layer conductivity | effective conductivity XX");
-            //for (int i = 0; i < inclusionLayerInterfaceCondictivities.Length; ++i)
+            //Console.WriteLine("layer-layer conductivity | effective conductivity XX");
+            //for (int i = 0; i < layerLayerInterfaceCondictivities.Length; ++i)
             //{
             //    var conductivities = new Conductivities
             //    {
@@ -156,98 +184,25 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
             //        Inclusion = 2000,
             //        Layer = 0.3,
             //        MatrixLayerInterface = 0.25,
-            //        LayerLayerInterface = 1E3,
-            //        InclusionLayerInterface = inclusionLayerInterfaceCondictivities[i],
+            //        LayerLayerInterface = layerLayerInterfaceCondictivities[i],
+            //        InclusionLayerInterface = 1E3,
             //    };
 
             //    try
             //    {
             //        IMatrix effectiveConductivity = RunHomogenization(conductivities);
-            //        Console.WriteLine(
-            //            inclusionLayerInterfaceCondictivities[i] + " " + effectiveConductivity[0, 0]);
+            //        Console.WriteLine(layerLayerInterfaceCondictivities[i] + " " + effectiveConductivity[0, 0]);
             //    }
             //    catch (IndefiniteMatrixException ex)
             //    {
-            //        Console.WriteLine(
-            //            inclusionLayerInterfaceCondictivities[i] + " singular matrix exception");
+            //        Console.WriteLine(layerLayerInterfaceCondictivities[i] + " singular matrix exception");
             //    }
             //    catch (Exception ex)
             //    {
-            //        Console.WriteLine(
-            //            inclusionLayerInterfaceCondictivities[i] + " something else happenned");
+            //        Console.WriteLine(layerLayerInterfaceCondictivities[i] + " something else happenned");
             //    }
             //}
-
-
-            //Console.WriteLine();
-            //Console.WriteLine("matrix-layer conductivity | effective conductivity XX");
-            //for (int i = 0; i < matrixLayerInterfaceCondictivities.Length; ++i)
-            //{
-            //    var conductivities = new Conductivities
-            //    {
-            //        Matrix = 0.2, Inclusion = 2000, Layer = 0.3,
-            //        MatrixLayerInterface = matrixLayerInterfaceCondictivities[i],
-            //        LayerLayerInterface = 1E3, InclusionLayerInterface = 1E3,
-            //    };
-
-            //    try
-            //    {
-            //        IMatrix effectiveConductivity = RunHomogenization(conductivities);
-            //        Console.WriteLine(matrixLayerInterfaceCondictivities[i] + " " + effectiveConductivity[0, 0]);
-            //    }
-            //    catch (IndefiniteMatrixException ex)
-            //    {
-            //        Console.WriteLine(matrixLayerInterfaceCondictivities[i] + " singular matrix exception");
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        Console.WriteLine(matrixLayerInterfaceCondictivities[i] + " something else happenned");
-            //    }
-            //}
-
-            double[] layerLayerInterfaceCondictivities = 
-            {
-                //1E-5,
-                //1E-4,
-                //1E-3,
-                //1E-2,
-                //1E-1,
-                //1E0,
-                //1E1,
-                //1E2,
-                //1E3,
-                //1E4,
-                //1E5,
-                //99999 
-            };
-            Console.WriteLine();
-            Console.WriteLine("layer-layer conductivity | effective conductivity XX");
-            for (int i = 0; i < layerLayerInterfaceCondictivities.Length; ++i)
-            {
-                var conductivities = new Conductivities
-                {
-                    Matrix = 0.2,
-                    Inclusion = 2000,
-                    Layer = 0.3,
-                    MatrixLayerInterface = 0.25,
-                    LayerLayerInterface = layerLayerInterfaceCondictivities[i],
-                    InclusionLayerInterface = 1E3,
-                };
-
-                try
-                {
-                    IMatrix effectiveConductivity = RunHomogenization(conductivities);
-                    Console.WriteLine(layerLayerInterfaceCondictivities[i] + " " + effectiveConductivity[0, 0]);
-                }
-                catch (IndefiniteMatrixException ex)
-                {
-                    Console.WriteLine(layerLayerInterfaceCondictivities[i] + " singular matrix exception");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(layerLayerInterfaceCondictivities[i] + " something else happenned");
-                }
-            }
+            #endregion
         }
 
         private static IMatrix RunHomogenization(Conductivities conductivities)
@@ -292,8 +247,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 
             GeometricModel geometricModel = genPhases();
             XModel physicalModel = CreatePhysicalModel(geometricModel, conductivities);
-            PrepareForAnalysis(physicalModel, geometricModel);
-            
+            physicalModel.ConnectDataStructures();
+
             // Plot stuff
             var feMesh = new ContinuousOutputMesh<XNode>(physicalModel.Nodes, physicalModel.Elements);
             using (var writer = new VtkFileWriter(paths.finiteElementMesh))
@@ -304,6 +259,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
             var phasePlotter = new PhasePlotter(physicalModel, geometricModel, -10);
             phasePlotter.PlotPhases(paths.phasesGeometry);
 
+            PrepareForAnalysis(physicalModel, geometricModel);
+            
             var conformingMesh = new ConformingOutputMesh2D(geometricModel, physicalModel.Nodes, physicalModel.Elements);
             using (var writer = new VtkFileWriter(paths.conformingMesh))
             {

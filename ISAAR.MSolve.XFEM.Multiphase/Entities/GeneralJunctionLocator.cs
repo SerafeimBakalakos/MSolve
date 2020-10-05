@@ -17,9 +17,13 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
                 #region debug
                 //double x = element.Nodes[0].X;
                 //double y = element.Nodes[0].Y;
-                //double xTarget = -0.98, yTarget = 0.88;
+                //double xTarget = 800, yTarget = 680;
                 //double tol = 1E-3;
                 //if ((Math.Abs(x - xTarget) < tol) && (Math.Abs(y - yTarget) < tol))
+                //{
+                //    Console.WriteLine();
+                //}
+                //if (element.ID == 41)
                 //{
                 //    Console.WriteLine();
                 //}
@@ -121,7 +125,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
             var currentSet = new HashSet<IPhase>(phaseCombo);
             foreach (PhaseJunction junction in existingJunctions)
             {
-                if (currentSet.IsSupersetOf(junction.Phases)) return true;
+                if (currentSet.IsSupersetOf(junction.Phases) && (currentSet.Count > junction.Phases.Count)) return true;
             }
             return false;
         }
