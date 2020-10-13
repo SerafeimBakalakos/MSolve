@@ -44,7 +44,7 @@ namespace MGroup.XFEM.Geometry.Mesh
 
         public int[] GetNodeIdx(int nodeID)
         {
-            return new int[] { nodeID % NumNodes[0], nodeID / NumNodes[1] };
+            return new int[] { nodeID % NumNodes[0], nodeID / NumNodes[0] };
         }
 
         public double[] GetNodeCoordinates(int[] nodeIdx)
@@ -62,9 +62,9 @@ namespace MGroup.XFEM.Geometry.Mesh
             return elementIdx[0] + elementIdx[1] * NumElements[0];
         }
 
-        public int[] GetElementIdx(int elementIdx)
+        public int[] GetElementIdx(int elementID)
         {
-            return new int[] { elementIdx % NumElements[0], elementIdx / NumElements[1] };
+            return new int[] { elementID % NumElements[0], elementID / NumElements[0] };
         }
 
         public int[] GetElementConnectivity(int[] elementIdx)

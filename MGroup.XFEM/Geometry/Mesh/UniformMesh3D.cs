@@ -66,10 +66,10 @@ namespace MGroup.XFEM.Geometry.Mesh
             return elementIdx[0] + elementIdx[1] * NumElements[0] + elementIdx[2] * NumElements[0] * NumElements[1];
         }
 
-        public int[] GetElementIdx(int elementIdx)
+        public int[] GetElementIdx(int elementID)
         {
-            int k = elementIdx / (NumElements[0] * NumElements[1]);
-            int mod = elementIdx % (NumElements[0] * NumElements[1]);
+            int k = elementID / (NumElements[0] * NumElements[1]);
+            int mod = elementID % (NumElements[0] * NumElements[1]);
             int j = mod / NumElements[0];
             int i = mod % NumElements[0];
             return new int[] { i, j, k };

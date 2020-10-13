@@ -38,25 +38,25 @@ namespace MGroup.XFEM.Geometry.Mesh
         /// <param name="lsmNodeID"></param>
         public int MapNodeLsmToFem(int lsmNodeID)
         {
-            int[] lsmIdx = FemMesh.GetElementIdx(lsmNodeID);
+            int[] lsmIdx = LsmMesh.GetNodeIdx(lsmNodeID);
             var femIdx = new int[dim];
             for (int d = 0; d < dim; d++)
             {
                 if (lsmIdx[d] % multiple[d] != 0) return -1;
                 else femIdx[d] = lsmIdx[d] / multiple[d];
             }
-            return LsmMesh.GetElementID(lsmIdx);
+            return FemMesh.GetElementID(femIdx);
         }
 
         public int MapNodeFemToLsm(int femNodeID)
         {
-            int[] femIdx = FemMesh.GetElementIdx(femNodeID);
+            int[] femIdx = FemMesh.GetNodeIdx(femNodeID);
             var lsmIdx = new int[dim];
             for (int d = 0; d < dim; d++)
             {
                 lsmIdx[d] = multiple[d] * femIdx[d];
             }
-            return LsmMesh.GetElementID(lsmIdx);
+            return LsmMesh.GetNodeID(lsmIdx);
         }
 
         public int MapElementLsmToFem(int lsmElementID)
@@ -95,6 +95,6 @@ namespace MGroup.XFEM.Geometry.Mesh
         /// E.g. 2D-3x3: {0, 0}, {1, 0}, {2, 0}, {0, 1}, {1, 1}, {2, 1}, {0, 2}, {1, 2}, {2, 2}, ...
         /// E.g. 3D-2x2: {0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {1, 1, 0}, {1, 0, 1}, {0, 1, 1}, {1, 1, 1}, ...
         /// </summary>
-        protected abstract List<int[]> ElementNeighbors { get; }
+        protected abstract List<int[]> ElementNeighbors { get; } 
     }
 }

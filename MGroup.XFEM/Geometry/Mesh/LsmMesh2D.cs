@@ -23,7 +23,7 @@ namespace MGroup.XFEM.Geometry.Mesh
             {
                 for (int i = 0; i < multiple[0]; ++i)
                 {
-                    // Offset from the LSM element that has the same first node as the FEM one
+                    // Offset from the LSM element that has the same first node as the FEM element
                     int[] offset = { i, j };
                     elementNeighbors.Add(offset);
                 }
