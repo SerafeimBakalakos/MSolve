@@ -77,17 +77,17 @@ namespace MGroup.XFEM.Geometry.Mesh
 
         public int[] GetElementConnectivity(int[] elementIdx)
         {
-            int first = elementIdx[0] + elementIdx[1] * NumNodes[0];
+            int first = elementIdx[0] + elementIdx[1] * NumNodes[0] + elementIdx[2] * NumNodes[0] * NumNodes[1];
             return new int[]
             {
                 first,                                                      // (-1, -1, -1)
                 first + 1,                                                  // ( 1, -1, -1)
-                first + NumNodes[1] + 1,                                    // ( 1,  1, -1)
-                first + NumNodes[1],                                        // (-1,  1, -1)
+                first + NumNodes[0] + 1,                                    // ( 1,  1, -1)
+                first + NumNodes[0],                                        // (-1,  1, -1)
                 first + NumNodes[0] * NumNodes[1],                          // (-1, -1,  1)
                 first + NumNodes[0] * NumNodes[1] + 1,                      // ( 1, -1,  1)
-                first + NumNodes[0] * NumNodes[1] + NumNodes[1] + 1,        // ( 1,  1,  1)
-                first + NumNodes[0] * NumNodes[1] + NumNodes[1]             // (-1,  1,  1)
+                first + NumNodes[0] * NumNodes[1] + NumNodes[0] + 1,        // ( 1,  1,  1)
+                first + NumNodes[0] * NumNodes[1] + NumNodes[0]             // (-1,  1,  1)
             };
         }
     }

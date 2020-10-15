@@ -136,13 +136,13 @@ namespace MGroup.XFEM.Tests.Geometry
 
             public int[] GetElementConnectivity(int[] elementIdx)
             {
-                var nodeIDs = new int[,][]
+                var elementNodes = new int[,][]
                 {
-                    { new int[] { 0, 1, 4, 3 }, new int[] { 3, 4, 7, 6 },   new int[] { 6, 7, 10, 9 } },
+                    { new int[] { 0, 1, 4, 3 }, new int[] { 3, 4, 7, 6 }, new int[] { 6, 7, 10, 9 } },
                     { new int[] { 1, 2, 5, 4 }, new int[] { 4, 5, 8, 7 }, new int[] { 7, 8, 11, 10 } }
                 };
 
-                return nodeIDs[elementIdx[0], elementIdx[1]];
+                return elementNodes[elementIdx[0], elementIdx[1]];
             }
 
             public int GetElementID(int[] elementIdx)
