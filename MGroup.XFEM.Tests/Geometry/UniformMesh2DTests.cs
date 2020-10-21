@@ -134,6 +134,10 @@ namespace MGroup.XFEM.Tests.Geometry
 
             public int[] NumNodes => new int[] { 3, 4 };
 
+            public int NumElementsTotal => 6;
+
+            public int NumNodesTotal => 12;
+
             public int[] GetElementConnectivity(int[] elementIdx)
             {
                 var elementNodes = new int[,][]

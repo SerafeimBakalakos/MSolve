@@ -5,9 +5,9 @@ using System.Text;
 
 namespace MGroup.XFEM.Geometry.Mesh
 {
-    public class LsmMesh3D : LsmMeshBase
+    public class DualMesh3D : DualMeshBase
     {
-        public LsmMesh3D(double[] minCoordinates, double[] maxCoordinates, int[] numElementsLsm, int[] numElementsFem) 
+        public DualMesh3D(double[] minCoordinates, double[] maxCoordinates, int[] numElementsFem, int[] numElementsLsm) 
             : base(3, new UniformMesh3D(minCoordinates, maxCoordinates, numElementsFem),
                   new UniformMesh3D(minCoordinates, maxCoordinates, numElementsLsm))
         {

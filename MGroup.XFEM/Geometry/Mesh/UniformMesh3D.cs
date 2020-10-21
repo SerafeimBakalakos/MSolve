@@ -27,6 +27,9 @@ namespace MGroup.XFEM.Geometry.Mesh
             {
                 dx[d] = (maxCoordinates[d] - minCoordinates[d]) / numElements[d];
             }
+
+            NumNodesTotal = NumNodes[0] * NumNodes[1] * NumNodes[2];
+            NumElementsTotal = NumElements[0] * NumElements[1] * NumNodes[3];
         }
 
         public CellType CellType => CellType.Hexa8;
@@ -35,7 +38,10 @@ namespace MGroup.XFEM.Geometry.Mesh
         public double[] MaxCoordinates { get; }
 
         public int[] NumElements { get; }
+        public int NumElementsTotal { get; }
+
         public int[] NumNodes { get; }
+        public int NumNodesTotal { get; }
 
         public int GetNodeID(int[] nodeIdx)
         {

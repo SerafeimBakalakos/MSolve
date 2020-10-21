@@ -5,12 +5,12 @@ using ISAAR.MSolve.Discretization.Interfaces;
 
 namespace MGroup.XFEM.Geometry.Mesh
 {
-    public abstract class LsmMeshBase : ILsmMesh
+    public abstract class DualMeshBase : ILsmMesh
     {
         protected readonly int dim;
         protected readonly int[] multiple;
 
-        protected LsmMeshBase(int dimension, IStructuredMesh femMesh, IStructuredMesh lsmMesh)
+        protected DualMeshBase(int dimension, IStructuredMesh femMesh, IStructuredMesh lsmMesh)
         {
             this.dim = dimension;
             this.FemMesh = femMesh;
@@ -45,7 +45,7 @@ namespace MGroup.XFEM.Geometry.Mesh
                 if (lsmIdx[d] % multiple[d] != 0) return -1;
                 else femIdx[d] = lsmIdx[d] / multiple[d];
             }
-            return FemMesh.GetElementID(femIdx);
+            return FemMesh.GetNodeID(femIdx);
         }
 
         public int MapNodeFemToLsm(int femNodeID)
