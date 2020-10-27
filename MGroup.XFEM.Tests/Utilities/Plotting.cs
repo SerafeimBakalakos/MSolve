@@ -16,7 +16,7 @@ namespace MGroup.XFEM.Tests.Utilities
     public class Plotting
     {
         public static Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> CalcIntersections(
-            XModel model, IEnumerable<IImplicitGeometry> geometries)
+            XModel<IXMultiphaseElement> model, IEnumerable<IImplicitGeometry> geometries)
         {
             var intersections = new Dictionary<IXFiniteElement, List<IElementGeometryIntersection>>();
             foreach (IXFiniteElement element in model.Elements)
@@ -37,7 +37,7 @@ namespace MGroup.XFEM.Tests.Utilities
         }
 
         public static Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> CalcIntersections(
-            XModel model, GeometricModel geometricModel)
+            XModel<IXMultiphaseElement> model, PhaseGeometryModel geometricModel)
         {
             Dictionary<int, IImplicitGeometry> geometries = FindCurvesOf(geometricModel);
             var intersections = new Dictionary<IXFiniteElement, List<IElementGeometryIntersection>>();
@@ -93,7 +93,7 @@ namespace MGroup.XFEM.Tests.Utilities
         //    return lsmCurves.ToArray();
         //}
 
-        public static Dictionary<int, IImplicitGeometry> FindCurvesOf(GeometricModel geometricModel)
+        public static Dictionary<int, IImplicitGeometry> FindCurvesOf(PhaseGeometryModel geometricModel)
         {
             var lsmCurves = new Dictionary<int, IImplicitGeometry>();
             foreach (IPhase phase in geometricModel.Phases)
@@ -106,7 +106,7 @@ namespace MGroup.XFEM.Tests.Utilities
         }
 
         public static void PlotInclusionLevelSets(string directoryPath, string vtkFilenamePrefix,
-            XModel model, GeometricModel geometricModel)
+            XModel<IXMultiphaseElement> model, PhaseGeometryModel geometricModel)
         {
             Dictionary<int, IImplicitGeometry> lsmCurves = FindCurvesOf(geometricModel);
             foreach (var pair in lsmCurves)

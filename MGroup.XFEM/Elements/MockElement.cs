@@ -5,6 +5,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
@@ -17,7 +18,7 @@ using MGroup.XFEM.Materials;
 //TODO: delete this class
 namespace MGroup.XFEM.Elements
 {
-    public class MockElement : IXFiniteElement
+    public class MockElement : IXThermalElement
     {
         private readonly IElementGeometry elementGeometry;
         private readonly int dimension;
@@ -120,7 +121,7 @@ namespace MGroup.XFEM.Elements
 
         public double CalcBulkSizeNatural() => elementGeometry.CalcBulkSizeNatural();
 
-        public void IdentifyDofs()
+        public void IdentifyDofs(Dictionary<IEnrichment, IDofType[]> enrichedDofs)
         {
         }
 

@@ -9,7 +9,7 @@ namespace MGroup.XFEM.Entities
 {
     public class LsmPhase : IPhase
     {
-        private readonly GeometricModel geometricModel;
+        private readonly PhaseGeometryModel geometricModel;
 
         /// <summary>
         /// 
@@ -17,7 +17,7 @@ namespace MGroup.XFEM.Entities
         /// <param name="id"></param>
         /// <param name="geometricModel"></param>
         /// <param name="mergeLevel">Negative values will cause this phase to be unmergable</param>
-        public LsmPhase(int id, GeometricModel geometricModel, int mergeLevel)
+        public LsmPhase(int id, PhaseGeometryModel geometricModel, int mergeLevel)
         {
             this.ID = id;
             this.geometricModel = geometricModel;
@@ -25,11 +25,11 @@ namespace MGroup.XFEM.Entities
         }
 
 
-        public HashSet<IXFiniteElement> BoundaryElements { get; } = new HashSet<IXFiniteElement>();
+        public HashSet<IXMultiphaseElement> BoundaryElements { get; } = new HashSet<IXMultiphaseElement>();
 
         public HashSet<XNode> ContainedNodes { get; } = new HashSet<XNode>();
 
-        public HashSet<IXFiniteElement> ContainedElements { get; } = new HashSet<IXFiniteElement>();
+        public HashSet<IXMultiphaseElement> ContainedElements { get; } = new HashSet<IXMultiphaseElement>();
 
         public List<PhaseBoundary> ExternalBoundaries { get; } = new List<PhaseBoundary>();
 
@@ -76,7 +76,7 @@ namespace MGroup.XFEM.Entities
             }
         }
 
-        public void InteractWithElements(IEnumerable<IXFiniteElement> elements)
+        public void InteractWithElements(IEnumerable<IXMultiphaseElement> elements)
         {
             Debug.Assert(ExternalBoundaries.Count == 1);
             PhaseBoundary boundary = ExternalBoundaries[0];
@@ -85,7 +85,7 @@ namespace MGroup.XFEM.Entities
 
             // Only process the elements near the contained nodes. Of course not all of them will be completely inside the phase.
             IEnumerable<IXFiniteElement> elementsToCheck = geometricModel.EnableOptimizations ? FindNearbyElements() : elements;
-            foreach (IXFiniteElement element in elementsToCheck)
+            foreach (IXMultiphaseElement element in elementsToCheck)
             {
                 bool isInside = ContainsCompletely(element);
 

@@ -75,9 +75,9 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             {
                 // Create physical model, LSM and phases
                 Console.WriteLine("Creating physical and geometric models");
-                (XModel model, BiMaterialField materialField) = CreateModel();
+                (XModel<IXMultiphaseElement> model, BiMaterialField materialField) = CreateModel();
                 GeometryPreprocessor3DRandom preprocessor = CreatePhases(model, materialField, numBalls);
-                GeometricModel geometricModel = preprocessor.GeometricModel;
+                PhaseGeometryModel geometricModel = preprocessor.GeometricModel;
 
                 // Geometric interactions
                 Console.WriteLine("Identifying interactions between physical and geometric models");
@@ -135,7 +135,8 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             }
         }
 
-        private GeometryPreprocessor3DRandom CreatePhases(XModel model, BiMaterialField materialField, int numBalls)
+        private GeometryPreprocessor3DRandom CreatePhases(XModel<IXMultiphaseElement> model, BiMaterialField materialField, 
+            int numBalls)
         {
             var preprocessor = new GeometryPreprocessor3DRandom();
             preprocessor.MinCoordinates = minCoords;
@@ -155,7 +156,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             return preprocessor;
         }
 
-        private static (XModel, BiMaterialField) CreateModel()
+        private static (XModel<IXMultiphaseElement>, BiMaterialField) CreateModel()
         {
             // Materials
             var epoxyMaterial = new ThermalMaterial(conductEpoxy, specialHeatCoeff);

@@ -58,8 +58,8 @@ namespace MGroup.XFEM.Tests.Unions
         public static void PlotGeometryAndEntities()
         {
             // Create physical model, LSM and phases
-            XModel model = CreateModel();
-            GeometricModel geometricModel = CreatePhases(model);
+            XModel<IXMultiphaseElement> model = CreateModel();
+            PhaseGeometryModel geometricModel = CreatePhases(model);
 
             // Plot original mesh and level sets
             Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
@@ -125,7 +125,7 @@ namespace MGroup.XFEM.Tests.Unions
         }
         
 
-        private static XModel CreateModel()
+        private static XModel<IXMultiphaseElement> CreateModel()
         {
             // Materials
             var matrixMaterial = new ThermalMaterial(conductMatrix, specialHeatCoeff);
@@ -138,18 +138,18 @@ namespace MGroup.XFEM.Tests.Unions
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField);
         }
 
-        private static GeometricModel CreatePhases(XModel model)
+        private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model)
         {
             var balls = new Circle2D[2];
             balls[0] = new Circle2D(-0.3, 0, 0.5);
             balls[1] = new Circle2D(+0.3, 0, 0.4);
 
-            var geometricModel = new GeometricModel(2, model);
+            var geometricModel = new PhaseGeometryModel(2, model);
             var defaultPhase = new DefaultPhase(defaultPhaseID);
             geometricModel.Phases.Add(defaultPhase);
             for (int p = 0; p < 2; ++p)
             {
-                var lsm = new SimpleLsm2D(p + 1, model, balls[p]);
+                var lsm = new SimpleLsm2D(p + 1, model.Nodes, balls[p]);
                 var phase = new LsmPhase(p + 1, geometricModel, 0);
                 geometricModel.Phases.Add(phase);
 

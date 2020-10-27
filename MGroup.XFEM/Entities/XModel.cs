@@ -9,12 +9,13 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
+using MGroup.XFEM.Enrichment;
 
 //TODO: There is a lot of repetition between this FEM.Model and IGA.Model with regards to interconnection data. That code should 
 //      be moved to a common class. Same goes for the interconnection methods of XSubdomain.
 namespace MGroup.XFEM.Entities
 {
-    public class XModel : IStructuralModel
+    public class XModel<TElement> : IXModel where TElement: IXFiniteElement
     {
         private bool areDataStructuresConnected;
 
@@ -27,8 +28,19 @@ namespace MGroup.XFEM.Entities
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();
 
-        IReadOnlyList<IElement> IStructuralModel.Elements => Elements;
-        public List<IXFiniteElement> Elements { get; } = new List<IXFiniteElement>();
+        IReadOnlyList<IElement> IStructuralModel.Elements
+        {
+            get
+            {
+                var result = new IElement[Elements.Count];
+                for (int i = 0; i < Elements.Count; ++i) result[i] = Elements[i];
+                return result;
+            }
+        }
+
+        public List<TElement> Elements { get; } = new List<TElement>();
+
+        public Dictionary<IEnrichment, IDofType[]> EnrichedDofs { get; set; } = new Dictionary<IEnrichment, IDofType[]>();
 
         public IGlobalFreeDofOrdering GlobalDofOrdering { get; set; }
 
@@ -75,9 +87,18 @@ namespace MGroup.XFEM.Entities
             }
         }
 
+
+        public IEnumerable<IXFiniteElement> EnumerateElements() //TODO: There must be a better way
+        {
+            var result = new IXFiniteElement[Elements.Count];
+            for (int i = 0; i < Elements.Count; ++i) result[i] = Elements[i];
+            return result;
+
+        }
+
         public void UpdateDofs()
         {
-            foreach (IXFiniteElement element in Elements) element.IdentifyDofs();
+            foreach (IXFiniteElement element in Elements) element.IdentifyDofs(EnrichedDofs);
         }
 
         public void UpdateMaterials()

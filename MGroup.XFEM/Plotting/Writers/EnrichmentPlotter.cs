@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ISAAR.MSolve.Geometry.Coordinates;
+using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 
@@ -10,10 +11,10 @@ namespace MGroup.XFEM.Plotting.Writers
     public class EnrichmentPlotter
     {
         private readonly double elementSize;
-        private readonly XModel physicalModel;
+        private readonly XModel<IXMultiphaseElement> physicalModel;
         private readonly bool plot3D;
 
-        public EnrichmentPlotter(XModel model, double elementSize, bool plot3D)
+        public EnrichmentPlotter(XModel<IXMultiphaseElement> model, double elementSize, bool plot3D)
         {
             this.physicalModel = model;
             this.elementSize = elementSize;

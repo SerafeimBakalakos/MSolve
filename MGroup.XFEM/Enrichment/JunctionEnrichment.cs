@@ -70,6 +70,23 @@ namespace MGroup.XFEM.Enrichment
             return descendingPhaseCoeffs[descendingPhases.Length - 1];
         }
 
+        public EvaluatedFunction EvaluateAllAt(XPoint point)
+        {
+            if (point.Phase != null)
+            {
+                double psi = EvaluateAt(point.Phase);
+                return new EvaluatedFunction(psi, new double[point.Dimension]);
+            }
+
+            for (int i = 0; i < descendingPhases.Length - 1; ++i)
+            {
+                if (descendingPhases[i].Contains(point))
+                {
+                    return new EvaluatedFunction(descendingPhaseCoeffs[i], new double[point.Dimension]);
+                }
+            }
+            return new EvaluatedFunction(descendingPhaseCoeffs[descendingPhases.Length - 1], new double[point.Dimension]);
+        }
         public double EvaluateAt(IPhase phaseAtPoint)
         {
             //WARNING: This does not work for a blending element that is intersected by another unrelated to the junction interface

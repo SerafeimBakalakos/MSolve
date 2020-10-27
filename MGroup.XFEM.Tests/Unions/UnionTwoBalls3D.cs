@@ -55,8 +55,8 @@ namespace MGroup.XFEM.Tests.Plotting
         public static void PlotGeometryAndEntities()
         {
             // Create model and LSM
-            XModel model = CreateModel();
-            GeometricModel geometricModel = CreatePhases(model);
+            XModel<IXMultiphaseElement> model = CreateModel();
+            PhaseGeometryModel geometricModel = CreatePhases(model);
 
             // Plot original mesh and level sets
             Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
@@ -127,18 +127,18 @@ namespace MGroup.XFEM.Tests.Plotting
             //enrichmentPlotter.PlotJunctionEnrichedNodes(pathJunctionEnrichedNodes);
         }
 
-        private static GeometricModel CreatePhases(XModel model)
+        private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model)
         {
             var balls = new Sphere[2];
             balls[0] = new Sphere(-0.25, 0, 0, 0.5);
             balls[1] = new Sphere(+0.25, 0, 0, 0.4);
 
-            var geometricModel = new GeometricModel(3, model);
+            var geometricModel = new PhaseGeometryModel(3, model);
             var defaultPhase = new DefaultPhase(defaultPhaseID);
             geometricModel.Phases.Add(defaultPhase);
             for (int p = 0; p < 2; ++p)
             {
-                var lsm = new SimpleLsm3D(p + 1, model, balls[p]);
+                var lsm = new SimpleLsm3D(p + 1, model.Nodes, balls[p]);
                 var phase = new LsmPhase(p + 1, geometricModel, 0);
                 geometricModel.Phases.Add(phase);
 
@@ -151,7 +151,7 @@ namespace MGroup.XFEM.Tests.Plotting
             return geometricModel;
         }
 
-        private static XModel CreateModel()
+        private static XModel<IXMultiphaseElement> CreateModel()
         {
             // Materials
             var matrixMaterial = new ThermalMaterial(conductMatrix, specialHeatCoeff);

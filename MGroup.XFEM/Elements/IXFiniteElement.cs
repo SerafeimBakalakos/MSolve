@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
+using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
@@ -30,11 +32,7 @@ namespace MGroup.XFEM.Elements
 
         IReadOnlyList<XNode> Nodes { get; }
 
-        HashSet<IPhase> Phases { get; }
-
         List<IElementGeometryIntersection> Intersections { get; }
-
-        Dictionary<PhaseBoundary, IElementGeometryIntersection> PhaseIntersections { get; }
 
         XSubdomain Subdomain { get; set; }
 
@@ -46,12 +44,7 @@ namespace MGroup.XFEM.Elements
 
         double[] FindCentroidCartesian();
 
-        Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)>
-            GetMaterialsForBoundaryIntegration();
-
-        (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalMaterial>) GetMaterialsForBulkIntegration();
-
-        void IdentifyDofs();
+        void IdentifyDofs(Dictionary<IEnrichment, IDofType[]> enrichedDofs);
 
         void IdentifyIntegrationPointsAndMaterials();
     }

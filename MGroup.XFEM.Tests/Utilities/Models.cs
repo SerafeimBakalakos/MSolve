@@ -17,10 +17,10 @@ namespace MGroup.XFEM.Tests.Utilities
 {
     public static class Models
     {
-        public static XModel CreateQuad4Model(double[] minCoords, double[] maxCoords, double thickness, int[] numElements, 
-            int bulkIntegrationOrder, int boundaryIntegrationOrder, IThermalMaterialField materialField)
+        public static XModel<IXMultiphaseElement> CreateQuad4Model(double[] minCoords, double[] maxCoords, double thickness,
+            int[] numElements, int bulkIntegrationOrder, int boundaryIntegrationOrder, IThermalMaterialField materialField)
         {
-            var model = new XModel();
+            var model = new XModel<IXMultiphaseElement>();
             model.Subdomains[0] = new XSubdomain(0);
 
             // Mesh generation
@@ -67,10 +67,10 @@ namespace MGroup.XFEM.Tests.Utilities
             return model;
         }
 
-        public static XModel CreateHexa8Model(double[] minCoords, double[] maxCoords,int[] numElements,
+        public static XModel<IXMultiphaseElement> CreateHexa8Model(double[] minCoords, double[] maxCoords,int[] numElements,
             int bulkIntegrationOrder, int boundaryIntegrationOrder, IThermalMaterialField materialField)
         {
-            var model = new XModel();
+            var model = new XModel<IXMultiphaseElement>();
             model.Subdomains[0] = new XSubdomain(0);
 
             // Mesh generation

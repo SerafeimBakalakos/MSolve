@@ -18,13 +18,13 @@ namespace MGroup.XFEM.Geometry.LSM
             this.NodalLevelSets = nodalLevelSets;
         }
 
-        public SimpleLsm2D(int id, XModel physicalModel, ICurve2D closedCurve)
+        public SimpleLsm2D(int id, IReadOnlyList<XNode> nodes, ICurve2D closedCurve)
         {
             this.ID = id;
-            NodalLevelSets = new double[physicalModel.Nodes.Count];
-            for (int n = 0; n < physicalModel.Nodes.Count; ++n)
+            NodalLevelSets = new double[nodes.Count];
+            for (int n = 0; n < nodes.Count; ++n)
             {
-                double[] node = physicalModel.Nodes[n].Coordinates;
+                double[] node = nodes[n].Coordinates;
                 NodalLevelSets[n] = closedCurve.SignedDistanceOf(node);
             }
         }

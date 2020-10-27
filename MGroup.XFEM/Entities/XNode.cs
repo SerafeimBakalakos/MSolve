@@ -26,7 +26,7 @@ namespace MGroup.XFEM.Entities
 
         public int ID { get; }
 
-        public int NumEnrichedDofs => Enrichments.Count;
+        //public int NumEnrichedDofs => Enrichments.Count; //TODO: Delete this. It differs in 2D, 3D, thermal, ...
 
         //public IReadOnlyList<EnrichedDof> EnrichedDofs
         //{

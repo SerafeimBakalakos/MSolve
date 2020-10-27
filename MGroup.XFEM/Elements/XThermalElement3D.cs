@@ -25,7 +25,7 @@ using MGroup.XFEM.Materials;
 //TODO: Bstd or Benr assume different order of the shape function gradient. Which is the correct one?
 namespace MGroup.XFEM.Elements
 {
-    public class XThermalElement3D : IXFiniteElement
+    public class XThermalElement3D : IXThermalElement
     {
         private readonly int boundaryIntegrationOrder;
         private readonly IElementGeometry elementGeometry;
@@ -133,7 +133,7 @@ namespace MGroup.XFEM.Elements
 
         public XPoint EvaluateFunctionsAt(double[] naturalPoint)
         {
-            var result = new XPoint();
+            var result = new XPoint(3);
             result.Coordinates[CoordinateSystem.ElementNatural] = naturalPoint;
             result.Element = this;
             result.ShapeFunctions = Interpolation.EvaluateFunctionsAt(naturalPoint);
@@ -158,10 +158,10 @@ namespace MGroup.XFEM.Elements
         public (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalMaterial>) GetMaterialsForBulkIntegration()
             => (gaussPointsBulk, materialsAtGPsBulk);
 
-        public void IdentifyDofs()
+        public void IdentifyDofs(Dictionary<IEnrichment, IDofType[]> enrichedDofs)
         {
             this.numEnrichedDofs = 0;
-            foreach (XNode node in Nodes) this.numEnrichedDofs += node.NumEnrichedDofs;
+            foreach (XNode node in Nodes) this.numEnrichedDofs += node.Enrichments.Count;
 
             if (this.numEnrichedDofs == 0) allDofTypes = standardDofTypes;
             else
@@ -173,12 +173,15 @@ namespace MGroup.XFEM.Elements
                 for (int i = 0; i < Nodes.Count; ++i)
                 {
                     XNode node = Nodes[i];
-                    var nodalDofs = new IDofType[1 + node.NumEnrichedDofs];
+                    var nodalDofs = new IDofType[1 + node.Enrichments.Count];
                     nodalDofs[0] = ThermalDof.Temperature;
                     int j = 1;
                     foreach (IEnrichment enrichment in node.Enrichments.Keys)
                     {
-                        nodalDofs[j++] = enrichment.Dof;
+                        foreach (IDofType dof in enrichedDofs[enrichment])
+                        {
+                            nodalDofs[j++] = dof;
+                        }
                     }
                     this.allDofTypes[i] = nodalDofs;
                 }
@@ -211,7 +214,7 @@ namespace MGroup.XFEM.Elements
             {
                 for (int i = 0; i < numPointsVolume; ++i)
                 {
-                    XPoint point = new XPoint();
+                    XPoint point = new XPoint(3);
                     point.Element = this;
                     point.Coordinates[CoordinateSystem.ElementNatural] = gaussPointsBulk[i].Coordinates;
                     point.ShapeFunctions = evalInterpolationsAtGPsVolume[i].ShapeFunctions;
@@ -277,7 +280,7 @@ namespace MGroup.XFEM.Elements
                 GaussPoint gaussPoint = gaussPointsBulk[i];
                 EvalInterpolation evalInterpolation = evalInterpolationsAtGPsVolume[i];
 
-                var gaussPointAlt = new XPoint();
+                var gaussPointAlt = new XPoint(3);
                 gaussPointAlt.Element = this;
                 gaussPointAlt.ShapeFunctions = evalInterpolation.ShapeFunctions;
 
@@ -508,7 +511,7 @@ namespace MGroup.XFEM.Elements
                 totalDofCounter += 1;
 
                 // Enr dofs
-                for (int e = 0; e < Nodes[n].NumEnrichedDofs; ++e)
+                for (int e = 0; e < Nodes[n].Enrichments.Count; ++e)
                 {
                     enrDofIndices[enrDofCounter++] = totalDofCounter++;
                 }

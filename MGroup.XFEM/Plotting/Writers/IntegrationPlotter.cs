@@ -13,9 +13,9 @@ namespace MGroup.XFEM.Plotting
 {
     public class IntegrationPlotter
     {
-        private readonly XModel physicalModel;
+        private readonly XModel<IXMultiphaseElement> physicalModel;
 
-        public IntegrationPlotter(XModel physicalModel)
+        public IntegrationPlotter(XModel<IXMultiphaseElement> physicalModel)
         {
             this.physicalModel = physicalModel;
         }

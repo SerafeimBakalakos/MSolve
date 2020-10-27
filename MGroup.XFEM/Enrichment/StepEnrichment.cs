@@ -45,6 +45,18 @@ namespace MGroup.XFEM.Enrichment
             else return +1;
         }
 
+        public EvaluatedFunction EvaluateAllAt(XPoint point)
+        {
+            if (internalPhase.Contains(point))
+            {
+                return new EvaluatedFunction(-1, new double[point.Dimension]);
+            }
+            else
+            {
+                return new EvaluatedFunction(+1, new double[point.Dimension]);
+            }
+        }
+
         public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
         {
             (IPhase boundaryMinPhase, IPhase boundaryMaxPhase) =

@@ -18,10 +18,10 @@ namespace MGroup.XFEM.Plotting.Writers
 
         private readonly double colorForDefaultPhase;
         private readonly int defaultPhaseID;
-        private readonly GeometricModel geometricModel;
-        private readonly XModel physicalModel;
+        private readonly PhaseGeometryModel geometricModel;
+        private readonly XModel<IXMultiphaseElement> physicalModel;
 
-        public PhasePlotter(XModel physicalModel, GeometricModel geometricModel, int defaultPhaseID, 
+        public PhasePlotter(XModel<IXMultiphaseElement> physicalModel, PhaseGeometryModel geometricModel, int defaultPhaseID, 
             double colorForDefaultPhase = 0.0)
         {
             this.physicalModel = physicalModel;
@@ -60,7 +60,7 @@ namespace MGroup.XFEM.Plotting.Writers
         private Dictionary<VtkPoint, double> FindPhasesOfElements(ConformingOutputMesh conformingMesh)
         {
             var field = new Dictionary<VtkPoint, double>();
-            foreach (IXFiniteElement element in physicalModel.Elements)
+            foreach (IXMultiphaseElement element in physicalModel.Elements)
             {
                 var elementPhases = element.Phases;
                 if (elementPhases.Count == 1)
@@ -80,7 +80,7 @@ namespace MGroup.XFEM.Plotting.Writers
                         // TODO: Perhaps I should do the next operations in the natural system of the element.
                         // Find the centroid
                         double[] centroidNatural = subcell.OriginalSubcell.FindCentroidNatural();
-                        var centroid = new XPoint();
+                        var centroid = new XPoint(centroidNatural.Length);
                         centroid.Element = subcell.ParentElement;
                         centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural;
                         centroid.ShapeFunctions = centroid.Element.Interpolation.EvaluateFunctionsAt(centroidNatural);

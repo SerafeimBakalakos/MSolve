@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
@@ -17,7 +18,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
         public int NumBalls { get; set; } = 20;
 
-        public GeometricModel GeometricModel { get; set; }
+        public PhaseGeometryModel GeometricModel { get; set; }
 
         public string MatrixPhaseName { get; } = "matrix";
 
@@ -31,9 +32,9 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
         public List<int> SilverPhaseIDs { get; set; } = new List<int>();
 
-        public void GeneratePhases(XModel physicalModel)
+        public void GeneratePhases(XModel<IXMultiphaseElement> physicalModel)
         {
-            GeometricModel = new GeometricModel(3, physicalModel);
+            GeometricModel = new PhaseGeometryModel(3, physicalModel);
             var defaultPhase = new DefaultPhase(0);
             GeometricModel.Phases.Add(defaultPhase);
             MatrixPhaseID = 0;
@@ -93,18 +94,14 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 SilverPhaseIDs.Add(phaseExternal.ID);
 
                 // Create phase boundaries
-                #region debug
-                //var lsmExternal = new SimpleLsm3D(phaseExternal.ID, physicalModel, newBallExternal);
-                var lsmExternal = new UnionLsm3D(phaseExternal.ID, physicalModel, 
-                    new SimpleLsm3D(phaseExternal.ID, physicalModel, newBallExternal));
-                #endregion
+                var lsmExternal = new SimpleLsm3D(phaseExternal.ID, physicalModel.Nodes, newBallExternal);
                 var boundaryExternal = new PhaseBoundary(lsmExternal, defaultPhase, phaseExternal);
                 defaultPhase.ExternalBoundaries.Add(boundaryExternal);
                 defaultPhase.Neighbors.Add(phaseExternal);
                 phaseExternal.ExternalBoundaries.Add(boundaryExternal);
                 phaseExternal.Neighbors.Add(defaultPhase);
 
-                var lsmInternal = new SimpleLsm3D(phaseInternal.ID, physicalModel, newBallInternal);
+                var lsmInternal = new SimpleLsm3D(phaseInternal.ID, physicalModel.Nodes, newBallInternal);
                 var boundaryInternal = new PhaseBoundary(lsmInternal, phaseExternal, phaseInternal);
                 phaseExternal.InternalBoundaries.Add(boundaryInternal);
                 phaseExternal.Neighbors.Add(phaseInternal);

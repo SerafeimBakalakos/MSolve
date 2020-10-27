@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Plotting.Mesh;
@@ -7,20 +8,18 @@ namespace MGroup.XFEM.Geometry
 {
     public class LevelSetField
     {
-        private readonly XModel model;
+        private readonly XModel<IXMultiphaseElement> model;
         private readonly IImplicitGeometry levelSet;
         private readonly ContinuousOutputMesh outMesh;
 
-        public LevelSetField(XModel model, IImplicitGeometry levelSet)
+        public LevelSetField(IXModel model, IImplicitGeometry levelSet)
         {
-            this.model = model;
             this.levelSet = levelSet;
-            this.outMesh = new ContinuousOutputMesh(model.Nodes, model.Elements);
+            this.outMesh = new ContinuousOutputMesh(model.Nodes, model.EnumerateElements());
         }
 
-        public LevelSetField(XModel model, IImplicitGeometry levelSet, ContinuousOutputMesh outputMesh)
+        public LevelSetField(IXModel model, IImplicitGeometry levelSet, ContinuousOutputMesh outputMesh)
         {
-            this.model = model;
             this.levelSet = levelSet;
             this.outMesh = outputMesh;
         }

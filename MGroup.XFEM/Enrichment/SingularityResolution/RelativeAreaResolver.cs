@@ -15,10 +15,10 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
 {
     public class RelativeAreaResolver : ISingularityResolver
     {
-        private readonly GeometricModel geometricModel;
+        private readonly PhaseGeometryModel geometricModel;
         private readonly double relativeAreaTolerance;
 
-        public RelativeAreaResolver(GeometricModel geometricModel, double relativeAreaTolerance = 1E-4)
+        public RelativeAreaResolver(PhaseGeometryModel geometricModel, double relativeAreaTolerance = 1E-4)
         {
             this.geometricModel = geometricModel;
             this.relativeAreaTolerance = relativeAreaTolerance;
@@ -42,7 +42,7 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
                 double nodeArea1 = 0.0;
                 double nodeArea2 = 0.0;
 
-                foreach (IXFiniteElement element in node.ElementsDictionary.Values)
+                foreach (IXMultiphaseElement element in node.ElementsDictionary.Values)
                 {
                     bool alreadyProcessed = processedElements.TryGetValue(element, out (double A1, double A2) elementAreas);
                     if (!alreadyProcessed)
@@ -71,7 +71,7 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
         }
 
         // TODO: I should really cache these somehow, so that they can be accessible from the crack object. They are used at various points.
-        private (double totalArea1, double totalArea2) FindSignedAreasOfElement(IXFiniteElement element, 
+        private (double totalArea1, double totalArea2) FindSignedAreasOfElement(IXMultiphaseElement element, 
             StepEnrichment enrichment)
         {
             IPhase phase1 = enrichment.Phases[0];
@@ -102,7 +102,7 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
                     // Calculate their areas and on which side they lie, based on their centroids
                     double[] centroidNatural = subcell.FindCentroidNatural();
                     (double[] centroidCartesian, double bulkSize) = subcell.FindCentroidAndBulkSizeCartesian(element);
-                    XPoint centroid = new XPoint();
+                    XPoint centroid = new XPoint(centroidNatural.Length);
                     centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural;
                     element.FindPhaseAt(centroid);
 

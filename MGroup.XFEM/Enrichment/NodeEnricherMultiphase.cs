@@ -11,10 +11,10 @@ namespace MGroup.XFEM.Enrichment
 {
     public class NodeEnricherMultiphase
     {
-        private readonly GeometricModel geometricModel;
+        private readonly PhaseGeometryModel geometricModel;
         private readonly ISingularityResolver singularityResolver;
 
-        public NodeEnricherMultiphase(GeometricModel geometricModel, ISingularityResolver singularityResolver)
+        public NodeEnricherMultiphase(PhaseGeometryModel geometricModel, ISingularityResolver singularityResolver)
         {
             this.geometricModel = geometricModel;
             this.singularityResolver = singularityResolver;
@@ -208,7 +208,7 @@ namespace MGroup.XFEM.Enrichment
             foreach (IPhase phase in geometricModel.Phases)
             {
                 if (phase is DefaultPhase) continue;
-                foreach (IXFiniteElement element in phase.BoundaryElements)
+                foreach (IXMultiphaseElement element in phase.BoundaryElements)
                 {
                     foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
                     {

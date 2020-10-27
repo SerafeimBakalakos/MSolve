@@ -16,10 +16,10 @@ namespace MGroup.XFEM.Plotting.Fields
 {
     public class TemperatureField
     {
-        private readonly XModel model;
+        private readonly XModel<IXMultiphaseElement> model;
         private readonly ConformingOutputMesh outMesh;
 
-        public TemperatureField(XModel model, ConformingOutputMesh outMesh)
+        public TemperatureField(XModel<IXMultiphaseElement> model, ConformingOutputMesh outMesh)
         {
             this.model = model;
             this.outMesh = outMesh;
@@ -77,7 +77,7 @@ namespace MGroup.XFEM.Plotting.Fields
 
             // Locate centroid
             double[] centroidNatural = subcell.FindCentroidNatural();
-            var centroid = new XPoint();
+            var centroid = new XPoint(centroidNatural.Length);
             centroid.Element = element;
             centroid.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(centroidNatural);
 

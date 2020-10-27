@@ -8,9 +8,9 @@ namespace MGroup.XFEM.Entities
 {
     public class ConvexPhase : IPhase
     {
-        private readonly GeometricModel geometricModel;
+        private readonly PhaseGeometryModel geometricModel;
 
-        public ConvexPhase(int id, GeometricModel geometricModel)
+        public ConvexPhase(int id, PhaseGeometryModel geometricModel)
         {
             this.ID = id;
             this.geometricModel = geometricModel;
@@ -20,11 +20,11 @@ namespace MGroup.XFEM.Entities
 
         public HashSet<XNode> ContainedNodes { get; } = new HashSet<XNode>();
 
-        public HashSet<IXFiniteElement> ContainedElements { get; } = new HashSet<IXFiniteElement>();
+        public HashSet<IXMultiphaseElement> ContainedElements { get; } = new HashSet<IXMultiphaseElement>();
 
         public int ID { get; }
 
-        public HashSet<IXFiniteElement> BoundaryElements { get; } = new HashSet<IXFiniteElement>();
+        public HashSet<IXMultiphaseElement> BoundaryElements { get; } = new HashSet<IXMultiphaseElement>();
 
         public HashSet<IPhase> Neighbors { get; } = new HashSet<IPhase>();
 
@@ -67,13 +67,13 @@ namespace MGroup.XFEM.Entities
             }
         }
 
-        public void InteractWithElements(IEnumerable<IXFiniteElement> elements)
+        public void InteractWithElements(IEnumerable<IXMultiphaseElement> elements)
         {
             //TODO: This does not necessarily provide correct results in coarse meshes.
 
             // Only process the elements near the contained nodes. Of course not all of them will be completely inside the phase.
             IEnumerable<IXFiniteElement> nearBoundaryElements = FindNearbyElements();
-            foreach (IXFiniteElement element in nearBoundaryElements)
+            foreach (IXMultiphaseElement element in nearBoundaryElements)
             {
                 bool isInside = ContainsCompletely(element);
                 if (isInside)

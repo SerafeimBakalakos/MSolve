@@ -10,7 +10,7 @@ namespace MGroup.XFEM.Elements
 {
     public static class XElementExtensions
     {
-        public static void FindPhaseAt(this IXFiniteElement element, XPoint point)
+        public static void FindPhaseAt(this IXMultiphaseElement element, XPoint point)
         {
             IPhase defaultPhase = null;
             foreach (IPhase phase in element.Phases)

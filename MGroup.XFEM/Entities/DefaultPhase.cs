@@ -18,11 +18,11 @@ namespace MGroup.XFEM.Entities
 
         public int ID { get; }
 
-        public HashSet<IXFiniteElement> BoundaryElements => throw new NotImplementedException();
+        public HashSet<IXMultiphaseElement> BoundaryElements => throw new NotImplementedException();
 
         public HashSet<XNode> ContainedNodes { get; } = new HashSet<XNode>();
 
-        public HashSet<IXFiniteElement> ContainedElements { get; } = new HashSet<IXFiniteElement>();
+        public HashSet<IXMultiphaseElement> ContainedElements { get; } = new HashSet<IXMultiphaseElement>();
 
         public List<PhaseBoundary> ExternalBoundaries { get; } = new List<PhaseBoundary>();
 
@@ -51,9 +51,9 @@ namespace MGroup.XFEM.Entities
         /// This must be called after all other phases have finished.
         /// </summary>
         /// <param name="elements"></param>
-        public void InteractWithElements(IEnumerable<IXFiniteElement> elements)
+        public void InteractWithElements(IEnumerable<IXMultiphaseElement> elements)
         {
-            foreach (IXFiniteElement element in elements)
+            foreach (IXMultiphaseElement element in elements)
             {
                 if (element.Phases.Count == 0)
                 {

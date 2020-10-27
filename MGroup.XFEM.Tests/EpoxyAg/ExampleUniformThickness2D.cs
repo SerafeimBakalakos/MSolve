@@ -56,9 +56,9 @@ namespace MGroup.XFEM.Tests.EpoxyAg
         public static void PlotGeometryAndEntities()
         {
             // Create physical model, LSM and phases
-            (XModel model, BiMaterialField materialField) = CreateModel();
+            (XModel<IXMultiphaseElement> model, BiMaterialField materialField) = CreateModel();
             GeometryPreprocessor2D preprocessor = CreatePhases(model, materialField);
-            GeometricModel geometricModel = preprocessor.GeometricModel;
+            PhaseGeometryModel geometricModel = preprocessor.GeometricModel;
 
             // Plot original mesh and level sets
             Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
@@ -127,9 +127,9 @@ namespace MGroup.XFEM.Tests.EpoxyAg
         public static void PlotSolution()
         {
             // Create physical model, LSM and phases
-            (XModel model, BiMaterialField materialField) = CreateModel();
+            (XModel<IXMultiphaseElement> model, BiMaterialField materialField) = CreateModel();
             GeometryPreprocessor2D preprocessor = CreatePhases(model, materialField);
-            GeometricModel geometricModel = preprocessor.GeometricModel;
+            PhaseGeometryModel geometricModel = preprocessor.GeometricModel;
 
             // Prepare for analysis
             geometricModel.InteractWithNodes();
@@ -182,7 +182,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             }
         }
 
-        private static GeometryPreprocessor2D CreatePhases(XModel model, BiMaterialField materialField)
+        private static GeometryPreprocessor2D CreatePhases(XModel<IXMultiphaseElement> model, BiMaterialField materialField)
         {
             var preprocessor = new GeometryPreprocessor2D();
             preprocessor.MinCoordinates = minCoords;
@@ -200,7 +200,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             return preprocessor;
         }
 
-        private static (XModel, BiMaterialField) CreateModel()
+        private static (XModel<IXMultiphaseElement>, BiMaterialField) CreateModel()
         {
             // Materials
             var epoxyMaterial = new ThermalMaterial(conductEpoxy, specialHeatCoeff);

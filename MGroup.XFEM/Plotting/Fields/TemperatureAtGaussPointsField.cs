@@ -15,9 +15,9 @@ namespace MGroup.XFEM.Plotting.Fields
 {
     public class TemperatureAtGaussPointsField
     {
-        private readonly XModel model;
+        private readonly XModel<IXMultiphaseElement> model;
 
-        public TemperatureAtGaussPointsField(XModel model)
+        public TemperatureAtGaussPointsField(XModel<IXMultiphaseElement> model)
         {
             this.model = model;
         }
@@ -28,13 +28,16 @@ namespace MGroup.XFEM.Plotting.Fields
             XSubdomain subdomain = model.Subdomains.First().Value;
 
             var result = new Dictionary<double[], double>();
-            foreach (IXFiniteElement element in model.Elements)
+            foreach (IXThermalElement element in model.Elements)
             {
                 (IReadOnlyList<GaussPoint> gaussPoints, _) = element.GetMaterialsForBulkIntegration();
                 double[] nodalTemperatures = Utilities.ExtractNodalTemperatures(element, subdomain, solution);
                 foreach (GaussPoint pointNatural in gaussPoints)
                 {
-                    XPoint point = element.EvaluateFunctionsAt(pointNatural.Coordinates);
+                    var point = new XPoint(pointNatural.Coordinates.Length);
+                    point.Element = element;
+                    point.Coordinates[CoordinateSystem.ElementNatural] = pointNatural.Coordinates;
+                    point.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(pointNatural.Coordinates);
                     double[] coordsCartesian = Utilities.TransformNaturalToCartesian(point.ShapeFunctions, element.Nodes);
                     double temperature = Utilities.CalcTemperatureAt(point, element, nodalTemperatures);
                     result[coordsCartesian] = temperature;

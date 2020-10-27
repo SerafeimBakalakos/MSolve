@@ -16,9 +16,9 @@ namespace MGroup.XFEM.Plotting.Fields
 {
     public class HeatFluxAtGaussPointsField
     {
-        private readonly XModel model;
+        private readonly XModel<IXMultiphaseElement> model;
 
-        public HeatFluxAtGaussPointsField(XModel model)
+        public HeatFluxAtGaussPointsField(XModel<IXMultiphaseElement> model)
         {
             this.model = model;
         }
@@ -30,7 +30,7 @@ namespace MGroup.XFEM.Plotting.Fields
             DofTable dofTable = subdomain.FreeDofOrdering.FreeDofs;
 
             var result = new Dictionary<double[], double[]>();
-            foreach (IXFiniteElement element in model.Elements)
+            foreach (IXThermalElement element in model.Elements)
             {
                 (IReadOnlyList<GaussPoint> gaussPoints, IReadOnlyList<ThermalMaterial> materials)
                     = element.GetMaterialsForBulkIntegration();
@@ -42,7 +42,7 @@ namespace MGroup.XFEM.Plotting.Fields
                         element.Interpolation.EvaluateAllAt(element.Nodes, pointNatural.Coordinates);
                     double[] coordsCartesian = 
                         Utilities.TransformNaturalToCartesian(evalInterpolation.ShapeFunctions, element.Nodes);
-                    var point = new XPoint();
+                    var point = new XPoint(coordsCartesian.Length);
                     point.Coordinates[CoordinateSystem.ElementNatural] = pointNatural.Coordinates;
                     point.Element = element;
                     point.ShapeFunctions = evalInterpolation.ShapeFunctions;

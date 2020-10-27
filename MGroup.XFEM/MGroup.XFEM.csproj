@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ISAAR.MSolve.Discretization\ISAAR.MSolve.Discretization.csproj" />
+    <ProjectReference Include="..\ISAAR.MSolve.Materials\ISAAR.MSolve.Materials.csproj" />
   </ItemGroup>
 
 </Project>

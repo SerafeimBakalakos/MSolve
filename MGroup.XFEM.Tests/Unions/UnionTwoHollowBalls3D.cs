@@ -55,8 +55,8 @@ namespace MGroup.XFEM.Tests.Plotting
         public static void PlotGeometryAndEntities()
         {
             // Create model and LSM
-            XModel model = CreateModel();
-            GeometricModel geometricModel = CreatePhases(model);
+            XModel<IXMultiphaseElement> model = CreateModel();
+            PhaseGeometryModel geometricModel = CreatePhases(model);
 
             // Plot original mesh and level sets
             Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
@@ -128,7 +128,7 @@ namespace MGroup.XFEM.Tests.Plotting
         }
 
 
-        private static GeometricModel CreatePhases(XModel model)
+        private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model)
         {
             var ballsInternal = new Sphere[2];
             ballsInternal[0] = new Sphere(-0.25, 0, 0, 0.2);
@@ -138,12 +138,12 @@ namespace MGroup.XFEM.Tests.Plotting
             ballsExternal[0] = new Sphere(-0.25, 0, 0, 0.5);
             ballsExternal[1] = new Sphere(+0.25, 0, 0, 0.4);
 
-            var geometricModel = new GeometricModel(3, model);
+            var geometricModel = new PhaseGeometryModel(3, model);
             var defaultPhase = new DefaultPhase(defaultPhaseID);
             geometricModel.Phases.Add(defaultPhase);
             for (int b = 0; b < 2; ++b)
             {
-                var externalLsm = new SimpleLsm3D(2 * b + 1, model, ballsExternal[b]);
+                var externalLsm = new SimpleLsm3D(2 * b + 1, model.Nodes, ballsExternal[b]);
                 var externalPhase = new HollowLsmPhase(2 * b + 1, geometricModel, 0);
                 geometricModel.Phases.Add(externalPhase);
 
@@ -153,7 +153,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 externalPhase.ExternalBoundaries.Add(externalBoundary);
                 externalPhase.Neighbors.Add(defaultPhase);
 
-                var internalLsm = new SimpleLsm3D(2 * b + 2, model, ballsInternal[b]);
+                var internalLsm = new SimpleLsm3D(2 * b + 2, model.Nodes, ballsInternal[b]);
                 var internalPhase = new LsmPhase(2 * b + 2, geometricModel, -1);
                 geometricModel.Phases.Add(internalPhase);
 
@@ -167,7 +167,7 @@ namespace MGroup.XFEM.Tests.Plotting
             return geometricModel;
         }
 
-        private static XModel CreateModel()
+        private static XModel<IXMultiphaseElement> CreateModel()
         {
             // Materials
             var matrixMaterial = new ThermalMaterial(conductMatrix, specialHeatCoeff);

@@ -5,15 +5,16 @@ using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
+using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 
 namespace MGroup.XFEM.Plotting.Fields
 {
     public class TemperatureAtNodesField
     {
-        private readonly XModel model;
+        private readonly XModel<IXMultiphaseElement> model;
 
-        public TemperatureAtNodesField(XModel model)
+        public TemperatureAtNodesField(XModel<IXMultiphaseElement> model)
         {
             this.model = model;
         }

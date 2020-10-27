@@ -13,7 +13,7 @@ namespace MGroup.XFEM.Tests.Utilities
 {
     public static class Analysis
     {
-        public static IMatrix RunHomogenizationAnalysis2D(XModel model, 
+        public static IMatrix RunHomogenizationAnalysis2D(IXModel model, 
             double[] minCoords, double[] maxCoords, double thickness)
         {
             Console.WriteLine("Starting homogenization analysis");
@@ -33,7 +33,7 @@ namespace MGroup.XFEM.Tests.Utilities
             return conductivity;
         }
 
-        public static IMatrix RunHomogenizationAnalysis3D(XModel model, double[] minCoords, double[] maxCoords)
+        public static IMatrix RunHomogenizationAnalysis3D(IXModel model, double[] minCoords, double[] maxCoords)
         {
             Console.WriteLine("Starting homogenization analysis");
             var solver = (new SuiteSparseSolver.Builder()).BuildSolver(model);
@@ -49,7 +49,7 @@ namespace MGroup.XFEM.Tests.Utilities
             return conductivity;
         }
 
-        public static IVectorView RunStaticAnalysis(XModel model)
+        public static IVectorView RunStaticAnalysis(IXModel model)
         {
             Console.WriteLine("Starting analysis");
             SuiteSparseSolver solver = new SuiteSparseSolver.Builder().BuildSolver(model);

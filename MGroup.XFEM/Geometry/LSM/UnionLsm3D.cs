@@ -13,7 +13,7 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         private readonly List<SimpleLsm3D> mergedLsms;
 
-        public UnionLsm3D(int id, XModel physicalModel, SimpleLsm3D starterLsm) : base(id, starterLsm.NodalLevelSets)
+        public UnionLsm3D(int id, IReadOnlyList<XNode> nodes, SimpleLsm3D starterLsm) : base(id, starterLsm.NodalLevelSets)
         {
             this.mergedLsms = new List<SimpleLsm3D>();
             mergedLsms.Add(starterLsm);

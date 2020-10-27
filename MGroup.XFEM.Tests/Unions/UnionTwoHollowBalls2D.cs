@@ -58,8 +58,8 @@ namespace MGroup.XFEM.Tests.Unions
         public static void PlotGeometryAndEntities()
         {
             // Create physical model, LSM and phases
-            XModel model = CreateModel();
-            GeometricModel geometricModel = CreatePhases(model);
+            XModel<IXMultiphaseElement> model = CreateModel();
+            PhaseGeometryModel geometricModel = CreatePhases(model);
 
             // Plot original mesh and level sets
             Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
@@ -124,7 +124,7 @@ namespace MGroup.XFEM.Tests.Unions
             //enrichmentPlotter.PlotJunctionEnrichedNodes(pathJunctionEnrichedNodes);
         }
 
-        private static XModel CreateModel()
+        private static XModel<IXMultiphaseElement> CreateModel()
         {
             // Materials
             var matrixMaterial = new ThermalMaterial(conductMatrix, specialHeatCoeff);
@@ -137,7 +137,7 @@ namespace MGroup.XFEM.Tests.Unions
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField);
         }
 
-        private static GeometricModel CreatePhases(XModel model)
+        private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model)
         {
             var ballsInternal = new Circle2D[2];
             ballsInternal[0] = new Circle2D(-0.3, 0, 0.15);
@@ -147,12 +147,12 @@ namespace MGroup.XFEM.Tests.Unions
             ballsExternal[0] = new Circle2D(-0.3, 0, 0.5);
             ballsExternal[1] = new Circle2D(+0.3, 0, 0.4);
 
-            var geometricModel = new GeometricModel(2, model);
+            var geometricModel = new PhaseGeometryModel(2, model);
             var defaultPhase = new DefaultPhase(defaultPhaseID);
             geometricModel.Phases.Add(defaultPhase);
             for (int b = 0; b < 2; ++b)
             {
-                var externalLsm = new SimpleLsm2D(2 * b + 1, model, ballsExternal[b]);
+                var externalLsm = new SimpleLsm2D(2 * b + 1, model.Nodes, ballsExternal[b]);
                 var externalPhase = new HollowLsmPhase(2 * b + 1, geometricModel, 0);
                 geometricModel.Phases.Add(externalPhase);
 
@@ -162,7 +162,7 @@ namespace MGroup.XFEM.Tests.Unions
                 externalPhase.ExternalBoundaries.Add(externalBoundary);
                 externalPhase.Neighbors.Add(defaultPhase);
 
-                var internalLsm = new SimpleLsm2D(2 * b + 2, model, ballsInternal[b]);
+                var internalLsm = new SimpleLsm2D(2 * b + 2, model.Nodes, ballsInternal[b]);
                 var internalPhase = new LsmPhase(2 * b + 2, geometricModel, -1);
                 geometricModel.Phases.Add(internalPhase);
 

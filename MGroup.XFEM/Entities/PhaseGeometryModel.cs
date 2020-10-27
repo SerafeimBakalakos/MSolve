@@ -12,11 +12,11 @@ using MGroup.XFEM.Geometry.Tolerances;
 //TODO: Perhaps I should save the conforming mesh here as well, rather than in each element
 namespace MGroup.XFEM.Entities
 {
-    public class GeometricModel
+    public class PhaseGeometryModel
     {
-        private readonly XModel physicalModel;
+        private readonly XModel<IXMultiphaseElement> physicalModel;
 
-        public GeometricModel(int dimension, XModel physicalModel)
+        public PhaseGeometryModel(int dimension, XModel<IXMultiphaseElement> physicalModel)
         {
             this.physicalModel = physicalModel;
 
@@ -40,7 +40,7 @@ namespace MGroup.XFEM.Entities
             var bulkSizes = new Dictionary<int, double>();
             foreach (IPhase phase in Phases) bulkSizes[phase.ID] = 0.0;
 
-            foreach (IXFiniteElement element in physicalModel.Elements)
+            foreach (IXMultiphaseElement element in physicalModel.Elements)
             {
                 if ((element.ConformingSubcells == null) || (element.ConformingSubcells.Length == 0))
                 {
@@ -53,8 +53,9 @@ namespace MGroup.XFEM.Entities
                 {
                     foreach (IElementSubcell subcell in element.ConformingSubcells)
                     {
-                        var centroid = new XPoint();
-                        centroid.Coordinates[CoordinateSystem.ElementNatural] = subcell.FindCentroidNatural();
+                        double[] centroidNatural = subcell.FindCentroidNatural();
+                        var centroid = new XPoint(centroidNatural.Length);
+                        centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural;
                         centroid.Element = element;
                         centroid.ShapeFunctions =
                             element.Interpolation.EvaluateFunctionsAt(centroid.Coordinates[CoordinateSystem.ElementNatural]);
@@ -79,7 +80,7 @@ namespace MGroup.XFEM.Entities
             else if (Dimension == 3) triangulator = new ConformingTriangulator3D();
             else throw new NotImplementedException();
 
-            foreach (IXFiniteElement element in physicalModel.Elements)
+            foreach (IXMultiphaseElement element in physicalModel.Elements)
             {
                 if (element.Phases.Count == 1) continue;
                 IEnumerable<IElementGeometryIntersection> boundaries = element.PhaseIntersections.Values;
