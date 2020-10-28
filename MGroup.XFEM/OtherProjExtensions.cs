@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
+using MGroup.XFEM.Entities;
 
 namespace MGroup.XFEM
 {
-    public static class OtherProjExtansions
+    public static class OtherProjExtensions
     {
         public static double[] Coordinates(this INode node)
         {
-            return new double[] { node.X, node.Y, node.Z };
+            if (node is XNode xnode) return xnode.Coordinates;
+            else return new double[] { node.X, node.Y, node.Z };
         }
     }
 }

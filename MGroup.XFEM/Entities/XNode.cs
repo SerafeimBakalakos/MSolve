@@ -9,7 +9,7 @@ namespace MGroup.XFEM.Entities
 {
     public class XNode : INode
     {
-        public XNode(int id, double[] coordinates)
+        public XNode(int id, params double[] coordinates)
         {
             this.ID = id;
             this.Coordinates = coordinates;

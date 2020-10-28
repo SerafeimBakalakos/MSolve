@@ -30,7 +30,7 @@ namespace MGroup.XFEM.Plotting.Writers
         public void PlotStepEnrichedNodes(string path)
         {
             PlotEnrichedNodesCategory(
-                enr => (enr is StepEnrichment), path, "step_enriched_nodes");
+                enr => (enr is PhaseStepEnrichment), path, "step_enriched_nodes");
         }
 
         private void PlotEnrichedNodesCategory(Func<IEnrichment, bool> predicate, string path, string categoryName)

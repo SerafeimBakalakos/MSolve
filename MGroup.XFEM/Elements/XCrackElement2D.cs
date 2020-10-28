@@ -269,7 +269,7 @@ namespace MGroup.XFEM.Elements
         {
             var uniqueEnrichments = new Dictionary<IEnrichment, EvaluatedFunction>();
 
-            var deformationMatrix = Matrix.CreateZero(2, numEnrichedDofs);
+            var deformationMatrix = Matrix.CreateZero(3, numEnrichedDofs);
             int currentColumn = 0;
             for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
             {
@@ -387,9 +387,8 @@ namespace MGroup.XFEM.Elements
             for (int n = 0; n < Nodes.Count; ++n)
             {
                 // Std dofs
-                stdDofIndices[2 * n] = totalDofCounter;
-                stdDofIndices[2 * n + 1] = totalDofCounter;
-                totalDofCounter += 2;
+                stdDofIndices[2 * n] = totalDofCounter++;
+                stdDofIndices[2 * n + 1] = totalDofCounter++;
 
                 // Enr dofs
                 for (int e = 0; e < Nodes[n].Enrichments.Count; ++e)

@@ -110,14 +110,14 @@ namespace MGroup.XFEM.Enrichment
         private int DefineStepEnrichments(int idStart)
         {
             // Keep track of identified interactions between phases, to avoid duplicate enrichments
-            var uniqueEnrichments = new Dictionary<int, Dictionary<int, StepEnrichment>>();
+            var uniqueEnrichments = new Dictionary<int, Dictionary<int, PhaseStepEnrichment>>();
 
             //TODO: This would be faster, but only works for consecutive phase IDs starting from 0.
             //var uniqueEnrichments = new Dictionary<int, StepEnrichment>[geometricModel.Phases.Count];
 
             for (int p = 1; p < geometricModel.Phases.Count; ++p)
             {
-                uniqueEnrichments[geometricModel.Phases[p].ID] = new Dictionary<int, StepEnrichment>();
+                uniqueEnrichments[geometricModel.Phases[p].ID] = new Dictionary<int, PhaseStepEnrichment>();
             }
 
             int id = idStart;
@@ -144,7 +144,7 @@ namespace MGroup.XFEM.Enrichment
 
                     // Find the existing enrichment for this phase interaction or create a new one
                     bool enrichmentsExists = 
-                        uniqueEnrichments[maxPhase.ID].TryGetValue(minPhase.ID, out StepEnrichment enrichment);
+                        uniqueEnrichments[maxPhase.ID].TryGetValue(minPhase.ID, out PhaseStepEnrichment enrichment);
                     if (!enrichmentsExists)
                     {
                         enrichment = DefineStepEnrichment(id, boundary);
@@ -158,27 +158,27 @@ namespace MGroup.XFEM.Enrichment
             return id - idStart;
         }
 
-        private StepEnrichment DefineStepEnrichment(int id, PhaseBoundary boundary)
+        private PhaseStepEnrichment DefineStepEnrichment(int id, PhaseBoundary boundary)
         {
             if (boundary.NegativePhase is DefaultPhase)
             {
-                return new StepEnrichment(id, boundary.PositivePhase, boundary.NegativePhase);
+                return new PhaseStepEnrichment(id, boundary.PositivePhase, boundary.NegativePhase);
             }
             else if (boundary.PositivePhase is DefaultPhase)
             {
-                return new StepEnrichment(id, boundary.NegativePhase, boundary.PositivePhase);
+                return new PhaseStepEnrichment(id, boundary.NegativePhase, boundary.PositivePhase);
             }
             else if (/*boundary.PositivePhase is HollowPhase &&*/ boundary.NegativePhase is ConvexPhase)
             {
-                return new StepEnrichment(id, boundary.NegativePhase, boundary.PositivePhase);
+                return new PhaseStepEnrichment(id, boundary.NegativePhase, boundary.PositivePhase);
             }
             else if (/*boundary.NegativePhase is HollowPhase &&*/ boundary.PositivePhase is ConvexPhase)
             {
-                return new StepEnrichment(id, boundary.PositivePhase, boundary.NegativePhase);
+                return new PhaseStepEnrichment(id, boundary.PositivePhase, boundary.NegativePhase);
             }
             else // Does not matter which phase will be internal/external
             {
-                return new StepEnrichment(id, boundary.NegativePhase, boundary.PositivePhase);
+                return new PhaseStepEnrichment(id, boundary.NegativePhase, boundary.PositivePhase);
             }
         }
 

@@ -9,12 +9,12 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Enrichment
 {
-    public class StepEnrichment : IEnrichment
+    public class PhaseStepEnrichment : IEnrichment
     {
         private readonly IPhase internalPhase, externalPhase;
         private readonly IPhase minPhase, maxPhase;
 
-        public StepEnrichment(int id, IPhase internalPhase, IPhase externalPhase)
+        public PhaseStepEnrichment(int id, IPhase internalPhase, IPhase externalPhase)
         {
             this.ID = id;
             this.internalPhase = internalPhase;
