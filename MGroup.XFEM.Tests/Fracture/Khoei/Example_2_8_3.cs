@@ -4,6 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
@@ -30,14 +31,65 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             (XNode[] nodes, XCrackElement2D[] elements) = CreateElements();
             Dictionary<IEnrichment, IDofType[]> enrichedDofs = EnrichNodes(nodes);
             
-            elements[1].IdentifyDofs(enrichedDofs);
-            elements[1].IdentifyIntegrationPointsAndMaterials();
-            IMatrix computedK = elements[1].StiffnessMatrix(null);
+            for (int e = 0; e < elements.Length; ++e)
+            {
+                elements[e].IdentifyDofs(enrichedDofs);
+                elements[e].IdentifyIntegrationPointsAndMaterials();
+                IMatrix computedK = elements[e].StiffnessMatrix(null);
 
+                double tol = 1E-13;
+                Matrix expectedK = GetExpectedStiffness(e);
+                IMatrix computedRoundedK = computedK.DoToAllEntries(round);
+                Assert.True(expectedK.Equals(computedRoundedK, tol));
+            }
+        }
+
+        //[Fact] //TODO: Figure why this does not seem to work correctly.
+        public static void TestSolution()
+        {
+            (XNode[] nodes, XCrackElement2D[] elements) = CreateElements();
+            Dictionary<IEnrichment, IDofType[]> enrichedDofs = EnrichNodes(nodes);
+
+            // FEM assembly
+            var elementToGlobalMaps = new List<int[]>();
+            elementToGlobalMaps.Add(new int[] { /*n0*/0, 1, /*n1*/2, 3, 4, 5, /*n2*/6, 7, 8, 9, /*n3*/10, 11});
+            elementToGlobalMaps.Add(new int[] { /*n1*/2, 3, 4, 5, /*n4*/12, 13, 14, 15, /*n7*/20, 21, 22, 23, /*n2*/6, 7, 8, 9 });
+            elementToGlobalMaps.Add(new int[] { /*n4*/12, 13, 14, 15, /*n5*/16, 17, /*n5*/18, 19, /*n7*/20, 21, 22, 23 });
+
+            var globalK = Matrix.CreateZero(24, 24);
+            for (int e = 0; e < elements.Length; ++e)
+            {
+                elements[e].IdentifyDofs(enrichedDofs);
+                elements[e].IdentifyIntegrationPointsAndMaterials();
+                IMatrix elementK = elements[e].StiffnessMatrix(null);
+                AddSubmatrix(globalK, elementK, elementToGlobalMaps[e]);
+            }
+
+
+            // Solution
+            int[] freeDofs =
+            { 
+                /*n1*/2, 3, 4, 5, /*n2*/6, 7, 8, 9, /*n4*/12, 13, 14, 15, /*n5*/17, /*n6*/19, /*n7*/20, 21, 22, 23
+            };
+            int[] constrainedDofs =
+            {
+                /*n0*/0, 1, /*n3*/10, 11, /*n5*/16, /*n6*/18
+            };
+            Matrix Kff = globalK.GetSubmatrix(freeDofs, freeDofs);
+            Matrix Kfc = globalK.GetSubmatrix(freeDofs, constrainedDofs);
+
+            Vector U = GetExpectedSolution();
+            Vector Uf = U.GetSubvector(freeDofs);
+            Vector Uc = U.GetSubvector(constrainedDofs);
+
+            // The system is singular or very degenerate and cannot be solved with reasonable accuracy. 
+            // Instead we check that the solution satisfies it.
+            Vector Ff = Kff * Uf + Kfc * Uc;
+            
+            // Compare
             double tol = 1E-13;
-            Matrix expectedK = GetExpectedStiffness(1);
-            IMatrix computedRoundedK = computedK.DoToAllEntries(round);
-            Assert.True(expectedK.Equals(computedRoundedK, tol));
+            var expectedFf = Vector.CreateFromArray(new double[freeDofs.Length]);
+            Assert.True(expectedFf.Equals(Ff, tol));
         }
 
 
@@ -94,8 +146,21 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         {
             if (elementID == 0)
             {
-                throw new NotImplementedException();
-                
+                return 1E6 * Matrix.CreateFromArray(new double[,]
+                {
+                    {  1.154,  0.481, -0.769,  0.096, 0.000, 0.000, -0.577, -0.481, 0.000, 0.000,  0.192, -0.096 },
+                    {  0.481,  1.154, -0.096,  0.192, 0.000, 0.000, -0.481, -0.577, 0.000, 0.000,  0.096, -0.769 },
+                    { -0.769, -0.096,  1.154, -0.481, 0.000, 0.000,  0.192,  0.096, 0.000, 0.000, -0.577,  0.481 },
+                    {  0.096,  0.192, -0.481,  1.154, 0.000, 0.000, -0.096, -0.769, 0.000, 0.000,  0.481, -0.577 },
+                    {  0.000,  0.000,  0.000,  0.000, 0.000, 0.000,  0.000,  0.000, 0.000, 0.000,  0.000,  0.000 },
+                    {  0.000,  0.000,  0.000,  0.000, 0.000, 0.000,  0.000,  0.000, 0.000, 0.000,  0.000,  0.000 },
+                    { -0.577, -0.481,  0.192, -0.096, 0.000, 0.000,  1.154,  0.481, 0.000, 0.000, -0.769,  0.096 },
+                    { -0.481, -0.577,  0.096, -0.769, 0.000, 0.000,  0.481,  1.154, 0.000, 0.000, -0.096,  0.192 },
+                    {  0.000,  0.000,  0.000,  0.000, 0.000, 0.000,  0.000,  0.000, 0.000, 0.000,  0.000,  0.000 },
+                    {  0.000,  0.000,  0.000,  0.000, 0.000, 0.000,  0.000,  0.000, 0.000, 0.000,  0.000,  0.000 },
+                    {  0.192,  0.096, -0.577,  0.481, 0.000, 0.000, -0.769, -0.096, 0.000, 0.000,  1.154, -0.481 },
+                    { -0.096, -0.769,  0.481, -0.577, 0.000, 0.000,  0.096,  0.192, 0.000, 0.000, -0.481,  1.154 }
+                });
             }
             else if (elementID == 1)
             {
@@ -121,10 +186,44 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             }
             else if (elementID == 2)
             {
-                throw new NotImplementedException();
+                return 1E6 * Matrix.CreateFromArray(new double[,]
+                {
+                    {  1.154,  0.481, 0.000, 0.000, -0.769,  0.096, -0.577, -0.481,  0.192, -0.096, 0.000, 0.000 },
+                    {  0.481,  1.154, 0.000, 0.000, -0.096,  0.192, -0.481, -0.577,  0.096, -0.769, 0.000, 0.000 },
+                    {  0.000,  0.000, 0.000, 0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000, 0.000, 0.000 },
+                    {  0.000,  0.000, 0.000, 0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000, 0.000, 0.000 },
+                    { -0.769, -0.096, 0.000, 0.000,  1.154, -0.481,  0.192,  0.096, -0.577,  0.481, 0.000, 0.000 },
+                    {  0.096,  0.192, 0.000, 0.000, -0.481,  1.154, -0.096, -0.769,  0.481, -0.577, 0.000, 0.000 },
+                    { -0.577, -0.481, 0.000, 0.000,  0.192, -0.096,  1.154,  0.481, -0.769,  0.096, 0.000, 0.000 },
+                    { -0.481, -0.577, 0.000, 0.000,  0.096, -0.769,  0.481,  1.154, -0.096,  0.192, 0.000, 0.000 },
+                    {  0.192,  0.096, 0.000, 0.000, -0.577,  0.481, -0.769, -0.096,  1.154, -0.481, 0.000, 0.000 },
+                    { -0.096, -0.769, 0.000, 0.000,  0.481, -0.577,  0.096,  0.192, -0.481,  1.154, 0.000, 0.000 },
+                    {  0.000,  0.000, 0.000, 0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000, 0.000, 0.000 },
+                    {  0.000,  0.000, 0.000, 0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000, 0.000, 0.000 }
+                });
             }
             else throw new ArgumentException();
             
+        }
+
+        private static Vector GetExpectedSolution()
+        {
+            return Vector.CreateFromArray(new double[]
+            {
+                /*n0*/0, 0, /*n1*/0, 0, 0.5, 0, /*n2*/0, 0, 0.5, 0, /*n3*/ 0, 0,
+                /*n4*/1, 0, 0.5, 0, /*n5*/1, 0, /*n6*/1, 0, /*n7*/1, 0, 0.5, 0
+            });
+        }
+
+        private static void AddSubmatrix(Matrix globalMatrix, IMatrix submatrix, int[] subToGlobalMatrix)
+        {
+            for (int j = 0; j < submatrix.NumColumns; ++j)
+            {
+                for (int i = 0; i < submatrix.NumRows; ++i)
+                {
+                    globalMatrix[subToGlobalMatrix[i], subToGlobalMatrix[j]] = submatrix[i, j];
+                }
+            }
         }
     }
 }
