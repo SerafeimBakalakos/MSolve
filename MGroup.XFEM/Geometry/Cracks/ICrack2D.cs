@@ -9,6 +9,8 @@ namespace MGroup.XFEM.Geometry.Cracks
 {
     public interface ICrack2D
     {
+        TipCoordinateSystem TipSystem { get; }
+
         double SignedDistanceFromBody(XNode node);
 
         double SignedDistanceFromBody(XPoint point);

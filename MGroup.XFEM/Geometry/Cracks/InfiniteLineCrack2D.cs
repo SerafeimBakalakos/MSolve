@@ -15,6 +15,8 @@ namespace MGroup.XFEM.Geometry.Cracks
             this.line = new Line2D(point0, point1);
         }
 
+        public TipCoordinateSystem TipSystem => null;
+
         public double SignedDistanceFromBody(XNode node)
         {
             return line.SignedDistanceOf(node.Coordinates);
