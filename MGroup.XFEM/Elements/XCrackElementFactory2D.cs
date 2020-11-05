@@ -19,7 +19,7 @@ namespace MGroup.XFEM.Elements
 
         //private readonly int integrationBoundaryOrder;
         private readonly IBulkIntegration integrationbulk;
-        private readonly IStructuralMaterialField material;
+        private readonly IFractureMaterialField material;
         private readonly double thickness;
 
         static XCrackElementFactory2D()
@@ -79,7 +79,7 @@ namespace MGroup.XFEM.Elements
 
         }
 
-        public XCrackElementFactory2D(IStructuralMaterialField commonMaterial, double thickness,
+        public XCrackElementFactory2D(IFractureMaterialField commonMaterial, double thickness,
             IBulkIntegration bulkIntegration/*, int integrationBoundaryOrder*/)
         {
             this.material = commonMaterial;

@@ -6,6 +6,7 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
@@ -43,7 +44,7 @@ namespace MGroup.XFEM.Elements
         private int numEnrichedDofs;
 
         public XCrackElement2D(int id, IReadOnlyList<XNode> nodes, double thickness, IElementGeometry elementGeometry,
-            IStructuralMaterialField materialField, IIsoparametricInterpolation interpolation, 
+            IFractureMaterialField materialField, IIsoparametricInterpolation interpolation, 
             IGaussPointExtrapolation gaussPointExtrapolation, IQuadrature standardQuadrature, 
             IBulkIntegration bulkIntegration)
         {
@@ -93,7 +94,7 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         public IIsoparametricInterpolation Interpolation { get; }
 
-        public IStructuralMaterialField MaterialField { get; }
+        public IFractureMaterialField MaterialField { get; }
 
         IReadOnlyList<INode> IElement.Nodes => Nodes;
         /// <summary>
@@ -115,9 +116,79 @@ namespace MGroup.XFEM.Elements
 
         public double Thickness { get; }
 
+        /// <summary>
+        /// Area of the element in the global cartesian coordinate system
+        /// </summary>
         public double CalcBulkSizeCartesian() => elementGeometry.CalcBulkSizeCartesian(Nodes);
 
         public double CalcBulkSizeNatural() => elementGeometry.CalcBulkSizeNatural();
+
+        /// <summary>
+        /// The displacement field derivatives are a 2x2 matrix: gradientU[i,j] = dui/dj where i is the vector component 
+        /// and j is the coordinate, w.r.t which the differentiation is done. The differentation coordinates and the
+        /// vector components refer to the global cartesian system. 
+        /// WARNING: Do not call this method for points on a crack interface.
+        /// </summary>
+        public Matrix CalcDisplacementFieldGradient(XPoint point, EvalInterpolation evalInterpolation,
+            Vector nodalDisplacements)
+        {
+            //TODO: There is a lot of duplication between this and the calculation of Bstd, Benr. I could abstract the common 
+            //      code, however that will probably slow down then calculation of Bstd, Benr which is much more important.
+
+            (int[] stdDofIndices, int[] enrDofIndices) = MapDofsFromStdEnrToNodeMajor();
+            Vector uStd = nodalDisplacements.GetSubvector(stdDofIndices);
+            Vector uenr = nodalDisplacements.GetSubvector(enrDofIndices);
+            var displacementGradient = Matrix.CreateZero(2, 2);
+
+            // Standard contributions
+            for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
+            {
+                double ux = uStd[2 * nodeIdx];
+                double uy = uStd[2 * nodeIdx + 1];
+
+                double dNdx = evalInterpolation.ShapeGradientsCartesian[nodeIdx, 0];
+                double dNdy = evalInterpolation.ShapeGradientsCartesian[nodeIdx, 1];
+                displacementGradient[0, 0] += dNdx * ux;
+                displacementGradient[0, 1] += dNdy * ux;
+                displacementGradient[1, 0] += dNdx * uy;
+                displacementGradient[1, 1] += dNdy * uy;
+            }
+
+            // Enriched contributions.
+            IReadOnlyDictionary<IEnrichment, EvaluatedFunction> evalEnrichments =
+                EvaluateEnrichments(point, evalInterpolation);
+            int dof = 0;
+            for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
+            {
+                double N = evalInterpolation.ShapeFunctions[nodeIdx];
+                double dNdx = evalInterpolation.ShapeGradientsCartesian[nodeIdx, 0];
+                double dNdy = evalInterpolation.ShapeGradientsCartesian[nodeIdx, 1];
+
+                foreach (var enrichmentValuePair in Nodes[nodeIdx].Enrichments)
+                {
+                    IEnrichment enrichment = enrichmentValuePair.Key;
+                    double nodalPsi = enrichmentValuePair.Value;
+                    EvaluatedFunction evalEnrichment = evalEnrichments[enrichment];
+
+                    double psi = evalEnrichment.Value;
+                    double[] gradPsi = evalEnrichment.CartesianDerivatives;
+                    double deltaPsi = psi - nodalPsi;
+
+                    double Bx = dNdx * deltaPsi + N * gradPsi[0];
+                    double By = dNdy * deltaPsi + N * gradPsi[1];
+
+                    double enrDisplacementX = uenr[dof++];
+                    double enrDisplacementY = uenr[dof++];
+
+                    displacementGradient[0, 0] += Bx * enrDisplacementX;
+                    displacementGradient[0, 1] += By * enrDisplacementX;
+                    displacementGradient[1, 0] += Bx * enrDisplacementY;
+                    displacementGradient[1, 1] += By * enrDisplacementY;
+                }
+            }
+
+            return displacementGradient;
+        }
 
         public IMatrix DampingMatrix(IElement element) => throw new NotImplementedException();
 
@@ -267,7 +338,7 @@ namespace MGroup.XFEM.Elements
         private Matrix CalculateDeformationMatrixEnriched(int numEnrichedDofs, XPoint gaussPoint, 
             EvalInterpolation evalInterpolation)
         {
-            var uniqueEnrichments = new Dictionary<IEnrichment, EvaluatedFunction>();
+            Dictionary<IEnrichment, EvaluatedFunction> enrichmentValues = EvaluateEnrichments(gaussPoint, evalInterpolation);
 
             var deformationMatrix = Matrix.CreateZero(3, numEnrichedDofs);
             int currentColumn = 0;
@@ -281,14 +352,7 @@ namespace MGroup.XFEM.Elements
                 {
                     IEnrichment enrichment = enrichmentValuePair.Key;
                     double nodalPsi = enrichmentValuePair.Value;
-
-                    // The enrichment function probably has been evaluated when processing a previous node. Avoid reevaluation.
-                    bool exists = uniqueEnrichments.TryGetValue(enrichment, out EvaluatedFunction evalEnrichment);
-                    if (!(exists))
-                    {
-                        evalEnrichment = enrichment.EvaluateAllAt(gaussPoint);
-                        uniqueEnrichments[enrichment] = evalEnrichment;
-                    }
+                    EvaluatedFunction evalEnrichment = enrichmentValues[enrichment];
                     
                     // Bx = enrN,x = N,x(x, y) * [psi(x, y) - psi(node)] + N(x,y) * psi,x(x,y)
                     // By = enrN,y = N,y(x, y) * [psi(x, y) - psi(node)] + N(x,y) * psi,y(x,y)
@@ -335,6 +399,25 @@ namespace MGroup.XFEM.Elements
                 deformation[2, col1] = dNdx;
             }
             return deformation;
+        }
+
+        private Dictionary<IEnrichment, EvaluatedFunction> EvaluateEnrichments(
+            XPoint gaussPoint, EvalInterpolation evalInterpolation)
+        {
+            var cachedEvalEnrichments = new Dictionary<IEnrichment, EvaluatedFunction>();
+            foreach (XNode node in Nodes)
+            {
+                foreach (IEnrichment enrichment in node.Enrichments.Keys)
+                {
+                    // The enrichment function probably has been evaluated when processing a previous node. Avoid reevaluation.
+                    if (!(cachedEvalEnrichments.TryGetValue(enrichment, out EvaluatedFunction evaluatedEnrichments)))
+                    {
+                        evaluatedEnrichments = enrichment.EvaluateAllAt(gaussPoint);
+                        cachedEvalEnrichments[enrichment] = evaluatedEnrichments;
+                    }
+                }
+            }
+            return cachedEvalEnrichments;
         }
 
         /// <summary>

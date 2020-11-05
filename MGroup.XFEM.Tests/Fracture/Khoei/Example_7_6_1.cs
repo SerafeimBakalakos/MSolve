@@ -12,10 +12,10 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
+using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
-using MGroup.XFEM.Geometry.Cracks;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Integration.Quadratures;
@@ -216,7 +216,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             foreach (XNode node in nodes) model.Nodes.Add(node);
 
             // Elements
-            var material = new HomogeneousMaterialField2D(E, v, false);
+            var material = new HomogeneousFractureMaterialField2D(E, v, thickness, false);
             var integration = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
             var connectivity = new int[3, 4]
             {

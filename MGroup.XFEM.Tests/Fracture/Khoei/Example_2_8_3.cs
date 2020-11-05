@@ -5,10 +5,10 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
+using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
-using MGroup.XFEM.Geometry.Cracks;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Materials;
@@ -126,7 +126,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 new XNode(7, 40.0, 20.0)
             };
 
-            var material = new HomogeneousMaterialField2D(E, v, planeStress);
+            var material = new HomogeneousFractureMaterialField2D(E, v, thickness, planeStress);
             var integrationStrategy = new IntegrationWithNonconformingQuads2D(2, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
             var factory = new XCrackElementFactory2D(material, thickness, integrationStrategy);
             var elements = new XCrackElement2D[3];
