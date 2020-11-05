@@ -4,7 +4,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Entities;
 
-namespace MGroup.XFEM.Geometry.Cracks
+namespace MGroup.XFEM.Cracks.Geometry
 {
     //TODO: decide what data structures (arrays, tuples, matrix & vector classes I will use as arguments, return types 
     // and for operations. Implement convenience methods for those operations on these data types.

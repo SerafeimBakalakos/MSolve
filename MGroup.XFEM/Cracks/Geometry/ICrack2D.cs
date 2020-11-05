@@ -5,7 +5,7 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Geometry.Cracks
+namespace MGroup.XFEM.Cracks.Geometry
 {
     public interface ICrack2D
     {

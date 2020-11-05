@@ -4,7 +4,7 @@ using System.Text;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Geometry.Cracks
+namespace MGroup.XFEM.Cracks.Geometry
 {
     public class InfiniteLineCrack2D : ICrack2D
     {

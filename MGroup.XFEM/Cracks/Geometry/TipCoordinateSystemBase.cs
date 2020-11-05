@@ -6,7 +6,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Geometry.Cracks
+namespace MGroup.XFEM.Cracks.Geometry
 {
     public abstract class TipCoordinateSystemBase
     {

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
+using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Entities;
-using MGroup.XFEM.Geometry.Cracks;
 using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Enrichment

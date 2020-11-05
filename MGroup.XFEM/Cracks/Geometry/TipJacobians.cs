@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
-namespace MGroup.XFEM.Geometry.Cracks
+namespace MGroup.XFEM.Cracks.Geometry
 {
     public class TipJacobians
     {
