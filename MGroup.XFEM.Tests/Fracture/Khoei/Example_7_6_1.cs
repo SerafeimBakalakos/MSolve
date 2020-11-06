@@ -12,6 +12,8 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
 using MGroup.XFEM.Cracks.Geometry;
+using MGroup.XFEM.Cracks.Jintegral;
+using MGroup.XFEM.Cracks.PropagationCriteria;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
@@ -99,17 +101,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
 
             // Find displacements at specified dofs
-            IXFiniteElement mouthElement = null;
-            foreach (IXFiniteElement element in model.Elements)
-            {
-                if (crack.IsMouthElement(element.Nodes))
-                {
-                    mouthElement = element;
-                    break;
-                }
-            }
-            Debug.Assert(mouthElement != null);
-
+            IXFiniteElement mouthElement = crack.FindMouthElement(model);
             double[] elementDisplacements = model.Subdomains[subdomainID].CalculateElementDisplacements(mouthElement, globalU);
             Vector computedDisplacements = Vector.CreateFromArray(elementDisplacements).GetSubvector(expectedDisplacementDofs);
 
@@ -243,16 +235,59 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             Assert.True(node7GlobalStiffnessExpected.Equals(node7GlobalStiffness.DoToAllEntries(round), tol));
         }
 
-        //[Theory]
-        //[InlineData(15, 1.0, 2.981, 2559.729)]
-        //[InlineData(15, 2.0, 2.286, 2559.729)]
-        //[InlineData(15, 3.0, 2.119, 2559.729)]
-        //[InlineData(15, 4.0, 2.117, 2559.729)]
-        //[InlineData(15, 5.0, 2.115, 2559.729)]
-        //public static void TestJintegral(int numElementsY, double rOverL, double expectedJintegral, double expectedSifMode1)
-        //{
+        [Theory]
+        [InlineData(15, 1.0, 2.981, 2559.729)]
+        [InlineData(15, 2.0, 2.286, 2241.703)]
+        [InlineData(15, 3.0, 2.119, 2158.025)]
+        [InlineData(15, 4.0, 2.117, 2157.079)]
+        [InlineData(15, 5.0, 2.115, 2156.142)]
 
-        //}
+        [InlineData(25, 1.0, 2.921, 2533.527)]
+        [InlineData(25, 2.0, 2.285, 2240.865)]
+        [InlineData(25, 3.0, 2.114, 2155.333)]
+        [InlineData(25, 4.0, 2.113, 2154.904)]
+        [InlineData(25, 5.0, 2.112, 2154.240)]
+
+        [InlineData(45, 1.0, 2.869, 2510.949)]
+        [InlineData(45, 2.0, 2.274, 2235.567)]
+        [InlineData(45, 3.0, 2.101, 2148.986)]
+        [InlineData(45, 4.0, 2.101, 2148.936)]
+        [InlineData(45, 5.0, 2.100, 2148.523)]
+
+        public static void TestJintegral(int numElementsY, double jIntegralRadiusRatio, 
+            double expectedJintegral, double expectedSifMode1)
+        {
+            // Create and analyze model
+            int[] numElements = { 3 * numElementsY, numElementsY };
+            XModel<XCrackElement2D> model = CreateModel(numElements);
+            var crack = new Crack();
+            IEnrichment[] enrichments = InitializeCrack(model, crack);
+            EnrichNodes(model, crack, enrichments);
+            (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
+
+            // Calculate J-integral and SIFs
+            var freeDisplacementsPerSubdomain = new Dictionary<int, Vector>();
+            freeDisplacementsPerSubdomain[model.Subdomains.First().Key] = (Vector)globalU;
+
+            var material = new HomogeneousFractureMaterialField2D(E, v, thickness, false);
+            var jIntegrationRule = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)); //TODO: this needs further work: intersected elements need a different integration
+            XCrackElement2D[] tipElements = { crack.FindTipElement(model) };
+            double elementSize = Math.Max(maxCoords[0] / numElements[0], maxCoords[1] / numElements[1]);
+
+            var propagator = new JintegralPropagator2D(jIntegralRadiusRatio, jIntegrationRule, material, 
+                new MaximumCircumferentialTensileStressCriterion(), 
+                new ConstantIncrement2D(1.5 * jIntegralRadiusRatio * elementSize));
+            (double growthAngle, double growthLength) = propagator.Propagate(freeDisplacementsPerSubdomain,
+                crack.TipGlobalCoords, crack.TipSystem, tipElements);
+
+            double sifMode1 = propagator.Logger.SIFsMode1[0];
+            double sifMode2 = propagator.Logger.SIFsMode2[0];
+            double jIntegral = (Math.Pow(sifMode1, 2) + Math.Pow(sifMode2, 2)) / material.EquivalentYoungModulus;
+
+            // Check. Note that my implementation seems to converge more quickly than the reference solution. 
+            Assert.InRange(Math.Round(jIntegral, 3), 2.100, expectedJintegral);
+            Assert.InRange(Math.Round(sifMode1, 3), 2148.523, expectedSifMode1);
+        }
 
         private static void ApplyBoundaryConditions(XModel<XCrackElement2D> model)
         {
@@ -338,13 +373,12 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         private static IEnrichment[] InitializeCrack(XModel<XCrackElement2D> model, Crack crack)
         {
             // Define enrichments
-            var tipSystem = new TipCoordinateSystem(new double[] { 0.5 * maxCoords[0], 0.5 * maxCoords[1] }, Math.PI);
             var enrichments = new IEnrichment[5];
             enrichments[0] = new CrackStepEnrichment(0, crack);
-            enrichments[1] = new IsotropicBrittleTipEnrichments2D.Func0(1, tipSystem);
-            enrichments[2] = new IsotropicBrittleTipEnrichments2D.Func1(2, tipSystem);
-            enrichments[3] = new IsotropicBrittleTipEnrichments2D.Func2(3, tipSystem);
-            enrichments[4] = new IsotropicBrittleTipEnrichments2D.Func3(4, tipSystem);
+            enrichments[1] = new IsotropicBrittleTipEnrichments2D.Func0(1, crack.TipSystem);
+            enrichments[2] = new IsotropicBrittleTipEnrichments2D.Func1(2, crack.TipSystem);
+            enrichments[3] = new IsotropicBrittleTipEnrichments2D.Func2(3, crack.TipSystem);
+            enrichments[4] = new IsotropicBrittleTipEnrichments2D.Func3(4, crack.TipSystem);
 
             // Define enriched dofs
             model.EnrichedDofs = new Dictionary<IEnrichment, IDofType[]>();
@@ -385,20 +419,16 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
         private static void EnrichNodes(XModel<XCrackElement2D> model, Crack crack, IEnrichment[] enrichments)
         {
+            // Find heaviside and tip enriched nodes
             var heavisideNodes = new HashSet<XNode>();
             var tipNodes = new HashSet<XNode>();
-            foreach (var element in model.Elements)
+            foreach (XCrackElement2D element in crack.FindIntersectedElements(model))
             {
-                if (crack.IsIntersectedElement(element.Nodes))
-                {
-                    heavisideNodes.UnionWith(element.Nodes);
-                }
-                else if (crack.IsTipElement(element.Nodes))
-                {
-                    tipNodes.UnionWith(element.Nodes);
-                }
-                heavisideNodes.ExceptWith(tipNodes);
+                heavisideNodes.UnionWith(element.Nodes);
             }
+            XCrackElement2D tipElement = crack.FindTipElement(model);
+            tipNodes.UnionWith(tipElement.Nodes);
+            heavisideNodes.ExceptWith(tipNodes);
 
             // Heaviside enrichment
             foreach (XNode node in heavisideNodes)
@@ -452,9 +482,13 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             {
                 this.mouth = new double[] { maxCoords[0], 0.5 * maxCoords[1] };
                 this.tip = new double[] { 0.5 * maxCoords[0], 0.5 * maxCoords[1] };
+
+                TipSystem = new TipCoordinateSystem(new double[] { 0.5 * maxCoords[0], 0.5 * maxCoords[1] }, Math.PI);
             }
 
-            public TipCoordinateSystem TipSystem => throw new NotImplementedException();
+            public TipCoordinateSystem TipSystem { get; }
+
+            public double[] TipGlobalCoords => tip;
 
             public double SignedDistanceFromBody(XNode node)
             {
@@ -467,7 +501,35 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 return cartesian[1] - tip[1];
             }
 
-            public bool IsIntersectedElement(IReadOnlyList<XNode> nodes)
+            public List<XCrackElement2D> FindIntersectedElements(XModel<XCrackElement2D> model)
+            {
+                var intersectedElements = new List<XCrackElement2D>();
+                foreach (XCrackElement2D element in model.Elements)
+                {
+                    if (IsIntersectedElement(element.Nodes)) intersectedElements.Add(element);
+                }
+                return intersectedElements;
+            }
+
+            public XCrackElement2D FindMouthElement(XModel<XCrackElement2D> model)
+            {
+                foreach (XCrackElement2D element in model.Elements)
+                {
+                    if (IsMouthElement(element.Nodes)) return element;
+                }
+                throw new Exception("This code should not have been reached");
+            }
+
+            public XCrackElement2D FindTipElement(XModel<XCrackElement2D> model)
+            {
+                foreach (XCrackElement2D element in model.Elements)
+                {
+                    if (IsTipElement(element.Nodes)) return element;
+                }
+                throw new Exception("This code should not have been reached");
+            }
+
+            private bool IsIntersectedElement(IReadOnlyList<XNode> nodes)
             {
                 int numNodesPos = 0;
                 int numNodesNeg = 0;
@@ -492,7 +554,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 }
             }
 
-            public bool IsMouthElement(IReadOnlyList<XNode> nodes)
+            private bool IsMouthElement(IReadOnlyList<XNode> nodes)
             {
                 double tol = 1E-6;
                 bool result = (nodes[0].Coordinates[0] < mouth[0]) && (nodes[0].Coordinates[1] < mouth[1]);
@@ -502,7 +564,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 return result;
             }
 
-            public bool IsTipElement(IReadOnlyList<XNode> nodes)
+            private bool IsTipElement(IReadOnlyList<XNode> nodes)
             {
                 bool result = (nodes[0].Coordinates[0] < tip[0]) && (nodes[0].Coordinates[1] < tip[1]);
                 result &= (nodes[1].Coordinates[0] > tip[0]) && (nodes[1].Coordinates[1] < tip[1]);
