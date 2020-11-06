@@ -145,5 +145,13 @@ namespace MGroup.XFEM.Elements
         }
 
         public double[] FindCentroidCartesian() => Utilities.FindCentroidCartesian(dimension, Nodes);
+
+        public class Factory : IElementFactory<MockElement>
+        {
+           public MockElement CreateElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
+            {
+                return new MockElement(id, cellType, nodes);
+            }
+        }
     }
 }

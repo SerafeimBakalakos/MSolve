@@ -29,28 +29,7 @@ namespace MGroup.XFEM.Tests.Geometry
             double[] maxCoords = { 10, 10 };
             int[] numElements = { 10, 10 };
             var mesh = new UniformMesh2D(minCoords, maxCoords, numElements);
-
-            // Nodes
-            for (int nodeID = 0; nodeID < mesh.NumNodesTotal; ++nodeID)
-            {
-                int[] nodeIdx = mesh.GetNodeIdx(nodeID);
-                double[] coords = mesh.GetNodeCoordinates(nodeIdx);
-                model.Nodes.Add(new XNode(nodeID, coords));
-            }
-
-            // Elements
-            for (int elemID = 0; elemID < mesh.NumElementsTotal; ++elemID)
-            {
-                var nodes = new List<XNode>();
-                int[] elemIdx = mesh.GetElementIdx(elemID);
-                foreach (int n in mesh.GetElementConnectivity(elemIdx))
-                {
-                    nodes.Add(model.Nodes[n]);
-                }
-                var element = new MockElement(elemID, CellType.Quad4, nodes);
-                model.Elements.Add(element);
-                model.Subdomains[subdomainID].Elements.Add(element);
-            }
+            Utilities.Models.AddNodesElements(model, mesh, new MockElement.Factory());
 
             model.ConnectDataStructures();
 

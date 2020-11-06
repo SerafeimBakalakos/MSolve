@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Discretization.Mesh.Generation;
-using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
@@ -16,6 +15,7 @@ using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry.Mesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Integration.Quadratures;
@@ -26,7 +26,8 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 {
     public static class Example_7_6_1
     {
-        private static readonly double[] dimensions = new double[] { 60, 20 };
+        private static readonly double[] minCoords = new double[] { 0, 0 };
+        private static readonly double[] maxCoords = new double[] { 60, 20 };
         private const double thickness = 1.0;
         private const double E = 2E6, v = 0.3;
         private const int subdomainID = 0;
@@ -56,7 +57,9 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             // Create and analyze model, in order to get the solution vector
             XModel<XCrackElement2D> model = CreateModel3x1();
             var crack = new Crack();
-            InitializeCrack(model, crack);
+            IEnrichment[] enrichments = InitializeCrack(model, crack);
+            EnrichNodes3x1(model, enrichments);
+            //EnrichNodes(model, crack, enrichments);
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
 
             var computedStdDisplacements = Vector.CreateFromArray(new double[]
@@ -73,6 +76,47 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             Func<double, double> round = x => 1E-3 * Math.Round(x * 1E3, 2);
             Assert.True(expectedStdDisplacements.Equals(computedStdDisplacements.DoToAllEntries(round), tol));
             Assert.True(expectedEnrDisplacements.Equals(computedEnrDisplacements.DoToAllEntries(round), tol));
+        }
+
+        [Fact]
+        public static void TestSolution135x45()
+        {
+            // Expected displacements of the element containing the crack mouth
+            // Dofs: ux0 uy0 hx0 hy0 ux1 uy1 hx1 hy1 ux2 uy2 hx2 hy2 ux3 uy3 hx3 hy3
+            var expectedDisplacements = 1E-3 * Vector.CreateFromArray(new double[]
+            {
+                //ux1 uy1     ux2   uy2    hx1   hy1    hx2    hy2 
+                9.12, -48.17, 9.12, 48.17, 0.43, 48.17, -0.43, 48.17
+            });
+            int[] expectedDisplacementDofs = { 4, 5, 8, 9, 6, 7, 10, 11 };
+
+            // Create and analyze model, in order to get the solution vector
+            int[] numElements = { 135, 45 };
+            XModel<XCrackElement2D> model = CreateModel(numElements);
+            var crack = new Crack();
+            IEnrichment[] enrichments = InitializeCrack(model, crack);
+            EnrichNodes(model, crack, enrichments);
+            (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
+
+            // Find displacements at specified dofs
+            IXFiniteElement mouthElement = null;
+            foreach (IXFiniteElement element in model.Elements)
+            {
+                if (crack.IsMouthElement(element.Nodes))
+                {
+                    mouthElement = element;
+                    break;
+                }
+            }
+            Debug.Assert(mouthElement != null);
+
+            double[] elementDisplacements = model.Subdomains[subdomainID].CalculateElementDisplacements(mouthElement, globalU);
+            Vector computedDisplacements = Vector.CreateFromArray(elementDisplacements).GetSubvector(expectedDisplacementDofs);
+
+            // Check
+            double tol = 1E-13;
+            Func<double, double> round = x => 1E-3 * Math.Round(x * 1E3, 2);
+            Assert.True(expectedDisplacements.Equals(computedDisplacements.DoToAllEntries(round), tol));
         }
 
         [Fact]
@@ -131,7 +175,9 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             // Create and analyze model, in order to get the global stiffness
             XModel<XCrackElement2D> model = CreateModel3x1();
             var crack = new Crack();
-            InitializeCrack(model, crack);
+            IEnrichment[] enrichments = InitializeCrack(model, crack);
+            EnrichNodes3x1(model, enrichments);
+            //EnrichNodes(model, crack, enrichments);
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
 
             // Dof numbering
@@ -197,6 +243,34 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             Assert.True(node7GlobalStiffnessExpected.Equals(node7GlobalStiffness.DoToAllEntries(round), tol));
         }
 
+        //[Theory]
+        //[InlineData(15, 1.0, 2.981, 2559.729)]
+        //[InlineData(15, 2.0, 2.286, 2559.729)]
+        //[InlineData(15, 3.0, 2.119, 2559.729)]
+        //[InlineData(15, 4.0, 2.117, 2559.729)]
+        //[InlineData(15, 5.0, 2.115, 2559.729)]
+        //public static void TestJintegral(int numElementsY, double rOverL, double expectedJintegral, double expectedSifMode1)
+        //{
+
+        //}
+
+        private static void ApplyBoundaryConditions(XModel<XCrackElement2D> model)
+        {
+            // Boundary conditions
+            double tol = 1E-6;
+            double L = maxCoords[0];
+            double H = maxCoords[1];
+            XNode topRight = model.Nodes.Where(n => Math.Abs(n.X - L) <= tol && Math.Abs(n.Y - H) <= tol).First();
+            XNode bottomRight = model.Nodes.Where(n => Math.Abs(n.X - L) <= tol && Math.Abs(n.Y) <= tol).First();
+            topRight.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = +0.05 });
+            bottomRight.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = -0.05 });
+            foreach (XNode node in model.Nodes.Where(n => Math.Abs(n.X) <= tol))
+            {
+                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = 0.0 });
+                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = 0.0 });
+            }
+        }
+
         private static XModel<XCrackElement2D> CreateModel3x1()
         {
             var model = new XModel<XCrackElement2D>();
@@ -205,13 +279,13 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             // Nodes
             var nodes = new XNode[8];
             nodes[0] = new XNode(0, new double[] { 0.0, 0.0 });
-            nodes[1] = new XNode(1, new double[] { 1.0/3 * dimensions[0], 0.0 });
-            nodes[2] = new XNode(2, new double[] { 1.0/3 * dimensions[0], dimensions[1] });
-            nodes[3] = new XNode(3, new double[] { 0.0, dimensions[1] });
-            nodes[4] = new XNode(4, new double[] { 2.0/3 * dimensions[0], 0.0 });
-            nodes[5] = new XNode(5, new double[] { dimensions[0], 0.0 });
-            nodes[6] = new XNode(6, new double[] { dimensions[0], dimensions[1] });
-            nodes[7] = new XNode(7, new double[] { 2.0 / 3 * dimensions[0], dimensions[1] });
+            nodes[1] = new XNode(1, new double[] { 1.0/3 * maxCoords[0], 0.0 });
+            nodes[2] = new XNode(2, new double[] { 1.0/3 * maxCoords[0], maxCoords[1] });
+            nodes[3] = new XNode(3, new double[] { 0.0, maxCoords[1] });
+            nodes[4] = new XNode(4, new double[] { 2.0/3 * maxCoords[0], 0.0 });
+            nodes[5] = new XNode(5, new double[] { maxCoords[0], 0.0 });
+            nodes[6] = new XNode(6, new double[] { maxCoords[0], maxCoords[1] });
+            nodes[7] = new XNode(7, new double[] { 2.0 / 3 * maxCoords[0], maxCoords[1] });
 
             foreach (XNode node in nodes) model.Nodes.Add(node);
 
@@ -238,21 +312,110 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 model.Subdomains[subdomainID].Elements.Add(element);
             }
 
-            // Boundary conditions
-            double tol = 1E-6;
-            double L = dimensions[0];
-            double H = dimensions[1];
-            XNode topRight = model.Nodes.Where(n => Math.Abs(n.X - L) <= tol && Math.Abs(n.Y - H) <= tol).First();
-            XNode bottomRight = model.Nodes.Where(n => Math.Abs(n.X - L) <= tol && Math.Abs(n.Y) <= tol).First();
-            topRight.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = +0.05 });
-            bottomRight.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = -0.05 });
-            foreach (XNode node in model.Nodes.Where(n => Math.Abs(n.X) <= tol))
+            ApplyBoundaryConditions(model);
+            return model;
+        }
+
+        private static XModel<XCrackElement2D> CreateModel(int[] numElements)
+        {
+            var model = new XModel<XCrackElement2D>();
+            model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
+
+            // Materials, integration
+            var material = new HomogeneousFractureMaterialField2D(E, v, thickness, false);
+            var integration = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
+            var factory = new XCrackElementFactory2D(material, thickness, integration);
+
+            // Mesh
+            var mesh = new UniformMesh2D(minCoords, maxCoords, numElements);
+            Utilities.Models.AddNodesElements(model, mesh, factory);
+
+            ApplyBoundaryConditions(model);
+            return model;
+        }
+
+        //TODO: These should be done automatically
+        private static IEnrichment[] InitializeCrack(XModel<XCrackElement2D> model, Crack crack)
+        {
+            // Define enrichments
+            var tipSystem = new TipCoordinateSystem(new double[] { 0.5 * maxCoords[0], 0.5 * maxCoords[1] }, Math.PI);
+            var enrichments = new IEnrichment[5];
+            enrichments[0] = new CrackStepEnrichment(0, crack);
+            enrichments[1] = new IsotropicBrittleTipEnrichments2D.Func0(1, tipSystem);
+            enrichments[2] = new IsotropicBrittleTipEnrichments2D.Func1(2, tipSystem);
+            enrichments[3] = new IsotropicBrittleTipEnrichments2D.Func2(3, tipSystem);
+            enrichments[4] = new IsotropicBrittleTipEnrichments2D.Func3(4, tipSystem);
+
+            // Define enriched dofs
+            model.EnrichedDofs = new Dictionary<IEnrichment, IDofType[]>();
+            foreach (IEnrichment enrichment in enrichments)
             {
-                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = 0.0 });
-                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = 0.0 });
+                var dofs = new IDofType[]
+                {
+                    new EnrichedDof(enrichment, StructuralDof.TranslationX),
+                    new EnrichedDof(enrichment, StructuralDof.TranslationY)
+                };
+                model.EnrichedDofs[enrichment] = dofs;
             }
 
-            return model;
+            return enrichments;
+        }
+
+        private static void EnrichNodes3x1(XModel<XCrackElement2D> model, IEnrichment[] enrichments)
+        {
+            // Heaviside enrichment
+            foreach (int n in new int[] { 5, 6 })
+            {
+                XNode node = model.Nodes[n];
+                IEnrichment enrichment = enrichments[0];
+                node.Enrichments[enrichment] = enrichment.EvaluateAt(node);
+            }
+
+            // Tip enrichments
+            foreach (int n in new int[] { 1, 2, 4, 7 })
+            {
+                XNode node = model.Nodes[n];
+                foreach (int e in new int[] { 1, 2, 3, 4 })
+                {
+                    IEnrichment enrichment = enrichments[e];
+                    node.Enrichments[enrichment] = enrichment.EvaluateAt(node);
+                }
+            }
+        }
+
+        private static void EnrichNodes(XModel<XCrackElement2D> model, Crack crack, IEnrichment[] enrichments)
+        {
+            var heavisideNodes = new HashSet<XNode>();
+            var tipNodes = new HashSet<XNode>();
+            foreach (var element in model.Elements)
+            {
+                if (crack.IsIntersectedElement(element.Nodes))
+                {
+                    heavisideNodes.UnionWith(element.Nodes);
+                }
+                else if (crack.IsTipElement(element.Nodes))
+                {
+                    tipNodes.UnionWith(element.Nodes);
+                }
+                heavisideNodes.ExceptWith(tipNodes);
+            }
+
+            // Heaviside enrichment
+            foreach (XNode node in heavisideNodes)
+            {
+                IEnrichment enrichment = enrichments[0];
+                node.Enrichments[enrichment] = enrichment.EvaluateAt(node);
+            }
+
+            // Tip enrichments
+            foreach (XNode node in tipNodes)
+            {
+                foreach (int e in new int[] { 1, 2, 3, 4 })
+                {
+                    IEnrichment enrichment = enrichments[e];
+                    node.Enrichments[enrichment] = enrichment.EvaluateAt(node);
+                }
+            }
         }
 
         private static (IVectorView globalU, IMatrixView globalK) RunAnalysis(XModel<XCrackElement2D> model)
@@ -281,60 +444,14 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             return (solver.LinearSystems[0].Solution, solver.LinearSystems[0].Matrix);
         }
 
-        //TODO: These should be done automatically
-        private static void InitializeCrack(XModel<XCrackElement2D> model, Crack crack)
-        {
-            // Define enrichments
-            var tipSystem = new TipCoordinateSystem(new double[] { 0.5 * dimensions[0], 0.5 * dimensions[1] }, Math.PI);
-            var enrichments = new IEnrichment[5];
-            enrichments[0] = new CrackStepEnrichment(0, crack);
-            enrichments[1] = new IsotropicBrittleTipEnrichments2D.Func0(1, tipSystem);
-            enrichments[2] = new IsotropicBrittleTipEnrichments2D.Func1(2, tipSystem);
-            enrichments[3] = new IsotropicBrittleTipEnrichments2D.Func2(3, tipSystem);
-            enrichments[4] = new IsotropicBrittleTipEnrichments2D.Func3(4, tipSystem);
-
-            // Define enriched dofs
-            model.EnrichedDofs = new Dictionary<IEnrichment, IDofType[]>();
-            foreach (IEnrichment enrichment in enrichments)
-            {
-                var dofs = new IDofType[]
-                {
-                    new EnrichedDof(enrichment, StructuralDof.TranslationX),
-                    new EnrichedDof(enrichment, StructuralDof.TranslationY)
-                };
-                model.EnrichedDofs[enrichment] = dofs;
-            }
-
-            // Enrich nodes
-            // Heaviside enrichment
-            foreach (int n in new int[] { 5, 6 })
-            {
-                XNode node = model.Nodes[n];
-                IEnrichment enrichment = enrichments[0];
-                node.Enrichments[enrichment] = enrichment.EvaluateAt(node);
-            }
-
-            // Tip enrichments
-            foreach (int n in new int[] { 1, 2, 4, 7})
-            {
-                XNode node = model.Nodes[n];
-                foreach (int e in new int[] { 1, 2, 3, 4 })
-                {
-                    IEnrichment enrichment = enrichments[e];
-                    node.Enrichments[enrichment] = enrichment.EvaluateAt(node);
-                }
-            }
-
-        }
-
         private class Crack : ICrack2D
         {
             private readonly double[] mouth, tip;
 
             public Crack()
             {
-                this.mouth = new double[] { dimensions[0], 0.5 * dimensions[1] };
-                this.tip = new double[] { 0.5 * dimensions[0], 0.5 * dimensions[1] };
+                this.mouth = new double[] { maxCoords[0], 0.5 * maxCoords[1] };
+                this.tip = new double[] { 0.5 * maxCoords[0], 0.5 * maxCoords[1] };
             }
 
             public TipCoordinateSystem TipSystem => throw new NotImplementedException();
@@ -348,6 +465,50 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             {
                 double[] cartesian = point.MapCoordinates(point.ShapeFunctions, point.Element.Nodes);
                 return cartesian[1] - tip[1];
+            }
+
+            public bool IsIntersectedElement(IReadOnlyList<XNode> nodes)
+            {
+                int numNodesPos = 0;
+                int numNodesNeg = 0;
+                foreach (XNode node in nodes)
+                {
+                    if (SignedDistanceFromBody(node) >= 0) ++numNodesPos;
+                    else ++numNodesNeg;
+                }
+
+                if ((numNodesNeg == 0) || (numNodesPos == 0)) return false;
+                else
+                {
+                    int numNodesLeft = 0;
+                    int numNodesRight = 0;
+                    foreach (XNode node in nodes)
+                    {
+                        if (node.Coordinates[0] <= tip[0]) ++numNodesLeft;
+                        else ++numNodesRight;
+                    }
+                    if (numNodesLeft == 0) return true;
+                    else return false;
+                }
+            }
+
+            public bool IsMouthElement(IReadOnlyList<XNode> nodes)
+            {
+                double tol = 1E-6;
+                bool result = (nodes[0].Coordinates[0] < mouth[0]) && (nodes[0].Coordinates[1] < mouth[1]);
+                result &= (Math.Abs(nodes[1].Coordinates[0] - mouth[0]) <= tol) && (nodes[1].Coordinates[1] < mouth[1]);
+                result &= (Math.Abs(nodes[2].Coordinates[0] - mouth[0]) <= tol) && (nodes[2].Coordinates[1] > mouth[1]);
+                result &= (nodes[3].Coordinates[0] < mouth[0]) && (nodes[3].Coordinates[1] > mouth[1]);
+                return result;
+            }
+
+            public bool IsTipElement(IReadOnlyList<XNode> nodes)
+            {
+                bool result = (nodes[0].Coordinates[0] < tip[0]) && (nodes[0].Coordinates[1] < tip[1]);
+                result &= (nodes[1].Coordinates[0] > tip[0]) && (nodes[1].Coordinates[1] < tip[1]);
+                result &= (nodes[2].Coordinates[0] > tip[0]) && (nodes[2].Coordinates[1] > tip[1]);
+                result &= (nodes[3].Coordinates[0] < tip[0]) && (nodes[3].Coordinates[1] > tip[1]);
+                return result;
             }
         }
     }

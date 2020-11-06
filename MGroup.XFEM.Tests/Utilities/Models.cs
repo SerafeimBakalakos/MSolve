@@ -9,6 +9,7 @@ using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry.Mesh;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Materials;
@@ -17,6 +18,35 @@ namespace MGroup.XFEM.Tests.Utilities
 {
     public static class Models
     {
+        public static void AddNodesElements<TElement>(
+            XModel<TElement> model, UniformMesh2D mesh, IElementFactory<TElement> factory) 
+            where TElement : class, IXFiniteElement
+        {
+            int subdomainID = model.Subdomains.First().Key;
+
+            // Nodes
+            for (int nodeID = 0; nodeID < mesh.NumNodesTotal; ++nodeID)
+            {
+                int[] nodeIdx = mesh.GetNodeIdx(nodeID);
+                double[] coords = mesh.GetNodeCoordinates(nodeIdx);
+                model.Nodes.Add(new XNode(nodeID, coords));
+            }
+
+            // Elements
+            for (int elemID = 0; elemID < mesh.NumElementsTotal; ++elemID)
+            {
+                var nodes = new List<XNode>();
+                int[] elemIdx = mesh.GetElementIdx(elemID);
+                foreach (int n in mesh.GetElementConnectivity(elemIdx))
+                {
+                    nodes.Add(model.Nodes[n]);
+                }
+                var element = factory.CreateElement(elemID, CellType.Quad4, nodes);
+                model.Elements.Add(element);
+                model.Subdomains[subdomainID].Elements.Add(element);
+            }
+        }
+
         public static XModel<IXMultiphaseElement> CreateQuad4Model(double[] minCoords, double[] maxCoords, double thickness,
             int[] numElements, int bulkIntegrationOrder, int boundaryIntegrationOrder, IThermalMaterialField materialField)
         {
