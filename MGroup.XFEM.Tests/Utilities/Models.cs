@@ -19,7 +19,7 @@ namespace MGroup.XFEM.Tests.Utilities
     public static class Models
     {
         public static void AddNodesElements<TElement>(
-            XModel<TElement> model, UniformMesh2D mesh, IElementFactory<TElement> factory) 
+            XModel<TElement> model, UniformMesh2D mesh, IXElementFactory<TElement> factory) 
             where TElement : class, IXFiniteElement
         {
             int subdomainID = model.Subdomains.First().Key;

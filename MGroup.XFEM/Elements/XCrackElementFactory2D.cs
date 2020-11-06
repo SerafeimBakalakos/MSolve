@@ -9,7 +9,7 @@ using MGroup.XFEM.Materials;
 
 namespace MGroup.XFEM.Elements
 {
-    public class XCrackElementFactory2D : IElementFactory<XCrackElement2D>
+    public class XCrackElementFactory2D : IXElementFactory<XCrackElement2D>
     {
         private static readonly IReadOnlyDictionary<CellType, IElementGeometry> elementGeometries;
         private static readonly IReadOnlyDictionary<CellType, IGaussPointExtrapolation> extrapolations;

@@ -58,7 +58,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
             // Create and analyze model, in order to get the solution vector
             XModel<XCrackElement2D> model = CreateModel3x1();
-            var crack = new Crack();
+            var crack = new Crack(model);
             IEnrichment[] enrichments = InitializeCrack(model, crack);
             EnrichNodes3x1(model, enrichments);
             //EnrichNodes(model, crack, enrichments);
@@ -95,13 +95,13 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             // Create and analyze model, in order to get the solution vector
             int[] numElements = { 135, 45 };
             XModel<XCrackElement2D> model = CreateModel(numElements);
-            var crack = new Crack();
+            var crack = new Crack(model);
             IEnrichment[] enrichments = InitializeCrack(model, crack);
             EnrichNodes(model, crack, enrichments);
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
 
             // Find displacements at specified dofs
-            IXFiniteElement mouthElement = crack.FindMouthElement(model);
+            IXFiniteElement mouthElement = model.Elements[crack.MouthElementID];
             double[] elementDisplacements = model.Subdomains[subdomainID].CalculateElementDisplacements(mouthElement, globalU);
             Vector computedDisplacements = Vector.CreateFromArray(elementDisplacements).GetSubvector(expectedDisplacementDofs);
 
@@ -166,7 +166,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
             // Create and analyze model, in order to get the global stiffness
             XModel<XCrackElement2D> model = CreateModel3x1();
-            var crack = new Crack();
+            var crack = new Crack(model);
             IEnrichment[] enrichments = InitializeCrack(model, crack);
             EnrichNodes3x1(model, enrichments);
             //EnrichNodes(model, crack, enrichments);
@@ -260,7 +260,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             // Create and analyze model
             int[] numElements = { 3 * numElementsY, numElementsY };
             XModel<XCrackElement2D> model = CreateModel(numElements);
-            var crack = new Crack();
+            var crack = new Crack(model);
             IEnrichment[] enrichments = InitializeCrack(model, crack);
             EnrichNodes(model, crack, enrichments);
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
@@ -270,8 +270,11 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             freeDisplacementsPerSubdomain[model.Subdomains.First().Key] = (Vector)globalU;
 
             var material = new HomogeneousFractureMaterialField2D(E, v, thickness, false);
-            var jIntegrationRule = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)); //TODO: this needs further work: intersected elements need a different integration
-            XCrackElement2D[] tipElements = { crack.FindTipElement(model) };
+            //HERE: Use an integration rule that differentiates between std and cut elements.Same for stiffness matrices;
+            var jIntegrationRule = new JintegrationStrategy(
+                GaussLegendre2D.GetQuadratureWithOrder(4, 4),
+                new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)));
+            XCrackElement2D[] tipElements = { model.Elements[crack.TipElementIDs.First()] };
             double elementSize = Math.Max(maxCoords[0] / numElements[0], maxCoords[1] / numElements[1]);
 
             var propagator = new JintegralPropagator2D(jIntegralRadiusRatio, jIntegrationRule, material, 
@@ -284,7 +287,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             double sifMode2 = propagator.Logger.SIFsMode2[0];
             double jIntegral = (Math.Pow(sifMode1, 2) + Math.Pow(sifMode2, 2)) / material.EquivalentYoungModulus;
 
-            // Check. Note that my implementation seems to converge more quickly than the reference solution. 
+            // Check. Note that I allow better values than the reference solution, since my implementation could converge faster.
             Assert.InRange(Math.Round(jIntegral, 3), 2.100, expectedJintegral);
             Assert.InRange(Math.Round(sifMode1, 3), 2148.523, expectedSifMode1);
         }
@@ -422,12 +425,14 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             // Find heaviside and tip enriched nodes
             var heavisideNodes = new HashSet<XNode>();
             var tipNodes = new HashSet<XNode>();
-            foreach (XCrackElement2D element in crack.FindIntersectedElements(model))
+            foreach (int elementID in crack.IntersectedElementIDs)
             {
-                heavisideNodes.UnionWith(element.Nodes);
+                heavisideNodes.UnionWith(model.Elements[elementID].Nodes);
             }
-            XCrackElement2D tipElement = crack.FindTipElement(model);
-            tipNodes.UnionWith(tipElement.Nodes);
+            foreach (int elementID in crack.TipElementIDs)
+            {
+                tipNodes.UnionWith(model.Elements[elementID].Nodes);
+            }
             heavisideNodes.ExceptWith(tipNodes);
 
             // Heaviside enrichment
@@ -478,17 +483,45 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         {
             private readonly double[] mouth, tip;
 
-            public Crack()
+            public Crack(XModel<XCrackElement2D> model)
             {
                 this.mouth = new double[] { maxCoords[0], 0.5 * maxCoords[1] };
                 this.tip = new double[] { 0.5 * maxCoords[0], 0.5 * maxCoords[1] };
 
                 TipSystem = new TipCoordinateSystem(new double[] { 0.5 * maxCoords[0], 0.5 * maxCoords[1] }, Math.PI);
+
+                IntersectedElementIDs = new HashSet<int>();
+                TipElementIDs = new HashSet<int>();
+                foreach (XCrackElement2D element in model.Elements)
+                {
+                    if (IsIntersectedElement(element.Nodes))
+                    {
+                        IntersectedElementIDs.Add(element.ID);
+                        element.IsIntersectedElement = true;
+                    }
+                    if (IsTipElement(element.Nodes))
+                    {
+                        TipElementIDs.Add(element.ID);
+                        element.IsTipElement = true;
+                        element.IsIntersectedElement = true;
+                    }
+                    if (IsMouthElement(element.Nodes))
+                    {
+                        MouthElementID = element.ID;
+                        element.IsIntersectedElement = true;
+                    }
+                }
             }
 
             public TipCoordinateSystem TipSystem { get; }
 
             public double[] TipGlobalCoords => tip;
+
+            public HashSet<int> IntersectedElementIDs { get; }
+
+            public int MouthElementID { get; }
+
+            public HashSet<int> TipElementIDs { get; }
 
             public double SignedDistanceFromBody(XNode node)
             {
@@ -499,34 +532,6 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             {
                 double[] cartesian = point.MapCoordinates(point.ShapeFunctions, point.Element.Nodes);
                 return cartesian[1] - tip[1];
-            }
-
-            public List<XCrackElement2D> FindIntersectedElements(XModel<XCrackElement2D> model)
-            {
-                var intersectedElements = new List<XCrackElement2D>();
-                foreach (XCrackElement2D element in model.Elements)
-                {
-                    if (IsIntersectedElement(element.Nodes)) intersectedElements.Add(element);
-                }
-                return intersectedElements;
-            }
-
-            public XCrackElement2D FindMouthElement(XModel<XCrackElement2D> model)
-            {
-                foreach (XCrackElement2D element in model.Elements)
-                {
-                    if (IsMouthElement(element.Nodes)) return element;
-                }
-                throw new Exception("This code should not have been reached");
-            }
-
-            public XCrackElement2D FindTipElement(XModel<XCrackElement2D> model)
-            {
-                foreach (XCrackElement2D element in model.Elements)
-                {
-                    if (IsTipElement(element.Nodes)) return element;
-                }
-                throw new Exception("This code should not have been reached");
             }
 
             private bool IsIntersectedElement(IReadOnlyList<XNode> nodes)

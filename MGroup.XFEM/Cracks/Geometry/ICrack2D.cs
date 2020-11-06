@@ -11,6 +11,10 @@ namespace MGroup.XFEM.Cracks.Geometry
     {
         TipCoordinateSystem TipSystem { get; }
 
+        HashSet<int> IntersectedElementIDs { get; }
+
+        HashSet<int> TipElementIDs { get; }
+
         double SignedDistanceFromBody(XNode node);
 
         double SignedDistanceFromBody(XPoint point);

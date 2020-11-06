@@ -9,6 +9,7 @@ using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Materials;
@@ -95,7 +96,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
         private static Dictionary<IEnrichment, IDofType[]> EnrichNodes(XNode[] nodes)
         {
-            var crack = new InfiniteLineCrack2D(new double[] { 30.0, +40.0 }, new double[] { 30.0, -40.0 });
+            var crack = new Crack(new double[] { 30.0, +40.0 }, new double[] { 30.0, -40.0 });
             var stepEnrichment = new CrackStepEnrichment(0, crack);
             nodes[1].Enrichments[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[1]);
             nodes[2].Enrichments[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[2]);
@@ -223,6 +224,40 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 {
                     globalMatrix[subToGlobalMatrix[i], subToGlobalMatrix[j]] = submatrix[i, j];
                 }
+            }
+        }
+
+        private class Crack : ICrack2D
+        {
+            private readonly Line2D line;
+
+            public Crack(double[] point0, double[] point1)
+            {
+                this.line = new Line2D(point0, point1);
+                IntersectedElementIDs = new HashSet<int>();
+                IntersectedElementIDs.Add(1);
+            }
+
+            public TipCoordinateSystem TipSystem => null;
+
+            public HashSet<int> IntersectedElementIDs { get; }
+
+            public HashSet<int> TipElementIDs => new HashSet<int>();
+
+            public double SignedDistanceFromBody(XNode node)
+            {
+                return line.SignedDistanceOf(node.Coordinates);
+            }
+
+            public double SignedDistanceFromBody(XPoint point)
+            {
+                bool hasCartesian = point.Coordinates.TryGetValue(CoordinateSystem.GlobalCartesian, out double[] coords);
+                if (!hasCartesian)
+                {
+                    coords = point.MapCoordinates(point.ShapeFunctions, point.Element.Nodes);
+                    point.Coordinates[CoordinateSystem.GlobalCartesian] = coords;
+                }
+                return line.SignedDistanceOf(coords);
             }
         }
     }

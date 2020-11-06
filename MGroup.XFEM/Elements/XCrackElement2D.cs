@@ -21,7 +21,7 @@ using MGroup.XFEM.Materials;
 
 namespace MGroup.XFEM.Elements
 {
-    public class XCrackElement2D : IXFiniteElement
+    public class XCrackElement2D : IXCrackElement
     {
         private readonly IElementGeometry elementGeometry;
         private readonly int id;
@@ -104,17 +104,14 @@ namespace MGroup.XFEM.Elements
 
         public List<IElementGeometryIntersection> Intersections { get; } = new List<IElementGeometryIntersection>();
 
-        #region remove 
-        //public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
-
-        //public Dictionary<PhaseBoundary, IElementGeometryIntersection> PhaseIntersections { get; }
-        //    = new Dictionary<PhaseBoundary, IElementGeometryIntersection>();
-        #endregion
-
         ISubdomain IElement.Subdomain => this.Subdomain;
         public XSubdomain Subdomain { get; set; }
 
         public double Thickness { get; }
+
+        public bool IsIntersectedElement { get; set; }
+
+        public bool IsTipElement { get; set; }
 
         /// <summary>
         /// Area of the element in the global cartesian coordinate system
