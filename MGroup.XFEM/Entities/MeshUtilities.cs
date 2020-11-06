@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using MGroup.XFEM.Elements;
@@ -27,6 +28,7 @@ namespace MGroup.XFEM.Entities
             bool allElementsExternal = false;
             while (!allElementsExternal)
             {
+                allElementsExternal = true;
                 var nextNeighbors = new HashSet<TElement>();
                 foreach (TElement element in neighbors)
                 {
@@ -36,17 +38,18 @@ namespace MGroup.XFEM.Entities
                         pos = RelativePositionOfCircleElement(circle, element);
                         if (pos < 0)
                         {
-                            internalElements.Add(startElement);
+                            internalElements.Add(element);
                             allElementsExternal = false;
                         }
                         else if (pos == 0)
                         {
-                            intersectedElements.Add(startElement);
+                            intersectedElements.Add(element);
                             allElementsExternal = false;
                         }
                         nextNeighbors.UnionWith(FindNeighbors(element));
                     }
                 }
+                neighbors = nextNeighbors;
             }
 
             return intersectedElements;
@@ -70,21 +73,12 @@ namespace MGroup.XFEM.Entities
         /// </summary>
         public static int RelativePositionOfCircleElement(Circle2D circle, IElement element)
         {
-            int numNodesInside = 0;
-            int numNodesOutside = 0;
-            int numNodesOnCircle = 0;
-
-            foreach (INode node in element.Nodes)
-            {
-                double distance = circle.SignedDistanceOf(node.Coordinates());
-                if (distance < 0) ++numNodesInside;
-                else if (distance > 0) ++numNodesOutside;
-                else ++numNodesOnCircle;
-            }
-
-            if (numNodesOutside == 0) return -1;
-            else if (numNodesInside == 0) return +1;
-            else return 0;
+            var polygon = new ConvexPolygon2D(element.Nodes.Select(n => n.Coordinates()).ToArray());
+            CirclePolygonPosition pos = polygon.FindRelativePositionOfCircle(circle);
+            if (pos == CirclePolygonPosition.Disjoint) return +1;
+            else if (pos == CirclePolygonPosition.PolygonInsideCircle) return -1;
+            else if ((pos == CirclePolygonPosition.CircleInsidePolygon) || (pos == CirclePolygonPosition.Intersecting)) return 0;
+            else throw new NotImplementedException();
         }
     }
 }

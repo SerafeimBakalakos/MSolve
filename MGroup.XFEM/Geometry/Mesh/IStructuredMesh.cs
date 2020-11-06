@@ -15,7 +15,12 @@ namespace MGroup.XFEM.Geometry.Mesh
 
         int[] NumElements { get; }
 
+        int NumElementsTotal { get; }
+
+
         int[] NumNodes { get; }
+
+        int NumNodesTotal { get; }
 
         int GetNodeID(int[] nodeIdx);
 

@@ -15,12 +15,14 @@ namespace MGroup.XFEM.Geometry.Mesh
             this.MinCoordinates = minCoordinates;
             this.MaxCoordinates = MaxCoordinates;
             this.NumElements = numElements;
+            NumElementsTotal = NumElements[0] * NumElements[1];
 
             NumNodes = new int[dim];
             for (int d = 0; d < dim; d++)
             {
                 NumNodes[d] = numElements[d] + 1;
             }
+            NumNodesTotal = NumNodes[0] * NumNodes[1];
 
             dx = new double[dim];
             for (int d = 0; d < dim; d++)
@@ -35,7 +37,10 @@ namespace MGroup.XFEM.Geometry.Mesh
         public double[] MaxCoordinates { get; }
 
         public int[] NumElements { get; }
+        public int NumElementsTotal { get; }
+
         public int[] NumNodes { get; }
+        public int NumNodesTotal { get; }
 
         public int GetNodeID(int[] nodeIdx)
         {
