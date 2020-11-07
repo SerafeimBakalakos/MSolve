@@ -10,7 +10,7 @@ namespace MGroup.XFEM.Enrichment
 {
     public static class IsotropicBrittleTipEnrichments2D
     {
-        public class Func0 : IEnrichment
+        public class Func0 : ICrackTipEnrichment
         {
             private readonly TipCoordinateSystem tipSystem;
 
@@ -66,7 +66,7 @@ namespace MGroup.XFEM.Enrichment
             }
         }
 
-        public class Func1 : IEnrichment
+        public class Func1 : ICrackTipEnrichment
         {
             private readonly TipCoordinateSystem tipSystem;
 
@@ -122,7 +122,7 @@ namespace MGroup.XFEM.Enrichment
             }
         }
 
-        public class Func2 : IEnrichment
+        public class Func2 : ICrackTipEnrichment
         {
             private readonly TipCoordinateSystem tipSystem;
 
@@ -180,7 +180,7 @@ namespace MGroup.XFEM.Enrichment
             }
         }
 
-        public class Func3 : IEnrichment
+        public class Func3 : ICrackTipEnrichment
         {
             private readonly TipCoordinateSystem tipSystem;
 

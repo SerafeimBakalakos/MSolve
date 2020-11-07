@@ -3,6 +3,9 @@ using MGroup.XFEM.Integration;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Integration;
 
+//TODO: Tidy up integration rules for crack and multiphase problems. Some of them need to check the element state, while others
+//      depend on the element to make decisions. Also a common interface should be used for all integrations. Alternatively,
+//      IXFiniteElement should not expose its IBulkIntegration. DO NOT USE GENERICS for this interface.
 namespace MGroup.XFEM.Integration
 {
     /// <summary>

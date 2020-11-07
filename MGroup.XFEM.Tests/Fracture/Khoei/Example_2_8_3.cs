@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Mesh;
+using ISAAR.MSolve.LinearAlgebra.Input;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Cracks.Geometry;
@@ -30,7 +31,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         public static void TestElementStiffnesses()
         {
             (XNode[] nodes, XCrackElement2D[] elements) = CreateElements();
-            Dictionary<IEnrichment, IDofType[]> enrichedDofs = EnrichNodes(nodes);
+            Dictionary<IEnrichment, IDofType[]> enrichedDofs = EnrichNodesElements(nodes, elements);
             
             for (int e = 0; e < elements.Length; ++e)
             {
@@ -41,6 +42,13 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 double tol = 1E-13;
                 Matrix expectedK = GetExpectedStiffness(e);
                 IMatrix computedRoundedK = computedK.DoToAllEntries(round);
+
+                #region debug
+                var writer = new ISAAR.MSolve.LinearAlgebra.Output.FullMatrixWriter();
+                string path = @"C:\Users\Serafeim\Desktop\XFEM2020\Cracks\DebugOutput\K.txt";
+                writer.WriteToFile(expectedK.Subtract(computedRoundedK), path);
+                #endregion
+
                 Assert.True(expectedK.Equals(computedRoundedK, tol));
             }
         }
@@ -49,7 +57,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         public static void TestSolution()
         {
             (XNode[] nodes, XCrackElement2D[] elements) = CreateElements();
-            Dictionary<IEnrichment, IDofType[]> enrichedDofs = EnrichNodes(nodes);
+            Dictionary<IEnrichment, IDofType[]> enrichedDofs = EnrichNodesElements(nodes, elements);
 
             // FEM assembly
             var elementToGlobalMaps = new List<int[]>();
@@ -94,7 +102,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         }
 
 
-        private static Dictionary<IEnrichment, IDofType[]> EnrichNodes(XNode[] nodes)
+        private static Dictionary<IEnrichment, IDofType[]> EnrichNodesElements(XNode[] nodes, XCrackElement2D[] elements)
         {
             var crack = new Crack(new double[] { 30.0, +40.0 }, new double[] { 30.0, -40.0 });
             var stepEnrichment = new CrackStepEnrichment(0, crack);
@@ -108,6 +116,8 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 new EnrichedDof(stepEnrichment, StructuralDof.TranslationX), 
                 new EnrichedDof(stepEnrichment, StructuralDof.TranslationY) 
             };
+
+            elements[1].IsIntersectedElement = true;
 
             return enrichedDofs;
         }
@@ -128,8 +138,10 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             };
 
             var material = new HomogeneousFractureMaterialField2D(E, v, thickness, planeStress);
-            var integrationStrategy = new IntegrationWithNonconformingQuads2D(2, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
-            var factory = new XCrackElementFactory2D(material, thickness, integrationStrategy);
+            var enrichedIntegration = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
+            var bulkIntegration = new CrackElementIntegrationStrategy(
+                enrichedIntegration, enrichedIntegration, enrichedIntegration);
+            var factory = new XCrackElementFactory2D(material, thickness, bulkIntegration);
             var elements = new XCrackElement2D[3];
             elements[0] = factory.CreateElement(0, CellType.Quad4, new XNode[] { nodes[0], nodes[1], nodes[2], nodes[3] });
             elements[1] = factory.CreateElement(1, CellType.Quad4, new XNode[] { nodes[1], nodes[4], nodes[7], nodes[2] });

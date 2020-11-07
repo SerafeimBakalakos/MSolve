@@ -270,7 +270,6 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             freeDisplacementsPerSubdomain[model.Subdomains.First().Key] = (Vector)globalU;
 
             var material = new HomogeneousFractureMaterialField2D(E, v, thickness, false);
-            //HERE: Use an integration rule that differentiates between std and cut elements.Same for stiffness matrices;
             var jIntegrationRule = new JintegrationStrategy(
                 GaussLegendre2D.GetQuadratureWithOrder(4, 4),
                 new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)));
@@ -328,16 +327,17 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             foreach (XNode node in nodes) model.Nodes.Add(node);
 
             // Elements
-            var material = new HomogeneousFractureMaterialField2D(E, v, thickness, false);
-            var integration = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
             var connectivity = new int[3, 4]
             {
                 { 0, 1, 2, 3 },
                 { 1, 4, 7, 2 },
                 { 4, 5, 6, 7 }
             };
-
-            var factory = new XCrackElementFactory2D(material, thickness, integration);
+            var material = new HomogeneousFractureMaterialField2D(E, v, thickness, false);
+            var enrichedIntegration = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
+            var bulkIntegration = new CrackElementIntegrationStrategy(
+                enrichedIntegration, enrichedIntegration, enrichedIntegration);
+            var factory = new XCrackElementFactory2D(material, thickness, bulkIntegration);
             for (int e = 0; e < 3; ++e)
             {
                 var elementNodes = new XNode[4];
@@ -361,8 +361,10 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
             // Materials, integration
             var material = new HomogeneousFractureMaterialField2D(E, v, thickness, false);
-            var integration = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
-            var factory = new XCrackElementFactory2D(material, thickness, integration);
+            var enrichedIntegration = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
+            var bulkIntegration = new CrackElementIntegrationStrategy(
+                enrichedIntegration, enrichedIntegration, enrichedIntegration);
+            var factory = new XCrackElementFactory2D(material, thickness, bulkIntegration);
 
             // Mesh
             var mesh = new UniformMesh2D(minCoords, maxCoords, numElements);

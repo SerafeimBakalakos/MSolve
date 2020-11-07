@@ -18,7 +18,7 @@ namespace MGroup.XFEM.Elements
         private static readonly IReadOnlyDictionary<CellType, IIsoparametricInterpolation> interpolations;
 
         //private readonly int integrationBoundaryOrder;
-        private readonly IBulkIntegration integrationbulk;
+        private readonly CrackElementIntegrationStrategy integrationbulk;
         private readonly IFractureMaterialField material;
         private readonly double thickness;
 
@@ -80,7 +80,7 @@ namespace MGroup.XFEM.Elements
         }
 
         public XCrackElementFactory2D(IFractureMaterialField commonMaterial, double thickness,
-            IBulkIntegration bulkIntegration/*, int integrationBoundaryOrder*/)
+            CrackElementIntegrationStrategy bulkIntegration/*, int integrationBoundaryOrder*/)
         {
             this.material = commonMaterial;
             this.thickness = thickness;

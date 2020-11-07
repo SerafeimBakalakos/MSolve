@@ -9,6 +9,7 @@ using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
+using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Materials;
 
@@ -27,6 +28,8 @@ namespace MGroup.XFEM.Elements
         ElementFace[] Faces { get; }
 
         IBulkIntegration IntegrationBulk { get; }
+
+        IQuadrature IntegrationStandard { get; }
 
         IIsoparametricInterpolation Interpolation { get; }
 
@@ -47,5 +50,18 @@ namespace MGroup.XFEM.Elements
         void IdentifyDofs(Dictionary<IEnrichment, IDofType[]> enrichedDofs);
 
         void IdentifyIntegrationPointsAndMaterials();
+    }
+
+    //TODO: These should be converted to default interface implementations
+    public static class XFiniteElementExtensions
+    {
+        public static bool HasEnrichedNodes(this IXFiniteElement element)
+        {
+            foreach (XNode node in element.Nodes)
+            {
+                if (node.IsEnriched) return true;
+            }
+            return false;
+        }
     }
 }

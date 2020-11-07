@@ -11,7 +11,7 @@ using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
-using MGroup.XFEM.Integration;
+using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Materials;
 
@@ -94,6 +94,8 @@ namespace MGroup.XFEM.Elements
         public IBulkIntegration IntegrationBulk { get; set; }
 
         public IElementSubcell[] ConformingSubcells { get; set; }
+
+        public IQuadrature IntegrationStandard => throw new NotImplementedException();
 
         public List<IElementGeometryIntersection> Intersections { get; } = new List<IElementGeometryIntersection>();
 

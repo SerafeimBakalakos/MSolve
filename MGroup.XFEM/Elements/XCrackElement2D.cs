@@ -45,8 +45,8 @@ namespace MGroup.XFEM.Elements
 
         public XCrackElement2D(int id, IReadOnlyList<XNode> nodes, double thickness, IElementGeometry elementGeometry,
             IFractureMaterialField materialField, IIsoparametricInterpolation interpolation, 
-            IGaussPointExtrapolation gaussPointExtrapolation, IQuadrature standardQuadrature, 
-            IBulkIntegration bulkIntegration)
+            IGaussPointExtrapolation gaussPointExtrapolation, IQuadrature standardQuadrature,
+            CrackElementIntegrationStrategy bulkIntegration)
         {
             this.id = id;
             this.Nodes = nodes;
@@ -307,7 +307,10 @@ namespace MGroup.XFEM.Elements
             return (Kee, Kse);
         }
 
-        //TODO: Perhaps the std integration rule should be used for Kss
+        //TODO: A perhaps important optimization would be to use the std integration rule for Kss. However that creates the need 
+        //      to track these integration points separately, which is cumbersome in non-linear problems. Perhaps it can be 
+        //      delegated to an auxiliary class. In problems featuring both multiple phases and cracks, the whole idea may not 
+        //      work at all.
         private Matrix BuildStiffnessMatrixStandard()
         {
             // If the element is has more than 1 phase, then I cannot use the standard quadrature, since the material is  
