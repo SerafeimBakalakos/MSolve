@@ -4,6 +4,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Entities;
 
+//TODO: This is the explicit implementation for 2D problems. Use an interface to allow for other implementations.
 namespace MGroup.XFEM.Cracks.Geometry
 {
     //TODO: decide what data structures (arrays, tuples, matrix & vector classes I will use as arguments, return types 

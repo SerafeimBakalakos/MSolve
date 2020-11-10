@@ -97,9 +97,9 @@ namespace MGroup.XFEM.Geometry.Primitives
             for (int i = 0; i < nodes.Count; ++i)
             {
                 int nextIndex = (i + 1) % nodes.Count;
-                (RelativePositionCurveCurve pos, double[] segmentIntersections)
+                (RelativePositionClosedCurves pos, double[] segmentIntersections)
                     = IntersectSegment(nodesLocal[i], nodesLocal[nextIndex]);
-                if (pos == RelativePositionCurveCurve.Conforming) conformingSegment = true;
+                if (pos == RelativePositionClosedCurves.Conforming) conformingSegment = true;
                 foreach (double t in segmentIntersections) intersections.Add(t);
             }
 
@@ -141,34 +141,34 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// <param name="point1"></param>
         /// <param name="point2"></param>
         /// <returns></returns>
-        protected (RelativePositionCurveCurve, double[]) IntersectSegment(double[] point1Local, double[] point2Local)
+        protected (RelativePositionClosedCurves, double[]) IntersectSegment(double[] point1Local, double[] point2Local)
         { //TODO: Use the results to create a new geometric object that can provide vertices for triangulation, gauss points etc. These can be empty
 
             double product = point1Local[1] * point2Local[1];
             if (product > 0) // Parallel or otherwise disjoint
             {
-                return (RelativePositionCurveCurve.Disjoint, new double[0]);
+                return (RelativePositionClosedCurves.Disjoint, new double[0]);
             }
             else if (product < 0) // P1, P2 lie on opposite semiplanes
             {
                 // Use linear interpolation
                 double lambda = -point1Local[1] / (point2Local[1] - point1Local[1]);
                 double intersectionLocalX = point1Local[0] + lambda * (point2Local[0] - point1Local[0]);
-                return (RelativePositionCurveCurve.Intersecting, new double[] { intersectionLocalX });
+                return (RelativePositionClosedCurves.Intersecting, new double[] { intersectionLocalX });
             }
             else
             {
                 if (point1Local[1] == 0 && point2Local[1] == 0) // Both P1 and P2 lie on the line
                 {
-                    return (RelativePositionCurveCurve.Conforming, Sort(point1Local[0], point2Local[0]));
+                    return (RelativePositionClosedCurves.Conforming, Sort(point1Local[0], point2Local[0]));
                 }
                 else if (point1Local[1] == 0 /*&& point2Local[1] != 0*/) // Only P1 lies on the line
                 {
-                    return (RelativePositionCurveCurve.Intersecting, new double[] { point1Local[0] });
+                    return (RelativePositionClosedCurves.Intersecting, new double[] { point1Local[0] });
                 }
                 else /*(point1Local[1] != 0 && point2Local[1] == 0)*/ // Only P2 lies on the line
                 {
-                    return (RelativePositionCurveCurve.Intersecting, new double[] { point2Local[0] });
+                    return (RelativePositionClosedCurves.Intersecting, new double[] { point2Local[0] });
                 }
             }
         }

@@ -52,11 +52,12 @@ namespace MGroup.XFEM.Geometry.LSM
                 IntersectionMesh intersectionMesh = FindIntersectionConforming(element);
                 return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Conforming, element, intersectionMesh);
             }
-            else 
+            else if (position == RelativePositionCurveElement.Intersecting)
             {
                 var intersectionMesh = FindIntersectionIntersecting(element, levelSetSubset);
                 return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Intersecting, element, intersectionMesh);
             }
+            else throw new NotImplementedException();
         }
 
         public double SignedDistanceOf(XNode node) => NodalLevelSets[node.ID];

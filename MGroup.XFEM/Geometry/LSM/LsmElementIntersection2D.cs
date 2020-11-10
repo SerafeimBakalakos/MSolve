@@ -35,7 +35,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public RelativePositionCurveElement RelativePosition { get; }
 
-        public IXFiniteElement Element { get; } //TODO: Perhaps this should be defined in the interface
+        public IXFiniteElement Element { get; } //TODO: Perhaps this should be defined in the interface. Isn't it the same as ParentGeometryID?
 
         public int ParentGeometryID { get; }
 

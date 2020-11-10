@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using DotNumerics.LinearAlgebra;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 
@@ -20,6 +21,11 @@ namespace MGroup.XFEM.Geometry.Primitives
         public IXFiniteElement Element { get; set; }
 
         public double[] ShapeFunctions { get; set; }
+
+        /// <summary>
+        /// With respect to global cartesian system
+        /// </summary>
+        public Matrix ShapeFunctionDerivatives { get; set; }
 
         public IPhase Phase { get; set; }
 

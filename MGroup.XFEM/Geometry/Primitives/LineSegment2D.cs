@@ -59,5 +59,14 @@ namespace MGroup.XFEM.Geometry.Primitives
             }
             else return lineIntersection;
         }
+
+        public double[] TransformGlobalToLocalPoint(double[] point)
+        {
+            return new double[]
+            {
+                cosa * point[0] + sina * point[1] + originLocal[0],
+                -sina * point[0] + cosa * point[1] + originLocal[1]
+            };
+        }
     }
 }

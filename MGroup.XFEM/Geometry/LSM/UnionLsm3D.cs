@@ -38,11 +38,12 @@ namespace MGroup.XFEM.Geometry.LSM
                         throw new InvalidElementGeometryIntersectionException(
                             "If one merged LSM is conforming, then no other one must intersect the element");
                     }
-                    else
+                    else if (position == RelativePositionCurveElement.Intersecting)
                     {
                         var intersectionMesh = FindIntersectionIntersecting(element, levelSetSubset);
                         unionIntersectionMesh.MergeWith(intersectionMesh);
                     }
+                    else throw new NotImplementedException();
                 }
                 if (unionIntersectionMesh.Vertices.Count > 0)
                 {

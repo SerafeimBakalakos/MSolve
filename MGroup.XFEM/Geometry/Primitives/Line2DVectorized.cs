@@ -84,9 +84,9 @@ namespace MGroup.XFEM.Geometry.Primitives
             for (int i = 0; i < nodes.Count; ++i)
             {
                 int nextIndex = (i + 1) % nodes.Count;
-                (RelativePositionCurveCurve pos, double[] segmentIntersections) 
+                (RelativePositionClosedCurves pos, double[] segmentIntersections) 
                     = IntersectSegment(projections[i], projections[nextIndex]);
-                if (pos == RelativePositionCurveCurve.Conforming) conformingSegment = true;
+                if (pos == RelativePositionClosedCurves.Conforming) conformingSegment = true;
                 foreach (double t in segmentIntersections) intersections.Add(t);
             }
 
@@ -132,13 +132,13 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// <param name="point1"></param>
         /// <param name="point2"></param>
         /// <returns></returns>
-        private (RelativePositionCurveCurve, double[]) IntersectSegment(PointProjection proj1, PointProjection proj2)
+        private (RelativePositionClosedCurves, double[]) IntersectSegment(PointProjection proj1, PointProjection proj2)
         { //TODO: Use the results to create a new geometric object that can provide vertices for triangulation, gauss points etc. These can be empty
             
             double dot = proj1.PPo.DotProduct2D(proj2.PPo);
             if (dot > 0) // Parallel or otherwise disjoint
             {
-                return (RelativePositionCurveCurve.Disjoint, new double[0]);
+                return (RelativePositionClosedCurves.Disjoint, new double[0]);
             }
             else if (dot < 0) // P1, P2 lie on opposite semiplanes
             {
@@ -149,7 +149,7 @@ namespace MGroup.XFEM.Geometry.Primitives
                 double[] P1oP2o = P2o.Subtract(P1o);
                 double[] P1oK = P1o.Add(P1oP2o.Scale(lambda));
                 double tk = P1oK.DotProduct2D(s);
-                return (RelativePositionCurveCurve.Intersecting, new double[] { tk });
+                return (RelativePositionClosedCurves.Intersecting, new double[] { tk });
             }
             else
             {
@@ -158,15 +158,15 @@ namespace MGroup.XFEM.Geometry.Primitives
 
                 if (proj1.Distance == 0 && proj2.Distance == 0) // Both P1 and P2 lie on the line
                 {
-                    return (RelativePositionCurveCurve.Conforming, Sort(t1, t2));
+                    return (RelativePositionClosedCurves.Conforming, Sort(t1, t2));
                 }
                 else if (proj1.Distance == 0 /*&& proj2.Distance != 0*/) // Only P1 lies on the line
                 {
-                    return (RelativePositionCurveCurve.Intersecting, new double[] { t1 });
+                    return (RelativePositionClosedCurves.Intersecting, new double[] { t1 });
                 }
                 else /*(proj1.Distance != 0 && proj2.Distance == 0)*/ // Only P2 lies on the line
                 {
-                    return (RelativePositionCurveCurve.Intersecting, new double[] { t2 });
+                    return (RelativePositionClosedCurves.Intersecting, new double[] { t2 });
                 }
             }
         }

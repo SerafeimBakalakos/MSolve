@@ -84,7 +84,7 @@ namespace MGroup.XFEM.Tests.Geometry
             else line = new Line2D(p1, p2);
             IElementGeometryIntersection intersection = line.IntersectPolygon(triangle);
 
-            Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Disjoint);
+            Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Disjoint); //TODO: This should be tangent
             Assert.True(intersection is NullElementIntersection);
 
             //Assert.True(pos == RelativePositionCurveDisc.Tangent);

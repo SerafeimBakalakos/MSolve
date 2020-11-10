@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using MGroup.XFEM.Integration;
-using ISAAR.MSolve.Geometry.Coordinates;
-using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Discretization.Mesh;
 using MGroup.XFEM.Elements;
 
