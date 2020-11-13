@@ -23,10 +23,15 @@ namespace MGroup.XFEM.Integration.Quadratures
         {
             //TODO: these should be thread safe and atomic.
             bool exists = quadratures.TryGetValue(orderXi, orderEta, orderZeta, out GaussLegendre3D quadrature);
-            if (!exists)
+            lock (quadratures)
             {
-                quadrature = new GaussLegendre3D(orderXi, orderEta, orderZeta);
-                quadratures[orderXi, orderEta, orderZeta] = quadrature;
+                // Check again, in case another thread added it between th first check and the lock
+                exists = quadratures.TryGetValue(orderXi, orderEta, orderZeta, out quadrature);
+                if (!exists)
+                {
+                    quadrature = new GaussLegendre3D(orderXi, orderEta, orderZeta);
+                    quadratures[orderXi, orderEta, orderZeta] = quadrature;
+                }
             }
             return quadrature;
         }

@@ -26,8 +26,17 @@ namespace MGroup.XFEM.Integration.Quadratures
             bool exists = quadratures.TryGetValue(orderXi, orderEta, out GaussLegendre2D quadrature);
             if (!exists)
             {
-                quadrature = new GaussLegendre2D(orderXi, orderEta);
-                quadratures[orderXi, orderEta] = quadrature;
+                lock(quadratures)
+                {
+                    // Check again, in case another thread added it between th first check and the lock
+                    exists = quadratures.TryGetValue(orderXi, orderEta, out quadrature);
+                    if (!exists)
+                    {
+                        quadrature = new GaussLegendre2D(orderXi, orderEta);
+                        quadratures[orderXi, orderEta] = quadrature;
+                    }
+                }
+                
             }
             return quadrature;
         }
