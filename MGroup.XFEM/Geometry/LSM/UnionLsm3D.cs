@@ -55,7 +55,7 @@ namespace MGroup.XFEM.Geometry.LSM
             
         }
 
-        public override void UnionWith(IImplicitGeometry otherGeometry)
+        public override void UnionWith(IClosedGeometry otherGeometry)
         {
             // If there is only one level set array, clone it, as to not corrupt the already merged curve
             if (mergedLsms.Count == 1)

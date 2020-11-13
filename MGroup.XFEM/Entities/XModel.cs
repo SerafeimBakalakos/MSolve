@@ -40,14 +40,16 @@ namespace MGroup.XFEM.Entities
 
         public List<TElement> Elements { get; } = new List<TElement>();
 
+        public Dictionary<IEnrichment, XNode[]> EnrichedNodes { get; set; } = new Dictionary<IEnrichment, XNode[]>();
+
         public Dictionary<IEnrichment, IDofType[]> EnrichedDofs { get; set; } = new Dictionary<IEnrichment, IDofType[]>();
 
         public IGlobalFreeDofOrdering GlobalDofOrdering { get; set; }
 
         public List<NodalLoad> NodalLoads { get; private set; } = new List<NodalLoad>();
 
-        IReadOnlyList<INode> IStructuralModel.Nodes => Nodes;
-        public List<XNode> Nodes { get; } = new List<XNode>();
+        IReadOnlyList<INode> IStructuralModel.Nodes => XNodes;
+        public List<XNode> XNodes { get; } = new List<XNode>();
 
         IReadOnlyList<ISubdomain> IStructuralModel.Subdomains => Subdomains.Values.ToList();
         public Dictionary<int, XSubdomain> Subdomains { get; } = new Dictionary<int, XSubdomain>();
@@ -108,7 +110,7 @@ namespace MGroup.XFEM.Entities
 
         private void AssignConstraints()
         {
-            foreach (XNode node in Nodes)
+            foreach (XNode node in XNodes)
             {
                 if (node.Constraints == null) continue;
                 foreach (Constraint constraint in node.Constraints) Constraints[node, constraint.DOF] = constraint.Amount;
@@ -132,7 +134,7 @@ namespace MGroup.XFEM.Entities
             }
 
             // Associate each node with its subdomains
-            foreach (XNode node in Nodes)
+            foreach (XNode node in XNodes)
             {
                 foreach (IXFiniteElement element in node.ElementsDictionary.Values)
                 {

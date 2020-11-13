@@ -92,7 +92,8 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 // Enrichment
                 Console.WriteLine("Applying enrichments");
                 ISingularityResolver singularityResolver
-                    = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+                    //= new MultiphaseRelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+                    = new NullSingularityResolver();
                 var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
                 nodeEnricher.ApplyEnrichments();
                 model.UpdateDofs();

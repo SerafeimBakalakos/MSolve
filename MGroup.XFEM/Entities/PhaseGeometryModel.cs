@@ -95,9 +95,9 @@ namespace MGroup.XFEM.Entities
             IPhase defaultPhase = Phases[0];
             for (int i = 1; i < Phases.Count; ++i)
             {
-                Phases[i].InteractWithNodes(physicalModel.Nodes);
+                Phases[i].InteractWithNodes(physicalModel.XNodes);
             }
-            defaultPhase.InteractWithNodes(physicalModel.Nodes);
+            defaultPhase.InteractWithNodes(physicalModel.XNodes);
         }
 
         public void InteractWithElements()

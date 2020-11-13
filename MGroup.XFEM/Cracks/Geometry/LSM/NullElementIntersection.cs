@@ -9,7 +9,7 @@ using MGroup.XFEM.Geometry;
 //TODO: Merge this with the one from MGroup.XFEM.Geometry
 namespace MGroup.XFEM.Cracks.Geometry.LSM
 {
-    public class NullElementIntersection : IElementCrackIntersection
+    public class NullElementIntersection : IElementCrackInteraction
     {
         public NullElementIntersection(int parentGeometryID, IXFiniteElement element)
         {
@@ -37,6 +37,6 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
             return new double[0][];
         }
 
-        IIntersectionMesh IElementCrackIntersection.ApproximateGlobalCartesian() => new IntersectionMesh();
+        IIntersectionMesh IElementCrackInteraction.ApproximateGlobalCartesian() => new IntersectionMesh();
     }
 }

@@ -10,9 +10,46 @@ namespace MGroup.XFEM.Entities
 {
     public static class MeshUtilities
     {
+        /// <summary>
+        /// Finds the nodes that lie in or on the circle. It can be an empty collection. It does not search all nodes of the 
+        /// mesh, but instead focuses around a provided element.
+        /// </summary>
+        /// <param name="circle"></param>
+        /// <param name="startElement">Start by searching the nodes of this element and then move "outwards".</param>
+        /// <returns>The nodes that lie in or on the circle. It can be an empty collection.</returns>
+        public static HashSet<XNode> FindNodesInsideCircle(Circle2D circle, IXFiniteElement startElement)
+        {
+            // neighbors of the processed nodes, moving "outwards"
+            var candidates = new HashSet<XNode>(startElement.Nodes); 
+            var internalNodes = new HashSet<XNode>();
+            var processedNodes = new HashSet<XNode>();
+
+            bool internalNodesFound = true;
+            while (internalNodesFound)
+            {
+                internalNodesFound = false;
+                foreach (XNode node in candidates)
+                {
+                    if (circle.SignedDistanceOf(node.Coordinates) <= 0)
+                    {
+                        internalNodesFound = true;
+                        internalNodes.Add(node);
+                        processedNodes.Add(node);
+
+                        foreach (XNode other in FindNeighbors(node))
+                        {
+                            if (!processedNodes.Contains(node)) candidates.Add(other);
+                        }
+                    }
+                }
+            }
+            return internalNodes;
+        }
+
         public static HashSet<TElement> FindElementsIntersectedByCircle<TElement>(Circle2D circle,
             TElement startElement) where TElement : class, IXFiniteElement
         {
+            //TODO: It should be rewritten. See the corresponding method for nodes.
             //TODO: It should also be tested (it is easy)
             var internalElements = new HashSet<TElement>();
             var intersectedElements = new HashSet<TElement>();
@@ -53,6 +90,19 @@ namespace MGroup.XFEM.Entities
             }
 
             return intersectedElements;
+        }
+
+        public static HashSet<XNode> FindNeighbors(XNode node)
+        {
+            var neighbors = new HashSet<XNode>();
+            foreach (IXFiniteElement element in node.ElementsDictionary.Values)
+            {
+                foreach (XNode other in element.Nodes)
+                {
+                    if (other != node) neighbors.Add(other);
+                }
+            }
+            return neighbors;
         }
 
         public static HashSet<TElement> FindNeighbors<TElement>(TElement element) where TElement : class, IXFiniteElement

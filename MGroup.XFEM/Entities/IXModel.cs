@@ -8,7 +8,7 @@ namespace MGroup.XFEM.Entities
 {
     public interface IXModel : IStructuralModel
     {
-        List<XNode> Nodes { get; }
+        List<XNode> XNodes { get; }
 
         IEnumerable<IXFiniteElement> EnumerateElements();
     }

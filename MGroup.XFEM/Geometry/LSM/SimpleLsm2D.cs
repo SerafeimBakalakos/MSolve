@@ -10,7 +10,7 @@ using MGroup.XFEM.Geometry.Tolerances;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public class SimpleLsm2D : IImplicitGeometry
+    public class SimpleLsm2D : IClosedGeometry
     {
         public SimpleLsm2D(int id, double[] nodalLevelSets)
         {
@@ -109,7 +109,7 @@ namespace MGroup.XFEM.Geometry.LSM
             return result;
         }
 
-        public virtual void UnionWith(IImplicitGeometry otherGeometry)
+        public virtual void UnionWith(IClosedGeometry otherGeometry)
         {
             if (otherGeometry is SimpleLsm2D otherLsm)
             {

@@ -9,7 +9,7 @@ namespace MGroup.XFEM.Entities
 {
     public class PhaseBoundary
     {
-        public PhaseBoundary(IImplicitGeometry geometry, IPhase positivePhase, IPhase negativePhase)
+        public PhaseBoundary(IClosedGeometry geometry, IPhase positivePhase, IPhase negativePhase)
         {
             this.Geometry = geometry;
             this.PositivePhase = positivePhase;
@@ -21,6 +21,6 @@ namespace MGroup.XFEM.Entities
         public IPhase NegativePhase { get; set; }
         public IPhase PositivePhase { get; set; }
 
-        public IImplicitGeometry Geometry { get; set; }
+        public IClosedGeometry Geometry { get; set; }
     }
 }

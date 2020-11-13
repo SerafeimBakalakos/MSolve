@@ -66,5 +66,7 @@ namespace MGroup.XFEM.Entities
             else throw new NotImplementedException();
         }
         public int CompareTo(INode other) => this.ID - other.ID;
+
+        public override int GetHashCode() => ID.GetHashCode();
     }
 }

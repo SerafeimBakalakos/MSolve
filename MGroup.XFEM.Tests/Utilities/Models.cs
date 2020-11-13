@@ -29,7 +29,7 @@ namespace MGroup.XFEM.Tests.Utilities
             {
                 int[] nodeIdx = mesh.GetNodeIdx(nodeID);
                 double[] coords = mesh.GetNodeCoordinates(nodeIdx);
-                model.Nodes.Add(new XNode(nodeID, coords));
+                model.XNodes.Add(new XNode(nodeID, coords));
             }
 
             // Elements
@@ -39,7 +39,7 @@ namespace MGroup.XFEM.Tests.Utilities
                 int[] elemIdx = mesh.GetElementIdx(elemID);
                 foreach (int n in mesh.GetElementConnectivity(elemIdx))
                 {
-                    nodes.Add(model.Nodes[n]);
+                    nodes.Add(model.XNodes[n]);
                 }
                 var element = factory.CreateElement(elemID, CellType.Quad4, nodes);
                 model.Elements.Add(element);
@@ -60,7 +60,7 @@ namespace MGroup.XFEM.Tests.Utilities
                 meshGen.CreateMesh((id, x, y, z) => new XNode(id, new double[] { x, y, z }));
 
             // Nodes
-            foreach (XNode node in nodes) model.Nodes.Add(node);
+            foreach (XNode node in nodes) model.XNodes.Add(node);
 
             // Integration
             var stdQuadrature = GaussLegendre2D.GetQuadratureWithOrder(bulkIntegrationOrder, bulkIntegrationOrder);
@@ -80,15 +80,15 @@ namespace MGroup.XFEM.Tests.Utilities
             double meshTol = 1E-7;
 
             // Left side: T = +100
-            double minX = model.Nodes.Select(n => n.X).Min();
-            foreach (var node in model.Nodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
+            double minX = model.XNodes.Select(n => n.X).Min();
+            foreach (var node in model.XNodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
             {
                 node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = +100 });
             }
 
             // Right side: T = 100
-            double maxX = model.Nodes.Select(n => n.X).Max();
-            foreach (var node in model.Nodes.Where(n => Math.Abs(n.X - maxX) <= meshTol))
+            double maxX = model.XNodes.Select(n => n.X).Max();
+            foreach (var node in model.XNodes.Where(n => Math.Abs(n.X - maxX) <= meshTol))
             {
                 node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = -100 });
             }
@@ -110,7 +110,7 @@ namespace MGroup.XFEM.Tests.Utilities
                 meshGen.CreateMesh((id, x, y, z) => new XNode(id, new double[] { x, y, z }));
 
             // Nodes
-            foreach (XNode node in nodes) model.Nodes.Add(node);
+            foreach (XNode node in nodes) model.XNodes.Add(node);
 
             // Integration
             var stdQuadrature = GaussLegendre3D.GetQuadratureWithOrder(bulkIntegrationOrder, bulkIntegrationOrder, bulkIntegrationOrder);
@@ -130,15 +130,15 @@ namespace MGroup.XFEM.Tests.Utilities
             double meshTol = 1E-7;
 
             // Left side: T = +100
-            double minX = model.Nodes.Select(n => n.X).Min();
-            foreach (var node in model.Nodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
+            double minX = model.XNodes.Select(n => n.X).Min();
+            foreach (var node in model.XNodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
             {
                 node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = +100 });
             }
 
             // Right side: T = 100
-            double maxX = model.Nodes.Select(n => n.X).Max();
-            foreach (var node in model.Nodes.Where(n => Math.Abs(n.X - maxX) <= meshTol))
+            double maxX = model.XNodes.Select(n => n.X).Max();
+            foreach (var node in model.XNodes.Where(n => Math.Abs(n.X - maxX) <= meshTol))
             {
                 node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = -100 });
             }

@@ -36,7 +36,7 @@ namespace MGroup.XFEM.Plotting.Writers
         private void PlotEnrichedNodesCategory(Func<IEnrichment, bool> predicate, string path, string categoryName)
         {
             var nodesToPlot = new Dictionary<double[], double>();
-            foreach (XNode node in physicalModel.Nodes)
+            foreach (XNode node in physicalModel.XNodes)
             {
                 if (node.Enrichments.Count == 0) continue;
                 IEnrichment[] enrichments = node.Enrichments.Keys.Where(predicate).ToArray();

@@ -86,7 +86,7 @@ namespace MGroup.XFEM.Tests.Plotting
             // Plot conforming mesh
             Dictionary<IXFiniteElement, IElementSubcell[]> triangulation = 
                 Utilities.Plotting.CreateConformingMesh(2, elementIntersections);
-            var conformingMesh = new ConformingOutputMesh(model.Nodes, model.Elements, triangulation);
+            var conformingMesh = new ConformingOutputMesh(model.XNodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathConformingMesh))
             {
                 writer.WriteMesh(conformingMesh);
@@ -133,7 +133,7 @@ namespace MGroup.XFEM.Tests.Plotting
             // Plot conforming mesh
             Dictionary<IXFiniteElement, IElementSubcell[]> triangulation =
                 Utilities.Plotting.CreateConformingMesh(2, elementIntersections);
-            var conformingMesh = new ConformingOutputMesh(model.Nodes, model.Elements, triangulation);
+            var conformingMesh = new ConformingOutputMesh(model.XNodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathConformingMesh))
             {
                 writer.WriteMesh(conformingMesh);
@@ -158,8 +158,9 @@ namespace MGroup.XFEM.Tests.Plotting
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
 
             // Enrichment
-            ISingularityResolver singularityResolver 
-                = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+            ISingularityResolver singularityResolver
+                    //= new MultiphaseRelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+                    = new NullSingularityResolver();
             var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
@@ -198,7 +199,7 @@ namespace MGroup.XFEM.Tests.Plotting
             // Plot conforming mesh
             Dictionary<IXFiniteElement, IElementSubcell[]> triangulation =
                 Utilities.Plotting.CreateConformingMesh(2, elementIntersections);
-            var conformingMesh = new ConformingOutputMesh(model.Nodes, model.Elements, triangulation);
+            var conformingMesh = new ConformingOutputMesh(model.XNodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathConformingMesh))
             {
                 writer.WriteMesh(conformingMesh);
@@ -229,7 +230,8 @@ namespace MGroup.XFEM.Tests.Plotting
 
             // Enrichment
             ISingularityResolver singularityResolver
-                = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+                    //= new MultiphaseRelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+                    = new NullSingularityResolver();
             var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
@@ -314,7 +316,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 {
                     double centerY = yMin + (j + 1) * dy;
                     var circle = new Circle2D(centerX, centerY, ballRadius);
-                    var lsm = new SimpleLsm2D(id++, model.Nodes, circle);
+                    var lsm = new SimpleLsm2D(id++, model.XNodes, circle);
                     curves.Add(lsm);
                 }
             }

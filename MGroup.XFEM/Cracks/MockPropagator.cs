@@ -47,8 +47,8 @@ namespace MGroup.XFEM.Cracks
         public PropagationLogger Logger { get; }
 
         
-        public (double growthAngle, double growthLength) Propagate(Dictionary<int, Vector> totalFreeDisplacements, 
-            double[] crackTipGlobal, TipCoordinateSystem tipSystem, IReadOnlyList<XCrackElement2D> tipElements)
+        public (double growthAngle, double growthLength) Propagate(Dictionary<int, Vector> subdomainFreeDisplacements, 
+            double[] crackTipGlobal, TipCoordinateSystem tipSystem, IEnumerable<IXCrackElement> tipElements)
         {
             if (iteration >= Logger.GrowthLengths.Count)
             {

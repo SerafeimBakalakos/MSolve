@@ -9,7 +9,7 @@ using MGroup.XFEM.Entities;
 //TODO: Remove casts
 namespace MGroup.XFEM.Enrichment
 {
-    public class NodeEnricherMultiphase
+    public class NodeEnricherMultiphase : INodeEnricher
     {
         private readonly PhaseGeometryModel geometricModel;
         private readonly ISingularityResolver singularityResolver;

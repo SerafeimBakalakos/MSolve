@@ -7,7 +7,7 @@ using MGroup.XFEM.Integration;
 //TODO: Merge with the general IElementGeometryIntersection
 namespace MGroup.XFEM.Cracks.Geometry.LSM
 {
-    public interface IElementCrackIntersection
+    public interface IElementCrackInteraction
     {
         int ElementID { get; }
 

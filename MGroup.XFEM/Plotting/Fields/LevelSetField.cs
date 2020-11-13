@@ -9,16 +9,16 @@ namespace MGroup.XFEM.Geometry
     public class LevelSetField
     {
         private readonly XModel<IXMultiphaseElement> model;
-        private readonly IImplicitGeometry levelSet;
+        private readonly IClosedGeometry levelSet;
         private readonly ContinuousOutputMesh outMesh;
 
-        public LevelSetField(IXModel model, IImplicitGeometry levelSet)
+        public LevelSetField(IXModel model, IClosedGeometry levelSet)
         {
             this.levelSet = levelSet;
-            this.outMesh = new ContinuousOutputMesh(model.Nodes, model.EnumerateElements());
+            this.outMesh = new ContinuousOutputMesh(model.XNodes, model.EnumerateElements());
         }
 
-        public LevelSetField(IXModel model, IImplicitGeometry levelSet, ContinuousOutputMesh outputMesh)
+        public LevelSetField(IXModel model, IClosedGeometry levelSet, ContinuousOutputMesh outputMesh)
         {
             this.levelSet = levelSet;
             this.outMesh = outputMesh;

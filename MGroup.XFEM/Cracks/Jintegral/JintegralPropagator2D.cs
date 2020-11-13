@@ -54,11 +54,11 @@ namespace MGroup.XFEM.Cracks.Jintegral
             this.Logger = new PropagationLogger();
         }
 
-        public (double growthAngle, double growthLength) Propagate(Dictionary<int, Vector> totalFreeDisplacements, 
-            double[] crackTipGlobal, TipCoordinateSystem tipSystem, IReadOnlyList<XCrackElement2D> tipElements)
+        public (double growthAngle, double growthLength) Propagate(Dictionary<int, Vector> subdomainFreeDisplacements, 
+            double[] crackTipGlobal, TipCoordinateSystem tipSystem, IEnumerable<IXCrackElement> tipElements)
         {
             // TODO: Also check if the sifs do not violate the material toughness
-            (double sifMode1, double sifMode2) = ComputeSIFS(totalFreeDisplacements, crackTipGlobal, tipSystem, tipElements);
+            (double sifMode1, double sifMode2) = ComputeSIFS(subdomainFreeDisplacements, crackTipGlobal, tipSystem, tipElements);
             double growthAngle = growthDirectionLaw.ComputeGrowthAngle(sifMode1, sifMode2);
             double growthLength = growthLengthLaw.ComputeGrowthLength(sifMode1, sifMode2);
             Logger.GrowthAngles.Add(growthAngle);
@@ -68,14 +68,14 @@ namespace MGroup.XFEM.Cracks.Jintegral
         }
 
         private (double sifMode1, double sifMode2) ComputeSIFS(Dictionary<int, Vector> totalFreeDisplacements,
-            double[] crackTip, TipCoordinateSystem tipSystem, IReadOnlyList<XCrackElement2D> tipElements)
+            double[] crackTip, TipCoordinateSystem tipSystem, IEnumerable<IXCrackElement> tipElements)
         {
             double interactionIntegralMode1 = 0.0, interactionIntegralMode2 = 0.0;
-            IReadOnlyDictionary<XCrackElement2D, double[]> elementWeights = 
-                FindJintegralElementsAndNodalWeights(crackTip, tipSystem, tipElements);
+            IReadOnlyDictionary<IXCrackElement, double[]> elementWeights = 
+                FindJintegralElementsAndNodalWeights(crackTip, tipElements);
             foreach (var pair in elementWeights)
             {
-                XCrackElement2D element = pair.Key;
+                IXCrackElement element = pair.Key;
                 double[] nodalWeights = pair.Value;
 
                 //TODO: This needs refactoring ASAP.
@@ -100,15 +100,15 @@ namespace MGroup.XFEM.Cracks.Jintegral
             return (sifMode1, sifMode2);
         }
 
-        private IReadOnlyDictionary<XCrackElement2D, double[]> FindJintegralElementsAndNodalWeights(
-            double[] crackTip, TipCoordinateSystem tipSystem, IReadOnlyList<XCrackElement2D> tipElements)
+        private IReadOnlyDictionary<IXCrackElement, double[]> FindJintegralElementsAndNodalWeights(
+            double[] crackTip, IEnumerable<IXCrackElement> tipElements)
         {
             Circle2D outerContour = 
-                new Circle2D(crackTip[0], crackTip[1], ComputeRadiusOfJintegralOuterContour(tipSystem, tipElements));
-            HashSet<XCrackElement2D> intersectedElements = 
-                MeshUtilities.FindElementsIntersectedByCircle(outerContour, tipElements[0]);
+                new Circle2D(crackTip[0], crackTip[1], ComputeRadiusOfJintegralOuterContour(tipElements));
+            HashSet<IXCrackElement> intersectedElements = 
+                MeshUtilities.FindElementsIntersectedByCircle(outerContour, tipElements.First());
 
-            var elementsAndWeights = new Dictionary<XCrackElement2D, double[]>();
+            var elementsAndWeights = new Dictionary<IXCrackElement, double[]>();
             foreach (var element in intersectedElements)
             {
                 // The relative position of the circle and the nodes was already calculated when checking the
@@ -135,8 +135,7 @@ namespace MGroup.XFEM.Cracks.Jintegral
         }
 
         
-        public double ComputeRadiusOfJintegralOuterContour(TipCoordinateSystem tipSystem, 
-            IReadOnlyList<XCrackElement2D> tipElements)
+        private double ComputeRadiusOfJintegralOuterContour(IEnumerable<IXCrackElement> tipElements)
         {
             // TODO: This method should directly return the elements and take care of cases near the domain boundaries (see Ahmed)
             // TODO: The J-integral radius should not exceed the last crack segment's length
@@ -150,7 +149,7 @@ namespace MGroup.XFEM.Cracks.Jintegral
             return magnificationOfJintegralRadius * Math.Sqrt(maxTipElementArea);
         }
 
-        private (double mode1I, double mode2I) ComputeInteractionIntegrals(XCrackElement2D element, Vector nodalDisplacements,
+        private (double mode1I, double mode2I) ComputeInteractionIntegrals(IXCrackElement element, Vector nodalDisplacements,
             double[] nodalWeights, TipCoordinateSystem tipSystem)
         {
             double integralMode1 = 0.0;
@@ -167,6 +166,7 @@ namespace MGroup.XFEM.Cracks.Jintegral
                 point.Element = element;
                 point.Coordinates[CoordinateSystem.ElementNatural] = gp.Coordinates;
                 point.ShapeFunctions = evalInterpolation.ShapeFunctions;
+                point.ShapeFunctionDerivatives = evalInterpolation.ShapeGradientsCartesian;
                 double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
                 TipJacobians tipJacobians = tipSystem.CalcJacobiansAt(point);
 
@@ -174,8 +174,7 @@ namespace MGroup.XFEM.Cracks.Jintegral
                 IMatrixView constitutive = material.FindMaterialAt(point).ConstitutiveMatrix;
 
                 // State 1
-                Matrix globalDisplacementGradState1 = element.CalcDisplacementFieldGradient(
-                    point, evalInterpolation, nodalDisplacements);
+                Matrix globalDisplacementGradState1 = element.CalcDisplacementFieldGradient(point, nodalDisplacements);
                 Tensor2D globalStressState1 = CalcStressTensor(globalDisplacementGradState1, constitutive);
                 Matrix localDisplacementGradState1 = tipSystem.
                     TransformVectorFieldDerivativesGlobalCartesianToLocalCartesian(globalDisplacementGradState1);

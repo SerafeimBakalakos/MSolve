@@ -7,9 +7,12 @@ using ISAAR.MSolve.LinearAlgebra.Input;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Cracks.Geometry;
+using MGroup.XFEM.Cracks.Geometry.LSM;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry;
+using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Integration.Quadratures;
@@ -44,9 +47,9 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 IMatrix computedRoundedK = computedK.DoToAllEntries(round);
 
                 #region debug
-                var writer = new ISAAR.MSolve.LinearAlgebra.Output.FullMatrixWriter();
-                string path = @"C:\Users\Serafeim\Desktop\XFEM2020\Cracks\DebugOutput\K.txt";
-                writer.WriteToFile(expectedK.Subtract(computedRoundedK), path);
+                //var writer = new ISAAR.MSolve.LinearAlgebra.Output.FullMatrixWriter();
+                //string path = @"C:\Users\Serafeim\Desktop\XFEM2020\Cracks\DebugOutput\K.txt";
+                //writer.WriteToFile(expectedK.Subtract(computedRoundedK), path);
                 #endregion
 
                 Assert.True(expectedK.Equals(computedRoundedK, tol));
@@ -112,12 +115,14 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             nodes[7].Enrichments[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[7]);
 
             var enrichedDofs = new Dictionary<IEnrichment, IDofType[]>();
-            enrichedDofs[stepEnrichment] = new IDofType[2] { 
-                new EnrichedDof(stepEnrichment, StructuralDof.TranslationX), 
-                new EnrichedDof(stepEnrichment, StructuralDof.TranslationY) 
+            enrichedDofs[stepEnrichment] = new IDofType[2] {
+                new EnrichedDof(stepEnrichment, StructuralDof.TranslationX),
+                new EnrichedDof(stepEnrichment, StructuralDof.TranslationY)
             };
 
-            elements[1].IsIntersectedElement = true;
+            elements[1].InteractingCracks[crack] = new OpenLsmElementIntersection2D(crack.ID, elements[1].ID,
+                RelativePositionCurveElement.Intersecting, false,
+                new double[][] { new double[] { 30.0, 0.0 }, new double[] { 30.0, 20.0 } } );
 
             return enrichedDofs;
         }
@@ -239,7 +244,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             }
         }
 
-        private class Crack : ICrack2D
+        private class Crack : ICrack, IXGeometryDescription
         {
             private readonly Line2D line;
 
@@ -256,12 +261,43 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
             public HashSet<int> TipElementIDs => new HashSet<int>();
 
-            public double SignedDistanceFromBody(XNode node)
+            public int ID => 0;
+
+            public HashSet<IXCrackElement> ConformingElements => throw new NotImplementedException();
+
+            public CrackStepEnrichment CrackBodyEnrichment => throw new NotImplementedException();
+
+            public IXGeometryDescription CrackGeometry => throw new NotImplementedException();
+
+            public IReadOnlyList<ICrackTipEnrichment> CrackTipEnrichments => throw new NotImplementedException();
+
+            public HashSet<IXCrackElement> IntersectedElements => throw new NotImplementedException();
+
+            public double[] TipCoordinates => throw new NotImplementedException();
+
+            public HashSet<IXCrackElement> TipElements => throw new NotImplementedException();
+
+            public void InteractWithMesh()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IElementCrackInteraction Intersect(IXFiniteElement element)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Propagate(Dictionary<int, Vector> subdomainFreeDisplacements)
+            {
+                throw new NotImplementedException();
+            }
+
+            public double SignedDistanceOf(XNode node)
             {
                 return line.SignedDistanceOf(node.Coordinates);
             }
 
-            public double SignedDistanceFromBody(XPoint point)
+            public double SignedDistanceOf(XPoint point)
             {
                 bool hasCartesian = point.Coordinates.TryGetValue(CoordinateSystem.GlobalCartesian, out double[] coords);
                 if (!hasCartesian)

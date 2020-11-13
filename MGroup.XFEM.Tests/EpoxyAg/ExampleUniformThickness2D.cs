@@ -87,7 +87,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             // Plot conforming mesh
             Dictionary<IXFiniteElement, IElementSubcell[]> triangulation =
                 Utilities.Plotting.CreateConformingMesh(2, elementIntersections);
-            var conformingMesh = new ConformingOutputMesh(model.Nodes, model.Elements, triangulation);
+            var conformingMesh = new ConformingOutputMesh(model.XNodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathConformingMesh))
             {
                 writer.WriteMesh(conformingMesh);
@@ -112,7 +112,8 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
             // Enrichment
             ISingularityResolver singularityResolver
-                = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+                    //= new MultiphaseRelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+                    = new NullSingularityResolver();
             var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
@@ -141,7 +142,8 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
             // Enrichment
             ISingularityResolver singularityResolver
-                = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+                    //= new MultiphaseRelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+                    = new NullSingularityResolver();
             var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
@@ -168,7 +170,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 = Utilities.Plotting.CalcIntersections(model, geometricModel);
             Dictionary<IXFiniteElement, IElementSubcell[]> triangulation =
                 Utilities.Plotting.CreateConformingMesh(2, elementIntersections);
-            var conformingMesh = new ConformingOutputMesh(model.Nodes, model.Elements, triangulation);
+            var conformingMesh = new ConformingOutputMesh(model.XNodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathTemperatureField))
             {
                 var temperatureField = new TemperatureField(model, conformingMesh);

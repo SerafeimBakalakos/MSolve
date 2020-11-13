@@ -46,7 +46,7 @@ namespace MGroup.XFEM.Plotting.Writers
             {
                 var nodalPhases = new Dictionary<INode, double>();
 
-                foreach (XNode node in physicalModel.Nodes)
+                foreach (XNode node in physicalModel.XNodes)
                 {
                     double phaseID = node.Phase.ID;
                     if (node.Phase.ID == defaultPhaseID) phaseID = colorForDefaultPhase;

@@ -63,5 +63,11 @@ namespace MGroup.XFEM.Elements
             }
             return false;
         }
+
+        public static double[] FindCentroidNatural(this IXFiniteElement element)
+        {
+            IReadOnlyList<double[]> nodesNatural = element.Interpolation.NodalNaturalCoordinates;
+            return Utilities.FindCentroid(nodesNatural);
+        }
     }
 }

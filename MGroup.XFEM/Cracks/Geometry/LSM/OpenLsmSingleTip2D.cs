@@ -14,7 +14,7 @@ using MGroup.XFEM.Geometry.Primitives;
 //      for this class to manage the decomposition. Perhaps it is necessary though.
 namespace MGroup.XFEM.Cracks.Geometry.LSM
 {
-    public class OpenLsmSingleTip2D
+    public class OpenLsmSingleTip2D : IXGeometryDescription
     {
         private readonly IOpenLevelSetUpdater levelSetUpdater;
 
@@ -63,7 +63,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
         /// <remarks>Stolarska has proposed a simpler approach for the characterization (tip element, cut or standard), but that  
         /// is not always correct.</remarks>
         /// <param name="element"></param>
-        public IElementCrackIntersection Intersect(IXFiniteElement element)
+        public IElementCrackInteraction Intersect(IXFiniteElement element)
         {
             (Dictionary<int, double> nodalBodyLevelSets, Dictionary<int, double> nodalTipLevelSets) = 
                 FindLevelSetsOfElementNodes(element);

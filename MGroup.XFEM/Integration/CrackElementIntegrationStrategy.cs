@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using MGroup.XFEM.Elements;
 
@@ -7,9 +8,10 @@ namespace MGroup.XFEM.Integration
 {
     public class CrackElementIntegrationStrategy : IBulkIntegration
     {
-        // TODO: verify the need to use higher order integration for tip blending elements
         private readonly IBulkIntegration integrationForIntersectedHeavisideElements;
         private readonly IBulkIntegration integrationForTipElements;
+
+        // TODO: verify the need to use higher order integration for tip blending elements
         private readonly IBulkIntegration integrationForTipBlendingElements;
 
         public CrackElementIntegrationStrategy(
@@ -38,7 +40,9 @@ namespace MGroup.XFEM.Integration
             }
             else
             {
-                if (crackElement.IsTipElement)
+                bool isIntersectedElement = crackElement.IsIntersected();
+                bool isTipElement = crackElement.IsTipElement();
+                if (isTipElement)
                 {
                     // Case 1: Element that is fully enriched with crack tip functions and may contain the crack tip itself.
                     // Special integration rules must be used that take into account: a) the crack tip enrichment functions,
@@ -47,7 +51,7 @@ namespace MGroup.XFEM.Integration
                 }
                 else if (crackElement.HasTipEnrichedNodes())
                 {
-                    if (crackElement.IsIntersectedElement)
+                    if (isIntersectedElement)
                     {
                         // Case 2: Blending element, with some nodes enriched with crack tip functions, while also being 
                         // intersected by the crack. The requirements are similar to Case 1.
@@ -61,7 +65,7 @@ namespace MGroup.XFEM.Integration
                         return integrationForTipBlendingElements.GenerateIntegrationPoints(crackElement);
                     }
                 }
-                else if (crackElement.IsIntersectedElement)
+                else if (isIntersectedElement)
                 {
                     // Case 4: Element intersected by the crack and fully enriched with Heaviside functions. We need to take into
                     // acccount the discontinuous integrand functions.

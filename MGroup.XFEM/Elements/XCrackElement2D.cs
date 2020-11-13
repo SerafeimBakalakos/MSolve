@@ -8,6 +8,8 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
+using MGroup.XFEM.Cracks.Geometry;
+using MGroup.XFEM.Cracks.Geometry.LSM;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
@@ -102,16 +104,15 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         public IReadOnlyList<XNode> Nodes { get; }
 
+        public Dictionary<ICrack, IElementCrackInteraction> InteractingCracks { get; } 
+            = new Dictionary<ICrack, IElementCrackInteraction>();
+
         public List<IElementGeometryIntersection> Intersections { get; } = new List<IElementGeometryIntersection>();
 
         ISubdomain IElement.Subdomain => this.Subdomain;
         public XSubdomain Subdomain { get; set; }
 
         public double Thickness { get; }
-
-        public bool IsIntersectedElement { get; set; }
-
-        public bool IsTipElement { get; set; }
 
         /// <summary>
         /// Area of the element in the global cartesian coordinate system
@@ -126,8 +127,7 @@ namespace MGroup.XFEM.Elements
         /// vector components refer to the global cartesian system. 
         /// WARNING: Do not call this method for points on a crack interface.
         /// </summary>
-        public Matrix CalcDisplacementFieldGradient(XPoint point, EvalInterpolation evalInterpolation,
-            Vector nodalDisplacements)
+        public Matrix CalcDisplacementFieldGradient(XPoint point, Vector nodalDisplacements)
         {
             //TODO: There is a lot of duplication between this and the calculation of Bstd, Benr. I could abstract the common 
             //      code, however that will probably slow down then calculation of Bstd, Benr which is much more important.
@@ -143,8 +143,8 @@ namespace MGroup.XFEM.Elements
                 double ux = uStd[2 * nodeIdx];
                 double uy = uStd[2 * nodeIdx + 1];
 
-                double dNdx = evalInterpolation.ShapeGradientsCartesian[nodeIdx, 0];
-                double dNdy = evalInterpolation.ShapeGradientsCartesian[nodeIdx, 1];
+                double dNdx = point.ShapeFunctionDerivatives[nodeIdx, 0];
+                double dNdy = point.ShapeFunctionDerivatives[nodeIdx, 1];
                 displacementGradient[0, 0] += dNdx * ux;
                 displacementGradient[0, 1] += dNdy * ux;
                 displacementGradient[1, 0] += dNdx * uy;
@@ -153,13 +153,13 @@ namespace MGroup.XFEM.Elements
 
             // Enriched contributions.
             IReadOnlyDictionary<IEnrichment, EvaluatedFunction> evalEnrichments =
-                EvaluateEnrichments(point, evalInterpolation);
+                EvaluateEnrichments(point);
             int dof = 0;
             for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
             {
-                double N = evalInterpolation.ShapeFunctions[nodeIdx];
-                double dNdx = evalInterpolation.ShapeGradientsCartesian[nodeIdx, 0];
-                double dNdy = evalInterpolation.ShapeGradientsCartesian[nodeIdx, 1];
+                double N = point.ShapeFunctions[nodeIdx];
+                double dNdx = point.ShapeFunctionDerivatives[nodeIdx, 0];
+                double dNdy = point.ShapeFunctionDerivatives[nodeIdx, 1];
 
                 foreach (var enrichmentValuePair in Nodes[nodeIdx].Enrichments)
                 {
@@ -190,6 +190,8 @@ namespace MGroup.XFEM.Elements
         public IMatrix DampingMatrix(IElement element) => throw new NotImplementedException();
 
         public IReadOnlyList<IReadOnlyList<IDofType>> GetElementDofTypes(IElement element) => allDofTypes;
+
+        public override int GetHashCode() => ID.GetHashCode();
 
         public XPoint EvaluateFunctionsAt(double[] naturalPoint)
         {
@@ -338,7 +340,7 @@ namespace MGroup.XFEM.Elements
         private Matrix CalculateDeformationMatrixEnriched(int numEnrichedDofs, XPoint gaussPoint, 
             EvalInterpolation evalInterpolation)
         {
-            Dictionary<IEnrichment, EvaluatedFunction> enrichmentValues = EvaluateEnrichments(gaussPoint, evalInterpolation);
+            Dictionary<IEnrichment, EvaluatedFunction> enrichmentValues = EvaluateEnrichments(gaussPoint);
 
             var deformationMatrix = Matrix.CreateZero(3, numEnrichedDofs);
             int currentColumn = 0;
@@ -401,8 +403,7 @@ namespace MGroup.XFEM.Elements
             return deformation;
         }
 
-        private Dictionary<IEnrichment, EvaluatedFunction> EvaluateEnrichments(
-            XPoint gaussPoint, EvalInterpolation evalInterpolation)
+        private Dictionary<IEnrichment, EvaluatedFunction> EvaluateEnrichments(XPoint gaussPoint)
         {
             var cachedEvalEnrichments = new Dictionary<IEnrichment, EvaluatedFunction>();
             foreach (XNode node in Nodes)

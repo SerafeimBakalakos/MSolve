@@ -16,13 +16,13 @@ namespace MGroup.XFEM.Tests.Utilities
     public class Plotting
     {
         public static Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> CalcIntersections(
-            XModel<IXMultiphaseElement> model, IEnumerable<IImplicitGeometry> geometries)
+            XModel<IXMultiphaseElement> model, IEnumerable<IClosedGeometry> geometries)
         {
             var intersections = new Dictionary<IXFiniteElement, List<IElementGeometryIntersection>>();
             foreach (IXFiniteElement element in model.Elements)
             {
                 var elementIntersections = new List<IElementGeometryIntersection>();
-                foreach (IImplicitGeometry curve in geometries)
+                foreach (IClosedGeometry curve in geometries)
                 {
                     IElementGeometryIntersection intersection = curve.Intersect(element);
                     if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
@@ -39,12 +39,12 @@ namespace MGroup.XFEM.Tests.Utilities
         public static Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> CalcIntersections(
             XModel<IXMultiphaseElement> model, PhaseGeometryModel geometricModel)
         {
-            Dictionary<int, IImplicitGeometry> geometries = FindCurvesOf(geometricModel);
+            Dictionary<int, IClosedGeometry> geometries = FindCurvesOf(geometricModel);
             var intersections = new Dictionary<IXFiniteElement, List<IElementGeometryIntersection>>();
             foreach (IXFiniteElement element in model.Elements)
             {
                 var elementIntersections = new List<IElementGeometryIntersection>();
-                foreach (IImplicitGeometry geometry in geometries.Values)
+                foreach (IClosedGeometry geometry in geometries.Values)
                 {
                     IElementGeometryIntersection intersection = geometry.Intersect(element);
                     if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
@@ -93,9 +93,9 @@ namespace MGroup.XFEM.Tests.Utilities
         //    return lsmCurves.ToArray();
         //}
 
-        public static Dictionary<int, IImplicitGeometry> FindCurvesOf(PhaseGeometryModel geometricModel)
+        public static Dictionary<int, IClosedGeometry> FindCurvesOf(PhaseGeometryModel geometricModel)
         {
-            var lsmCurves = new Dictionary<int, IImplicitGeometry>();
+            var lsmCurves = new Dictionary<int, IClosedGeometry>();
             foreach (IPhase phase in geometricModel.Phases)
             {
                 if (phase is DefaultPhase) continue;
@@ -108,11 +108,11 @@ namespace MGroup.XFEM.Tests.Utilities
         public static void PlotInclusionLevelSets(string directoryPath, string vtkFilenamePrefix,
             XModel<IXMultiphaseElement> model, PhaseGeometryModel geometricModel)
         {
-            Dictionary<int, IImplicitGeometry> lsmCurves = FindCurvesOf(geometricModel);
+            Dictionary<int, IClosedGeometry> lsmCurves = FindCurvesOf(geometricModel);
             foreach (var pair in lsmCurves)
             {
                 int phaseId = pair.Key;
-                IImplicitGeometry geometry = pair.Value;
+                IClosedGeometry geometry = pair.Value;
                 directoryPath = directoryPath.Trim('\\');
                 string suffix = (lsmCurves.Count == 1) ? "" : String.Format("{0:000}", phaseId);
                 string file = $"{directoryPath}\\{vtkFilenamePrefix}{suffix}.vtk";

@@ -79,14 +79,14 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 SilverPhaseIDs.Add(phaseExternal.ID);
 
                 // Create phase boundaries
-                var lsmExternal = new SimpleLsm3D(phaseExternal.ID, physicalModel.Nodes, newBallExternal);
+                var lsmExternal = new SimpleLsm3D(phaseExternal.ID, physicalModel.XNodes, newBallExternal);
                 var boundaryExternal = new PhaseBoundary(lsmExternal, defaultPhase, phaseExternal);
                 defaultPhase.ExternalBoundaries.Add(boundaryExternal);
                 defaultPhase.Neighbors.Add(phaseExternal);
                 phaseExternal.ExternalBoundaries.Add(boundaryExternal);
                 phaseExternal.Neighbors.Add(defaultPhase);
 
-                var lsmInternal = new SimpleLsm3D(phaseInternal.ID, physicalModel.Nodes, newBallInternal);
+                var lsmInternal = new SimpleLsm3D(phaseInternal.ID, physicalModel.XNodes, newBallInternal);
                 var boundaryInternal = new PhaseBoundary(lsmInternal, phaseExternal, phaseInternal);
                 phaseExternal.InternalBoundaries.Add(boundaryInternal);
                 phaseExternal.Neighbors.Add(phaseInternal);

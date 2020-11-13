@@ -86,7 +86,7 @@ namespace MGroup.XFEM.Tests.Unions
             // Plot conforming mesh
             Dictionary<IXFiniteElement, IElementSubcell[]> triangulation =
                 Utilities.Plotting.CreateConformingMesh(2, elementIntersections);
-            var conformingMesh = new ConformingOutputMesh(model.Nodes, model.Elements, triangulation);
+            var conformingMesh = new ConformingOutputMesh(model.XNodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathConformingMesh))
             {
                 writer.WriteMesh(conformingMesh);
@@ -111,8 +111,9 @@ namespace MGroup.XFEM.Tests.Unions
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
 
             // Enrichment
-            ISingularityResolver singularityResolver 
-                = new RelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+            ISingularityResolver singularityResolver
+                    //= new MultiphaseRelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
+                    = new NullSingularityResolver();
             var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
@@ -152,7 +153,7 @@ namespace MGroup.XFEM.Tests.Unions
             geometricModel.Phases.Add(defaultPhase);
             for (int b = 0; b < 2; ++b)
             {
-                var externalLsm = new SimpleLsm2D(2 * b + 1, model.Nodes, ballsExternal[b]);
+                var externalLsm = new SimpleLsm2D(2 * b + 1, model.XNodes, ballsExternal[b]);
                 var externalPhase = new HollowLsmPhase(2 * b + 1, geometricModel, 0);
                 geometricModel.Phases.Add(externalPhase);
 
@@ -162,7 +163,7 @@ namespace MGroup.XFEM.Tests.Unions
                 externalPhase.ExternalBoundaries.Add(externalBoundary);
                 externalPhase.Neighbors.Add(defaultPhase);
 
-                var internalLsm = new SimpleLsm2D(2 * b + 2, model.Nodes, ballsInternal[b]);
+                var internalLsm = new SimpleLsm2D(2 * b + 2, model.XNodes, ballsInternal[b]);
                 var internalPhase = new LsmPhase(2 * b + 2, geometricModel, -1);
                 geometricModel.Phases.Add(internalPhase);
 

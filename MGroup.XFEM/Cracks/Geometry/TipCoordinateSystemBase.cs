@@ -6,6 +6,12 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 
+//TODO: I dislike storing state in here and it increases memory requirements needlessly. In this case, the state stored here is 
+//      only used to avoid recalculating coordinate system data for each of the 4 tip functions. Wouldn't it be better to store 
+//      that data in XPoint? But then, what about XNode? Another approach would be to have all tip function objects (of the same 
+//      crack tip) store and share these calculated values. They will always be calculated together and in order for the same 
+//      point. I could have them store the values for each point in Dictionaries and when all 4 have used them, then remove that 
+//      entry from the Dictionary.
 namespace MGroup.XFEM.Cracks.Geometry
 {
     public abstract class TipCoordinateSystemBase

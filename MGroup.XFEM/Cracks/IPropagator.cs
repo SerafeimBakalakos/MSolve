@@ -14,7 +14,7 @@ namespace MGroup.XFEM.Cracks
     {
         PropagationLogger Logger { get; }
 
-        (double growthAngle, double growthLength) Propagate(Dictionary<int, Vector> totalFreeDisplacements, 
-            double[] globalCrackTip, TipCoordinateSystem tipSystem, IReadOnlyList<XCrackElement2D> tipElements);
+        (double growthAngle, double growthLength) Propagate(Dictionary<int, Vector> subdomainFreeDisplacements, 
+            double[] globalCrackTip, TipCoordinateSystem tipSystem, IEnumerable<IXCrackElement> tipElements);
     }
 }

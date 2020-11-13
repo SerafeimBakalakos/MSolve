@@ -12,11 +12,13 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
 using MGroup.XFEM.Cracks.Geometry;
+using MGroup.XFEM.Cracks.Geometry.LSM;
 using MGroup.XFEM.Cracks.Jintegral;
 using MGroup.XFEM.Cracks.PropagationCriteria;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Mesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
@@ -183,7 +185,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             // node 7: ux_7=36 uy_1=37 t0x_7=38 t0y_7=39 t1x_7=40 t1y_7=41 t2x_7=42 t2y_7=43 t3x_1=44 t3y_7=45 
 
             // Calculate relevant stiffness submatrix global
-            XNode node7 = model.Nodes[7];
+            XNode node7 = model.XNodes[7];
             int[] node7GlobalDofs = { 36, 37, 38, 39, 40, 41, 42, 43, 44, 45 };
             IMatrix node7GlobalStiffness = globalK.GetSubmatrix(node7GlobalDofs, node7GlobalDofs);
 
@@ -297,11 +299,11 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             double tol = 1E-6;
             double L = maxCoords[0];
             double H = maxCoords[1];
-            XNode topRight = model.Nodes.Where(n => Math.Abs(n.X - L) <= tol && Math.Abs(n.Y - H) <= tol).First();
-            XNode bottomRight = model.Nodes.Where(n => Math.Abs(n.X - L) <= tol && Math.Abs(n.Y) <= tol).First();
+            XNode topRight = model.XNodes.Where(n => Math.Abs(n.X - L) <= tol && Math.Abs(n.Y - H) <= tol).First();
+            XNode bottomRight = model.XNodes.Where(n => Math.Abs(n.X - L) <= tol && Math.Abs(n.Y) <= tol).First();
             topRight.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = +0.05 });
             bottomRight.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = -0.05 });
-            foreach (XNode node in model.Nodes.Where(n => Math.Abs(n.X) <= tol))
+            foreach (XNode node in model.XNodes.Where(n => Math.Abs(n.X) <= tol))
             {
                 node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = 0.0 });
                 node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = 0.0 });
@@ -324,7 +326,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             nodes[6] = new XNode(6, new double[] { maxCoords[0], maxCoords[1] });
             nodes[7] = new XNode(7, new double[] { 2.0 / 3 * maxCoords[0], maxCoords[1] });
 
-            foreach (XNode node in nodes) model.Nodes.Add(node);
+            foreach (XNode node in nodes) model.XNodes.Add(node);
 
             // Elements
             var connectivity = new int[3, 4]
@@ -343,7 +345,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 var elementNodes = new XNode[4];
                 for (int n = 0; n < 4; ++n)
                 {
-                    elementNodes[n] = model.Nodes[connectivity[e, n]];
+                    elementNodes[n] = model.XNodes[connectivity[e, n]];
                 }
                 XCrackElement2D element = factory.CreateElement(e, CellType.Quad4, elementNodes);
                 model.Elements.Add(element);
@@ -380,10 +382,10 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             // Define enrichments
             var enrichments = new IEnrichment[5];
             enrichments[0] = new CrackStepEnrichment(0, crack);
-            enrichments[1] = new IsotropicBrittleTipEnrichments2D.Func0(1, crack.TipSystem);
-            enrichments[2] = new IsotropicBrittleTipEnrichments2D.Func1(2, crack.TipSystem);
-            enrichments[3] = new IsotropicBrittleTipEnrichments2D.Func2(3, crack.TipSystem);
-            enrichments[4] = new IsotropicBrittleTipEnrichments2D.Func3(4, crack.TipSystem);
+            enrichments[1] = new IsotropicBrittleTipEnrichments2D.Func0(1, () => crack.TipSystem);
+            enrichments[2] = new IsotropicBrittleTipEnrichments2D.Func1(2, () => crack.TipSystem);
+            enrichments[3] = new IsotropicBrittleTipEnrichments2D.Func2(3, () => crack.TipSystem);
+            enrichments[4] = new IsotropicBrittleTipEnrichments2D.Func3(4, () => crack.TipSystem);
 
             // Define enriched dofs
             model.EnrichedDofs = new Dictionary<IEnrichment, IDofType[]>();
@@ -405,7 +407,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             // Heaviside enrichment
             foreach (int n in new int[] { 5, 6 })
             {
-                XNode node = model.Nodes[n];
+                XNode node = model.XNodes[n];
                 IEnrichment enrichment = enrichments[0];
                 node.Enrichments[enrichment] = enrichment.EvaluateAt(node);
             }
@@ -413,7 +415,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             // Tip enrichments
             foreach (int n in new int[] { 1, 2, 4, 7 })
             {
-                XNode node = model.Nodes[n];
+                XNode node = model.XNodes[n];
                 foreach (int e in new int[] { 1, 2, 3, 4 })
                 {
                     IEnrichment enrichment = enrichments[e];
@@ -481,7 +483,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             return (solver.LinearSystems[0].Solution, solver.LinearSystems[0].Matrix);
         }
 
-        private class Crack : ICrack2D
+        private class Crack : IXGeometryDescription, ICrack
         {
             private readonly double[] mouth, tip;
 
@@ -499,18 +501,22 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                     if (IsIntersectedElement(element.Nodes))
                     {
                         IntersectedElementIDs.Add(element.ID);
-                        element.IsIntersectedElement = true;
+                        element.InteractingCracks[this] = new OpenLsmElementIntersection2D(this.ID, element.ID,
+                            RelativePositionCurveElement.Intersecting, false, new double[0][]);
+                        element.InteractingCracks[this] = new OpenLsmElementIntersection2D(this.ID, element.ID,
+                            RelativePositionCurveElement.Intersecting, false, new double[0][]);
                     }
                     if (IsTipElement(element.Nodes))
                     {
                         TipElementIDs.Add(element.ID);
-                        element.IsTipElement = true;
-                        element.IsIntersectedElement = true;
+                        element.InteractingCracks[this] = new OpenLsmElementIntersection2D(this.ID, element.ID,
+                            RelativePositionCurveElement.Intersecting, true, new double[0][]);
                     }
                     if (IsMouthElement(element.Nodes))
                     {
                         MouthElementID = element.ID;
-                        element.IsIntersectedElement = true;
+                        element.InteractingCracks[this] = new OpenLsmElementIntersection2D(this.ID, element.ID,
+                            RelativePositionCurveElement.Intersecting, false, new double[0][]);
                     }
                 }
             }
@@ -525,12 +531,43 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
             public HashSet<int> TipElementIDs { get; }
 
-            public double SignedDistanceFromBody(XNode node)
+            public int ID => 0;
+
+            public HashSet<IXCrackElement> ConformingElements => throw new NotImplementedException();
+
+            public CrackStepEnrichment CrackBodyEnrichment => throw new NotImplementedException();
+
+            public IXGeometryDescription CrackGeometry => throw new NotImplementedException();
+
+            public IReadOnlyList<ICrackTipEnrichment> CrackTipEnrichments => throw new NotImplementedException();
+
+            public HashSet<IXCrackElement> IntersectedElements => throw new NotImplementedException();
+
+            public double[] TipCoordinates => throw new NotImplementedException();
+
+            public HashSet<IXCrackElement> TipElements => throw new NotImplementedException();
+
+            public void InteractWithMesh()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IElementCrackInteraction Intersect(IXFiniteElement element)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Propagate(Dictionary<int, Vector> subdomainFreeDisplacements)
+            {
+                throw new NotImplementedException();
+            }
+
+            public double SignedDistanceOf(XNode node)
             {
                 return node.Coordinates[1] - tip[1];
             }
 
-            public double SignedDistanceFromBody(XPoint point)
+            public double SignedDistanceOf(XPoint point)
             {
                 double[] cartesian = point.MapCoordinates(point.ShapeFunctions, point.Element.Nodes);
                 return cartesian[1] - tip[1];
@@ -542,7 +579,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 int numNodesNeg = 0;
                 foreach (XNode node in nodes)
                 {
-                    if (SignedDistanceFromBody(node) >= 0) ++numNodesPos;
+                    if (SignedDistanceOf(node) >= 0) ++numNodesPos;
                     else ++numNodesNeg;
                 }
 

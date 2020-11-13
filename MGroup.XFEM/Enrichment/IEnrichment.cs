@@ -5,6 +5,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 
+//TODO: Move this and its implementations to a sub-namespace
 //TODO: Some enrichments only apply to multiphase stuff
 namespace MGroup.XFEM.Enrichment
 {

@@ -6,18 +6,20 @@ using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 
+//TODO: I could make an IXOpenGeometry:IXGeometryDescription that also exposes tip data and use that here instead of the delegate.
+//      However, how would these classes choose which tip to use, if there are multiple ones? With the delegate this is very easy.
 namespace MGroup.XFEM.Enrichment
 {
     public static class IsotropicBrittleTipEnrichments2D
     {
         public class Func0 : ICrackTipEnrichment
         {
-            private readonly TipCoordinateSystem tipSystem;
+            private readonly Func<TipCoordinateSystem> getTipSystem;
 
-            public Func0(int id, TipCoordinateSystem tipSystem)
+            public Func0(int id, Func<TipCoordinateSystem> getTipSystem)
             {
                 this.ID = id;
-                this.tipSystem = tipSystem;
+                this.getTipSystem = getTipSystem;
             }
 
             public int ID { get; }
@@ -26,6 +28,7 @@ namespace MGroup.XFEM.Enrichment
 
             public EvaluatedFunction EvaluateAllAt(XPoint point)
             {
+                TipCoordinateSystem tipSystem = getTipSystem();
                 double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
                 TipJacobians jacobians = tipSystem.CalcJacobiansAt(point);
 
@@ -45,12 +48,14 @@ namespace MGroup.XFEM.Enrichment
 
             public double EvaluateAt(XNode node)
             {
+                TipCoordinateSystem tipSystem = getTipSystem();
                 double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(node);
                 return Math.Sqrt(polarCoords[0]) * Math.Sin(polarCoords[1] / 2.0);
             }
 
             public double EvaluateAt(XPoint point)
             {
+                TipCoordinateSystem tipSystem = getTipSystem();
                 double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
                 return Math.Sqrt(polarCoords[0]) * Math.Sin(polarCoords[1] / 2.0);
             }
@@ -68,12 +73,12 @@ namespace MGroup.XFEM.Enrichment
 
         public class Func1 : ICrackTipEnrichment
         {
-            private readonly TipCoordinateSystem tipSystem;
+            private readonly Func<TipCoordinateSystem> getTipSystem;
 
-            public Func1(int id, TipCoordinateSystem tipSystem)
+            public Func1(int id, Func<TipCoordinateSystem> getTipSystem)
             {
                 this.ID = id;
-                this.tipSystem = tipSystem;
+                this.getTipSystem = getTipSystem;
             }
 
             public int ID { get; }
@@ -82,6 +87,7 @@ namespace MGroup.XFEM.Enrichment
 
             public EvaluatedFunction EvaluateAllAt(XPoint point)
             {
+                TipCoordinateSystem tipSystem = getTipSystem();
                 double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
                 TipJacobians jacobians = tipSystem.CalcJacobiansAt(point);
 
@@ -101,12 +107,14 @@ namespace MGroup.XFEM.Enrichment
 
             public double EvaluateAt(XNode node)
             {
+                TipCoordinateSystem tipSystem = getTipSystem();
                 double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(node);
                 return Math.Sqrt(polarCoords[0]) * Math.Cos(polarCoords[1] / 2.0);
             }
 
             public double EvaluateAt(XPoint point)
             {
+                TipCoordinateSystem tipSystem = getTipSystem();
                 double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
                 return Math.Sqrt(polarCoords[0]) * Math.Cos(polarCoords[1] / 2.0);
             }
@@ -124,12 +132,12 @@ namespace MGroup.XFEM.Enrichment
 
         public class Func2 : ICrackTipEnrichment
         {
-            private readonly TipCoordinateSystem tipSystem;
+            private readonly Func<TipCoordinateSystem> getTipSystem;
 
-            public Func2(int id, TipCoordinateSystem tipSystem)
+            public Func2(int id, Func<TipCoordinateSystem> getTipSystem)
             {
                 this.ID = id;
-                this.tipSystem = tipSystem;
+                this.getTipSystem = getTipSystem;
             }
 
             public int ID { get; }
@@ -138,6 +146,7 @@ namespace MGroup.XFEM.Enrichment
 
             public EvaluatedFunction EvaluateAllAt(XPoint point)
             {
+                TipCoordinateSystem tipSystem = getTipSystem();
                 double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
                 TipJacobians jacobians = tipSystem.CalcJacobiansAt(point);
 
@@ -159,12 +168,14 @@ namespace MGroup.XFEM.Enrichment
 
             public double EvaluateAt(XNode node)
             {
+                TipCoordinateSystem tipSystem = getTipSystem();
                 double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(node);
                 return Math.Sqrt(polarCoords[0]) * Math.Sin(polarCoords[1] / 2.0) * Math.Sin(polarCoords[1]);
             }
 
             public double EvaluateAt(XPoint point)
             {
+                TipCoordinateSystem tipSystem = getTipSystem();
                 double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
                 return Math.Sqrt(polarCoords[0]) * Math.Sin(polarCoords[1] / 2.0) * Math.Sin(polarCoords[1]);
             }
@@ -182,12 +193,12 @@ namespace MGroup.XFEM.Enrichment
 
         public class Func3 : ICrackTipEnrichment
         {
-            private readonly TipCoordinateSystem tipSystem;
+            private readonly Func<TipCoordinateSystem> getTipSystem;
 
-            public Func3(int id, TipCoordinateSystem tipSystem)
+            public Func3(int id, Func<TipCoordinateSystem> getTipSystem)
             {
                 this.ID = id;
-                this.tipSystem = tipSystem;
+                this.getTipSystem = getTipSystem;
             }
 
             public int ID { get; }
@@ -196,6 +207,7 @@ namespace MGroup.XFEM.Enrichment
 
             public EvaluatedFunction EvaluateAllAt(XPoint point)
             {
+                TipCoordinateSystem tipSystem = getTipSystem();
                 double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
                 TipJacobians jacobians = tipSystem.CalcJacobiansAt(point);
 
@@ -217,12 +229,14 @@ namespace MGroup.XFEM.Enrichment
 
             public double EvaluateAt(XNode node)
             {
+                TipCoordinateSystem tipSystem = getTipSystem();
                 double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(node);
                 return Math.Sqrt(polarCoords[0]) * Math.Cos(polarCoords[1] / 2.0) * Math.Sin(polarCoords[1]);
             }
 
             public double EvaluateAt(XPoint point)
             {
+                TipCoordinateSystem tipSystem = getTipSystem();
                 double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
                 return Math.Sqrt(polarCoords[0]) * Math.Cos(polarCoords[1] / 2.0) * Math.Sin(polarCoords[1]);
             }

@@ -6,7 +6,7 @@ using MGroup.XFEM.Integration;
 
 namespace MGroup.XFEM.Cracks.Geometry.LSM
 {
-    public class OpenLsmElementIntersection2D : IElementCrackIntersection
+    public class OpenLsmElementIntersection2D : IElementCrackInteraction
     {
         private readonly IList<double[]> commonPointsNatural;
 
@@ -19,6 +19,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
             {
                 throw new ArgumentException("There is no intersection between the curve and element");
             }
+            this.RelativePosition = relativePosition;
             this.TipInteractsWithElement = tipInteractsWithElement;
             this.commonPointsNatural = commonPointsNatural;
         }

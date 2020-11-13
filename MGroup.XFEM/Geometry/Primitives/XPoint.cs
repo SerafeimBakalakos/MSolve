@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using DotNumerics.LinearAlgebra;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 
@@ -23,7 +23,8 @@ namespace MGroup.XFEM.Geometry.Primitives
         public double[] ShapeFunctions { get; set; }
 
         /// <summary>
-        /// With respect to global cartesian system
+        /// With respect to global cartesian system. Each row is the gradient of a shape function. Each column is the the 
+        /// derivatives of all shape function with respect to the axis corresponding to that column.
         /// </summary>
         public Matrix ShapeFunctionDerivatives { get; set; }
 

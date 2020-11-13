@@ -14,7 +14,7 @@ using MGroup.XFEM.Geometry.Tolerances;
 //TODO: Remove duplication between this and 2D case.
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public class SimpleLsm3D : IImplicitGeometry
+    public class SimpleLsm3D : IClosedGeometry
     {
         public SimpleLsm3D(int id, double[] nodalLevelSets)
         {
@@ -74,7 +74,7 @@ namespace MGroup.XFEM.Geometry.LSM
             return result;
         }
 
-        public virtual void UnionWith(IImplicitGeometry otherGeometry)
+        public virtual void UnionWith(IClosedGeometry otherGeometry)
         {
             if (otherGeometry is SimpleLsm3D otherLsm)
             {

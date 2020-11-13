@@ -19,7 +19,7 @@ namespace MGroup.XFEM.Integration
 
         public IReadOnlyList<GaussPoint> GenerateIntegrationPoints(IXCrackElement element)
         {
-            if (element.IsIntersectedElement)
+            if (element.IsIntersected())
             {
                 return intersectedElementIntegration.GenerateIntegrationPoints(element);
             }

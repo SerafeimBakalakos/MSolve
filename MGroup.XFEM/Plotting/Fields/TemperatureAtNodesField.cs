@@ -26,7 +26,7 @@ namespace MGroup.XFEM.Plotting.Fields
             DofTable dofTable = subdomain.FreeDofOrdering.FreeDofs;
 
             var result = new Dictionary<double[], double>();
-            foreach (XNode node in model.Nodes)
+            foreach (XNode node in model.XNodes)
             {
                 bool isFreeDof = dofTable.TryGetValue(node, ThermalDof.Temperature, out int stdDof);
                 if (isFreeDof) result[node.Coordinates] = solution[stdDof];

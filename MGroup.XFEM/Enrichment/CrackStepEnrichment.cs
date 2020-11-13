@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Enrichment
 {
     public class CrackStepEnrichment : IEnrichment
     {
-        private readonly ICrack2D crack;
+        private readonly IXGeometryDescription crackGeometry;
 
-        public CrackStepEnrichment(int id, ICrack2D crack)
+        public CrackStepEnrichment(int id, IXGeometryDescription crackGeometry)
         {
             this.ID = id;
-            this.crack = crack;
+            this.crackGeometry = crackGeometry;
         }
 
         public int ID { get; }
@@ -23,21 +24,21 @@ namespace MGroup.XFEM.Enrichment
 
         public EvaluatedFunction EvaluateAllAt(XPoint point)
         {
-            double distance = crack.SignedDistanceFromBody(point);
+            double distance = crackGeometry.SignedDistanceOf(point);
             if (distance >= 0) return new EvaluatedFunction(+1, new double[2]);
             else return new EvaluatedFunction(-1, new double[2]);
         }
 
         public double EvaluateAt(XNode node)
         {
-            double distance = crack.SignedDistanceFromBody(node);
+            double distance = crackGeometry.SignedDistanceOf(node);
             if (distance >= 0) return +1;
             else return -1;
         }
 
         public double EvaluateAt(XPoint point)
         {
-            double distance = crack.SignedDistanceFromBody(point);
+            double distance = crackGeometry.SignedDistanceOf(point);
             if (distance >= 0) return +1;
             else return -1;
         }
