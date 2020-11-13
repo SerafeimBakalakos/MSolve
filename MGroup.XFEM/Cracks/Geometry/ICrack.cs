@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
-using MGroup.XFEM.Enrichment;
-using MGroup.XFEM.Entities;
+using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Geometry;
-using MGroup.XFEM.Geometry.LSM;
-using MGroup.XFEM.Geometry.Primitives;
 
 //TODO: This will probably be deleted, unless I use it as an abstraction of crack entity classes (2D,3D, implicit, explicit, etc), 
 //      instead of crack geometry classes.

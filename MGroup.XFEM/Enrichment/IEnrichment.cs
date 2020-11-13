@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 
-//TODO: Move this and its implementations to a sub-namespace
-//TODO: Some enrichments only apply to multiphase stuff
+//TODO: Some properties only apply to multiphase problems. Move these elsewhere
 namespace MGroup.XFEM.Enrichment
 {
     public interface IEnrichment

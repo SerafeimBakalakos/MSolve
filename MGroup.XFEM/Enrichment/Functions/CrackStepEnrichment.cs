@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Enrichment
+namespace MGroup.XFEM.Enrichment.Functions
 {
     public class CrackStepEnrichment : IEnrichment
     {

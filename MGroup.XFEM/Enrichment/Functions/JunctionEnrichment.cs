@@ -4,11 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Enrichment
+namespace MGroup.XFEM.Enrichment.Functions
 {
     public class JunctionEnrichment : IEnrichment
     {

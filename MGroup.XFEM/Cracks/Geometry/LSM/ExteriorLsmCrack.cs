@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using ISAAR.MSolve.Geometry.Commons;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
-using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
-using MGroup.XFEM.Interpolation;
-using TriangleNet;
 
 
 //TODO: Tracking items (nodes, elements, crack tip positions) from previous configurations

@@ -8,7 +8,7 @@ using MGroup.XFEM.Geometry.Primitives;
 
 //TODO: I could make an IXOpenGeometry:IXGeometryDescription that also exposes tip data and use that here instead of the delegate.
 //      However, how would these classes choose which tip to use, if there are multiple ones? With the delegate this is very easy.
-namespace MGroup.XFEM.Enrichment
+namespace MGroup.XFEM.Enrichment.Functions
 {
     public static class IsotropicBrittleTipEnrichments2D
     {

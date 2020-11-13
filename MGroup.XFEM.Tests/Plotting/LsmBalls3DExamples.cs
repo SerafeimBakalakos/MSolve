@@ -28,6 +28,7 @@ using MGroup.XFEM.Plotting.Fields;
 using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
 using MGroup.XFEM.Tests.Utilities;
+using MGroup.XFEM.Enrichment.Enrichers;
 
 namespace MGroup.XFEM.Tests.Plotting
 {

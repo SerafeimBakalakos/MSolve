@@ -4,6 +4,7 @@ using System.Linq;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Entities;
 
 namespace MGroup.XFEM.Plotting.Writers

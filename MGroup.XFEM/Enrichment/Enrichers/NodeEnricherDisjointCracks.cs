@@ -9,7 +9,7 @@ using MGroup.XFEM.Enrichment.SingularityResolution;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Enrichment
+namespace MGroup.XFEM.Enrichment.Enrichers
 {
     public class NodeEnricherDisjointCracks : INodeEnricher
     {

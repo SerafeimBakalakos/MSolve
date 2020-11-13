@@ -21,6 +21,7 @@ using MGroup.XFEM.Plotting.Writers;
 using System.Diagnostics;
 using Xunit;
 using MGroup.XFEM.Tests.Utilities;
+using MGroup.XFEM.Enrichment.Enrichers;
 
 namespace MGroup.XFEM.Tests.Unions
 {

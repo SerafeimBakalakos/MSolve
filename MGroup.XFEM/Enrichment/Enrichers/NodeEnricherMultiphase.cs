@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MGroup.XFEM.Elements;
+using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Enrichment.SingularityResolution;
 using MGroup.XFEM.Entities;
 
 //TODO: Remove casts
-namespace MGroup.XFEM.Enrichment
+namespace MGroup.XFEM.Enrichment.Enrichers
 {
     public class NodeEnricherMultiphase : INodeEnricher
     {

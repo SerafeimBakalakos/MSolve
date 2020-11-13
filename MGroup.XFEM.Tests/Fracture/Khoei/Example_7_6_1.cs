@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
@@ -17,6 +16,7 @@ using MGroup.XFEM.Cracks.Jintegral;
 using MGroup.XFEM.Cracks.PropagationCriteria;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Mesh;

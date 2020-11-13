@@ -20,6 +20,7 @@ using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
 using Xunit;
 using MGroup.XFEM.Tests.Utilities;
+using MGroup.XFEM.Enrichment.Enrichers;
 
 namespace MGroup.XFEM.Tests.Plotting
 {

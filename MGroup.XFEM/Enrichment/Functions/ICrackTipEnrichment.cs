@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MGroup.XFEM.Enrichment
+namespace MGroup.XFEM.Enrichment.Functions
 {
     public interface ICrackTipEnrichment : IEnrichment
     {

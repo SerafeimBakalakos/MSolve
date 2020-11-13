@@ -7,10 +7,10 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Cracks.Geometry.LSM;
 using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
-using MGroup.XFEM.Interpolation;
 
 namespace MGroup.XFEM.Elements
 {
