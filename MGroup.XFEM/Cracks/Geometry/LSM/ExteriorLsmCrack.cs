@@ -8,25 +8,6 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
 
-
-//TODO: Tracking items (nodes, elements, crack tip positions) from previous configurations
-//      (and also solver specific data tracked) must be moved to dedicated observer classes (pull observers). 
-//BEFORE FINISHING THIS CLASS: once I clean this up, I must test just the LSM geometry as it propagates (e.g a parabol, S-curve);
-//After finishing here, go tidy up TipCoordinateSystemBase
-
-
-//TODO: Crack tips should be handled differently than using enums. Interior and exterior cracks should compose their common 
-//      dedicated strategy classes with their common functionality and expose appropriate properties for the crack tip data.
-//TODO: Perhaps all loggers can be grouped and called together
-//TODO: a lot of the tracking is just wasted memory and cpu time for most cases. It would be better to use observers to do it.
-//      However, syncing the observers with the LSM is error prone and needs to be done at well defined points, without changing
-//      the LSM itself and without too much memory duplication.
-//TODO: A lot of functionality should be delegated to strategy classes. This can be done by having the strategy classes share
-//      the fields of LSM and then mutate them when called upon. Each strategy classes gets injected with the fields it needs  
-//      during construction. Alternatively I could have a readonly LSM interface that only exposes readonly properties, and a 
-//      mutable one for the various strategy classes to mutate LSM data that they pull.
-//TODO: If I do delegate a lot of functionality to strategy classes, how can the observers be updated correctly and efficiently,
-//      namely without a lot of memory copying?
 namespace MGroup.XFEM.Cracks.Geometry.LSM
 {
     public class ExteriorLsmCrack : ICrack
@@ -64,49 +45,44 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
 
         public HashSet<IXCrackElement> ConformingElements { get; }
 
+        public CrackStepEnrichment CrackBodyEnrichment { get; }
+
         public IReadOnlyList<double[]> CrackPath => crackPath;
 
         public IXGeometryDescription CrackGeometry => lsmGeometry;
+
+        public IReadOnlyList<ICrackTipEnrichment> CrackTipEnrichments { get; }
 
         public HashSet<IXCrackElement> IntersectedElements { get; }
 
         public int ID { get; }
 
+        public ISingleTipLsmGeometry LsmGeometry => lsmGeometry;
+
         public HashSet<IXCrackElement> TipElements { get; } = new HashSet<IXCrackElement>();
 
         public override int GetHashCode() => ID.GetHashCode();
 
-        #region marked for removal. However I think I will use them in the new implementation
+        #region marked for removal. However I think I will use them in the new implementation. Or expose them in a ISingleTipGeometry : IXGeometryDescription
         public double[] TipCoordinates => lsmGeometry.Tip;
 
         public TipCoordinateSystem TipSystem => lsmGeometry.TipSystem;
         #endregion
 
         #region state logging. Only the absolutely necessary for the current configuration should stay
-        public ISet<XNode> CrackBodyNodesAll { get; }
-        public ISet<XNode> CrackBodyNodesModified { get; }
-        public ISet<XNode> CrackBodyNodesNearModified { get; }
-        public ISet<XNode> CrackBodyNodesNew { get; }
-        public ISet<XNode> CrackBodyNodesRejected { get; } // Rejected due to singular stiffnesses
+        public List<ICrackObserver> Observers { get; } = new List<ICrackObserver>();
 
-        public IReadOnlyList<double[]> CrackTips => new double[][] { TipCoordinates };
-
-        public IReadOnlyList<ICollection<IXCrackElement>> CrackTipElements => new HashSet<IXCrackElement>[] { TipElements };
-
-        public IReadOnlyList<IPropagator> CrackTipPropagators => new IPropagator[] { this.propagator };
-
-        public ISet<IXCrackElement> ElementsModified { get; private set; }
-
-        public ISet<XNode> CrackTipNodesOld {get;}
-        public ISet<XNode> CrackTipNodesNew { get; }
-
-        //public EnrichmentLogger EnrichmentLogger { get; set; }
-        //public LevelSetLogger LevelSetLogger { get; set; }
-        //public PreviousLevelSetComparer LevelSetComparer { get; set; }
+        // TODO: Analyzer uses IPropagator to check collapse, e.g reading the SIFs. But: calculation of SIFs, of next geometry direction&Length
+        // and geometric update are different things currently hidden behind a single Propagate() method. Perhaps I should decouple them.
+        // then SIFs should be stored somewhere (e.g. in ICrack and accessed from there).
+        public IReadOnlyList<IPropagator> CrackTipPropagators => new IPropagator[] { this.propagator }; 
         #endregion
 
         #region geometry : trim these down by delegating functionality elsewhere and then just call the delegated methods in a general Initialize/Update() method
-        private void InitializeGeometry(IEnumerable<XNode> nodes, PolyLine2D initialCrack)
+        //TODO: Since initialization is different for each crack representation, it would be better if I could refactor the 
+        //      Initialize(), Update/Propagate(), InteractWithMesh() methods to make Initialize() more abstract or replace it
+        //      with Update(). The parameters that are unique for each representation can be injected in the constructor.
+        public void InitializeGeometry(IEnumerable<XNode> nodes, PolyLine2D initialCrack)
         {
             lsmGeometry.Initialize(nodes, initialCrack);
             foreach (var vertex in initialCrack.Vertices) crackPath.Add(vertex);
@@ -153,12 +129,10 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
                     element.InteractingCracks[this] = interaction;
                 }
             }
-        }
-        #endregion
 
-        #region enrichments. These should probably be delegated to a ICrackEnricher class
-        public CrackStepEnrichment CrackBodyEnrichment { get; }
-        public IReadOnlyList<ICrackTipEnrichment> CrackTipEnrichments { get; }
+            // Call observers to pull any state they want
+            foreach (ICrackObserver observer in Observers) observer.Update();
+        }
         #endregion
     }
 }

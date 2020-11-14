@@ -5,6 +5,7 @@ using System.Text;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
+using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 
 //TODO: Use an interface
@@ -14,7 +15,7 @@ using MGroup.XFEM.Geometry.Primitives;
 //      for this class to manage the decomposition. Perhaps it is necessary though.
 namespace MGroup.XFEM.Cracks.Geometry.LSM
 {
-    public class OpenLsmSingleTip2D : IXGeometryDescription
+    public class OpenLsmSingleTip2D : ISingleTipLsmGeometry
     {
         private readonly IOpenLevelSetUpdater levelSetUpdater;
 
@@ -22,14 +23,13 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
         {
             this.ID = id;
             this.levelSetUpdater = new LevelSetUpdater2DStolarska();
-            this.LevelSetsBody = new Dictionary<int, double>();
-            this.LevelSetsTip = new Dictionary<int, double>();
         }
 
         public int ID { get; }
 
-        public Dictionary<int, double> LevelSetsBody { get; }
-        public Dictionary<int, double> LevelSetsTip { get; }
+        Dictionary<int, double> ILsmGeometry.LevelSets => LevelSetsBody;
+        public Dictionary<int, double> LevelSetsBody { get; } = new Dictionary<int, double>();
+        public Dictionary<int, double> LevelSetsTip { get; } = new Dictionary<int, double>();
 
         public double[] Tip { get; private set; }
 

@@ -11,7 +11,7 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Enrichment.Enrichers
 {
-    public class NodeEnricherDisjointCracks : INodeEnricher
+    public class NodeEnricherIndependentCracks : INodeEnricher
     {
         private readonly IEnumerable<ICrack> cracks; //TODO: Read these from a component like PhaseGeometryModel
         private readonly double fixedTipEnrichmentRegionRadius;
@@ -27,7 +27,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
         /// functions. They can still be enriched with Heaviside functions, if they do not belong to the tip 
         /// element(s).
         /// </param>
-        public NodeEnricherDisjointCracks(int dimension, XModel<IXCrackElement> model, IEnumerable<ICrack> cracks,
+        public NodeEnricherIndependentCracks(int dimension, XModel<IXCrackElement> model, IEnumerable<ICrack> cracks,
             ISingularityResolver singularityResolver, double fixedTipEnrichmentRegionRadius = 0.0)
         {
             this.dimension = dimension;
@@ -46,7 +46,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
         /// functions. They can still be enriched with Heaviside functions, if they do not belong to the tip 
         /// element(s).
         /// </param>
-        public NodeEnricherDisjointCracks(int dimension, XModel<IXCrackElement> model, IEnumerable<ICrack> cracks,
+        public NodeEnricherIndependentCracks(int dimension, XModel<IXCrackElement> model, IEnumerable<ICrack> cracks,
             double fixedTipEnrichmentRegionRadius = 0.0) :
             this(dimension, model, cracks, new RelativeAreaSingularityResolver(1E-4), fixedTipEnrichmentRegionRadius)
         {

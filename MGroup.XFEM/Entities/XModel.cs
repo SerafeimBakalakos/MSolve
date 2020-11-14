@@ -10,7 +10,11 @@ using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.Enrichment.Observers;
 
+//Method for enriching nodes and updating observers
+//TODO: All the UpdateSomething() methods can be abstracted behind an IModel.Update(). The Analyzer does not need to know each
+//      detail.
 //TODO: There is a lot of repetition between this FEM.Model and IGA.Model with regards to interconnection data. That code should 
 //      be moved to a common class. Same goes for the interconnection methods of XSubdomain.
 namespace MGroup.XFEM.Entities
@@ -18,6 +22,8 @@ namespace MGroup.XFEM.Entities
     public class XModel<TElement> : IXModel where TElement: IXFiniteElement
     {
         private bool areDataStructuresConnected;
+
+        private List<IEnrichmentObserver> enrichmentObservers = new List<IEnrichmentObserver>();
 
         public XModel()
         {
@@ -40,6 +46,7 @@ namespace MGroup.XFEM.Entities
 
         public List<TElement> Elements { get; } = new List<TElement>();
 
+        //TODO: Perhaps I need something more involved for storing and interfacing with the enrichments
         public Dictionary<IEnrichment, XNode[]> EnrichedNodes { get; set; } = new Dictionary<IEnrichment, XNode[]>();
 
         public Dictionary<IEnrichment, IDofType[]> EnrichedDofs { get; set; } = new Dictionary<IEnrichment, IDofType[]>();
@@ -96,6 +103,25 @@ namespace MGroup.XFEM.Entities
             for (int i = 0; i < Elements.Count; ++i) result[i] = Elements[i];
             return result;
 
+        }
+
+        public void RegisterEnrichmentObserver(IEnrichmentObserver observer)
+        {
+            var previous = observer.RegisterAfterThese();
+            foreach (IEnrichmentObserver other in previous)
+            {
+                if (!enrichmentObservers.Contains(other))
+                {
+                    if (other.RegisterAfterThese().Length == 0) enrichmentObservers.Add(other);
+                    else
+                    {
+                        throw new ArgumentException("This observer depends on others that in turn depend on even more."
+                            + " The order of registration cannot be safely determined automatically."
+                            + " Please register them in the correct order yourself.");
+                    }
+                }
+            }
+            enrichmentObservers.Add(observer);
         }
 
         public void UpdateDofs()

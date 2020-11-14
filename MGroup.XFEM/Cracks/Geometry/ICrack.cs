@@ -15,6 +15,10 @@ namespace MGroup.XFEM.Cracks.Geometry
 {
     public interface ICrack
     {
+        /// <summary>
+        /// Elements whose edges conform to the crack, instead of being intersected by it. This does not include elements 
+        /// belonging to <see cref="TipElements"/>.
+        /// </summary>
         HashSet<IXCrackElement> ConformingElements { get; }
 
         CrackStepEnrichment CrackBodyEnrichment { get; }
@@ -23,6 +27,9 @@ namespace MGroup.XFEM.Cracks.Geometry
 
         IReadOnlyList<ICrackTipEnrichment> CrackTipEnrichments { get; }
 
+        /// <summary>
+        /// Elements that are intersected by the crack, but do not belong to <see cref="TipElements"/>.
+        /// </summary>
         HashSet<IXCrackElement> IntersectedElements { get; }
 
         int ID { get; }
@@ -30,8 +37,8 @@ namespace MGroup.XFEM.Cracks.Geometry
         double[] TipCoordinates { get; }
 
         /// <summary>
-        /// In 2D cracks there is only 1 usually. However it is possible for the tip to lie on the boundary between multiple 
-        /// elements.
+        /// Elements containing the crack tip, not elements whose nodes are enriched with crack tip functions. In 2D cracks there 
+        /// is only 1 usually. However it is possible for the tip to lie on the boundary between multiple elements.
         /// </summary>
         HashSet<IXCrackElement> TipElements { get; }
 
