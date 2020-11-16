@@ -152,7 +152,7 @@ namespace MGroup.XFEM.Elements
             }
 
             // Enriched contributions.
-            IReadOnlyDictionary<IEnrichment, EvaluatedFunction> evalEnrichments =
+            IReadOnlyDictionary<IEnrichmentFunction, EvaluatedFunction> evalEnrichments =
                 EvaluateEnrichments(point);
             int dof = 0;
             for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
@@ -161,9 +161,9 @@ namespace MGroup.XFEM.Elements
                 double dNdx = point.ShapeFunctionDerivatives[nodeIdx, 0];
                 double dNdy = point.ShapeFunctionDerivatives[nodeIdx, 1];
 
-                foreach (var enrichmentValuePair in Nodes[nodeIdx].Enrichments)
+                foreach (var enrichmentValuePair in Nodes[nodeIdx].EnrichmentFuncs)
                 {
-                    IEnrichment enrichment = enrichmentValuePair.Key;
+                    IEnrichmentFunction enrichment = enrichmentValuePair.Key;
                     double nodalPsi = enrichmentValuePair.Value;
                     EvaluatedFunction evalEnrichment = evalEnrichments[enrichment];
 
@@ -207,11 +207,12 @@ namespace MGroup.XFEM.Elements
         public (IReadOnlyList<GaussPoint>, IReadOnlyList<ElasticMaterial2D>) GetMaterialsForBulkIntegration()
             => (gaussPointsBulk, materialsAtGPsBulk);
 
-        //TODO: This method should be moved to a base class. Enriched DOFs do not depend on the finite element, but are set globally
-        public void IdentifyDofs(Dictionary<IEnrichment, IDofType[]> enrichedDofs)
+        //TODO: This method should be moved to a base class. Enriched DOFs do not depend on the finite element, but are set globally.
+        //      Also standard dofs per node can be provided be the element in another property 
+        public void IdentifyDofs()
         {
             this.numEnrichedDofs = 0;
-            foreach (XNode node in Nodes) this.numEnrichedDofs += 2 * node.Enrichments.Count;
+            foreach (XNode node in Nodes) this.numEnrichedDofs += 2 * node.EnrichmentFuncs.Count;
 
             if (this.numEnrichedDofs == 0) allDofTypes = standardDofTypes;
             else
@@ -223,13 +224,13 @@ namespace MGroup.XFEM.Elements
                 for (int i = 0; i < Nodes.Count; ++i)
                 {
                     XNode node = Nodes[i];
-                    var nodalDofs = new IDofType[2 + 2 * node.Enrichments.Count];
+                    var nodalDofs = new IDofType[2 + 2 * node.EnrichmentFuncs.Count];
                     nodalDofs[0] = StructuralDof.TranslationX;
                     nodalDofs[1] = StructuralDof.TranslationY;
                     int j = 2;
-                    foreach (IEnrichment enrichment in node.Enrichments.Keys)
+                    foreach (EnrichmentItem enrichment in node.Enrichments)
                     {
-                        foreach (IDofType dof in enrichedDofs[enrichment])
+                        foreach (IDofType dof in enrichment.EnrichedDofs)
                         {
                             nodalDofs[j++] = dof;
                         }
@@ -340,7 +341,7 @@ namespace MGroup.XFEM.Elements
         private Matrix CalculateDeformationMatrixEnriched(int numEnrichedDofs, XPoint gaussPoint, 
             EvalInterpolation evalInterpolation)
         {
-            Dictionary<IEnrichment, EvaluatedFunction> enrichmentValues = EvaluateEnrichments(gaussPoint);
+            Dictionary<IEnrichmentFunction, EvaluatedFunction> enrichmentValues = EvaluateEnrichments(gaussPoint);
 
             var deformationMatrix = Matrix.CreateZero(3, numEnrichedDofs);
             int currentColumn = 0;
@@ -350,9 +351,9 @@ namespace MGroup.XFEM.Elements
                 double dNdx = evalInterpolation.ShapeGradientsCartesian[nodeIdx, 0];
                 double dNdy = evalInterpolation.ShapeGradientsCartesian[nodeIdx, 1];
 
-                foreach (var enrichmentValuePair in Nodes[nodeIdx].Enrichments)
+                foreach (var enrichmentValuePair in Nodes[nodeIdx].EnrichmentFuncs)
                 {
-                    IEnrichment enrichment = enrichmentValuePair.Key;
+                    IEnrichmentFunction enrichment = enrichmentValuePair.Key;
                     double nodalPsi = enrichmentValuePair.Value;
                     EvaluatedFunction evalEnrichment = enrichmentValues[enrichment];
                     
@@ -403,12 +404,13 @@ namespace MGroup.XFEM.Elements
             return deformation;
         }
 
-        private Dictionary<IEnrichment, EvaluatedFunction> EvaluateEnrichments(XPoint gaussPoint)
+        //TODO: This can be used in all XFEM elements
+        private Dictionary<IEnrichmentFunction, EvaluatedFunction> EvaluateEnrichments(XPoint gaussPoint)
         {
-            var cachedEvalEnrichments = new Dictionary<IEnrichment, EvaluatedFunction>();
+            var cachedEvalEnrichments = new Dictionary<IEnrichmentFunction, EvaluatedFunction>();
             foreach (XNode node in Nodes)
             {
-                foreach (IEnrichment enrichment in node.Enrichments.Keys)
+                foreach (IEnrichmentFunction enrichment in node.EnrichmentFuncs.Keys)
                 {
                     // The enrichment function probably has been evaluated when processing a previous node. Avoid reevaluation.
                     if (!(cachedEvalEnrichments.TryGetValue(enrichment, out EvaluatedFunction evaluatedEnrichments)))
@@ -475,7 +477,7 @@ namespace MGroup.XFEM.Elements
                 stdDofIndices[2 * n + 1] = totalDofCounter++;
 
                 // Enr dofs
-                for (int e = 0; e < Nodes[n].Enrichments.Count; ++e)
+                for (int e = 0; e < Nodes[n].EnrichmentFuncs.Count; ++e)
                 {
                     for (int i = 0; i < 2; ++i)
                     {

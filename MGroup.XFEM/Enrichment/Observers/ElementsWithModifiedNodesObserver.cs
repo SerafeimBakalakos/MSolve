@@ -21,7 +21,7 @@ namespace MGroup.XFEM.Enrichment.Observers
 
         public HashSet<IXFiniteElement> ModifiedElements { get; } = new HashSet<IXFiniteElement>();
 
-        public void Update(Dictionary<IEnrichment, XNode[]> enrichedNodes)
+        public void Update(IEnumerable<EnrichmentItem> allEnrichments)
         {
             ModifiedElements.Clear();
             foreach (XNode node in nodesWithModifiedEnrichmentsObserver.ModifiedNodes)

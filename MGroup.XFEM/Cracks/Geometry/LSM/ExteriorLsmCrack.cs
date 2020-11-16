@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
+using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
@@ -13,45 +15,32 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
     public class ExteriorLsmCrack : ICrack
     {
         private readonly List<double[]> crackPath; //TODO: should this also be stored in the pure geometry class?
+        private readonly PolyLine2D initialCrack;
         private readonly OpenLsmSingleTip2D lsmGeometry; //TODO: Abstract this
         private readonly XModel<IXCrackElement> model;
         private readonly IPropagator propagator;
 
-        public ExteriorLsmCrack(int id, XModel<IXCrackElement> model, IPropagator propagator)
+        public ExteriorLsmCrack(int id, PolyLine2D initialCrack, XModel<IXCrackElement> model, IPropagator propagator)
         {
             this.ID = id;
+            this.initialCrack = initialCrack;
             this.model = model;
 
             // Geometry
             this.lsmGeometry = new OpenLsmSingleTip2D(id);
             this.crackPath = new List<double[]>();
             this.propagator = propagator;
-
-            // Enrichments
-            //TODO: Perhaps a global component (e.g. INodeEnricher) should number these ids. Or store enrichments in XModel, read 
-            //      and update them here. Another approach is to not have ICrack expose its enrichments. Instead it will just 
-            //      generate new ones (like a factory class) and they will be stored in INodeEnricher.
-            int enrichmentIdStart = 10 * id;
-            this.CrackBodyEnrichment = new CrackStepEnrichment(enrichmentIdStart, lsmGeometry);
-
-            //TODO: For problems other than LEFM, use Abstract Factory pattern for tip enrichments, materials, propagators, etc.
-            var tipEnrichments = new ICrackTipEnrichment[4];
-            tipEnrichments[0] = new IsotropicBrittleTipEnrichments2D.Func0(enrichmentIdStart + 1, () => lsmGeometry.TipSystem);
-            tipEnrichments[1] = new IsotropicBrittleTipEnrichments2D.Func1(enrichmentIdStart + 2, () => lsmGeometry.TipSystem);
-            tipEnrichments[2] = new IsotropicBrittleTipEnrichments2D.Func2(enrichmentIdStart + 3, () => lsmGeometry.TipSystem);
-            tipEnrichments[3] = new IsotropicBrittleTipEnrichments2D.Func3(enrichmentIdStart + 4, () => lsmGeometry.TipSystem);
-            this.CrackTipEnrichments = tipEnrichments;
         }
 
         public HashSet<IXCrackElement> ConformingElements { get; }
 
-        public CrackStepEnrichment CrackBodyEnrichment { get; }
+        public EnrichmentItem CrackBodyEnrichment { get; private set; }
 
         public IReadOnlyList<double[]> CrackPath => crackPath;
 
         public IXGeometryDescription CrackGeometry => lsmGeometry;
 
-        public IReadOnlyList<ICrackTipEnrichment> CrackTipEnrichments { get; }
+        public EnrichmentItem CrackTipEnrichments { get; private set; }
 
         public HashSet<IXCrackElement> IntersectedElements { get; }
 
@@ -60,6 +49,39 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
         public ISingleTipLsmGeometry LsmGeometry => lsmGeometry;
 
         public HashSet<IXCrackElement> TipElements { get; } = new HashSet<IXCrackElement>();
+
+        public IList<EnrichmentItem> DefineEnrichments(int numCurrentEnrichments)
+        {
+            int enrichmentID = numCurrentEnrichments;
+
+            // Crack body enrichment
+            var stepEnrichmentFunc = new CrackStepEnrichment(lsmGeometry);
+            IDofType[] stepEnrichedDofs =
+            {
+                new EnrichedDof(stepEnrichmentFunc, StructuralDof.TranslationX),
+                new EnrichedDof(stepEnrichmentFunc, StructuralDof.TranslationY)
+            };
+            this.CrackBodyEnrichment = new EnrichmentItem(
+                enrichmentID++, new IEnrichmentFunction[] { stepEnrichmentFunc }, stepEnrichedDofs);
+
+            // Crack tip enrichments
+            //TODO: For problems other than LEFM, use Abstract Factory pattern for tip enrichments, materials, propagators, etc.
+            var tipEnrichmentFuncs = new ICrackTipEnrichment[4];
+            tipEnrichmentFuncs[0] = new IsotropicBrittleTipEnrichments2D.Func0(() => lsmGeometry.TipSystem);
+            tipEnrichmentFuncs[1] = new IsotropicBrittleTipEnrichments2D.Func1(() => lsmGeometry.TipSystem);
+            tipEnrichmentFuncs[2] = new IsotropicBrittleTipEnrichments2D.Func2(() => lsmGeometry.TipSystem);
+            tipEnrichmentFuncs[3] = new IsotropicBrittleTipEnrichments2D.Func3(() => lsmGeometry.TipSystem);
+            var tipEnrichedDofs = new List<IDofType>(8);
+            for (int i = 0; i < tipEnrichmentFuncs.Length; ++i)
+            {
+                tipEnrichedDofs.Add(new EnrichedDof(tipEnrichmentFuncs[i], StructuralDof.TranslationX));
+                tipEnrichedDofs.Add(new EnrichedDof(tipEnrichmentFuncs[i], StructuralDof.TranslationY));
+            }
+            this.CrackTipEnrichments = new EnrichmentItem(
+                enrichmentID++, tipEnrichmentFuncs, tipEnrichedDofs.ToArray());
+
+            return new EnrichmentItem[] { this.CrackBodyEnrichment, this.CrackTipEnrichments };
+        }
 
         public override int GetHashCode() => ID.GetHashCode();
 
@@ -82,13 +104,13 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
         //TODO: Since initialization is different for each crack representation, it would be better if I could refactor the 
         //      Initialize(), Update/Propagate(), InteractWithMesh() methods to make Initialize() more abstract or replace it
         //      with Update(). The parameters that are unique for each representation can be injected in the constructor.
-        public void InitializeGeometry(IEnumerable<XNode> nodes, PolyLine2D initialCrack)
+        public void InitializeGeometry()
         {
-            lsmGeometry.Initialize(nodes, initialCrack);
+            lsmGeometry.Initialize(model.XNodes, initialCrack);
             foreach (var vertex in initialCrack.Vertices) crackPath.Add(vertex);
         }
 
-        public void Propagate(Dictionary<int, Vector> subdomainFreeDisplacements)
+        public void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements)
         {
             (double growthAngle, double growthLength) = propagator.Propagate(
                 subdomainFreeDisplacements, lsmGeometry.Tip, lsmGeometry.TipSystem, TipElements);
@@ -96,7 +118,6 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
             crackPath.Add(lsmGeometry.Tip);
         }
         #endregion
-
 
         #region mesh interaction. These are probably the same for cracks represented with different ways
         public void InteractWithMesh()
@@ -133,6 +154,8 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
             // Call observers to pull any state they want
             foreach (ICrackObserver observer in Observers) observer.Update();
         }
+
+        
         #endregion
     }
 }

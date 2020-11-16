@@ -7,17 +7,14 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Enrichment.Functions
 {
-    public class CrackStepEnrichment : IEnrichment
+    public class CrackStepEnrichment : IEnrichmentFunction
     {
         private readonly IXGeometryDescription crackGeometry;
 
-        public CrackStepEnrichment(int id, IXGeometryDescription crackGeometry)
+        public CrackStepEnrichment(IXGeometryDescription crackGeometry)
         {
-            this.ID = id;
             this.crackGeometry = crackGeometry;
         }
-
-        public int ID { get; }
 
         public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
 

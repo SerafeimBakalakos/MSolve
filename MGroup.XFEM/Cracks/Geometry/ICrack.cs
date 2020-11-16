@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
+using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Enrichment.Functions;
+using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 
 //TODO: This will probably be deleted, unless I use it as an abstraction of crack entity classes (2D,3D, implicit, explicit, etc), 
@@ -13,7 +15,7 @@ using MGroup.XFEM.Geometry;
 //TODO: Perhaps use IDs instead of references to IXCrackElement.
 namespace MGroup.XFEM.Cracks.Geometry
 {
-    public interface ICrack
+    public interface ICrack : IXDiscontinuity
     {
         /// <summary>
         /// Elements whose edges conform to the crack, instead of being intersected by it. This does not include elements 
@@ -21,18 +23,18 @@ namespace MGroup.XFEM.Cracks.Geometry
         /// </summary>
         HashSet<IXCrackElement> ConformingElements { get; }
 
-        CrackStepEnrichment CrackBodyEnrichment { get; }
+        EnrichmentItem CrackBodyEnrichment { get; }
 
         IXGeometryDescription CrackGeometry { get; }
 
-        IReadOnlyList<ICrackTipEnrichment> CrackTipEnrichments { get; }
+        EnrichmentItem CrackTipEnrichments { get; }
 
         /// <summary>
         /// Elements that are intersected by the crack, but do not belong to <see cref="TipElements"/>.
         /// </summary>
         HashSet<IXCrackElement> IntersectedElements { get; }
 
-        int ID { get; }
+        //int ID { get; }
 
         double[] TipCoordinates { get; }
 
@@ -43,9 +45,5 @@ namespace MGroup.XFEM.Cracks.Geometry
         HashSet<IXCrackElement> TipElements { get; }
 
         TipCoordinateSystem TipSystem { get; } //TODO: This should probably be provided by the Geometry property
-
-        void InteractWithMesh(); //TODO: Should this be included in Propagate()?
-
-        void Propagate(Dictionary<int, Vector> subdomainFreeDisplacements); //TODO: What about Initialize()? Should the user call it?
     }
 }

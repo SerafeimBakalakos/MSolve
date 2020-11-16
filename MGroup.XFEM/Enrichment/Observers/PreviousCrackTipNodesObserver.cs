@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Cracks.Geometry;
-using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 
 namespace MGroup.XFEM.Enrichment.Observers
@@ -20,11 +19,11 @@ namespace MGroup.XFEM.Enrichment.Observers
 
         public HashSet<XNode> PreviousTipNodes { get; } = new HashSet<XNode>();
 
-        public void Update(Dictionary<IEnrichment, XNode[]> enrichedNodes)
+        public void Update(IEnumerable<EnrichmentItem> allEnrichments)
         {
             PreviousTipNodes.Clear();
-            IEnrichment tipEnrichment = crack.CrackTipEnrichments[0]; // A node will be enriched with one or all of them.
-            bool theyExist = previousEnrichmentsObserver.PreviousEnrichments.TryGetValue(tipEnrichment, out XNode[] nodes);
+            Dictionary<EnrichmentItem, XNode[]> previousEnrichments = previousEnrichmentsObserver.PreviousEnrichments;
+            bool theyExist = previousEnrichments.TryGetValue(crack.CrackTipEnrichments, out XNode[] nodes);
             if (theyExist) PreviousTipNodes.UnionWith(nodes);
         }
 

@@ -82,10 +82,10 @@ namespace MGroup.XFEM.Plotting.Fields
             centroid.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(centroidNatural);
 
             // Evaluate enrichment functions at triangle centroid and assume it also holds for its vertices
-            var enrichments = new HashSet<IEnrichment>();
-            foreach (XNode node in element.Nodes) enrichments.UnionWith(node.Enrichments.Keys);
-            var enrichmentValues = new Dictionary<IEnrichment, double>();
-            foreach (IEnrichment enrichment in enrichments)
+            var enrichments = new HashSet<IEnrichmentFunction>();
+            foreach (XNode node in element.Nodes) enrichments.UnionWith(node.EnrichmentFuncs.Keys);
+            var enrichmentValues = new Dictionary<IEnrichmentFunction, double>();
+            foreach (IEnrichmentFunction enrichment in enrichments)
             {
                 enrichmentValues[enrichment] = enrichment.EvaluateAt(centroid);
                 //enrichmentValues[enrichment] = EvaluateFunctionsAtSubtriangleVertices(
@@ -105,10 +105,10 @@ namespace MGroup.XFEM.Plotting.Fields
                     sum += N[n] * nodalTemperatures[idx++];
 
                     // Eniched temperatures
-                    foreach (IEnrichment enrichment in element.Nodes[n].Enrichments.Keys)
+                    foreach (IEnrichmentFunction enrichment in element.Nodes[n].EnrichmentFuncs.Keys)
                     {
                         double psiVertex = enrichmentValues[enrichment];
-                        double psiNode = element.Nodes[n].Enrichments[enrichment];
+                        double psiNode = element.Nodes[n].EnrichmentFuncs[enrichment];
                         sum += N[n] * (psiVertex - psiNode) * nodalTemperatures[idx++];
                     }
                 }

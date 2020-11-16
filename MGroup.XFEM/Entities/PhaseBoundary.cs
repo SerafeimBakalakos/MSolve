@@ -16,7 +16,7 @@ namespace MGroup.XFEM.Entities
             this.NegativePhase = negativePhase;
         }
 
-        public IEnrichment StepEnrichment { get; set; }
+        public IEnrichmentFunction StepEnrichment { get; set; }
 
         public IPhase NegativePhase { get; set; }
         public IPhase PositivePhase { get; set; }

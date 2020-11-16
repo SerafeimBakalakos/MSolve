@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MGroup.XFEM.Entities;
 
 namespace MGroup.XFEM.Enrichment.Observers
 {
     public interface IEnrichmentObserver
     {
-        void Update(Dictionary<IEnrichment, XNode[]> enrichedNodes);
+        void Update(IEnumerable<EnrichmentItem> allEnrichments);
 
         /// <summary>
         /// Observers will be called in the order they register. Therefore if an observer depends on the updated state of another

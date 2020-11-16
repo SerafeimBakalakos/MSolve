@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MGroup.XFEM.Enrichment.Functions
 {
-    public interface ICrackTipEnrichment : IEnrichment
+    public interface ICrackTipEnrichment : IEnrichmentFunction
     {
         // Tagging interface
     }

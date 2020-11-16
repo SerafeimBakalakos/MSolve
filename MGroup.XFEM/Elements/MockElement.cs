@@ -123,7 +123,7 @@ namespace MGroup.XFEM.Elements
 
         public double CalcBulkSizeNatural() => elementGeometry.CalcBulkSizeNatural();
 
-        public void IdentifyDofs(Dictionary<IEnrichment, IDofType[]> enrichedDofs)
+        public void IdentifyDofs()
         {
         }
 

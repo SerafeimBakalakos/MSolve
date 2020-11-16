@@ -9,7 +9,7 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Enrichment.Functions
 {
-    public class JunctionEnrichment : IEnrichment
+    public class JunctionEnrichment : IEnrichmentFunction
     {
         private readonly IPhase[] descendingPhases;
         private readonly int[] descendingPhaseCoeffs;

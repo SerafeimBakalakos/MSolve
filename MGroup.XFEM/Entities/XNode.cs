@@ -22,7 +22,10 @@ namespace MGroup.XFEM.Entities
 
         public new Dictionary<int, IXFiniteElement> ElementsDictionary { get; } = new Dictionary<int, IXFiniteElement>();
 
-        public Dictionary<IEnrichment, double> Enrichments { get; } = new Dictionary<IEnrichment, double>();
+        //TODO: Perhaps this should be a Dictionary<EnrichmentItem, double[]> instead of storing them in EnrichmentFuncs
+        public HashSet<EnrichmentItem> Enrichments { get; } = new HashSet<EnrichmentItem>();
+
+        public Dictionary<IEnrichmentFunction, double> EnrichmentFuncs { get; } = new Dictionary<IEnrichmentFunction, double>();
 
         public int ID { get; }
 
@@ -38,7 +41,7 @@ namespace MGroup.XFEM.Entities
         //    }
         //}
 
-        public bool IsEnriched => Enrichments.Count > 0;
+        public bool IsEnriched => EnrichmentFuncs.Count > 0;
 
 
         public new Dictionary<int, XSubdomain> SubdomainsDictionary { get; } = new Dictionary<int, XSubdomain>();

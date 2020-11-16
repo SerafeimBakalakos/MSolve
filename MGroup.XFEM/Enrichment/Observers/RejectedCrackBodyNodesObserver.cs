@@ -26,7 +26,7 @@ namespace MGroup.XFEM.Enrichment.Observers
 
         public IEnrichmentObserver[] RegisterAfterThese() => new IEnrichmentObserver[] { tipNodesObserver };
 
-        public void Update(Dictionary<IEnrichment, XNode[]> enrichedNodes)
+        public void Update(IEnumerable<EnrichmentItem> allEnrichments)
         {
             RejectedHeavisideNodes.Clear();
             var bodyElements = new HashSet<IXCrackElement>(crack.IntersectedElements);

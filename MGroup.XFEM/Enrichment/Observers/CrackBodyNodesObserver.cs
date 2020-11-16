@@ -17,11 +17,10 @@ namespace MGroup.XFEM.Enrichment.Observers
 
         public HashSet<XNode> BodyNodes { get; } = new HashSet<XNode>();
 
-        public void Update(Dictionary<IEnrichment, XNode[]> enrichedNodes)
+        public void Update(IEnumerable<EnrichmentItem> allEnrichments)
         {
             BodyNodes.Clear();
-            bool theyExist = enrichedNodes.TryGetValue(crack.CrackBodyEnrichment, out XNode[] nodes);
-            if (theyExist) BodyNodes.UnionWith(nodes);
+            BodyNodes.UnionWith(crack.CrackBodyEnrichment.EnrichedNodes);
         }
         
         public IEnrichmentObserver[] RegisterAfterThese() => new IEnrichmentObserver[0];

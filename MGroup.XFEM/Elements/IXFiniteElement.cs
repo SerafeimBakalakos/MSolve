@@ -47,7 +47,7 @@ namespace MGroup.XFEM.Elements
 
         double[] FindCentroidCartesian();
 
-        void IdentifyDofs(Dictionary<IEnrichment, IDofType[]> enrichedDofs);
+        void IdentifyDofs();
 
         void IdentifyIntegrationPointsAndMaterials();
     }

@@ -158,10 +158,10 @@ namespace MGroup.XFEM.Elements
         public (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalMaterial>) GetMaterialsForBulkIntegration()
             => (gaussPointsBulk, materialsAtGPsBulk);
 
-        public void IdentifyDofs(Dictionary<IEnrichment, IDofType[]> enrichedDofs)
+        public void IdentifyDofs()
         {
             this.numEnrichedDofs = 0;
-            foreach (XNode node in Nodes) this.numEnrichedDofs += node.Enrichments.Count;
+            foreach (XNode node in Nodes) this.numEnrichedDofs += node.EnrichmentFuncs.Count;
 
             if (this.numEnrichedDofs == 0) allDofTypes = standardDofTypes;
             else
@@ -173,12 +173,12 @@ namespace MGroup.XFEM.Elements
                 for (int i = 0; i < Nodes.Count; ++i)
                 {
                     XNode node = Nodes[i];
-                    var nodalDofs = new IDofType[1 + node.Enrichments.Count];
+                    var nodalDofs = new IDofType[1 + node.EnrichmentFuncs.Count];
                     nodalDofs[0] = ThermalDof.Temperature;
                     int j = 1;
-                    foreach (IEnrichment enrichment in node.Enrichments.Keys)
+                    foreach (EnrichmentItem enrichment in node.Enrichments)
                     {
-                        foreach (IDofType dof in enrichedDofs[enrichment])
+                        foreach (IDofType dof in enrichment.EnrichedDofs)
                         {
                             nodalDofs[j++] = dof;
                         }
@@ -363,7 +363,7 @@ namespace MGroup.XFEM.Elements
             // enrichment function. However in this formulation of multiphase XFEM, only piecewise constant enrichments
             // are used. Therefore always psi,x = 0.
 
-            var uniqueEnrichments = new Dictionary<IEnrichment, double>();
+            var uniqueEnrichments = new Dictionary<IEnrichmentFunction, double>();
 
             var deformationMatrix = Matrix.CreateZero(3, numEnrichedDofs);
             int currentColumn = 0;
@@ -373,9 +373,9 @@ namespace MGroup.XFEM.Elements
                 double dNdy = evaluatedInterpolation.ShapeGradientsCartesian[nodeIdx, 1];
                 double dNdz = evaluatedInterpolation.ShapeGradientsCartesian[nodeIdx, 2];
 
-                foreach (var enrichmentValuePair in Nodes[nodeIdx].Enrichments)
+                foreach (var enrichmentValuePair in Nodes[nodeIdx].EnrichmentFuncs)
                 {
-                    IEnrichment enrichment = enrichmentValuePair.Key;
+                    IEnrichmentFunction enrichment = enrichmentValuePair.Key;
                     double nodalPsi = enrichmentValuePair.Value;
 
                     // The enrichment function probably has been evaluated when processing a previous node. Avoid reevaluation.
@@ -447,7 +447,7 @@ namespace MGroup.XFEM.Elements
                 //TODO: VERY FRAGILE CODE. This order of enrichments was used to determine the order of enriched dofs in 
                 //      another method. It works as of the time of writing, but this dependency must be removed. Perhaps use a 
                 //      DofTable.
-                foreach (IEnrichment enrichment in node.Enrichments.Keys)
+                foreach (IEnrichmentFunction enrichment in node.EnrichmentFuncs.Keys)
                 {
                     double phaseJump = enrichment.GetJumpCoefficientBetween(boundary);
                     totalShapeFunctions[idx] = phaseJump * N[n];
@@ -511,7 +511,7 @@ namespace MGroup.XFEM.Elements
                 totalDofCounter += 1;
 
                 // Enr dofs
-                for (int e = 0; e < Nodes[n].Enrichments.Count; ++e)
+                for (int e = 0; e < Nodes[n].EnrichmentFuncs.Count; ++e)
                 {
                     enrDofIndices[enrDofCounter++] = totalDofCounter++;
                 }
@@ -529,7 +529,7 @@ namespace MGroup.XFEM.Elements
                 //TODO: VERY FRAGILE CODE. This order of enrichments was used to determine the order of enriched dofs in 
                 //      another method. It works as of the time of writing, but this dependency must be removed. Perhaps use a 
                 //      DofTable.
-                foreach (IEnrichment enrichment in node.Enrichments.Keys)
+                foreach (IEnrichmentFunction enrichment in node.EnrichmentFuncs.Keys)
                 {
                     if (enrichment.IsAppliedDueTo(boundary)) enrichedDofIndicesToNodeIndices[idx] = n;
                     else enrichedDofIndicesToNodeIndices[idx] = -1;

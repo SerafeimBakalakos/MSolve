@@ -183,12 +183,12 @@ namespace MGroup.XFEM.Enrichment.Enrichers
             }
         }
 
-        private void EnrichNode(XNode node, IEnrichment enrichment)
+        private void EnrichNode(XNode node, IEnrichmentFunction enrichment)
         {
-            if (!node.Enrichments.ContainsKey(enrichment))
+            if (!node.EnrichmentFuncs.ContainsKey(enrichment))
             {
                 double value = enrichment.EvaluateAt(node);
-                node.Enrichments[enrichment] = value;
+                node.EnrichmentFuncs[enrichment] = value;
             }
         }
 
@@ -205,7 +205,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
             }
 
             // Find nodes to potentially be enriched by step enrichments
-            var nodesPerStepEnrichment = new Dictionary<IEnrichment, HashSet<XNode>>();
+            var nodesPerStepEnrichment = new Dictionary<IEnrichmentFunction, HashSet<XNode>>();
             foreach (IPhase phase in geometricModel.Phases)
             {
                 if (phase is DefaultPhase) continue;
@@ -214,7 +214,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
                     foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
                     {
                         // Find the nodes to potentially be enriched by this step enrichment 
-                        IEnrichment stepEnrichment = boundary.StepEnrichment;
+                        IEnrichmentFunction stepEnrichment = boundary.StepEnrichment;
                         bool exists = nodesPerStepEnrichment.TryGetValue(stepEnrichment, out HashSet<XNode> nodesToEnrich);
                         if (!exists)
                         {
@@ -234,7 +234,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
             // Enrich these nodes with the corresponding step enrichment
             foreach (var enrichmentNodesPair in nodesPerStepEnrichment)
             {
-                IEnrichment stepEnrichment = enrichmentNodesPair.Key;
+                IEnrichmentFunction stepEnrichment = enrichmentNodesPair.Key;
                 HashSet<XNode> nodesToEnrich = enrichmentNodesPair.Value;
 
                 // Some of these nodes may need to not be enriched after all, to avoid singularities in the global stiffness matrix
@@ -249,9 +249,9 @@ namespace MGroup.XFEM.Enrichment.Enrichers
             }
         }
 
-        private bool HasCorrespondingJunction(XNode node, IEnrichment stepEnrichment)
+        private bool HasCorrespondingJunction(XNode node, IEnrichmentFunction stepEnrichment)
         {
-            foreach (IEnrichment enrichment in node.Enrichments.Keys)
+            foreach (IEnrichmentFunction enrichment in node.EnrichmentFuncs.Keys)
             {
                 if (enrichment is JunctionEnrichment junctionEnrichment)
                 {

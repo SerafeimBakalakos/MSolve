@@ -5,10 +5,10 @@ namespace MGroup.XFEM.Enrichment
 {
     public class EnrichedDof: IDofType
     {
-        public IEnrichment Enrichment { get; }
+        public IEnrichmentFunction Enrichment { get; }
         public IDofType StandardDof { get; }
 
-        public EnrichedDof(IEnrichment enrichment, IDofType standardDof)
+        public EnrichedDof(IEnrichmentFunction enrichment, IDofType standardDof)
         {
             this.Enrichment = enrichment;
             this.StandardDof = standardDof;

@@ -10,6 +10,7 @@ using ISAAR.MSolve.FEM.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Enrichment.Observers;
 
 //Method for enriching nodes and updating observers
@@ -34,6 +35,9 @@ namespace MGroup.XFEM.Entities
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();
 
+        //TODO: Phases (or more accurately phase boundaries) and phase junctions should be stored here, not in a GeometricModel
+        public List<IXDiscontinuity> Discontinuities { get; } = new List<IXDiscontinuity>();
+
         IReadOnlyList<IElement> IStructuralModel.Elements
         {
             get
@@ -46,14 +50,17 @@ namespace MGroup.XFEM.Entities
 
         public List<TElement> Elements { get; } = new List<TElement>();
 
-        //TODO: Perhaps I need something more involved for storing and interfacing with the enrichments
-        public Dictionary<IEnrichment, XNode[]> EnrichedNodes { get; set; } = new Dictionary<IEnrichment, XNode[]>();
+        public Dictionary<int, EnrichmentItem> Enrichments { get; } = new Dictionary<int, EnrichmentItem>();
 
-        public Dictionary<IEnrichment, IDofType[]> EnrichedDofs { get; set; } = new Dictionary<IEnrichment, IDofType[]>();
+        //TODO: Perhaps I need something more involved for storing and interfacing with the enrichments
+        //public Dictionary<IEnrichmentFunction, XNode[]> EnrichedNodes { get; set; } = new Dictionary<IEnrichmentFunction, XNode[]>();
+        //public Dictionary<IEnrichmentFunction, IDofType[]> EnrichedDofs { get; set; } = new Dictionary<IEnrichmentFunction, IDofType[]>();
 
         public IGlobalFreeDofOrdering GlobalDofOrdering { get; set; }
 
         public List<NodalLoad> NodalLoads { get; private set; } = new List<NodalLoad>();
+
+        public List<INodeEnricher> NodeEnrichers { get; set; } = new List<INodeEnricher>();
 
         IReadOnlyList<INode> IStructuralModel.Nodes => XNodes;
         public List<XNode> XNodes { get; } = new List<XNode>();
@@ -96,13 +103,30 @@ namespace MGroup.XFEM.Entities
             }
         }
 
-
-        public IEnumerable<IXFiniteElement> EnumerateElements() //TODO: There must be a better way
+        public IEnumerable<IXFiniteElement> EnumerateElements() 
         {
+            //TODO: There must be a better way than recreating the data structures
             var result = new IXFiniteElement[Elements.Count];
             for (int i = 0; i < Elements.Count; ++i) result[i] = Elements[i];
             return result;
+        }
 
+        public void Initialize()
+        {
+            ConnectDataStructures();
+
+            // Identify enrichments and their dofs
+            //TODO: The enrichments may need to change during the analysis (e.g. branching cracks, crack junctions, etc)
+            foreach (IXDiscontinuity discontinuity in Discontinuities)
+            {
+                IList<EnrichmentItem> enrichments = discontinuity.DefineEnrichments(this.Enrichments.Count);
+                foreach (EnrichmentItem enrichment in enrichments)
+                {
+                    this.Enrichments[enrichment.ID] = enrichment;
+                }
+            }
+
+            UpdateStatePrivate(true, null);
         }
 
         public void RegisterEnrichmentObserver(IEnrichmentObserver observer)
@@ -124,11 +148,21 @@ namespace MGroup.XFEM.Entities
             enrichmentObservers.Add(observer);
         }
 
-        public void UpdateDofs()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="subdomainFreeDisplacements">Total displacements of all dofs of each subdomain.</param>
+        public void Update(Dictionary<int, Vector> subdomainFreeDisplacements)
         {
-            foreach (IXFiniteElement element in Elements) element.IdentifyDofs(EnrichedDofs);
+            UpdateStatePrivate(false, subdomainFreeDisplacements);
         }
 
+        public void UpdateDofs()
+        {
+            foreach (IXFiniteElement element in Elements) element.IdentifyDofs();
+        }
+
+        //TODO: Replace this with Update() and/or Initialize() 
         public void UpdateMaterials()
         {
             foreach (IXFiniteElement element in Elements) element.IdentifyIntegrationPointsAndMaterials();
@@ -182,6 +216,34 @@ namespace MGroup.XFEM.Entities
                 if (!isConstrained) activeLoadsStatic.Add(load);
             }
             NodalLoads = activeLoadsStatic;
+        }
+
+        /// <summary>
+        /// Common operations for intializing/updating the model's state.
+        /// </summary>
+        /// <param name="firstAnalysis"></param>
+        /// <param name="subdomainFreeDisplacements">if <paramref name="firstAnalysis"/> == true, this can be null.</param>
+        private void UpdateStatePrivate(bool firstAnalysis, Dictionary<int, Vector> subdomainFreeDisplacements)
+        {
+            // Update the discontinuities
+            foreach (IXDiscontinuity discontinuity in Discontinuities)
+            {
+                if (firstAnalysis) discontinuity.InitializeGeometry();
+                else discontinuity.UpdateGeometry(subdomainFreeDisplacements);
+                discontinuity.InteractWithMesh(); //TODO: Should this be included in UpdateGeometry()?
+            }
+
+            // Enrich the required nodes
+            foreach (INodeEnricher enricher in NodeEnrichers) enricher.ApplyEnrichments();
+
+            // Identify each element's dofs
+            foreach (IXFiniteElement element in Elements) element.IdentifyDofs();
+
+            // Identify each element's integration points and the material properties at those points
+            foreach (IXFiniteElement element in Elements) element.IdentifyIntegrationPointsAndMaterials();
+
+            // Let observers read the current state and update themselves
+            foreach (IEnrichmentObserver observer in enrichmentObservers) observer.Update(Enrichments.Values);
         }
     }
 }

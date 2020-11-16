@@ -22,7 +22,7 @@ namespace MGroup.XFEM.Enrichment.Observers
 
         public HashSet<XNode> NewBodyNodes { get; } = new HashSet<XNode>();
 
-        public void Update(Dictionary<IEnrichment, XNode[]> enrichedNodes)
+        public void Update(IEnumerable<EnrichmentItem> allEnrichments)
         {
             NewBodyNodes.Clear();
 

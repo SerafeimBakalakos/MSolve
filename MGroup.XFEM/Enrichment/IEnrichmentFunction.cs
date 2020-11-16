@@ -7,9 +7,9 @@ using MGroup.XFEM.Geometry.Primitives;
 //TODO: Some properties only apply to multiphase problems. Move these elsewhere
 namespace MGroup.XFEM.Enrichment
 {
-    public interface IEnrichment
+    public interface IEnrichmentFunction
     {
-        int ID { get; }
+        //int ID { get; }
 
         //TODO: Not sure about this. This necessitates that the enrichment between phase0 and phase1 is different than the one 
         //      between phase0 and phase2. This does not allow step enrichments to be defined as in/out of a phase

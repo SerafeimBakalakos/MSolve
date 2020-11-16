@@ -61,8 +61,8 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             // Create and analyze model, in order to get the solution vector
             XModel<XCrackElement2D> model = CreateModel3x1();
             var crack = new Crack(model);
-            IEnrichment[] enrichments = InitializeCrack(model, crack);
-            EnrichNodes3x1(model, enrichments);
+            InitializeCrack(model, crack);
+            EnrichNodes3x1(model, crack);
             //EnrichNodes(model, crack, enrichments);
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
 
@@ -98,8 +98,8 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             int[] numElements = { 135, 45 };
             XModel<XCrackElement2D> model = CreateModel(numElements);
             var crack = new Crack(model);
-            IEnrichment[] enrichments = InitializeCrack(model, crack);
-            EnrichNodes(model, crack, enrichments);
+            InitializeCrack(model, crack);
+            EnrichNodes(model, crack);
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
 
             // Find displacements at specified dofs
@@ -169,8 +169,8 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             // Create and analyze model, in order to get the global stiffness
             XModel<XCrackElement2D> model = CreateModel3x1();
             var crack = new Crack(model);
-            IEnrichment[] enrichments = InitializeCrack(model, crack);
-            EnrichNodes3x1(model, enrichments);
+            InitializeCrack(model, crack);
+            EnrichNodes3x1(model, crack);
             //EnrichNodes(model, crack, enrichments);
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
 
@@ -263,8 +263,8 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             int[] numElements = { 3 * numElementsY, numElementsY };
             XModel<XCrackElement2D> model = CreateModel(numElements);
             var crack = new Crack(model);
-            IEnrichment[] enrichments = InitializeCrack(model, crack);
-            EnrichNodes(model, crack, enrichments);
+            InitializeCrack(model, crack);
+            EnrichNodes(model, crack);
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
 
             // Calculate J-integral and SIFs
@@ -377,54 +377,61 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         }
 
         //TODO: These should be done automatically
-        private static IEnrichment[] InitializeCrack(XModel<XCrackElement2D> model, Crack crack)
+        private static void InitializeCrack(XModel<XCrackElement2D> model, Crack crack)
         {
-            // Define enrichments
-            var enrichments = new IEnrichment[5];
-            enrichments[0] = new CrackStepEnrichment(0, crack);
-            enrichments[1] = new IsotropicBrittleTipEnrichments2D.Func0(1, () => crack.TipSystem);
-            enrichments[2] = new IsotropicBrittleTipEnrichments2D.Func1(2, () => crack.TipSystem);
-            enrichments[3] = new IsotropicBrittleTipEnrichments2D.Func2(3, () => crack.TipSystem);
-            enrichments[4] = new IsotropicBrittleTipEnrichments2D.Func3(4, () => crack.TipSystem);
-
-            // Define enriched dofs
-            model.EnrichedDofs = new Dictionary<IEnrichment, IDofType[]>();
-            foreach (IEnrichment enrichment in enrichments)
+            var enrichments = crack.DefineEnrichments(0);
+            foreach (EnrichmentItem enrichment in enrichments)
             {
-                var dofs = new IDofType[]
-                {
-                    new EnrichedDof(enrichment, StructuralDof.TranslationX),
-                    new EnrichedDof(enrichment, StructuralDof.TranslationY)
-                };
-                model.EnrichedDofs[enrichment] = dofs;
+                model.Enrichments[enrichment.ID] = enrichment;
             }
+            //// Define enrichments
+            //var enrichments = new IEnrichmentFunction[5];
+            //enrichments[0] = new CrackStepEnrichment(crack);
+            //enrichments[1] = new IsotropicBrittleTipEnrichments2D.Func0(() => crack.TipSystem);
+            //enrichments[2] = new IsotropicBrittleTipEnrichments2D.Func1(() => crack.TipSystem);
+            //enrichments[3] = new IsotropicBrittleTipEnrichments2D.Func2(() => crack.TipSystem);
+            //enrichments[4] = new IsotropicBrittleTipEnrichments2D.Func3(() => crack.TipSystem);
 
-            return enrichments;
+            //// Define enriched dofs
+            //model.EnrichedDofs = new Dictionary<IEnrichmentFunction, IDofType[]>();
+            //foreach (IEnrichmentFunction enrichment in enrichments)
+            //{
+            //    var dofs = new IDofType[]
+            //    {
+            //        new EnrichedDof(enrichment, StructuralDof.TranslationX),
+            //        new EnrichedDof(enrichment, StructuralDof.TranslationY)
+            //    };
+            //    model.EnrichedDofs[enrichment] = dofs;
+            //}
+
+            //return enrichments;
         }
 
-        private static void EnrichNodes3x1(XModel<XCrackElement2D> model, IEnrichment[] enrichments)
+        private static void EnrichNodes3x1(XModel<XCrackElement2D> model, Crack crack)
         {
             // Heaviside enrichment
             foreach (int n in new int[] { 5, 6 })
             {
                 XNode node = model.XNodes[n];
-                IEnrichment enrichment = enrichments[0];
-                node.Enrichments[enrichment] = enrichment.EvaluateAt(node);
+                node.Enrichments.Add(crack.CrackBodyEnrichment);
+                IEnrichmentFunction enrichment = crack.CrackBodyEnrichment.EnrichmentFunctions[0];
+                node.EnrichmentFuncs[enrichment] = enrichment.EvaluateAt(node);
             }
 
             // Tip enrichments
             foreach (int n in new int[] { 1, 2, 4, 7 })
             {
                 XNode node = model.XNodes[n];
+                node.Enrichments.Add(crack.CrackTipEnrichments);
                 foreach (int e in new int[] { 1, 2, 3, 4 })
                 {
-                    IEnrichment enrichment = enrichments[e];
-                    node.Enrichments[enrichment] = enrichment.EvaluateAt(node);
+                    IEnrichmentFunction enrichment = crack.CrackTipEnrichments.EnrichmentFunctions[e];
+                    node.EnrichmentFuncs[enrichment] = enrichment.EvaluateAt(node);
                 }
             }
         }
 
-        private static void EnrichNodes(XModel<XCrackElement2D> model, Crack crack, IEnrichment[] enrichments)
+        private static void EnrichNodes(XModel<XCrackElement2D> model, Crack crack)
         {
             // Find heaviside and tip enriched nodes
             var heavisideNodes = new HashSet<XNode>();
@@ -442,17 +449,19 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             // Heaviside enrichment
             foreach (XNode node in heavisideNodes)
             {
-                IEnrichment enrichment = enrichments[0];
-                node.Enrichments[enrichment] = enrichment.EvaluateAt(node);
+                node.Enrichments.Add(crack.CrackBodyEnrichment);
+                IEnrichmentFunction enrichment = crack.CrackBodyEnrichment.EnrichmentFunctions[0];
+                node.EnrichmentFuncs[enrichment] = enrichment.EvaluateAt(node);
             }
 
             // Tip enrichments
             foreach (XNode node in tipNodes)
             {
+                node.Enrichments.Add(crack.CrackTipEnrichments);
                 foreach (int e in new int[] { 1, 2, 3, 4 })
                 {
-                    IEnrichment enrichment = enrichments[e];
-                    node.Enrichments[enrichment] = enrichment.EvaluateAt(node);
+                    IEnrichmentFunction enrichment = crack.CrackTipEnrichments.EnrichmentFunctions[e];
+                    node.EnrichmentFuncs[enrichment] = enrichment.EvaluateAt(node);
                 }
             }
         }
@@ -461,7 +470,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         {
             foreach (XCrackElement2D element in model.Elements)
             {
-                element.IdentifyDofs(model.EnrichedDofs);
+                element.IdentifyDofs();
                 element.IdentifyIntegrationPointsAndMaterials();
             }
 
@@ -535,11 +544,11 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
             public HashSet<IXCrackElement> ConformingElements => throw new NotImplementedException();
 
-            public CrackStepEnrichment CrackBodyEnrichment => throw new NotImplementedException();
+            public EnrichmentItem CrackBodyEnrichment => throw new NotImplementedException();
 
             public IXGeometryDescription CrackGeometry => throw new NotImplementedException();
 
-            public IReadOnlyList<ICrackTipEnrichment> CrackTipEnrichments => throw new NotImplementedException();
+            public EnrichmentItem CrackTipEnrichments => throw new NotImplementedException();
 
             public HashSet<IXCrackElement> IntersectedElements => throw new NotImplementedException();
 
@@ -557,7 +566,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 throw new NotImplementedException();
             }
 
-            public void Propagate(Dictionary<int, Vector> subdomainFreeDisplacements)
+            public void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements)
             {
                 throw new NotImplementedException();
             }
@@ -615,6 +624,16 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 result &= (nodes[2].Coordinates[0] > tip[0]) && (nodes[2].Coordinates[1] > tip[1]);
                 result &= (nodes[3].Coordinates[0] < tip[0]) && (nodes[3].Coordinates[1] > tip[1]);
                 return result;
+            }
+
+            public IList<EnrichmentItem> DefineEnrichments(int numCurrentEnrichments)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void InitializeGeometry()
+            {
+                throw new NotImplementedException();
             }
         }
     }

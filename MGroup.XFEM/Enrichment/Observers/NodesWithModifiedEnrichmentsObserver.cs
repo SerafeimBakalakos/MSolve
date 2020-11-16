@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 
 namespace MGroup.XFEM.Enrichment.Observers
@@ -32,7 +31,7 @@ namespace MGroup.XFEM.Enrichment.Observers
 
         public HashSet<XNode> ModifiedNodes { get; } = new HashSet<XNode>();
 
-        public void Update(Dictionary<IEnrichment, XNode[]> enrichedNodes)
+        public void Update(IEnumerable<EnrichmentItem> allEnrichments)
         {
             ModifiedNodes.Clear();
             ModifiedNodes.UnionWith(newTipNodesObserver.TipNodes);

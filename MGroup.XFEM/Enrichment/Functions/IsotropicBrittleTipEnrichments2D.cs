@@ -16,13 +16,10 @@ namespace MGroup.XFEM.Enrichment.Functions
         {
             private readonly Func<TipCoordinateSystem> getTipSystem;
 
-            public Func0(int id, Func<TipCoordinateSystem> getTipSystem)
+            public Func0(Func<TipCoordinateSystem> getTipSystem)
             {
-                this.ID = id;
                 this.getTipSystem = getTipSystem;
             }
-
-            public int ID { get; }
 
             public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
 
@@ -75,13 +72,10 @@ namespace MGroup.XFEM.Enrichment.Functions
         {
             private readonly Func<TipCoordinateSystem> getTipSystem;
 
-            public Func1(int id, Func<TipCoordinateSystem> getTipSystem)
+            public Func1(Func<TipCoordinateSystem> getTipSystem)
             {
-                this.ID = id;
                 this.getTipSystem = getTipSystem;
             }
-
-            public int ID { get; }
 
             public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
 
@@ -134,13 +128,10 @@ namespace MGroup.XFEM.Enrichment.Functions
         {
             private readonly Func<TipCoordinateSystem> getTipSystem;
 
-            public Func2(int id, Func<TipCoordinateSystem> getTipSystem)
+            public Func2(Func<TipCoordinateSystem> getTipSystem)
             {
-                this.ID = id;
                 this.getTipSystem = getTipSystem;
             }
-
-            public int ID { get; }
 
             public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
 
@@ -195,13 +186,10 @@ namespace MGroup.XFEM.Enrichment.Functions
         {
             private readonly Func<TipCoordinateSystem> getTipSystem;
 
-            public Func3(int id, Func<TipCoordinateSystem> getTipSystem)
+            public Func3(Func<TipCoordinateSystem> getTipSystem)
             {
-                this.ID = id;
                 this.getTipSystem = getTipSystem;
             }
-
-            public int ID { get; }
 
             public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
 

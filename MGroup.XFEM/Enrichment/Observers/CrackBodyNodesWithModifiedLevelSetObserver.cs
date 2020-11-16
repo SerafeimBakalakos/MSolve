@@ -29,7 +29,7 @@ namespace MGroup.XFEM.Enrichment.Observers
 
         public Dictionary<int, double> LevelSetsOfBodyNodes { get; private set; } = new Dictionary<int, double>();
 
-        public void Update(Dictionary<IEnrichment, XNode[]> enrichedNodes)
+        public void Update(IEnumerable<EnrichmentItem> allEnrichments)
         {
             Dictionary<int, double> previousBodyLevelSets = LevelSetsOfBodyNodes;
             LevelSetsOfBodyNodes = new Dictionary<int, double>();

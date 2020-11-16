@@ -24,7 +24,7 @@ namespace MGroup.XFEM.Enrichment.Observers
 
         public HashSet<XNode> NearModifiedNodes { get; } = new HashSet<XNode>();
 
-        public void Update(Dictionary<IEnrichment, XNode[]> enrichedNodes)
+        public void Update(IEnumerable<EnrichmentItem> allEnrichments)
         {
             NearModifiedNodes.Clear();
             HashSet<XNode> modifiedNodes = nodesWithModifiedEnrichmentsObserver.ModifiedNodes;
@@ -32,7 +32,7 @@ namespace MGroup.XFEM.Enrichment.Observers
             {
                 foreach (XNode node in element.Nodes)
                 {
-                    if ((!modifiedNodes.Contains(node)) && (node.Enrichments.Count > 0))
+                    if ((!modifiedNodes.Contains(node)) && (node.EnrichmentFuncs.Count > 0))
                     {
                         NearModifiedNodes.Add(node);
                     }

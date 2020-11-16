@@ -8,7 +8,7 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Enrichment.Functions
 {
-    public class PhaseStepEnrichment : IEnrichment
+    public class PhaseStepEnrichment : IEnrichmentFunction
     {
         private readonly IPhase internalPhase, externalPhase;
         private readonly IPhase minPhase, maxPhase;

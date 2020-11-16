@@ -33,7 +33,7 @@ namespace MGroup.XFEM.Elements
         {
             foreach (XNode node in element.Nodes)
             {
-                foreach (IEnrichment enrichment in node.Enrichments.Keys)
+                foreach (IEnrichmentFunction enrichment in node.EnrichmentFuncs.Keys)
                 {
                     if (enrichment is ICrackTipEnrichment) return true;
                 }

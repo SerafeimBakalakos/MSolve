@@ -33,11 +33,11 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         public static void TestElementStiffnesses()
         {
             (XNode[] nodes, XCrackElement2D[] elements) = CreateElements();
-            Dictionary<IEnrichment, IDofType[]> enrichedDofs = EnrichNodesElements(nodes, elements);
+            Dictionary<IEnrichmentFunction, IDofType[]> enrichedDofs = EnrichNodesElements(nodes, elements);
             
             for (int e = 0; e < elements.Length; ++e)
             {
-                elements[e].IdentifyDofs(enrichedDofs);
+                elements[e].IdentifyDofs();
                 elements[e].IdentifyIntegrationPointsAndMaterials();
                 IMatrix computedK = elements[e].StiffnessMatrix(null);
 
@@ -59,7 +59,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         public static void TestSolution()
         {
             (XNode[] nodes, XCrackElement2D[] elements) = CreateElements();
-            Dictionary<IEnrichment, IDofType[]> enrichedDofs = EnrichNodesElements(nodes, elements);
+            Dictionary<IEnrichmentFunction, IDofType[]> enrichedDofs = EnrichNodesElements(nodes, elements);
 
             // FEM assembly
             var elementToGlobalMaps = new List<int[]>();
@@ -70,7 +70,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             var globalK = Matrix.CreateZero(24, 24);
             for (int e = 0; e < elements.Length; ++e)
             {
-                elements[e].IdentifyDofs(enrichedDofs);
+                elements[e].IdentifyDofs();
                 elements[e].IdentifyIntegrationPointsAndMaterials();
                 IMatrix elementK = elements[e].StiffnessMatrix(null);
                 AddSubmatrix(globalK, elementK, elementToGlobalMaps[e]);
@@ -104,16 +104,16 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         }
 
 
-        private static Dictionary<IEnrichment, IDofType[]> EnrichNodesElements(XNode[] nodes, XCrackElement2D[] elements)
+        private static Dictionary<IEnrichmentFunction, IDofType[]> EnrichNodesElements(XNode[] nodes, XCrackElement2D[] elements)
         {
             var crack = new Crack(new double[] { 30.0, +40.0 }, new double[] { 30.0, -40.0 });
-            var stepEnrichment = new CrackStepEnrichment(0, crack);
-            nodes[1].Enrichments[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[1]);
-            nodes[2].Enrichments[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[2]);
-            nodes[4].Enrichments[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[4]);
-            nodes[7].Enrichments[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[7]);
+            var stepEnrichment = new CrackStepEnrichment(crack);
+            nodes[1].EnrichmentFuncs[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[1]);
+            nodes[2].EnrichmentFuncs[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[2]);
+            nodes[4].EnrichmentFuncs[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[4]);
+            nodes[7].EnrichmentFuncs[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[7]);
 
-            var enrichedDofs = new Dictionary<IEnrichment, IDofType[]>();
+            var enrichedDofs = new Dictionary<IEnrichmentFunction, IDofType[]>();
             enrichedDofs[stepEnrichment] = new IDofType[2] {
                 new EnrichedDof(stepEnrichment, StructuralDof.TranslationX),
                 new EnrichedDof(stepEnrichment, StructuralDof.TranslationY)
@@ -264,11 +264,11 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
             public HashSet<IXCrackElement> ConformingElements => throw new NotImplementedException();
 
-            public CrackStepEnrichment CrackBodyEnrichment => throw new NotImplementedException();
+            public EnrichmentItem CrackBodyEnrichment => throw new NotImplementedException();
 
             public IXGeometryDescription CrackGeometry => throw new NotImplementedException();
 
-            public IReadOnlyList<ICrackTipEnrichment> CrackTipEnrichments => throw new NotImplementedException();
+            public EnrichmentItem CrackTipEnrichments => throw new NotImplementedException();
 
             public HashSet<IXCrackElement> IntersectedElements => throw new NotImplementedException();
 
@@ -286,7 +286,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 throw new NotImplementedException();
             }
 
-            public void Propagate(Dictionary<int, Vector> subdomainFreeDisplacements)
+            public void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements)
             {
                 throw new NotImplementedException();
             }
@@ -305,6 +305,16 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                     point.Coordinates[CoordinateSystem.GlobalCartesian] = coords;
                 }
                 return line.SignedDistanceOf(coords);
+            }
+
+            public IList<EnrichmentItem> DefineEnrichments(int numCurrentEnrichments)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void InitializeGeometry()
+            {
+                throw new NotImplementedException();
             }
         }
     }

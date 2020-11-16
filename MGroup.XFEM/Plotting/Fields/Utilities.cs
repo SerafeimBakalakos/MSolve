@@ -25,10 +25,10 @@ namespace MGroup.XFEM.Plotting.Fields
                 sum += point.ShapeFunctions[n] * nodalTemperatures[idx++];
 
                 // Eniched temperatures
-                foreach (IEnrichment enrichment in element.Nodes[n].Enrichments.Keys)
+                foreach (IEnrichmentFunction enrichment in element.Nodes[n].EnrichmentFuncs.Keys)
                 {
                     double psiVertex = enrichment.EvaluateAt(point);
-                    double psiNode = element.Nodes[n].Enrichments[enrichment];
+                    double psiNode = element.Nodes[n].EnrichmentFuncs[enrichment];
                     sum += point.ShapeFunctions[n] * (psiVertex - psiNode) * nodalTemperatures[idx++];
                 }
             }
@@ -51,10 +51,10 @@ namespace MGroup.XFEM.Plotting.Fields
                 }
 
                 // Eniched temperatures
-                foreach (IEnrichment enrichment in element.Nodes[n].Enrichments.Keys)
+                foreach (IEnrichmentFunction enrichment in element.Nodes[n].EnrichmentFuncs.Keys)
                 {
                     double psiVertex = enrichment.EvaluateAt(point);
-                    double psiNode = element.Nodes[n].Enrichments[enrichment];
+                    double psiNode = element.Nodes[n].EnrichmentFuncs[enrichment];
                     double enrTij = nodalTemperatures[idx++];
 
                     for (int i = 0; i < dimension; ++i)

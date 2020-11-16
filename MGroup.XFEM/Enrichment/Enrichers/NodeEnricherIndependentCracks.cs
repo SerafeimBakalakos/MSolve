@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.Discretization.FreedomDegrees;
 using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.SingularityResolution;
@@ -15,8 +14,6 @@ namespace MGroup.XFEM.Enrichment.Enrichers
     {
         private readonly IEnumerable<ICrack> cracks; //TODO: Read these from a component like PhaseGeometryModel
         private readonly double fixedTipEnrichmentRegionRadius;
-        private readonly int dimension;
-        private readonly XModel<IXCrackElement> model;
         private readonly ISingularityResolver singularityResolver;
 
         /// <summary>
@@ -27,15 +24,12 @@ namespace MGroup.XFEM.Enrichment.Enrichers
         /// functions. They can still be enriched with Heaviside functions, if they do not belong to the tip 
         /// element(s).
         /// </param>
-        public NodeEnricherIndependentCracks(int dimension, XModel<IXCrackElement> model, IEnumerable<ICrack> cracks,
+        public NodeEnricherIndependentCracks(IEnumerable<ICrack> cracks,
             ISingularityResolver singularityResolver, double fixedTipEnrichmentRegionRadius = 0.0)
         {
-            this.dimension = dimension;
-            this.model = model;
             this.cracks = cracks;
             this.singularityResolver = singularityResolver;
             this.fixedTipEnrichmentRegionRadius = fixedTipEnrichmentRegionRadius;
-            IdentifyEnrichedDofs();
         }
 
         /// <summary>
@@ -46,9 +40,8 @@ namespace MGroup.XFEM.Enrichment.Enrichers
         /// functions. They can still be enriched with Heaviside functions, if they do not belong to the tip 
         /// element(s).
         /// </param>
-        public NodeEnricherIndependentCracks(int dimension, XModel<IXCrackElement> model, IEnumerable<ICrack> cracks,
-            double fixedTipEnrichmentRegionRadius = 0.0) :
-            this(dimension, model, cracks, new RelativeAreaSingularityResolver(1E-4), fixedTipEnrichmentRegionRadius)
+        public NodeEnricherIndependentCracks(IEnumerable<ICrack> cracks, double fixedTipEnrichmentRegionRadius = 0.0) :
+            this(cracks, new RelativeAreaSingularityResolver(1E-4), fixedTipEnrichmentRegionRadius)
         {
         }
 
@@ -60,7 +53,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
 
                 // Enrich nodes of the new crack tip elements
                 var tipElementNodes = new HashSet<XNode>();
-                foreach (IXCrackElement element in crack.CrackTipEnrichments)
+                foreach (IXCrackElement element in crack.TipElements)
                 {
                     tipElementNodes.UnionWith(tipElementNodes);
                 }
@@ -97,75 +90,83 @@ namespace MGroup.XFEM.Enrichment.Enrichers
                 // Only enrich the new Heaviside nodes, namely the ones not previously enriched. This optimization is not
                 // necessary. It will cause problems if the crack tip turns sharply towards the crack body, which shouldn't 
                 // happen normally.
+                var newHeavisideNodes = new HashSet<XNode>();
                 foreach (XNode node in heavisideNodes)
                 {
-                    if (!node.Enrichments.ContainsKey(crack.CrackBodyEnrichment))
+                    if (!node.Enrichments.Contains(crack.CrackBodyEnrichment))
                     {
-                        node.Enrichments[crack.CrackBodyEnrichment] = crack.CrackBodyEnrichment.EvaluateAt(node);
+                        newHeavisideNodes.Add(node);
                     }
                 }
+                EnrichNodesWith(newHeavisideNodes, crack.CrackBodyEnrichment);
             }
         }
 
-        private void ClearNodalEnrichments(IEnumerable<IEnrichment> enrichments)
+        private void ClearNodalEnrichments(EnrichmentItem enrichment)
         {
-            foreach (IEnrichment enrichment in enrichments)
+            foreach (XNode node in enrichment.EnrichedNodes)
             {
-                foreach (XNode node in model.EnrichedNodes[enrichment])
+                node.Enrichments.Remove(enrichment);
+                foreach (IEnrichmentFunction enrichmentFunc in enrichment.EnrichmentFunctions)
                 {
-                    node.Enrichments.Remove(enrichment);
+                    node.EnrichmentFuncs.Remove(enrichmentFunc);
                 }
-                model.EnrichedNodes[enrichment] = null;
             }
+            enrichment.EnrichedNodes.Clear();
         }
 
-        private void EnrichNodesWith(IEnumerable<XNode> nodes, IEnumerable<IEnrichment> enrichments)
+        private void EnrichNodesWith(IEnumerable<XNode> nodes, EnrichmentItem enrichment)
         {
             foreach (XNode node in nodes)
             {
-                foreach (IEnrichment enrichment in enrichments)
+                node.Enrichments.Add(enrichment);
+                foreach (IEnrichmentFunction enrichmentFunc in enrichment.EnrichmentFunctions)
                 {
-                    node.Enrichments[enrichment] = enrichment.EvaluateAt(node);
+                    node.EnrichmentFuncs[enrichmentFunc] = enrichmentFunc.EvaluateAt(node);
                 }
+                enrichment.EnrichedNodes.Add(node);
             }
         }
 
-        //TODO: Generalize this method for all INodeEnricher implementations
-        private void IdentifyEnrichedDofs()
-        {
-            model.EnrichedDofs.Clear();
-            foreach (ICrack crack in cracks)
-            {
-                var enrichments = new List<IEnrichment>();
-                enrichments.Add(crack.CrackBodyEnrichment);
-                enrichments.AddRange(crack.CrackTipEnrichments);
-                if (dimension == 2)
-                {
-                    foreach (IEnrichment enrichment in enrichments)
-                    {
-                        var dofs = new IDofType[]
-                        {
-                            new EnrichedDof(enrichment, StructuralDof.TranslationX),
-                            new EnrichedDof(enrichment, StructuralDof.TranslationY)
-                        };
-                        model.EnrichedDofs[enrichment] = dofs;
-                    }
-                }
-                else if (dimension == 3)
-                {
-                    foreach (IEnrichment enrichment in enrichments)
-                    {
-                        var dofs = new IDofType[]
-                        {
-                            new EnrichedDof(enrichment, StructuralDof.TranslationX),
-                            new EnrichedDof(enrichment, StructuralDof.TranslationY),
-                            new EnrichedDof(enrichment, StructuralDof.TranslationZ)
-                        };
-                        model.EnrichedDofs[enrichment] = dofs;
-                    }
-                }
-                else throw new NotImplementedException();
-            }
-        }
+        ////TODO: Generalize this method for all INodeEnricher implementations
+        ////TODO: For cases where a crack branches or 2 cracks merge, the enrichments will change. This method will need to be
+        ////      called repeatedly (probably by the model). How do I determine which enrichments change and which remain the same?
+        //private void IdentifyEnrichedDofs()
+        //{
+        //    //TODO: Create EnrichmentItems (and their dofs) and register them in the model 
+        //    model.EnrichedDofs.Clear();
+        //    foreach (ICrack crack in cracks)
+        //    {
+        //        var enrichments = new List<IEnrichmentFunction>();
+        //        enrichments.Add(crack.CrackBodyEnrichment);
+        //        enrichments.AddRange(crack.CrackTipEnrichments);
+        //        if (dimension == 2)
+        //        {
+        //            foreach (IEnrichmentFunction enrichment in enrichments)
+        //            {
+        //                var dofs = new IDofType[]
+        //                {
+        //                    new EnrichedDof(enrichment, StructuralDof.TranslationX),
+        //                    new EnrichedDof(enrichment, StructuralDof.TranslationY)
+        //                };
+        //                model.EnrichedDofs[enrichment] = dofs;
+        //            }
+        //        }
+        //        else if (dimension == 3)
+        //        {
+        //            foreach (IEnrichmentFunction enrichment in enrichments)
+        //            {
+        //                var dofs = new IDofType[]
+        //                {
+        //                    new EnrichedDof(enrichment, StructuralDof.TranslationX),
+        //                    new EnrichedDof(enrichment, StructuralDof.TranslationY),
+        //                    new EnrichedDof(enrichment, StructuralDof.TranslationZ)
+        //                };
+        //                model.EnrichedDofs[enrichment] = dofs;
+        //            }
+        //        }
+        //        else throw new NotImplementedException();
+        //    }
+        //}
     }
 }

@@ -40,7 +40,7 @@ namespace MGroup.XFEM.Plotting.Writers
             this.iteration = 0;
         }
 
-        public void Update(Dictionary<IEnrichment, XNode[]> enrichedNodes)
+        public void Update(IEnumerable<EnrichmentItem> allEnrichments)
         {
             // Write the new tip enriched nodes and the signs of their crack body level sets.
             using (var writer = new VtkPointWriter($"{outputDirectory}\\tip_nodes_new_{iteration}.vtk"))
@@ -114,7 +114,7 @@ namespace MGroup.XFEM.Plotting.Writers
                 var nearModifiedHeavisideNodes = new Dictionary<double[], double>();
                 foreach (XNode node in nearModifiedNodesObserver.NearModifiedNodes)
                 {
-                    if (node.Enrichments.ContainsKey(crack.CrackBodyEnrichment))
+                    if (node.Enrichments.Contains(crack.CrackBodyEnrichment))
                     {
                         nearModifiedHeavisideNodes[node.Coordinates] = crack.LsmGeometry.LevelSets[node.ID];
                     }
