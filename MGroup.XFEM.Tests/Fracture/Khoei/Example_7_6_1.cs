@@ -16,7 +16,9 @@ using MGroup.XFEM.Cracks.Jintegral;
 using MGroup.XFEM.Cracks.PropagationCriteria;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Enrichment.Functions;
+using MGroup.XFEM.Enrichment.SingularityResolution;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Mesh;
@@ -59,11 +61,8 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             }); 
 
             // Create and analyze model, in order to get the solution vector
-            XModel<XCrackElement2D> model = CreateModel3x1();
-            var crack = new Crack(model);
-            InitializeCrack(model, crack);
-            EnrichNodes3x1(model, crack);
-            //EnrichNodes(model, crack, enrichments);
+            XModel<IXCrackElement> model = CreateModel3x1();
+            model.Initialize();
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
 
             var computedStdDisplacements = Vector.CreateFromArray(new double[]
@@ -96,10 +95,9 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
             // Create and analyze model, in order to get the solution vector
             int[] numElements = { 135, 45 };
-            XModel<XCrackElement2D> model = CreateModel(numElements);
-            var crack = new Crack(model);
-            InitializeCrack(model, crack);
-            EnrichNodes(model, crack);
+            XModel<IXCrackElement> model = CreateModel(numElements);
+            model.Initialize();
+            var crack = (Crack)model.Discontinuities[0];
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
 
             // Find displacements at specified dofs
@@ -167,11 +165,8 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             });
 
             // Create and analyze model, in order to get the global stiffness
-            XModel<XCrackElement2D> model = CreateModel3x1();
-            var crack = new Crack(model);
-            InitializeCrack(model, crack);
-            EnrichNodes3x1(model, crack);
-            //EnrichNodes(model, crack, enrichments);
+            XModel<IXCrackElement> model = CreateModel3x1();
+            model.Initialize();
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
 
             // Dof numbering
@@ -261,10 +256,9 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         {
             // Create and analyze model
             int[] numElements = { 3 * numElementsY, numElementsY };
-            XModel<XCrackElement2D> model = CreateModel(numElements);
-            var crack = new Crack(model);
-            InitializeCrack(model, crack);
-            EnrichNodes(model, crack);
+            XModel<IXCrackElement> model = CreateModel(numElements);
+            model.Initialize();
+            var crack = (Crack)model.Discontinuities[0];
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
 
             // Calculate J-integral and SIFs
@@ -275,14 +269,14 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             var jIntegrationRule = new JintegrationStrategy(
                 GaussLegendre2D.GetQuadratureWithOrder(4, 4),
                 new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)));
-            XCrackElement2D[] tipElements = { model.Elements[crack.TipElementIDs.First()] };
+
             double elementSize = Math.Max(maxCoords[0] / numElements[0], maxCoords[1] / numElements[1]);
 
             var propagator = new JintegralPropagator2D(jIntegralRadiusRatio, jIntegrationRule, material, 
                 new MaximumCircumferentialTensileStressCriterion(), 
                 new ConstantIncrement2D(1.5 * jIntegralRadiusRatio * elementSize));
             (double growthAngle, double growthLength) = propagator.Propagate(freeDisplacementsPerSubdomain,
-                crack.TipGlobalCoords, crack.TipSystem, tipElements);
+                crack.TipCoordinates, crack.TipSystem, crack.TipElements);
 
             double sifMode1 = propagator.Logger.SIFsMode1[0];
             double sifMode2 = propagator.Logger.SIFsMode2[0];
@@ -293,7 +287,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             Assert.InRange(Math.Round(sifMode1, 3), 2148.523, expectedSifMode1);
         }
 
-        private static void ApplyBoundaryConditions(XModel<XCrackElement2D> model)
+        private static void ApplyBoundaryConditions(XModel<IXCrackElement> model)
         {
             // Boundary conditions
             double tol = 1E-6;
@@ -310,9 +304,9 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             }
         }
 
-        private static XModel<XCrackElement2D> CreateModel3x1()
+        private static XModel<IXCrackElement> CreateModel3x1()
         {
-            var model = new XModel<XCrackElement2D>();
+            var model = new XModel<IXCrackElement>();
             model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
 
             // Nodes
@@ -347,18 +341,25 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 {
                     elementNodes[n] = model.XNodes[connectivity[e, n]];
                 }
-                XCrackElement2D element = factory.CreateElement(e, CellType.Quad4, elementNodes);
+                IXCrackElement element = factory.CreateElement(e, CellType.Quad4, elementNodes);
                 model.Elements.Add(element);
                 model.Subdomains[subdomainID].Elements.Add(element);
             }
 
             ApplyBoundaryConditions(model);
+
+            // Crack, enrichments
+            var crack = new Crack(model);
+            var enricher = new NodeEnricherIndependentCracks(new ICrack[] { crack }, new NullSingularityResolver());
+            model.Discontinuities.Add(crack);
+            model.NodeEnrichers.Add(enricher);
+
             return model;
         }
 
-        private static XModel<XCrackElement2D> CreateModel(int[] numElements)
+        private static XModel<IXCrackElement> CreateModel(int[] numElements)
         {
-            var model = new XModel<XCrackElement2D>();
+            var model = new XModel<IXCrackElement>();
             model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
 
             // Materials, integration
@@ -373,107 +374,18 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             Utilities.Models.AddNodesElements(model, mesh, factory);
 
             ApplyBoundaryConditions(model);
+
+            // Crack, enrichments
+            var crack = new Crack(model);
+            var enricher = new NodeEnricherIndependentCracks(new ICrack[] { crack }, new NullSingularityResolver());
+            model.Discontinuities.Add(crack);
+            model.NodeEnrichers.Add(enricher);
+
             return model;
         }
 
-        //TODO: These should be done automatically
-        private static void InitializeCrack(XModel<XCrackElement2D> model, Crack crack)
+        private static (IVectorView globalU, IMatrixView globalK) RunAnalysis(XModel<IXCrackElement> model)
         {
-            var enrichments = crack.DefineEnrichments(0);
-            foreach (EnrichmentItem enrichment in enrichments)
-            {
-                model.Enrichments[enrichment.ID] = enrichment;
-            }
-            //// Define enrichments
-            //var enrichments = new IEnrichmentFunction[5];
-            //enrichments[0] = new CrackStepEnrichment(crack);
-            //enrichments[1] = new IsotropicBrittleTipEnrichments2D.Func0(() => crack.TipSystem);
-            //enrichments[2] = new IsotropicBrittleTipEnrichments2D.Func1(() => crack.TipSystem);
-            //enrichments[3] = new IsotropicBrittleTipEnrichments2D.Func2(() => crack.TipSystem);
-            //enrichments[4] = new IsotropicBrittleTipEnrichments2D.Func3(() => crack.TipSystem);
-
-            //// Define enriched dofs
-            //model.EnrichedDofs = new Dictionary<IEnrichmentFunction, IDofType[]>();
-            //foreach (IEnrichmentFunction enrichment in enrichments)
-            //{
-            //    var dofs = new IDofType[]
-            //    {
-            //        new EnrichedDof(enrichment, StructuralDof.TranslationX),
-            //        new EnrichedDof(enrichment, StructuralDof.TranslationY)
-            //    };
-            //    model.EnrichedDofs[enrichment] = dofs;
-            //}
-
-            //return enrichments;
-        }
-
-        private static void EnrichNodes3x1(XModel<XCrackElement2D> model, Crack crack)
-        {
-            // Heaviside enrichment
-            foreach (int n in new int[] { 5, 6 })
-            {
-                XNode node = model.XNodes[n];
-                node.Enrichments.Add(crack.CrackBodyEnrichment);
-                IEnrichmentFunction enrichment = crack.CrackBodyEnrichment.EnrichmentFunctions[0];
-                node.EnrichmentFuncs[enrichment] = enrichment.EvaluateAt(node);
-            }
-
-            // Tip enrichments
-            foreach (int n in new int[] { 1, 2, 4, 7 })
-            {
-                XNode node = model.XNodes[n];
-                node.Enrichments.Add(crack.CrackTipEnrichments);
-                foreach (int e in new int[] { 1, 2, 3, 4 })
-                {
-                    IEnrichmentFunction enrichment = crack.CrackTipEnrichments.EnrichmentFunctions[e];
-                    node.EnrichmentFuncs[enrichment] = enrichment.EvaluateAt(node);
-                }
-            }
-        }
-
-        private static void EnrichNodes(XModel<XCrackElement2D> model, Crack crack)
-        {
-            // Find heaviside and tip enriched nodes
-            var heavisideNodes = new HashSet<XNode>();
-            var tipNodes = new HashSet<XNode>();
-            foreach (int elementID in crack.IntersectedElementIDs)
-            {
-                heavisideNodes.UnionWith(model.Elements[elementID].Nodes);
-            }
-            foreach (int elementID in crack.TipElementIDs)
-            {
-                tipNodes.UnionWith(model.Elements[elementID].Nodes);
-            }
-            heavisideNodes.ExceptWith(tipNodes);
-
-            // Heaviside enrichment
-            foreach (XNode node in heavisideNodes)
-            {
-                node.Enrichments.Add(crack.CrackBodyEnrichment);
-                IEnrichmentFunction enrichment = crack.CrackBodyEnrichment.EnrichmentFunctions[0];
-                node.EnrichmentFuncs[enrichment] = enrichment.EvaluateAt(node);
-            }
-
-            // Tip enrichments
-            foreach (XNode node in tipNodes)
-            {
-                node.Enrichments.Add(crack.CrackTipEnrichments);
-                foreach (int e in new int[] { 1, 2, 3, 4 })
-                {
-                    IEnrichmentFunction enrichment = crack.CrackTipEnrichments.EnrichmentFunctions[e];
-                    node.EnrichmentFuncs[enrichment] = enrichment.EvaluateAt(node);
-                }
-            }
-        }
-
-        private static (IVectorView globalU, IMatrixView globalK) RunAnalysis(XModel<XCrackElement2D> model)
-        {
-            foreach (XCrackElement2D element in model.Elements)
-            {
-                element.IdentifyDofs();
-                element.IdentifyIntegrationPointsAndMaterials();
-            }
-
             // Solver
             SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(model);
             solver.PreventFromOverwrittingSystemMatrices(); // Necessary to extract the stiffness matrix.
@@ -492,119 +404,84 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             return (solver.LinearSystems[0].Solution, solver.LinearSystems[0].Matrix);
         }
 
-        private class Crack : IXGeometryDescription, ICrack
+        private class Crack : ICrack
         {
+            private readonly ExteriorLsmCrack crack;
             private readonly double[] mouth, tip;
+            private readonly XModel<IXCrackElement> model;
 
-            public Crack(XModel<XCrackElement2D> model)
+            public Crack(XModel<IXCrackElement> model)
             {
                 this.mouth = new double[] { maxCoords[0], 0.5 * maxCoords[1] };
                 this.tip = new double[] { 0.5 * maxCoords[0], 0.5 * maxCoords[1] };
+                var initialGeom = new PolyLine2D(mouth, tip);
+                this.crack = new ExteriorLsmCrack(0, initialGeom, model, null);
+                this.model = model;
+            }
 
-                TipSystem = new TipCoordinateSystem(new double[] { 0.5 * maxCoords[0], 0.5 * maxCoords[1] }, Math.PI);
+            public HashSet<IXCrackElement> ConformingElements => crack.ConformingElements;
 
-                IntersectedElementIDs = new HashSet<int>();
-                TipElementIDs = new HashSet<int>();
+            public EnrichmentItem CrackBodyEnrichment { get; private set; }
+
+            public IXGeometryDescription CrackGeometry => crack.CrackGeometry;
+
+            public EnrichmentItem CrackTipEnrichments => crack.CrackTipEnrichments;
+
+            public HashSet<IXCrackElement> IntersectedElements => crack.IntersectedElements;
+
+            public double[] TipCoordinates => crack.TipCoordinates;
+
+            public HashSet<IXCrackElement> TipElements => crack.TipElements;
+
+            public TipCoordinateSystem TipSystem => crack.TipSystem;
+
+            public int ID => crack.ID;
+
+            public int MouthElementID { get; set; }
+
+            public IList<EnrichmentItem> DefineEnrichments(int numCurrentEnrichments)
+            {
+                IList<EnrichmentItem> enrichments = crack.DefineEnrichments(numCurrentEnrichments);
+
+                // Different crack body enrichment
+                var stepEnrichmentFunc = new OppositeStepEnrichment(crack.LsmGeometry);
+                IDofType[] stepEnrichedDofs =
+                {
+                new EnrichedDof(stepEnrichmentFunc, StructuralDof.TranslationX),
+                new EnrichedDof(stepEnrichmentFunc, StructuralDof.TranslationY)
+                };
+                this.CrackBodyEnrichment = new EnrichmentItem(
+                    crack.CrackBodyEnrichment.ID, new IEnrichmentFunction[] { stepEnrichmentFunc }, stepEnrichedDofs);
+
+                enrichments[0] = this.CrackBodyEnrichment;
+                return enrichments;
+            }
+
+            public void InitializeGeometry()
+            {
+                crack.InitializeGeometry();
+            }
+
+            public void InteractWithMesh()
+            {
+                crack.InteractWithMesh();
                 foreach (XCrackElement2D element in model.Elements)
                 {
-                    if (IsIntersectedElement(element.Nodes))
+                    if (element.InteractingCracks.ContainsKey(crack))
                     {
-                        IntersectedElementIDs.Add(element.ID);
-                        element.InteractingCracks[this] = new OpenLsmElementIntersection2D(this.ID, element.ID,
-                            RelativePositionCurveElement.Intersecting, false, new double[0][]);
-                        element.InteractingCracks[this] = new OpenLsmElementIntersection2D(this.ID, element.ID,
-                            RelativePositionCurveElement.Intersecting, false, new double[0][]);
-                    }
-                    if (IsTipElement(element.Nodes))
-                    {
-                        TipElementIDs.Add(element.ID);
-                        element.InteractingCracks[this] = new OpenLsmElementIntersection2D(this.ID, element.ID,
-                            RelativePositionCurveElement.Intersecting, true, new double[0][]);
+                        element.InteractingCracks[this] = element.InteractingCracks[crack];
+                        element.InteractingCracks.Remove(crack);
                     }
                     if (IsMouthElement(element.Nodes))
                     {
                         MouthElementID = element.ID;
-                        element.InteractingCracks[this] = new OpenLsmElementIntersection2D(this.ID, element.ID,
-                            RelativePositionCurveElement.Intersecting, false, new double[0][]);
                     }
                 }
-            }
-
-            public TipCoordinateSystem TipSystem { get; }
-
-            public double[] TipGlobalCoords => tip;
-
-            public HashSet<int> IntersectedElementIDs { get; }
-
-            public int MouthElementID { get; }
-
-            public HashSet<int> TipElementIDs { get; }
-
-            public int ID => 0;
-
-            public HashSet<IXCrackElement> ConformingElements => throw new NotImplementedException();
-
-            public EnrichmentItem CrackBodyEnrichment => throw new NotImplementedException();
-
-            public IXGeometryDescription CrackGeometry => throw new NotImplementedException();
-
-            public EnrichmentItem CrackTipEnrichments => throw new NotImplementedException();
-
-            public HashSet<IXCrackElement> IntersectedElements => throw new NotImplementedException();
-
-            public double[] TipCoordinates => throw new NotImplementedException();
-
-            public HashSet<IXCrackElement> TipElements => throw new NotImplementedException();
-
-            public void InteractWithMesh()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IElementCrackInteraction Intersect(IXFiniteElement element)
-            {
-                throw new NotImplementedException();
             }
 
             public void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements)
             {
-                throw new NotImplementedException();
-            }
-
-            public double SignedDistanceOf(XNode node)
-            {
-                return node.Coordinates[1] - tip[1];
-            }
-
-            public double SignedDistanceOf(XPoint point)
-            {
-                double[] cartesian = point.MapCoordinates(point.ShapeFunctions, point.Element.Nodes);
-                return cartesian[1] - tip[1];
-            }
-
-            private bool IsIntersectedElement(IReadOnlyList<XNode> nodes)
-            {
-                int numNodesPos = 0;
-                int numNodesNeg = 0;
-                foreach (XNode node in nodes)
-                {
-                    if (SignedDistanceOf(node) >= 0) ++numNodesPos;
-                    else ++numNodesNeg;
-                }
-
-                if ((numNodesNeg == 0) || (numNodesPos == 0)) return false;
-                else
-                {
-                    int numNodesLeft = 0;
-                    int numNodesRight = 0;
-                    foreach (XNode node in nodes)
-                    {
-                        if (node.Coordinates[0] <= tip[0]) ++numNodesLeft;
-                        else ++numNodesRight;
-                    }
-                    if (numNodesLeft == 0) return true;
-                    else return false;
-                }
+                crack.UpdateGeometry(subdomainFreeDisplacements);
             }
 
             private bool IsMouthElement(IReadOnlyList<XNode> nodes)
@@ -616,25 +493,33 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 result &= (nodes[3].Coordinates[0] < mouth[0]) && (nodes[3].Coordinates[1] > mouth[1]);
                 return result;
             }
+        }
 
-            private bool IsTipElement(IReadOnlyList<XNode> nodes)
+        private class OppositeStepEnrichment : IEnrichmentFunction
+        {
+            private CrackStepEnrichment enrichment;
+
+            public OppositeStepEnrichment(IXGeometryDescription geometry)
             {
-                bool result = (nodes[0].Coordinates[0] < tip[0]) && (nodes[0].Coordinates[1] < tip[1]);
-                result &= (nodes[1].Coordinates[0] > tip[0]) && (nodes[1].Coordinates[1] < tip[1]);
-                result &= (nodes[2].Coordinates[0] > tip[0]) && (nodes[2].Coordinates[1] > tip[1]);
-                result &= (nodes[3].Coordinates[0] < tip[0]) && (nodes[3].Coordinates[1] > tip[1]);
-                return result;
+                this.enrichment = new CrackStepEnrichment(geometry);
             }
 
-            public IList<EnrichmentItem> DefineEnrichments(int numCurrentEnrichments)
+            public IReadOnlyList<IPhase> Phases => enrichment.Phases;
+
+            public EvaluatedFunction EvaluateAllAt(XPoint point)
             {
-                throw new NotImplementedException();
+                var oppositeResult = enrichment.EvaluateAllAt(point);
+                return new EvaluatedFunction(-oppositeResult.Value, oppositeResult.CartesianDerivatives);
             }
 
-            public void InitializeGeometry()
-            {
-                throw new NotImplementedException();
-            }
+            public double EvaluateAt(XNode node) => -enrichment.EvaluateAt(node);
+
+            public double EvaluateAt(XPoint point) => -enrichment.EvaluateAt(point);
+
+            public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary) 
+                => enrichment.GetJumpCoefficientBetween(phaseBoundary);
+
+            public bool IsAppliedDueTo(PhaseBoundary phaseBoundary) => enrichment.IsAppliedDueTo(phaseBoundary);
         }
     }
 }

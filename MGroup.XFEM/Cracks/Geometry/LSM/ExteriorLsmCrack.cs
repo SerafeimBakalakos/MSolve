@@ -32,7 +32,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
             this.propagator = propagator;
         }
 
-        public HashSet<IXCrackElement> ConformingElements { get; }
+        public HashSet<IXCrackElement> ConformingElements { get; } = new HashSet<IXCrackElement>();
 
         public EnrichmentItem CrackBodyEnrichment { get; private set; }
 
@@ -42,7 +42,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
 
         public EnrichmentItem CrackTipEnrichments { get; private set; }
 
-        public HashSet<IXCrackElement> IntersectedElements { get; }
+        public HashSet<IXCrackElement> IntersectedElements { get; } = new HashSet<IXCrackElement>();
 
         public int ID { get; }
 

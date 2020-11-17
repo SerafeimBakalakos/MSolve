@@ -9,7 +9,7 @@ using MGroup.XFEM.Materials;
 
 namespace MGroup.XFEM.Elements
 {
-    public class XCrackElementFactory2D : IXElementFactory<XCrackElement2D>
+    public class XCrackElementFactory2D : IXElementFactory<IXCrackElement>
     {
         private static readonly IReadOnlyDictionary<CellType, IElementGeometry> elementGeometries;
         private static readonly IReadOnlyDictionary<CellType, IGaussPointExtrapolation> extrapolations;
@@ -88,7 +88,7 @@ namespace MGroup.XFEM.Elements
             //this.integrationBoundaryOrder = integrationBoundaryOrder;
         }
 
-        public XCrackElement2D CreateElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
+        public IXCrackElement CreateElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
         {
 #if DEBUG
             interpolations[cellType].CheckElementNodes(nodes);

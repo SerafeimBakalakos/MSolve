@@ -22,16 +22,13 @@ namespace MGroup.XFEM.Entities
 {
     public class XModel<TElement> : IXModel where TElement: IXFiniteElement
     {
-        private bool areDataStructuresConnected;
+        private bool areDataStructuresConnected = false;
 
         private List<IEnrichmentObserver> enrichmentObservers = new List<IEnrichmentObserver>();
 
         public XModel()
         {
-            areDataStructuresConnected = false;
         }
-
-        public IDomain2DBoundary Boundary { get; set; }
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();
 

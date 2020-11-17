@@ -55,7 +55,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
                 var tipElementNodes = new HashSet<XNode>();
                 foreach (IXCrackElement element in crack.TipElements)
                 {
-                    tipElementNodes.UnionWith(tipElementNodes);
+                    tipElementNodes.UnionWith(element.Nodes);
                 }
                 EnrichNodesWith(tipElementNodes, crack.CrackTipEnrichments);
 

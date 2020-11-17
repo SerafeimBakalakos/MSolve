@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
+using MGroup.XFEM.Cracks;
 using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Cracks.Geometry.LSM;
 using MGroup.XFEM.Elements;
-using MGroup.XFEM.Enrichment;
-using MGroup.XFEM.Enrichment.Functions;
+using MGroup.XFEM.Enrichment.Enrichers;
+using MGroup.XFEM.Enrichment.SingularityResolution;
 using MGroup.XFEM.Entities;
-using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Integration.Quadratures;
@@ -28,18 +27,17 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         private const double v = 0.3;
         private const double thickness = 1.0;
         private const bool planeStress = false;
+        private const int subdomainID = 0;
 
         [Fact]
         public static void TestElementStiffnesses()
         {
-            (XNode[] nodes, XCrackElement2D[] elements) = CreateElements();
-            Dictionary<IEnrichmentFunction, IDofType[]> enrichedDofs = EnrichNodesElements(nodes, elements);
-            
-            for (int e = 0; e < elements.Length; ++e)
+            XModel<IXCrackElement> model = CreateModel();
+            CreateCrack(model);
+            model.Initialize();
+            for (int e = 0; e < model.Elements.Count; ++e)
             {
-                elements[e].IdentifyDofs();
-                elements[e].IdentifyIntegrationPointsAndMaterials();
-                IMatrix computedK = elements[e].StiffnessMatrix(null);
+                IMatrix computedK = model.Elements[e].StiffnessMatrix(model.Elements[e]);
 
                 double tol = 1E-13;
                 Matrix expectedK = GetExpectedStiffness(e);
@@ -58,8 +56,9 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         //[Fact] //TODO: Figure why this does not seem to work correctly.
         public static void TestSolution()
         {
-            (XNode[] nodes, XCrackElement2D[] elements) = CreateElements();
-            Dictionary<IEnrichmentFunction, IDofType[]> enrichedDofs = EnrichNodesElements(nodes, elements);
+            XModel<IXCrackElement> model = CreateModel();
+            CreateCrack(model);
+            model.Initialize();
 
             // FEM assembly
             var elementToGlobalMaps = new List<int[]>();
@@ -68,14 +67,11 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             elementToGlobalMaps.Add(new int[] { /*n4*/12, 13, 14, 15, /*n5*/16, 17, /*n5*/18, 19, /*n7*/20, 21, 22, 23 });
 
             var globalK = Matrix.CreateZero(24, 24);
-            for (int e = 0; e < elements.Length; ++e)
+            for (int e = 0; e < model.Elements.Count; ++e)
             {
-                elements[e].IdentifyDofs();
-                elements[e].IdentifyIntegrationPointsAndMaterials();
-                IMatrix elementK = elements[e].StiffnessMatrix(null);
+                IMatrix elementK = model.Elements[e].StiffnessMatrix(model.Elements[e]);
                 AddSubmatrix(globalK, elementK, elementToGlobalMaps[e]);
             }
-
 
             // Solution
             int[] freeDofs =
@@ -103,31 +99,11 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             Assert.True(expectedFf.Equals(Ff, tol));
         }
 
-
-        private static Dictionary<IEnrichmentFunction, IDofType[]> EnrichNodesElements(XNode[] nodes, XCrackElement2D[] elements)
+        private static XModel<IXCrackElement> CreateModel()
         {
-            var crack = new Crack(new double[] { 30.0, +40.0 }, new double[] { 30.0, -40.0 });
-            var stepEnrichment = new CrackStepEnrichment(crack);
-            nodes[1].EnrichmentFuncs[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[1]);
-            nodes[2].EnrichmentFuncs[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[2]);
-            nodes[4].EnrichmentFuncs[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[4]);
-            nodes[7].EnrichmentFuncs[stepEnrichment] = stepEnrichment.EvaluateAt(nodes[7]);
+            var model = new XModel<IXCrackElement>();
+            model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
 
-            var enrichedDofs = new Dictionary<IEnrichmentFunction, IDofType[]>();
-            enrichedDofs[stepEnrichment] = new IDofType[2] {
-                new EnrichedDof(stepEnrichment, StructuralDof.TranslationX),
-                new EnrichedDof(stepEnrichment, StructuralDof.TranslationY)
-            };
-
-            elements[1].InteractingCracks[crack] = new OpenLsmElementIntersection2D(crack.ID, elements[1].ID,
-                RelativePositionCurveElement.Intersecting, false,
-                new double[][] { new double[] { 30.0, 0.0 }, new double[] { 30.0, 20.0 } } );
-
-            return enrichedDofs;
-        }
-
-        private static (XNode[] nodes, XCrackElement2D[] elements) CreateElements()
-        {
             XNode[] nodes = new XNode[]
             {
                 new XNode(0, 00.0, 00.0),
@@ -140,18 +116,34 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 new XNode(6, 60.0, 20.0),
                 new XNode(7, 40.0, 20.0)
             };
+            foreach (XNode node in nodes) model.XNodes.Add(node);
 
             var material = new HomogeneousFractureMaterialField2D(E, v, thickness, planeStress);
-            var enrichedIntegration = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
+            var enrichedIntegration = new IntegrationWithNonconformingQuads2D(2, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
             var bulkIntegration = new CrackElementIntegrationStrategy(
                 enrichedIntegration, enrichedIntegration, enrichedIntegration);
             var factory = new XCrackElementFactory2D(material, thickness, bulkIntegration);
-            var elements = new XCrackElement2D[3];
+            var elements = new IXCrackElement[3];
             elements[0] = factory.CreateElement(0, CellType.Quad4, new XNode[] { nodes[0], nodes[1], nodes[2], nodes[3] });
             elements[1] = factory.CreateElement(1, CellType.Quad4, new XNode[] { nodes[1], nodes[4], nodes[7], nodes[2] });
             elements[2] = factory.CreateElement(2, CellType.Quad4, new XNode[] { nodes[4], nodes[5], nodes[6], nodes[7] });
+            foreach (IXCrackElement element in elements)
+            {
+                model.Elements.Add(element);
+                model.Subdomains[subdomainID].Elements.Add(element);
+            }
 
-            return (nodes, elements);
+            return model;
+        }
+
+        private static void CreateCrack(XModel<IXCrackElement> model)
+        {
+            var initGeometry = new PolyLine2D(new double[] { 30.0, +40.0 }, new double[] { 30.0, -40.0 });
+            IPropagator propagator = null;
+            var crack = new ExteriorLsmCrack(0, initGeometry, model, propagator);
+            var enricher = new NodeEnricherIndependentCracks(new ICrack[] { crack }, new NullSingularityResolver());
+            model.Discontinuities.Add(crack);
+            model.NodeEnrichers.Add(enricher);
         }
 
         /// <summary>
@@ -240,81 +232,6 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 {
                     globalMatrix[subToGlobalMatrix[i], subToGlobalMatrix[j]] = submatrix[i, j];
                 }
-            }
-        }
-
-        private class Crack : ICrack, IXGeometryDescription
-        {
-            private readonly Line2D line;
-
-            public Crack(double[] point0, double[] point1)
-            {
-                this.line = new Line2D(point0, point1);
-                IntersectedElementIDs = new HashSet<int>();
-                IntersectedElementIDs.Add(1);
-            }
-
-            public TipCoordinateSystem TipSystem => null;
-
-            public HashSet<int> IntersectedElementIDs { get; }
-
-            public HashSet<int> TipElementIDs => new HashSet<int>();
-
-            public int ID => 0;
-
-            public HashSet<IXCrackElement> ConformingElements => throw new NotImplementedException();
-
-            public EnrichmentItem CrackBodyEnrichment => throw new NotImplementedException();
-
-            public IXGeometryDescription CrackGeometry => throw new NotImplementedException();
-
-            public EnrichmentItem CrackTipEnrichments => throw new NotImplementedException();
-
-            public HashSet<IXCrackElement> IntersectedElements => throw new NotImplementedException();
-
-            public double[] TipCoordinates => throw new NotImplementedException();
-
-            public HashSet<IXCrackElement> TipElements => throw new NotImplementedException();
-
-            public void InteractWithMesh()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IElementCrackInteraction Intersect(IXFiniteElement element)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements)
-            {
-                throw new NotImplementedException();
-            }
-
-            public double SignedDistanceOf(XNode node)
-            {
-                return line.SignedDistanceOf(node.Coordinates);
-            }
-
-            public double SignedDistanceOf(XPoint point)
-            {
-                bool hasCartesian = point.Coordinates.TryGetValue(CoordinateSystem.GlobalCartesian, out double[] coords);
-                if (!hasCartesian)
-                {
-                    coords = point.MapCoordinates(point.ShapeFunctions, point.Element.Nodes);
-                    point.Coordinates[CoordinateSystem.GlobalCartesian] = coords;
-                }
-                return line.SignedDistanceOf(coords);
-            }
-
-            public IList<EnrichmentItem> DefineEnrichments(int numCurrentEnrichments)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void InitializeGeometry()
-            {
-                throw new NotImplementedException();
             }
         }
     }

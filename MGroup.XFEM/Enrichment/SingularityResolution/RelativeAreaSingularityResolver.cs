@@ -99,6 +99,7 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
                 double bulkSize = element.CalcBulkSizeCartesian();
                 double[] centroidNatural = element.FindCentroidNatural();
                 XPoint centroid = new XPoint(centroidNatural.Length);
+                centroid.Element = element;
                 centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural;
                 centroid.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(centroidNatural);
 
