@@ -19,6 +19,16 @@ namespace MGroup.XFEM.Cracks
         /// </summary>
         private int iteration;
 
+        public MockPropagator(double[] angles, double[] lengths)
+        {
+            Logger = new PropagationLogger();
+            for (int t = 0; t < angles.Length; ++t)
+            {
+                Logger.GrowthAngles.Add(angles[t]);
+                Logger.GrowthLengths.Add(lengths[t]);
+            }
+        }
+
         public MockPropagator(string anglesLengthsPath)
         {
             Logger = ReadFromFile(anglesLengthsPath);

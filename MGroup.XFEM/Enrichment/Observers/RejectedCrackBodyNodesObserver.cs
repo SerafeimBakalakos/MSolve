@@ -13,18 +13,21 @@ namespace MGroup.XFEM.Enrichment.Observers
     /// </summary>
     public class RejectedCrackBodyNodesObserver : IEnrichmentObserver
     {
+        private readonly CrackBodyNodesObserver bodyNodesObserver;
         private readonly ICrack crack;
         private readonly NewCrackTipNodesObserver tipNodesObserver;
 
-        public RejectedCrackBodyNodesObserver(ICrack crack, NewCrackTipNodesObserver tipNodesObserver)
+        public RejectedCrackBodyNodesObserver(ICrack crack, NewCrackTipNodesObserver tipNodesObserver, 
+            CrackBodyNodesObserver bodyNodesObserver)
         {
             this.crack = crack;
             this.tipNodesObserver = tipNodesObserver;
+            this.bodyNodesObserver = bodyNodesObserver;
         }
 
         public HashSet<XNode> RejectedHeavisideNodes = new HashSet<XNode>();
 
-        public IEnrichmentObserver[] RegisterAfterThese() => new IEnrichmentObserver[] { tipNodesObserver };
+        public IEnrichmentObserver[] RegisterAfterThese() => new IEnrichmentObserver[] { tipNodesObserver, bodyNodesObserver };
 
         public void Update(IEnumerable<EnrichmentItem> allEnrichments)
         {
@@ -35,7 +38,7 @@ namespace MGroup.XFEM.Enrichment.Observers
             {
                 foreach (XNode node in element.Nodes)
                 {
-                    if (!tipNodesObserver.TipNodes.Contains(node))
+                    if (!bodyNodesObserver.BodyNodes.Contains(node) && !tipNodesObserver.TipNodes.Contains(node))
                     {
                         RejectedHeavisideNodes.Add(node);
                     }

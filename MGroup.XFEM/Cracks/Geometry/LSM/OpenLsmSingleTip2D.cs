@@ -293,7 +293,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
                 if (bodyLS > maxBodyLS) maxBodyLS = bodyLS;
 
                 double tipLS = nodalTipLevelSets[node.ID];
-                if (tipLS < minBodyLS) minTipLS = tipLS;
+                if (tipLS < minTipLS) minTipLS = tipLS;
             }
 
             if (minBodyLS * maxBodyLS > 0.0) return true;

@@ -12,8 +12,8 @@ namespace MGroup.XFEM.Enrichment.Observers
     /// </summary>
     public class PreviousEnrichmentsObserver : IEnrichmentObserver
     {
-        public Dictionary<EnrichmentItem, XNode[]> PreviousEnrichments { get; set; }
-        private Dictionary<EnrichmentItem, XNode[]> CurrentEnrichments { get; set; }
+        public Dictionary<EnrichmentItem, XNode[]> PreviousEnrichments { get; set; } = new Dictionary<EnrichmentItem, XNode[]>();
+        private Dictionary<EnrichmentItem, XNode[]> CurrentEnrichments { get; set; } = new Dictionary<EnrichmentItem, XNode[]>();
 
         public void Update(IEnumerable<EnrichmentItem> allEnrichments)
         {

@@ -7,17 +7,20 @@ using MGroup.XFEM.Entities;
 namespace MGroup.XFEM.Enrichment.Observers
 {
     /// <summary>
-    /// Tracks nodes that are enriched with crack body enrichments, but their corresponding crack body level sets were modified
-    /// with respect to their values during the previous propagation step.
+    /// Tracks nodes that are enriched with crack body enrichments in this and the previous step, but their corresponding crack 
+    /// body level sets were modified with respect to their values during the previous propagation step.
     /// </summary>
     public class CrackBodyNodesWithModifiedLevelSetObserver : IEnrichmentObserver
     {
         private readonly ExteriorLsmCrack crack;
+        private readonly PreviousEnrichmentsObserver previousEnrichmentsObserver;
         private readonly CrackBodyNodesObserver bodyNodesObserver;
 
-        public CrackBodyNodesWithModifiedLevelSetObserver(ExteriorLsmCrack crack, CrackBodyNodesObserver bodyNodesObserver)
+        public CrackBodyNodesWithModifiedLevelSetObserver(ExteriorLsmCrack crack, 
+            PreviousEnrichmentsObserver previousEnrichmentsObserver, CrackBodyNodesObserver bodyNodesObserver)
         {
             this.crack = crack;
+            this.previousEnrichmentsObserver = previousEnrichmentsObserver;
             this.bodyNodesObserver = bodyNodesObserver;
         }
 
@@ -38,13 +41,31 @@ namespace MGroup.XFEM.Enrichment.Observers
             {
                 double newLevelSet = crack.LsmGeometry.LevelSets[node.ID];
                 LevelSetsOfBodyNodes[node.ID] = newLevelSet;
-                if (newLevelSet != previousBodyLevelSets[node.ID]) BodyNodesWithModifiedLevelSets.Add(node);
             }
+
+            if (previousBodyLevelSets.Count != 0)
+            {
+                //bool previousBodyNodesExist = previousEnrichmentsObserver.PreviousEnrichments.TryGetValue(
+                //    crack.CrackBodyEnrichment, out XNode[] nodes);
+                var previousBodyNodes = new HashSet<XNode>(
+                    previousEnrichmentsObserver.PreviousEnrichments[crack.CrackBodyEnrichment]);
+                foreach (XNode node in bodyNodesObserver.BodyNodes)
+                {
+                    if (previousBodyNodes.Contains(node))
+                    {
+                        if (LevelSetsOfBodyNodes[node.ID] != previousBodyLevelSets[node.ID])
+                        {
+                            BodyNodesWithModifiedLevelSets.Add(node);
+                        }
+                    }
+                }
+            }
+            
         }
 
         public IEnrichmentObserver[] RegisterAfterThese()
         {
-            return new IEnrichmentObserver[] { bodyNodesObserver };
+            return new IEnrichmentObserver[] { previousEnrichmentsObserver, bodyNodesObserver };
         }
     }
 }

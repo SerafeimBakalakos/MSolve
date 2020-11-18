@@ -51,7 +51,7 @@ namespace MGroup.XFEM.Plotting.Writers
                 }
 
                 lsmWriter.WriteScalarField("level_set_crack_body", mesh, levelSetsBody);
-                lsmWriter.WriteScalarField("level_set_crack_body", mesh, levelSetsTip);
+                lsmWriter.WriteScalarField("level_set_crack_tip", mesh, levelSetsTip);
             }
             ++iteration;
         }

@@ -32,6 +32,13 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
             var nodesToRemove = new HashSet<XNode>();
             foreach (XNode node in stepNodes)
             {
+                #region debug
+                if (node.ID == 190)
+                {
+                    Console.WriteLine();
+                }
+                #endregion
+
                 double nodeBulkSizePos = 0.0;
                 double nodeBulkSizeNeg = 0.0;
 
@@ -85,6 +92,7 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
                     double[] centroidNatural = subcell.FindCentroidNatural();
                     (double[] centroidCartesian, double bulkSize) = subcell.FindCentroidAndBulkSizeCartesian(element);
                     XPoint centroid = new XPoint(centroidNatural.Length);
+                    centroid.Element = element;
                     centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural;
                     centroid.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(centroidNatural);
 

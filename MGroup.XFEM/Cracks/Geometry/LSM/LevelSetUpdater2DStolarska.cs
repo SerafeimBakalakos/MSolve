@@ -15,7 +15,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
         {
             double dx = newTip[0] - oldTip[0];
             double dy = newTip[1] - oldTip[1];
-            double length = Math.Sqrt(dx * dx + dx * dx);
+            double length = Math.Sqrt(dx * dx + dy * dy);
             double unitDx = dx / length;
             double unitDy = dy / length;
             var newSegment = LineSegment2D.Create(oldTip, newTip);

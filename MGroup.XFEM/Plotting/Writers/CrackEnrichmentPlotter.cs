@@ -30,7 +30,7 @@ namespace MGroup.XFEM.Plotting.Writers
             RejectedCrackBodyNodesObserver rejectedBodyNodesObserver, NodesNearModifiedNodesObserver nearModifiedNodesObserver)
         {
             this.crack = crack;
-            this.outputDirectory = outputDirectory;
+            this.outputDirectory = outputDirectory.TrimEnd('\\');
             this.newTipNodesObserver = newTipNodesObserver;
             this.previousTipNodesObserver = previousTipNodesObserver;
             this.bodyNodesObserver = bodyNodesObserver;
