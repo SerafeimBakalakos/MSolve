@@ -66,11 +66,8 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
 
             // Crack tip enrichments
             //TODO: For problems other than LEFM, use Abstract Factory pattern for tip enrichments, materials, propagators, etc.
-            var tipEnrichmentFuncs = new ICrackTipEnrichment[4];
-            tipEnrichmentFuncs[0] = new IsotropicBrittleTipEnrichments2D.Func0(() => lsmGeometry.TipSystem);
-            tipEnrichmentFuncs[1] = new IsotropicBrittleTipEnrichments2D.Func1(() => lsmGeometry.TipSystem);
-            tipEnrichmentFuncs[2] = new IsotropicBrittleTipEnrichments2D.Func2(() => lsmGeometry.TipSystem);
-            tipEnrichmentFuncs[3] = new IsotropicBrittleTipEnrichments2D.Func3(() => lsmGeometry.TipSystem);
+            var tipEnrichment = new IsotropicBrittleTipEnrichments2D(() => lsmGeometry.TipSystem);
+            ICrackTipEnrichment[] tipEnrichmentFuncs = tipEnrichment.Functions;
             var tipEnrichedDofs = new List<IDofType>(8);
             for (int i = 0; i < tipEnrichmentFuncs.Length; ++i)
             {

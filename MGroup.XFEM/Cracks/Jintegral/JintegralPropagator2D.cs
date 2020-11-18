@@ -167,8 +167,10 @@ namespace MGroup.XFEM.Cracks.Jintegral
                 point.Coordinates[CoordinateSystem.ElementNatural] = gp.Coordinates;
                 point.ShapeFunctions = evalInterpolation.ShapeFunctions;
                 point.ShapeFunctionDerivatives = evalInterpolation.ShapeGradientsCartesian;
-                double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
-                TipJacobians tipJacobians = tipSystem.CalcJacobiansAt(point);
+                double[] cartesianCoords = point.MapCoordinates(point.ShapeFunctions, point.Element.Nodes);
+                point.Coordinates[CoordinateSystem.GlobalCartesian] = cartesianCoords;
+                double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(cartesianCoords);
+                TipJacobians tipJacobians = tipSystem.CalcJacobiansAt(polarCoords);
 
                 // Material properties
                 IMatrixView constitutive = material.FindMaterialAt(point).ConstitutiveMatrix;

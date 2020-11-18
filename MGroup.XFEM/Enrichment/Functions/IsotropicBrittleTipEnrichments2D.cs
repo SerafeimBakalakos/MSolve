@@ -10,25 +10,88 @@ using MGroup.XFEM.Geometry.Primitives;
 //      However, how would these classes choose which tip to use, if there are multiple ones? With the delegate this is very easy.
 namespace MGroup.XFEM.Enrichment.Functions
 {
-    public static class IsotropicBrittleTipEnrichments2D
+    public class IsotropicBrittleTipEnrichments2D
     {
+        private readonly Func<TipCoordinateSystem> getTipSystem;
+
+        private NodePolarDataCache nodeCache;
+        private PointPolarDataCache pointCache;
+
+        public IsotropicBrittleTipEnrichments2D(Func<TipCoordinateSystem> getTipSystem)
+        {
+            this.getTipSystem = getTipSystem;
+
+            Functions = new ICrackTipEnrichment[4];
+            Functions[0] = new Func0(this);
+            Functions[1] = new Func1(this);
+            Functions[2] = new Func2(this);
+            Functions[3] = new Func3(this);
+        }
+
+        public ICrackTipEnrichment[] Functions { get; }
+
+        //TODO: Perhaps these methods should be in a seperate class, not the one that contains the function classes.
+        private (double[] coords, TipJacobians jacobians) CalcAll(XPoint point)
+        {
+            if ((pointCache == null) || (pointCache.originalPoint != point))
+            {
+                TipCoordinateSystem tipSystem = getTipSystem();
+                double[] cartesianCoords = GetGlobalCartesianCoords(point);
+                var polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(cartesianCoords);
+                TipJacobians jacobians = tipSystem.CalcJacobiansAt(polarCoords);
+                pointCache = new PointPolarDataCache(point, polarCoords, jacobians);
+            }
+            return (pointCache.polarCoords, pointCache.polarJacobians);
+        }
+
+        private double[] CalcPolarCoordinates(XNode node)
+        {
+            if ((nodeCache == null) || (nodeCache.originalNode != node))
+            {
+                TipCoordinateSystem tipSystem = getTipSystem();
+                var polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(node.Coordinates);
+                nodeCache = new NodePolarDataCache(node, polarCoords);
+            }
+            return nodeCache.polarCoords;
+        }
+
+        private double[] CalcPolarCoordinates(XPoint point)
+        {
+            if ((pointCache == null) || (pointCache.originalPoint != point))
+            {
+                TipCoordinateSystem tipSystem = getTipSystem();
+                double[] cartesianCoords = GetGlobalCartesianCoords(point);
+                var polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(cartesianCoords);
+                pointCache = new PointPolarDataCache(point, polarCoords, null);
+            }
+            return pointCache.polarCoords;
+        }
+
+        private double[] GetGlobalCartesianCoords(XPoint point)
+        {
+            bool hasCartesian = point.Coordinates.TryGetValue(CoordinateSystem.GlobalCartesian, out double[] cartesianCoords);
+            if (!hasCartesian)
+            {
+                cartesianCoords = point.MapCoordinates(point.ShapeFunctions, point.Element.Nodes);
+                point.Coordinates[CoordinateSystem.GlobalCartesian] = cartesianCoords;
+            }
+            return cartesianCoords;
+        }
+
         public class Func0 : ICrackTipEnrichment
         {
-            private readonly Func<TipCoordinateSystem> getTipSystem;
+            private readonly IsotropicBrittleTipEnrichments2D commonData;
 
-            public Func0(Func<TipCoordinateSystem> getTipSystem)
+            public Func0(IsotropicBrittleTipEnrichments2D commonData)
             {
-                this.getTipSystem = getTipSystem;
+                this.commonData = commonData;
             }
 
             public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
 
             public EvaluatedFunction EvaluateAllAt(XPoint point)
             {
-                TipCoordinateSystem tipSystem = getTipSystem();
-                double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
-                TipJacobians jacobians = tipSystem.CalcJacobiansAt(point);
-
+                (double[] polarCoords, TipJacobians jacobians) = commonData.CalcAll(point);
                 double sqrtR = Math.Sqrt(polarCoords[0]);
                 double cosThetaHalf = Math.Cos(polarCoords[1] / 2.0);
                 double sinThetaHalf = Math.Sin(polarCoords[1] / 2.0);
@@ -45,15 +108,13 @@ namespace MGroup.XFEM.Enrichment.Functions
 
             public double EvaluateAt(XNode node)
             {
-                TipCoordinateSystem tipSystem = getTipSystem();
-                double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(node);
+                double[] polarCoords = commonData.CalcPolarCoordinates(node);
                 return Math.Sqrt(polarCoords[0]) * Math.Sin(polarCoords[1] / 2.0);
             }
 
             public double EvaluateAt(XPoint point)
             {
-                TipCoordinateSystem tipSystem = getTipSystem();
-                double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
+                double[] polarCoords = commonData.CalcPolarCoordinates(point);
                 return Math.Sqrt(polarCoords[0]) * Math.Sin(polarCoords[1] / 2.0);
             }
 
@@ -70,21 +131,18 @@ namespace MGroup.XFEM.Enrichment.Functions
 
         public class Func1 : ICrackTipEnrichment
         {
-            private readonly Func<TipCoordinateSystem> getTipSystem;
+            private readonly IsotropicBrittleTipEnrichments2D commonData;
 
-            public Func1(Func<TipCoordinateSystem> getTipSystem)
+            public Func1(IsotropicBrittleTipEnrichments2D commonData)
             {
-                this.getTipSystem = getTipSystem;
+                this.commonData = commonData;
             }
 
             public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
 
             public EvaluatedFunction EvaluateAllAt(XPoint point)
             {
-                TipCoordinateSystem tipSystem = getTipSystem();
-                double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
-                TipJacobians jacobians = tipSystem.CalcJacobiansAt(point);
-
+                (double[] polarCoords, TipJacobians jacobians) = commonData.CalcAll(point);
                 double sqrtR = Math.Sqrt(polarCoords[0]);
                 double cosThetaHalf = Math.Cos(polarCoords[1] / 2.0);
                 double sinThetaHalf = Math.Sin(polarCoords[1] / 2.0);
@@ -101,15 +159,13 @@ namespace MGroup.XFEM.Enrichment.Functions
 
             public double EvaluateAt(XNode node)
             {
-                TipCoordinateSystem tipSystem = getTipSystem();
-                double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(node);
+                double[] polarCoords = commonData.CalcPolarCoordinates(node);
                 return Math.Sqrt(polarCoords[0]) * Math.Cos(polarCoords[1] / 2.0);
             }
 
             public double EvaluateAt(XPoint point)
             {
-                TipCoordinateSystem tipSystem = getTipSystem();
-                double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
+                double[] polarCoords = commonData.CalcPolarCoordinates(point);
                 return Math.Sqrt(polarCoords[0]) * Math.Cos(polarCoords[1] / 2.0);
             }
 
@@ -126,21 +182,18 @@ namespace MGroup.XFEM.Enrichment.Functions
 
         public class Func2 : ICrackTipEnrichment
         {
-            private readonly Func<TipCoordinateSystem> getTipSystem;
+            private readonly IsotropicBrittleTipEnrichments2D commonData;
 
-            public Func2(Func<TipCoordinateSystem> getTipSystem)
+            public Func2(IsotropicBrittleTipEnrichments2D commonData)
             {
-                this.getTipSystem = getTipSystem;
+                this.commonData = commonData;
             }
 
             public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
 
             public EvaluatedFunction EvaluateAllAt(XPoint point)
             {
-                TipCoordinateSystem tipSystem = getTipSystem();
-                double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
-                TipJacobians jacobians = tipSystem.CalcJacobiansAt(point);
-
+                (double[] polarCoords, TipJacobians jacobians) = commonData.CalcAll(point); 
                 double sqrtR = Math.Sqrt(polarCoords[0]);
                 double cosTheta = Math.Cos(polarCoords[1]);
                 double sinTheta = Math.Sin(polarCoords[1]);
@@ -159,15 +212,13 @@ namespace MGroup.XFEM.Enrichment.Functions
 
             public double EvaluateAt(XNode node)
             {
-                TipCoordinateSystem tipSystem = getTipSystem();
-                double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(node);
+                double[] polarCoords = commonData.CalcPolarCoordinates(node);
                 return Math.Sqrt(polarCoords[0]) * Math.Sin(polarCoords[1] / 2.0) * Math.Sin(polarCoords[1]);
             }
 
             public double EvaluateAt(XPoint point)
             {
-                TipCoordinateSystem tipSystem = getTipSystem();
-                double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
+                double[] polarCoords = commonData.CalcPolarCoordinates(point);
                 return Math.Sqrt(polarCoords[0]) * Math.Sin(polarCoords[1] / 2.0) * Math.Sin(polarCoords[1]);
             }
 
@@ -184,21 +235,18 @@ namespace MGroup.XFEM.Enrichment.Functions
 
         public class Func3 : ICrackTipEnrichment
         {
-            private readonly Func<TipCoordinateSystem> getTipSystem;
+            private readonly IsotropicBrittleTipEnrichments2D commonData;
 
-            public Func3(Func<TipCoordinateSystem> getTipSystem)
+            public Func3(IsotropicBrittleTipEnrichments2D commonData)
             {
-                this.getTipSystem = getTipSystem;
+                this.commonData = commonData;
             }
 
             public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
 
             public EvaluatedFunction EvaluateAllAt(XPoint point)
             {
-                TipCoordinateSystem tipSystem = getTipSystem();
-                double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
-                TipJacobians jacobians = tipSystem.CalcJacobiansAt(point);
-
+                (double[] polarCoords, TipJacobians jacobians) = commonData.CalcAll(point);
                 double sqrtR = Math.Sqrt(polarCoords[0]);
                 double cosTheta = Math.Cos(polarCoords[1]);
                 double sinTheta = Math.Sin(polarCoords[1]);
@@ -217,15 +265,13 @@ namespace MGroup.XFEM.Enrichment.Functions
 
             public double EvaluateAt(XNode node)
             {
-                TipCoordinateSystem tipSystem = getTipSystem();
-                double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(node);
+                double[] polarCoords = commonData.CalcPolarCoordinates(node);
                 return Math.Sqrt(polarCoords[0]) * Math.Cos(polarCoords[1] / 2.0) * Math.Sin(polarCoords[1]);
             }
 
             public double EvaluateAt(XPoint point)
             {
-                TipCoordinateSystem tipSystem = getTipSystem();
-                double[] polarCoords = tipSystem.MapPointGlobalCartesianToLocalPolar(point);
+                double[] polarCoords = commonData.CalcPolarCoordinates(point);
                 return Math.Sqrt(polarCoords[0]) * Math.Cos(polarCoords[1] / 2.0) * Math.Sin(polarCoords[1]);
             }
 
@@ -237,6 +283,35 @@ namespace MGroup.XFEM.Enrichment.Functions
             public bool IsAppliedDueTo(PhaseBoundary phaseBoundary)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class PointPolarDataCache
+        {
+            public XPoint originalPoint;
+
+            public double[] polarCoords;
+
+            public TipJacobians polarJacobians;
+
+            public PointPolarDataCache(XPoint originalPoint, double[] polarCoords, TipJacobians polarJacobians)
+            {
+                this.originalPoint = originalPoint;
+                this.polarCoords = polarCoords;
+                this.polarJacobians = polarJacobians;
+            }
+        }
+
+        private class NodePolarDataCache
+        {
+            public XNode originalNode;
+
+            public double[] polarCoords;
+
+            public NodePolarDataCache(XNode originalNode, double[] polarCoords)
+            {
+                this.originalNode = originalNode;
+                this.polarCoords = polarCoords;
             }
         }
     }

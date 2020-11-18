@@ -2,20 +2,17 @@
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using MGroup.XFEM.Entities;
 
 //TODO: This is the explicit implementation for 2D problems. Use an interface to allow for other implementations.
 namespace MGroup.XFEM.Cracks.Geometry
 {
-    //TODO: decide what data structures (arrays, tuples, matrix & vector classes I will use as arguments, return types 
-    // and for operations. Implement convenience methods for those operations on these data types.
-    // Perhaps vector-vector operations could be abstracted. 
-    // Actually wouldn't all methods be clearer if I operated directly with cosa, sina, instead of rotation matrices?
-    public class TipCoordinateSystem : TipCoordinateSystemBase
+    public class TipCoordinateSystem
     {
         private readonly Vector localCoordinatesOfGlobalOrigin;
 
         public double RotationAngle { get; }
+
+        public Matrix RotationMatrixGlobalToLocal { get; }
         public Matrix TransposeRotationMatrixGlobalToLocal { get; } // cache this for efficiency
 
         /// <summary>
@@ -41,14 +38,19 @@ namespace MGroup.XFEM.Cracks.Geometry
             DeterminantOfJacobianGlobalToLocalCartesian = 1.0; // det = (cosa)^2 +(sina)^2 = 1
         }
 
-        public double[] TransformPointGlobalCartesianToLocalCartesian(double[] cartesianGlobalPoint)
+        public TipJacobians CalcJacobiansAt(double[] polarCoords)
+        {
+            return new TipJacobians(polarCoords, RotationMatrixGlobalToLocal);
+        }
+
+        public double[] MapPointGlobalCartesianToLocalCartesian(double[] cartesianGlobalPoint)
         {
             Vector local = RotationMatrixGlobalToLocal * Vector.CreateFromArray(cartesianGlobalPoint);
             local.AddIntoThis(localCoordinatesOfGlobalOrigin);
             return new double[] { local[0], local[1] };
         }
 
-        public double[] TransformPointLocalCartesianToLocalPolar(double[] cartesianLocalPoint)
+        public double[] MapPointLocalCartesianToLocalPolar(double[] cartesianLocalPoint)
         {
             double x1 = cartesianLocalPoint[0];
             double x2 = cartesianLocalPoint[1];
@@ -57,7 +59,7 @@ namespace MGroup.XFEM.Cracks.Geometry
             return new double[] { r, theta };
         }
 
-        protected override double[] TransformCoordsGlobalCartesianToLocalPolar(double[] cartesianGlobalPoint)
+        public double[] MapPointGlobalCartesianToLocalPolar(double[] cartesianGlobalPoint)
         {
             Vector local = RotationMatrixGlobalToLocal * Vector.CreateFromArray(cartesianGlobalPoint);
             local.AddIntoThis(localCoordinatesOfGlobalOrigin);
