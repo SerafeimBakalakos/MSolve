@@ -101,7 +101,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
         private static XModel<IXCrackElement> CreateModel()
         {
-            var model = new XModel<IXCrackElement>();
+            var model = new XModel<IXCrackElement>(2);
             model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
 
             XNode[] nodes = new XNode[]

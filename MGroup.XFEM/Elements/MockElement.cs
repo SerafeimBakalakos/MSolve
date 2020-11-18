@@ -81,8 +81,11 @@ namespace MGroup.XFEM.Elements
 
         public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
 
-        public Dictionary<PhaseBoundary, IElementGeometryIntersection> PhaseIntersections { get; } 
-            = new Dictionary<PhaseBoundary, IElementGeometryIntersection>();
+        public Dictionary<PhaseBoundary, IElementDiscontinuityInteraction> PhaseIntersections { get; } 
+            = new Dictionary<PhaseBoundary, IElementDiscontinuityInteraction>();
+
+        public Dictionary<int, IElementDiscontinuityInteraction> InteractingDiscontinuities { get; }
+            = new Dictionary<int, IElementDiscontinuityInteraction>();
 
         public XSubdomain Subdomain { get; set; }
         ISubdomain IElement.Subdomain => Subdomain;
@@ -96,8 +99,6 @@ namespace MGroup.XFEM.Elements
         public IElementSubcell[] ConformingSubcells { get; set; }
 
         public IQuadrature IntegrationStandard => throw new NotImplementedException();
-
-        public List<IElementGeometryIntersection> Intersections { get; } = new List<IElementGeometryIntersection>();
 
         public IMatrix DampingMatrix(IElement element)
         {

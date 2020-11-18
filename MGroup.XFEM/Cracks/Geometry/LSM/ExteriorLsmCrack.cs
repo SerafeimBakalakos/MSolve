@@ -137,17 +137,17 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
                 if (interaction.TipInteractsWithElement)
                 {
                     TipElements.Add(element);
-                    element.InteractingCracks[this] = interaction;
+                    element.RegisterInteractionWithCrack(this, interaction);
                 }
                 else if (interaction.RelativePosition == RelativePositionCurveElement.Intersecting)
                 {
                     IntersectedElements.Add(element);
-                    element.InteractingCracks[this] = interaction;
+                    element.RegisterInteractionWithCrack(this, interaction);
                 }
                 else if (interaction.RelativePosition == RelativePositionCurveElement.Conforming)
                 {
                     ConformingElements.Add(element);
-                    element.InteractingCracks[this] = interaction;
+                    element.RegisterInteractionWithCrack(this, interaction);
                 }
             }
 

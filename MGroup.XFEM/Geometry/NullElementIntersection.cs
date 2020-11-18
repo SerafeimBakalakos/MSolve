@@ -8,7 +8,7 @@ using MGroup.XFEM.Elements;
 
 namespace MGroup.XFEM.Geometry
 {
-    public class NullElementIntersection : IElementGeometryIntersection
+    public class NullElementIntersection : IElementDiscontinuityInteraction
     {
         public NullElementIntersection(int parentGeometryID, IXFiniteElement element)
         {
@@ -24,16 +24,16 @@ namespace MGroup.XFEM.Geometry
 
         public IntersectionMesh ApproximateGlobalCartesian() => new IntersectionMesh();
 
-        public IReadOnlyList<GaussPoint> GetIntegrationPoints(int numPoints)
+        public IReadOnlyList<GaussPoint> GetBoundaryIntegrationPoints(int numPoints)
         {
             return new GaussPoint[0];
         }
 
-        public IList<double[]> GetPointsForTriangulation()
+        public IList<double[]> GetVerticesForTriangulation()
         {
             return new double[0][];
         }
 
-        IIntersectionMesh IElementGeometryIntersection.ApproximateGlobalCartesian() => new IntersectionMesh();
+        IIntersectionMesh IElementDiscontinuityInteraction.ApproximateGlobalCartesian() => new IntersectionMesh();
     }
 }

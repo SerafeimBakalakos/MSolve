@@ -87,13 +87,13 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
                 else if (intersections[0].TipLevelSet < 0)
                 {
                     // The node lies on the curve before the tip 
-                    return new OpenLsmElementIntersection2D(this.ID, element.ID, RelativePositionCurveElement.Tangent, false,
+                    return new OpenLsmElementIntersection2D(this.ID, element, RelativePositionCurveElement.Tangent, false,
                         new double[][] { intersections[0].CoordinatesNatural });
                 }
                 else
                 {
                     // The node coincides with the tip
-                    return new OpenLsmElementIntersection2D(this.ID, element.ID, RelativePositionCurveElement.Tangent, true,
+                    return new OpenLsmElementIntersection2D(this.ID, element, RelativePositionCurveElement.Tangent, true,
                         new double[][] { intersections[0].CoordinatesNatural });
                 }
             }
@@ -122,7 +122,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
                 {
                     // Both points lie on the curve before the tip
                     var pos = conforming ? RelativePositionCurveElement.Conforming : RelativePositionCurveElement.Intersecting;
-                    return new OpenLsmElementIntersection2D(this.ID, element.ID, pos, false,
+                    return new OpenLsmElementIntersection2D(this.ID, element, pos, false,
                         new double[][] { point0.CoordinatesNatural, point1.CoordinatesNatural });
                 }
                 else
@@ -141,13 +141,13 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
                     {
                         // A segment of the curve is inside the element or on its boundary
                         var pos = conforming ? RelativePositionCurveElement.Conforming : RelativePositionCurveElement.Intersecting;
-                        return new OpenLsmElementIntersection2D(this.ID, element.ID, pos, true,
+                        return new OpenLsmElementIntersection2D(this.ID, element, pos, true,
                             new double[][] { point0.CoordinatesNatural, tipCoordsNatural });
                     }
                     else
                     {
                         // The only common point is the curve tip, which lies on the element's boundary
-                        return new OpenLsmElementIntersection2D(this.ID, element.ID, RelativePositionCurveElement.Tangent, true,
+                        return new OpenLsmElementIntersection2D(this.ID, element, RelativePositionCurveElement.Tangent, true,
                             new double[][] { tipCoordsNatural });
                     }
 

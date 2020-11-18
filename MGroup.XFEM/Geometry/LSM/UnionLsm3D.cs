@@ -19,7 +19,7 @@ namespace MGroup.XFEM.Geometry.LSM
             mergedLsms.Add(starterLsm);
         }
 
-        public override IElementGeometryIntersection Intersect(IXFiniteElement element)
+        public override IElementDiscontinuityInteraction Intersect(IXFiniteElement element)
         {
             try
             {

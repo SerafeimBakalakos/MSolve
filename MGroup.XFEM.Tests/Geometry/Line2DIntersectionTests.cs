@@ -56,7 +56,7 @@ namespace MGroup.XFEM.Tests.Geometry
             ICurve2D line;
             if (vectorized) line = new Line2DVectorized(p1, p2);
             else line = new Line2D(p1, p2);
-            IElementGeometryIntersection intersection = line.IntersectPolygon(triangle);
+            IElementDiscontinuityInteraction intersection = line.IntersectPolygon(triangle);
 
             Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Disjoint);
             Assert.True(intersection is NullElementIntersection);
@@ -82,7 +82,7 @@ namespace MGroup.XFEM.Tests.Geometry
             ICurve2D line;
             if (vectorized) line = new Line2DVectorized(p1, p2);
             else line = new Line2D(p1, p2);
-            IElementGeometryIntersection intersection = line.IntersectPolygon(triangle);
+            IElementDiscontinuityInteraction intersection = line.IntersectPolygon(triangle);
 
             Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Disjoint); //TODO: This should be tangent
             Assert.True(intersection is NullElementIntersection);
@@ -115,7 +115,7 @@ namespace MGroup.XFEM.Tests.Geometry
             ICurve2D line;
             if (vectorized) line = new Line2DVectorized(p1, p2);
             else line = new Line2D(p1, p2);
-            IElementGeometryIntersection intersection = line.IntersectPolygon(triangle);
+            IElementDiscontinuityInteraction intersection = line.IntersectPolygon(triangle);
             IIntersectionMesh intersectionMesh = intersection.ApproximateGlobalCartesian();
 
             Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Intersecting);
@@ -148,7 +148,7 @@ namespace MGroup.XFEM.Tests.Geometry
             ICurve2D line;
             if (vectorized) line = new Line2DVectorized(p1, p2);
             else line = new Line2D(p1, p2);
-            IElementGeometryIntersection intersection = line.IntersectPolygon(triangle);
+            IElementDiscontinuityInteraction intersection = line.IntersectPolygon(triangle);
             IIntersectionMesh intersectionMesh = intersection.ApproximateGlobalCartesian();
 
             Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Intersecting);
@@ -185,7 +185,7 @@ namespace MGroup.XFEM.Tests.Geometry
             ICurve2D line;
             if (vectorized) line = new Line2DVectorized(p1, p2);
             else line = new Line2D(p1, p2);
-            IElementGeometryIntersection intersection = line.IntersectPolygon(triangle);
+            IElementDiscontinuityInteraction intersection = line.IntersectPolygon(triangle);
             IIntersectionMesh intersectionMesh = intersection.ApproximateGlobalCartesian();
 
             Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Conforming);

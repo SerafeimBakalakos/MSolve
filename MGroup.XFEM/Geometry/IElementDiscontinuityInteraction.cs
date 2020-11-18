@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Integration;
-using ISAAR.MSolve.Geometry.Coordinates;
-using MGroup.XFEM.Integration;
 using MGroup.XFEM.Elements;
 
 namespace MGroup.XFEM.Geometry
 {
-    public interface IElementGeometryIntersection
+    public interface IElementDiscontinuityInteraction
     {
         IXFiniteElement Element { get; }
 
@@ -23,8 +21,8 @@ namespace MGroup.XFEM.Geometry
         /// natural system of the element to the global cartesian system.
         /// </summary>
         /// <param name="order"></param>
-        IReadOnlyList<GaussPoint> GetIntegrationPoints(int order);
+        IReadOnlyList<GaussPoint> GetBoundaryIntegrationPoints(int order);
 
-        IList<double[]> GetPointsForTriangulation();
+        IList<double[]> GetVerticesForTriangulation();
     }
 }

@@ -12,6 +12,9 @@ using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Enrichment.Observers;
+using MGroup.XFEM.Geometry;
+using MGroup.XFEM.Geometry.ConformingMesh;
+using MGroup.XFEM.Geometry.Tolerances;
 
 //Method for enriching nodes and updating observers
 //TODO: All the UpdateSomething() methods can be abstracted behind an IModel.Update(). The Analyzer does not need to know each
@@ -26,11 +29,14 @@ namespace MGroup.XFEM.Entities
 
         private List<IEnrichmentObserver> enrichmentObservers = new List<IEnrichmentObserver>();
 
-        public XModel()
+        public XModel(int dimension)
         {
+            Dimension = dimension;
         }
 
         public Table<INode, IDofType, double> Constraints { get; private set; } = new Table<INode, IDofType, double>();
+
+        public int Dimension { get; }
 
         //TODO: Phases (or more accurately phase boundaries) and phase junctions should be stored here, not in a GeometricModel
         public List<IXDiscontinuity> Discontinuities { get; } = new List<IXDiscontinuity>();
@@ -49,11 +55,11 @@ namespace MGroup.XFEM.Entities
 
         public Dictionary<int, EnrichmentItem> Enrichments { get; } = new Dictionary<int, EnrichmentItem>();
 
-        //TODO: Perhaps I need something more involved for storing and interfacing with the enrichments
-        //public Dictionary<IEnrichmentFunction, XNode[]> EnrichedNodes { get; set; } = new Dictionary<IEnrichmentFunction, XNode[]>();
-        //public Dictionary<IEnrichmentFunction, IDofType[]> EnrichedDofs { get; set; } = new Dictionary<IEnrichmentFunction, IDofType[]>();
+        public bool FindConformingSubcells { get; set; } = false;
 
         public IGlobalFreeDofOrdering GlobalDofOrdering { get; set; }
+
+        public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 
         public List<NodalLoad> NodalLoads { get; private set; } = new List<NodalLoad>();
 
@@ -68,6 +74,7 @@ namespace MGroup.XFEM.Entities
         public IList<IMassAccelerationHistoryLoad> MassAccelerationHistoryLoads => throw new NotImplementedException();
 
         IList<IMassAccelerationHistoryLoad> IStructuralModel.MassAccelerationHistoryLoads => throw new NotImplementedException();
+
 
         public void AssignLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
         {
@@ -201,7 +208,31 @@ namespace MGroup.XFEM.Entities
 
             // Associate each subdomain with its nodes
             foreach (XSubdomain subdomain in Subdomains.Values) subdomain.DefineNodesFromElements();
-        }   
+        }
+
+        private void CalcConformingSubcells()
+        {
+            IConformingTriangulator triangulator;
+            if (Dimension == 2) triangulator = new ConformingTriangulator2D();
+            else if (Dimension == 3) triangulator = new ConformingTriangulator3D();
+            else throw new NotImplementedException();
+
+            foreach (IXFiniteElement element in Elements)
+            {
+                var intersections = new List<IElementDiscontinuityInteraction>();
+                foreach (IElementDiscontinuityInteraction interaction in element.InteractingDiscontinuities.Values)
+                {
+                    if (interaction.RelativePosition == RelativePositionCurveElement.Intersecting)
+                    {
+                        intersections.Add(interaction);
+                    }
+                }
+                if (intersections.Count > 0)
+                {
+                    element.ConformingSubcells = triangulator.FindConformingMesh(element, intersections, MeshTolerance);
+                }
+            }
+        }
 
         private void RemoveInactiveNodalLoads()
         {
@@ -229,6 +260,9 @@ namespace MGroup.XFEM.Entities
                 else discontinuity.UpdateGeometry(subdomainFreeDisplacements);
                 discontinuity.InteractWithMesh(); //TODO: Should this be included in UpdateGeometry()?
             }
+
+            // Optionally calculate conforming subcells for elements that interact with discontinuities
+            if (FindConformingSubcells) CalcConformingSubcells();
 
             // Enrich the required nodes
             foreach (INodeEnricher enricher in NodeEnrichers) enricher.ApplyEnrichments();

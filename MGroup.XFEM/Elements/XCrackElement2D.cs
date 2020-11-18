@@ -107,7 +107,8 @@ namespace MGroup.XFEM.Elements
         public Dictionary<ICrack, IElementCrackInteraction> InteractingCracks { get; } 
             = new Dictionary<ICrack, IElementCrackInteraction>();
 
-        public List<IElementGeometryIntersection> Intersections { get; } = new List<IElementGeometryIntersection>();
+        public Dictionary<int, IElementDiscontinuityInteraction> InteractingDiscontinuities { get; }
+            = new Dictionary<int, IElementDiscontinuityInteraction>();
 
         ISubdomain IElement.Subdomain => this.Subdomain;
         public XSubdomain Subdomain { get; set; }

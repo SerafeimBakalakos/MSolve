@@ -83,7 +83,7 @@ namespace MGroup.XFEM.Entities
             foreach (IXMultiphaseElement element in physicalModel.Elements)
             {
                 if (element.Phases.Count == 1) continue;
-                IEnumerable<IElementGeometryIntersection> boundaries = element.PhaseIntersections.Values;
+                IEnumerable<IElementDiscontinuityInteraction> boundaries = element.PhaseIntersections.Values;
                 Debug.Assert(boundaries.Count() != 0);
                 element.ConformingSubcells = triangulator.FindConformingMesh(element, boundaries, MeshTolerance);
             }

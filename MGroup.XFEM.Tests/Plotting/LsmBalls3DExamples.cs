@@ -72,9 +72,9 @@ namespace MGroup.XFEM.Tests.Plotting
             PlotInclusionLevelSets(outputDirectory, "level_set", model, lsmSurfaces);
 
             // Plot intersections between level set curves and elements
-            Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> elementIntersections
+            Dictionary<IXFiniteElement, List<IElementDiscontinuityInteraction>> elementIntersections
                 = Utilities.Plotting.CalcIntersections(model, lsmSurfaces);
-            var allIntersections = new List<IElementGeometryIntersection>();
+            var allIntersections = new List<IElementDiscontinuityInteraction>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
             var intersectionPlotter = new LsmElementIntersectionsPlotter();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
@@ -122,9 +122,9 @@ namespace MGroup.XFEM.Tests.Plotting
 
             //TODO: The next intersections and conforming mesh should have been taken care by the geometric model. 
             //      Read them from there.
-            Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> elementIntersections
+            Dictionary<IXFiniteElement, List<IElementDiscontinuityInteraction>> elementIntersections
                 = Utilities.Plotting.CalcIntersections(model, lsmSurfaces);
-            var allIntersections = new List<IElementGeometryIntersection>();
+            var allIntersections = new List<IElementDiscontinuityInteraction>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
             var intersectionPlotter = new LsmElementIntersectionsPlotter();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
@@ -189,9 +189,9 @@ namespace MGroup.XFEM.Tests.Plotting
 
             //TODO: The next intersections and conforming mesh should have been taken care by the geometric model. 
             //      Read them from there.
-            Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> elementIntersections
+            Dictionary<IXFiniteElement, List<IElementDiscontinuityInteraction>> elementIntersections
                 = Utilities.Plotting.CalcIntersections(model, lsmSurfaces);
-            var allIntersections = new List<IElementGeometryIntersection>();
+            var allIntersections = new List<IElementDiscontinuityInteraction>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
             var intersectionPlotter = new LsmElementIntersectionsPlotter();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);

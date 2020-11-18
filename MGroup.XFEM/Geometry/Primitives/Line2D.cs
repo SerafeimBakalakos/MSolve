@@ -79,7 +79,7 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// <param name="point1"></param>
         /// <param name="point2"></param>
         /// <returns></returns>
-        public IElementGeometryIntersection IntersectPolygon(IList<double[]> nodes)
+        public IElementDiscontinuityInteraction IntersectPolygon(IList<double[]> nodes)
         {
             //TODO: Use the results to create a new geometric object that can provide vertices for triangulation, gauss points etc. These can be empty
             //TODO: needs a fast way to eliminate most elements

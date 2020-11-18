@@ -10,6 +10,6 @@ namespace MGroup.XFEM.Elements
     {
         HashSet<IPhase> Phases { get; }
 
-        Dictionary<PhaseBoundary, IElementGeometryIntersection> PhaseIntersections { get; }
+        Dictionary<PhaseBoundary, IElementDiscontinuityInteraction> PhaseIntersections { get; }
     }
 }

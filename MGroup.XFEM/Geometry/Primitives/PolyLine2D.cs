@@ -47,7 +47,7 @@ namespace MGroup.XFEM.Geometry.Primitives
             return Math.Atan2(dy, dx);
         }
 
-        public IElementGeometryIntersection IntersectPolygon(IList<double[]> nodes)
+        public IElementDiscontinuityInteraction IntersectPolygon(IList<double[]> nodes)
         {
             throw new NotImplementedException();
         }

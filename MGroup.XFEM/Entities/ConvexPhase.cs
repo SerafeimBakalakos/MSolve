@@ -93,7 +93,7 @@ namespace MGroup.XFEM.Entities
                             continue;
                         }
 
-                        IElementGeometryIntersection intersection = boundary.Geometry.Intersect(element);
+                        IElementDiscontinuityInteraction intersection = boundary.Geometry.Intersect(element);
                         if (intersection.RelativePosition == RelativePositionCurveElement.Intersecting)
                         {
                             element.Phases.Add(boundary.PositivePhase);

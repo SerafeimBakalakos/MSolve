@@ -38,11 +38,11 @@ namespace MGroup.XFEM.Geometry.Primitives
             return new LineSegment2D(start, end, length, cosa, sina, originLocal);
         }
 
-        public IElementGeometryIntersection IntersectPolygon(IList<double[]> nodes)
+        public IElementDiscontinuityInteraction IntersectPolygon(IList<double[]> nodes)
         {
             //TODO: needs a fast way to eliminate most elements
 
-            IElementGeometryIntersection lineIntersection = base.IntersectPolygon(nodes);
+            IElementDiscontinuityInteraction lineIntersection = base.IntersectPolygon(nodes);
             if (lineIntersection is LineSegmentIntersection2D segment)
             {
                 // The intersection points may not be inside the segment. 

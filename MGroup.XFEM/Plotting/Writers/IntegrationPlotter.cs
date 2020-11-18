@@ -25,9 +25,9 @@ namespace MGroup.XFEM.Plotting
             var integrationPoints = new Dictionary<double[], double>();
             foreach (IXFiniteElement element in physicalModel.Elements)
             {
-                foreach (IElementGeometryIntersection intersection in element.Intersections)
+                foreach (IElementDiscontinuityInteraction interaction in element.InteractingDiscontinuities.Values)
                 {
-                    IReadOnlyList<GaussPoint> gaussPoints = intersection.GetIntegrationPoints(order);
+                    IReadOnlyList<GaussPoint> gaussPoints = interaction.GetBoundaryIntegrationPoints(order);
                     foreach (GaussPoint gp in gaussPoints)
                     {
                         double[] point = element.Interpolation.TransformNaturalToCartesian(element.Nodes, gp.Coordinates);

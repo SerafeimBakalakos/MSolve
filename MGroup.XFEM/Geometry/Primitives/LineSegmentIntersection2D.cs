@@ -10,7 +10,7 @@ using MGroup.XFEM.Elements;
 //      Or just use LineSegment2D wrapped in a class about Intersection
 namespace MGroup.XFEM.Geometry.Primitives
 {
-    public class LineSegmentIntersection2D : IElementGeometryIntersection
+    public class LineSegmentIntersection2D : IElementDiscontinuityInteraction
     {
         /// <summary>
         /// a is the counter-clockwise angle from the global x axis to the local x axis
@@ -84,13 +84,13 @@ namespace MGroup.XFEM.Geometry.Primitives
             return meshCartesian;
         }
 
-        public IReadOnlyList<GaussPoint> GetIntegrationPoints(int numPoints)
+        public IReadOnlyList<GaussPoint> GetBoundaryIntegrationPoints(int numPoints)
         {
             // If conforming: halve the weights. Perhaps this can be done in the XElement
             throw new NotImplementedException();
         }
 
-        public IList<double[]> GetPointsForTriangulation()
+        public IList<double[]> GetVerticesForTriangulation()
         {
             throw new NotImplementedException();
         }

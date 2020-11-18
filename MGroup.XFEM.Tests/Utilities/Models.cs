@@ -50,7 +50,7 @@ namespace MGroup.XFEM.Tests.Utilities
         public static XModel<IXMultiphaseElement> CreateQuad4Model(double[] minCoords, double[] maxCoords, double thickness,
             int[] numElements, int bulkIntegrationOrder, int boundaryIntegrationOrder, IThermalMaterialField materialField)
         {
-            var model = new XModel<IXMultiphaseElement>();
+            var model = new XModel<IXMultiphaseElement>(2);
             model.Subdomains[0] = new XSubdomain(0);
 
             // Mesh generation
@@ -100,7 +100,7 @@ namespace MGroup.XFEM.Tests.Utilities
         public static XModel<IXMultiphaseElement> CreateHexa8Model(double[] minCoords, double[] maxCoords,int[] numElements,
             int bulkIntegrationOrder, int boundaryIntegrationOrder, IThermalMaterialField materialField)
         {
-            var model = new XModel<IXMultiphaseElement>();
+            var model = new XModel<IXMultiphaseElement>(3);
             model.Subdomains[0] = new XSubdomain(0);
 
             // Mesh generation

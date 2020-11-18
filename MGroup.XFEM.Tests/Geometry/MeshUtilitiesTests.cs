@@ -22,7 +22,7 @@ namespace MGroup.XFEM.Tests.Geometry
         [InlineData(2.40, new int[] { 32, 33, 34, 35, 36, 42, 46, 52, 56, 62, 66, 72, 73, 74, 75, 76})]
         public static void TestElementsIntersectedByCircle(double radius, int[] expectedElements)
         {
-            var model = new XModel<MockElement>();
+            var model = new XModel<MockElement>(2);
             model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
 
             double[] minCoords = { 0, 0 };

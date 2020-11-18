@@ -12,7 +12,7 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         int ID { get; }
 
-        IElementGeometryIntersection Intersect(IXFiniteElement element);
+        IElementDiscontinuityInteraction Intersect(IXFiniteElement element);
 
         double SignedDistanceOf(XNode node);
 

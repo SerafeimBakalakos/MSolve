@@ -14,7 +14,7 @@ namespace MGroup.XFEM.Geometry.LSM
     /// A curve resulting from the intersection of a parent curve with a 2D element.
     /// Degenerate cases are also possible: null or single point.
     /// </summary>
-    public class LsmElementIntersection2D : IElementGeometryIntersection
+    public class LsmElementIntersection2D : IElementDiscontinuityInteraction
     {
         private readonly double[] startNatural;
         private readonly double[] endNatural;
@@ -49,7 +49,7 @@ namespace MGroup.XFEM.Geometry.LSM
         }
 
         //TODO: Perhaps a dedicated IBoundaryIntegration component is needed
-        public IReadOnlyList<GaussPoint> GetIntegrationPoints(int order)
+        public IReadOnlyList<GaussPoint> GetBoundaryIntegrationPoints(int order)
         {
             // Conforming curves intersect 2 elements, thus the integral will be computed twice. Halve the weights to avoid 
             // obtaining double the value of the integral.
@@ -77,7 +77,7 @@ namespace MGroup.XFEM.Geometry.LSM
             return integrationPoints;
         }
 
-        public IList<double[]> GetPointsForTriangulation()
+        public IList<double[]> GetVerticesForTriangulation()
         {
             return new double[][] { startNatural, endNatural };
         }

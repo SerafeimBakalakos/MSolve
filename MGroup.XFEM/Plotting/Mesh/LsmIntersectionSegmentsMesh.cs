@@ -14,14 +14,14 @@ namespace MGroup.XFEM.Plotting.Mesh
 {
     public class LsmIntersectionSegmentsMesh : IOutputMesh
     {
-        public LsmIntersectionSegmentsMesh(IEnumerable<IElementGeometryIntersection> intersections)
+        public LsmIntersectionSegmentsMesh(IEnumerable<IElementDiscontinuityInteraction> intersections)
         {
             var vertices = new List<VtkPoint>();
             this.ParentElementIDsOfVertices = new List<double>();
             this.ParentGeometryIDsOfVertices = new List<double>();
             var cells = new List<VtkCell>();
             int vertexID = 0;
-            foreach (IElementGeometryIntersection intersection in intersections)
+            foreach (IElementDiscontinuityInteraction intersection in intersections)
             {
                 // Vertices of the intersection mesh
                 IIntersectionMesh intersectionMesh = intersection.ApproximateGlobalCartesian();

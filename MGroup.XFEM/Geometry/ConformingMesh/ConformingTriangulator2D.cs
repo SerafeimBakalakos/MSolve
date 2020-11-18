@@ -19,11 +19,11 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
     public class ConformingTriangulator2D : IConformingTriangulator
     {
         IElementSubcell[] IConformingTriangulator.FindConformingMesh(
-            IXFiniteElement element, IEnumerable<IElementGeometryIntersection> intersections, IMeshTolerance meshTolerance)
+            IXFiniteElement element, IEnumerable<IElementDiscontinuityInteraction> intersections, IMeshTolerance meshTolerance)
             => FindConformingMesh(element, intersections, meshTolerance);
 
         public ElementSubtriangle2D[] FindConformingMesh(IXFiniteElement element, 
-            IEnumerable<IElementGeometryIntersection> intersections, IMeshTolerance meshTolerance)
+            IEnumerable<IElementDiscontinuityInteraction> intersections, IMeshTolerance meshTolerance)
         {
             // Store the nodes and all intersection points in a set
             double tol = meshTolerance.CalcTolerance(element);
@@ -36,13 +36,13 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             triangleVertices.UnionWith(nodes);
 
             // Add intersection points from each curve-element intersection object.
-            foreach (IElementGeometryIntersection intersection in intersections)
+            foreach (IElementDiscontinuityInteraction intersection in intersections)
             {
                 // If the curve does not intersect this element (e.g. it conforms to the element edge), 
                 // there is no need to take into account for triangulation
                 if (intersection.RelativePosition != RelativePositionCurveElement.Intersecting) continue;
 
-                IList<double[]> newVertices = intersection.GetPointsForTriangulation();
+                IList<double[]> newVertices = intersection.GetVerticesForTriangulation();
                 int countBeforeInsertion = triangleVertices.Count;
                 triangleVertices.UnionWith(newVertices);
 

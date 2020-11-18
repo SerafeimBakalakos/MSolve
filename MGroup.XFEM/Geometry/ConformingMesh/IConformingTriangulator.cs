@@ -16,6 +16,6 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
     public interface IConformingTriangulator
     {
         IElementSubcell[] FindConformingMesh(IXFiniteElement element,
-            IEnumerable<IElementGeometryIntersection> intersections, IMeshTolerance meshTolerance);
+            IEnumerable<IElementDiscontinuityInteraction> intersections, IMeshTolerance meshTolerance);
     }
 }

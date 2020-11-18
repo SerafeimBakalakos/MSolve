@@ -19,10 +19,6 @@ namespace MGroup.XFEM.Elements
         
         Dictionary<ICrack, IElementCrackInteraction> InteractingCracks { get; }
 
-        //TODO: Delete these implementations. They are covered by InteractingCracks, which works better in the presence of multiple cracks
-        //bool IsIntersectedElement { get; set; } //TODO: Should this be in IXFiniteElement? It is similar to storing the triangulation mesh.
-        //bool IsTipElement { get; set; }
-
         Matrix CalcDisplacementFieldGradient(XPoint point, Vector nodalDisplacements);
     }
 
@@ -67,6 +63,13 @@ namespace MGroup.XFEM.Elements
             {
                 throw new NotImplementedException("For now only 1 crack may interact with each element");
             }
+        }
+
+        public static void RegisterInteractionWithCrack(this IXCrackElement element, 
+            ICrack crack, IElementCrackInteraction interaction)
+        {
+            element.InteractingCracks[crack] = interaction;
+            element.InteractingDiscontinuities[crack.ID] = interaction;
         }
     }
 }

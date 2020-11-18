@@ -39,7 +39,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public double[] NodalLevelSets { get; protected set; }
 
-        public virtual IElementGeometryIntersection Intersect(IXFiniteElement element)
+        public virtual IElementDiscontinuityInteraction Intersect(IXFiniteElement element)
         {
             Dictionary<int, double> levelSetSubset = FindLevelSetsOfElementNodes(element, NodalLevelSets);
             RelativePositionCurveElement position = FindRelativePosition(element, levelSetSubset);

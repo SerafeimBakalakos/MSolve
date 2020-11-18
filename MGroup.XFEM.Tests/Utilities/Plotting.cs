@@ -15,19 +15,19 @@ namespace MGroup.XFEM.Tests.Utilities
 {
     public class Plotting
     {
-        public static Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> CalcIntersections(
+        public static Dictionary<IXFiniteElement, List<IElementDiscontinuityInteraction>> CalcIntersections(
             XModel<IXMultiphaseElement> model, IEnumerable<IClosedGeometry> geometries)
         {
-            var intersections = new Dictionary<IXFiniteElement, List<IElementGeometryIntersection>>();
+            var intersections = new Dictionary<IXFiniteElement, List<IElementDiscontinuityInteraction>>();
             foreach (IXFiniteElement element in model.Elements)
             {
-                var elementIntersections = new List<IElementGeometryIntersection>();
+                var elementIntersections = new List<IElementDiscontinuityInteraction>();
                 foreach (IClosedGeometry curve in geometries)
                 {
-                    IElementGeometryIntersection intersection = curve.Intersect(element);
+                    IElementDiscontinuityInteraction intersection = curve.Intersect(element);
                     if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
                     {
-                        element.Intersections.Add(intersection);
+                        element.InteractingDiscontinuities.Add(curve.ID, intersection);
                         elementIntersections.Add(intersection);
                     }
                 }
@@ -36,20 +36,20 @@ namespace MGroup.XFEM.Tests.Utilities
             return intersections;
         }
 
-        public static Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> CalcIntersections(
+        public static Dictionary<IXFiniteElement, List<IElementDiscontinuityInteraction>> CalcIntersections(
             XModel<IXMultiphaseElement> model, PhaseGeometryModel geometricModel)
         {
             Dictionary<int, IClosedGeometry> geometries = FindCurvesOf(geometricModel);
-            var intersections = new Dictionary<IXFiniteElement, List<IElementGeometryIntersection>>();
+            var intersections = new Dictionary<IXFiniteElement, List<IElementDiscontinuityInteraction>>();
             foreach (IXFiniteElement element in model.Elements)
             {
-                var elementIntersections = new List<IElementGeometryIntersection>();
+                var elementIntersections = new List<IElementDiscontinuityInteraction>();
                 foreach (IClosedGeometry geometry in geometries.Values)
                 {
-                    IElementGeometryIntersection intersection = geometry.Intersect(element);
+                    IElementDiscontinuityInteraction intersection = geometry.Intersect(element);
                     if (intersection.RelativePosition != RelativePositionCurveElement.Disjoint)
                     {
-                        element.Intersections.Add(intersection);
+                        element.InteractingDiscontinuities.Add(geometry.ID, intersection);
                         elementIntersections.Add(intersection);
                     }
                 }
@@ -59,7 +59,7 @@ namespace MGroup.XFEM.Tests.Utilities
         }
 
         public static Dictionary<IXFiniteElement, IElementSubcell[]> CreateConformingMesh(int dimension,
-            Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> intersections)
+            Dictionary<IXFiniteElement, List<IElementDiscontinuityInteraction>> intersections)
         {
 
             IConformingTriangulator triangulator;
@@ -71,7 +71,7 @@ namespace MGroup.XFEM.Tests.Utilities
             var conformingMesh = new Dictionary<IXFiniteElement, IElementSubcell[]>();
             foreach (IXFiniteElement element in intersections.Keys)
             {
-                List<IElementGeometryIntersection> elementIntersections = intersections[element];
+                List<IElementDiscontinuityInteraction> elementIntersections = intersections[element];
                 IElementSubcell[] subtriangles = triangulator.FindConformingMesh(element, elementIntersections, tolerance);
                 conformingMesh[element] = subtriangles;
                 element.ConformingSubcells = subtriangles;

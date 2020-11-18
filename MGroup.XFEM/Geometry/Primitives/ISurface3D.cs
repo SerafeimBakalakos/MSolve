@@ -8,6 +8,6 @@ namespace MGroup.XFEM.Geometry.Primitives
     {
         double SignedDistanceOf(double[] point);
 
-        IElementGeometryIntersection IntersectPolygon(IList<double[]> nodes);
+        IElementDiscontinuityInteraction IntersectPolygon(IList<double[]> nodes);
     }
 }

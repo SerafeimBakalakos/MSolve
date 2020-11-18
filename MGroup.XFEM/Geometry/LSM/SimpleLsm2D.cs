@@ -35,7 +35,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 
-        public virtual IElementGeometryIntersection Intersect(IXFiniteElement element)
+        public virtual IElementDiscontinuityInteraction Intersect(IXFiniteElement element)
         {
             if (IsElementDisjoint(element)) // Check this first, since it is faster and most elements are in this category 
             {

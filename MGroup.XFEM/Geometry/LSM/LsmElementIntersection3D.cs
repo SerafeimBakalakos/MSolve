@@ -19,7 +19,7 @@ namespace MGroup.XFEM.Geometry.LSM
     /// A surface resulting from the intersection of a parent surface with a 3D finite element.
     /// Degenerate cases are also possible: null, single point or single curve.
     /// </summary>
-    public class LsmElementIntersection3D : IElementGeometryIntersection
+    public class LsmElementIntersection3D : IElementDiscontinuityInteraction
     {
         private readonly IntersectionMesh intersectionMeshNatural;
 
@@ -55,7 +55,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         //TODO: Perhaps a dedicated IBoundaryIntegration component is needed,
         //      along with dedicated concrete integrations for triangles, quads, etc
-        public IReadOnlyList<GaussPoint> GetIntegrationPoints(int order)
+        public IReadOnlyList<GaussPoint> GetBoundaryIntegrationPoints(int order)
         {
             if ((((IElementType)Element).CellType != CellType.Hexa8) && (((IElementType)Element).CellType != CellType.Tet4))
             {
@@ -133,7 +133,7 @@ namespace MGroup.XFEM.Geometry.LSM
             return integrationPoints;
         }
 
-        public IList<double[]> GetPointsForTriangulation()
+        public IList<double[]> GetVerticesForTriangulation()
         {
             return intersectionMeshNatural.Vertices;
         }

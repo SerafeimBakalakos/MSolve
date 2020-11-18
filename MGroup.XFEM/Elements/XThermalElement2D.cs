@@ -114,12 +114,13 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         public IReadOnlyList<XNode> Nodes { get; }
 
-        public List<IElementGeometryIntersection> Intersections { get; } = new List<IElementGeometryIntersection>();
+        public Dictionary<int, IElementDiscontinuityInteraction> InteractingDiscontinuities { get; }
+            = new Dictionary<int, IElementDiscontinuityInteraction>();
 
         public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
 
-        public Dictionary<PhaseBoundary, IElementGeometryIntersection> PhaseIntersections { get; }
-            = new Dictionary<PhaseBoundary, IElementGeometryIntersection>();
+        public Dictionary<PhaseBoundary, IElementDiscontinuityInteraction> PhaseIntersections { get; }
+            = new Dictionary<PhaseBoundary, IElementDiscontinuityInteraction>();
 
         ISubdomain IElement.Subdomain => this.Subdomain;
         public XSubdomain Subdomain { get; set; }
@@ -237,9 +238,9 @@ namespace MGroup.XFEM.Elements
             foreach (var boundaryIntersectionPair in PhaseIntersections)
             {
                 PhaseBoundary boundary = boundaryIntersectionPair.Key;
-                IElementGeometryIntersection intersection = boundaryIntersectionPair.Value;
+                IElementDiscontinuityInteraction intersection = boundaryIntersectionPair.Value;
 
-                IReadOnlyList<GaussPoint> gaussPoints = intersection.GetIntegrationPoints(boundaryIntegrationOrder);
+                IReadOnlyList<GaussPoint> gaussPoints = intersection.GetBoundaryIntegrationPoints(boundaryIntegrationOrder);
                 int numGaussPoints = gaussPoints.Count;
                 var materials = new ThermalInterfaceMaterial[numGaussPoints];
 

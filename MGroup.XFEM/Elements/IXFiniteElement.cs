@@ -35,7 +35,8 @@ namespace MGroup.XFEM.Elements
 
         IReadOnlyList<XNode> Nodes { get; }
 
-        List<IElementGeometryIntersection> Intersections { get; }
+        //TODO: Use a reference to the discontinuity itself instead of its ID
+        Dictionary<int, IElementDiscontinuityInteraction> InteractingDiscontinuities { get; }
 
         XSubdomain Subdomain { get; set; }
 

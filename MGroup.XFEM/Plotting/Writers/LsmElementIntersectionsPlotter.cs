@@ -20,7 +20,7 @@ namespace MGroup.XFEM.Plotting.Writers
             this.shuffleIDs = shuffleIDs;
         }
 
-        public void PlotIntersections(string path, IEnumerable<IElementGeometryIntersection> intersections)
+        public void PlotIntersections(string path, IEnumerable<IElementDiscontinuityInteraction> intersections)
         {
             var intersectionMesh = new LsmIntersectionSegmentsMesh(intersections);
 

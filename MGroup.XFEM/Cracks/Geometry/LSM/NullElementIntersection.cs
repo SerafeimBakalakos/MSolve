@@ -14,18 +14,18 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
         public NullElementIntersection(int parentGeometryID, IXFiniteElement element)
         {
             this.ParentGeometryID = parentGeometryID;
-            this.ElementID = element.ID;
+            this.Element = element;
         }
 
         public int ParentGeometryID { get; }
 
         public RelativePositionCurveElement RelativePosition => RelativePositionCurveElement.Disjoint;
 
-        public int ElementID { get; }
+        public IXFiniteElement Element { get; }
 
         public bool TipInteractsWithElement => false;
 
-        public IntersectionMesh ApproximateGlobalCartesian() => new IntersectionMesh();
+        public IIntersectionMesh ApproximateGlobalCartesian() => new IntersectionMesh();
 
         public IReadOnlyList<GaussPoint> GetBoundaryIntegrationPoints(int numPoints)
         {
@@ -36,7 +36,5 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
         {
             return new double[0][];
         }
-
-        IIntersectionMesh IElementCrackInteraction.ApproximateGlobalCartesian() => new IntersectionMesh();
     }
 }
