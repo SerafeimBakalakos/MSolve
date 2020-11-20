@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MGroup.XFEM.Cracks.PropagationCriteria
 {
-    public class ConstantIncrement2D: ICrackGrowthLengthLaw2D
+    public class ConstantIncrement2D: ICrackGrowthLengthCriterion
     {
         private readonly double length;
 
@@ -23,7 +23,7 @@ namespace MGroup.XFEM.Cracks.PropagationCriteria
             this.length = incrementLength;
         }
 
-        public double ComputeGrowthLength(double sif1, double sif2)
+        public double ComputeGrowthLength(double[] modeSifs)
         {
             return length;
         }

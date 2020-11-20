@@ -10,7 +10,7 @@ namespace MGroup.XFEM.Cracks.PropagationCriteria
     /// Operates on the variations of the stress intensity factors ΔKI and ΔKII, which should be obtained by applying the 
     /// stress variation Δσ (or displacement variation Δu) on the structure.
     /// </summary>
-    public class ParisLawIncrement2D: ICrackGrowthLengthLaw2D
+    public class ParisLawIncrement2D: ICrackGrowthLengthCriterion
     {
         private readonly int cyclesIncrement;
         private readonly double parisLawConstant;
@@ -24,9 +24,9 @@ namespace MGroup.XFEM.Cracks.PropagationCriteria
             this.cyclesIncrement = cyclesIncrement;
         }
 
-        public double ComputeGrowthLength(double sif1, double sif2)
+        public double ComputeGrowthLength(double[] modeSifs)
         {
-            double dKeff = CalcEffectiveSifRegular(sif1, sif2);
+            double dKeff = CalcEffectiveSifRegular(modeSifs[0], modeSifs[1]);
             return parisLawConstant * FindElapsedCycles() * Math.Pow(dKeff, parisLawExponent);
         }
 

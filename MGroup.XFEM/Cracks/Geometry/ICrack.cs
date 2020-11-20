@@ -8,8 +8,6 @@ using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 
-//TODO: This will probably be deleted, unless I use it as an abstraction of crack entity classes (2D,3D, implicit, explicit, etc), 
-//      instead of crack geometry classes.
 //TODO: Extend to the case where there are 2 tips! Perhaps abstract the number of tips by using a general ICrackTip that can
 //      have an implementation with 2 tips. 
 //TODO: Perhaps use IDs instead of references to IXCrackElement.
@@ -34,7 +32,6 @@ namespace MGroup.XFEM.Cracks.Geometry
         /// </summary>
         HashSet<IXCrackElement> IntersectedElements { get; }
 
-        //int ID { get; }
 
         double[] TipCoordinates { get; }
 
@@ -45,5 +42,7 @@ namespace MGroup.XFEM.Cracks.Geometry
         HashSet<IXCrackElement> TipElements { get; }
 
         TipCoordinateSystem TipSystem { get; } //TODO: This should probably be provided by the Geometry property
+
+        void CheckPropagation(IPropagationTermination termination);
     }
 }

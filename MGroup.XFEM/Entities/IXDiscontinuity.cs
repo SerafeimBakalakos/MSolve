@@ -28,6 +28,6 @@ namespace MGroup.XFEM.Entities
         /// 
         /// </summary>
         /// <param name="subdomainFreeDisplacements">Total displacements of all dofs of each subdomain.</param>
-        void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements); //TODO: What about InitializeGeometry()? Should the user call it?
+        void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements);
     }
 }

@@ -45,8 +45,6 @@ namespace MGroup.XFEM.Cracks
             this.Logger = logger;
             for (int i = 0; i < logger.GrowthAngles.Count; ++i)
             {
-                logger.InteractionIntegralsMode1.Add(0.0);
-                logger.InteractionIntegralsMode2.Add(0.0);
                 logger.SIFsMode1.Add(0.0);
                 logger.SIFsMode2.Add(0.0);
             }

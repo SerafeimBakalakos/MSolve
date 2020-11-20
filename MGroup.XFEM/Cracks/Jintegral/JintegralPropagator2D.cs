@@ -26,9 +26,9 @@ namespace MGroup.XFEM.Cracks.Jintegral
         private readonly JintegrationStrategy jIntegrationRule;
         private readonly HomogeneousFractureMaterialField2D material;
         private readonly IAuxiliaryStates auxiliaryStatesStrategy;
-        private readonly ISIFCalculator sifCalculationStrategy;
-        private readonly ICrackGrowthDirectionLaw2D growthDirectionLaw;
-        private readonly ICrackGrowthLengthLaw2D growthLengthLaw;
+        private readonly ISifCalculator sifCalculationStrategy;
+        private readonly ICrackGrowthDirectionCriterion growthDirectionCriterion;
+        private readonly ICrackGrowthLengthCriterion growthLengthCriterion;
 
         public PropagationLogger Logger { get; }
 
@@ -42,15 +42,15 @@ namespace MGroup.XFEM.Cracks.Jintegral
         ///     (see Ahmed thesis, 2009).</param>
         public JintegralPropagator2D(double magnificationOfJintegralRadius, JintegrationStrategy jIntegrationRule,
             HomogeneousFractureMaterialField2D material,
-            ICrackGrowthDirectionLaw2D growthDirectionLaw, ICrackGrowthLengthLaw2D growthLengthLaw)
+            ICrackGrowthDirectionCriterion growthDirectionCriterion, ICrackGrowthLengthCriterion growthLengthCriterion)
         {
             this.magnificationOfJintegralRadius = magnificationOfJintegralRadius;
             this.jIntegrationRule = jIntegrationRule;
             this.material = material;
             this.auxiliaryStatesStrategy = new HomogeneousMaterialAuxiliaryStates(material);
-            this.sifCalculationStrategy = new HomogeneousSIFCalculator(material);
-            this.growthDirectionLaw = growthDirectionLaw;
-            this.growthLengthLaw = growthLengthLaw;
+            this.sifCalculationStrategy = new HomogeneousSifCalculator(material);
+            this.growthDirectionCriterion = growthDirectionCriterion;
+            this.growthLengthCriterion = growthLengthCriterion;
             this.Logger = new PropagationLogger();
         }
 
@@ -58,16 +58,16 @@ namespace MGroup.XFEM.Cracks.Jintegral
             double[] crackTipGlobal, TipCoordinateSystem tipSystem, IEnumerable<IXCrackElement> tipElements)
         {
             // TODO: Also check if the sifs do not violate the material toughness
-            (double sifMode1, double sifMode2) = ComputeSIFS(subdomainFreeDisplacements, crackTipGlobal, tipSystem, tipElements);
-            double growthAngle = growthDirectionLaw.ComputeGrowthAngle(sifMode1, sifMode2);
-            double growthLength = growthLengthLaw.ComputeGrowthLength(sifMode1, sifMode2);
+            double[] sifs = ComputeSIFS(subdomainFreeDisplacements, crackTipGlobal, tipSystem, tipElements);
+            double growthAngle = growthDirectionCriterion.ComputeGrowthAngle(sifs);
+            double growthLength = growthLengthCriterion.ComputeGrowthLength(sifs);
             Logger.GrowthAngles.Add(growthAngle);
             Logger.GrowthLengths.Add(growthLength);
             return (growthAngle, growthLength);
 
         }
 
-        private (double sifMode1, double sifMode2) ComputeSIFS(Dictionary<int, Vector> totalFreeDisplacements,
+        private double[] ComputeSIFS(Dictionary<int, Vector> totalFreeDisplacements,
             double[] crackTip, TipCoordinateSystem tipSystem, IEnumerable<IXCrackElement> tipElements)
         {
             double interactionIntegralMode1 = 0.0, interactionIntegralMode2 = 0.0;
@@ -89,15 +89,13 @@ namespace MGroup.XFEM.Cracks.Jintegral
                 interactionIntegralMode2 += mode2I;
             }
 
-            double sifMode1 = sifCalculationStrategy.CalculateSIF(interactionIntegralMode1);
-            double sifMode2 = sifCalculationStrategy.CalculateSIF(interactionIntegralMode2);
+            double sifMode1 = sifCalculationStrategy.CalculateSif(interactionIntegralMode1);
+            double sifMode2 = sifCalculationStrategy.CalculateSif(interactionIntegralMode2);
 
-            Logger.InteractionIntegralsMode1.Add(interactionIntegralMode1);
-            Logger.InteractionIntegralsMode2.Add(interactionIntegralMode2);
             Logger.SIFsMode1.Add(sifMode1);
             Logger.SIFsMode2.Add(sifMode2);
 
-            return (sifMode1, sifMode2);
+            return new double[] { sifMode1, sifMode2 };
         }
 
         private IReadOnlyDictionary<IXCrackElement, double[]> FindJintegralElementsAndNodalWeights(

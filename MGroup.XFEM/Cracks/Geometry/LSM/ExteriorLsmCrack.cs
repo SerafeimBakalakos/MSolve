@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
@@ -48,7 +49,19 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
 
         public ISingleTipLsmGeometry LsmGeometry => lsmGeometry;
 
+        public List<ICrackObserver> Observers { get; } = new List<ICrackObserver>();
+
+        public double[] TipCoordinates => lsmGeometry.Tip;
+
         public HashSet<IXCrackElement> TipElements { get; } = new HashSet<IXCrackElement>();
+
+        public TipCoordinateSystem TipSystem => lsmGeometry.TipSystem;
+
+        public void CheckPropagation(IPropagationTermination termination)
+        {
+            double[] sifs = { propagator.Logger.SIFsMode1.Last(), propagator.Logger.SIFsMode2.Last() }; //TODO: These should be accessible without the logger.
+            termination.Update(sifs, TipCoordinates);
+        }
 
         public IList<EnrichmentItem> DefineEnrichments(int numCurrentEnrichments)
         {
@@ -82,41 +95,12 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
 
         public override int GetHashCode() => ID.GetHashCode();
 
-        #region marked for removal. However I think I will use them in the new implementation. Or expose them in a ISingleTipGeometry : IXGeometryDescription
-        public double[] TipCoordinates => lsmGeometry.Tip;
-
-        public TipCoordinateSystem TipSystem => lsmGeometry.TipSystem;
-        #endregion
-
-        #region state logging. Only the absolutely necessary for the current configuration should stay
-        public List<ICrackObserver> Observers { get; } = new List<ICrackObserver>();
-
-        // TODO: Analyzer uses IPropagator to check collapse, e.g reading the SIFs. But: calculation of SIFs, of next geometry direction&Length
-        // and geometric update are different things currently hidden behind a single Propagate() method. Perhaps I should decouple them.
-        // then SIFs should be stored somewhere (e.g. in ICrack and accessed from there).
-        public IReadOnlyList<IPropagator> CrackTipPropagators => new IPropagator[] { this.propagator }; 
-        #endregion
-
-        #region geometry : trim these down by delegating functionality elsewhere and then just call the delegated methods in a general Initialize/Update() method
-        //TODO: Since initialization is different for each crack representation, it would be better if I could refactor the 
-        //      Initialize(), Update/Propagate(), InteractWithMesh() methods to make Initialize() more abstract or replace it
-        //      with Update(). The parameters that are unique for each representation can be injected in the constructor.
         public void InitializeGeometry()
         {
             lsmGeometry.Initialize(model.XNodes, initialCrack);
             foreach (var vertex in initialCrack.Vertices) crackPath.Add(vertex);
         }
 
-        public void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements)
-        {
-            (double growthAngle, double growthLength) = propagator.Propagate(
-                subdomainFreeDisplacements, lsmGeometry.Tip, lsmGeometry.TipSystem, TipElements);
-            lsmGeometry.Update(model.XNodes, growthAngle, growthLength);
-            crackPath.Add(lsmGeometry.Tip);
-        }
-        #endregion
-
-        #region mesh interaction. These are probably the same for cracks represented with different ways
         public void InteractWithMesh()
         {
             //TODO: Optimization: Do not go over the intersecting elements that are already stored here. Even better,
@@ -161,7 +145,12 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
             foreach (ICrackObserver observer in Observers) observer.Update();
         }
 
-        
-        #endregion
+        public void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements)
+        {
+            (double growthAngle, double growthLength) = propagator.Propagate(
+                subdomainFreeDisplacements, lsmGeometry.Tip, lsmGeometry.TipSystem, TipElements);
+            lsmGeometry.Update(model.XNodes, growthAngle, growthLength);
+            crackPath.Add(lsmGeometry.Tip);
+        }
     }
 }

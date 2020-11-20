@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace MGroup.XFEM.Cracks.Jintegral
 {
-    public interface ISIFCalculator
+    public interface ISifCalculator
     {
-        double CalculateSIF(double interactionIntegral);
+        double CalculateSif(double interactionIntegral);
     }
 }

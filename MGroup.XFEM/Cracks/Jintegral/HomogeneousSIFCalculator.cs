@@ -7,7 +7,7 @@ using MGroup.XFEM.Materials;
 
 namespace MGroup.XFEM.Cracks.Jintegral
 {
-    public class HomogeneousSIFCalculator : ISIFCalculator
+    public class HomogeneousSifCalculator : ISifCalculator
     {
         private readonly double equivalentYoungModulus;
 
@@ -17,12 +17,12 @@ namespace MGroup.XFEM.Cracks.Jintegral
         /// the materials of all other elements of the integration domain.
         /// </summary>
         /// <param name="globalMaterial">The material properties which must be identical for all elements and this class</param>
-        public HomogeneousSIFCalculator(HomogeneousFractureMaterialField2D globalMaterial)
+        public HomogeneousSifCalculator(HomogeneousFractureMaterialField2D globalMaterial)
         {
             this.equivalentYoungModulus = globalMaterial.EquivalentYoungModulus;
         }
 
-        public double CalculateSIF(double interactionIntegral)
+        public double CalculateSif(double interactionIntegral)
         {
             return 0.5 * equivalentYoungModulus * interactionIntegral;
         }

@@ -7,20 +7,20 @@ using System.Threading.Tasks;
 namespace MGroup.XFEM.Cracks.PropagationCriteria
 {
     // TODO: Research whether this work for heterogenegous materials as well.
-    public class MaximumCircumferentialTensileStressCriterion: ICrackGrowthDirectionLaw2D
+    public class MaximumCircumferentialTensileStressCriterion: ICrackGrowthDirectionCriterion
     {
         public MaximumCircumferentialTensileStressCriterion()
         {
         }
 
-        public double ComputeGrowthAngle(double sif1, double sif2)
+        public double ComputeGrowthAngle(double[] modeSifs)
         {
-            if (sif1 > 0)
+            if (modeSifs[0] > 0)
             {
-                double ratio = sif2 / sif1;
+                double ratio = modeSifs[1] / modeSifs[0];
                 return 2 * Math.Atan((-2 * ratio) / (1 + Math.Sqrt(1 + 8 * ratio * ratio)));
             }
-            else throw new NotImplementedException("SIF 1 = " + sif1 + " <= 0. What happens in this case?");
+            else throw new NotImplementedException("SIF 1 = " + modeSifs[0] + " <= 0. What happens in this case?");
         }
     }
 }

@@ -10,6 +10,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
+using MGroup.XFEM.Cracks;
 using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Cracks.Geometry.LSM;
 using MGroup.XFEM.Cracks.Jintegral;
@@ -438,6 +439,8 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             public int ID => crack.ID;
 
             public int MouthElementID { get; set; }
+
+            public void CheckPropagation(IPropagationTermination termination) => crack.CheckPropagation(termination);
 
             public IList<EnrichmentItem> DefineEnrichments(int numCurrentEnrichments)
             {
