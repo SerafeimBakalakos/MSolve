@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using MGroup.XFEM.Cracks;
 using MGroup.XFEM.Cracks.Geometry;
@@ -24,8 +25,141 @@ namespace MGroup.XFEM.Tests.Fracture.Observers
     {
         private const int subdomainID = 0;
 
-        //TODO: Error in tip enrichments when orientation is vertical
         [Fact]
+        public static void TestCrackElementInteraction()
+        {
+            XModel<IXCrackElement> model = CreateModel();
+            var crack = (ExteriorLsmCrack)model.Discontinuities[0];
+
+            // Expected results
+            var expectedTipElements = new List<int[]>();
+            expectedTipElements.Add(new int[] { 184 });
+            expectedTipElements.Add(new int[] { 205 });
+            expectedTipElements.Add(new int[] { 226 });
+            expectedTipElements.Add(new int[] { 270 });
+
+            var expectedIntersectedElements = new List<int[]>();
+            expectedIntersectedElements.Add(new int[] { 180, 181, 182, 183 });
+            expectedIntersectedElements.Add(new int[] { 180, 181, 182, 183, 184, 204 });
+            expectedIntersectedElements.Add(new int[] { 180, 181, 182, 183, 184, 204, 205, 206 });
+            expectedIntersectedElements.Add(new int[] { 180, 181, 182, 183, 184, 204, 205, 206, 226, 246, 247, 248, 268, 269 });
+
+            var expectedConformingElements = new List<int[]>();
+            expectedConformingElements.Add(new int[0]);
+            expectedConformingElements.Add(new int[0]);
+            expectedConformingElements.Add(new int[0]);
+            expectedConformingElements.Add(new int[0]);
+
+            // Compare the model's state at each iteration.
+            for (int t = 0; t <= 3; ++t)
+            {
+                if (t == 0) model.Initialize();
+                else model.Update(null);
+
+                // Check
+                var computedTipElements = new HashSet<int>(crack.TipElements.Select(e => e.ID));
+                var computedIntersectedElements = new HashSet<int>(crack.IntersectedElements.Select(e => e.ID));
+                var computedConformingElements = new HashSet<int>(crack.ConformingElements.Select(e => e.ID));
+                Assert.True(computedTipElements.SetEquals(expectedTipElements[t]));
+                Assert.True(computedIntersectedElements.SetEquals(expectedIntersectedElements[t]));
+                Assert.True(computedConformingElements.SetEquals(expectedConformingElements[t]));
+            }
+        }
+
+        [Fact]
+        public static void TestEnrichedNodes()
+        {
+            XModel<IXCrackElement> model = CreateModel();
+            var crack = (ExteriorLsmCrack)model.Discontinuities[0];
+
+            // Set up observers.
+            var previousEnrichments = new PreviousEnrichmentsObserver();
+            model.RegisterEnrichmentObserver(previousEnrichments);
+            var newTipNodes = new NewCrackTipNodesObserver(crack);
+            model.RegisterEnrichmentObserver(newTipNodes);
+            var previousTipNodes = new PreviousCrackTipNodesObserver(crack, previousEnrichments);
+            model.RegisterEnrichmentObserver(previousTipNodes);
+            var allBodyNodes = new CrackBodyNodesObserver(crack);
+            model.RegisterEnrichmentObserver(allBodyNodes);
+            var newBodyNodes = new NewCrackBodyNodesObserver(crack, previousEnrichments, allBodyNodes);
+            model.RegisterEnrichmentObserver(newBodyNodes);
+            var rejectedBodyNodes = new RejectedCrackBodyNodesObserver(crack, newTipNodes, allBodyNodes);
+            model.RegisterEnrichmentObserver(rejectedBodyNodes);
+            var bodyNodesWithModifiedLevelSet = new CrackBodyNodesWithModifiedLevelSetObserver(
+                crack, previousEnrichments, allBodyNodes);
+            model.RegisterEnrichmentObserver(bodyNodesWithModifiedLevelSet);
+            var modifiedNodes = new NodesWithModifiedEnrichmentsObserver(
+                newTipNodes, previousTipNodes, newBodyNodes, bodyNodesWithModifiedLevelSet);
+            model.RegisterEnrichmentObserver(modifiedNodes);
+            var modifiedElements = new ElementsWithModifiedNodesObserver(modifiedNodes);
+            model.RegisterEnrichmentObserver(modifiedElements);
+            var nearModifiedNodes = new NodesNearModifiedNodesObserver(modifiedNodes, modifiedElements);
+            model.RegisterEnrichmentObserver(nearModifiedNodes);
+
+            // Expected results
+            var expectedNewTipNodes = new List<int[]>();
+            expectedNewTipNodes.Add(new int[] { 193, 194, 215, 214 });
+            expectedNewTipNodes.Add(new int[] { 215, 216, 237, 236 });
+            expectedNewTipNodes.Add(new int[] { 237, 238, 259, 258 });
+            expectedNewTipNodes.Add(new int[] { 283, 284, 305, 304 });
+
+            var expectedOldTipNodes = new List<int[]>();
+            expectedOldTipNodes.Add(new int[] {  });
+            expectedOldTipNodes.Add(new int[] { 193, 194, 215, 214 });
+            expectedOldTipNodes.Add(new int[] { 215, 216, 237, 236 });
+            expectedOldTipNodes.Add(new int[] { 237, 238, 259, 258 });
+
+            var expectedBodyNodes = new List<int[]>();
+            expectedBodyNodes.Add(new int[] { 211, 210, 212, 213 });
+            expectedBodyNodes.Add(new int[] { 211, 210, 212, 213, 214 });
+            expectedBodyNodes.Add(new int[] { 211, 210, 212, 213, 214, 215, 236, 216 });
+            expectedBodyNodes.Add(new int[] 
+            { 
+                211, 210, 212, 213, 214, 215, 236, 216, 237, 238, 259, 258, 280, 260, 281, 261, 282, 303, 302 
+            });
+
+            var expectedNewBodyNodes = new List<int[]>();
+            expectedNewBodyNodes.Add(new int[] { 211, 210, 212, 213 });
+            expectedNewBodyNodes.Add(new int[] { 214 });
+            expectedNewBodyNodes.Add(new int[] { 215, 236, 216 });
+            expectedNewBodyNodes.Add(new int[] { 237, 238, 259, 258, 280, 260, 281, 261, 282, 303, 302 });
+
+            var expectedRejectedBodyNodes = new List<int[]>();
+            expectedRejectedBodyNodes.Add(new int[] { 189, 190, 191, 192 });
+            expectedRejectedBodyNodes.Add(new int[] { 189, 190, 191, 192, 193, 194, 235 });
+            expectedRejectedBodyNodes.Add(new int[] { 189, 190, 191, 192, 193, 194, 235, 217 });
+            expectedRejectedBodyNodes.Add(new int[] { 189, 190, 191, 192, 193, 194, 235, 217, 279 });
+
+            var expectedNearModifiedBodyNodes = new List<int[]>();
+            expectedNearModifiedBodyNodes.Add(new int[] { });
+            expectedNearModifiedBodyNodes.Add(new int[] { 213 });
+            expectedNearModifiedBodyNodes.Add(new int[] { 214 });
+            expectedNearModifiedBodyNodes.Add(new int[] { 215, 216, 236 });
+
+            // Compare the model's state at each iteration.
+            for (int t = 0; t <= 3; ++t)
+            {
+                if (t == 0) model.Initialize();
+                else model.Update(null);
+
+                // Check
+                var computedNewTipNodes = new HashSet<int>(newTipNodes.TipNodes.Select(n => n.ID));
+                var computedOldTipNodes = new HashSet<int>(previousTipNodes.PreviousTipNodes.Select(n => n.ID));
+                var computedBodyNodes = new HashSet<int>(allBodyNodes.BodyNodes.Select(n => n.ID));
+                var computedNewBodyNodes = new HashSet<int>(newBodyNodes.NewBodyNodes.Select(n => n.ID));
+                var computedRejectedBodyNodes = new HashSet<int>(rejectedBodyNodes.RejectedHeavisideNodes.Select(n => n.ID));
+                var computedNearModifiedNodes = new HashSet<int>(nearModifiedNodes.NearModifiedNodes.Select(n => n.ID));
+
+                Assert.True(computedNewTipNodes.SetEquals(expectedNewTipNodes[t]));
+                Assert.True(computedOldTipNodes.SetEquals(expectedOldTipNodes[t]));
+                Assert.True(computedBodyNodes.SetEquals(expectedBodyNodes[t]));
+                Assert.True(computedNewBodyNodes.SetEquals(expectedNewBodyNodes[t]));
+                Assert.True(computedRejectedBodyNodes.SetEquals(expectedRejectedBodyNodes[t]));
+                Assert.True(computedNearModifiedNodes.SetEquals(expectedNearModifiedBodyNodes[t]));
+            }
+        }
+
+        //[Fact]
         private static void RunPropagationAndPlot() 
         {
             XModel<IXCrackElement> model = CreateModel();
