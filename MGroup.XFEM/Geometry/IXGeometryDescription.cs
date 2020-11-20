@@ -16,9 +16,9 @@ namespace MGroup.XFEM.Geometry
         //TODO: Remove this. IDs are for model entities, such as cracks and phases. The underlying geometry classes only
         //      provide the necessary math. At most they contain some state (e.g. level sets over a mesh; not necessarily XNodes)
         //      which can also be mutated. 
-        int ID { get; } 
+        int ID { get; }
 
-        IElementCrackInteraction Intersect(IXFiniteElement element);
+        IElementOpenGeometryInteraction Intersect(IXFiniteElement element);
 
         double SignedDistanceOf(XNode node);
 

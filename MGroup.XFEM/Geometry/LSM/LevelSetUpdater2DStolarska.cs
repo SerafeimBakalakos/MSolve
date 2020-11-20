@@ -4,7 +4,7 @@ using System.Text;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Cracks.Geometry.LSM
+namespace MGroup.XFEM.Geometry.LSM
 {
     public class LevelSetUpdater2DStolarska : IOpenLevelSetUpdater
     {

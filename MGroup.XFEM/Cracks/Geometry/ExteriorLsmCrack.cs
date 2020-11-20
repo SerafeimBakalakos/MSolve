@@ -9,6 +9,7 @@ using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
+using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Cracks.Geometry.LSM
@@ -123,7 +124,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
                 //}
                 #endregion
 
-                IElementCrackInteraction interaction = lsmGeometry.Intersect(element);
+                IElementOpenGeometryInteraction interaction = lsmGeometry.Intersect(element);
                 if (interaction.TipInteractsWithElement)
                 {
                     TipElements.Add(element);

@@ -93,12 +93,12 @@ namespace MGroup.XFEM.Geometry.Primitives
             // Investigate the intersection type
             if (intersections.Count == 0)
             {
-                return new NullElementIntersection(-1, null);
+                return new NullElementDiscontinuityInteraction(-1, null);
                 //return (RelativePositionCurveDisc.Disjoint, new double[0]);
             }
             else if (intersections.Count == 1)
             {
-                return new NullElementIntersection(-1, null);
+                return new NullElementDiscontinuityInteraction(-1, null);
                 //return (RelativePositionCurveDisc.Tangent, new double[] { intersections.First() });
             }
             else if (intersections.Count == 2)

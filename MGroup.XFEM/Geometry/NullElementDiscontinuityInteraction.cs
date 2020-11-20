@@ -2,16 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Integration;
-using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
-using MGroup.XFEM.Geometry;
+using MGroup.XFEM.Geometry.LSM;
 
-//TODO: Merge this with the one from MGroup.XFEM.Geometry
-namespace MGroup.XFEM.Cracks.Geometry.LSM
+namespace MGroup.XFEM.Geometry
 {
-    public class NullElementIntersection : IElementCrackInteraction
+    public class NullElementDiscontinuityInteraction : IElementDiscontinuityInteraction, IElementOpenGeometryInteraction
     {
-        public NullElementIntersection(int parentGeometryID, IXFiniteElement element)
+        public NullElementDiscontinuityInteraction(int parentGeometryID, IXFiniteElement element)
         {
             this.ParentGeometryID = parentGeometryID;
             this.Element = element;
@@ -25,7 +23,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
 
         public bool TipInteractsWithElement => false;
 
-        public IIntersectionMesh ApproximateGlobalCartesian() => new IntersectionMesh();
+        public IntersectionMesh ApproximateGlobalCartesian() => new IntersectionMesh();
 
         public IReadOnlyList<GaussPoint> GetBoundaryIntegrationPoints(int numPoints)
         {
@@ -36,5 +34,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
         {
             return new double[0][];
         }
+
+        IIntersectionMesh IElementDiscontinuityInteraction.ApproximateGlobalCartesian() => new IntersectionMesh();
     }
 }

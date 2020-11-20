@@ -5,9 +5,9 @@ using MGroup.XFEM.Elements;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Integration;
 
-namespace MGroup.XFEM.Cracks.Geometry.LSM
+namespace MGroup.XFEM.Geometry.LSM
 {
-    public class OpenLsmElementIntersection2D : IElementCrackInteraction
+    public class OpenLsmElementIntersection2D : IElementOpenGeometryInteraction
     {
         private readonly IList<double[]> commonPointsNatural;
 

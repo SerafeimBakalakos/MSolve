@@ -2,18 +2,16 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
-using MGroup.XFEM.Geometry;
-using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 
-//TODO: Use an interface
 //TODO: Nodes define the state of this object, don't they? Therefore shouldn't they be stored in it, instead of being passed into
 //      this class's methods from client code? The problem with that are state changes, e.g. nodes being added removed to 
 //      represent the geometry or the model itself. Another problem is distributed environments, where it would be cumbersome
 //      for this class to manage the decomposition. Perhaps it is necessary though.
-namespace MGroup.XFEM.Cracks.Geometry.LSM
+namespace MGroup.XFEM.Geometry.LSM
 {
     public class OpenLsmSingleTip2D : ISingleTipLsmGeometry
     {
@@ -63,7 +61,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
         /// <remarks>Stolarska has proposed a simpler approach for the characterization (tip element, cut or standard), but that  
         /// is not always correct.</remarks>
         /// <param name="element"></param>
-        public IElementCrackInteraction Intersect(IXFiniteElement element)
+        public IElementOpenGeometryInteraction Intersect(IXFiniteElement element)
         {
             (Dictionary<int, double> nodalBodyLevelSets, Dictionary<int, double> nodalTipLevelSets) = 
                 FindLevelSetsOfElementNodes(element);
@@ -71,7 +69,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
             // Check this first, since it is faster and most elements belong to this category 
             if (IsElementDisjoint(element, nodalBodyLevelSets, nodalTipLevelSets)) 
             {
-                return new NullElementIntersection(ID, element);
+                return new NullElementDiscontinuityInteraction(ID, element);
             }
 
             (bool conforming, List<IntersectionPoint> intersections) = 
@@ -82,7 +80,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
                 if (intersections[0].TipLevelSet > 0)
                 {
                     // The node lies on the curve's extension 
-                    return new NullElementIntersection(this.ID, element);
+                    return new NullElementDiscontinuityInteraction(this.ID, element);
                 }
                 else if (intersections[0].TipLevelSet < 0)
                 {
@@ -116,7 +114,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
                 if (point0.TipLevelSet > 0)
                 {
                     // Both points lie on the extension
-                    return new NullElementIntersection(this.ID, element);
+                    return new NullElementDiscontinuityInteraction(this.ID, element);
                 }
                 else if (point1.TipLevelSet < 0)
                 {

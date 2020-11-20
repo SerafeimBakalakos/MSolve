@@ -10,6 +10,7 @@ using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
+using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Elements
@@ -17,7 +18,7 @@ namespace MGroup.XFEM.Elements
     public interface IXCrackElement : IXFiniteElement
     {
         
-        Dictionary<ICrack, IElementCrackInteraction> InteractingCracks { get; }
+        Dictionary<ICrack, IElementOpenGeometryInteraction> InteractingCracks { get; }
 
         Matrix CalcDisplacementFieldGradient(XPoint point, Vector nodalDisplacements);
     }
@@ -42,7 +43,7 @@ namespace MGroup.XFEM.Elements
             if (element.InteractingCracks.Count == 0) return false;
             else if (element.InteractingCracks.Count == 1)
             {
-                IElementCrackInteraction interaction = element.InteractingCracks.First().Value;
+                IElementOpenGeometryInteraction interaction = element.InteractingCracks.First().Value;
                 return interaction.RelativePosition == RelativePositionCurveElement.Intersecting;
             }
             else
@@ -56,7 +57,7 @@ namespace MGroup.XFEM.Elements
             if (element.InteractingCracks.Count == 0) return false;
             else if (element.InteractingCracks.Count == 1)
             {
-                IElementCrackInteraction interaction = element.InteractingCracks.First().Value;
+                IElementOpenGeometryInteraction interaction = element.InteractingCracks.First().Value;
                 return interaction.TipInteractsWithElement;
             }
             else
@@ -66,7 +67,7 @@ namespace MGroup.XFEM.Elements
         }
 
         public static void RegisterInteractionWithCrack(this IXCrackElement element, 
-            ICrack crack, IElementCrackInteraction interaction)
+            ICrack crack, IElementOpenGeometryInteraction interaction)
         {
             element.InteractingCracks[crack] = interaction;
             element.InteractingDiscontinuities[crack.ID] = interaction;

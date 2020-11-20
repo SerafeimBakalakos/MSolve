@@ -45,7 +45,7 @@ namespace MGroup.XFEM.Geometry.LSM
             RelativePositionCurveElement position = FindRelativePosition(element, levelSetSubset);
             if (position == RelativePositionCurveElement.Disjoint)
             {
-                return new NullElementIntersection(ID, element);
+                return new NullElementDiscontinuityInteraction(ID, element);
             }
             else if (position == RelativePositionCurveElement.Conforming)
             {

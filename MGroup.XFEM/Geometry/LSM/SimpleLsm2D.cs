@@ -39,7 +39,7 @@ namespace MGroup.XFEM.Geometry.LSM
         {
             if (IsElementDisjoint(element)) // Check this first, since it is faster and most elements are in this category 
             {
-                return new NullElementIntersection(ID, element);
+                return new NullElementDiscontinuityInteraction(ID, element);
             }
 
             double tol = MeshTolerance.CalcTolerance(element);
@@ -84,7 +84,7 @@ namespace MGroup.XFEM.Geometry.LSM
             if (intersections.Count == 1) // Curve is tangent to the element at a single node
             {
                 //TODO: Make sure the intersection point is a node (debug only)
-                return new NullElementIntersection(ID, element);
+                return new NullElementDiscontinuityInteraction(ID, element);
             }
             else if (intersections.Count == 2)
             {

@@ -59,7 +59,7 @@ namespace MGroup.XFEM.Tests.Geometry
             IElementDiscontinuityInteraction intersection = line.IntersectPolygon(triangle);
 
             Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Disjoint);
-            Assert.True(intersection is NullElementIntersection);
+            Assert.True(intersection is NullElementDiscontinuityInteraction);
         }
 
         [Theory]
@@ -85,7 +85,7 @@ namespace MGroup.XFEM.Tests.Geometry
             IElementDiscontinuityInteraction intersection = line.IntersectPolygon(triangle);
 
             Assert.True(intersection.RelativePosition == RelativePositionCurveElement.Disjoint); //TODO: This should be tangent
-            Assert.True(intersection is NullElementIntersection);
+            Assert.True(intersection is NullElementDiscontinuityInteraction);
 
             //Assert.True(pos == RelativePositionCurveDisc.Tangent);
             //Assert.Equal(1, intersection.Length);
