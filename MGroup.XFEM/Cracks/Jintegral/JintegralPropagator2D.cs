@@ -23,7 +23,7 @@ namespace MGroup.XFEM.Cracks.Jintegral
     public class JintegralPropagator2D: IPropagator
     {
         private readonly double magnificationOfJintegralRadius;
-        private readonly JintegrationStrategy jIntegrationRule;
+        private readonly IBulkIntegration jIntegrationRule;
         private readonly HomogeneousFractureMaterialField2D material;
         private readonly IAuxiliaryStates auxiliaryStatesStrategy;
         private readonly ISifCalculator sifCalculationStrategy;
@@ -40,7 +40,7 @@ namespace MGroup.XFEM.Cracks.Jintegral
         ///     It should be at least 1.5 (see "Modeling quasi-static crack growth with the extended finite element 
         ///     method Part II: Numerical applications, Huang et al, 2003" page 7546). Usually values 2-3 are selected 
         ///     (see Ahmed thesis, 2009).</param>
-        public JintegralPropagator2D(double magnificationOfJintegralRadius, JintegrationStrategy jIntegrationRule,
+        public JintegralPropagator2D(double magnificationOfJintegralRadius, IBulkIntegration jIntegrationRule,
             HomogeneousFractureMaterialField2D material,
             ICrackGrowthDirectionCriterion growthDirectionCriterion, ICrackGrowthLengthCriterion growthLengthCriterion)
         {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MGroup.XFEM.Cracks.PropagationCriteria
+namespace MGroup.XFEM.Cracks.PropagationTermination
 {
     public interface IEquivalentSifCalculator
     {

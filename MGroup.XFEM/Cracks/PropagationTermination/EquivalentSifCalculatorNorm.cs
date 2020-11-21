@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 //TODO: Also add Tanaka_1974 version and unit tests, which are trivial
-namespace MGroup.XFEM.Cracks.PropagationCriteria
+namespace MGroup.XFEM.Cracks.PropagationTermination
 {
     public class EquivalentSifCalculatorNorm : IEquivalentSifCalculator
     {

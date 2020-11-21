@@ -4,7 +4,7 @@ using System.Text;
 using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Geometry.Boundaries;
 
-namespace MGroup.XFEM.Cracks.PropagationCriteria
+namespace MGroup.XFEM.Cracks.PropagationTermination
 {
     public class CrackExitsDomainTermination : IPropagationTermination
     {

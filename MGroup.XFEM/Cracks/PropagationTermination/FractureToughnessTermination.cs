@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Cracks.Geometry;
 
-namespace MGroup.XFEM.Cracks.PropagationCriteria
+namespace MGroup.XFEM.Cracks.PropagationTermination
 {
     public class FractureToughnessTermination : IPropagationTermination
     {

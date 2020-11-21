@@ -174,7 +174,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
 
         private void InitializeCrack()
         {
-            var globalHomogeneousMaterial = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStrain(E, v);
+            var globalHomogeneousMaterial = HomogeneousElasticMaterial2D.CreateMaterialForPlaneStress(E, v, thickness: 1.0);
             IPropagator propagator = new Propagator(mesh, jIntegralRadiusOverElementSize,
                 new HomogeneousMaterialAuxiliaryStates(globalHomogeneousMaterial),
                 new HomogeneousSIFCalculator(globalHomogeneousMaterial),
@@ -250,7 +250,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
             /// The maximum number of crack propagation steps. The analysis may stop earlier if the crack has reached the domain 
             /// boundary or if the fracture toughness is exceeded.
             /// </summary>
-            public int MaxIterations { get; set; } = 8; //TODO: After that I noticed very weird behaviour
+            public int MaxIterations { get; set; } = 7; //TODO: After that I noticed very weird behaviour
 
             public string PropagationPath { get; set; }
 

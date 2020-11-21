@@ -6,7 +6,7 @@ using MGroup.XFEM.Integration.Quadratures;
 
 namespace MGroup.XFEM.Integration
 {
-    public class JintegrationStrategy
+    public class JintegrationStrategy : IBulkIntegration
     {
         private readonly IQuadrature stdElementIntegration;
         private readonly IBulkIntegration intersectedElementIntegration;
@@ -17,9 +17,15 @@ namespace MGroup.XFEM.Integration
             this.intersectedElementIntegration = intersectedElementIntegration;
         }
 
-        public IReadOnlyList<GaussPoint> GenerateIntegrationPoints(IXCrackElement element)
+        public IReadOnlyList<GaussPoint> GenerateIntegrationPoints(IXFiniteElement element)
         {
-            if (element.IsIntersected())
+            if (!(element is IXCrackElement))
+            {
+                throw new ArgumentException();
+            }
+
+            var crackElement = (IXCrackElement)element;
+            if (crackElement.IsIntersected())
             {
                 return intersectedElementIntegration.GenerateIntegrationPoints(element);
             }

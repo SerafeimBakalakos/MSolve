@@ -8,6 +8,7 @@ using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
 
+//TODO: The tolerance is counter-intuitive. Larger tolerance should mean more nodes are enriched with Heaviside.
 namespace MGroup.XFEM.Enrichment.SingularityResolution
 {
     public class RelativeAreaSingularityResolver : ISingularityResolver
@@ -32,6 +33,13 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
             var nodesToRemove = new HashSet<XNode>();
             foreach (XNode node in stepNodes)
             {
+                #region debug
+                //if (node.ID == 569 || node.ID == 570)
+                //{
+                //    Console.WriteLine();
+                //}
+                #endregion
+
                 double nodeBulkSizePos = 0.0;
                 double nodeBulkSizeNeg = 0.0;
 

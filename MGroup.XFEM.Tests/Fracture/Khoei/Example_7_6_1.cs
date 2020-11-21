@@ -15,6 +15,7 @@ using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Cracks.Geometry.LSM;
 using MGroup.XFEM.Cracks.Jintegral;
 using MGroup.XFEM.Cracks.PropagationCriteria;
+using MGroup.XFEM.Cracks.PropagationTermination;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Enrichment.Enrichers;

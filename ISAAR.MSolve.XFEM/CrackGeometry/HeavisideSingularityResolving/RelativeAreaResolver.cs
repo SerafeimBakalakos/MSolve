@@ -36,6 +36,12 @@ namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.HeavisideSingularityResolving
             var nodesToRemove = new HashSet<XNode>();
             foreach (var node in heavisideNodes)
             {
+                #region debug
+                if (node.ID == 569 || node.ID == 570)
+                {
+                    Console.WriteLine();
+                }
+                #endregion
                 double nodePositiveArea = 0.0;
                 double nodeNegativeArea = 0.0;
 
