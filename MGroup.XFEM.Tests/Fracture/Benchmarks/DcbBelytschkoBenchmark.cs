@@ -32,6 +32,7 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
         private const double thickness = 1.0;
         private const double E = 3E7; // psi=lbs/in^2
         private const double v = 0.3;
+        private const bool planeStress = true;
         private const double load = 197; // lbs
         private const double a = 3.95, da = 0.5, growthLength = 0.3; // in 
         private const double dTheta = 5.71 * Math.PI / 180; // initial crack angle
@@ -97,7 +98,7 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
             model.FindConformingSubcells = true;
 
             // Materials, integration
-            var material = new HomogeneousFractureMaterialField2D(E, v, thickness, true);
+            var material = new HomogeneousFractureMaterialField2D(E, v, thickness, planeStress);
             var enrichedIntegration = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
             var bulkIntegration = new CrackElementIntegrationStrategy(
                 enrichedIntegration, enrichedIntegration, enrichedIntegration);

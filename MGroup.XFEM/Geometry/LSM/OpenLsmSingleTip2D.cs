@@ -148,7 +148,6 @@ namespace MGroup.XFEM.Geometry.LSM
                         return new OpenLsmElementIntersection2D(this.ID, element, RelativePositionCurveElement.Tangent, true,
                             new double[][] { tipCoordsNatural });
                     }
-
                 }
             }
         }

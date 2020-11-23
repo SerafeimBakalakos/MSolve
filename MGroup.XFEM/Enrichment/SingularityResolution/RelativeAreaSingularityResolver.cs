@@ -11,6 +11,9 @@ using MGroup.XFEM.Geometry.Primitives;
 //TODO: The tolerance is counter-intuitive. Larger tolerance should mean more nodes are enriched with Heaviside.
 namespace MGroup.XFEM.Enrichment.SingularityResolution
 {
+    /// <summary>
+    /// Must not be used unless the elements are decomposed into subcells that conform to the discontinuities.
+    /// </summary>
     public class RelativeAreaSingularityResolver : ISingularityResolver
     {
         private readonly double relativeAreaTolerance;

@@ -4,6 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Materials;
 using MGroup.XFEM.Geometry.Primitives;
 
+//TODO: Delete thickness from here
 namespace MGroup.XFEM.Materials
 {
     public class HomogeneousFractureMaterialField2D : IFractureMaterialField
@@ -37,8 +38,6 @@ namespace MGroup.XFEM.Materials
         public double PoissonRatio { get; }
         public double EquivalentPoissonRatio { get; }
         public double Thickness { get; }
-
-
 
         public ElasticMaterial2D FindMaterialAt(XPoint point) => material;
     }

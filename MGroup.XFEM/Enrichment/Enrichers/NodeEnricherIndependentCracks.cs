@@ -76,7 +76,14 @@ namespace MGroup.XFEM.Enrichment.Enrichers
                 }
                 foreach (IXCrackElement element in crack.ConformingElements)
                 {
-                    throw new NotImplementedException("Must find which of the element's nodes lie on the conforming edge");
+                    foreach (XNode node in element.Nodes)
+                    {
+                        double distance = crack.CrackGeometry.SignedDistanceOf(node);
+                        if (distance == 0.0) //TODO: what if the geometry class uses some tolerance for this? Is this reflected in .SignedDistanceOf(node)?
+                        {
+                            heavisideNodes.Add(node);
+                        }
+                    }
                 }
 
                 // Do not enrich the nodes of the crack tip(s)
