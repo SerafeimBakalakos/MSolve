@@ -36,13 +36,6 @@ namespace MGroup.XFEM.Enrichment.SingularityResolution
             var nodesToRemove = new HashSet<XNode>();
             foreach (XNode node in stepNodes)
             {
-                #region debug
-                //if (node.ID == 569 || node.ID == 570)
-                //{
-                //    Console.WriteLine();
-                //}
-                #endregion
-
                 double nodeBulkSizePos = 0.0;
                 double nodeBulkSizeNeg = 0.0;
 

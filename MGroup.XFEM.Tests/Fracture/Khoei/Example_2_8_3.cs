@@ -43,12 +43,6 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 Matrix expectedK = GetExpectedStiffness(e);
                 IMatrix computedRoundedK = computedK.DoToAllEntries(round);
 
-                #region debug
-                //var writer = new ISAAR.MSolve.LinearAlgebra.Output.FullMatrixWriter();
-                //string path = @"C:\Users\Serafeim\Desktop\XFEM2020\Cracks\DebugOutput\K.txt";
-                //writer.WriteToFile(expectedK.Subtract(computedRoundedK), path);
-                #endregion
-
                 Assert.True(expectedK.Equals(computedRoundedK, tol));
             }
         }

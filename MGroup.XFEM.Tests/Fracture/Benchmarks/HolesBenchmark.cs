@@ -98,16 +98,6 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
         public static void TestCrackPropagationPath()
         {
             XModel<IXCrackElement> model = CreateModel();
-            #region debug
-            //string[] outputDir = { @"C:\Users\Serafeim\Desktop\XFEM2020\Cracks\HolesBenchmark\left\",
-            //    @"C:\Users\Serafeim\Desktop\XFEM2020\Cracks\HolesBenchmark\right\"};
-            //var outputMesh = new XFEM.Plotting.Mesh.ContinuousOutputMesh(model.XNodes, model.Elements);
-            //for (int i = 0; i < 2; ++i)
-            //{
-            //    var crackI = (ExteriorLsmCrack)model.Discontinuities[i];
-            //    crackI.Observers.Add(new MGroup.XFEM.Plotting.Writers.CrackLevelSetPlotter(crackI, outputMesh, outputDir[i]));
-            //}
-            #endregion
             RunAnalysis(model);
             var leftCrack = (ExteriorLsmCrack)model.Discontinuities[0];
             var rightCrack = (ExteriorLsmCrack)model.Discontinuities[1];

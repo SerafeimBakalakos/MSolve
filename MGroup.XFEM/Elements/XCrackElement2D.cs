@@ -246,16 +246,6 @@ namespace MGroup.XFEM.Elements
             // Bulk integration
             this.gaussPointsBulk = IntegrationBulk.GenerateIntegrationPoints(this);
             int numPointsVolume = gaussPointsBulk.Count;
-            #region debug
-            //if (ID == 810)
-            //{
-            //    Console.WriteLine();
-            //}
-            //if (gaussPointsBulk.Count != 4)
-            //{
-            //    Debug.WriteLine($"Element {ID}: {gaussPointsBulk.Count} gauss points");
-            //}
-            #endregion
 
             // Calculate and cache standard interpolation at integration points.
             //TODO: for all standard elements of the same type, this should be cached only once
