@@ -117,6 +117,10 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
             foreach (IXCrackElement element in model.Elements)
             {
                 #region debug
+                if (element.ID == 810)
+                {
+                    Console.WriteLine();
+                }
                 //double tol = 1E-5;
                 //double targetX = 4.0, targetY = 9.0;
                 //if (Math.Abs(element.Nodes[0].X -targetX)<tol && Math.Abs(element.Nodes[0].Y - targetY) < tol)

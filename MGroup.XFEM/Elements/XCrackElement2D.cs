@@ -246,6 +246,16 @@ namespace MGroup.XFEM.Elements
             // Bulk integration
             this.gaussPointsBulk = IntegrationBulk.GenerateIntegrationPoints(this);
             int numPointsVolume = gaussPointsBulk.Count;
+            #region debug
+            //if (ID == 810)
+            //{
+            //    Console.WriteLine();
+            //}
+            //if (gaussPointsBulk.Count != 4)
+            //{
+            //    Debug.WriteLine($"Element {ID}: {gaussPointsBulk.Count} gauss points");
+            //}
+            #endregion
 
             // Calculate and cache standard interpolation at integration points.
             //TODO: for all standard elements of the same type, this should be cached only once
@@ -272,13 +282,13 @@ namespace MGroup.XFEM.Elements
             if (numEnrichedDofs == 0) Ktotal = Kss;
             else
             {
-                (Matrix Kee, Matrix Kse) = BuildConductivityMatricesEnriched();
+                (Matrix Kee, Matrix Kse) = BuildStiffnessMatricesEnriched();
                 Ktotal = JoinStiffnesses(Kss, Kee, Kse);
             }
             return Ktotal;
         }
 
-        private (Matrix Kee, Matrix Kse) BuildConductivityMatricesEnriched()
+        private (Matrix Kee, Matrix Kse) BuildStiffnessMatricesEnriched()
         {
             var Kse = Matrix.CreateZero(numStandardDofs, numEnrichedDofs);
             var Kee = Matrix.CreateZero(numEnrichedDofs, numEnrichedDofs);

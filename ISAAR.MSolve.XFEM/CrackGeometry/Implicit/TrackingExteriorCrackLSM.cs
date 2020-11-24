@@ -515,6 +515,13 @@ namespace ISAAR.MSolve.XFEM_OLD.CrackGeometry.Implicit
         {
             foreach (var element in Mesh.Elements)
             {
+                #region debug
+                if (element.ID == 810)
+                {
+                    Console.WriteLine();
+                }
+                #endregion
+
                 //TODO: I tried an alternative approach, ie elements access their enrichments from their nodes. 
                 //      My original thought that this approach (storing enrichments in elements, unless they are standard /
                 //      blending) wouldn't work for blending elements, was incorrect, as elements with 0 enrichments

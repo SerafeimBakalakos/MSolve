@@ -20,15 +20,15 @@ using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Enrichment.SingularityResolution;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Boundaries;
-using MGroup.XFEM.Geometry.Mesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Materials;
 using Xunit;
+
 namespace MGroup.XFEM.Tests.Fracture.Benchmarks
 {
-    public class FilletBenchmark
+    public static class FilletBenchmark
     {
         /// <summary>
         /// Thickness of the whole domain
@@ -38,7 +38,7 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
         /// <summary>
         /// Young's modulus
         /// </summary>
-        private const double E = 2.1e12; // kN/mm^2
+        private const double E = 2.1E12; // kN/mm^2
 
         /// <summary>
         /// Poisson's ratio
@@ -202,7 +202,7 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
 
             ApplyBoundaryConditions(model, rigidBCs);
 
-            /// Crack, enrichments
+            // Crack, enrichments
             var crackMouth = new double[] { webLeft, crackHeight };
             var crackTip = new double[] { webLeft + crackLength, crackHeight };
             var initialCrack = new PolyLine2D(crackMouth, crackTip);

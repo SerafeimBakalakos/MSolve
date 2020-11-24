@@ -28,20 +28,22 @@ namespace MGroup.XFEM.Entities
             while (internalNodesFound)
             {
                 internalNodesFound = false;
+                var nextCandidates = new HashSet<XNode>();
                 foreach (XNode node in candidates)
                 {
+                    processedNodes.Add(node);
                     if (circle.SignedDistanceOf(node.Coordinates) <= 0)
                     {
                         internalNodesFound = true;
                         internalNodes.Add(node);
-                        processedNodes.Add(node);
 
                         foreach (XNode other in FindNeighbors(node))
                         {
-                            if (!processedNodes.Contains(node)) candidates.Add(other);
+                            if (!processedNodes.Contains(other) && !candidates.Contains(other)) nextCandidates.Add(other);
                         }
                     }
                 }
+                candidates = nextCandidates;
             }
             return internalNodes;
         }

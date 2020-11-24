@@ -8,6 +8,7 @@ using ISAAR.MSolve.Discretization.Integration;
 using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
+using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.FEM.Interpolation.GaussPointExtrapolation;
 using ISAAR.MSolve.Geometry.Coordinates;
@@ -229,6 +230,17 @@ namespace ISAAR.MSolve.XFEM_OLD.Elements
             var stiffnessStandardEnriched = Matrix.CreateZero(numStandardDofs, numEnrichedDofs);
             var stiffnessEnrichedEnriched = Matrix.CreateZero(numEnrichedDofs, numEnrichedDofs);
 
+            #region debug
+            if (ID == 810)
+            {
+                Console.WriteLine();
+            }
+            var points = IntegrationStrategy.GenerateIntegrationPoints(this);
+            if (points.Count != 4)
+            {
+                Debug.WriteLine($"Element {ID}: {points.Count} gauss points");
+            }
+            #endregion
             foreach (GaussPoint gaussPoint in IntegrationStrategy.GenerateIntegrationPoints(this))
             {
                 // Calculate the necessary quantities for the integration
@@ -544,6 +556,12 @@ namespace ISAAR.MSolve.XFEM_OLD.Elements
 
         public IMatrix JoinStiffnessesNodeMajor()
         {
+            #region debug
+            if (ID == 810)
+            {
+                Console.WriteLine();
+            }
+            #endregion
             //TODO: Perhaps it is more efficient to do this by just appending Kse and Kee to Kss.
             if (IsStandardElement) return BuildStandardStiffnessMatrix();
             else
