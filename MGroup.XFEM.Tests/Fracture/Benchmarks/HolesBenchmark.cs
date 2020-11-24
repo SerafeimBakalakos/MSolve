@@ -243,8 +243,7 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
 
             // Elements
             var material = new HomogeneousFractureMaterialField2D(E, v, t, planeStress);
-            var cutIntegration = new IntegrationWithConformingSubtriangles2D(GaussLegendre2D.GetQuadratureWithOrder(2, 2),
-                TriangleQuadratureSymmetricGaussian.Order2Points3);
+            var cutIntegration = new IntegrationWithConformingSubtriangles2D(TriangleQuadratureSymmetricGaussian.Order2Points3);
             var tipIntegration = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
             var bulkIntegration = new CrackElementIntegrationStrategy(
                 cutIntegration, tipIntegration, tipIntegration);

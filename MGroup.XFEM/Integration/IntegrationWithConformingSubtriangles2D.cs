@@ -13,19 +13,16 @@ namespace MGroup.XFEM.Integration
     {
         private const int dim = 2;
         private readonly TriangleQuadratureSymmetricGaussian quadratureInSubcells;
-        private readonly IQuadrature standardQuadrature; //TODO: This should be accessed from the element
 
-        public IntegrationWithConformingSubtriangles2D(IQuadrature standardQuadrature, 
-            TriangleQuadratureSymmetricGaussian quadratureInSubcells)
+        public IntegrationWithConformingSubtriangles2D(TriangleQuadratureSymmetricGaussian quadratureInSubcells)
         {
-            this.standardQuadrature = standardQuadrature;
             this.quadratureInSubcells = quadratureInSubcells;
         }
 
         public IReadOnlyList<GaussPoint> GenerateIntegrationPoints(IXFiniteElement element)
         {
             // Standard elements
-            if (element.ConformingSubcells == null) return standardQuadrature.IntegrationPoints;
+            if (element.ConformingSubcells == null) return element.IntegrationStandard.IntegrationPoints;
 
             // Create integration points for all subtriangles
             var integrationPoints = new List<GaussPoint>();

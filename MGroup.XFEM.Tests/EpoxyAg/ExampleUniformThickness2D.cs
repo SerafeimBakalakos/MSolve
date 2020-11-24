@@ -99,8 +99,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             PrintVolumes(preprocessor);
 
             // Plot bulk integration points
-            var integrationBulk = new IntegrationWithConformingSubtriangles2D(GaussLegendre2D.GetQuadratureWithOrder(2, 2),
-                TriangleQuadratureSymmetricGaussian.Order2Points3);
+            var integrationBulk = new IntegrationWithConformingSubtriangles2D(TriangleQuadratureSymmetricGaussian.Order2Points3);
             foreach (IXFiniteElement element in model.Elements)
             {
                 if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;

@@ -12,19 +12,16 @@ namespace MGroup.XFEM.Integration
     {
         private const int dim = 3;
         private readonly TetrahedronQuadrature quadratureInSubcells;
-        private readonly IQuadrature standardQuadrature;
 
-        public IntegrationWithConformingSubtetrahedra3D(IQuadrature standardQuadrature, 
-            TetrahedronQuadrature quadratureInSubcells)
+        public IntegrationWithConformingSubtetrahedra3D(TetrahedronQuadrature quadratureInSubcells)
         {
-            this.standardQuadrature = standardQuadrature;
             this.quadratureInSubcells = quadratureInSubcells;
         }
 
         public IReadOnlyList<GaussPoint> GenerateIntegrationPoints(IXFiniteElement element)
         {
             // Standard elements
-            if (element.ConformingSubcells == null) return standardQuadrature.IntegrationPoints;
+            if (element.ConformingSubcells == null) return element.IntegrationStandard.IntegrationPoints;
 
             // Create integration points for all subtriangles
             var integrationPoints = new List<GaussPoint>();

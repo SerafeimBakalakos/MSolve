@@ -89,8 +89,7 @@ namespace MGroup.XFEM.Tests.Plotting
             }
 
             // Plot bulk integration points
-            var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2),
-                TetrahedronQuadrature.Order2Points4);
+            var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(TetrahedronQuadrature.Order2Points4);
             foreach (IXFiniteElement element in model.Elements)
             {
                 if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
@@ -139,8 +138,7 @@ namespace MGroup.XFEM.Tests.Plotting
             }
 
             // Plot bulk integration points
-            var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2),
-                TetrahedronQuadrature.Order2Points4);
+            var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(TetrahedronQuadrature.Order2Points4);
             foreach (IXFiniteElement element in model.Elements)
             {
                 if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
@@ -215,8 +213,7 @@ namespace MGroup.XFEM.Tests.Plotting
             Console.WriteLine(Utilities.Printing.PrintVolumes(volumes));
 
             // Plot bulk integration points
-            var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(GaussLegendre3D.GetQuadratureWithOrder(2, 2, 2),
-                TetrahedronQuadrature.Order2Points4);
+            var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(TetrahedronQuadrature.Order2Points4);
             foreach (IXFiniteElement element in model.Elements)
             {
                 if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;

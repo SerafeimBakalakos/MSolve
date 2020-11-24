@@ -65,7 +65,7 @@ namespace MGroup.XFEM.Tests.Utilities
             // Integration
             var stdQuadrature = GaussLegendre2D.GetQuadratureWithOrder(bulkIntegrationOrder, bulkIntegrationOrder);
             var subcellQuadrature = TriangleQuadratureSymmetricGaussian.Order2Points3;
-            var integrationBulk = new IntegrationWithConformingSubtriangles2D(stdQuadrature, subcellQuadrature);
+            var integrationBulk = new IntegrationWithConformingSubtriangles2D(subcellQuadrature);
 
             // Elements
             var elemFactory = new XThermalElement2DFactory(materialField, thickness, integrationBulk, boundaryIntegrationOrder);
@@ -113,9 +113,8 @@ namespace MGroup.XFEM.Tests.Utilities
             foreach (XNode node in nodes) model.XNodes.Add(node);
 
             // Integration
-            var stdQuadrature = GaussLegendre3D.GetQuadratureWithOrder(bulkIntegrationOrder, bulkIntegrationOrder, bulkIntegrationOrder);
             var subcellQuadrature = TetrahedronQuadrature.Order2Points4;
-            var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(stdQuadrature, subcellQuadrature);
+            var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(subcellQuadrature);
 
             // Elements
             var elemFactory = new XThermalElement3DFactory(materialField, integrationBulk, boundaryIntegrationOrder);
