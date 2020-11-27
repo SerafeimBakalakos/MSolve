@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Cracks.Geometry;
@@ -118,14 +119,15 @@ namespace MGroup.XFEM.Enrichment.Functions
                 return Math.Sqrt(polarCoords[0]) * Math.Sin(polarCoords[1] / 2.0);
             }
 
-            public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
+            public double EvaluateJumpAcross(IXDiscontinuity discontinuity, XPoint point)
             {
                 throw new NotImplementedException();
-            }
-
-            public bool IsAppliedDueTo(PhaseBoundary phaseBoundary)
-            {
-                throw new NotImplementedException();
+                double[] polarCoords = commonData.CalcPolarCoordinates(point);
+                Debug.Assert(polarCoords[1] == Math.PI/2); //TODO: this needs some tolerance. Also why would it not be -pi/2?
+                double sqrtR = Math.Sqrt(polarCoords[0]);
+                double jumpAbsolute = sqrtR * 2; // sqrt(r) * (sin(pi/2) - sin(-pi/2))
+                double sign = +1; //TODO: The positive side of sin(theta/2) coincides with the positive side of crack, only if there is a single tip. How can I check this?
+                return sign * jumpAbsolute;
             }
         }
 
@@ -169,15 +171,7 @@ namespace MGroup.XFEM.Enrichment.Functions
                 return Math.Sqrt(polarCoords[0]) * Math.Cos(polarCoords[1] / 2.0);
             }
 
-            public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool IsAppliedDueTo(PhaseBoundary phaseBoundary)
-            {
-                throw new NotImplementedException();
-            }
+            public double EvaluateJumpAcross(IXDiscontinuity discontinuity, XPoint point) => 0;
         }
 
         public class Func2 : ICrackTipEnrichment
@@ -222,15 +216,7 @@ namespace MGroup.XFEM.Enrichment.Functions
                 return Math.Sqrt(polarCoords[0]) * Math.Sin(polarCoords[1] / 2.0) * Math.Sin(polarCoords[1]);
             }
 
-            public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool IsAppliedDueTo(PhaseBoundary phaseBoundary)
-            {
-                throw new NotImplementedException();
-            }
+            public double EvaluateJumpAcross(IXDiscontinuity discontinuity, XPoint point) => 0;
         }
 
         public class Func3 : ICrackTipEnrichment
@@ -275,15 +261,7 @@ namespace MGroup.XFEM.Enrichment.Functions
                 return Math.Sqrt(polarCoords[0]) * Math.Cos(polarCoords[1] / 2.0) * Math.Sin(polarCoords[1]);
             }
 
-            public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool IsAppliedDueTo(PhaseBoundary phaseBoundary)
-            {
-                throw new NotImplementedException();
-            }
+            public double EvaluateJumpAcross(IXDiscontinuity discontinuity, XPoint point) => 0;
         }
 
         private class PointPolarDataCache

@@ -28,6 +28,7 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// </summary>
         public Matrix ShapeFunctionDerivatives { get; set; }
 
+        //MODIFICATION NEEDED: Delete this
         public IPhase Phase { get; set; }
 
         public double[] MapCoordinates(double[] shapeFunctions, IReadOnlyList<XNode> nodes)

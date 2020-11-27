@@ -500,11 +500,16 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         private Vector CalculateEnrichedShapeFunctionVector(double[] gaussPoint, PhaseBoundary boundary)
         {
-            //TODO: Optimize this: The mapping should be done once per enrichment ane reused for all Gauss points.
+            //TODO: Optimize this: The mapping should be done once per enrichment and reused for all Gauss points of this 
+            //      boundary. That would only work if the jump is independent of the gauss point though, which is not always true.
             //      See an attempt at MapEnrichedDofIndicesToNodeIndices().
+            
+            double[] N = Interpolation.EvaluateFunctionsAt(gaussPoint);
+            var point = new XPoint(2);
+            point.Coordinates[CoordinateSystem.ElementNatural] = gaussPoint;
+            point.ShapeFunctions = N;
 
             Vector totalShapeFunctions = Vector.CreateZero(numEnrichedDofs);
-            double[] N = Interpolation.EvaluateFunctionsAt(gaussPoint);
             int idx = 0;
             for (int n = 0; n < Nodes.Count; ++n)
             {
@@ -514,7 +519,7 @@ namespace MGroup.XFEM.Elements
                 //      DofTable.
                 foreach (IEnrichmentFunction enrichment in node.EnrichmentFuncs.Keys)
                 {
-                    double phaseJump = enrichment.GetJumpCoefficientBetween(boundary);
+                    double phaseJump = enrichment.EvaluateJumpAcross(boundary, point);
                     totalShapeFunctions[idx] = phaseJump * N[n];
                     ++idx; // always move to the next index in the total shape function array
                 }
@@ -584,25 +589,7 @@ namespace MGroup.XFEM.Elements
             return (stdDofIndices, enrDofIndices);
         }
 
-        private int[] MapEnrichedDofIndicesToNodeIndices(PhaseBoundary boundary)
-        {
-            var enrichedDofIndicesToNodeIndices = new int[numEnrichedDofs];
-            int idx = 0;
-            for (int n = 0; n < Nodes.Count; ++n)
-            {
-                XNode node = Nodes[n];
-                //TODO: VERY FRAGILE CODE. This order of enrichments was used to determine the order of enriched dofs in 
-                //      another method. It works as of the time of writing, but this dependency must be removed. Perhaps use a 
-                //      DofTable.
-                foreach (IEnrichmentFunction enrichment in node.EnrichmentFuncs.Keys)
-                {
-                    if (enrichment.IsAppliedDueTo(boundary)) enrichedDofIndicesToNodeIndices[idx] = n;
-                    else enrichedDofIndicesToNodeIndices[idx] = -1;
-                    ++idx; // always move to the next index in the total shape function array
-                }
-            }
-            return enrichedDofIndicesToNodeIndices;
-        }
+        
 
     }
 }

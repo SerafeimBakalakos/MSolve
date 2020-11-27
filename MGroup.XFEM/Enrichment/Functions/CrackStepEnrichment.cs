@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
@@ -9,11 +10,13 @@ namespace MGroup.XFEM.Enrichment.Functions
 {
     public class CrackStepEnrichment : IEnrichmentFunction
     {
+        private readonly ICrack crack;
         private readonly IXGeometryDescription crackGeometry;
 
-        public CrackStepEnrichment(IXGeometryDescription crackGeometry)
+        public CrackStepEnrichment(ICrack crack)
         {
-            this.crackGeometry = crackGeometry;
+            this.crack = crack;
+            this.crackGeometry = crack.CrackGeometry;
         }
 
         public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
@@ -39,14 +42,10 @@ namespace MGroup.XFEM.Enrichment.Functions
             else return -1;
         }
 
-        public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
+        public double EvaluateJumpAcross(IXDiscontinuity discontinuity, XPoint point)
         {
-            throw new NotImplementedException();
-        }
-
-        public bool IsAppliedDueTo(PhaseBoundary phaseBoundary)
-        {
-            throw new NotImplementedException();
+            if (discontinuity == crack) return 2.0; // +1 - (-1)
+            else return 0.0;
         }
     }
 }

@@ -56,22 +56,19 @@ namespace MGroup.XFEM.Enrichment.Functions
             }
         }
 
-        public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
+        public double EvaluateJumpAcross(IXDiscontinuity discontinuity, XPoint point)
         {
-            (IPhase boundaryMinPhase, IPhase boundaryMaxPhase) =
-                FindMinMaxPhases(phaseBoundary.PositivePhase, phaseBoundary.NegativePhase);
-            if ((boundaryMinPhase == this.minPhase) && (boundaryMaxPhase == this.maxPhase))
+            if (discontinuity is PhaseBoundary phaseBoundary) //TODO: Find a better way than casting
             {
-                return EvaluateAt(phaseBoundary.PositivePhase) - EvaluateAt(phaseBoundary.NegativePhase);
+                (IPhase boundaryMinPhase, IPhase boundaryMaxPhase) =
+                FindMinMaxPhases(phaseBoundary.PositivePhase, phaseBoundary.NegativePhase);
+                if ((boundaryMinPhase == this.minPhase) && (boundaryMaxPhase == this.maxPhase))
+                {
+                    return EvaluateAt(phaseBoundary.PositivePhase) - EvaluateAt(phaseBoundary.NegativePhase);
+                }
+                else return 0.0;
             }
             else return 0.0;
-        }
-
-        public bool IsAppliedDueTo(PhaseBoundary phaseBoundary)
-        {
-            (IPhase boundaryMinPhase, IPhase boundaryMaxPhase) =
-                FindMinMaxPhases(phaseBoundary.PositivePhase, phaseBoundary.NegativePhase);
-            return (boundaryMinPhase == this.minPhase) && (boundaryMaxPhase == this.maxPhase);
         }
 
         //WARNING: This only works for points that are in one of the 2 phases.

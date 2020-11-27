@@ -29,24 +29,12 @@ namespace MGroup.XFEM.Entities
 
         public int ID { get; }
 
-        //public int NumEnrichedDofs => Enrichments.Count; //TODO: Delete this. It differs in 2D, 3D, thermal, ...
-
-        //public IReadOnlyList<EnrichedDof> EnrichedDofs
-        //{
-        //    get
-        //    {
-        //        var dofs = new List<EnrichedDof>();
-        //        foreach (IEnrichment enrichment in Enrichments.Keys) dofs.Add(enrichment.Dof);
-        //        return dofs;
-        //    }
-        //}
-
         public bool IsEnriched => EnrichmentFuncs.Count > 0;
 
 
         public new Dictionary<int, XSubdomain> SubdomainsDictionary { get; } = new Dictionary<int, XSubdomain>();
 
-        public IPhase Phase { get; set; }
+        public IPhase Phase { get; set; } //MODIFICATION NEEDED: Delete this
 
         public double X => Coordinates[0];
 

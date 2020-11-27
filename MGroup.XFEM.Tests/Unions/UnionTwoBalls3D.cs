@@ -142,7 +142,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 var phase = new LsmPhase(p + 1, geometricModel, 0);
                 geometricModel.Phases.Add(phase);
 
-                var boundary = new PhaseBoundary(lsm, defaultPhase, phase);
+                var boundary = new PhaseBoundary(phase.ID, lsm, defaultPhase, phase);
                 defaultPhase.ExternalBoundaries.Add(boundary);
                 defaultPhase.Neighbors.Add(phase);
                 phase.ExternalBoundaries.Add(boundary);

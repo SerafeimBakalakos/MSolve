@@ -96,14 +96,13 @@ namespace MGroup.XFEM.Enrichment.Functions
             throw new ArgumentException();
         }
 
-        public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary)
+        public double EvaluateJumpAcross(IXDiscontinuity discontinuity, XPoint point)
         {
-            return FindPhaseCoeff(phaseBoundary.PositivePhase) - FindPhaseCoeff(phaseBoundary.NegativePhase);
-        }
-
-        public bool IsAppliedDueTo(PhaseBoundary phaseBoundary)
-        {
-            throw new NotImplementedException();
+            if (discontinuity is PhaseBoundary phaseBoundary) //TODO: Find a better way than casting
+            {
+                return FindPhaseCoeff(phaseBoundary.PositivePhase) - FindPhaseCoeff(phaseBoundary.NegativePhase);
+            }
+            else return 0.0;
         }
 
         private int FindPhaseCoeff(IPhase phase)

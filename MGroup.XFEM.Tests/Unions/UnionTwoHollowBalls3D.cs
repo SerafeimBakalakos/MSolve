@@ -147,7 +147,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 var externalPhase = new HollowLsmPhase(2 * b + 1, geometricModel, 0);
                 geometricModel.Phases.Add(externalPhase);
 
-                var externalBoundary = new PhaseBoundary(externalLsm, defaultPhase, externalPhase);
+                var externalBoundary = new PhaseBoundary(externalPhase.ID, externalLsm, defaultPhase, externalPhase);
                 defaultPhase.ExternalBoundaries.Add(externalBoundary);
                 defaultPhase.Neighbors.Add(externalPhase);
                 externalPhase.ExternalBoundaries.Add(externalBoundary);
@@ -157,7 +157,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 var internalPhase = new LsmPhase(2 * b + 2, geometricModel, -1);
                 geometricModel.Phases.Add(internalPhase);
 
-                var internalBoundary = new PhaseBoundary(internalLsm, externalPhase, internalPhase);
+                var internalBoundary = new PhaseBoundary(internalPhase.ID, internalLsm, externalPhase, internalPhase);
                 externalPhase.InternalBoundaries.Add(internalBoundary);
                 externalPhase.InternalPhases.Add(internalPhase);
                 externalPhase.Neighbors.Add(internalPhase);

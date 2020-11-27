@@ -448,7 +448,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 IList<EnrichmentItem> enrichments = crack.DefineEnrichments(numCurrentEnrichments);
 
                 // Different crack body enrichment
-                var stepEnrichmentFunc = new OppositeStepEnrichment(crack.LsmGeometry);
+                var stepEnrichmentFunc = new OppositeStepEnrichment(this);
                 IDofType[] stepEnrichedDofs =
                 {
                 new EnrichedDof(stepEnrichmentFunc, StructuralDof.TranslationX),
@@ -503,9 +503,9 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
         {
             private CrackStepEnrichment enrichment;
 
-            public OppositeStepEnrichment(IXGeometryDescription geometry)
+            public OppositeStepEnrichment(ICrack crack)
             {
-                this.enrichment = new CrackStepEnrichment(geometry);
+                this.enrichment = new CrackStepEnrichment(crack);
             }
 
             public IReadOnlyList<IPhase> Phases => enrichment.Phases;
@@ -520,10 +520,8 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
             public double EvaluateAt(XPoint point) => -enrichment.EvaluateAt(point);
 
-            public double GetJumpCoefficientBetween(PhaseBoundary phaseBoundary) 
-                => enrichment.GetJumpCoefficientBetween(phaseBoundary);
-
-            public bool IsAppliedDueTo(PhaseBoundary phaseBoundary) => enrichment.IsAppliedDueTo(phaseBoundary);
+            public double EvaluateJumpAcross(IXDiscontinuity discontinuity, XPoint point)
+                => enrichment.EvaluateJumpAcross(discontinuity, point);
         }
     }
 }

@@ -70,7 +70,7 @@ namespace MGroup.XFEM.Cracks.Geometry.LSM
             int enrichmentID = numCurrentEnrichments;
 
             // Crack body enrichment
-            var stepEnrichmentFunc = new CrackStepEnrichment(lsmGeometry);
+            var stepEnrichmentFunc = new CrackStepEnrichment(this);
             IDofType[] stepEnrichedDofs =
             {
                 new EnrichedDof(stepEnrichmentFunc, StructuralDof.TranslationX),
