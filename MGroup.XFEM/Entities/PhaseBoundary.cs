@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 
@@ -18,16 +19,17 @@ namespace MGroup.XFEM.Entities
             this.NegativePhase = negativePhase;
         }
 
-        public IEnrichmentFunction StepEnrichment { get; set; }
+        public int ID { get; }
+
+
+        public PhaseStepEnrichment StepEnrichment { get; set; }
 
         public IPhase NegativePhase { get; set; }
         public IPhase PositivePhase { get; set; }
 
         public IClosedGeometry Geometry { get; set; }
 
-        public int ID { get; }
-
-        public IList<EnrichmentItem> DefineEnrichments(int numCurrentEnrichments)
+        public IList<EnrichmentItem> DefineEnrichments(int numCurrentEnrichments) //MODIFICATION NEEDED. Probably this should be moved to INodeEnricher
         {
             throw new NotImplementedException();
         }
@@ -37,7 +39,7 @@ namespace MGroup.XFEM.Entities
             //TODO: In problems where the phase boundaries move, a new class should be used (and this renamed to ConstantPhaseBoundary)
         }
 
-        public void InteractWithMesh()
+        public void InteractWithMesh() //MODIFICATION NEEDED. 
         {
             throw new NotImplementedException();
         }

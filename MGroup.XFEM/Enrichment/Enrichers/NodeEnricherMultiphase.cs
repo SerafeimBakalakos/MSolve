@@ -214,7 +214,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
                     foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
                     {
                         // Find the nodes to potentially be enriched by this step enrichment 
-                        IEnrichmentFunction stepEnrichment = boundary.StepEnrichment;
+                        PhaseStepEnrichment stepEnrichment = boundary.StepEnrichment;
                         bool exists = nodesPerStepEnrichment.TryGetValue(stepEnrichment, out HashSet<XNode> nodesToEnrich);
                         if (!exists)
                         {
@@ -249,8 +249,9 @@ namespace MGroup.XFEM.Enrichment.Enrichers
             }
         }
 
-        private bool HasCorrespondingJunction(XNode node, IEnrichmentFunction stepEnrichment)
+        private bool HasCorrespondingJunction(XNode node, PhaseStepEnrichment stepEnrichment) 
         {
+            //TODO: Alternatively I could compare phase boundaries (discontinuities in general) instead of phases.
             foreach (IEnrichmentFunction enrichment in node.EnrichmentFuncs.Keys)
             {
                 if (enrichment is JunctionEnrichment junctionEnrichment)

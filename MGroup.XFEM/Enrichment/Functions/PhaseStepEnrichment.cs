@@ -26,8 +26,6 @@ namespace MGroup.XFEM.Enrichment.Functions
 
         public int ID { get; }
 
-        public double PhaseJumpCoefficient => maxPhase.ID - minPhase.ID;
-
         public IReadOnlyList<IPhase> Phases => new IPhase[] { maxPhase, minPhase };
 
         public double EvaluateAt(XNode node)

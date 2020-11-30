@@ -19,8 +19,6 @@ namespace MGroup.XFEM.Enrichment.Functions
             this.crackGeometry = crack.CrackGeometry;
         }
 
-        public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
-
         public EvaluatedFunction EvaluateAllAt(XPoint point)
         {
             double distance = crackGeometry.SignedDistanceOf(point);

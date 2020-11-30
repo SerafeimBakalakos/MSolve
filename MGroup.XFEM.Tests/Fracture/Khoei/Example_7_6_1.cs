@@ -508,8 +508,6 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 this.enrichment = new CrackStepEnrichment(crack);
             }
 
-            public IReadOnlyList<IPhase> Phases => enrichment.Phases;
-
             public EvaluatedFunction EvaluateAllAt(XPoint point)
             {
                 var oppositeResult = enrichment.EvaluateAllAt(point);

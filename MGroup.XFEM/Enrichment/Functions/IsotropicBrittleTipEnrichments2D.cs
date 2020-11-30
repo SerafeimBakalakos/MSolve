@@ -31,7 +31,7 @@ namespace MGroup.XFEM.Enrichment.Functions
 
         public ICrackTipEnrichment[] Functions { get; }
 
-        //TODO: Perhaps these methods should be in a seperate class, not the one that contains the function classes.
+        //TODO: Perhaps these methods should be in a separate class, not the one that contains the function classes.
         private (double[] coords, TipJacobians jacobians) CalcAll(XPoint point)
         {
             if ((pointCache == null) || (pointCache.originalPoint != point))
@@ -88,8 +88,6 @@ namespace MGroup.XFEM.Enrichment.Functions
                 this.commonData = commonData;
             }
 
-            public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
-
             public EvaluatedFunction EvaluateAllAt(XPoint point)
             {
                 (double[] polarCoords, TipJacobians jacobians) = commonData.CalcAll(point);
@@ -140,8 +138,6 @@ namespace MGroup.XFEM.Enrichment.Functions
                 this.commonData = commonData;
             }
 
-            public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
-
             public EvaluatedFunction EvaluateAllAt(XPoint point)
             {
                 (double[] polarCoords, TipJacobians jacobians) = commonData.CalcAll(point);
@@ -182,8 +178,6 @@ namespace MGroup.XFEM.Enrichment.Functions
             {
                 this.commonData = commonData;
             }
-
-            public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
 
             public EvaluatedFunction EvaluateAllAt(XPoint point)
             {
@@ -227,8 +221,6 @@ namespace MGroup.XFEM.Enrichment.Functions
             {
                 this.commonData = commonData;
             }
-
-            public IReadOnlyList<IPhase> Phases => throw new NotImplementedException();
 
             public EvaluatedFunction EvaluateAllAt(XPoint point)
             {
