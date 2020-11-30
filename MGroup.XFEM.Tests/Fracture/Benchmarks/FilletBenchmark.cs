@@ -89,7 +89,7 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
         {
             XModel<IXCrackElement> model = CreateModel(rigidBCs);
             RunAnalysis(model);
-            var crack = (ExteriorLsmCrack)model.Discontinuities[0];
+            var crack = (ExteriorLsmCrack)model.GeometryModel.GetDiscontinuity(0);
 
             // Expected propagation path
             var expectedPath = new List<double[]>();
@@ -203,6 +203,10 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
             ApplyBoundaryConditions(model, rigidBCs);
 
             // Crack, enrichments
+            var geometryModel = new CrackGeometryModel(model);
+            model.GeometryModel = geometryModel;
+            geometryModel.Enricher = new NodeEnricherIndependentCracks(
+                geometryModel, new RelativeAreaSingularityResolver(heavisideTol), tipEnrichmentArea);
             var crackMouth = new double[] { webLeft, crackHeight };
             var crackTip = new double[] { webLeft + crackLength, crackHeight };
             var initialCrack = new PolyLine2D(crackMouth, crackTip);
@@ -215,10 +219,7 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
             var propagator = new JintegralPropagator2D(jIntegralRadiusRatio, jIntegrationRule, material,
                 new MaximumCircumferentialTensileStressCriterion(), new ConstantIncrement2D(growthLength));
             var crack = new ExteriorLsmCrack(0, initialCrack, model, propagator);
-            var enricher = new NodeEnricherIndependentCracks(
-                new ICrack[] { crack }, new RelativeAreaSingularityResolver(heavisideTol), tipEnrichmentArea);
-            model.Discontinuities.Add(crack);
-            model.NodeEnrichers.Add(enricher);
+            geometryModel.Cracks[crack.ID] = crack;
 
             return model;
         }

@@ -99,7 +99,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             int[] numElements = { 135, 45 };
             XModel<IXCrackElement> model = CreateModel(numElements);
             model.Initialize();
-            var crack = (Crack)model.Discontinuities[0];
+            var crack = (Crack)model.GeometryModel.GetDiscontinuity(0);
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
 
             // Find displacements at specified dofs
@@ -260,7 +260,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             int[] numElements = { 3 * numElementsY, numElementsY };
             XModel<IXCrackElement> model = CreateModel(numElements);
             model.Initialize();
-            var crack = (Crack)model.Discontinuities[0];
+            var crack = (Crack)model.GeometryModel.GetDiscontinuity(0);
             (IVectorView globalU, IMatrixView globalK) = RunAnalysis(model);
 
             // Calculate J-integral and SIFs
@@ -351,10 +351,11 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             ApplyBoundaryConditions(model);
 
             // Crack, enrichments
+            var geometryModel = new CrackGeometryModel(model);
+            model.GeometryModel = geometryModel;
+            geometryModel.Enricher = new NodeEnricherIndependentCracks(geometryModel, new NullSingularityResolver());
             var crack = new Crack(model);
-            var enricher = new NodeEnricherIndependentCracks(new ICrack[] { crack }, new NullSingularityResolver());
-            model.Discontinuities.Add(crack);
-            model.NodeEnrichers.Add(enricher);
+            geometryModel.Cracks[crack.ID] = crack;
 
             return model;
         }
@@ -378,10 +379,11 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             ApplyBoundaryConditions(model);
 
             // Crack, enrichments
+            var geometryModel = new CrackGeometryModel(model);
+            model.GeometryModel = geometryModel;
+            geometryModel.Enricher = new NodeEnricherIndependentCracks(geometryModel, new NullSingularityResolver());
             var crack = new Crack(model);
-            var enricher = new NodeEnricherIndependentCracks(new ICrack[] { crack }, new NullSingularityResolver());
-            model.Discontinuities.Add(crack);
-            model.NodeEnrichers.Add(enricher);
+            geometryModel.Cracks[crack.ID] = crack;
 
             return model;
         }

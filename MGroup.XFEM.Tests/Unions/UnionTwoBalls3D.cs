@@ -57,7 +57,7 @@ namespace MGroup.XFEM.Tests.Plotting
         {
             // Create model and LSM
             XModel<IXMultiphaseElement> model = CreateModel();
-            PhaseGeometryModel geometricModel = CreatePhases(model);
+            PhaseGeometryModel_OLD geometricModel = CreatePhases(model);
 
             // Plot original mesh and level sets
             Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
@@ -127,13 +127,13 @@ namespace MGroup.XFEM.Tests.Plotting
             //enrichmentPlotter.PlotJunctionEnrichedNodes(pathJunctionEnrichedNodes);
         }
 
-        private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model)
+        private static PhaseGeometryModel_OLD CreatePhases(XModel<IXMultiphaseElement> model)
         {
             var balls = new Sphere[2];
             balls[0] = new Sphere(-0.25, 0, 0, 0.5);
             balls[1] = new Sphere(+0.25, 0, 0, 0.4);
 
-            var geometricModel = new PhaseGeometryModel(3, model);
+            var geometricModel = new PhaseGeometryModel_OLD(3, model);
             var defaultPhase = new DefaultPhase(defaultPhaseID);
             geometricModel.Phases.Add(defaultPhase);
             for (int p = 0; p < 2; ++p)

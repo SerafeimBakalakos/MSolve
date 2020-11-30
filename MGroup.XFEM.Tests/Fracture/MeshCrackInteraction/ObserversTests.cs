@@ -29,7 +29,7 @@ namespace MGroup.XFEM.Tests.Fracture.Observers
         public static void TestCrackElementInteraction()
         {
             XModel<IXCrackElement> model = CreateModel();
-            var crack = (ExteriorLsmCrack)model.Discontinuities[0];
+            var crack = (ExteriorLsmCrack)model.GeometryModel.GetDiscontinuity(0);
 
             // Expected results
             var expectedTipElements = new List<int[]>();
@@ -70,7 +70,7 @@ namespace MGroup.XFEM.Tests.Fracture.Observers
         public static void TestEnrichedNodes()
         {
             XModel<IXCrackElement> model = CreateModel();
-            var crack = (ExteriorLsmCrack)model.Discontinuities[0];
+            var crack = (ExteriorLsmCrack)model.GeometryModel.GetDiscontinuity(0);
 
             // Set up observers.
             var previousEnrichments = new PreviousEnrichmentsObserver();
@@ -163,7 +163,7 @@ namespace MGroup.XFEM.Tests.Fracture.Observers
         private static void RunPropagationAndPlot() 
         {
             XModel<IXCrackElement> model = CreateModel();
-            var crack = (ExteriorLsmCrack)model.Discontinuities[0];
+            var crack = (ExteriorLsmCrack)model.GeometryModel.GetDiscontinuity(0);
 
             // Plot the FE mesh
             string outputDir = @"C:\Users\Serafeim\Desktop\XFEM2020\Cracks\InteractionTests\";
@@ -217,6 +217,7 @@ namespace MGroup.XFEM.Tests.Fracture.Observers
         {
             var model = new XModel<IXCrackElement>(2);
             model.Subdomains[subdomainID] = new XSubdomain(subdomainID);
+            model.FindConformingSubcells = true;
 
             // Materials, integration
             double E = 2E6, v = 0.3, thickness = 1.0;
@@ -239,13 +240,13 @@ namespace MGroup.XFEM.Tests.Fracture.Observers
             IPropagator propagator = new MockPropagator(angles, lengths);
 
             // Crack, enrichments
+            var geometryModel = new CrackGeometryModel(model);
+            model.GeometryModel = geometryModel;
+            geometryModel.Enricher = new NodeEnricherIndependentCracks(geometryModel, new RelativeAreaSingularityResolver(0.006));
             double yCrack = 9.99; // avoid conforming case
             var initialFlaw = new PolyLine2D(new double[] { 0, yCrack }, new double[] { 4.93, yCrack } );
             var crack = new ExteriorLsmCrack(0, initialFlaw, model, propagator);
-            var enricher = new NodeEnricherIndependentCracks(new ICrack[] { crack }, new RelativeAreaSingularityResolver(0.006));
-            model.Discontinuities.Add(crack);
-            model.NodeEnrichers.Add(enricher);
-            model.FindConformingSubcells = true;
+            geometryModel.Cracks[crack.ID] = crack;
 
             return model;
         }

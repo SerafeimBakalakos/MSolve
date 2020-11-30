@@ -7,7 +7,7 @@ namespace MGroup.XFEM.Entities
 {
     public class HollowLsmPhase : LsmPhase
     {
-        private readonly PhaseGeometryModel geometricModel;
+        private readonly PhaseGeometryModel_OLD geometricModel;
 
         /// <summary>
         /// 
@@ -15,7 +15,7 @@ namespace MGroup.XFEM.Entities
         /// <param name="id"></param>
         /// <param name="geometricModel"></param>
         /// <param name="mergeLevel">Negative values will cause this phase to be unmergable</param>
-        public HollowLsmPhase(int id, PhaseGeometryModel geometricModel, int mergeLevel) : base(id, geometricModel, mergeLevel)
+        public HollowLsmPhase(int id, PhaseGeometryModel_OLD geometricModel, int mergeLevel) : base(id, geometricModel, mergeLevel)
         {
         }
 

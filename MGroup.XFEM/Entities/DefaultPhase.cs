@@ -7,6 +7,8 @@ using MGroup.XFEM.Geometry.Tolerances;
 
 //TODO: Using a default phase messes up pretty much everything (avoiding it in collections, casts). Its geometry is too 
 //      different to treat it as other phases. It is imply it, than using an explit phase.
+//MODIFICATION NEEDED: Perhaps this should not exist. If a node or element is not associated with any other phase, then it is
+//      implicitly associated with the default one. It also cannot interact with other phases, by definition.
 namespace MGroup.XFEM.Entities
 {
     public class DefaultPhase : IPhase

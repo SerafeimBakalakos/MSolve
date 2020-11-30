@@ -3,38 +3,42 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
-using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Geometry.Tolerances;
 
-//MODIFICATION NEEDED: Perhaps plotting element-node-phase interactions should be done using observers and called in this class
+//MODIFICATION NEEDED: remove this when the new version is complete
 namespace MGroup.XFEM.Entities
 {
-    public class PhaseGeometryModel : IGeometryModel
+    public class PhaseGeometryModel_OLD
     {
         private readonly XModel<IXMultiphaseElement> physicalModel;
 
-        public PhaseGeometryModel(XModel<IXMultiphaseElement> physicalModel)
+        public PhaseGeometryModel_OLD(int dimension, XModel<IXMultiphaseElement> physicalModel)
         {
             this.physicalModel = physicalModel;
+
+            if (dimension != 2 && dimension != 3)
+            {
+                throw new ArgumentException();
+            }
+            this.Dimension = dimension;
         }
 
-        public INodeEnricher Enricher => throw new NotImplementedException();
+        public int Dimension { get; set; }
 
-        public bool MergeOverlappingPhases { get; set; } = true;
+        public bool EnableOptimizations { get; set; } = true;
 
-        public Dictionary<int, IPhase> Phases { get; } = new Dictionary<int, IPhase>();
-        
-        public Dictionary<int, PhaseBoundary> PhaseBoundaries { get; } = new Dictionary<int, PhaseBoundary>();
+        public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
+
+        public List<IPhase> Phases { get; } = new List<IPhase>();
 
         public Dictionary<int, double> CalcBulkSizeOfEachPhase() //MODIFICATION NEEDED: this is a pre/post-processing feature. No need to be in the core classes
         {
             var bulkSizes = new Dictionary<int, double>();
-            foreach (IPhase phase in Phases.Values) bulkSizes[phase.ID] = 0.0;
+            foreach (IPhase phase in Phases) bulkSizes[phase.ID] = 0.0;
 
             foreach (IXMultiphaseElement element in physicalModel.Elements)
             {
@@ -68,60 +72,56 @@ namespace MGroup.XFEM.Entities
             return bulkSizes;
         }
 
-        public IEnumerable<IXDiscontinuity> EnumerateDiscontinuities() => PhaseBoundaries.Values;
-
-        public IXDiscontinuity GetDiscontinuity(int discontinuityID) => PhaseBoundaries[discontinuityID];
-
-        public void InitializeGeometry()
+        //TODO: Perhaps I need a dedicated class for this
+        public void FindConformingMesh() //MODIFICATION NEEDED: Delete this. It is done automatically by XModel, without depending on IPhase or IXMultiphaseElement
         {
-            foreach (PhaseBoundary boundary in PhaseBoundaries.Values)
+            IConformingTriangulator triangulator;
+            if (Dimension == 2) triangulator = new ConformingTriangulator2D();
+            else if (Dimension == 3) triangulator = new ConformingTriangulator3D();
+            else throw new NotImplementedException();
+
+            foreach (IXMultiphaseElement element in physicalModel.Elements)
             {
-                boundary.InitializeGeometry();
+                if (element.Phases.Count == 1) continue;
+                IEnumerable<IElementDiscontinuityInteraction> boundaries = element.PhaseIntersections.Values;
+                Debug.Assert(boundaries.Count() != 0);
+                element.ConformingSubcells = triangulator.FindConformingMesh(element, boundaries, MeshTolerance);
             }
         }
 
-        public void InteractWithMesh()
+        public void InteractWithNodes()
         {
-            // Phases - nodes
+            // Nodes
             IPhase defaultPhase = Phases[0];
             for (int i = 1; i < Phases.Count; ++i)
             {
                 Phases[i].InteractWithNodes(physicalModel.XNodes);
             }
             defaultPhase.InteractWithNodes(physicalModel.XNodes);
+        }
 
-            // Phases - elements
+        public void InteractWithElements()
+        {
+            // Elements
+            IPhase defaultPhase = Phases[0];
             for (int i = 1; i < Phases.Count; ++i)
             {
                 Phases[i].InteractWithElements(physicalModel.Elements);
             }
             defaultPhase.InteractWithElements(physicalModel.Elements);
 
-            // Phase boundaries - elements 
-            //MODIFICATION NEEDED: I think this is done during Phases - elements. If this is the desired behavior, consider removing InteractWithMesh() from IXDiscontinuity and adding it to ICrack
-            foreach (PhaseBoundary boundary in PhaseBoundaries.Values)
-            {
-                boundary.InteractWithMesh();
-            }
         }
 
-        public void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements)
-        {
-            foreach (PhaseBoundary boundary in PhaseBoundaries.Values)
-            {
-                boundary.UpdateGeometry(subdomainFreeDisplacements);
-            }
-
-            if (MergeOverlappingPhases) MergePhases();
-        }
-
-        private void MergePhases()
+        //MODIFICATION NEEDED: This is part of the GeometryUpdate() routine of XModel: Geometric entities interacting with each other.
+        //  However this interaction must be defined by the entities themselves. It must not be defined by XModel using various cases.
+        //  Perhaps interaction of Phases can be done starting from PhaseBoundaries. Alternatively an object like INodeEnricher can be used to examine all Phases
+        public void UnifyOverlappingPhases(bool ignoreDefaultPhase)
         {
             var unifiedPhases = new List<IPhase>();
             IPhase defaultPhase = null;
-            foreach (IPhase phase in Phases.Values)
+            foreach (IPhase phase in Phases)
             {
-                if (phase is DefaultPhase)
+                if (phase is DefaultPhase && ignoreDefaultPhase)
                 {
                     defaultPhase = phase;
                     continue;
@@ -150,8 +150,8 @@ namespace MGroup.XFEM.Entities
             }
 
             Phases.Clear();
-            if (defaultPhase != null) Phases[defaultPhase.ID] = defaultPhase;
-            foreach (IPhase phase in unifiedPhases) Phases[phase.ID] = phase;
+            if (defaultPhase != null) Phases.Add(defaultPhase);
+            Phases.AddRange(unifiedPhases);
         }
     }
 }

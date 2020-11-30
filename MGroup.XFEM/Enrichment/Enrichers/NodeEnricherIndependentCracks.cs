@@ -12,8 +12,8 @@ namespace MGroup.XFEM.Enrichment.Enrichers
 {
     public class NodeEnricherIndependentCracks : INodeEnricher
     {
-        private readonly IEnumerable<ICrack> cracks; //TODO: Read these from a component like PhaseGeometryModel
         private readonly double fixedTipEnrichmentRegionRadius;
+        private readonly CrackGeometryModel geometryModel;
         private readonly ISingularityResolver singularityResolver;
 
         /// <summary>
@@ -24,10 +24,10 @@ namespace MGroup.XFEM.Enrichment.Enrichers
         /// functions. They can still be enriched with Heaviside functions, if they do not belong to the tip 
         /// element(s).
         /// </param>
-        public NodeEnricherIndependentCracks(IEnumerable<ICrack> cracks,
+        public NodeEnricherIndependentCracks(CrackGeometryModel geometryModel,
             ISingularityResolver singularityResolver, double fixedTipEnrichmentRegionRadius = 0.0)
         {
-            this.cracks = cracks;
+            this.geometryModel = geometryModel;
             this.singularityResolver = singularityResolver;
             this.fixedTipEnrichmentRegionRadius = fixedTipEnrichmentRegionRadius;
         }
@@ -40,14 +40,14 @@ namespace MGroup.XFEM.Enrichment.Enrichers
         /// functions. They can still be enriched with Heaviside functions, if they do not belong to the tip 
         /// element(s).
         /// </param>
-        public NodeEnricherIndependentCracks(IEnumerable<ICrack> cracks, double fixedTipEnrichmentRegionRadius = 0.0) :
-            this(cracks, new RelativeAreaSingularityResolver(1E-4), fixedTipEnrichmentRegionRadius)
+        public NodeEnricherIndependentCracks(CrackGeometryModel geometryModel, double fixedTipEnrichmentRegionRadius = 0.0) :
+            this(geometryModel, new RelativeAreaSingularityResolver(1E-4), fixedTipEnrichmentRegionRadius)
         {
         }
 
         public void ApplyEnrichments()
         {
-            foreach (ICrack crack in cracks)
+            foreach (ICrack crack in geometryModel.Cracks.Values)
             {
                 ClearNodalEnrichments(crack.CrackTipEnrichments);
 

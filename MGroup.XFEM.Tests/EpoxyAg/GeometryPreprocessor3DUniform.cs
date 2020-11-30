@@ -21,7 +21,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
         public double ThicknessSilverPhase { get; set; } = 0.05;
 
-        public PhaseGeometryModel GeometricModel { get; set; }
+        public PhaseGeometryModel_OLD GeometricModel { get; set; }
 
         public string MatrixPhaseName { get; } = "matrix";
 
@@ -37,7 +37,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
         public void GeneratePhases(XModel<IXMultiphaseElement> physicalModel)
         {
-            GeometricModel = new PhaseGeometryModel(3, physicalModel);
+            GeometricModel = new PhaseGeometryModel_OLD(3, physicalModel);
             var defaultPhase = new DefaultPhase(0);
             GeometricModel.Phases.Add(defaultPhase);
             MatrixPhaseID = 0;

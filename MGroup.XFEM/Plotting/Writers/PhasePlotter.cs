@@ -18,10 +18,10 @@ namespace MGroup.XFEM.Plotting.Writers
 
         private readonly double colorForDefaultPhase;
         private readonly int defaultPhaseID;
-        private readonly PhaseGeometryModel geometricModel;
+        private readonly PhaseGeometryModel_OLD geometricModel;
         private readonly XModel<IXMultiphaseElement> physicalModel;
 
-        public PhasePlotter(XModel<IXMultiphaseElement> physicalModel, PhaseGeometryModel geometricModel, int defaultPhaseID, 
+        public PhasePlotter(XModel<IXMultiphaseElement> physicalModel, PhaseGeometryModel_OLD geometricModel, int defaultPhaseID, 
             double colorForDefaultPhase = 0.0)
         {
             this.physicalModel = physicalModel;

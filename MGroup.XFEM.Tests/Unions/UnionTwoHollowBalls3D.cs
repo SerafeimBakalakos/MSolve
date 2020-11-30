@@ -57,7 +57,7 @@ namespace MGroup.XFEM.Tests.Plotting
         {
             // Create model and LSM
             XModel<IXMultiphaseElement> model = CreateModel();
-            PhaseGeometryModel geometricModel = CreatePhases(model);
+            PhaseGeometryModel_OLD geometricModel = CreatePhases(model);
 
             // Plot original mesh and level sets
             Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
@@ -128,7 +128,7 @@ namespace MGroup.XFEM.Tests.Plotting
         }
 
 
-        private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model)
+        private static PhaseGeometryModel_OLD CreatePhases(XModel<IXMultiphaseElement> model)
         {
             var ballsInternal = new Sphere[2];
             ballsInternal[0] = new Sphere(-0.25, 0, 0, 0.2);
@@ -138,7 +138,7 @@ namespace MGroup.XFEM.Tests.Plotting
             ballsExternal[0] = new Sphere(-0.25, 0, 0, 0.5);
             ballsExternal[1] = new Sphere(+0.25, 0, 0, 0.4);
 
-            var geometricModel = new PhaseGeometryModel(3, model);
+            var geometricModel = new PhaseGeometryModel_OLD(3, model);
             var defaultPhase = new DefaultPhase(defaultPhaseID);
             geometricModel.Phases.Add(defaultPhase);
             for (int b = 0; b < 2; ++b)

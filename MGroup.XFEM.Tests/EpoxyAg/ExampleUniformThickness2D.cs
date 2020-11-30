@@ -59,7 +59,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             // Create physical model, LSM and phases
             (XModel<IXMultiphaseElement> model, BiMaterialField materialField) = CreateModel();
             GeometryPreprocessor2D preprocessor = CreatePhases(model, materialField);
-            PhaseGeometryModel geometricModel = preprocessor.GeometricModel;
+            PhaseGeometryModel_OLD geometricModel = preprocessor.GeometricModel;
 
             // Plot original mesh and level sets
             Utilities.Plotting.PlotInclusionLevelSets(outputDirectory, "level_set_before_union", model, geometricModel);
@@ -130,7 +130,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             // Create physical model, LSM and phases
             (XModel<IXMultiphaseElement> model, BiMaterialField materialField) = CreateModel();
             GeometryPreprocessor2D preprocessor = CreatePhases(model, materialField);
-            PhaseGeometryModel geometricModel = preprocessor.GeometricModel;
+            PhaseGeometryModel_OLD geometricModel = preprocessor.GeometricModel;
 
             // Prepare for analysis
             geometricModel.InteractWithNodes();

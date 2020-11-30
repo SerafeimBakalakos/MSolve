@@ -109,7 +109,7 @@ namespace MGroup.XFEM.Tests.Plotting
             // Create model and LSM
             XModel<IXMultiphaseElement> model = CreateModel();
             List<SimpleLsm3D> lsmSurfaces = InitializeLSM(model);
-            PhaseGeometryModel geometricModel = CreatePhases(model, lsmSurfaces);
+            PhaseGeometryModel_OLD geometricModel = CreatePhases(model, lsmSurfaces);
 
             // Plot original mesh and level sets
             PlotInclusionLevelSets(outputDirectory, "level_set", model, lsmSurfaces);
@@ -175,7 +175,7 @@ namespace MGroup.XFEM.Tests.Plotting
             // Create model and LSM
             XModel<IXMultiphaseElement> model = CreateModel();
             List<SimpleLsm3D> lsmSurfaces = InitializeLSM(model);
-            PhaseGeometryModel geometricModel = CreatePhases(model, lsmSurfaces);
+            PhaseGeometryModel_OLD geometricModel = CreatePhases(model, lsmSurfaces);
 
             // Plot original mesh and level sets
             PlotInclusionLevelSets(outputDirectory, "level_set", model, lsmSurfaces);
@@ -267,9 +267,9 @@ namespace MGroup.XFEM.Tests.Plotting
             }
         }
 
-        private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model, List<SimpleLsm3D> lsmSurfaces)
+        private static PhaseGeometryModel_OLD CreatePhases(XModel<IXMultiphaseElement> model, List<SimpleLsm3D> lsmSurfaces)
         {
-            var geometricModel = new PhaseGeometryModel(3, model);
+            var geometricModel = new PhaseGeometryModel_OLD(3, model);
             var defaultPhase = new DefaultPhase(defaultPhaseID);
             geometricModel.Phases.Add(defaultPhase);
             for (int p = 0; p < lsmSurfaces.Count; ++p)

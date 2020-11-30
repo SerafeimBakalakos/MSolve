@@ -8,9 +8,9 @@ namespace MGroup.XFEM.Entities
 {
     public class ConvexPhase : IPhase
     {
-        private readonly PhaseGeometryModel geometricModel;
+        private readonly PhaseGeometryModel_OLD geometricModel;
 
-        public ConvexPhase(int id, PhaseGeometryModel geometricModel)
+        public ConvexPhase(int id, PhaseGeometryModel_OLD geometricModel)
         {
             this.ID = id;
             this.geometricModel = geometricModel;

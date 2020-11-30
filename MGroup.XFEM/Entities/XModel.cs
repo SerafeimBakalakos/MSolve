@@ -21,6 +21,7 @@ using MGroup.XFEM.Geometry.Tolerances;
 //      detail.
 //TODO: There is a lot of repetition between this FEM.Model and IGA.Model with regards to interconnection data. That code should 
 //      be moved to a common class. Same goes for the interconnection methods of XSubdomain.
+//MODIFICATION NEEDED: crack geometry related stuff should be moved to a dedicated implementation of IGeometryModel
 namespace MGroup.XFEM.Entities
 {
     public class XModel<TElement> : IXModel where TElement: IXFiniteElement
@@ -38,9 +39,6 @@ namespace MGroup.XFEM.Entities
 
         public int Dimension { get; }
 
-        //TODO: Phases (or more accurately phase boundaries) and phase junctions should be stored here, not in a GeometricModel
-        public List<IXDiscontinuity> Discontinuities { get; } = new List<IXDiscontinuity>();
-
         IReadOnlyList<IElement> IStructuralModel.Elements
         {
             get
@@ -57,13 +55,13 @@ namespace MGroup.XFEM.Entities
 
         public bool FindConformingSubcells { get; set; } = false;
 
+        public IGeometryModel GeometryModel { get; set; }
+
         public IGlobalFreeDofOrdering GlobalDofOrdering { get; set; }
 
         public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 
         public List<NodalLoad> NodalLoads { get; private set; } = new List<NodalLoad>();
-
-        public List<INodeEnricher> NodeEnrichers { get; set; } = new List<INodeEnricher>();
 
         IReadOnlyList<INode> IStructuralModel.Nodes => XNodes;
         public List<XNode> XNodes { get; } = new List<XNode>();
@@ -121,7 +119,7 @@ namespace MGroup.XFEM.Entities
 
             // Identify enrichments and their dofs
             //TODO: The enrichments may need to change during the analysis (e.g. branching cracks, crack junctions, etc)
-            foreach (IXDiscontinuity discontinuity in Discontinuities)
+            foreach (IXDiscontinuity discontinuity in GeometryModel.EnumerateDiscontinuities()) //MODIFICATION NEEDED: this should be handled by INodeEnricher probably
             {
                 IList<EnrichmentItem> enrichments = discontinuity.DefineEnrichments(this.Enrichments.Count);
                 foreach (EnrichmentItem enrichment in enrichments)
@@ -254,18 +252,15 @@ namespace MGroup.XFEM.Entities
         private void UpdateStatePrivate(bool firstAnalysis, Dictionary<int, Vector> subdomainFreeDisplacements)
         {
             // Update the discontinuities
-            foreach (IXDiscontinuity discontinuity in Discontinuities)
-            {
-                if (firstAnalysis) discontinuity.InitializeGeometry();
-                else discontinuity.UpdateGeometry(subdomainFreeDisplacements);
-                discontinuity.InteractWithMesh(); //TODO: Should this be included in UpdateGeometry()?
-            }
+            if (firstAnalysis) GeometryModel.InitializeGeometry();
+            else GeometryModel.UpdateGeometry(subdomainFreeDisplacements);
+            GeometryModel.InteractWithMesh();
 
             // Optionally calculate conforming subcells for elements that interact with discontinuities
             if (FindConformingSubcells) CalcConformingSubcells();
 
             // Enrich the required nodes
-            foreach (INodeEnricher enricher in NodeEnrichers) enricher.ApplyEnrichments();
+            GeometryModel.Enricher.ApplyEnrichments();
 
             // Identify each element's dofs
             foreach (IXFiniteElement element in Elements) element.IdentifyDofs();

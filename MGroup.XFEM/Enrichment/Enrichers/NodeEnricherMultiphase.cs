@@ -12,10 +12,10 @@ namespace MGroup.XFEM.Enrichment.Enrichers
 {
     public class NodeEnricherMultiphase : INodeEnricher
     {
-        private readonly PhaseGeometryModel geometricModel;
+        private readonly PhaseGeometryModel_OLD geometricModel;
         private readonly ISingularityResolver singularityResolver;
 
-        public NodeEnricherMultiphase(PhaseGeometryModel geometricModel, ISingularityResolver singularityResolver)
+        public NodeEnricherMultiphase(PhaseGeometryModel_OLD geometricModel, ISingularityResolver singularityResolver)
         {
             this.geometricModel = geometricModel;
             this.singularityResolver = singularityResolver;

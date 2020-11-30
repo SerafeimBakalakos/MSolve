@@ -51,7 +51,7 @@ namespace MGroup.XFEM.Cracks
                 else
                 {
                     model.Update(freeDisplacements);
-                    foreach (ICrack crack in model.Discontinuities)
+                    foreach (ICrack crack in model.GeometryModel.EnumerateDiscontinuities())
                     {
                         if (termination.MustTerminate(crack))
                         {

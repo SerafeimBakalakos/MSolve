@@ -78,7 +78,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 Console.WriteLine("Creating physical and geometric models");
                 (XModel<IXMultiphaseElement> model, BiMaterialField materialField) = CreateModel();
                 GeometryPreprocessor3DRandom preprocessor = CreatePhases(model, materialField, numBalls);
-                PhaseGeometryModel geometricModel = preprocessor.GeometricModel;
+                PhaseGeometryModel_OLD geometricModel = preprocessor.GeometricModel;
 
                 // Geometric interactions
                 Console.WriteLine("Identifying interactions between physical and geometric models");

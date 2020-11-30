@@ -18,7 +18,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
         public int NumBalls { get; set; } = 20;
 
-        public PhaseGeometryModel GeometricModel { get; set; }
+        public PhaseGeometryModel_OLD GeometricModel { get; set; }
 
         public string MatrixPhaseName { get; } = "matrix";
 
@@ -34,7 +34,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
         public void GeneratePhases(XModel<IXMultiphaseElement> physicalModel)
         {
-            GeometricModel = new PhaseGeometryModel(3, physicalModel);
+            GeometricModel = new PhaseGeometryModel_OLD(3, physicalModel);
             var defaultPhase = new DefaultPhase(0);
             GeometricModel.Phases.Add(defaultPhase);
             MatrixPhaseID = 0;

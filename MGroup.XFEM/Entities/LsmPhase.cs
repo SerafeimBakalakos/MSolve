@@ -9,7 +9,7 @@ namespace MGroup.XFEM.Entities
 {
     public class LsmPhase : IPhase
     {
-        private readonly PhaseGeometryModel geometricModel;
+        private readonly PhaseGeometryModel_OLD geometricModel;
 
         /// <summary>
         /// 
@@ -17,7 +17,7 @@ namespace MGroup.XFEM.Entities
         /// <param name="id"></param>
         /// <param name="geometricModel"></param>
         /// <param name="mergeLevel">Negative values will cause this phase to be unmergable</param>
-        public LsmPhase(int id, PhaseGeometryModel geometricModel, int mergeLevel)
+        public LsmPhase(int id, PhaseGeometryModel_OLD geometricModel, int mergeLevel)
         {
             this.ID = id;
             this.geometricModel = geometricModel;

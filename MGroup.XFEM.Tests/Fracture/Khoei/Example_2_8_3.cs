@@ -132,12 +132,13 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
         private static void CreateCrack(XModel<IXCrackElement> model)
         {
+            var geometryModel = new CrackGeometryModel(model);
+            model.GeometryModel = geometryModel;
+            geometryModel.Enricher = new NodeEnricherIndependentCracks(geometryModel, new NullSingularityResolver());
             var initGeometry = new PolyLine2D(new double[] { 30.0, +40.0 }, new double[] { 30.0, -40.0 });
             IPropagator propagator = null;
             var crack = new ExteriorLsmCrack(0, initGeometry, model, propagator);
-            var enricher = new NodeEnricherIndependentCracks(new ICrack[] { crack }, new NullSingularityResolver());
-            model.Discontinuities.Add(crack);
-            model.NodeEnrichers.Add(enricher);
+            geometryModel.Cracks[crack.ID] = crack;
         }
 
         /// <summary>

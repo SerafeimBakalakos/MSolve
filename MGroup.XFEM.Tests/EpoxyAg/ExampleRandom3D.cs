@@ -65,7 +65,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             Console.WriteLine("Creating physical and geometric models");
             (XModel<IXMultiphaseElement> model, BiMaterialField materialField) = CreateModel();
             GeometryPreprocessor3DRandom preprocessor = CreatePhases(model, materialField);
-            PhaseGeometryModel geometricModel = preprocessor.GeometricModel;
+            PhaseGeometryModel_OLD geometricModel = preprocessor.GeometricModel;
             geometricModel.EnableOptimizations = false;
 
             // Plot original mesh and level sets
@@ -138,7 +138,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             Console.WriteLine("Creating physical and geometric models");
             (XModel<IXMultiphaseElement> model, BiMaterialField materialField) = CreateModel();
             GeometryPreprocessor3DRandom preprocessor = CreatePhases(model, materialField);
-            PhaseGeometryModel geometricModel = preprocessor.GeometricModel;
+            PhaseGeometryModel_OLD geometricModel = preprocessor.GeometricModel;
 
             // Prepare for analysis
             Console.WriteLine("Identifying interactions between physical and geometric models");
@@ -197,7 +197,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             Console.WriteLine("Creating physical and geometric models");
             (XModel<IXMultiphaseElement> model, BiMaterialField materialField) = CreateModel();
             GeometryPreprocessor3DRandom preprocessor = CreatePhases(model, materialField);
-            PhaseGeometryModel geometricModel = preprocessor.GeometricModel;
+            PhaseGeometryModel_OLD geometricModel = preprocessor.GeometricModel;
 
             // Geometric interactions
             Console.WriteLine("Identifying interactions between physical and geometric models");

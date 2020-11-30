@@ -99,8 +99,8 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
         {
             XModel<IXCrackElement> model = CreateModel();
             RunAnalysis(model);
-            var leftCrack = (ExteriorLsmCrack)model.Discontinuities[0];
-            var rightCrack = (ExteriorLsmCrack)model.Discontinuities[1];
+            var leftCrack = (ExteriorLsmCrack)model.GeometryModel.GetDiscontinuity(0);
+            var rightCrack = (ExteriorLsmCrack)model.GeometryModel.GetDiscontinuity(1);
 
             // Expected propagation paths
             var expectedPathLeft = new List<double[]>();
@@ -260,19 +260,20 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
             ApplyBoundaryConditions(model);
 
             // Cracks, enrichments
+            var geometryModel = new CrackGeometryModel(model);
+            model.GeometryModel = geometryModel;
+            geometryModel.Enricher = new NodeEnricherIndependentCracks(
+                geometryModel, new RelativeAreaSingularityResolver(heavisideTol), tipEnrichmentArea);
             var jIntegrationRule = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(4, 4));
             var leftPropagator = new JintegralPropagator2D(jIntegralRadiusRatio, jIntegrationRule, material,
                 new MaximumCircumferentialTensileStressCriterion(), new ConstantIncrement2D(growthLength));
             var leftCrack = new ExteriorLsmCrack(0, new PolyLine2D(leftCrackMouth, leftCrackTip), model, leftPropagator);
+            geometryModel.Cracks[leftCrack.ID] = leftCrack;
             var rightPropagator = new JintegralPropagator2D(jIntegralRadiusRatio, jIntegrationRule, material,
                 new MaximumCircumferentialTensileStressCriterion(), new ConstantIncrement2D(growthLength));
             var rightCrack = new ExteriorLsmCrack(1, new PolyLine2D(rightCrackMouth, rightCrackTip), model, rightPropagator);
-            var enricher = new NodeEnricherIndependentCracks(
-                new ICrack[] { leftCrack, rightCrack }, new RelativeAreaSingularityResolver(heavisideTol), tipEnrichmentArea);
-            model.Discontinuities.Add(leftCrack);
-            model.Discontinuities.Add(rightCrack);
-            model.NodeEnrichers.Add(enricher);
-
+            geometryModel.Cracks[rightCrack.ID] = rightCrack;
+            
             return model;
         }
 
