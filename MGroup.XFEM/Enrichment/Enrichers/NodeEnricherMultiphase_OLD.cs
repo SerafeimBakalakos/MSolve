@@ -8,14 +8,15 @@ using MGroup.XFEM.Enrichment.SingularityResolution;
 using MGroup.XFEM.Entities;
 
 //TODO: Remove casts
+//MODIFICATION NEEDED: remove this when the new version is complete
 namespace MGroup.XFEM.Enrichment.Enrichers
 {
-    public class NodeEnricherMultiphase : INodeEnricher
+    public class NodeEnricherMultiphase_OLD : INodeEnricher
     {
-        private readonly PhaseGeometryModel geometricModel;
+        private readonly PhaseGeometryModel_OLD geometricModel;
         private readonly ISingularityResolver singularityResolver;
 
-        public NodeEnricherMultiphase(PhaseGeometryModel geometricModel, ISingularityResolver singularityResolver)
+        public NodeEnricherMultiphase_OLD(PhaseGeometryModel_OLD geometricModel, ISingularityResolver singularityResolver)
         {
             this.geometricModel = geometricModel;
             this.singularityResolver = singularityResolver;
@@ -206,7 +207,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
 
             // Find nodes to potentially be enriched by step enrichments
             var nodesPerStepEnrichment = new Dictionary<IEnrichmentFunction, HashSet<XNode>>();
-            foreach (IPhase phase in geometricModel.Phases.Values)
+            foreach (IPhase phase in geometricModel.Phases)
             {
                 if (phase is DefaultPhase) continue;
                 foreach (IXMultiphaseElement element in phase.BoundaryElements)

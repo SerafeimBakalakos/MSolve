@@ -114,7 +114,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             ISingularityResolver singularityResolver
                     //= new MultiphaseRelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
                     = new NullSingularityResolver();
-            var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
+            var nodeEnricher = new NodeEnricherMultiphase_OLD(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
             model.UpdateMaterials();
@@ -144,7 +144,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             ISingularityResolver singularityResolver
                     //= new MultiphaseRelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
                     = new NullSingularityResolver();
-            var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
+            var nodeEnricher = new NodeEnricherMultiphase_OLD(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
 

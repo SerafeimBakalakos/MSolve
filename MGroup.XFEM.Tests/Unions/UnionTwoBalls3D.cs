@@ -116,7 +116,7 @@ namespace MGroup.XFEM.Tests.Plotting
 
             // Enrichment
             ISingularityResolver singularityResolver = new NullSingularityResolver();
-            var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
+            var nodeEnricher = new NodeEnricherMultiphase_OLD(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
             model.UpdateMaterials();
@@ -142,7 +142,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 var phase = new LsmPhase(p + 1, geometricModel, 0);
                 geometricModel.Phases.Add(phase);
 
-                var boundary = new PhaseBoundary(phase.ID, lsm, defaultPhase, phase);
+                var boundary = new ClosedLsmPhaseBoundary(phase.ID, lsm, defaultPhase, phase);
                 defaultPhase.ExternalBoundaries.Add(boundary);
                 defaultPhase.Neighbors.Add(phase);
                 phase.ExternalBoundaries.Add(boundary);

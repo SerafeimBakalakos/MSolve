@@ -114,7 +114,7 @@ namespace MGroup.XFEM.Tests.Unions
             ISingularityResolver singularityResolver
                     //= new MultiphaseRelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
                     = new NullSingularityResolver();
-            var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
+            var nodeEnricher = new NodeEnricherMultiphase_OLD(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
             model.UpdateMaterials();
@@ -157,7 +157,7 @@ namespace MGroup.XFEM.Tests.Unions
                 var externalPhase = new HollowLsmPhase(2 * b + 1, geometricModel, 0);
                 geometricModel.Phases.Add(externalPhase);
 
-                var externalBoundary = new PhaseBoundary(externalPhase.ID, externalLsm, defaultPhase, externalPhase);
+                var externalBoundary = new ClosedLsmPhaseBoundary(externalPhase.ID, externalLsm, defaultPhase, externalPhase);
                 defaultPhase.ExternalBoundaries.Add(externalBoundary);
                 defaultPhase.Neighbors.Add(externalPhase);
                 externalPhase.ExternalBoundaries.Add(externalBoundary);
@@ -167,7 +167,7 @@ namespace MGroup.XFEM.Tests.Unions
                 var internalPhase = new LsmPhase(2 * b + 2, geometricModel, -1);
                 geometricModel.Phases.Add(internalPhase);
 
-                var internalBoundary = new PhaseBoundary(internalPhase.ID, internalLsm, externalPhase, internalPhase);
+                var internalBoundary = new ClosedLsmPhaseBoundary(internalPhase.ID, internalLsm, externalPhase, internalPhase);
                 externalPhase.InternalBoundaries.Add(internalBoundary);
                 externalPhase.InternalPhases.Add(internalPhase);
                 externalPhase.Neighbors.Add(internalPhase);

@@ -14,7 +14,7 @@ namespace MGroup.XFEM.Enrichment.Functions
         private readonly IPhase[] descendingPhases;
         private readonly int[] descendingPhaseCoeffs;
 
-        public JunctionEnrichment(int id, PhaseBoundary boundary, IEnumerable<IPhase> allPhases)
+        public JunctionEnrichment(int id, ClosedLsmPhaseBoundary boundary, IEnumerable<IPhase> allPhases)
         {
             this.ID = id;
             this.Dof = new EnrichedDof(this, ThermalDof.Temperature);
@@ -45,7 +45,7 @@ namespace MGroup.XFEM.Enrichment.Functions
 
         public int ID { get; }
 
-        public PhaseBoundary Boundary { get; }
+        public ClosedLsmPhaseBoundary Boundary { get; }
 
         public IReadOnlyList<IPhase> Phases => descendingPhases;
 
@@ -98,7 +98,7 @@ namespace MGroup.XFEM.Enrichment.Functions
 
         public double EvaluateJumpAcross(IXDiscontinuity discontinuity, XPoint point)
         {
-            if (discontinuity is PhaseBoundary phaseBoundary) //TODO: Find a better way than casting
+            if (discontinuity is ClosedLsmPhaseBoundary phaseBoundary) //TODO: Find a better way than casting
             {
                 return FindPhaseCoeff(phaseBoundary.PositivePhase) - FindPhaseCoeff(phaseBoundary.NegativePhase);
             }

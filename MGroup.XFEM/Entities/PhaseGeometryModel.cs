@@ -6,10 +6,8 @@ using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Enrichers;
-using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
-using MGroup.XFEM.Geometry.Tolerances;
 
 //MODIFICATION NEEDED: Perhaps plotting element-node-phase interactions should be done using observers and called in this class
 namespace MGroup.XFEM.Entities
@@ -23,13 +21,13 @@ namespace MGroup.XFEM.Entities
             this.physicalModel = physicalModel;
         }
 
-        public INodeEnricher Enricher => throw new NotImplementedException();
+        public INodeEnricher Enricher { get; set; }
 
         public bool MergeOverlappingPhases { get; set; } = true;
 
         public Dictionary<int, IPhase> Phases { get; } = new Dictionary<int, IPhase>();
         
-        public Dictionary<int, PhaseBoundary> PhaseBoundaries { get; } = new Dictionary<int, PhaseBoundary>();
+        public Dictionary<int, IPhaseBoundary> PhaseBoundaries { get; } = new Dictionary<int, IPhaseBoundary>();
 
         public Dictionary<int, double> CalcBulkSizeOfEachPhase() //MODIFICATION NEEDED: this is a pre/post-processing feature. No need to be in the core classes
         {
@@ -74,7 +72,7 @@ namespace MGroup.XFEM.Entities
 
         public void InitializeGeometry()
         {
-            foreach (PhaseBoundary boundary in PhaseBoundaries.Values)
+            foreach (ClosedLsmPhaseBoundary boundary in PhaseBoundaries.Values)
             {
                 boundary.InitializeGeometry();
             }
@@ -99,7 +97,7 @@ namespace MGroup.XFEM.Entities
 
             // Phase boundaries - elements 
             //MODIFICATION NEEDED: I think this is done during Phases - elements. If this is the desired behavior, consider removing InteractWithMesh() from IXDiscontinuity and adding it to ICrack
-            foreach (PhaseBoundary boundary in PhaseBoundaries.Values)
+            foreach (ClosedLsmPhaseBoundary boundary in PhaseBoundaries.Values)
             {
                 boundary.InteractWithMesh();
             }
@@ -107,7 +105,7 @@ namespace MGroup.XFEM.Entities
 
         public void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements)
         {
-            foreach (PhaseBoundary boundary in PhaseBoundaries.Values)
+            foreach (ClosedLsmPhaseBoundary boundary in PhaseBoundaries.Values)
             {
                 boundary.UpdateGeometry(subdomainFreeDisplacements);
             }

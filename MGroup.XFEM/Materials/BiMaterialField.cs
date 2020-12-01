@@ -24,7 +24,7 @@ namespace MGroup.XFEM.Materials
         public HashSet<int> PhasesWithMaterial0 { get; } = new HashSet<int>();
         public HashSet<int> PhasesWithMaterial1 { get; } = new HashSet<int>();
 
-        public ThermalInterfaceMaterial FindInterfaceMaterialAt(PhaseBoundary phaseBoundary)
+        public ThermalInterfaceMaterial FindInterfaceMaterialAt(IPhaseBoundary phaseBoundary)
         {
             Debug.Assert(
                 (PhasesWithMaterial0.Contains(phaseBoundary.PositivePhase.ID)

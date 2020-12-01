@@ -80,14 +80,14 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
                 // Create phase boundaries
                 var lsmExternal = new SimpleLsm3D(phaseExternal.ID, physicalModel.XNodes, newBallExternal);
-                var boundaryExternal = new PhaseBoundary(phaseExternal.ID, lsmExternal, defaultPhase, phaseExternal);
+                var boundaryExternal = new ClosedLsmPhaseBoundary(phaseExternal.ID, lsmExternal, defaultPhase, phaseExternal);
                 defaultPhase.ExternalBoundaries.Add(boundaryExternal);
                 defaultPhase.Neighbors.Add(phaseExternal);
                 phaseExternal.ExternalBoundaries.Add(boundaryExternal);
                 phaseExternal.Neighbors.Add(defaultPhase);
 
                 var lsmInternal = new SimpleLsm3D(phaseInternal.ID, physicalModel.XNodes, newBallInternal);
-                var boundaryInternal = new PhaseBoundary(phaseInternal.ID, lsmInternal, phaseExternal, phaseInternal);
+                var boundaryInternal = new ClosedLsmPhaseBoundary(phaseInternal.ID, lsmInternal, phaseExternal, phaseInternal);
                 phaseExternal.InternalBoundaries.Add(boundaryInternal);
                 phaseExternal.Neighbors.Add(phaseInternal);
                 phaseExternal.InternalPhases.Add(phaseInternal);

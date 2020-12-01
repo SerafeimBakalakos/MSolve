@@ -14,7 +14,7 @@ namespace MGroup.XFEM.Entities
 
         HashSet<IXMultiphaseElement> ContainedElements { get; }
 
-        List<PhaseBoundary> ExternalBoundaries { get; }
+        List<IPhaseBoundary> ExternalBoundaries { get; }
 
         int ID { get; }
 

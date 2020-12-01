@@ -9,7 +9,7 @@ namespace MGroup.XFEM.Elements
 {
     public interface IXThermalElement : IXMultiphaseElement
     {
-        Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)>
+        Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)>
             GetMaterialsForBoundaryIntegration();
 
         (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalMaterial>) GetMaterialsForBulkIntegration();

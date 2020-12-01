@@ -9,9 +9,9 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Entities
 {
-    public class PhaseBoundary : IXDiscontinuity
+    public class ClosedLsmPhaseBoundary : IPhaseBoundary
     {
-        public PhaseBoundary(int id, IClosedGeometry geometry, IPhase positivePhase, IPhase negativePhase)
+        public ClosedLsmPhaseBoundary(int id, IClosedGeometry geometry, IPhase positivePhase, IPhase negativePhase)
         {
             this.ID = id;
             this.Geometry = geometry;
@@ -21,13 +21,14 @@ namespace MGroup.XFEM.Entities
 
         public int ID { get; }
 
-
         public PhaseStepEnrichment StepEnrichment { get; set; }
 
         public IPhase NegativePhase { get; set; }
         public IPhase PositivePhase { get; set; }
 
-        public IClosedGeometry Geometry { get; set; }
+        public IClosedGeometry Geometry { get; }
+
+        public ILsmGeometry LsmGeometry { get; }
 
         public IList<EnrichmentItem> DefineEnrichments(int numCurrentEnrichments) //MODIFICATION NEEDED. Probably this should be moved to INodeEnricher
         {

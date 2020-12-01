@@ -160,7 +160,7 @@ namespace MGroup.XFEM.Tests.Plotting
             ISingularityResolver singularityResolver
                     //= new MultiphaseRelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
                     = new NullSingularityResolver();
-            var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
+            var nodeEnricher = new NodeEnricherMultiphase_OLD(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
             model.UpdateMaterials();
@@ -230,7 +230,7 @@ namespace MGroup.XFEM.Tests.Plotting
             ISingularityResolver singularityResolver
                     //= new MultiphaseRelativeAreaResolver(geometricModel, singularityRelativeAreaTolerance);
                     = new NullSingularityResolver();
-            var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
+            var nodeEnricher = new NodeEnricherMultiphase_OLD(geometricModel, singularityResolver);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
 
@@ -291,7 +291,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 var phase = new LsmPhase(p + 1, geometricModel, -1);
                 geometricModel.Phases.Add(phase);
 
-                var boundary = new PhaseBoundary(phase.ID, curve, defaultPhase, phase);
+                var boundary = new ClosedLsmPhaseBoundary(phase.ID, curve, defaultPhase, phase);
                 defaultPhase.ExternalBoundaries.Add(boundary);
                 defaultPhase.Neighbors.Add(phase);
                 phase.ExternalBoundaries.Add(boundary);

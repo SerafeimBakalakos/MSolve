@@ -81,8 +81,8 @@ namespace MGroup.XFEM.Elements
 
         public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
 
-        public Dictionary<PhaseBoundary, IElementDiscontinuityInteraction> PhaseIntersections { get; } 
-            = new Dictionary<PhaseBoundary, IElementDiscontinuityInteraction>();
+        public Dictionary<IPhaseBoundary, IElementDiscontinuityInteraction> PhaseIntersections { get; } 
+            = new Dictionary<IPhaseBoundary, IElementDiscontinuityInteraction>();
 
         public Dictionary<int, IElementDiscontinuityInteraction> InteractingDiscontinuities { get; }
             = new Dictionary<int, IElementDiscontinuityInteraction>();
@@ -137,7 +137,8 @@ namespace MGroup.XFEM.Elements
             throw new NotImplementedException();
         }
 
-        public Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)> GetMaterialsForBoundaryIntegration()
+        public Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)> 
+            GetMaterialsForBoundaryIntegration()
         {
             throw new NotImplementedException();
         }

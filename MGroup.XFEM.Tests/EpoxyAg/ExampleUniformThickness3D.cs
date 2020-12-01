@@ -119,7 +119,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
             // Enrichment
             Console.WriteLine("Applying enrichments");
-            var nodeEnricher = new NodeEnricherMultiphase(geometricModel, new NullSingularityResolver());
+            var nodeEnricher = new NodeEnricherMultiphase_OLD(geometricModel, new NullSingularityResolver());
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
             model.UpdateMaterials();
@@ -148,7 +148,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
 
             // Enrichment
             Console.WriteLine("Applying enrichments");
-            var nodeEnricher = new NodeEnricherMultiphase(geometricModel, null);
+            var nodeEnricher = new NodeEnricherMultiphase_OLD(geometricModel, null);
             nodeEnricher.ApplyEnrichments();
             model.UpdateDofs();
             model.UpdateMaterials();

@@ -31,7 +31,7 @@ namespace MGroup.XFEM.Entities
 
         public HashSet<IXMultiphaseElement> ContainedElements { get; } = new HashSet<IXMultiphaseElement>();
 
-        public List<PhaseBoundary> ExternalBoundaries { get; } = new List<PhaseBoundary>();
+        public List<IPhaseBoundary> ExternalBoundaries { get; } = new List<IPhaseBoundary>();
 
         public int ID { get; }
 
@@ -44,7 +44,7 @@ namespace MGroup.XFEM.Entities
         public virtual bool Contains(XNode node)
         {
             Debug.Assert(ExternalBoundaries.Count == 1);
-            PhaseBoundary boundary = ExternalBoundaries[0];
+            IPhaseBoundary boundary = ExternalBoundaries[0];
             double distance = boundary.Geometry.SignedDistanceOf(node);
             bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
             sameSide |= (distance < 0) && (boundary.NegativePhase == this);
@@ -55,7 +55,7 @@ namespace MGroup.XFEM.Entities
         public virtual bool Contains(XPoint point)
         {
             Debug.Assert(ExternalBoundaries.Count == 1);
-            PhaseBoundary boundary = ExternalBoundaries[0];
+            IPhaseBoundary boundary = ExternalBoundaries[0];
             double distance = boundary.Geometry.SignedDistanceOf(point);
             bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
             sameSide |= (distance < 0) && (boundary.NegativePhase == this);
@@ -79,7 +79,7 @@ namespace MGroup.XFEM.Entities
         public void InteractWithElements(IEnumerable<IXMultiphaseElement> elements)
         {
             Debug.Assert(ExternalBoundaries.Count == 1);
-            PhaseBoundary boundary = ExternalBoundaries[0];
+            IPhaseBoundary boundary = ExternalBoundaries[0];
 
             //TODO: This does not necessarily provide correct results in coarse meshes.
 

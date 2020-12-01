@@ -7,7 +7,7 @@ namespace MGroup.XFEM.Materials
 {
     public interface IThermalMaterialField
     {
-        ThermalInterfaceMaterial FindInterfaceMaterialAt(PhaseBoundary phaseBoundary);
+        ThermalInterfaceMaterial FindInterfaceMaterialAt(IPhaseBoundary phaseBoundary);
         ThermalMaterial FindMaterialAt(IPhase phase);
     }
 }

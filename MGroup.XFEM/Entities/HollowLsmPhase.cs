@@ -19,14 +19,14 @@ namespace MGroup.XFEM.Entities
         {
         }
 
-        public List<PhaseBoundary> InternalBoundaries { get; } = new List<PhaseBoundary>();
+        public List<IPhaseBoundary> InternalBoundaries { get; } = new List<IPhaseBoundary>();
 
         public HashSet<IPhase> InternalPhases { get; } = new HashSet<IPhase>();
 
         public override bool Contains(XNode node)
         {
             Debug.Assert(ExternalBoundaries.Count == 1);
-            PhaseBoundary boundary = ExternalBoundaries[0];
+            IPhaseBoundary boundary = ExternalBoundaries[0];
             double distance = boundary.Geometry.SignedDistanceOf(node);
             bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
             sameSide |= (distance < 0) && (boundary.NegativePhase == this);
@@ -43,7 +43,7 @@ namespace MGroup.XFEM.Entities
         public override bool Contains(XPoint point)
         {
             Debug.Assert(ExternalBoundaries.Count == 1);
-            PhaseBoundary boundary = ExternalBoundaries[0];
+            IPhaseBoundary boundary = ExternalBoundaries[0];
             double distance = boundary.Geometry.SignedDistanceOf(point);
             bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
             sameSide |= (distance < 0) && (boundary.NegativePhase == this);
@@ -94,7 +94,7 @@ namespace MGroup.XFEM.Entities
 
                     // Merge internal phases
                     this.InternalPhases.UnionWith(otherHollowPhase.InternalPhases);
-                    foreach (PhaseBoundary boundary in otherHollowPhase.InternalBoundaries)
+                    foreach (IPhaseBoundary boundary in otherHollowPhase.InternalBoundaries)
                     {
                         if (boundary.NegativePhase == otherHollowPhase) boundary.NegativePhase = this;
                         else boundary.PositivePhase = this;

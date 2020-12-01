@@ -32,7 +32,7 @@ namespace MGroup.XFEM.Elements
 
         private IDofType[][] allDofTypes;
 
-        private Dictionary<PhaseBoundary, IReadOnlyList<GaussPoint>> gaussPointsBoundary;
+        private Dictionary<ClosedLsmPhaseBoundary, IReadOnlyList<GaussPoint>> gaussPointsBoundary;
         private IReadOnlyList<GaussPoint> gaussPointsBulk;
 
         //TODO: this can be cached once for all standard elements of the same type

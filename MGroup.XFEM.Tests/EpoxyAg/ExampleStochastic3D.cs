@@ -94,7 +94,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 // Enrichment
                 Console.WriteLine("Applying enrichments");
                 ISingularityResolver singularityResolver = new NullSingularityResolver();
-                var nodeEnricher = new NodeEnricherMultiphase(geometricModel, singularityResolver);
+                var nodeEnricher = new NodeEnricherMultiphase_OLD(geometricModel, singularityResolver);
                 nodeEnricher.ApplyEnrichments();
                 model.UpdateDofs();
 

@@ -33,7 +33,7 @@ namespace MGroup.XFEM.Elements
 
         private IDofType[][] allDofTypes;
 
-        private Dictionary<PhaseBoundary, IReadOnlyList<GaussPoint>> gaussPointsBoundary;
+        private Dictionary<IPhaseBoundary, IReadOnlyList<GaussPoint>> gaussPointsBoundary;
         private IReadOnlyList<GaussPoint> gaussPointsBulk;
 
         //TODO: this can be cached once for all standard elements of the same type
@@ -42,7 +42,7 @@ namespace MGroup.XFEM.Elements
         /// <summary>
         /// In the same order as their corresponding <see cref="gaussPointsBoundary"/>.
         /// </summary>
-        private Dictionary<PhaseBoundary, ThermalInterfaceMaterial[]> materialsAtGPsBoundary;
+        private Dictionary<IPhaseBoundary, ThermalInterfaceMaterial[]> materialsAtGPsBoundary;
 
         /// <summary>
         /// In the same order as their corresponding <see cref="gaussPointsBulk"/>.
@@ -119,8 +119,8 @@ namespace MGroup.XFEM.Elements
 
         public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
 
-        public Dictionary<PhaseBoundary, IElementDiscontinuityInteraction> PhaseIntersections { get; }
-            = new Dictionary<PhaseBoundary, IElementDiscontinuityInteraction>();
+        public Dictionary<IPhaseBoundary, IElementDiscontinuityInteraction> PhaseIntersections { get; }
+            = new Dictionary<IPhaseBoundary, IElementDiscontinuityInteraction>();
 
         ISubdomain IElement.Subdomain => this.Subdomain;
         public XSubdomain Subdomain { get; set; }
@@ -147,11 +147,11 @@ namespace MGroup.XFEM.Elements
         public double[] FindCentroidCartesian() => Utilities.FindCentroidCartesian(2, Nodes);
 
 
-        public Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)>
+        public Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)>
             GetMaterialsForBoundaryIntegration()
         {
-            var result = new Dictionary<PhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)>();
-            foreach (PhaseBoundary boundary in gaussPointsBoundary.Keys)
+            var result = new Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)>();
+            foreach (ClosedLsmPhaseBoundary boundary in gaussPointsBoundary.Keys)
             {
                 result[boundary] = (gaussPointsBoundary[boundary], materialsAtGPsBoundary[boundary]);
             }
@@ -233,11 +233,11 @@ namespace MGroup.XFEM.Elements
             }
 
             // Create and cache materials at boundary integration points.
-            this.gaussPointsBoundary = new Dictionary<PhaseBoundary, IReadOnlyList<GaussPoint>>();
-            this.materialsAtGPsBoundary = new Dictionary<PhaseBoundary, ThermalInterfaceMaterial[]>();
+            this.gaussPointsBoundary = new Dictionary<IPhaseBoundary, IReadOnlyList<GaussPoint>>();
+            this.materialsAtGPsBoundary = new Dictionary<IPhaseBoundary, ThermalInterfaceMaterial[]>();
             foreach (var boundaryIntersectionPair in PhaseIntersections)
             {
-                PhaseBoundary boundary = boundaryIntersectionPair.Key;
+                IPhaseBoundary boundary = boundaryIntersectionPair.Key;
                 IElementDiscontinuityInteraction intersection = boundaryIntersectionPair.Value;
 
                 IReadOnlyList<GaussPoint> gaussPoints = intersection.GetBoundaryIntegrationPoints(boundaryIntegrationOrder);
@@ -340,7 +340,7 @@ namespace MGroup.XFEM.Elements
             var Kii = Matrix.CreateZero(numEnrichedDofs, numEnrichedDofs);
             foreach (var boundaryGaussPointsPair in gaussPointsBoundary)
             {
-                PhaseBoundary boundary = boundaryGaussPointsPair.Key;
+                IPhaseBoundary boundary = boundaryGaussPointsPair.Key;
                 IReadOnlyList<GaussPoint> gaussPoints = boundaryGaussPointsPair.Value;
                 ThermalInterfaceMaterial[] materials = materialsAtGPsBoundary[boundary];
 
@@ -498,7 +498,7 @@ namespace MGroup.XFEM.Elements
         /// b) rare cases where one or more nodes were not enriched like the rest, because their nodal support was almost 
         /// entirely in one of the two regions.
         /// </summary>
-        private Vector CalculateEnrichedShapeFunctionVector(double[] gaussPoint, PhaseBoundary boundary)
+        private Vector CalculateEnrichedShapeFunctionVector(double[] gaussPoint, IPhaseBoundary boundary)
         {
             //TODO: Optimize this: The mapping should be done once per enrichment and reused for all Gauss points of this 
             //      boundary. That would only work if the jump is independent of the gauss point though, which is not always true.

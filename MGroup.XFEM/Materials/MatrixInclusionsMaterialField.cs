@@ -25,7 +25,7 @@ namespace MGroup.XFEM.Materials
             this.matrixPhaseID = matrixPhaseID;
         }
 
-        public ThermalInterfaceMaterial FindInterfaceMaterialAt(PhaseBoundary phaseBoundary)
+        public ThermalInterfaceMaterial FindInterfaceMaterialAt(IPhaseBoundary phaseBoundary)
         {
             if ((phaseBoundary.PositivePhase.ID == matrixPhaseID) || (phaseBoundary.NegativePhase.ID == matrixPhaseID))
             {
