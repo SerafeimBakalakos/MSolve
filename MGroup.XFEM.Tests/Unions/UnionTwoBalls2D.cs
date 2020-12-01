@@ -151,7 +151,7 @@ namespace MGroup.XFEM.Tests.Unions
             for (int p = 0; p < 2; ++p)
             {
                 var lsm = new SimpleLsm2D(p + 1, model.XNodes, balls[p]);
-                var phase = new LsmPhase(p + 1, geometricModel, 0);
+                var phase = new LsmPhase_OLD(p + 1, geometricModel, 0);
                 geometricModel.Phases.Add(phase);
 
                 var boundary = new ClosedLsmPhaseBoundary(phase.ID, lsm, defaultPhase, phase);

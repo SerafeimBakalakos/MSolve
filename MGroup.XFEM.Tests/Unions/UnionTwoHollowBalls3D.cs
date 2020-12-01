@@ -154,7 +154,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 externalPhase.Neighbors.Add(defaultPhase);
 
                 var internalLsm = new SimpleLsm3D(2 * b + 2, model.XNodes, ballsInternal[b]);
-                var internalPhase = new LsmPhase(2 * b + 2, geometricModel, -1);
+                var internalPhase = new LsmPhase_OLD(2 * b + 2, geometricModel, -1);
                 geometricModel.Phases.Add(internalPhase);
 
                 var internalBoundary = new ClosedLsmPhaseBoundary(internalPhase.ID, internalLsm, externalPhase, internalPhase);

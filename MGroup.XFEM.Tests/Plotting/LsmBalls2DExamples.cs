@@ -1,34 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using ISAAR.MSolve.Analyzers;
-using ISAAR.MSolve.Discretization;
-using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Discretization.Mesh.Generation;
-using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.Problems;
-using ISAAR.MSolve.Solvers.Direct;
 using MGroup.XFEM.Elements;
-using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Enrichment.SingularityResolution;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
-using MGroup.XFEM.Geometry.Tolerances;
-using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Integration;
+using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Materials;
 using MGroup.XFEM.Plotting;
 using MGroup.XFEM.Plotting.Fields;
 using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
 using MGroup.XFEM.Tests.Utilities;
-using MGroup.XFEM.Enrichment.Enrichers;
 
 namespace MGroup.XFEM.Tests.Plotting
 {
@@ -288,7 +276,7 @@ namespace MGroup.XFEM.Tests.Plotting
             for (int p = 0; p < lsmCurves.Count; ++p)
             {
                 SimpleLsm2D curve = lsmCurves[p];
-                var phase = new LsmPhase(p + 1, geometricModel, -1);
+                var phase = new LsmPhase_OLD(p + 1, geometricModel, -1);
                 geometricModel.Phases.Add(phase);
 
                 var boundary = new ClosedLsmPhaseBoundary(phase.ID, curve, defaultPhase, phase);

@@ -32,17 +32,17 @@ namespace MGroup.XFEM.Entities
 
         public IList<EnrichmentItem> DefineEnrichments(int numCurrentEnrichments) //MODIFICATION NEEDED. Probably this should be moved to INodeEnricher
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            return new List<EnrichmentItem>();
         }
 
-        public void InitializeGeometry()
+        public void InitializeGeometry() //MODIFICATION NEEDED. 
         {
             //TODO: In problems where the phase boundaries move, a new class should be used (and this renamed to ConstantPhaseBoundary)
         }
 
         public void InteractWithMesh() //MODIFICATION NEEDED. 
         {
-            throw new NotImplementedException();
         }
 
         public void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements)

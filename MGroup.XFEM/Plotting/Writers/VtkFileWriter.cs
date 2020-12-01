@@ -17,7 +17,7 @@ namespace MGroup.XFEM.Plotting.Writers
             this.writer = new StreamWriter(filePath);
             writer.Write("# vtk DataFile Version ");
             writer.WriteLine(vtkReaderVersion);
-            writer.WriteLine(filePath);
+            //writer.WriteLine(filePath);
             writer.Write("ASCII\n\n");
             writeFieldsNext = false;
         }

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 
 //TODO: Perhaps I should use IDs for vertices, cells and avoid any generics.
-//TODO: Remove generics
 namespace MGroup.XFEM.Plotting.Mesh
 {
     /// <summary>

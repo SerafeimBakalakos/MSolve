@@ -5,11 +5,12 @@ using MGroup.XFEM.Elements;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
 
+//MODIFICATION NEEDED: remove this when the new version is complete
 namespace MGroup.XFEM.Entities
 {
-    public class LsmPhase : IPhase
+    public class LsmPhase_OLD : IPhase
     {
-        private readonly PhaseGeometryModel geometricModel;
+        private readonly PhaseGeometryModel_OLD geometricModel;
 
         /// <summary>
         /// 
@@ -17,7 +18,7 @@ namespace MGroup.XFEM.Entities
         /// <param name="id"></param>
         /// <param name="geometricModel"></param>
         /// <param name="mergeLevel">Negative values will cause this phase to be unmergable</param>
-        public LsmPhase(int id, PhaseGeometryModel geometricModel, int mergeLevel)
+        public LsmPhase_OLD(int id, PhaseGeometryModel_OLD geometricModel, int mergeLevel)
         {
             this.ID = id;
             this.geometricModel = geometricModel;
@@ -35,9 +36,11 @@ namespace MGroup.XFEM.Entities
 
         public int ID { get; }
 
+
         public int MergeLevel { get; }
 
         public HashSet<IPhase> Neighbors { get; } = new HashSet<IPhase>();
+
 
         public virtual bool Contains(XNode node)
         {

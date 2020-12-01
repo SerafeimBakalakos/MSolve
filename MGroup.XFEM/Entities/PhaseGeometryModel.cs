@@ -21,15 +21,19 @@ namespace MGroup.XFEM.Entities
             this.physicalModel = physicalModel;
         }
 
+        public bool EnableOptimizations { get; set; }
+
         public INodeEnricher Enricher { get; set; }
 
         public bool MergeOverlappingPhases { get; set; } = true;
+
+        public List<IPhaseObserver> Observers { get; } = new List<IPhaseObserver>();
 
         public Dictionary<int, IPhase> Phases { get; } = new Dictionary<int, IPhase>();
         
         public Dictionary<int, IPhaseBoundary> PhaseBoundaries { get; } = new Dictionary<int, IPhaseBoundary>();
 
-        public Dictionary<int, double> CalcBulkSizeOfEachPhase() //MODIFICATION NEEDED: this is a pre/post-processing feature. No need to be in the core classes
+        public Dictionary<int, double> CalcBulkSizeOfEachPhase() //MODIFICATION NEEDED: this is a pre/post-processing feature. No need to be in the core classes. Use an observer instead
         {
             var bulkSizes = new Dictionary<int, double>();
             foreach (IPhase phase in Phases.Values) bulkSizes[phase.ID] = 0.0;
@@ -76,6 +80,8 @@ namespace MGroup.XFEM.Entities
             {
                 boundary.InitializeGeometry();
             }
+
+            foreach (IPhaseObserver observer in Observers) observer.LogGeometry();
         }
 
         public void InteractWithMesh()
@@ -101,6 +107,8 @@ namespace MGroup.XFEM.Entities
             {
                 boundary.InteractWithMesh();
             }
+
+            foreach (IPhaseObserver observer in Observers) observer.LogMeshInteractions();
         }
 
         public void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements)
@@ -111,6 +119,8 @@ namespace MGroup.XFEM.Entities
             }
 
             if (MergeOverlappingPhases) MergePhases();
+
+            foreach (IPhaseObserver observer in Observers) observer.LogGeometry();
         }
 
         private void MergePhases()

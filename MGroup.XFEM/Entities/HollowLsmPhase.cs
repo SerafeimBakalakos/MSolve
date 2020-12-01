@@ -5,7 +5,7 @@ using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Entities
 {
-    public class HollowLsmPhase : LsmPhase
+    public class HollowLsmPhase : LsmPhase_OLD
     {
         private readonly PhaseGeometryModel_OLD geometricModel;
 

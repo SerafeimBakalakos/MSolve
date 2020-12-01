@@ -9,6 +9,7 @@ using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Tolerances;
+using MGroup.XFEM.Plotting.Fields;
 using MGroup.XFEM.Plotting.Writers;
 
 namespace MGroup.XFEM.Tests.Utilities

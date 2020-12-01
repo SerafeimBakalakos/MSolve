@@ -275,7 +275,7 @@ namespace MGroup.XFEM.Tests.Plotting
             for (int p = 0; p < lsmSurfaces.Count; ++p)
             {
                 SimpleLsm3D curve = lsmSurfaces[p];
-                var phase = new LsmPhase(p + 1, geometricModel, -1);
+                var phase = new LsmPhase_OLD(p + 1, geometricModel, -1);
                 geometricModel.Phases.Add(phase);
 
                 var boundary = new ClosedLsmPhaseBoundary(phase.ID, curve, defaultPhase, phase);

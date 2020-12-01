@@ -4,7 +4,7 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Plotting.Mesh;
 
-namespace MGroup.XFEM.Geometry
+namespace MGroup.XFEM.Plotting.Fields
 {
     public class LevelSetField
     {
