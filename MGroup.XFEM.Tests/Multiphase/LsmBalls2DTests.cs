@@ -9,6 +9,7 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Materials;
+using MGroup.XFEM.Plotting;
 using MGroup.XFEM.Plotting.Writers;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
@@ -59,6 +60,10 @@ namespace MGroup.XFEM.Tests.Multiphase
                 // Plot element subcells
                 model.ModelObservers.Add(new ConformingMeshPlotter(directory, model));
 
+                // Plot bulk and boundary integration points of each element
+                model.ModelObservers.Add(new IntegrationPointsPlotter(directory, model));
+
+                // Initialize model state so that everything descrived above can be tracked
                 model.Initialize();
 
                 // Compare output
@@ -67,6 +72,8 @@ namespace MGroup.XFEM.Tests.Multiphase
                 computedFiles.Add(Path.Combine(directory, "level_set2_t0.vtk"));
                 computedFiles.Add(Path.Combine(directory, "intersections_t0.vtk"));
                 computedFiles.Add(Path.Combine(directory, "conforming_mesh_t0.vtk"));
+                computedFiles.Add(Path.Combine(directory, "gauss_points_bulk_t0.vtk"));
+                computedFiles.Add(Path.Combine(directory, "gauss_points_boundary_t0.vtk"));
 
                 string expectedDirectory = Path.Combine(Directory.GetParent(
                     Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "lsm_balls_2D");
@@ -75,6 +82,8 @@ namespace MGroup.XFEM.Tests.Multiphase
                 expectedFiles.Add(Path.Combine(expectedDirectory, "level_set2_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "intersections_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "conforming_mesh_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_bulk_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_boundary_t0.vtk"));
 
                 for (int i = 0; i < expectedFiles.Count; ++i)
                 {

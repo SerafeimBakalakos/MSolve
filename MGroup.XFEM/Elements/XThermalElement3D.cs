@@ -80,6 +80,20 @@ namespace MGroup.XFEM.Elements
             (this.Edges, this.Faces) = elementGeometry.FindEdgesFaces(nodes);
         }
 
+        public IEnumerable<GaussPoint> BulkIntegrationPoints => gaussPointsBulk;
+
+        public IEnumerable<GaussPoint> BoundaryIntegrationPoints
+        {
+            get
+            {
+                var allBoundaryPoints = new List<GaussPoint>();
+                foreach (var points in gaussPointsBoundary.Values)
+                {
+                    allBoundaryPoints.AddRange(points);
+                }
+                return allBoundaryPoints;
+            }
+        }
         public CellType CellType => Interpolation.CellType;
 
         public IElementSubcell[] ConformingSubcells { get; set; }

@@ -100,6 +100,10 @@ namespace MGroup.XFEM.Elements
 
         public IQuadrature IntegrationStandard => throw new NotImplementedException();
 
+        public IEnumerable<GaussPoint> BulkIntegrationPoints => new GaussPoint[0];
+
+        public IEnumerable<GaussPoint> BoundaryIntegrationPoints => new GaussPoint[0];
+
         public IMatrix DampingMatrix(IElement element)
         {
             throw new NotImplementedException();

@@ -11,11 +11,11 @@ using MGroup.XFEM.Plotting.Writers;
 //      having attached values).
 namespace MGroup.XFEM.Plotting
 {
-    public class IntegrationPlotter
+    public class IntegrationPlotter_OLD
     {
         private readonly XModel<IXMultiphaseElement> physicalModel;
 
-        public IntegrationPlotter(XModel<IXMultiphaseElement> physicalModel)
+        public IntegrationPlotter_OLD(XModel<IXMultiphaseElement> physicalModel)
         {
             this.physicalModel = physicalModel;
         }

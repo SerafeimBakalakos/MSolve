@@ -94,7 +94,7 @@ namespace MGroup.XFEM.Tests.Plotting
             {
                 if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
             }
-            var integrationPlotter = new IntegrationPlotter(model);
+            var integrationPlotter = new IntegrationPlotter_OLD(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
 
             // Plot boundary integration points
@@ -143,7 +143,7 @@ namespace MGroup.XFEM.Tests.Plotting
             {
                 if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
             }
-            var integrationPlotter = new IntegrationPlotter(model);
+            var integrationPlotter = new IntegrationPlotter_OLD(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
 
             // Plot boundary integration points
@@ -218,7 +218,7 @@ namespace MGroup.XFEM.Tests.Plotting
             {
                 if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
             }
-            var integrationPlotter = new IntegrationPlotter(model);
+            var integrationPlotter = new IntegrationPlotter_OLD(model);
             integrationPlotter.PlotBulkIntegrationPoints(pathIntegrationBulk);
 
             // Plot boundary integration points

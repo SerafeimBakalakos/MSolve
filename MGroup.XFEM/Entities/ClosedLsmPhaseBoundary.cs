@@ -36,7 +36,7 @@ namespace MGroup.XFEM.Entities
             return new List<EnrichmentItem>();
         }
 
-        public void InitializeGeometry() //MODIFICATION NEEDED. 
+        public void InitializeGeometry() //MODIFICATION NEEDED. Right now the user creates the LSM. We want him to only provide the initial shape (e.g. Circle)
         {
             //TODO: In problems where the phase boundaries move, a new class should be used (and this renamed to ConstantPhaseBoundary)
         }
