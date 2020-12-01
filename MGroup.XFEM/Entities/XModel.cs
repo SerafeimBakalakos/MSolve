@@ -61,6 +61,8 @@ namespace MGroup.XFEM.Entities
 
         public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 
+        public List<IModelObserver> ModelObservers { get; set; } = new List<IModelObserver>();
+
         public List<NodalLoad> NodalLoads { get; private set; } = new List<NodalLoad>();
 
         IReadOnlyList<INode> IStructuralModel.Nodes => XNodes;
@@ -269,6 +271,7 @@ namespace MGroup.XFEM.Entities
             foreach (IXFiniteElement element in Elements) element.IdentifyIntegrationPointsAndMaterials();
 
             // Let observers read the current state and update themselves
+            foreach (IModelObserver observer in ModelObservers) observer.Update();
             foreach (IEnrichmentObserver observer in enrichmentObservers) observer.Update(Enrichments.Values);
         }
     }

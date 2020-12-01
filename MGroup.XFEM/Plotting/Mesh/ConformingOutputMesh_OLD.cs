@@ -11,7 +11,7 @@ using MGroup.XFEM.Geometry.ConformingMesh;
 //TODO: Needs tidying up.
 namespace MGroup.XFEM.Plotting.Mesh
 {
-    public class ConformingOutputMesh : IOutputMesh
+    public class ConformingOutputMesh_OLD : IOutputMesh
     {
         private readonly List<VtkCell> outCells;
         private readonly List<VtkPoint> outVertices;
@@ -19,13 +19,11 @@ namespace MGroup.XFEM.Plotting.Mesh
         private readonly Dictionary<IXFiniteElement, HashSet<Subcell>> originalCells2Subcells;
         //private readonly Dictionary<XNode, HashSet<VtkPoint>> original2OutVertices;
 
-        public ConformingOutputMesh(IXModel model)
+        public ConformingOutputMesh_OLD(IReadOnlyList<XNode> originalVertices, 
+            IReadOnlyList<IXFiniteElement> originalCells, Dictionary<IXFiniteElement, IElementSubcell[]> triangulation)
         {
-            List<XNode> originalVertices = model.XNodes;
-            List<IXFiniteElement> originalCells = model.EnumerateElements().ToList();
-
-            this.outVertices = new List<VtkPoint>(model.Nodes.Count);
-            this.outCells = new List<VtkCell>(model.Elements.Count);
+            this.outVertices = new List<VtkPoint>(originalVertices.Count);
+            this.outCells = new List<VtkCell>(originalCells.Count);
             this.original2OutCells = new Dictionary<IXFiniteElement, HashSet<VtkCell>>();
             this.originalCells2Subcells = new Dictionary<IXFiniteElement, HashSet<Subcell>>();
 
@@ -36,11 +34,11 @@ namespace MGroup.XFEM.Plotting.Mesh
                 CellType cellType = ((IElementType)element).CellType;
                 original2OutCells[element] = new HashSet<VtkCell>();
 
-                bool isIntersected = (element.ConformingSubcells != null) && (element.ConformingSubcells.Length > 0);
+                bool isIntersected = triangulation.TryGetValue(element, out IElementSubcell[] subcells);
                 if (isIntersected)
                 {
                     originalCells2Subcells[element] = new HashSet<Subcell>();
-                    foreach (IElementSubcell subcell in element.ConformingSubcells)
+                    foreach (IElementSubcell subcell in subcells)
                     {
                         VtkPoint[] subvertices = subcell.FindVerticesCartesian(element).
                             Select(v => new VtkPoint(outVertexID++, v)).ToArray();

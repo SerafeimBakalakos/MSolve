@@ -30,7 +30,7 @@ namespace MGroup.XFEM.Plotting.Writers
             this.colorForDefaultPhase = colorForDefaultPhase;
         }
 
-        public void PlotElements(string path, ConformingOutputMesh conformingMesh)
+        public void PlotElements(string path, ConformingOutputMesh_OLD conformingMesh)
         {
             Dictionary<VtkPoint, double> phases = FindPhasesOfElements(conformingMesh);
             using (var writer = new Writers.VtkFileWriter(path))
@@ -57,7 +57,7 @@ namespace MGroup.XFEM.Plotting.Writers
             }
         }
 
-        private Dictionary<VtkPoint, double> FindPhasesOfElements(ConformingOutputMesh conformingMesh)
+        private Dictionary<VtkPoint, double> FindPhasesOfElements(ConformingOutputMesh_OLD conformingMesh)
         {
             var field = new Dictionary<VtkPoint, double>();
             foreach (IXMultiphaseElement element in physicalModel.Elements)
@@ -72,8 +72,8 @@ namespace MGroup.XFEM.Plotting.Writers
                 }
                 else
                 {
-                    IEnumerable<ConformingOutputMesh.Subcell> subcells = conformingMesh.GetSubcellsForOriginal(element);
-                    foreach (ConformingOutputMesh.Subcell subcell in subcells)
+                    IEnumerable<ConformingOutputMesh_OLD.Subcell> subcells = conformingMesh.GetSubcellsForOriginal(element);
+                    foreach (ConformingOutputMesh_OLD.Subcell subcell in subcells)
                     {
                         Debug.Assert(subcell.OutVertices.Count == 3 || subcell.OutVertices.Count == 4); //TODO: Not sure what happens for 2nd order elements
 

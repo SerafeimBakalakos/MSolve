@@ -75,7 +75,7 @@ namespace MGroup.XFEM.Tests.Plotting
             // Plot conforming mesh
             Dictionary<IXFiniteElement, IElementSubcell[]> triangulation = 
                 Utilities.Plotting.CreateConformingMesh(2, elementIntersections);
-            var conformingMesh = new ConformingOutputMesh(model.XNodes, model.Elements, triangulation);
+            var conformingMesh = new ConformingOutputMesh_OLD(model.XNodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathConformingMesh))
             {
                 writer.WriteMesh(conformingMesh);
@@ -121,7 +121,7 @@ namespace MGroup.XFEM.Tests.Plotting
             // Plot conforming mesh
             Dictionary<IXFiniteElement, IElementSubcell[]> triangulation =
                 Utilities.Plotting.CreateConformingMesh(2, elementIntersections);
-            var conformingMesh = new ConformingOutputMesh(model.XNodes, model.Elements, triangulation);
+            var conformingMesh = new ConformingOutputMesh_OLD(model.XNodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathConformingMesh))
             {
                 writer.WriteMesh(conformingMesh);
@@ -186,7 +186,7 @@ namespace MGroup.XFEM.Tests.Plotting
             // Plot conforming mesh
             Dictionary<IXFiniteElement, IElementSubcell[]> triangulation =
                 Utilities.Plotting.CreateConformingMesh(2, elementIntersections);
-            var conformingMesh = new ConformingOutputMesh(model.XNodes, model.Elements, triangulation);
+            var conformingMesh = new ConformingOutputMesh_OLD(model.XNodes, model.Elements, triangulation);
             using (var writer = new VtkFileWriter(pathConformingMesh))
             {
                 writer.WriteMesh(conformingMesh);

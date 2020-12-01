@@ -46,6 +46,7 @@ namespace MGroup.XFEM.Tests.Multiphase
 
                 // Create model and LSM
                 XModel<IXMultiphaseElement> model = CreateModel();
+                model.FindConformingSubcells = true;
                 PhaseGeometryModel geometryModel = CreatePhases(model);
                 string pathLevelSets = Path.Combine(directory);
 
@@ -53,7 +54,10 @@ namespace MGroup.XFEM.Tests.Multiphase
                 geometryModel.Observers.Add(new PhaseLevelSetPlotter(directory, model, geometryModel));
 
                 // Plot element - phase boundaries interactions
-                geometryModel.Observers.Add(new LsmElementIntersectionsPlotter(directory, model)); 
+                geometryModel.Observers.Add(new LsmElementIntersectionsPlotter(directory, model));
+
+                // Plot element subcells
+                model.ModelObservers.Add(new ConformingMeshPlotter(directory, model));
 
                 model.Initialize();
 
@@ -62,6 +66,7 @@ namespace MGroup.XFEM.Tests.Multiphase
                 computedFiles.Add(Path.Combine(directory, "level_set1_t0.vtk"));
                 computedFiles.Add(Path.Combine(directory, "level_set2_t0.vtk"));
                 computedFiles.Add(Path.Combine(directory, "intersections_t0.vtk"));
+                computedFiles.Add(Path.Combine(directory, "conforming_mesh_t0.vtk"));
 
                 string expectedDirectory = Path.Combine(Directory.GetParent(
                     Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "lsm_balls_2D");
@@ -69,6 +74,7 @@ namespace MGroup.XFEM.Tests.Multiphase
                 expectedFiles.Add(Path.Combine(expectedDirectory, "level_set1_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "level_set2_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "intersections_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "conforming_mesh_t0.vtk"));
 
                 for (int i = 0; i < expectedFiles.Count; ++i)
                 {

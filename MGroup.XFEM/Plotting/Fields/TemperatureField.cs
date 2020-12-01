@@ -17,9 +17,9 @@ namespace MGroup.XFEM.Plotting.Fields
     public class TemperatureField
     {
         private readonly XModel<IXMultiphaseElement> model;
-        private readonly ConformingOutputMesh outMesh;
+        private readonly ConformingOutputMesh_OLD outMesh;
 
-        public TemperatureField(XModel<IXMultiphaseElement> model, ConformingOutputMesh outMesh)
+        public TemperatureField(XModel<IXMultiphaseElement> model, ConformingOutputMesh_OLD outMesh)
         {
             this.model = model;
             this.outMesh = outMesh;
@@ -34,7 +34,7 @@ namespace MGroup.XFEM.Plotting.Fields
             foreach (IXFiniteElement element in subdomain.Elements)
             {
 
-                IEnumerable<ConformingOutputMesh.Subcell> subtriangles = outMesh.GetSubcellsForOriginal(element);
+                IEnumerable<ConformingOutputMesh_OLD.Subcell> subtriangles = outMesh.GetSubcellsForOriginal(element);
                 if (subtriangles.Count() == 0)
                 {
                     double[] nodalTemperatures = Utilities.ExtractNodalTemperaturesStandard(element, subdomain, systemSolution);
@@ -45,7 +45,7 @@ namespace MGroup.XFEM.Plotting.Fields
                 else
                 {
                     double[] nodalTemperatures = Utilities.ExtractNodalTemperatures(element, subdomain, systemSolution);
-                    foreach (ConformingOutputMesh.Subcell subcell in subtriangles)
+                    foreach (ConformingOutputMesh_OLD.Subcell subcell in subtriangles)
                     {
                         Debug.Assert(subcell.OutVertices.Count == 3 || subcell.OutVertices.Count == 4); //TODO: Not sure what happens for 2nd order elements
 
