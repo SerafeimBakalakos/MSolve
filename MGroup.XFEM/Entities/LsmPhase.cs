@@ -107,7 +107,11 @@ namespace MGroup.XFEM.Entities
                     {
                         element.Phases.Add(boundary.PositivePhase);
                         element.Phases.Add(boundary.NegativePhase);
-                        element.PhaseIntersections[boundary] = intersection;
+
+                        //TODO: The next 2 should be done together. Even better the generic element.InteractingDiscontinuities 
+                        //      should be a method that accesses the dictionary of PhaseBoundaries,Cracks, etc
+                        element.PhaseIntersections[boundary] = intersection; 
+                        element.InteractingDiscontinuities[boundary.ID] = intersection; 
                         isBoundary = true;
                     }
                     else if (intersection.RelativePosition == RelativePositionCurveElement.Conforming)

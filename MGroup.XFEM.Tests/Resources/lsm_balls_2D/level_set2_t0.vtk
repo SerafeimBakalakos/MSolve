@@ -1,4 +1,5 @@
 # vtk DataFile Version 4.1
+Header:
 ASCII
 
 DATASET UNSTRUCTURED_GRID

@@ -90,7 +90,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 = Utilities.Plotting.CalcIntersections(model, geometricModel);
             var allIntersections = new List<IElementDiscontinuityInteraction>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
-            var intersectionPlotter = new LsmElementIntersectionsPlotter(false);
+            var intersectionPlotter = new LsmElementIntersectionsPlotter_OLD(false);
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh

@@ -76,7 +76,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 = Utilities.Plotting.CalcIntersections(model, lsmSurfaces);
             var allIntersections = new List<IElementDiscontinuityInteraction>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
-            var intersectionPlotter = new LsmElementIntersectionsPlotter();
+            var intersectionPlotter = new LsmElementIntersectionsPlotter_OLD();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
@@ -125,7 +125,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 = Utilities.Plotting.CalcIntersections(model, lsmSurfaces);
             var allIntersections = new List<IElementDiscontinuityInteraction>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
-            var intersectionPlotter = new LsmElementIntersectionsPlotter();
+            var intersectionPlotter = new LsmElementIntersectionsPlotter_OLD();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
@@ -191,7 +191,7 @@ namespace MGroup.XFEM.Tests.Plotting
                 = Utilities.Plotting.CalcIntersections(model, lsmSurfaces);
             var allIntersections = new List<IElementDiscontinuityInteraction>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
-            var intersectionPlotter = new LsmElementIntersectionsPlotter();
+            var intersectionPlotter = new LsmElementIntersectionsPlotter_OLD();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh

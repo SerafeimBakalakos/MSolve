@@ -81,7 +81,7 @@ namespace MGroup.XFEM.Tests.Unions
                 = Utilities.Plotting.CalcIntersections(model, geometricModel);
             var allIntersections = new List<IElementDiscontinuityInteraction>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
-            var intersectionPlotter = new LsmElementIntersectionsPlotter();
+            var intersectionPlotter = new LsmElementIntersectionsPlotter_OLD();
             intersectionPlotter.PlotIntersections(pathIntersections, allIntersections);
 
             // Plot conforming mesh
