@@ -140,7 +140,7 @@ namespace MGroup.XFEM.Tests.Plotting
             integrationPlotter.PlotBoundaryIntegrationPoints(pathIntegrationBoundary, boundaryIntegrationOrder);
 
             // Plot phases
-            var phasePlotter = new PhasePlotter(model, geometricModel, defaultPhaseID);
+            var phasePlotter = new PhasePlotter_OLD(model, geometricModel, defaultPhaseID);
             phasePlotter.PlotNodes(pathPhasesOfNodes);
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
 
@@ -193,7 +193,7 @@ namespace MGroup.XFEM.Tests.Plotting
             }
 
             // Plot phases
-            var phasePlotter = new PhasePlotter(model, geometricModel, defaultPhaseID);
+            var phasePlotter = new PhasePlotter_OLD(model, geometricModel, defaultPhaseID);
             phasePlotter.PlotNodes(pathPhasesOfNodes);
             phasePlotter.PlotElements(pathPhasesOfElements, conformingMesh);
 

@@ -54,11 +54,17 @@ namespace MGroup.XFEM.Tests.Multiphase
                 // Plot level sets
                 geometryModel.Observers.Add(new PhaseLevelSetPlotter(directory, model, geometryModel));
 
+                // Plot phases of nodes
+                geometryModel.Observers.Add(new NodalPhasesPlotter(directory, model));
+
                 // Plot element - phase boundaries interactions
                 geometryModel.Observers.Add(new LsmElementIntersectionsPlotter(directory, model));
 
                 // Plot element subcells
                 model.ModelObservers.Add(new ConformingMeshPlotter(directory, model));
+
+                // Plot phases of each element subcell
+                model.ModelObservers.Add(new ElementPhasePlotter(directory, model, geometryModel, defaultPhaseID));
 
                 // Plot bulk and boundary integration points of each element
                 model.ModelObservers.Add(new IntegrationPointsPlotter(directory, model));
@@ -70,18 +76,22 @@ namespace MGroup.XFEM.Tests.Multiphase
                 var computedFiles = new List<string>();
                 computedFiles.Add(Path.Combine(directory, "level_set1_t0.vtk"));
                 computedFiles.Add(Path.Combine(directory, "level_set2_t0.vtk"));
+                computedFiles.Add(Path.Combine(directory, "nodal_phases_t0.vtk"));
                 computedFiles.Add(Path.Combine(directory, "intersections_t0.vtk"));
                 computedFiles.Add(Path.Combine(directory, "conforming_mesh_t0.vtk"));
+                computedFiles.Add(Path.Combine(directory, "element_phases_t0.vtk"));
                 computedFiles.Add(Path.Combine(directory, "gauss_points_bulk_t0.vtk"));
                 computedFiles.Add(Path.Combine(directory, "gauss_points_boundary_t0.vtk"));
-
+                
                 string expectedDirectory = Path.Combine(Directory.GetParent(
                     Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "lsm_balls_2D");
                 var expectedFiles = new List<string>();
                 expectedFiles.Add(Path.Combine(expectedDirectory, "level_set1_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "level_set2_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "nodal_phases_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "intersections_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "conforming_mesh_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "element_phases_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_bulk_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_boundary_t0.vtk"));
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
@@ -12,52 +13,49 @@ using MGroup.XFEM.Plotting.Mesh;
 
 namespace MGroup.XFEM.Plotting.Writers
 {
-    public class PhasePlotter
+    public class ElementPhasePlotter : IModelObserver
     {
-        public const string vtkReaderVersion = "4.1";
-
         private readonly double colorForDefaultPhase;
         private readonly int defaultPhaseID;
-        private readonly PhaseGeometryModel_OLD geometricModel;
+        private readonly PhaseGeometryModel geometricModel;
         private readonly XModel<IXMultiphaseElement> physicalModel;
+        private readonly string outputDirectory;
 
-        public PhasePlotter(XModel<IXMultiphaseElement> physicalModel, PhaseGeometryModel_OLD geometricModel, int defaultPhaseID, 
-            double colorForDefaultPhase = 0.0)
+        private int iteration;
+
+        public ElementPhasePlotter(string outputDirectory, XModel<IXMultiphaseElement> physicalModel, 
+            PhaseGeometryModel geometricModel, int defaultPhaseID, double colorForDefaultPhase)
         {
+            this.outputDirectory = outputDirectory;
             this.physicalModel = physicalModel;
             this.geometricModel = geometricModel;
             this.defaultPhaseID = defaultPhaseID;
             this.colorForDefaultPhase = colorForDefaultPhase;
+
+            iteration = 0;
         }
 
-        public void PlotElements(string path, ConformingOutputMesh_OLD conformingMesh)
+        public ElementPhasePlotter(string outputDirectory, XModel<IXMultiphaseElement> physicalModel,
+            PhaseGeometryModel geometricModel, int defaultPhaseID) : 
+            this(outputDirectory, physicalModel, geometricModel, defaultPhaseID, defaultPhaseID)
         {
+        }
+
+        public void Update()
+        {
+            var conformingMesh = new ConformingOutputMesh(physicalModel);
             Dictionary<VtkPoint, double> phases = FindPhasesOfElements(conformingMesh);
+            string path = Path.Combine(outputDirectory, $"element_phases_t{iteration}.vtk");
             using (var writer = new Writers.VtkFileWriter(path))
             {
                 writer.WriteMesh(conformingMesh);
                 writer.WriteScalarField("phase", conformingMesh, v => phases[v]);
             }
+
+            iteration++;
         }
 
-        public void PlotNodes(string path)
-        {
-            using (var writer = new VtkPointWriter(path))
-            {
-                var nodalPhases = new Dictionary<INode, double>();
-
-                foreach (XNode node in physicalModel.XNodes)
-                {
-                    double phaseID = node.Phase.ID;
-                    if (node.Phase.ID == defaultPhaseID) phaseID = colorForDefaultPhase;
-                    nodalPhases[node] = phaseID;
-                }
-
-                writer.WriteScalarField("nodal_phases", nodalPhases);
-            }
-        }
-
-        private Dictionary<VtkPoint, double> FindPhasesOfElements(ConformingOutputMesh_OLD conformingMesh)
+        private Dictionary<VtkPoint, double> FindPhasesOfElements(ConformingOutputMesh conformingMesh)
         {
             var field = new Dictionary<VtkPoint, double>();
             foreach (IXMultiphaseElement element in physicalModel.Elements)
@@ -72,8 +70,8 @@ namespace MGroup.XFEM.Plotting.Writers
                 }
                 else
                 {
-                    IEnumerable<ConformingOutputMesh_OLD.Subcell> subcells = conformingMesh.GetSubcellsForOriginal(element);
-                    foreach (ConformingOutputMesh_OLD.Subcell subcell in subcells)
+                    IEnumerable<ConformingOutputMesh.Subcell> subcells = conformingMesh.GetSubcellsForOriginal(element);
+                    foreach (ConformingOutputMesh.Subcell subcell in subcells)
                     {
                         Debug.Assert(subcell.OutVertices.Count == 3 || subcell.OutVertices.Count == 4); //TODO: Not sure what happens for 2nd order elements
 

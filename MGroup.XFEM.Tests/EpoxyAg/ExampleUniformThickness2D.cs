@@ -73,7 +73,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             geometricModel.FindConformingMesh();
             
             // Plot phases
-            var phasePlotter = new PhasePlotter(model, geometricModel, defaultPhaseID);
+            var phasePlotter = new PhasePlotter_OLD(model, geometricModel, defaultPhaseID);
             phasePlotter.PlotNodes(pathPhasesOfNodes);
 
             //TODO: The next intersections and conforming mesh should have been taken care by the geometric model. 
