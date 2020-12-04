@@ -243,7 +243,7 @@ namespace MGroup.XFEM.Tests.Plotting
             }
             using (var writer = new VtkFileWriter(pathTemperatureField))
             {
-                var temperatureField = new TemperatureField(model, conformingMesh);
+                var temperatureField = new TemperatureField_OLD(model, conformingMesh);
                 writer.WriteMesh(conformingMesh);
                 writer.WriteScalarField("temperature", conformingMesh, temperatureField.CalcValuesAtVertices(solution));
             }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Enrichment.SingularityResolution;
@@ -10,6 +11,8 @@ using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Materials;
 using MGroup.XFEM.Plotting;
+using MGroup.XFEM.Plotting.Fields;
+using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
@@ -37,7 +40,7 @@ namespace MGroup.XFEM.Tests.Multiphase
         private const double specialHeatCoeff = 1.0;
 
         [Fact]
-        public static void TestGeometry2D()
+        public static void TestModel2D()
         {
             try
             {
@@ -50,7 +53,6 @@ namespace MGroup.XFEM.Tests.Multiphase
                 XModel<IXMultiphaseElement> model = CreateModel();
                 model.FindConformingSubcells = true;
                 PhaseGeometryModel geometryModel = CreatePhases(model);
-                string pathLevelSets = Path.Combine(directory);
 
                 // Plot level sets
                 geometryModel.Observers.Add(new PhaseLevelSetPlotter(directory, model, geometryModel));
@@ -77,7 +79,7 @@ namespace MGroup.XFEM.Tests.Multiphase
                 double elementSize = (maxCoords[0] - minCoords[0]) / numElements[0];
                 model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(directory, model, elementSize, 2));
 
-                // Initialize model state so that everything descrived above can be tracked
+                // Initialize model state so that everything described above can be tracked
                 model.Initialize();
 
                 // Compare output
@@ -106,6 +108,58 @@ namespace MGroup.XFEM.Tests.Multiphase
                 expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_bulk_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_boundary_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "enriched_nodes_heaviside_t0.vtk"));
+
+                for (int i = 0; i < expectedFiles.Count; ++i)
+                {
+                    Assert.True(IOUtilities.AreFilesEquivalent(expectedFiles[i], computedFiles[i]));
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(directory))
+                {
+                    DirectoryInfo di = new DirectoryInfo(directory);
+                    di.Delete(true);//true means delete subdirectories and files
+                }
+            }
+        }
+
+        [Fact]
+        public static void TestSolution2D()
+        {
+            try
+            {
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                // Create model and LSM
+                XModel<IXMultiphaseElement> model = CreateModel();
+                model.FindConformingSubcells = true;
+                PhaseGeometryModel geometryModel = CreatePhases(model);
+
+                // Run analysis
+                model.Initialize();
+                IVectorView solution = Analysis.RunStaticAnalysis(model);
+
+                // Plot temperature and heat flux
+                PlotTemperatureAndHeatFlux(directory, model, solution);
+
+                // Compare output
+                var computedFiles = new List<string>();
+                computedFiles.Add(Path.Combine(directory, "temperature_nodes.vtk"));
+                computedFiles.Add(Path.Combine(directory, "temperature_gauss_points.vtk"));
+                computedFiles.Add(Path.Combine(directory, "temperature_field.vtk"));
+                computedFiles.Add(Path.Combine(directory, "heat_flux_gauss_points.vtk"));
+
+                string expectedDirectory = Path.Combine(Directory.GetParent(
+                    Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "lsm_balls_2D");
+                var expectedFiles = new List<string>();
+                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_nodes.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_gauss_points.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_field.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "heat_flux_gauss_points.vtk"));
 
                 for (int i = 0; i < expectedFiles.Count; ++i)
                 {
@@ -179,6 +233,44 @@ namespace MGroup.XFEM.Tests.Multiphase
             }
 
             return curves;
+        }
+
+        private static void PlotTemperatureAndHeatFlux(string outputDirectory, XModel<IXMultiphaseElement> model,
+            IVectorView solution)
+        {
+            // Temperature at nodes
+            string path = Path.Combine(outputDirectory, "temperature_nodes.vtk");
+            using (var writer = new VtkPointWriter(path))
+            {
+                var temperatureField = new TemperatureAtNodesField(model);
+                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
+            }
+
+            // Temperature at Gauss Points
+            path = Path.Combine(outputDirectory, "temperature_gauss_points.vtk");
+            using (var writer = new VtkPointWriter(path))
+            {
+                var temperatureField = new TemperatureAtGaussPointsField(model);
+                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
+            }
+
+            // Temperature field
+            path = Path.Combine(outputDirectory, "temperature_field.vtk");
+            var conformingMesh = new ConformingOutputMesh(model);
+            using (var writer = new VtkFileWriter(path))
+            {
+                var temperatureField = new TemperatureField(model, conformingMesh);
+                writer.WriteMesh(conformingMesh);
+                writer.WriteScalarField("temperature", conformingMesh, temperatureField.CalcValuesAtVertices(solution));
+            }
+
+            // Heat flux at Gauss Points
+            path = Path.Combine(outputDirectory, "heat_flux_gauss_points.vtk");
+            using (var writer = new VtkPointWriter(path))
+            {
+                var fluxField = new HeatFluxAtGaussPointsField(model);
+                writer.WriteVectorField("heat_flux", fluxField.CalcValuesAtVertices(solution));
+            }
         }
     }
 }
