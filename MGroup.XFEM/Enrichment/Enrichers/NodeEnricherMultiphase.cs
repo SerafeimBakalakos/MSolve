@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Enrichment.SingularityResolution;
@@ -111,20 +112,17 @@ namespace MGroup.XFEM.Enrichment.Enrichers
         private int DefineStepEnrichments(int idStart)
         {
             // Keep track of identified interactions between phases, to avoid duplicate enrichments
-            var uniqueEnrichments = new Dictionary<int, Dictionary<int, PhaseStepEnrichment>>();
-
-            //TODO: This would be faster, but only works for consecutive phase IDs starting from 0.
-            //var uniqueEnrichments = new Dictionary<int, StepEnrichment>[geometricModel.Phases.Count];
+            var uniqueEnrichments = new Dictionary<int, Dictionary<int, EnrichmentItem>>();
 
             for (int p = 1; p < geometricModel.Phases.Count; ++p)
             {
-                uniqueEnrichments[geometricModel.Phases[p].ID] = new Dictionary<int, PhaseStepEnrichment>();
+                uniqueEnrichments[geometricModel.Phases[p].ID] = new Dictionary<int, EnrichmentItem>();
             }
 
             int id = idStart;
             for (int p = 1; p < geometricModel.Phases.Count; ++p)
             {
-                foreach (ClosedLsmPhaseBoundary boundary in geometricModel.Phases[p].ExternalBoundaries)
+                foreach (IPhaseBoundary boundary in geometricModel.Phases[p].ExternalBoundaries)
                 {
                     // It may have been processed when iterating the boundaries of the opposite phase.
                     if (boundary.StepEnrichment != null) continue;
@@ -145,41 +143,58 @@ namespace MGroup.XFEM.Enrichment.Enrichers
 
                     // Find the existing enrichment for this phase interaction or create a new one
                     bool enrichmentsExists = 
-                        uniqueEnrichments[maxPhase.ID].TryGetValue(minPhase.ID, out PhaseStepEnrichment enrichment);
+                        uniqueEnrichments[maxPhase.ID].TryGetValue(minPhase.ID, out EnrichmentItem enrichmentItem);
                     if (!enrichmentsExists)
                     {
-                        enrichment = DefineStepEnrichment(id, boundary);
+                        var enrichmentFunc = DefineStepEnrichment(boundary);
+                        var enrichedDof = new EnrichedDof(enrichmentFunc, ThermalDof.Temperature);
+                        enrichmentItem = new EnrichmentItem(id,
+                            new IEnrichmentFunction[] { enrichmentFunc }, new IDofType[] { enrichedDof });
                         ++id;
-                        uniqueEnrichments[maxPhase.ID][minPhase.ID] = enrichment;
+                        uniqueEnrichments[maxPhase.ID][minPhase.ID] = enrichmentItem;
                     }
 
-                    boundary.StepEnrichment = enrichment;
+                    boundary.StepEnrichment = enrichmentItem;
                 }
             }
             return id - idStart;
         }
 
-        private PhaseStepEnrichment DefineStepEnrichment(int id, ClosedLsmPhaseBoundary boundary)
+        private PhaseStepEnrichment DefineStepEnrichment(IPhaseBoundary boundary)
         {
+            //TODO: This is horrible
             if (boundary.NegativePhase is DefaultPhase)
             {
-                return new PhaseStepEnrichment(id, boundary.PositivePhase, boundary.NegativePhase);
+                return new PhaseStepEnrichment(boundary.PositivePhase, boundary.NegativePhase);
             }
             else if (boundary.PositivePhase is DefaultPhase)
             {
-                return new PhaseStepEnrichment(id, boundary.NegativePhase, boundary.PositivePhase);
+                return new PhaseStepEnrichment(boundary.NegativePhase, boundary.PositivePhase);
             }
             else if (/*boundary.PositivePhase is HollowPhase &&*/ boundary.NegativePhase is ConvexPhase)
             {
-                return new PhaseStepEnrichment(id, boundary.NegativePhase, boundary.PositivePhase);
+                return new PhaseStepEnrichment(boundary.NegativePhase, boundary.PositivePhase);
             }
             else if (/*boundary.NegativePhase is HollowPhase &&*/ boundary.PositivePhase is ConvexPhase)
             {
-                return new PhaseStepEnrichment(id, boundary.PositivePhase, boundary.NegativePhase);
+                return new PhaseStepEnrichment(boundary.PositivePhase, boundary.NegativePhase);
             }
             else // Does not matter which phase will be internal/external
             {
-                return new PhaseStepEnrichment(id, boundary.NegativePhase, boundary.PositivePhase);
+                return new PhaseStepEnrichment(boundary.NegativePhase, boundary.PositivePhase);
+            }
+        }
+
+        private void EnrichNode(XNode node, EnrichmentItem enrichment)
+        {
+            if (!node.Enrichments.Contains(enrichment))
+            {
+                node.Enrichments.Add(enrichment);
+                foreach (IEnrichmentFunction enrichmentFunc in enrichment.EnrichmentFunctions)
+                {
+                    double value = enrichmentFunc.EvaluateAt(node);
+                    node.EnrichmentFuncs[enrichmentFunc] = value;
+                }
             }
         }
 
@@ -205,16 +220,17 @@ namespace MGroup.XFEM.Enrichment.Enrichers
             }
 
             // Find nodes to potentially be enriched by step enrichments
-            var nodesPerStepEnrichment = new Dictionary<IEnrichmentFunction, HashSet<XNode>>();
+            var nodesPerStepEnrichment = new Dictionary<EnrichmentItem, HashSet<XNode>>();
             foreach (IPhase phase in geometricModel.Phases.Values)
             {
                 if (phase is DefaultPhase) continue;
                 foreach (IXMultiphaseElement element in phase.BoundaryElements)
                 {
-                    foreach (ClosedLsmPhaseBoundary boundary in element.PhaseIntersections.Keys)
+                    foreach (IPhaseBoundary boundary in element.PhaseIntersections.Keys)
                     {
                         // Find the nodes to potentially be enriched by this step enrichment 
-                        PhaseStepEnrichment stepEnrichment = boundary.StepEnrichment;
+                        EnrichmentItem stepEnrichment = boundary.StepEnrichment;
+                        var stepEnrichmentFunc = (PhaseStepEnrichment)stepEnrichment.EnrichmentFunctions[0]; //TODO: remove the cast
                         bool exists = nodesPerStepEnrichment.TryGetValue(stepEnrichment, out HashSet<XNode> nodesToEnrich);
                         if (!exists)
                         {
@@ -225,7 +241,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
                         // Only enrich a node if it does not have a corresponding junction enrichment
                         foreach (XNode node in element.Nodes)
                         {
-                            if (!HasCorrespondingJunction(node, stepEnrichment)) nodesToEnrich.Add(node);
+                            if (!HasCorrespondingJunction(node, stepEnrichmentFunc)) nodesToEnrich.Add(node);
                         }
                     }
                 }
@@ -234,7 +250,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
             // Enrich these nodes with the corresponding step enrichment
             foreach (var enrichmentNodesPair in nodesPerStepEnrichment)
             {
-                IEnrichmentFunction stepEnrichment = enrichmentNodesPair.Key;
+                EnrichmentItem stepEnrichment = enrichmentNodesPair.Key;
                 HashSet<XNode> nodesToEnrich = enrichmentNodesPair.Value;
 
                 // Some of these nodes may need to not be enriched after all, to avoid singularities in the global stiffness matrix

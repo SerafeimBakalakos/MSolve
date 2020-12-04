@@ -122,7 +122,7 @@ namespace MGroup.XFEM.Tests.Plotting
             model.UpdateMaterials();
 
             double elementSize = (maxCoords[0] - minCoords[0]) / numElements[0];
-            var enrichmentPlotter = new EnrichmentPlotter(model, elementSize, true);
+            var enrichmentPlotter = new EnrichmentPlotter_OLD(model, elementSize, true);
             enrichmentPlotter.PlotStepEnrichedNodes(pathStepEnrichedNodes);
             //enrichmentPlotter.PlotJunctionEnrichedNodes(pathJunctionEnrichedNodes);
         }

@@ -13,9 +13,8 @@ namespace MGroup.XFEM.Enrichment.Functions
         private readonly IPhase internalPhase, externalPhase;
         private readonly IPhase minPhase, maxPhase;
 
-        public PhaseStepEnrichment(int id, IPhase internalPhase, IPhase externalPhase)
+        public PhaseStepEnrichment(IPhase internalPhase, IPhase externalPhase)
         {
-            this.ID = id;
             this.internalPhase = internalPhase;
             this.externalPhase = externalPhase;
             (this.minPhase, this.maxPhase) = FindMinMaxPhases(internalPhase, externalPhase);
@@ -23,8 +22,6 @@ namespace MGroup.XFEM.Enrichment.Functions
         }
 
         public EnrichedDof Dof { get; }
-
-        public int ID { get; }
 
         public IReadOnlyList<IPhase> Phases => new IPhase[] { maxPhase, minPhase };
 

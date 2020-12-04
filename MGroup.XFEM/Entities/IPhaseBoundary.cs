@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MGroup.XFEM.Enrichment.Functions;
+using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Geometry.LSM;
 
 namespace MGroup.XFEM.Entities
@@ -12,7 +12,7 @@ namespace MGroup.XFEM.Entities
 
         IClosedGeometry Geometry { get; }
 
-        PhaseStepEnrichment StepEnrichment { get; }
+        EnrichmentItem StepEnrichment { get; set; }
 
         IPhase NegativePhase { get; set; }
         IPhase PositivePhase { get; set; }

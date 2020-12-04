@@ -125,7 +125,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
             model.UpdateMaterials();
 
             double elementSize = (maxCoords[0] - minCoords[0]) / numElements[0];
-            var enrichmentPlotter = new EnrichmentPlotter(model, elementSize, false);
+            var enrichmentPlotter = new EnrichmentPlotter_OLD(model, elementSize, false);
             enrichmentPlotter.PlotStepEnrichedNodes(pathStepEnrichedNodes);
             //enrichmentPlotter.PlotJunctionEnrichedNodes(pathJunctionEnrichedNodes);
 

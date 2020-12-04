@@ -21,7 +21,11 @@ namespace MGroup.XFEM.Entities
 
         public int ID { get; }
 
-        public PhaseStepEnrichment StepEnrichment { get; set; }
+        //MODIFICATION NEEDED: Following the design of cracks, the enrichments functions and items should be defined by this 
+        //  class, not the INodeEnricher. However if this is problematic if there are multiple 
+        //  boundaries between the same 2 phases, because then there would be duplicate enrichments! This case does not affect
+        //  closed geometries that are defined as a single boundary.
+        public EnrichmentItem StepEnrichment { get; set; } 
 
         public IPhase NegativePhase { get; set; }
         public IPhase PositivePhase { get; set; }

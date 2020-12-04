@@ -14,6 +14,7 @@ using MGroup.XFEM.Plotting.Writers;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
 
+//MODIFICATION NEEDED: enrichments, temperature field, temperature at nodes & GPs, heat flux at GPs
 namespace MGroup.XFEM.Tests.Multiphase
 {
     public static class LsmBalls2DTests
@@ -66,8 +67,15 @@ namespace MGroup.XFEM.Tests.Multiphase
                 // Plot phases of each element subcell
                 model.ModelObservers.Add(new ElementPhasePlotter(directory, model, geometryModel, defaultPhaseID));
 
+                // Write the size of each phase
+                model.ModelObservers.Add(new PhasesSizeWriter(directory, geometryModel));
+
                 // Plot bulk and boundary integration points of each element
                 model.ModelObservers.Add(new IntegrationPointsPlotter(directory, model));
+
+                // Plot enrichments
+                double elementSize = (maxCoords[0] - minCoords[0]) / numElements[0];
+                model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(directory, model, elementSize, 2));
 
                 // Initialize model state so that everything descrived above can be tracked
                 model.Initialize();
@@ -80,9 +88,11 @@ namespace MGroup.XFEM.Tests.Multiphase
                 computedFiles.Add(Path.Combine(directory, "intersections_t0.vtk"));
                 computedFiles.Add(Path.Combine(directory, "conforming_mesh_t0.vtk"));
                 computedFiles.Add(Path.Combine(directory, "element_phases_t0.vtk"));
+                computedFiles.Add(Path.Combine(directory, "phase_sizes_t0.txt"));
                 computedFiles.Add(Path.Combine(directory, "gauss_points_bulk_t0.vtk"));
                 computedFiles.Add(Path.Combine(directory, "gauss_points_boundary_t0.vtk"));
-                
+                computedFiles.Add(Path.Combine(directory, "enriched_nodes_heaviside_t0.vtk"));
+
                 string expectedDirectory = Path.Combine(Directory.GetParent(
                     Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "lsm_balls_2D");
                 var expectedFiles = new List<string>();
@@ -92,8 +102,10 @@ namespace MGroup.XFEM.Tests.Multiphase
                 expectedFiles.Add(Path.Combine(expectedDirectory, "intersections_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "conforming_mesh_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "element_phases_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "phase_sizes_t0.txt"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_bulk_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_boundary_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "enriched_nodes_heaviside_t0.vtk"));
 
                 for (int i = 0; i < expectedFiles.Count; ++i)
                 {

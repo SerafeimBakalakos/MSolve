@@ -9,13 +9,13 @@ using MGroup.XFEM.Entities;
 
 namespace MGroup.XFEM.Plotting.Writers
 {
-    public class EnrichmentPlotter
+    public class EnrichmentPlotter_OLD
     {
         private readonly double elementSize;
         private readonly XModel<IXMultiphaseElement> physicalModel;
         private readonly bool plot3D;
 
-        public EnrichmentPlotter(XModel<IXMultiphaseElement> model, double elementSize, bool plot3D)
+        public EnrichmentPlotter_OLD(XModel<IXMultiphaseElement> model, double elementSize, bool plot3D)
         {
             this.physicalModel = model;
             this.elementSize = elementSize;
