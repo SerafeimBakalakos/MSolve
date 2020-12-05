@@ -52,8 +52,8 @@ namespace MGroup.XFEM.Tests.Utilities
         public static IVectorView RunStaticAnalysis(IXModel model)
         {
             Console.WriteLine("Starting analysis");
-            SuiteSparseSolver solver = new SuiteSparseSolver.Builder().BuildSolver(model);
-            //SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(model);
+            //SuiteSparseSolver solver = new SuiteSparseSolver.Builder().BuildSolver(model);
+            SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(model);
             var problem = new ProblemThermalSteadyState(model, solver);
             var linearAnalyzer = new LinearAnalyzer(model, solver, problem);
             var staticAnalyzer = new StaticAnalyzer(model, solver, problem, linearAnalyzer);

@@ -109,9 +109,10 @@ namespace MGroup.XFEM.Tests.Multiphase
                 expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_boundary_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "enriched_nodes_heaviside_t0.vtk"));
 
+                double tolerance = 1E-6;
                 for (int i = 0; i < expectedFiles.Count; ++i)
                 {
-                    Assert.True(IOUtilities.AreFilesEquivalent(expectedFiles[i], computedFiles[i]));
+                    Assert.True(IOUtilities.AreDoubleValueFilesEquivalent(expectedFiles[i], computedFiles[i], tolerance));
                 }
             }
             finally
@@ -161,9 +162,10 @@ namespace MGroup.XFEM.Tests.Multiphase
                 expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_field.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "heat_flux_gauss_points.vtk"));
 
+                double tolerance = 1E-6;
                 for (int i = 0; i < expectedFiles.Count; ++i)
                 {
-                    Assert.True(IOUtilities.AreFilesEquivalent(expectedFiles[i], computedFiles[i]));
+                    Assert.True(IOUtilities.AreDoubleValueFilesEquivalent(expectedFiles[i], computedFiles[i], tolerance));
                 }
             }
             finally

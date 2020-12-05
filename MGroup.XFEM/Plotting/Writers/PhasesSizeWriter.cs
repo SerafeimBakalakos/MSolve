@@ -29,10 +29,10 @@ namespace MGroup.XFEM.Plotting.Writers
             {
                 var builder = new StringBuilder();
                 writer.WriteLine("Total areas/volumes of each material phase:");
-                writer.WriteLine("Phase | Size");
+                writer.WriteLine("Phase Size");
                 foreach (int phase in volumes.Keys)
                 {
-                    writer.WriteLine($"{phase} | {volumes[phase]}");
+                    writer.WriteLine($"{phase} {volumes[phase]}");
                 }
                 writer.Flush();
             }
