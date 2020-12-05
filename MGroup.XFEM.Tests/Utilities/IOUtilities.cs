@@ -107,11 +107,6 @@ namespace MGroup.XFEM.Tests.Utilities
         /// </param>
         internal static bool AreDoubleValueFilesEquivalent(string file1, string file2, double tolerance)
         {
-            //HERE: test and delete this comment
-            // Use this https://docs.microsoft.com/en-us/dotnet/api/system.double.tryparse?view=net-5.0 for the first word of
-            // each line, to decide if the line is a title or contains actual data. For actual data use the double numbers
-            // and tolerance for the comparison
-
             var comparer = new ValueComparer(tolerance);
 
             // Determine if the same file was referenced two times.
@@ -130,8 +125,14 @@ namespace MGroup.XFEM.Tests.Utilities
                     string line1 = reader1.ReadLine();
                     string line2 = reader2.ReadLine();
 
-                    if ((line1 == null) && (line2 == null)) return true; // both files have ended without finding a difference.
-                    else if ((line1 == null) != (line2 == null)) return false; // only 1 file has ended.
+                    if ((line1 == null) && (line2 == null))
+                    {
+                        return true; // both files have ended without finding a difference.
+                    }
+                    else if ((line1 == null) != (line2 == null))
+                    {
+                        return false; // only 1 file has ended.
+                    }
                     
                     var words1 = line1.Split(' ', ',');
                     bool valueLine = double.TryParse(words1[0], out double number);

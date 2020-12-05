@@ -17,13 +17,14 @@ using MGroup.XFEM.Plotting.Writers;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
 
-//MODIFICATION NEEDED: enrichments, temperature field, temperature at nodes & GPs, heat flux at GPs
 namespace MGroup.XFEM.Tests.Multiphase
 {
     public static class LsmBalls2DTests
     {
-        private static readonly string directory = Path.Combine(
-            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "lsm_balls_2D_temp"); 
+        private static readonly string outputDirectory = Path.Combine(
+            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "lsm_balls_2D_temp");
+        private static readonly string expectedDirectory = Path.Combine(
+            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "lsm_balls_2D");
 
         private static readonly double[] minCoords = { -1.0, -1.0 };
         private static readonly double[] maxCoords = { +1.0, +1.0 };
@@ -40,13 +41,13 @@ namespace MGroup.XFEM.Tests.Multiphase
         private const double specialHeatCoeff = 1.0;
 
         [Fact]
-        public static void TestModel2D()
+        public static void TestModel()
         {
             try
             {
-                if (!Directory.Exists(directory))
+                if (!Directory.Exists(outputDirectory))
                 {
-                    Directory.CreateDirectory(directory);
+                    Directory.CreateDirectory(outputDirectory);
                 }
 
                 // Create model and LSM
@@ -55,48 +56,46 @@ namespace MGroup.XFEM.Tests.Multiphase
                 PhaseGeometryModel geometryModel = CreatePhases(model);
 
                 // Plot level sets
-                geometryModel.Observers.Add(new PhaseLevelSetPlotter(directory, model, geometryModel));
+                geometryModel.Observers.Add(new PhaseLevelSetPlotter(outputDirectory, model, geometryModel));
 
                 // Plot phases of nodes
-                geometryModel.Observers.Add(new NodalPhasesPlotter(directory, model));
+                geometryModel.Observers.Add(new NodalPhasesPlotter(outputDirectory, model));
 
                 // Plot element - phase boundaries interactions
-                geometryModel.Observers.Add(new LsmElementIntersectionsPlotter(directory, model));
+                geometryModel.Observers.Add(new LsmElementIntersectionsPlotter(outputDirectory, model));
 
                 // Plot element subcells
-                model.ModelObservers.Add(new ConformingMeshPlotter(directory, model));
+                model.ModelObservers.Add(new ConformingMeshPlotter(outputDirectory, model));
 
                 // Plot phases of each element subcell
-                model.ModelObservers.Add(new ElementPhasePlotter(directory, model, geometryModel, defaultPhaseID));
+                model.ModelObservers.Add(new ElementPhasePlotter(outputDirectory, model, geometryModel, defaultPhaseID));
 
                 // Write the size of each phase
-                model.ModelObservers.Add(new PhasesSizeWriter(directory, geometryModel));
+                model.ModelObservers.Add(new PhasesSizeWriter(outputDirectory, geometryModel));
 
                 // Plot bulk and boundary integration points of each element
-                model.ModelObservers.Add(new IntegrationPointsPlotter(directory, model));
+                model.ModelObservers.Add(new IntegrationPointsPlotter(outputDirectory, model));
 
                 // Plot enrichments
                 double elementSize = (maxCoords[0] - minCoords[0]) / numElements[0];
-                model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(directory, model, elementSize, 2));
+                model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 2));
 
                 // Initialize model state so that everything described above can be tracked
                 model.Initialize();
 
                 // Compare output
                 var computedFiles = new List<string>();
-                computedFiles.Add(Path.Combine(directory, "level_set1_t0.vtk"));
-                computedFiles.Add(Path.Combine(directory, "level_set2_t0.vtk"));
-                computedFiles.Add(Path.Combine(directory, "nodal_phases_t0.vtk"));
-                computedFiles.Add(Path.Combine(directory, "intersections_t0.vtk"));
-                computedFiles.Add(Path.Combine(directory, "conforming_mesh_t0.vtk"));
-                computedFiles.Add(Path.Combine(directory, "element_phases_t0.vtk"));
-                computedFiles.Add(Path.Combine(directory, "phase_sizes_t0.txt"));
-                computedFiles.Add(Path.Combine(directory, "gauss_points_bulk_t0.vtk"));
-                computedFiles.Add(Path.Combine(directory, "gauss_points_boundary_t0.vtk"));
-                computedFiles.Add(Path.Combine(directory, "enriched_nodes_heaviside_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "level_set1_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "level_set2_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "nodal_phases_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "intersections_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "conforming_mesh_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "element_phases_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "phase_sizes_t0.txt"));
+                computedFiles.Add(Path.Combine(outputDirectory, "gauss_points_bulk_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "gauss_points_boundary_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "enriched_nodes_heaviside_t0.vtk"));
 
-                string expectedDirectory = Path.Combine(Directory.GetParent(
-                    Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "lsm_balls_2D");
                 var expectedFiles = new List<string>();
                 expectedFiles.Add(Path.Combine(expectedDirectory, "level_set1_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "level_set2_t0.vtk"));
@@ -117,22 +116,22 @@ namespace MGroup.XFEM.Tests.Multiphase
             }
             finally
             {
-                if (Directory.Exists(directory))
+                if (Directory.Exists(outputDirectory))
                 {
-                    DirectoryInfo di = new DirectoryInfo(directory);
+                    DirectoryInfo di = new DirectoryInfo(outputDirectory);
                     di.Delete(true);//true means delete subdirectories and files
                 }
             }
         }
 
         [Fact]
-        public static void TestSolution2D()
+        public static void TestSolution()
         {
             try
             {
-                if (!Directory.Exists(directory))
+                if (!Directory.Exists(outputDirectory))
                 {
-                    Directory.CreateDirectory(directory);
+                    Directory.CreateDirectory(outputDirectory);
                 }
 
                 // Create model and LSM
@@ -145,22 +144,20 @@ namespace MGroup.XFEM.Tests.Multiphase
                 IVectorView solution = Analysis.RunStaticAnalysis(model);
 
                 // Plot temperature and heat flux
-                PlotTemperatureAndHeatFlux(directory, model, solution);
+                PlotTemperatureAndHeatFlux(outputDirectory, model, solution);
 
                 // Compare output
                 var computedFiles = new List<string>();
-                computedFiles.Add(Path.Combine(directory, "temperature_nodes.vtk"));
-                computedFiles.Add(Path.Combine(directory, "temperature_gauss_points.vtk"));
-                computedFiles.Add(Path.Combine(directory, "temperature_field.vtk"));
-                computedFiles.Add(Path.Combine(directory, "heat_flux_gauss_points.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "temperature_nodes_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "temperature_gauss_points_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "temperature_field_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "heat_flux_gauss_points_t0.vtk"));
 
-                string expectedDirectory = Path.Combine(Directory.GetParent(
-                    Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "lsm_balls_2D");
                 var expectedFiles = new List<string>();
-                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_nodes.vtk"));
-                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_gauss_points.vtk"));
-                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_field.vtk"));
-                expectedFiles.Add(Path.Combine(expectedDirectory, "heat_flux_gauss_points.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_nodes_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_gauss_points_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_field_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "heat_flux_gauss_points_t0.vtk"));
 
                 double tolerance = 1E-6;
                 for (int i = 0; i < expectedFiles.Count; ++i)
@@ -170,9 +167,9 @@ namespace MGroup.XFEM.Tests.Multiphase
             }
             finally
             {
-                if (Directory.Exists(directory))
+                if (Directory.Exists(outputDirectory))
                 {
-                    DirectoryInfo di = new DirectoryInfo(directory);
+                    DirectoryInfo di = new DirectoryInfo(outputDirectory);
                     di.Delete(true);//true means delete subdirectories and files
                 }
             }
@@ -183,7 +180,6 @@ namespace MGroup.XFEM.Tests.Multiphase
             // Materials
             var matrixMaterial = new ThermalMaterial(conductMatrix, specialHeatCoeff);
             var inclusionMaterial = new ThermalMaterial(conductInclusion, specialHeatCoeff);
-            var interfaceMaterial = new ThermalInterfaceMaterial(conductBoundaryMatrixInclusion);
             var materialField = new MatrixInclusionsMaterialField(matrixMaterial, inclusionMaterial,
                 conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
 
@@ -241,7 +237,7 @@ namespace MGroup.XFEM.Tests.Multiphase
             IVectorView solution)
         {
             // Temperature at nodes
-            string path = Path.Combine(outputDirectory, "temperature_nodes.vtk");
+            string path = Path.Combine(outputDirectory, "temperature_nodes_t0.vtk");
             using (var writer = new VtkPointWriter(path))
             {
                 var temperatureField = new TemperatureAtNodesField(model);
@@ -249,7 +245,7 @@ namespace MGroup.XFEM.Tests.Multiphase
             }
 
             // Temperature at Gauss Points
-            path = Path.Combine(outputDirectory, "temperature_gauss_points.vtk");
+            path = Path.Combine(outputDirectory, "temperature_gauss_points_t0.vtk");
             using (var writer = new VtkPointWriter(path))
             {
                 var temperatureField = new TemperatureAtGaussPointsField(model);
@@ -257,7 +253,7 @@ namespace MGroup.XFEM.Tests.Multiphase
             }
 
             // Temperature field
-            path = Path.Combine(outputDirectory, "temperature_field.vtk");
+            path = Path.Combine(outputDirectory, "temperature_field_t0.vtk");
             var conformingMesh = new ConformingOutputMesh(model);
             using (var writer = new VtkFileWriter(path))
             {
@@ -267,7 +263,7 @@ namespace MGroup.XFEM.Tests.Multiphase
             }
 
             // Heat flux at Gauss Points
-            path = Path.Combine(outputDirectory, "heat_flux_gauss_points.vtk");
+            path = Path.Combine(outputDirectory, "heat_flux_gauss_points_t0.vtk");
             using (var writer = new VtkPointWriter(path))
             {
                 var fluxField = new HeatFluxAtGaussPointsField(model);
