@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
@@ -10,6 +11,7 @@ using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Tolerances;
 using MGroup.XFEM.Plotting.Fields;
+using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
 
 namespace MGroup.XFEM.Tests.Utilities
@@ -80,20 +82,6 @@ namespace MGroup.XFEM.Tests.Utilities
             return conformingMesh;
         }
 
-        //public static IImplicitGeometry[] FindCurvesOf(GeometricModel geometricModel)
-        //{
-        //    var lsmCurves = new HashSet<IImplicitGeometry>();
-        //    foreach (IPhase phase in geometricModel.Phases)
-        //    {
-        //        if (phase is DefaultPhase) continue;
-        //        foreach (PhaseBoundary boundary in phase.ExternalBoundaries)
-        //        {
-        //            lsmCurves.Add(boundary.Geometry);
-        //        }
-        //    }
-        //    return lsmCurves.ToArray();
-        //}
-
         public static Dictionary<int, IClosedGeometry> FindCurvesOf(PhaseGeometryModel_OLD geometricModel)
         {
             var lsmCurves = new Dictionary<int, IClosedGeometry>();
@@ -127,23 +115,39 @@ namespace MGroup.XFEM.Tests.Utilities
             }
         }
 
-        //private static void PlotInclusionLevelSets(string directoryPath, string vtkFilenamePrefix,
-        //    XModel model, GeometricModel geometricModel)
-        //{
-        //    IImplicitGeometry[] lsmCurves = Utilities.Plotting.FindCurvesOf(geometricModel);
-        //    for (int c = 0; c < lsmCurves.Length; ++c)
-        //    {
-        //        directoryPath = directoryPath.Trim('\\');
-        //        string suffix = (lsmCurves.Length == 1) ? "" : $"{c}";
-        //        string file = $"{directoryPath}\\{vtkFilenamePrefix}{suffix}.vtk";
-        //        using (var writer = new VtkFileWriter(file))
-        //        {
-        //            var levelSetField = new LevelSetField(model, lsmCurves[c]);
-        //            writer.WriteMesh(levelSetField.Mesh);
-        //            writer.WriteScalarField($"inclusion{suffix}_level_set",
-        //                levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
-        //        }
-        //    }
-        //}
+        public static void PlotTemperatureAndHeatFlux(XModel<IXMultiphaseElement> model, IVectorView solution,
+            string pathTemperatureAtNodes, string pathTemperatureAtGaussPoints, string pathTemperatureField,
+            string pathHeatFluxAtGaussPoints)
+        {
+            // Temperature at nodes
+            using (var writer = new VtkPointWriter(pathTemperatureAtNodes))
+            {
+                var temperatureField = new TemperatureAtNodesField(model);
+                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
+            }
+
+            // Temperature at Gauss Points
+            using (var writer = new VtkPointWriter(pathTemperatureAtGaussPoints))
+            {
+                var temperatureField = new TemperatureAtGaussPointsField(model);
+                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
+            }
+
+            // Temperature field
+            var conformingMesh = new ConformingOutputMesh(model);
+            using (var writer = new VtkFileWriter(pathTemperatureField))
+            {
+                var temperatureField = new TemperatureField(model, conformingMesh);
+                writer.WriteMesh(conformingMesh);
+                writer.WriteScalarField("temperature", conformingMesh, temperatureField.CalcValuesAtVertices(solution));
+            }
+
+            // Heat flux at Gauss Points
+            using (var writer = new VtkPointWriter(pathHeatFluxAtGaussPoints))
+            {
+                var fluxField = new HeatFluxAtGaussPointsField(model);
+                writer.WriteVectorField("heat_flux", fluxField.CalcValuesAtVertices(solution));
+            }
+        }
     }
 }

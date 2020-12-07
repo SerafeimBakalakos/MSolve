@@ -25,6 +25,7 @@ namespace MGroup.XFEM.Entities
             this.MergeLevel = mergeLevel;
         }
 
+        public IEnumerable<IPhaseBoundary> AllBoundaries => ExternalBoundaries;
 
         public HashSet<IXMultiphaseElement> BoundaryElements { get; } = new HashSet<IXMultiphaseElement>();
 

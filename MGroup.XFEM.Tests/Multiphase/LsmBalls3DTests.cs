@@ -143,15 +143,15 @@ namespace MGroup.XFEM.Tests.Multiphase
                 IVectorView solution = Analysis.RunStaticAnalysis(model);
 
                 // Plot temperature and heat flux
-                PlotTemperatureAndHeatFlux(outputDirectory, model, solution);
-
-                // Compare output
                 var computedFiles = new List<string>();
                 computedFiles.Add(Path.Combine(outputDirectory, "temperature_nodes_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "temperature_gauss_points_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "temperature_field_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "heat_flux_gauss_points_t0.vtk"));
+                Utilities.Plotting.PlotTemperatureAndHeatFlux(model, solution,
+                    computedFiles[0], computedFiles[1], computedFiles[2], computedFiles[3]);
 
+                // Compare output
                 var expectedFiles = new List<string>();
                 expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_nodes_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_gauss_points_t0.vtk"));
@@ -237,44 +237,6 @@ namespace MGroup.XFEM.Tests.Multiphase
             }
 
             return surfaces;
-        }
-
-        private static void PlotTemperatureAndHeatFlux(string outputDirectory, XModel<IXMultiphaseElement> model,
-            IVectorView solution)
-        {
-            // Temperature at nodes
-            string path = Path.Combine(outputDirectory, "temperature_nodes_t0.vtk");
-            using (var writer = new VtkPointWriter(path))
-            {
-                var temperatureField = new TemperatureAtNodesField(model);
-                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
-            }
-
-            // Temperature at Gauss Points
-            path = Path.Combine(outputDirectory, "temperature_gauss_points_t0.vtk");
-            using (var writer = new VtkPointWriter(path))
-            {
-                var temperatureField = new TemperatureAtGaussPointsField(model);
-                writer.WriteScalarField("temperature", temperatureField.CalcValuesAtVertices(solution));
-            }
-
-            // Temperature field
-            path = Path.Combine(outputDirectory, "temperature_field_t0.vtk");
-            var conformingMesh = new ConformingOutputMesh(model);
-            using (var writer = new VtkFileWriter(path))
-            {
-                var temperatureField = new TemperatureField(model, conformingMesh);
-                writer.WriteMesh(conformingMesh);
-                writer.WriteScalarField("temperature", conformingMesh, temperatureField.CalcValuesAtVertices(solution));
-            }
-
-            // Heat flux at Gauss Points
-            path = Path.Combine(outputDirectory, "heat_flux_gauss_points_t0.vtk");
-            using (var writer = new VtkPointWriter(path))
-            {
-                var fluxField = new HeatFluxAtGaussPointsField(model);
-                writer.WriteVectorField("heat_flux", fluxField.CalcValuesAtVertices(solution));
-            }
         }
     }
 }

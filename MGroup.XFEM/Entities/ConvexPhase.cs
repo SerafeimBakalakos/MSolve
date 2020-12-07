@@ -15,6 +15,7 @@ namespace MGroup.XFEM.Entities
             this.ID = id;
             this.geometricModel = geometricModel;
         }
+        public IEnumerable<IPhaseBoundary> AllBoundaries => ExternalBoundaries;
 
         public List<IPhaseBoundary> ExternalBoundaries { get; } = new List<IPhaseBoundary>();
 

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Entities
 {
-    public class HollowLsmPhase : LsmPhase_OLD
+    public class HollowLsmPhase : LsmPhase
     {
-        private readonly PhaseGeometryModel_OLD geometricModel;
+        private readonly PhaseGeometryModel geometricModel;
 
         /// <summary>
         /// 
@@ -15,9 +16,10 @@ namespace MGroup.XFEM.Entities
         /// <param name="id"></param>
         /// <param name="geometricModel"></param>
         /// <param name="mergeLevel">Negative values will cause this phase to be unmergable</param>
-        public HollowLsmPhase(int id, PhaseGeometryModel_OLD geometricModel, int mergeLevel) : base(id, geometricModel, mergeLevel)
+        public HollowLsmPhase(int id, PhaseGeometryModel geometricModel, int mergeLevel) : base(id, geometricModel, mergeLevel)
         {
         }
+        public IEnumerable<IPhaseBoundary> AllBoundaries => ExternalBoundaries.Union(InternalBoundaries);
 
         public List<IPhaseBoundary> InternalBoundaries { get; } = new List<IPhaseBoundary>();
 
@@ -106,12 +108,6 @@ namespace MGroup.XFEM.Entities
                     {
                         this.ContainedNodes.Add(node);
                         node.Phase = this;
-                    }
-
-                    // Merge elements
-                    if ((this.BoundaryElements.Count != 0) && (otherHollowPhase.BoundaryElements.Count != 0))
-                    {
-                        throw new NotImplementedException();
                     }
 
                     return true;

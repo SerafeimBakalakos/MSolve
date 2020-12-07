@@ -9,12 +9,15 @@ using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
 
-//MODIFICATION NEEDED: Perhaps plotting element-node-phase interactions should be done using observers and called in this class
+//TODO: The order of operations is problematic when merging level sets, which is typically a geometric operation and thus
+//      happens before geometry-mesh interaction. However merging level sets needs the interaction between phases and nodes.
+//      Improve the current unsafe implementation.
 namespace MGroup.XFEM.Entities
 {
     public class PhaseGeometryModel : IGeometryModel
     {
         private readonly XModel<IXMultiphaseElement> physicalModel;
+        private bool calcPhasesNodesInteractions = true;
 
         public PhaseGeometryModel(XModel<IXMultiphaseElement> physicalModel)
         {
@@ -76,10 +79,15 @@ namespace MGroup.XFEM.Entities
 
         public void InitializeGeometry()
         {
-            foreach (ClosedLsmPhaseBoundary boundary in PhaseBoundaries.Values)
+            calcPhasesNodesInteractions = true;
+
+            foreach (IPhaseBoundary boundary in PhaseBoundaries.Values)
             {
                 boundary.InitializeGeometry();
             }
+
+            if (MergeOverlappingPhases) MergePhases();
+
 
             foreach (IPhaseObserver observer in Observers) observer.LogGeometry();
         }
@@ -87,23 +95,19 @@ namespace MGroup.XFEM.Entities
         public void InteractWithMesh()
         {
             // Phases - nodes
-            IPhase defaultPhase = Phases[0];
-            for (int i = 1; i < Phases.Count; ++i)
-            {
-                Phases[i].InteractWithNodes(physicalModel.XNodes);
-            }
-            defaultPhase.InteractWithNodes(physicalModel.XNodes);
+            InteractWithNodes();
 
             // Phases - elements
-            for (int i = 1; i < Phases.Count; ++i)
+            IPhase defaultPhase = Phases.Values.Where(p => p is DefaultPhase).FirstOrDefault();
+            foreach (IPhase phase in Phases.Values)
             {
-                Phases[i].InteractWithElements(physicalModel.Elements);
+                if (phase != defaultPhase) phase.InteractWithElements(physicalModel.Elements);
             }
-            defaultPhase.InteractWithElements(physicalModel.Elements);
+            if (defaultPhase != null) defaultPhase.InteractWithElements(physicalModel.Elements);
 
             // Phase boundaries - elements 
             //MODIFICATION NEEDED: I think this is done during Phases - elements. If this is the desired behavior, consider removing InteractWithMesh() from IXDiscontinuity and adding it to ICrack
-            foreach (ClosedLsmPhaseBoundary boundary in PhaseBoundaries.Values)
+            foreach (IPhaseBoundary boundary in PhaseBoundaries.Values)
             {
                 boundary.InteractWithMesh();
             }
@@ -113,7 +117,9 @@ namespace MGroup.XFEM.Entities
 
         public void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements)
         {
-            foreach (ClosedLsmPhaseBoundary boundary in PhaseBoundaries.Values)
+            calcPhasesNodesInteractions = true;
+
+            foreach (IPhaseBoundary boundary in PhaseBoundaries.Values)
             {
                 boundary.UpdateGeometry(subdomainFreeDisplacements);
             }
@@ -123,8 +129,24 @@ namespace MGroup.XFEM.Entities
             foreach (IPhaseObserver observer in Observers) observer.LogGeometry();
         }
 
+        private void InteractWithNodes()
+        {
+            if (calcPhasesNodesInteractions)
+            {
+                IPhase defaultPhase = Phases.Values.Where(p => p is DefaultPhase).FirstOrDefault();
+                foreach (IPhase phase in Phases.Values)
+                {
+                    if (phase != defaultPhase) phase.InteractWithNodes(physicalModel.XNodes);
+                }
+                if (defaultPhase != null) defaultPhase.InteractWithNodes(physicalModel.XNodes);
+            }
+            calcPhasesNodesInteractions = false;
+        }
+
         private void MergePhases()
         {
+            InteractWithNodes(); // Do it beforehand since it will assist with geometric unions
+
             var unifiedPhases = new List<IPhase>();
             IPhase defaultPhase = null;
             foreach (IPhase phase in Phases.Values)
@@ -160,6 +182,15 @@ namespace MGroup.XFEM.Entities
             Phases.Clear();
             if (defaultPhase != null) Phases[defaultPhase.ID] = defaultPhase;
             foreach (IPhase phase in unifiedPhases) Phases[phase.ID] = phase;
+
+            PhaseBoundaries.Clear();
+            foreach (IPhase phase in Phases.Values)
+            {
+                foreach (IPhaseBoundary boundary in phase.AllBoundaries)
+                {
+                    PhaseBoundaries[boundary.ID] = boundary;
+                }
+            }
         }
     }
 }

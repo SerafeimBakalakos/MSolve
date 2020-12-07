@@ -24,6 +24,8 @@ namespace MGroup.XFEM.Entities
             this.MergeLevel = mergeLevel;
         }
 
+        public IEnumerable<IPhaseBoundary> AllBoundaries => ExternalBoundaries;
+
 
         public HashSet<IXMultiphaseElement> BoundaryElements { get; } = new HashSet<IXMultiphaseElement>();
 
@@ -132,7 +134,7 @@ namespace MGroup.XFEM.Entities
             if (this.MergeLevel < 0) return false;
             if (this.MergeLevel != otherPhase.MergeLevel) return false;
 
-            if (otherPhase is LsmPhase_OLD otherLsmPhase)
+            if (otherPhase is LsmPhase otherLsmPhase)
             {
                 if (this.Overlaps(otherPhase))
                 {
@@ -160,18 +162,11 @@ namespace MGroup.XFEM.Entities
                     externalPhase.Neighbors.Add(this);
                     this.Neighbors.Add(externalPhase);
 
-
                     // Merge nodes
                     foreach (XNode node in otherPhase.ContainedNodes)
                     {
                         this.ContainedNodes.Add(node);
                         node.Phase = this;
-                    }
-
-                    // Merge elements
-                    if ((this.BoundaryElements.Count != 0) && (otherLsmPhase.BoundaryElements.Count != 0))
-                    {
-                        throw new NotImplementedException();
                     }
 
                     return true;

@@ -17,6 +17,7 @@ namespace MGroup.XFEM.Entities
         {
             this.ID = id;
         }
+        public IEnumerable<IPhaseBoundary> AllBoundaries => ExternalBoundaries;
 
         public int ID { get; }
 

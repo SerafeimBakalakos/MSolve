@@ -114,15 +114,15 @@ namespace MGroup.XFEM.Enrichment.Enrichers
             // Keep track of identified interactions between phases, to avoid duplicate enrichments
             var uniqueEnrichments = new Dictionary<int, Dictionary<int, EnrichmentItem>>();
 
-            for (int p = 1; p < geometricModel.Phases.Count; ++p)
+            foreach (IPhase phase in geometricModel.Phases.Values)
             {
-                uniqueEnrichments[geometricModel.Phases[p].ID] = new Dictionary<int, EnrichmentItem>();
+                uniqueEnrichments[phase.ID] = new Dictionary<int, EnrichmentItem>();
             }
 
             int id = idStart;
-            for (int p = 1; p < geometricModel.Phases.Count; ++p)
+            foreach (IPhase phase in geometricModel.Phases.Values)
             {
-                foreach (IPhaseBoundary boundary in geometricModel.Phases[p].ExternalBoundaries)
+                foreach (IPhaseBoundary boundary in phase.ExternalBoundaries)
                 {
                     // It may have been processed when iterating the boundaries of the opposite phase.
                     if (boundary.StepEnrichment != null) continue;

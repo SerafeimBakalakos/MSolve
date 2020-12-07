@@ -99,7 +99,7 @@ namespace MGroup.XFEM.Tests.EpoxyAg
                 var phaseInternal = new LsmPhase_OLD(GeometricModel.Phases.Count, GeometricModel, -1);
                 GeometricModel.Phases.Add(phaseInternal);
                 EpoxyPhaseIDs.Add(phaseInternal.ID);
-                var phaseExternal = new HollowLsmPhase(GeometricModel.Phases.Count, GeometricModel, 0);
+                var phaseExternal = new HollowLsmPhase_OLD(GeometricModel.Phases.Count, GeometricModel, 0);
                 GeometricModel.Phases.Add(phaseExternal);
                 SilverPhaseIDs.Add(phaseExternal.ID);
 

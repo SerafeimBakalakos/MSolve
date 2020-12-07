@@ -154,7 +154,7 @@ namespace MGroup.XFEM.Tests.Unions
             for (int b = 0; b < 2; ++b)
             {
                 var externalLsm = new SimpleLsm2D(2 * b + 1, model.XNodes, ballsExternal[b]);
-                var externalPhase = new HollowLsmPhase(2 * b + 1, geometricModel, 0);
+                var externalPhase = new HollowLsmPhase_OLD(2 * b + 1, geometricModel, 0);
                 geometricModel.Phases.Add(externalPhase);
 
                 var externalBoundary = new ClosedLsmPhaseBoundary(externalPhase.ID, externalLsm, defaultPhase, externalPhase);

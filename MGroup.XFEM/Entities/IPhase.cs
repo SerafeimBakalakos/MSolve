@@ -8,6 +8,8 @@ namespace MGroup.XFEM.Entities
 {
     public interface IPhase
     {
+        IEnumerable<IPhaseBoundary> AllBoundaries { get; }
+
         HashSet<IXMultiphaseElement> BoundaryElements { get; }
 
         HashSet<XNode> ContainedNodes { get; }
