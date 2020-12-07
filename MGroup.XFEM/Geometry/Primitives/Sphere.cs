@@ -12,6 +12,12 @@ namespace MGroup.XFEM.Geometry.Primitives
             this.Radius = radius;
         }
 
+        public Sphere(double[] center, double radius)
+        {
+            this.Center = center;
+            this.Radius = radius;
+        }
+
         public double[] Center { get; }
         public double Radius { get; }
 

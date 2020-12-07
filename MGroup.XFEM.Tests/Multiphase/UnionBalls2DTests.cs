@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Enrichment.SingularityResolution;
@@ -11,8 +10,6 @@ using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Materials;
 using MGroup.XFEM.Plotting;
-using MGroup.XFEM.Plotting.Fields;
-using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
