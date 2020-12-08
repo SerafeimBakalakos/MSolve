@@ -16,12 +16,8 @@ using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Tolerances;
 
-//Method for enriching nodes and updating observers
-//TODO: All the UpdateSomething() methods can be abstracted behind an IModel.Update(). The Analyzer does not need to know each
-//      detail.
 //TODO: There is a lot of repetition between this FEM.Model and IGA.Model with regards to interconnection data. That code should 
 //      be moved to a common class. Same goes for the interconnection methods of XSubdomain.
-//MODIFICATION NEEDED: crack geometry related stuff should be moved to a dedicated implementation of IGeometryModel
 namespace MGroup.XFEM.Entities
 {
     public class XModel<TElement> : IXModel where TElement: IXFiniteElement
@@ -74,7 +70,6 @@ namespace MGroup.XFEM.Entities
         public IList<IMassAccelerationHistoryLoad> MassAccelerationHistoryLoads => throw new NotImplementedException();
 
         IList<IMassAccelerationHistoryLoad> IStructuralModel.MassAccelerationHistoryLoads => throw new NotImplementedException();
-
 
         public void AssignLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads)
         {
@@ -159,17 +154,6 @@ namespace MGroup.XFEM.Entities
         public void Update(Dictionary<int, Vector> subdomainFreeDisplacements)
         {
             UpdateStatePrivate(false, subdomainFreeDisplacements);
-        }
-
-        public void UpdateDofs()
-        {
-            foreach (IXFiniteElement element in Elements) element.IdentifyDofs();
-        }
-
-        //TODO: Replace this with Update() and/or Initialize() 
-        public void UpdateMaterials()
-        {
-            foreach (IXFiniteElement element in Elements) element.IdentifyIntegrationPointsAndMaterials();
         }
 
         private void AssignConstraints()
