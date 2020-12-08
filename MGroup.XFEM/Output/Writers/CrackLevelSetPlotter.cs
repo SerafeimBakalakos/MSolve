@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MGroup.XFEM.Cracks.Geometry.LSM;
 using MGroup.XFEM.Cracks;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Output.Mesh;
 using MGroup.XFEM.Output.Vtk;
+using MGroup.XFEM.Cracks.Geometry;
 
 namespace MGroup.XFEM.Output.Writers
 {

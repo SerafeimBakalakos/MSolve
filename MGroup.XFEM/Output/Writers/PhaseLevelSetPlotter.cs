@@ -9,7 +9,7 @@ using MGroup.XFEM.Output.Vtk;
 
 namespace MGroup.XFEM.Output.Writers
 {
-    public class PhaseLevelSetPlotter : IPhaseObserver
+    public class PhaseLevelSetPlotter : IPhaseGeometryObserver
     {
         private readonly string directoryPath;
         private readonly PhaseGeometryModel geometryModel;
@@ -24,7 +24,7 @@ namespace MGroup.XFEM.Output.Writers
             iteration = 0;
         }
 
-        public void LogGeometry()
+        public void Update()
         {
             var outMesh = new ContinuousOutputMesh(physicalModel.XNodes, physicalModel.EnumerateElements());
             foreach (IPhaseBoundary boundary in geometryModel.PhaseBoundaries.Values)
@@ -38,10 +38,7 @@ namespace MGroup.XFEM.Output.Writers
                         levelSetField.Mesh, levelSetField.CalcValuesAtVertices());
                 }
             }
-        }
 
-        public void LogMeshInteractions()
-        {
             ++iteration;
         }
     }

@@ -30,7 +30,6 @@ namespace MGroup.XFEM.Output.Writers
 
         public void Update(IEnumerable<EnrichmentItem> allEnrichments)
         {
-            //MODIFICATION NEEDED: This casting is not good practice, but it shows that having EnrichmentItems is cumbersome.
             PlotEnrichedNodesCategory(enr => enr.EnrichmentFunctions[0] is PhaseStepEnrichment, 
                 Path.Combine(outputDirectory, $"enriched_nodes_heaviside_t{iteration}.vtk"), "enriched_nodes_heaviside");
 

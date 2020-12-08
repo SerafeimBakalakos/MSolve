@@ -13,9 +13,7 @@ using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 
-//MODIFICATION NEEDED: Perhaps model should be passed by CrackGeometryModel to the methods needed here. 
-//  Not sure what the advantage would be though. It probably makes the interfaces more specific, but that is usually a bad thing. 
-namespace MGroup.XFEM.Cracks.Geometry.LSM
+namespace MGroup.XFEM.Cracks.Geometry
 {
     public class ExteriorLsmCrack : ICrack
     {

@@ -43,13 +43,13 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
             var geometryModel = geometryPreprocessor.GeometryModel;
 
             // Plot level sets
-            geometryModel.Observers.Add(new PhaseLevelSetPlotter(outputDirectory, model, geometryModel));
+            geometryModel.GeometryObservers.Add(new PhaseLevelSetPlotter(outputDirectory, model, geometryModel));
 
             // Plot phases of nodes
-            geometryModel.Observers.Add(new NodalPhasesPlotter(outputDirectory, model));
+            geometryModel.InteractionObservers.Add(new NodalPhasesPlotter(outputDirectory, model));
 
             // Plot element - phase boundaries interactions
-            geometryModel.Observers.Add(new LsmElementIntersectionsPlotter(outputDirectory, model));
+            geometryModel.InteractionObservers.Add(new LsmElementIntersectionsPlotter(outputDirectory, model));
 
             // Plot element subcells
             model.ModelObservers.Add(new ConformingMeshPlotter(outputDirectory, model));

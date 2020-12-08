@@ -29,9 +29,11 @@ namespace MGroup.XFEM.Phases
 
         public INodeEnricher Enricher { get; set; }
 
-        public bool MergeOverlappingPhases { get; set; } = true;
+        public List<IPhaseGeometryObserver> GeometryObservers { get; } = new List<IPhaseGeometryObserver>();
 
-        public List<IPhaseObserver> Observers { get; } = new List<IPhaseObserver>();
+        public List<IPhaseMeshInteractionObserver> InteractionObservers { get; } = new List<IPhaseMeshInteractionObserver>();
+
+        public bool MergeOverlappingPhases { get; set; } = true;
 
         public Dictionary<int, IPhase> Phases { get; } = new Dictionary<int, IPhase>();
         
@@ -90,7 +92,7 @@ namespace MGroup.XFEM.Phases
             if (MergeOverlappingPhases) MergePhases();
 
 
-            foreach (IPhaseObserver observer in Observers) observer.LogGeometry();
+            foreach (IPhaseGeometryObserver observer in GeometryObservers) observer.Update();
         }
 
         public void InteractWithMesh()
@@ -113,7 +115,7 @@ namespace MGroup.XFEM.Phases
                 boundary.InteractWithMesh();
             }
 
-            foreach (IPhaseObserver observer in Observers) observer.LogMeshInteractions();
+            foreach (IPhaseMeshInteractionObserver observer in InteractionObservers) observer.Update();
         }
 
         public void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements)
@@ -127,7 +129,7 @@ namespace MGroup.XFEM.Phases
 
             if (MergeOverlappingPhases) MergePhases();
 
-            foreach (IPhaseObserver observer in Observers) observer.LogGeometry();
+            foreach (IPhaseGeometryObserver observer in GeometryObservers) observer.Update();
         }
 
         private void InteractWithNodes()

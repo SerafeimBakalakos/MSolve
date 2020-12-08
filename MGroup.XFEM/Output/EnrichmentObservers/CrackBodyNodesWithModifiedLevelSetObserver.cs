@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MGroup.XFEM.Cracks.Geometry.LSM;
+using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 

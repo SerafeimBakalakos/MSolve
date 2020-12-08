@@ -4,7 +4,7 @@ using System.Text;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Enrichment //MODIFICATION NEEDED: same namespace as concrete classes
+namespace MGroup.XFEM.Enrichment
 {
     public interface IEnrichmentFunction
     {

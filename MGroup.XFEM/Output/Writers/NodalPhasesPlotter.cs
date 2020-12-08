@@ -12,7 +12,7 @@ using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Output.Writers
 {
-    public class NodalPhasesPlotter : IPhaseObserver
+    public class NodalPhasesPlotter : IPhaseMeshInteractionObserver
     {
         private readonly double colorForDefaultPhase;
         private readonly int defaultPhaseID;
@@ -37,11 +37,7 @@ namespace MGroup.XFEM.Output.Writers
         {
         }
 
-        public void LogGeometry()
-        {
-        }
-
-        public void LogMeshInteractions()
+        public void Update()
         {
             string path = Path.Combine(outputDirectory, $"nodal_phases_t{iteration}.vtk");
             using (var writer = new VtkPointWriter(path))

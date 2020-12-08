@@ -6,7 +6,6 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Cracks;
 using MGroup.XFEM.Cracks.Geometry;
-using MGroup.XFEM.Cracks.Geometry.LSM;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Enrichment.SingularityResolution;

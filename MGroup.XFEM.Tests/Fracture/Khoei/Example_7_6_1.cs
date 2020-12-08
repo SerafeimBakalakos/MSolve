@@ -12,7 +12,6 @@ using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
 using MGroup.XFEM.Cracks;
 using MGroup.XFEM.Cracks.Geometry;
-using MGroup.XFEM.Cracks.Geometry.LSM;
 using MGroup.XFEM.Cracks.Jintegral;
 using MGroup.XFEM.Cracks.PropagationCriteria;
 using MGroup.XFEM.Cracks.PropagationTermination;

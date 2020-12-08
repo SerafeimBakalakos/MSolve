@@ -9,7 +9,6 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
 using MGroup.XFEM.Cracks.Geometry;
-using MGroup.XFEM.Cracks.Geometry.LSM;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;

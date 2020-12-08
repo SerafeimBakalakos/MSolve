@@ -14,7 +14,7 @@ using MGroup.XFEM.Output.Vtk;
 
 namespace MGroup.XFEM.Output.Writers
 {
-    public class LsmElementIntersectionsPlotter : IPhaseObserver
+    public class LsmElementIntersectionsPlotter : IPhaseMeshInteractionObserver
     {
         private readonly string outputDirectory;
         private readonly IXModel model;
@@ -29,11 +29,7 @@ namespace MGroup.XFEM.Output.Writers
             iteration = 0;
         }
 
-        public void LogGeometry()
-        {
-        }
-
-        public void LogMeshInteractions()
+        public void Update()
         {
             var allIntersections = new List<IElementDiscontinuityInteraction>();
             foreach (IXFiniteElement element in model.EnumerateElements())

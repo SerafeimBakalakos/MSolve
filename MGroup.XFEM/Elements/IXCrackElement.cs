@@ -5,7 +5,6 @@ using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Cracks.Geometry;
-using MGroup.XFEM.Cracks.Geometry.LSM;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Entities;
