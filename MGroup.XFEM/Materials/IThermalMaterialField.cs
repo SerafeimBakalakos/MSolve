@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Materials
 {

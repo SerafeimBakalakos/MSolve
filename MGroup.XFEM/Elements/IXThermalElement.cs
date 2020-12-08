@@ -4,6 +4,7 @@ using System.Text;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Materials;
+using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Elements
 {

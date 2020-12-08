@@ -20,6 +20,7 @@ using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Interpolation.GaussPointExtrapolation;
 using MGroup.XFEM.Materials;
+using MGroup.XFEM.Phases;
 
 //TODO: Bstd or Benr assume different order of the shape function gradient. Which is the correct one?
 namespace MGroup.XFEM.Elements

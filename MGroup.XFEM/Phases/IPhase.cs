@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Elements;
+using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Entities
+namespace MGroup.XFEM.Phases
 {
     public interface IPhase
     {

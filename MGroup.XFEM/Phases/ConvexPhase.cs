@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using MGroup.XFEM.Elements;
+using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Entities
+namespace MGroup.XFEM.Phases
 {
     public class ConvexPhase : IPhase
     {

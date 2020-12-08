@@ -9,6 +9,7 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Materials;
+using MGroup.XFEM.Phases;
 using MGroup.XFEM.Plotting;
 using MGroup.XFEM.Plotting.Writers;
 using MGroup.XFEM.Tests.Utilities;

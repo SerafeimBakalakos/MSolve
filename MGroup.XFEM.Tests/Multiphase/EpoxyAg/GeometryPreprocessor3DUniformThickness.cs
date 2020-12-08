@@ -7,6 +7,7 @@ using MGroup.XFEM.Enrichment.SingularityResolution;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
 {

@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Entities
+namespace MGroup.XFEM.Phases
 {
     public class HollowLsmPhase : LsmPhase
     {

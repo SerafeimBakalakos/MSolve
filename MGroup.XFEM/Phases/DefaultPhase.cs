@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Elements;
+using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Geometry.Tolerances;
 
@@ -9,7 +10,7 @@ using MGroup.XFEM.Geometry.Tolerances;
 //      different to treat it as other phases. It is imply it, than using an explit phase.
 //MODIFICATION NEEDED: Perhaps this should not exist. If a node or element is not associated with any other phase, then it is
 //      implicitly associated with the default one. It also cannot interact with other phases, by definition.
-namespace MGroup.XFEM.Entities
+namespace MGroup.XFEM.Phases
 {
     public class DefaultPhase : IPhase
     {

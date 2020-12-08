@@ -6,13 +6,14 @@ using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Enrichers;
+using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
 
 //TODO: The order of operations is problematic when merging level sets, which is typically a geometric operation and thus
 //      happens before geometry-mesh interaction. However merging level sets needs the interaction between phases and nodes.
 //      Improve the current unsafe implementation.
-namespace MGroup.XFEM.Entities
+namespace MGroup.XFEM.Phases
 {
     public class PhaseGeometryModel : IGeometryModel
     {

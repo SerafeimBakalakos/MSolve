@@ -20,6 +20,7 @@ using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Interpolation.GaussPointExtrapolation;
 using MGroup.XFEM.Materials;
+using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Elements
 {

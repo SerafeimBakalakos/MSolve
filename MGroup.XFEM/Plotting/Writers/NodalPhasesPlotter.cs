@@ -7,6 +7,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Plotting.Writers
 {

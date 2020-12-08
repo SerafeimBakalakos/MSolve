@@ -6,6 +6,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Enrichment.Functions
 {

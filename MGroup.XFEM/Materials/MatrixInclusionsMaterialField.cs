@@ -6,6 +6,7 @@ using System.Text;
 
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Materials
 {

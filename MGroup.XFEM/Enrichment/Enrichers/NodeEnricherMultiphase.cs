@@ -7,6 +7,7 @@ using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Enrichment.SingularityResolution;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Phases;
 
 //TODO: Remove casts
 namespace MGroup.XFEM.Enrichment.Enrichers

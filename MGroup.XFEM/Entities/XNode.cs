@@ -4,6 +4,7 @@ using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.Interfaces;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Entities
 {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Integration;
+using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Elements
 {

@@ -14,6 +14,7 @@ using MGroup.XFEM.Integration;
 using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Materials;
+using MGroup.XFEM.Phases;
 
 //TODO: delete this class
 namespace MGroup.XFEM.Elements

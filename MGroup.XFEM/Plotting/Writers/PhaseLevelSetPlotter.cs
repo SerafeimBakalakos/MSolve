@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Phases;
 using MGroup.XFEM.Plotting.Fields;
 using MGroup.XFEM.Plotting.Mesh;
 

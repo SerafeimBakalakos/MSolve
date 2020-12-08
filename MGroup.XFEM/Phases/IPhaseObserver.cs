@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MGroup.XFEM.Entities
+namespace MGroup.XFEM.Phases
 {
     public interface IPhaseObserver
     {

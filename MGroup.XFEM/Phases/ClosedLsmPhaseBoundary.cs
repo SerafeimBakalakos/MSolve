@@ -7,7 +7,7 @@ using MGroup.XFEM.Enrichment.Functions;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Entities
+namespace MGroup.XFEM.Phases
 {
     public class ClosedLsmPhaseBoundary : IPhaseBoundary
     {

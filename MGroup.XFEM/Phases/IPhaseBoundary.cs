@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.LSM;
 
-namespace MGroup.XFEM.Entities
+namespace MGroup.XFEM.Phases
 {
     public interface IPhaseBoundary : IXDiscontinuity
     {
-        int ID { get; }
-
         IClosedGeometry Geometry { get; }
 
         EnrichmentItem StepEnrichment { get; set; }

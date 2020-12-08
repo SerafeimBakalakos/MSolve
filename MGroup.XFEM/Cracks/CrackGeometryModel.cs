@@ -5,9 +5,10 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Enrichers;
+using MGroup.XFEM.Entities;
 
 //MODIFICATION NEEDED: Perhaps crack observers should be called by this class
-namespace MGroup.XFEM.Entities
+namespace MGroup.XFEM.Cracks
 {
     public class CrackGeometryModel : IGeometryModel
     {
