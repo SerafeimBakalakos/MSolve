@@ -6,13 +6,9 @@ using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
-using MGroup.XFEM.Geometry;
-using MGroup.XFEM.Geometry.ConformingMesh;
-using MGroup.XFEM.Geometry.LSM;
-using MGroup.XFEM.Geometry.Tolerances;
-using MGroup.XFEM.Plotting.Fields;
-using MGroup.XFEM.Plotting.Mesh;
-using MGroup.XFEM.Plotting.Writers;
+using MGroup.XFEM.Output.Fields;
+using MGroup.XFEM.Output.Mesh;
+using MGroup.XFEM.Output.Vtk;
 
 namespace MGroup.XFEM.Tests.Utilities
 {

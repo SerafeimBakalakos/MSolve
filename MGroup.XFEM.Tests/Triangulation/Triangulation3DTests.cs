@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Geometry.Coordinates;
-using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
-using MGroup.XFEM.Plotting.Mesh;
-using MGroup.XFEM.Plotting.Writers;
+using MGroup.XFEM.Output.Mesh;
+using MGroup.XFEM.Output.Vtk;
 using Xunit;
 
 //TODO: add comment figures
@@ -327,21 +324,21 @@ namespace MGroup.XFEM.Tests.Triangulation
         {
             CustomMesh originalMesh = CreateOriginalMesh();
             string originalMeshPath = outputDirectory + $"{outputCase}_originalMesh.vtk";
-            using (var writer = new MGroup.XFEM.Plotting.Writers.VtkFileWriter(originalMeshPath))
+            using (var writer = new VtkFileWriter(originalMeshPath))
             {
                 writer.WriteMesh(originalMesh);
             }
 
             CustomMesh intersectionMesh = CreateIntersectionMesh(intersections);
             string intersectionMeshPath = outputDirectory + $"{outputCase}_intersectionMesh.vtk";
-            using (var writer = new MGroup.XFEM.Plotting.Writers.VtkFileWriter(intersectionMeshPath))
+            using (var writer = new VtkFileWriter(intersectionMeshPath))
             {
                 writer.WriteMesh(intersectionMesh);
             }
 
             CustomMesh conformingMesh = CreateConformingMesh(tetrahedra);
             string conformingMeshPath = outputDirectory + $"{outputCase}_conformingMesh.vtk";
-            using (var writer = new MGroup.XFEM.Plotting.Writers.VtkFileWriter(conformingMeshPath))
+            using (var writer = new VtkFileWriter(conformingMeshPath))
             {
                 writer.WriteMesh(conformingMesh);
             }

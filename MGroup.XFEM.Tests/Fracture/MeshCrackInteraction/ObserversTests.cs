@@ -7,7 +7,6 @@ using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Cracks.Geometry.LSM;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Enrichers;
-using MGroup.XFEM.Enrichment.Observers;
 using MGroup.XFEM.Enrichment.SingularityResolution;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Mesh;
@@ -15,8 +14,10 @@ using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Materials;
-using MGroup.XFEM.Plotting.Mesh;
-using MGroup.XFEM.Plotting.Writers;
+using MGroup.XFEM.Output.EnrichmentObservers;
+using MGroup.XFEM.Output.Mesh;
+using MGroup.XFEM.Output.Vtk;
+using MGroup.XFEM.Output.Writers;
 using Xunit;
 
 namespace MGroup.XFEM.Tests.Fracture.Observers

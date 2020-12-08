@@ -6,8 +6,8 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Materials;
-using MGroup.XFEM.Plotting;
-using MGroup.XFEM.Plotting.Writers;
+using MGroup.XFEM.Output;
+using MGroup.XFEM.Output.Writers;
 using MGroup.XFEM.Tests.Utilities;
 
 namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg

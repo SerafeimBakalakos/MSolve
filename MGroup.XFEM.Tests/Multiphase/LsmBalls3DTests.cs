@@ -11,8 +11,8 @@ using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Materials;
 using MGroup.XFEM.Phases;
-using MGroup.XFEM.Plotting;
-using MGroup.XFEM.Plotting.Writers;
+using MGroup.XFEM.Output;
+using MGroup.XFEM.Output.Writers;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
 
