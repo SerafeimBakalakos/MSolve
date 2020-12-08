@@ -36,11 +36,6 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
 
         public static void RunModelCreation()
         {
-            if (!Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
             // Create model and LSM
             (XModel<IXMultiphaseElement> model, BiMaterialField materialField) = CreateModel();
             model.FindConformingSubcells = true;

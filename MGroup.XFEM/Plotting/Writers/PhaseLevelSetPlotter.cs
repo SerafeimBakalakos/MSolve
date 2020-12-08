@@ -27,6 +27,9 @@ namespace MGroup.XFEM.Plotting.Writers
             var outMesh = new ContinuousOutputMesh(physicalModel.XNodes, physicalModel.EnumerateElements());
             foreach (IPhaseBoundary boundary in geometryModel.PhaseBoundaries.Values)
             {
+                #region debug
+                //if (boundary.ID != 1) continue;
+                #endregion
                 string file = $"{directoryPath}\\level_set{boundary.ID}_t{iteration}.vtk";
                 using (var writer = new VtkFileWriter(file))
                 {
