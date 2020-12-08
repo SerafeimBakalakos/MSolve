@@ -104,7 +104,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
 
         private GeometryPreprocessor2D CreatePhases(XModel<IXMultiphaseElement> model, BiMaterialField materialField)
         {
-            var preprocessor = new GeometryPreprocessor2D();
+            var preprocessor = new GeometryPreprocessor2D(model);
             preprocessor.MinCoordinates = minCoords;
             preprocessor.MaxCoordinates = maxCoords;
             preprocessor.NumBalls = numBalls;

@@ -1,12 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MGroup.XFEM.Elements;
+using MGroup.XFEM.Entities;
 using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
 {
     public class GeometryPreprocessorBase
     {
+        private XModel<IXMultiphaseElement> physicalModel;
+
+        protected GeometryPreprocessorBase(XModel<IXMultiphaseElement> physicalModel)
+        {
+            this.physicalModel = physicalModel;
+        }
+
         public double[] MinCoordinates { get; set; }
         public double[] MaxCoordinates { get; set; }
 
@@ -31,7 +40,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
         public Dictionary<string, double> CalcPhaseVolumes()
         {
             var volumes = new Dictionary<string, double>();
-            Dictionary<int, double> phaseVolumes = GeometryModel.CalcBulkSizeOfEachPhase();
+            Dictionary<int, double> phaseVolumes = Output.Fields.Utilities.CalcBulkSizeOfEachPhase(physicalModel, GeometryModel);
 
             volumes[MatrixPhaseName] = phaseVolumes[MatrixPhaseID];
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Geometry.Coordinates;
@@ -7,13 +8,53 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Interpolation;
+using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Output.Fields
 {
-    internal static class Utilities
+    public static class Utilities
     {
+        public static Dictionary<int, double> CalcBulkSizeOfEachPhase(XModel<IXMultiphaseElement> physicalModel,
+            PhaseGeometryModel geometryModel)
+        {
+            var bulkSizes = new Dictionary<int, double>();
+            foreach (IPhase phase in geometryModel.Phases.Values) bulkSizes[phase.ID] = 0.0;
+
+            foreach (IXMultiphaseElement element in physicalModel.Elements)
+            {
+                if ((element.ConformingSubcells == null) || (element.ConformingSubcells.Length == 0))
+                {
+                    System.Diagnostics.Debug.Assert(element.Phases.Count == 1);
+                    IPhase phase = element.Phases.First();
+                    double elementBulkSize = element.CalcBulkSizeCartesian();
+                    bulkSizes[phase.ID] += elementBulkSize;
+                }
+                else
+                {
+                    foreach (IElementSubcell subcell in element.ConformingSubcells)
+                    {
+                        double[] centroidNatural = subcell.FindCentroidNatural();
+                        var centroid = new XPoint(centroidNatural.Length);
+                        centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural;
+                        centroid.Element = element;
+                        centroid.ShapeFunctions =
+                            element.Interpolation.EvaluateFunctionsAt(centroid.Coordinates[CoordinateSystem.ElementNatural]);
+                        element.FindPhaseAt(centroid);
+                        IPhase phase = centroid.Phase;
+
+                        (_, double subcellBulk) = subcell.FindCentroidAndBulkSizeCartesian(element);
+
+                        bulkSizes[phase.ID] += subcellBulk;
+                    }
+                }
+            }
+
+            return bulkSizes;
+        }
+
         //TODO: Perhaps this should be implemented by the element itself, where a lot of optimizations can be employed.
         internal static double CalcTemperatureAt(XPoint point, IXFiniteElement element, double[] nodalTemperatures)
         {

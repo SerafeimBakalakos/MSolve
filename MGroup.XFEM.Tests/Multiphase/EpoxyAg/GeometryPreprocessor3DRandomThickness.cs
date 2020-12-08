@@ -14,7 +14,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
 {
     public class GeometryPreprocessor3DRandomThickness : GeometryPreprocessorBase
     {
-        public GeometryPreprocessor3DRandomThickness()
+        public GeometryPreprocessor3DRandomThickness(XModel<IXMultiphaseElement> physicalModel) : base(physicalModel)
         {
             MinCoordinates = new double[] { -1.0, -1.0, -1.0 };
             MaxCoordinates = new double[] { +1.0, +1.0, +1.0 };

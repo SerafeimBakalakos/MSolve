@@ -13,7 +13,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
 {
     public class GeometryPreprocessor2D : GeometryPreprocessorBase
     {
-        public GeometryPreprocessor2D()
+        public GeometryPreprocessor2D(XModel<IXMultiphaseElement> physicalModel) : base(physicalModel)
         {
             MinCoordinates = new double[] { -1.0, -1.0};
             MaxCoordinates = new double[] { +1.0, +1.0 };

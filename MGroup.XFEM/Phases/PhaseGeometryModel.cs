@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Entities;
-using MGroup.XFEM.Geometry.ConformingMesh;
-using MGroup.XFEM.Geometry.Primitives;
 
 //TODO: The order of operations is problematic when merging level sets, which is typically a geometric operation and thus
 //      happens before geometry-mesh interaction. However merging level sets needs the interaction between phases and nodes.
@@ -38,43 +34,6 @@ namespace MGroup.XFEM.Phases
         public Dictionary<int, IPhase> Phases { get; } = new Dictionary<int, IPhase>();
         
         public Dictionary<int, IPhaseBoundary> PhaseBoundaries { get; } = new Dictionary<int, IPhaseBoundary>();
-
-        public Dictionary<int, double> CalcBulkSizeOfEachPhase() //MODIFICATION NEEDED: this is a pre/post-processing feature. No need to be in the core classes. Use an observer instead
-        {
-            var bulkSizes = new Dictionary<int, double>();
-            foreach (IPhase phase in Phases.Values) bulkSizes[phase.ID] = 0.0;
-
-            foreach (IXMultiphaseElement element in physicalModel.Elements)
-            {
-                if ((element.ConformingSubcells == null) || (element.ConformingSubcells.Length == 0))
-                {
-                    Debug.Assert(element.Phases.Count == 1);
-                    IPhase phase = element.Phases.First();
-                    double elementBulkSize = element.CalcBulkSizeCartesian();
-                    bulkSizes[phase.ID] += elementBulkSize;
-                }
-                else
-                {
-                    foreach (IElementSubcell subcell in element.ConformingSubcells)
-                    {
-                        double[] centroidNatural = subcell.FindCentroidNatural();
-                        var centroid = new XPoint(centroidNatural.Length);
-                        centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural;
-                        centroid.Element = element;
-                        centroid.ShapeFunctions =
-                            element.Interpolation.EvaluateFunctionsAt(centroid.Coordinates[CoordinateSystem.ElementNatural]);
-                        element.FindPhaseAt(centroid);
-                        IPhase phase = centroid.Phase;
-
-                        (_, double subcellBulk) = subcell.FindCentroidAndBulkSizeCartesian(element);
-
-                        bulkSizes[phase.ID] += subcellBulk;
-                    }
-                }
-            }
-
-            return bulkSizes;
-        }
 
         public IEnumerable<IXDiscontinuity> EnumerateDiscontinuities() => PhaseBoundaries.Values;
 

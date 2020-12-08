@@ -132,7 +132,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
         private static GeometryPreprocessor3DRandomThickness CreatePhases(
             XModel<IXMultiphaseElement> model, BiMaterialField materialField)
         {
-            var preprocessor = new GeometryPreprocessor3DRandomThickness();
+            var preprocessor = new GeometryPreprocessor3DRandomThickness(model);
             preprocessor.MinCoordinates = minCoords;
             preprocessor.MaxCoordinates = maxCoords;
             preprocessor.NumBalls = numBalls;

@@ -13,7 +13,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
 {
     public class GeometryPreprocessor3DUniformThickness : GeometryPreprocessorBase
     {
-        public GeometryPreprocessor3DUniformThickness()
+        public GeometryPreprocessor3DUniformThickness(XModel<IXMultiphaseElement> physicalModel) : base(physicalModel)
         {
             MinCoordinates = new double[] { -1.0, -1.0, -1.0 };
             MaxCoordinates = new double[] { +1.0, +1.0, +1.0 };

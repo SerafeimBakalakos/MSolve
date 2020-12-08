@@ -66,7 +66,7 @@ namespace MGroup.XFEM.Tests.Multiphase
                 model.ModelObservers.Add(new ElementPhasePlotter(outputDirectory, model, geometryModel, defaultPhaseID));
 
                 // Write the size of each phase
-                model.ModelObservers.Add(new PhasesSizeWriter(outputDirectory, geometryModel));
+                model.ModelObservers.Add(new PhasesSizeWriter(outputDirectory, model, geometryModel));
 
                 // Plot bulk and boundary integration points of each element
                 model.ModelObservers.Add(new IntegrationPointsPlotter(outputDirectory, model));
