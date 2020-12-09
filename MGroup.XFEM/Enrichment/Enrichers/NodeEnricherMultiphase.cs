@@ -28,188 +28,6 @@ namespace MGroup.XFEM.Enrichment.Enrichers
 
         public void ApplyEnrichments()
         {
-            int numStepEnrichments = DefineStepEnrichments(0);
-            int numJunctionEnrichments = DefineJunctionEnrichments(numStepEnrichments);
-            EnrichNodes();
-        }
-
-        private static (IPhase minPhase, IPhase maxPhase) FindMinMaxPhases(IPhase phase1, IPhase phase2)
-        {
-            IPhase minPhase, maxPhase;
-            if (phase1.ID < phase2.ID)
-            {
-                minPhase = phase1;
-                maxPhase = phase2;
-            }
-            else
-            {
-                minPhase = phase2;
-                maxPhase = phase1;
-            }
-            return (minPhase, maxPhase);
-        }
-
-        /// <summary>
-        /// Assumes 0 or 1 junction per element
-        /// </summary>
-        /// <param name="idStart"></param>
-        private int DefineJunctionEnrichments(int idStart) 
-        {
-            // Keep track of the junctions to avoid duplicate ones.
-            //TODO: What happens if the same boundary is used for more than one junctions? E.g. the boundary is an almost closed 
-            //      curve, that has 2 ends, both of which need junctions.
-            var junctionEnrichments = new Dictionary<ClosedLsmPhaseBoundary, JunctionEnrichment>();
-
-            int id = idStart;
-            //for (int p = 1; p < geometricModel.Phases.Count; ++p)
-            //{
-            //    IPhase phase = geometricModel.Phases[p];
-            //    foreach (IXFiniteElement element in phase.BoundaryElements)
-            //    {
-            //        // This element has already been processed when looking at another phase
-            //        if (JunctionElements.ContainsKey(element)) continue;
-
-            //        // Check if the element contains a junction point
-            //        //TODO: Shouldn't the boundaries intersect?
-            //        if (element.Phases.Count <= 2) continue; // Not a junction element
-            //        else
-            //        {
-            //            var uniquePhaseSeparators = new Dictionary<int, HashSet<int>>();
-            //            foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
-            //            {
-            //                (IPhase minPhase, IPhase maxPhase) = FindMinMaxPhases(boundary.PositivePhase, boundary.NegativePhase);
-            //                bool exists = uniquePhaseSeparators.TryGetValue(minPhase.ID, out HashSet<int> neighbors);
-            //                if (!exists)
-            //                {
-            //                    neighbors = new HashSet<int>();
-            //                    uniquePhaseSeparators[minPhase.ID] = neighbors;
-            //                }
-            //                neighbors.Add(maxPhase.ID);
-            //            }
-
-            //            int numUniqueSeparators = 0;
-            //            foreach (HashSet<int> neighbors in uniquePhaseSeparators.Values) numUniqueSeparators += neighbors.Count;
-
-            //            if (numUniqueSeparators <= 2) continue; // 3 or more phases, but the boundaries do not intersect
-            //        }
-
-            //        // Create a new junction enrichment
-            //        // If there are n boundaries intersecting, then use n-1 junctions
-            //        PhaseBoundary[] boundaries = element.PhaseIntersections.Keys.ToArray();
-            //        var elementJunctions = new HashSet<JunctionEnrichment>();
-            //        JunctionElements[element] = elementJunctions;
-            //        for (int i = 0; i < boundaries.Length - 1; ++i) 
-            //        {
-            //            PhaseBoundary boundary = boundaries[i];
-            //            var junction = new JunctionEnrichment(id, boundary, element.Phases);
-            //            ++id;
-            //            elementJunctions.Add(junction);
-            //        }
-            //    }
-            //}
-            return id - idStart;
-        }
-
-        private int DefineStepEnrichments(int idStart)
-        {
-            // Keep track of identified interactions between phases, to avoid duplicate enrichments
-            var uniqueEnrichments = new Dictionary<int, Dictionary<int, EnrichmentItem>>();
-
-            foreach (IPhase phase in geometricModel.Phases.Values)
-            {
-                uniqueEnrichments[phase.ID] = new Dictionary<int, EnrichmentItem>();
-            }
-
-            int id = idStart;
-            foreach (IPhase phase in geometricModel.Phases.Values)
-            {
-                foreach (IPhaseBoundary boundary in phase.ExternalBoundaries)
-                {
-                    // It may have been processed when iterating the boundaries of the opposite phase.
-                    if (boundary.StepEnrichment != null) continue;
-
-                    // Find min/max phase IDs to uniquely identify the interaction.
-                    //TODO: Why not uniquely identify the interaction based on the boundary object?
-                    IPhase minPhase, maxPhase;
-                    if (boundary.PositivePhase.ID < boundary.NegativePhase.ID)
-                    {
-                        minPhase = boundary.PositivePhase;
-                        maxPhase = boundary.NegativePhase;
-                    }
-                    else
-                    {
-                        minPhase = boundary.NegativePhase;
-                        maxPhase = boundary.PositivePhase;
-                    }
-
-                    // Find the existing enrichment for this phase interaction or create a new one
-                    bool enrichmentsExists = 
-                        uniqueEnrichments[maxPhase.ID].TryGetValue(minPhase.ID, out EnrichmentItem enrichmentItem);
-                    if (!enrichmentsExists)
-                    {
-                        var enrichmentFunc = DefineStepEnrichment(boundary);
-                        var enrichedDof = new EnrichedDof(enrichmentFunc, ThermalDof.Temperature);
-                        enrichmentItem = new EnrichmentItem(id,
-                            new IEnrichmentFunction[] { enrichmentFunc }, new IDofType[] { enrichedDof });
-                        ++id;
-                        uniqueEnrichments[maxPhase.ID][minPhase.ID] = enrichmentItem;
-                    }
-
-                    boundary.StepEnrichment = enrichmentItem;
-                }
-            }
-            return id - idStart;
-        }
-
-        private PhaseStepEnrichment DefineStepEnrichment(IPhaseBoundary boundary)
-        {
-            //TODO: This is horrible
-            if (boundary.NegativePhase is DefaultPhase)
-            {
-                return new PhaseStepEnrichment(boundary.PositivePhase, boundary.NegativePhase);
-            }
-            else if (boundary.PositivePhase is DefaultPhase)
-            {
-                return new PhaseStepEnrichment(boundary.NegativePhase, boundary.PositivePhase);
-            }
-            else if (/*boundary.PositivePhase is HollowPhase &&*/ boundary.NegativePhase is ConvexPhase)
-            {
-                return new PhaseStepEnrichment(boundary.NegativePhase, boundary.PositivePhase);
-            }
-            else if (/*boundary.NegativePhase is HollowPhase &&*/ boundary.PositivePhase is ConvexPhase)
-            {
-                return new PhaseStepEnrichment(boundary.PositivePhase, boundary.NegativePhase);
-            }
-            else // Does not matter which phase will be internal/external
-            {
-                return new PhaseStepEnrichment(boundary.NegativePhase, boundary.PositivePhase);
-            }
-        }
-
-        private void EnrichNode(XNode node, EnrichmentItem enrichment)
-        {
-            if (!node.Enrichments.Contains(enrichment))
-            {
-                node.Enrichments.Add(enrichment);
-                foreach (IEnrichmentFunction enrichmentFunc in enrichment.EnrichmentFunctions)
-                {
-                    double value = enrichmentFunc.EvaluateAt(node);
-                    node.EnrichmentFuncs[enrichmentFunc] = value;
-                }
-            }
-        }
-
-        private void EnrichNode(XNode node, IEnrichmentFunction enrichment)
-        {
-            if (!node.EnrichmentFuncs.ContainsKey(enrichment))
-            {
-                double value = enrichment.EvaluateAt(node);
-                node.EnrichmentFuncs[enrichment] = value;
-            }
-        }
-
-        private void EnrichNodes()
-        {
             // Junction enrichments
             foreach (var elementJunctionPair in JunctionElements)
             {
@@ -263,6 +81,185 @@ namespace MGroup.XFEM.Enrichment.Enrichers
                 {
                     EnrichNode(node, stepEnrichment);
                 }
+            }
+        }
+
+        public IEnumerable<EnrichmentItem> DefineEnrichments()
+        {
+            var enrichmentItems = new List<EnrichmentItem>();
+            DefineStepEnrichments(enrichmentItems);
+            DefineJunctionEnrichments(enrichmentItems);
+            return enrichmentItems;
+        }
+
+        private static (IPhase minPhase, IPhase maxPhase) FindMinMaxPhases(IPhase phase1, IPhase phase2)
+        {
+            IPhase minPhase, maxPhase;
+            if (phase1.ID < phase2.ID)
+            {
+                minPhase = phase1;
+                maxPhase = phase2;
+            }
+            else
+            {
+                minPhase = phase2;
+                maxPhase = phase1;
+            }
+            return (minPhase, maxPhase);
+        }
+
+        private void DefineJunctionEnrichments(List<EnrichmentItem> enrichmentItems)
+        { //WARNING: Assumes 0 or 1 junction per element
+
+            // Keep track of the junctions to avoid duplicate ones.
+            //TODO: What happens if the same boundary is used for more than one junctions? E.g. the boundary is an almost closed 
+            //      curve, that has 2 ends, both of which need junctions.
+            var junctionEnrichments = new Dictionary<ClosedPhaseBoundary, JunctionEnrichment>();
+
+            int id = enrichmentItems.Count;
+            //for (int p = 1; p < geometricModel.Phases.Count; ++p)
+            //{
+            //    IPhase phase = geometricModel.Phases[p];
+            //    foreach (IXFiniteElement element in phase.BoundaryElements)
+            //    {
+            //        // This element has already been processed when looking at another phase
+            //        if (JunctionElements.ContainsKey(element)) continue;
+
+            //        // Check if the element contains a junction point
+            //        //TODO: Shouldn't the boundaries intersect?
+            //        if (element.Phases.Count <= 2) continue; // Not a junction element
+            //        else
+            //        {
+            //            var uniquePhaseSeparators = new Dictionary<int, HashSet<int>>();
+            //            foreach (PhaseBoundary boundary in element.PhaseIntersections.Keys)
+            //            {
+            //                (IPhase minPhase, IPhase maxPhase) = FindMinMaxPhases(boundary.PositivePhase, boundary.NegativePhase);
+            //                bool exists = uniquePhaseSeparators.TryGetValue(minPhase.ID, out HashSet<int> neighbors);
+            //                if (!exists)
+            //                {
+            //                    neighbors = new HashSet<int>();
+            //                    uniquePhaseSeparators[minPhase.ID] = neighbors;
+            //                }
+            //                neighbors.Add(maxPhase.ID);
+            //            }
+
+            //            int numUniqueSeparators = 0;
+            //            foreach (HashSet<int> neighbors in uniquePhaseSeparators.Values) numUniqueSeparators += neighbors.Count;
+
+            //            if (numUniqueSeparators <= 2) continue; // 3 or more phases, but the boundaries do not intersect
+            //        }
+
+            //        // Create a new junction enrichment
+            //        // If there are n boundaries intersecting, then use n-1 junctions
+            //        PhaseBoundary[] boundaries = element.PhaseIntersections.Keys.ToArray();
+            //        var elementJunctions = new HashSet<JunctionEnrichment>();
+            //        JunctionElements[element] = elementJunctions;
+            //        for (int i = 0; i < boundaries.Length - 1; ++i) 
+            //        {
+            //            PhaseBoundary boundary = boundaries[i];
+            //            var junction = new JunctionEnrichment(id, boundary, element.Phases);
+            //            ++id;
+            //            elementJunctions.Add(junction);
+            //        }
+            //    }
+            //}
+        }
+
+        private void DefineStepEnrichments(List<EnrichmentItem> enrichmentItems)
+        {
+            // Keep track of identified interactions between phases, to avoid duplicate enrichments
+            var uniqueEnrichments = new Dictionary<int, Dictionary<int, EnrichmentItem>>();
+
+            foreach (IPhase phase in geometricModel.Phases.Values)
+            {
+                uniqueEnrichments[phase.ID] = new Dictionary<int, EnrichmentItem>();
+            }
+
+            int id = enrichmentItems.Count;
+            foreach (IPhase phase in geometricModel.Phases.Values)
+            {
+                foreach (IPhaseBoundary boundary in phase.ExternalBoundaries)
+                {
+                    // It may have been processed when iterating the boundaries of the opposite phase.
+                    if (boundary.StepEnrichment != null) continue;
+
+                    // Find min/max phase IDs to uniquely identify the interaction.
+                    //TODO: Why not uniquely identify the interaction based on the boundary object?
+                    IPhase minPhase, maxPhase;
+                    if (boundary.PositivePhase.ID < boundary.NegativePhase.ID)
+                    {
+                        minPhase = boundary.PositivePhase;
+                        maxPhase = boundary.NegativePhase;
+                    }
+                    else
+                    {
+                        minPhase = boundary.NegativePhase;
+                        maxPhase = boundary.PositivePhase;
+                    }
+
+                    // Find the existing enrichment for this phase interaction or create a new one
+                    bool enrichmentsExists = 
+                        uniqueEnrichments[maxPhase.ID].TryGetValue(minPhase.ID, out EnrichmentItem enrichmentItem);
+                    if (!enrichmentsExists)
+                    {
+                        var enrichmentFunc = DefineStepEnrichment(boundary);
+                        var enrichedDof = new EnrichedDof(enrichmentFunc, ThermalDof.Temperature);
+                        enrichmentItem = new EnrichmentItem(id,
+                            new IEnrichmentFunction[] { enrichmentFunc }, new IDofType[] { enrichedDof });
+                        ++id;
+                        uniqueEnrichments[maxPhase.ID][minPhase.ID] = enrichmentItem;
+                        enrichmentItems.Add(enrichmentItem);
+                    }
+
+                    boundary.StepEnrichment = enrichmentItem;
+                }
+            }
+        }
+
+        private PhaseStepEnrichment DefineStepEnrichment(IPhaseBoundary boundary)
+        {
+            //TODO: This is horrible
+            if (boundary.NegativePhase is DefaultPhase)
+            {
+                return new PhaseStepEnrichment(boundary.PositivePhase, boundary.NegativePhase);
+            }
+            else if (boundary.PositivePhase is DefaultPhase)
+            {
+                return new PhaseStepEnrichment(boundary.NegativePhase, boundary.PositivePhase);
+            }
+            else if (/*boundary.PositivePhase is HollowPhase &&*/ boundary.NegativePhase is ConvexPhase)
+            {
+                return new PhaseStepEnrichment(boundary.NegativePhase, boundary.PositivePhase);
+            }
+            else if (/*boundary.NegativePhase is HollowPhase &&*/ boundary.PositivePhase is ConvexPhase)
+            {
+                return new PhaseStepEnrichment(boundary.PositivePhase, boundary.NegativePhase);
+            }
+            else // Does not matter which phase will be internal/external
+            {
+                return new PhaseStepEnrichment(boundary.NegativePhase, boundary.PositivePhase);
+            }
+        }
+
+        private void EnrichNode(XNode node, EnrichmentItem enrichment)
+        {
+            if (!node.Enrichments.Contains(enrichment))
+            {
+                node.Enrichments.Add(enrichment);
+                foreach (IEnrichmentFunction enrichmentFunc in enrichment.EnrichmentFunctions)
+                {
+                    double value = enrichmentFunc.EvaluateAt(node);
+                    node.EnrichmentFuncs[enrichmentFunc] = value;
+                }
+            }
+        }
+
+        private void EnrichNode(XNode node, IEnrichmentFunction enrichment)
+        {
+            if (!node.EnrichmentFuncs.ContainsKey(enrichment))
+            {
+                double value = enrichment.EvaluateAt(node);
+                node.EnrichmentFuncs[enrichment] = value;
             }
         }
 

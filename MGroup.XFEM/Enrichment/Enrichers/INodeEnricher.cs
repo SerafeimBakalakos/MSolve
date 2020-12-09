@@ -8,5 +8,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
     public interface INodeEnricher
     {
         void ApplyEnrichments();
+
+        IEnumerable<EnrichmentItem> DefineEnrichments();
     }
 }

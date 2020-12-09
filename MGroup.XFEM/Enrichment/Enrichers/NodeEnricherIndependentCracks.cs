@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
 using MGroup.XFEM.Cracks;
 using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Elements;
@@ -110,6 +111,17 @@ namespace MGroup.XFEM.Enrichment.Enrichers
             }
         }
 
+        public IEnumerable<EnrichmentItem> DefineEnrichments()
+        {
+            var enrichmentItems = new List<EnrichmentItem>();
+            foreach (ICrack crack in geometryModel.Cracks.Values)
+            {
+                IList<EnrichmentItem> crackEnrichments = crack.DefineEnrichments(enrichmentItems.Count);
+                enrichmentItems.AddRange(crackEnrichments);
+            }
+            return enrichmentItems;
+        }
+
         private void ClearNodalEnrichments(EnrichmentItem enrichment)
         {
             foreach (XNode node in enrichment.EnrichedNodes)
@@ -135,46 +147,5 @@ namespace MGroup.XFEM.Enrichment.Enrichers
                 enrichment.EnrichedNodes.Add(node);
             }
         }
-
-        ////TODO: Generalize this method for all INodeEnricher implementations
-        ////TODO: For cases where a crack branches or 2 cracks merge, the enrichments will change. This method will need to be
-        ////      called repeatedly (probably by the model). How do I determine which enrichments change and which remain the same?
-        //private void IdentifyEnrichedDofs()
-        //{
-        //    //TODO: Create EnrichmentItems (and their dofs) and register them in the model 
-        //    model.EnrichedDofs.Clear();
-        //    foreach (ICrack crack in cracks)
-        //    {
-        //        var enrichments = new List<IEnrichmentFunction>();
-        //        enrichments.Add(crack.CrackBodyEnrichment);
-        //        enrichments.AddRange(crack.CrackTipEnrichments);
-        //        if (dimension == 2)
-        //        {
-        //            foreach (IEnrichmentFunction enrichment in enrichments)
-        //            {
-        //                var dofs = new IDofType[]
-        //                {
-        //                    new EnrichedDof(enrichment, StructuralDof.TranslationX),
-        //                    new EnrichedDof(enrichment, StructuralDof.TranslationY)
-        //                };
-        //                model.EnrichedDofs[enrichment] = dofs;
-        //            }
-        //        }
-        //        else if (dimension == 3)
-        //        {
-        //            foreach (IEnrichmentFunction enrichment in enrichments)
-        //            {
-        //                var dofs = new IDofType[]
-        //                {
-        //                    new EnrichedDof(enrichment, StructuralDof.TranslationX),
-        //                    new EnrichedDof(enrichment, StructuralDof.TranslationY),
-        //                    new EnrichedDof(enrichment, StructuralDof.TranslationZ)
-        //                };
-        //                model.EnrichedDofs[enrichment] = dofs;
-        //            }
-        //        }
-        //        else throw new NotImplementedException();
-        //    }
-        //}
     }
 }

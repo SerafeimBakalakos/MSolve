@@ -167,7 +167,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
                 var internalPhase = new LsmPhase(p+1, geometricModel, 0);
                 geometricModel.Phases[internalPhase.ID] = internalPhase;
 
-                var internalBoundary = new ClosedLsmPhaseBoundary(internalPhase.ID, internalLsm, defaultPhase, internalPhase);
+                var internalBoundary = new ClosedPhaseBoundary(internalPhase.ID, internalLsm, defaultPhase, internalPhase);
                 defaultPhase.Neighbors.Add(internalPhase);
                 internalPhase.ExternalBoundaries.Add(internalBoundary);
                 internalPhase.Neighbors.Add(defaultPhase);

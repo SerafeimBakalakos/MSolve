@@ -110,18 +110,6 @@ namespace MGroup.XFEM.Entities
         public void Initialize()
         {
             ConnectDataStructures();
-
-            // Identify enrichments and their dofs
-            //TODO: The enrichments may need to change during the analysis (e.g. branching cracks, crack junctions, etc)
-            foreach (IXDiscontinuity discontinuity in GeometryModel.EnumerateDiscontinuities()) //MODIFICATION NEEDED: this should be handled by INodeEnricher probably
-            {
-                IList<EnrichmentItem> enrichments = discontinuity.DefineEnrichments(this.Enrichments.Count);
-                foreach (EnrichmentItem enrichment in enrichments)
-                {
-                    this.Enrichments[enrichment.ID] = enrichment;
-                }
-            }
-
             UpdateStatePrivate(true, null);
         }
 
@@ -241,6 +229,17 @@ namespace MGroup.XFEM.Entities
 
             // Optionally calculate conforming subcells for elements that interact with discontinuities
             if (FindConformingSubcells) CalcConformingSubcells();
+
+            // Define enrichments and their dofs
+            //TODO: The enrichments may need to change during the analysis (e.g. branching cracks, crack junctions, etc)
+            if (firstAnalysis)
+            {
+                IEnumerable<EnrichmentItem> enrichments = GeometryModel.Enricher.DefineEnrichments();
+                foreach (EnrichmentItem enrichment in enrichments)
+                {
+                    this.Enrichments[enrichment.ID] = enrichment;
+                }
+            }
 
             // Enrich the required nodes
             GeometryModel.Enricher.ApplyEnrichments();

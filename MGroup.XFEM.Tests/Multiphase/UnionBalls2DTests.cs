@@ -148,7 +148,7 @@ namespace MGroup.XFEM.Tests.Multiphase
                 var curve = new SimpleLsm2D(phase.ID, model.XNodes, balls[p]);
                 geometricModel.Phases[phase.ID] = phase;
 
-                var boundary = new ClosedLsmPhaseBoundary(phase.ID, curve, defaultPhase, phase);
+                var boundary = new ClosedPhaseBoundary(phase.ID, curve, defaultPhase, phase);
                 defaultPhase.ExternalBoundaries.Add(boundary);
                 defaultPhase.Neighbors.Add(phase);
                 phase.ExternalBoundaries.Add(boundary);

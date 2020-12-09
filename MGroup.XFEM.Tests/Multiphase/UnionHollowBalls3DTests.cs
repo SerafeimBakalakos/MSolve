@@ -155,7 +155,7 @@ namespace MGroup.XFEM.Tests.Multiphase
                 var externalCurve = new SimpleLsm3D(externalPhase.ID, model.XNodes, ballsExternal[p]);
                 geometricModel.Phases[externalPhase.ID] = externalPhase;
 
-                var externalBoundary = new ClosedLsmPhaseBoundary(externalPhase.ID, externalCurve, defaultPhase, externalPhase);
+                var externalBoundary = new ClosedPhaseBoundary(externalPhase.ID, externalCurve, defaultPhase, externalPhase);
                 defaultPhase.ExternalBoundaries.Add(externalBoundary);
                 defaultPhase.Neighbors.Add(externalPhase);
                 externalPhase.ExternalBoundaries.Add(externalBoundary);
@@ -166,7 +166,7 @@ namespace MGroup.XFEM.Tests.Multiphase
                 var internalPhase = new LsmPhase(2 * p + 2, geometricModel, -1);
                 geometricModel.Phases[internalPhase.ID] = internalPhase;
 
-                var internalBoundary = new ClosedLsmPhaseBoundary(internalPhase.ID, internalLsm, externalPhase, internalPhase);
+                var internalBoundary = new ClosedPhaseBoundary(internalPhase.ID, internalLsm, externalPhase, internalPhase);
                 externalPhase.InternalBoundaries.Add(internalBoundary);
                 externalPhase.InternalPhases.Add(internalPhase);
                 externalPhase.Neighbors.Add(internalPhase);

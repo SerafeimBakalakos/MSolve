@@ -167,7 +167,7 @@ namespace MGroup.XFEM.Elements
             GetMaterialsForBoundaryIntegration()
         {
             var result = new Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<ThermalInterfaceMaterial>)>();
-            foreach (ClosedLsmPhaseBoundary boundary in gaussPointsBoundary.Keys)
+            foreach (ClosedPhaseBoundary boundary in gaussPointsBoundary.Keys)
             {
                 result[boundary] = (gaussPointsBoundary[boundary], materialsAtGPsBoundary[boundary]);
             }

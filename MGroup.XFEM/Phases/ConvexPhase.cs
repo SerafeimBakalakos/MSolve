@@ -34,7 +34,7 @@ namespace MGroup.XFEM.Phases
 
         public virtual bool Contains(XNode node)
         {
-            foreach (ClosedLsmPhaseBoundary boundary in ExternalBoundaries)
+            foreach (ClosedPhaseBoundary boundary in ExternalBoundaries)
             {
                 double distance = boundary.Geometry.SignedDistanceOf(node);
                 bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
@@ -46,7 +46,7 @@ namespace MGroup.XFEM.Phases
 
         public virtual bool Contains(XPoint point)
         {
-            foreach (ClosedLsmPhaseBoundary boundary in ExternalBoundaries)
+            foreach (ClosedPhaseBoundary boundary in ExternalBoundaries)
             {
                 double distance = boundary.Geometry.SignedDistanceOf(point);
                 bool sameSide = (distance > 0) && (boundary.PositivePhase == this);
@@ -86,7 +86,7 @@ namespace MGroup.XFEM.Phases
                 else
                 {
                     bool isBoundary = false;
-                    foreach (ClosedLsmPhaseBoundary boundary in ExternalBoundaries)
+                    foreach (ClosedPhaseBoundary boundary in ExternalBoundaries)
                     {
                         // This boundary-element intersection may have already been calculated from the opposite phase. 
                         if (element.PhaseIntersections.ContainsKey(boundary))

@@ -54,7 +54,7 @@ namespace MGroup.XFEM.Enrichment.Functions
 
         public double EvaluateJumpAcross(IXDiscontinuity discontinuity, XPoint point)
         {
-            if (discontinuity is ClosedLsmPhaseBoundary phaseBoundary) //TODO: Find a better way than casting
+            if (discontinuity is ClosedPhaseBoundary phaseBoundary) //TODO: Find a better way than casting
             {
                 (IPhase boundaryMinPhase, IPhase boundaryMaxPhase) =
                 FindMinMaxPhases(phaseBoundary.PositivePhase, phaseBoundary.NegativePhase);

@@ -59,20 +59,13 @@ namespace MGroup.XFEM.Phases
             // Phases - nodes
             InteractWithNodes();
 
-            // Phases - elements
+            // Phases & phase boundaries - elements
             IPhase defaultPhase = Phases.Values.Where(p => p is DefaultPhase).FirstOrDefault();
             foreach (IPhase phase in Phases.Values)
             {
                 if (phase != defaultPhase) phase.InteractWithElements(physicalModel.Elements);
             }
             if (defaultPhase != null) defaultPhase.InteractWithElements(physicalModel.Elements);
-
-            // Phase boundaries - elements 
-            //MODIFICATION NEEDED: I think this is done during Phases - elements. If this is the desired behavior, consider removing InteractWithMesh() from IXDiscontinuity and adding it to ICrack
-            foreach (IPhaseBoundary boundary in PhaseBoundaries.Values)
-            {
-                boundary.InteractWithMesh();
-            }
 
             foreach (IPhaseMeshInteractionObserver observer in InteractionObservers) observer.Update();
         }

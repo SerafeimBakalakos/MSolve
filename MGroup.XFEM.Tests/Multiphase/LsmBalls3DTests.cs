@@ -199,7 +199,7 @@ namespace MGroup.XFEM.Tests.Multiphase
                 var phase = new LsmPhase(p + 1, geometricModel, -1);
                 geometricModel.Phases[phase.ID] = phase;
 
-                var boundary = new ClosedLsmPhaseBoundary(phase.ID, surface, defaultPhase, phase);
+                var boundary = new ClosedPhaseBoundary(phase.ID, surface, defaultPhase, phase);
                 defaultPhase.ExternalBoundaries.Add(boundary);
                 defaultPhase.Neighbors.Add(phase);
                 phase.ExternalBoundaries.Add(boundary);
