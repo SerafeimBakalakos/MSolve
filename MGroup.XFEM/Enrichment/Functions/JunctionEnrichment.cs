@@ -54,38 +54,53 @@ namespace MGroup.XFEM.Enrichment.Functions
         {
             for (int i = 0; i < descendingPhases.Length; ++i)
             {
-                if (node.Phase == descendingPhases[i]) return descendingPhaseCoeffs[i];
+                if (node.PhaseID == descendingPhases[i].ID) return descendingPhaseCoeffs[i];
             }
             throw new ArgumentException();
         }
 
         public double EvaluateAt(XPoint point)
         {
-            if (point.Phase != null) return EvaluateAt(point.Phase);
-
             for (int i = 0; i < descendingPhases.Length - 1; ++i)
             {
-                if (descendingPhases[i].Contains(point)) return descendingPhaseCoeffs[i];
+                if (descendingPhases[i].ID == point.PhaseID) return descendingPhaseCoeffs[i];
             }
             return descendingPhaseCoeffs[descendingPhases.Length - 1];
+
+            //if (point.PhaseID != null) return EvaluateAt(point.Phase);
+
+            //for (int i = 0; i < descendingPhases.Length - 1; ++i)
+            //{
+            //    if (descendingPhases[i].Contains(point)) return descendingPhaseCoeffs[i];
+            //}
+            //return descendingPhaseCoeffs[descendingPhases.Length - 1];
         }
 
         public EvaluatedFunction EvaluateAllAt(XPoint point)
         {
-            if (point.Phase != null)
-            {
-                double psi = EvaluateAt(point.Phase);
-                return new EvaluatedFunction(psi, new double[point.Dimension]);
-            }
-
             for (int i = 0; i < descendingPhases.Length - 1; ++i)
             {
-                if (descendingPhases[i].Contains(point))
+                if (descendingPhases[i].ID == point.PhaseID)
                 {
                     return new EvaluatedFunction(descendingPhaseCoeffs[i], new double[point.Dimension]);
                 }
             }
             return new EvaluatedFunction(descendingPhaseCoeffs[descendingPhases.Length - 1], new double[point.Dimension]);
+
+            //if (point.Phase != null)
+            //{
+            //    double psi = EvaluateAt(point.Phase);
+            //    return new EvaluatedFunction(psi, new double[point.Dimension]);
+            //}
+
+            //for (int i = 0; i < descendingPhases.Length - 1; ++i)
+            //{
+            //    if (descendingPhases[i].Contains(point))
+            //    {
+            //        return new EvaluatedFunction(descendingPhaseCoeffs[i], new double[point.Dimension]);
+            //    }
+            //}
+            //return new EvaluatedFunction(descendingPhaseCoeffs[descendingPhases.Length - 1], new double[point.Dimension]);
         }
         public double EvaluateAt(IPhase phaseAtPoint)
         {

@@ -28,7 +28,7 @@ namespace MGroup.XFEM.Enrichment.Functions
 
         public double EvaluateAt(XNode node)
         {
-            if (internalPhase == node.Phase/*internalPhase.ContainedNodes.Contains(node)*/) return -1.0;
+            if (internalPhase.ID == node.PhaseID) return -1.0;
             else return 1.0;
         }
 

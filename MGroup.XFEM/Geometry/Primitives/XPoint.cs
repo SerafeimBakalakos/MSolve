@@ -29,8 +29,13 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// </summary>
         public Matrix ShapeFunctionDerivatives { get; set; }
 
-        //MODIFICATION NEEDED: Delete this
-        public IPhase Phase { get; set; }
+        /// <summary>
+        /// The id of the material phases this point belongs to. For multiphase problems, points may belong to an enclosed phase
+        /// or the encompassing material, which is represented as the "default" phase. It is also possible that the enclosed 
+        /// phases make up the whole domain, in which case there is no default phase. For problems without multiple material 
+        /// phases, there is only one phase, the default onde.
+        /// </summary>
+        public int PhaseID { get; set; } = DefaultPhase.defaultPhaseID;
 
         public double[] MapCoordinates(double[] shapeFunctions, IReadOnlyList<XNode> nodes)
         {

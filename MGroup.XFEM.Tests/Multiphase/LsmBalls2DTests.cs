@@ -192,7 +192,7 @@ namespace MGroup.XFEM.Tests.Multiphase
             model.GeometryModel = geometricModel;
             geometricModel.Enricher = new NodeEnricherMultiphase(geometricModel, new NullSingularityResolver());
             List<SimpleLsm2D> lsmCurves = InitializeLSM(model);
-            var defaultPhase = new DefaultPhase(defaultPhaseID);
+            var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;
             for (int p = 0; p < lsmCurves.Count; ++p)
             {

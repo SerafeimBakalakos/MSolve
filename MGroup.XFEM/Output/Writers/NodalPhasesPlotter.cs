@@ -15,25 +15,23 @@ namespace MGroup.XFEM.Output.Writers
     public class NodalPhasesPlotter : IPhaseMeshInteractionObserver
     {
         private readonly double colorForDefaultPhase;
-        private readonly int defaultPhaseID;
         private readonly XModel<IXMultiphaseElement> model;
         private readonly string outputDirectory;
 
         private int iteration;
 
-        public NodalPhasesPlotter(string outputDirectory, XModel<IXMultiphaseElement> model, int defaultPhaseID,
+        public NodalPhasesPlotter(string outputDirectory, XModel<IXMultiphaseElement> model,
             double colorForDefaultPhase)
         {
             this.outputDirectory = outputDirectory;
             this.model = model;
-            this.defaultPhaseID = defaultPhaseID;
             this.colorForDefaultPhase = colorForDefaultPhase;
 
             iteration = 0;
         }
 
         public NodalPhasesPlotter(string outputDirectory, XModel<IXMultiphaseElement> model)
-            : this(outputDirectory, model, int.MaxValue, int.MaxValue)
+            : this(outputDirectory, model, DefaultPhase.defaultPhaseID)
         {
         }
 
@@ -46,8 +44,8 @@ namespace MGroup.XFEM.Output.Writers
 
                 foreach (XNode node in model.XNodes)
                 {
-                    double phaseID = node.Phase.ID;
-                    if (node.Phase.ID == defaultPhaseID) phaseID = colorForDefaultPhase;
+                    double phaseID = node.PhaseID;
+                    if (node.PhaseID == DefaultPhase.defaultPhaseID) phaseID = colorForDefaultPhase;
                     nodalPhases[node] = phaseID;
                 }
 

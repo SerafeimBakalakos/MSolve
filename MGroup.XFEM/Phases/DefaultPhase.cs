@@ -14,13 +14,15 @@ namespace MGroup.XFEM.Phases
 {
     public class DefaultPhase : IPhase
     {
-        public DefaultPhase(int id)
+        public const int defaultPhaseID = 0;
+
+        public DefaultPhase()
         {
-            this.ID = id;
         }
+
         public IEnumerable<IPhaseBoundary> AllBoundaries => ExternalBoundaries;
 
-        public int ID { get; }
+        public int ID => defaultPhaseID;
 
         public HashSet<IXMultiphaseElement> BoundaryElements => throw new NotImplementedException();
 
@@ -43,10 +45,9 @@ namespace MGroup.XFEM.Phases
         {
             foreach (XNode node in nodes)
             {
-                if (node.Phase == null)
+                if (node.PhaseID == defaultPhaseID)
                 {
                     ContainedNodes.Add(node);
-                    node.Phase = this;
                 }
             }
         }

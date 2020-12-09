@@ -35,7 +35,13 @@ namespace MGroup.XFEM.Entities
 
         public new Dictionary<int, XSubdomain> SubdomainsDictionary { get; } = new Dictionary<int, XSubdomain>();
 
-        public IPhase Phase { get; set; } //MODIFICATION NEEDED: Delete this
+        /// <summary>
+        /// The id of the material phases this node belongs to. For multiphase problems, nodes may belong to an enclosed phase
+        /// or the encompassing material, which is represented as the "default" phase. It is also possible that the enclosed 
+        /// phases make up the whole domain, in which case there is no default phase. For problems without multiple material 
+        /// phases, there is only one phase, the default onde.
+        /// </summary>
+        public int PhaseID { get; set; } = DefaultPhase.defaultPhaseID;
 
         public double X => Coordinates[0];
 

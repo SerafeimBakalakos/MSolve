@@ -236,8 +236,9 @@ namespace MGroup.XFEM.Elements
                     XPoint point = new XPoint(2);
                     point.Element = this;
                     point.ShapeFunctions = evalInterpolationsAtGPsVolume[i].ShapeFunctions;
-                    this.FindPhaseAt(point);
-                    this.phasesAtGPsVolume[i] = point.Phase;
+                    IPhase phase = this.FindPhaseAt(point);
+                    point.PhaseID = phase.ID;
+                    this.phasesAtGPsVolume[i] = phase;
                 }
             }
 

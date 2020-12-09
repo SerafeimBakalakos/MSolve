@@ -29,7 +29,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
             physicalModel.GeometryModel = GeometryModel;
             GeometryModel.Enricher = new NodeEnricherMultiphase(GeometryModel, new NullSingularityResolver());
             GeometryModel.MergeOverlappingPhases = true;
-            var defaultPhase = new DefaultPhase(0);
+            var defaultPhase = new DefaultPhase();
             GeometryModel.Phases[defaultPhase.ID] = defaultPhase;
             MatrixPhaseID = 0;
 

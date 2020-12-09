@@ -64,7 +64,7 @@ namespace MGroup.XFEM.Phases
                 if (Contains(node))
                 {
                     ContainedNodes.Add(node);
-                    node.Phase = this;
+                    node.PhaseID = this.ID;
                 }
             }
         }

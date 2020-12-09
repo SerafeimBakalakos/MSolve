@@ -42,8 +42,8 @@ namespace MGroup.XFEM.Output.Fields
                         centroid.Element = element;
                         centroid.ShapeFunctions =
                             element.Interpolation.EvaluateFunctionsAt(centroid.Coordinates[CoordinateSystem.ElementNatural]);
-                        element.FindPhaseAt(centroid);
-                        IPhase phase = centroid.Phase;
+                        IPhase phase = element.FindPhaseAt(centroid);
+                        centroid.PhaseID = phase.ID;
 
                         (_, double subcellBulk) = subcell.FindCentroidAndBulkSizeCartesian(element);
 

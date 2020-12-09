@@ -136,7 +136,7 @@ namespace MGroup.XFEM.Tests.Multiphase
             model.GeometryModel = geometricModel;
             geometricModel.Enricher = new NodeEnricherMultiphase(geometricModel, new NullSingularityResolver());
             geometricModel.MergeOverlappingPhases = true;
-            var defaultPhase = new DefaultPhase(defaultPhaseID);
+            var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;
 
             var balls = new Circle2D[2];

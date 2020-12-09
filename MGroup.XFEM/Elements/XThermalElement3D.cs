@@ -233,8 +233,9 @@ namespace MGroup.XFEM.Elements
                     point.Element = this;
                     point.Coordinates[CoordinateSystem.ElementNatural] = gaussPointsBulk[i].Coordinates;
                     point.ShapeFunctions = evalInterpolationsAtGPsVolume[i].ShapeFunctions;
-                    this.FindPhaseAt(point);
-                    this.phasesAtGPsVolume[i] = point.Phase;
+                    IPhase phase = this.FindPhaseAt(point);
+                    point.PhaseID = phase.ID;
+                    this.phasesAtGPsVolume[i] = phase;
                 }
             }
 

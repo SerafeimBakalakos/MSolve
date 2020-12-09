@@ -11,7 +11,7 @@ namespace MGroup.XFEM.Elements
 {
     public static class XElementExtensions
     {
-        public static void FindPhaseAt(this IXMultiphaseElement element, XPoint point)
+        public static IPhase FindPhaseAt(this IXMultiphaseElement element, XPoint point)
         {
             IPhase defaultPhase = null;
             foreach (IPhase phase in element.Phases)
@@ -24,8 +24,7 @@ namespace MGroup.XFEM.Elements
                 }
                 else if (phase.Contains(point))
                 {
-                    point.Phase = phase;
-                    return;
+                    return phase;
                 }
             }
 
@@ -34,7 +33,7 @@ namespace MGroup.XFEM.Elements
             {
                 throw new ArgumentException("The provided point does not belong to any of this element's phases");
             }
-            point.Phase = defaultPhase;
+            return defaultPhase;
         }
 
         private static void PreparePoint(IXFiniteElement element, XPoint point)

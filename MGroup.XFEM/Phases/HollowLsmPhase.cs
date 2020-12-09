@@ -108,7 +108,7 @@ namespace MGroup.XFEM.Phases
                     foreach (XNode node in otherPhase.ContainedNodes)
                     {
                         this.ContainedNodes.Add(node);
-                        node.Phase = this;
+                        node.PhaseID = this.ID;
                     }
 
                     return true;
