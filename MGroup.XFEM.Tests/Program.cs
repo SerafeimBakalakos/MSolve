@@ -9,6 +9,9 @@ namespace MGroup.XFEM.Tests
     {
         public static void Main(string[] args)
         {
+            DualMeshLsm2DExamples.PlotIndividualMeshesLevelSets();
+            DualMeshLsm2DExamples.PlotCircleLevelSets();
+
             //START HERE
             //TODO: Split these into tests using mock elements and actual ones. For the actual ones, integration points should
             //      be created and stored as planned for the analysis, instead of being created just to plot them.
@@ -29,7 +32,7 @@ namespace MGroup.XFEM.Tests
 
             //ExampleRandom3D.PlotGeometryAndEntities();
             //ExampleRandom3D.PlotSolution();
-            ExampleRandom3D.RunHomogenization();
+            //ExampleRandom3D.RunHomogenization();
 
             //ExampleStochastic2D.RunAll();
             //ExampleStochastic3D.RunAll();

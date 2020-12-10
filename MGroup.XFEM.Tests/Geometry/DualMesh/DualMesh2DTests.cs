@@ -4,7 +4,7 @@ using System.Text;
 using MGroup.XFEM.Geometry.Mesh;
 using Xunit;
 
-namespace MGroup.XFEM.Tests.Geometry
+namespace MGroup.XFEM.Tests.Geometry.DualMesh
 {
     public static class DualMesh2DTests
     {
@@ -13,7 +13,7 @@ namespace MGroup.XFEM.Tests.Geometry
         [InlineData(3)]
         public static void TestMapNodeLsmToFem(int multiplicity)
         {
-            (DualMesh2D lsmMesh, ILsmMesh mockMesh) = PrepareMeshes(multiplicity);
+            (DualMesh2D lsmMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
 
             for (int lsmNode = 0; lsmNode < lsmMesh.LsmMesh.NumNodesTotal; ++lsmNode)
             {
@@ -28,7 +28,7 @@ namespace MGroup.XFEM.Tests.Geometry
         [InlineData(3)]
         public static void TestMapNodeFemToLsm(int multiplicity)
         {
-            (DualMesh2D lsmMesh, ILsmMesh mockMesh) = PrepareMeshes(multiplicity);
+            (DualMesh2D lsmMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
 
             for (int femNode = 0; femNode < lsmMesh.FemMesh.NumNodesTotal; ++femNode)
             {
@@ -43,7 +43,7 @@ namespace MGroup.XFEM.Tests.Geometry
         [InlineData(3)]
         public static void TestMapElementLsmToFem(int multiplicity)
         {
-            (DualMesh2D lsmMesh, ILsmMesh mockMesh) = PrepareMeshes(multiplicity);
+            (DualMesh2D lsmMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
 
             for (int lsmElem = 0; lsmElem < lsmMesh.LsmMesh.NumElementsTotal; ++lsmElem)
             {
@@ -58,7 +58,7 @@ namespace MGroup.XFEM.Tests.Geometry
         [InlineData(3)]
         public static void TestMapElementFemToLsm(int multiplicity)
         {
-            (DualMesh2D lsmMesh, ILsmMesh mockMesh) = PrepareMeshes(multiplicity);
+            (DualMesh2D lsmMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
 
             for (int femElem = 0; femElem < lsmMesh.FemMesh.NumElementsTotal; ++femElem)
             {
@@ -72,13 +72,13 @@ namespace MGroup.XFEM.Tests.Geometry
             }
         }
 
-        private static (DualMesh2D lsmMesh, ILsmMesh mockMesh) PrepareMeshes(int multiplicity)
+        private static (DualMesh2D lsmMesh, IDualMesh mockMesh) PrepareMeshes(int multiplicity)
         {
             var minCoordinates = new double[] { 0, 0 };
             var maxCoordinates = new double[] { 2, 3 };
             var numElementsFem = new int[] { 2, 3 };
 
-            ILsmMesh mockMesh;
+            IDualMesh mockMesh;
             DualMesh2D lsmMesh;
             if (multiplicity == 1)
             {
@@ -100,11 +100,16 @@ namespace MGroup.XFEM.Tests.Geometry
             return (lsmMesh, mockMesh);
         }
 
-        private class MockMesh1To1 : ILsmMesh
+        private class MockMesh1To1 : IDualMesh
         {
             public IStructuredMesh FemMesh => throw new NotImplementedException();
 
             public IStructuredMesh LsmMesh => throw new NotImplementedException();
+
+            public DualMeshPoint CalcShapeFunctions(int femElementID, double[] femNaturalCoords)
+            {
+                throw new NotImplementedException();
+            }
 
             public int[] MapElementFemToLsm(int femElementID)
             {
@@ -127,11 +132,16 @@ namespace MGroup.XFEM.Tests.Geometry
             }
         }
 
-        private class MockMesh1To3 : ILsmMesh
+        private class MockMesh1To3 : IDualMesh
         {
             public IStructuredMesh FemMesh => throw new NotImplementedException();
 
             public IStructuredMesh LsmMesh => throw new NotImplementedException();
+
+            public DualMeshPoint CalcShapeFunctions(int femElementID, double[] femNaturalCoords)
+            {
+                throw new NotImplementedException();
+            }
 
             public int[] MapElementFemToLsm(int femElementID)
             {

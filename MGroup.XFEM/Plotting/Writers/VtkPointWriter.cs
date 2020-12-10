@@ -49,6 +49,7 @@ namespace MGroup.XFEM.Plotting.Writers
                 else if (point.Length == 3) writer.WriteLine($"{point[0]} {point[1]} {point[2]}");
                 else throw new NotImplementedException();
             }
+            writer.Flush();
 
             // Values
             writer.Write("\n\n");
@@ -60,6 +61,7 @@ namespace MGroup.XFEM.Plotting.Writers
                 writer.WriteLine(value);
             }
             writer.WriteLine();
+            writer.Flush();
         }
 
         //TODO: Avoid the duplication.

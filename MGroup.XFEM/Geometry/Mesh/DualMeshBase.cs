@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
+using MGroup.XFEM.Interpolation;
 
 namespace MGroup.XFEM.Geometry.Mesh
 {
-    public abstract class DualMeshBase : ILsmMesh
+    public abstract class DualMeshBase : IDualMesh
     {
         protected readonly int dim;
         protected readonly int[] multiple;
@@ -88,6 +89,56 @@ namespace MGroup.XFEM.Geometry.Mesh
                 lsmElementIDs[i] = lsmID;
             }
             return lsmElementIDs;
+        }
+
+        public DualMeshPoint CalcShapeFunctions(int femElementID, double[] femNaturalCoords)
+        {
+            // Find the LSM element containing that point and the natural coordinates in that element
+            var subElementsIdx = new int[dim];
+            var lsmNaturalCoords = new double[dim];
+            for (int d = 0; d < dim; ++d)
+            {
+                // Let: 
+                // x = FEM natural coordinate
+                // x0 = FEM natural coordinate starting from the min point of the axis (-1): x0 = 1 + x
+                // dx = max - min of FEM natural coordinate axis: dx = +1 - (-1) = 2
+                // m = multiplicity of LSM elements per FEM element in this axis
+                // i = index of LSM element starting from the one at the min of the axis: i = 0, 1, ... m-1
+                // r = LSM natural coordinate
+                // r0 = LSM natural coordinate starting from the min point of the axis (-1): r0 = 1 + r
+                // dr = max - min of LSM natural coordinate axis: dr = dx/m
+                // x0 = i * dr + r0/m => r = m * x - 2 * i + m - 1
+                double dx = 2.0; // [-1, 1]
+                double x0 = 1 + femNaturalCoords[d];
+                double m = multiple[d];
+                double limit = x0 * m / dx;
+                for (int i = 0; i <= m; ++i) // TODO: Use Math.Floor() instead.
+                {
+                    if (i > limit)
+                    {
+                        subElementsIdx[d] = i - 1;
+                        break;
+                    }
+                }
+
+                lsmNaturalCoords[d] = m * femNaturalCoords[d] - 2 * subElementsIdx[d] + m - 1;
+            }
+
+            // Calculate the shape functions in this LSM element
+            double[] shapeFunctions = InterpolationQuad4.UniqueInstance.EvaluateFunctionsAt(lsmNaturalCoords);
+
+            var result = new DualMeshPoint();
+            result.LsmNaturalCoordinates = lsmNaturalCoords;
+            result.LsmShapeFunctions = shapeFunctions;
+
+            result.LsmElementIdx = new int[dim];
+            int[] femElementIdx = FemMesh.GetElementIdx(femElementID);
+            for (int d = 0; d < dim; ++d)
+            {
+                result.LsmElementIdx[d] = femElementIdx[d] * multiple[d] + subElementsIdx[d];
+            }
+
+            return result;
         }
 
         /// <summary>

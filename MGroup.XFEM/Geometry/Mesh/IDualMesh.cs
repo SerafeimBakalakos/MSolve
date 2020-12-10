@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MGroup.XFEM.Geometry.Mesh
 {
-    public interface ILsmMesh
+    public interface IDualMesh
     {
         IStructuredMesh FemMesh { get; }
 
@@ -22,5 +22,7 @@ namespace MGroup.XFEM.Geometry.Mesh
         int MapElementLsmToFem(int lsmElementID);
 
         int[] MapElementFemToLsm(int femElementID);
+
+        DualMeshPoint CalcShapeFunctions(int femElementID, double[] femNaturalCoords);
     }
 }

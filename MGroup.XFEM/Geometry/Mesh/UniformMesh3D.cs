@@ -29,7 +29,7 @@ namespace MGroup.XFEM.Geometry.Mesh
             }
 
             NumNodesTotal = NumNodes[0] * NumNodes[1] * NumNodes[2];
-            NumElementsTotal = NumElements[0] * NumElements[1] * NumNodes[3];
+            NumElementsTotal = NumElements[0] * NumElements[1] * NumNodes[2];
         }
 
         public CellType CellType => CellType.Hexa8;

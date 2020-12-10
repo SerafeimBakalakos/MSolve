@@ -6,7 +6,7 @@ using ISAAR.MSolve.FEM.Entities;
 using MGroup.XFEM.Geometry.Mesh;
 using Xunit;
 
-namespace MGroup.XFEM.Tests.Geometry
+namespace MGroup.XFEM.Tests.Geometry.DualMesh
 {
     public static class UniformMesh3DTests
     {
