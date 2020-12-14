@@ -22,11 +22,11 @@ namespace MGroup.XFEM.Tests.Plotting
         private static readonly double[] maxCoords = { +1.0, +1.0 };
         private static readonly int[] numElementsFem = { 4, 4 };
         private static readonly int[] numElementsLsm = { 20, 20 };
+        private static readonly Circle2D initialCurve = new Circle2D(0.0, 0.0, 0.49);
+
 
         public static void PlotIndividualMeshesLevelSets()
         {
-            var initialCurve = new Circle2D(0.0, 0.0, 0.5);
-
             // Coarse mesh
             var coarseMesh = new UniformMesh2D(minCoords, maxCoords, numElementsFem);
             XModel coarseModel = CreateModel(coarseMesh);
@@ -75,8 +75,6 @@ namespace MGroup.XFEM.Tests.Plotting
         {
             var mesh = new DualMesh2D(minCoords, maxCoords, numElementsFem, numElementsLsm);
             XModel coarseModel = CreateModel(mesh.FemMesh);
-
-            var initialCurve = new Circle2D(0.0, 0.0, 0.5);
             var dualMeshLsm = new DualMeshLsm2D(0, mesh, initialCurve);
 
             int numPointsPerElemPerAxis = 10;
@@ -93,15 +91,15 @@ namespace MGroup.XFEM.Tests.Plotting
                     double[] cartesianCoords = 
                         element.Interpolation.TransformNaturalToCartesian(element.Nodes, pointsNaturalCoarse[p]);
                     #region debug
-                    double tol = 1E-4;
-                    double targetX = -0.05;
-                    double targetY = -0.05;
-                    double x = cartesianCoords[0];
-                    double y = cartesianCoords[1];
-                    if ((Math.Abs(x - targetX) < tol) && (Math.Abs(y - targetY) < tol))
-                    {
-                        Console.WriteLine();
-                    }
+                    //double tol = 1E-4;
+                    //double targetX = -0.05;
+                    //double targetY = -0.05;
+                    //double x = cartesianCoords[0];
+                    //double y = cartesianCoords[1];
+                    //if ((Math.Abs(x - targetX) < tol) && (Math.Abs(y - targetY) < tol))
+                    //{
+                    //    Console.WriteLine();
+                    //}
                     #endregion
                     allPoints[cartesianCoords] = dualMeshLsm.SignedDistanceOf(point);
                     //allPoints[cartesianCoords] = initialCurve.SignedDistanceOf(cartesianCoords);
@@ -113,6 +111,23 @@ namespace MGroup.XFEM.Tests.Plotting
                 writer.WriteScalarField("level_set", allPoints);
 
             }
+        }
+
+        public static void PlotElementCurveIntersections()
+        {
+            var mesh = new DualMesh2D(minCoords, maxCoords, numElementsFem, numElementsLsm);
+            XModel coarseModel = CreateModel(mesh.FemMesh);
+
+            var dualMeshLsm = new DualMeshLsm2D(0, mesh, initialCurve);
+            var lsmCurves = new IImplicitGeometry[] { dualMeshLsm };
+
+            // Plot intersections between level set curves and elements
+            Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> elementIntersections
+                = Utilities.Plotting.CalcIntersections(coarseModel, lsmCurves);
+            var allIntersections = new List<IElementGeometryIntersection>();
+            foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
+            var intersectionPlotter = new LsmElementIntersectionsPlotter();
+            intersectionPlotter.PlotIntersections(outputDirectory + "\\intersections.vtk", allIntersections);
         }
 
         private static XModel CreateModel(IStructuredMesh mesh)

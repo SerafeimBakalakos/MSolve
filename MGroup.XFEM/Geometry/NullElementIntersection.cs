@@ -22,7 +22,7 @@ namespace MGroup.XFEM.Geometry
 
         public IXFiniteElement Element { get; }
 
-        public IntersectionMesh ApproximateGlobalCartesian() => new IntersectionMesh();
+        public IntersectionMesh3D ApproximateGlobalCartesian() => new IntersectionMesh3D();
 
         public IReadOnlyList<GaussPoint> GetIntegrationPoints(int numPoints)
         {
@@ -34,6 +34,6 @@ namespace MGroup.XFEM.Geometry
             return new double[0][];
         }
 
-        IIntersectionMesh IElementGeometryIntersection.ApproximateGlobalCartesian() => new IntersectionMesh();
+        IIntersectionMesh IElementGeometryIntersection.ApproximateGlobalCartesian() => new IntersectionMesh3D();
     }
 }

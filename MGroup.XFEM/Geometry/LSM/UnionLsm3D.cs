@@ -27,7 +27,7 @@ namespace MGroup.XFEM.Geometry.LSM
             }
             catch (InvalidElementGeometryIntersectionException)
             {
-                var unionIntersectionMesh = new IntersectionMesh();
+                var unionIntersectionMesh = new IntersectionMesh3D();
                 foreach (SimpleLsm3D lsm in mergedLsms)
                 {
                     Dictionary<int, double> levelSetSubset = FindLevelSetsOfElementNodes(element, lsm.NodalLevelSets);

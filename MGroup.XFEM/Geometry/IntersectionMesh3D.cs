@@ -9,15 +9,15 @@ using MGroup.XFEM.Exceptions;
 
 namespace MGroup.XFEM.Geometry
 {
-    public class IntersectionMesh : IIntersectionMesh
+    public class IntersectionMesh3D : IIntersectionMesh
     {
-        public IntersectionMesh()
+        public IntersectionMesh3D()
         {
         }
 
-        public static IntersectionMesh CreateMultiCellMesh3D(Dictionary<double[], HashSet<ElementFace>> intersectionPoints)
+        public static IntersectionMesh3D CreateMultiCellMesh3D(Dictionary<double[], HashSet<ElementFace>> intersectionPoints)
         {
-            var mesh = new IntersectionMesh();
+            var mesh = new IntersectionMesh3D();
             if (intersectionPoints.Count < 3) throw new ArgumentException("There must be at least 3 points");
             else if (intersectionPoints.Count == 3)
             {
@@ -38,9 +38,9 @@ namespace MGroup.XFEM.Geometry
             return mesh;
         }
 
-        public static IntersectionMesh CreateSingleCellMesh(CellType cellType, IReadOnlyList<double[]> intersectionPoints)
+        public static IntersectionMesh3D CreateSingleCellMesh(CellType cellType, IReadOnlyList<double[]> intersectionPoints)
         {
-            var mesh = new IntersectionMesh();
+            var mesh = new IntersectionMesh3D();
             for (int i = 0; i < intersectionPoints.Count; ++i)
             {
                 mesh.Vertices.Add(intersectionPoints[i]);
@@ -59,7 +59,7 @@ namespace MGroup.XFEM.Geometry
         /// without taking intersecting cells into account. 
         /// </summary>
         /// <param name="other"></param>
-        public void MergeWith(IntersectionMesh other)
+        public void MergeWith(IntersectionMesh3D other)
         {
             int offset = this.Vertices.Count;
             foreach (double[] vertex in other.Vertices) this.Vertices.Add(vertex);

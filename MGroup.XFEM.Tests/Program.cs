@@ -11,6 +11,7 @@ namespace MGroup.XFEM.Tests
         {
             DualMeshLsm2DExamples.PlotIndividualMeshesLevelSets();
             DualMeshLsm2DExamples.PlotCircleLevelSets();
+            DualMeshLsm2DExamples.PlotElementCurveIntersections();
 
             //START HERE
             //TODO: Split these into tests using mock elements and actual ones. For the actual ones, integration points should

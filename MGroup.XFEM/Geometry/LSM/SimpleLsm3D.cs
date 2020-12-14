@@ -49,7 +49,7 @@ namespace MGroup.XFEM.Geometry.LSM
             }
             else if (position == RelativePositionCurveElement.Conforming)
             {
-                IntersectionMesh intersectionMesh = FindIntersectionConforming(element);
+                IntersectionMesh3D intersectionMesh = FindIntersectionConforming(element);
                 return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Conforming, element, intersectionMesh);
             }
             else 
@@ -89,7 +89,7 @@ namespace MGroup.XFEM.Geometry.LSM
             else throw new ArgumentException("Incompatible Level Set geometry");
         }
 
-        protected IntersectionMesh FindIntersectionConforming(IXFiniteElement element)
+        protected IntersectionMesh3D FindIntersectionConforming(IXFiniteElement element)
         {
             // Find the nodes that lie on the surface
             var zeroNodes = new HashSet<XNode>();
@@ -105,7 +105,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 if (zeroNodes.SetEquals(face.Nodes))
                 {
                     // Intersection segment is a single cell with the same shape, nodes, etc as the face.
-                    return IntersectionMesh.CreateSingleCellMesh(face.CellType, face.NodesNatural);
+                    return IntersectionMesh3D.CreateSingleCellMesh(face.CellType, face.NodesNatural);
                     
                 }
             }
@@ -115,7 +115,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 "Element marked as conforming, but the zero nodes of the element do not belong to a single face.");
         }
 
-        protected IntersectionMesh FindIntersectionIntersecting(IXFiniteElement element, Dictionary<int, double> levelSetSubset)
+        protected IntersectionMesh3D FindIntersectionIntersecting(IXFiniteElement element, Dictionary<int, double> levelSetSubset)
         {
             ElementFace[] allFaces = element.Faces;
             var intersectionPoints = new Dictionary<double[], HashSet<ElementFace>>();
@@ -143,7 +143,7 @@ namespace MGroup.XFEM.Geometry.LSM
             }
 
             // Create mesh
-            return IntersectionMesh.CreateMultiCellMesh3D(intersectionPoints);
+            return IntersectionMesh3D.CreateMultiCellMesh3D(intersectionPoints);
         }
 
         protected static Dictionary<int, double> FindLevelSetsOfElementNodes(IXFiniteElement element, double[] nodalLevelSets)

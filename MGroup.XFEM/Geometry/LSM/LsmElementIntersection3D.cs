@@ -21,10 +21,10 @@ namespace MGroup.XFEM.Geometry.LSM
     /// </summary>
     public class LsmElementIntersection3D : IElementGeometryIntersection
     {
-        private readonly IntersectionMesh intersectionMeshNatural;
+        private readonly IntersectionMesh3D intersectionMeshNatural;
 
         public LsmElementIntersection3D(int parentGeometryID, RelativePositionCurveElement relativePosition, 
-            IXFiniteElement element, IntersectionMesh intersectionMeshNatural)
+            IXFiniteElement element, IntersectionMesh3D intersectionMeshNatural)
         {
             this.ParentGeometryID = parentGeometryID;
             this.RelativePosition = relativePosition;
@@ -39,7 +39,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IIntersectionMesh ApproximateGlobalCartesian()
         {
-            var meshCartesian = new IntersectionMesh();
+            var meshCartesian = new IntersectionMesh3D();
             foreach (double[] vertexNatural in intersectionMeshNatural.Vertices)
             {
                 double[] vertexCartesian = Element.Interpolation.TransformNaturalToCartesian(

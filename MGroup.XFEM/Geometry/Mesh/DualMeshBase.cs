@@ -49,15 +49,21 @@ namespace MGroup.XFEM.Geometry.Mesh
             return FemMesh.GetNodeID(femIdx);
         }
 
-        public int MapNodeFemToLsm(int femNodeID)
+        public int MapNodeIDFemToLsm(int femNodeID)
         {
             int[] femIdx = FemMesh.GetNodeIdx(femNodeID);
+            var lsmIdx = MapNodeIdxFemToLsm(femIdx);
+            return LsmMesh.GetNodeID(lsmIdx);
+        }
+
+        public int[] MapNodeIdxFemToLsm(int[] femNodeIdx)
+        {
             var lsmIdx = new int[dim];
             for (int d = 0; d < dim; d++)
             {
-                lsmIdx[d] = multiple[d] * femIdx[d];
+                lsmIdx[d] = multiple[d] * femNodeIdx[d];
             }
-            return LsmMesh.GetNodeID(lsmIdx);
+            return lsmIdx;
         }
 
         public int MapElementLsmToFem(int lsmElementID)
@@ -91,6 +97,29 @@ namespace MGroup.XFEM.Geometry.Mesh
             return lsmElementIDs;
         }
 
+        public double[] MapPointLsmNaturalToFemNatural(int[] lsmElementIdx, double[] coordsLsmNatural)
+        {
+            var coordsFemNatural = new double[dim];
+            for (int d = 0; d < dim; ++d)
+            {
+                // Let: 
+                // x = FEM natural coordinate
+                // x0 = FEM natural coordinate starting from the min point of the axis (-1): x0 = 1 + x
+                // dx = max - min of FEM natural coordinate axis: dx = +1 - (-1) = 2
+                // m = multiplicity of LSM elements per FEM element in this axis
+                // i = index of LSM element starting from the one at the min of the axis: i = 0, 1, ... m-1
+                // r = LSM natural coordinate
+                // r0 = LSM natural coordinate starting from the min point of the axis (-1): r0 = 1 + r
+                // dr = max - min of LSM natural coordinate axis: dr = dx/m
+                // x0 = i * dr + r0/m => x = i * dx / m + (1+r) / m - 1
+
+                int i = lsmElementIdx[d] % multiple[d];
+                coordsFemNatural[d] = (i * 2.0 + coordsLsmNatural[d] + 1.0) / multiple[d] - 1.0;
+            }
+            return coordsFemNatural;
+        }
+
+        //TODO: Perhaps split this into a function that maps FEM -> LSM and one that calculates shape functions. 
         public DualMeshPoint CalcShapeFunctions(int femElementID, double[] femNaturalCoords)
         {
             // Find the LSM element containing that point and the natural coordinates in that element
@@ -111,16 +140,7 @@ namespace MGroup.XFEM.Geometry.Mesh
                 double dx = 2.0; // [-1, 1]
                 double x0 = 1 + femNaturalCoords[d];
                 double m = multiple[d];
-                double limit = x0 * m / dx;
-                for (int i = 0; i <= m; ++i) // TODO: Use Math.Floor() instead.
-                {
-                    if (i > limit)
-                    {
-                        subElementsIdx[d] = i - 1;
-                        break;
-                    }
-                }
-
+                subElementsIdx[d] = (int)Math.Floor(x0 * m / dx);
                 lsmNaturalCoords[d] = m * femNaturalCoords[d] - 2 * subElementsIdx[d] + m - 1;
             }
 

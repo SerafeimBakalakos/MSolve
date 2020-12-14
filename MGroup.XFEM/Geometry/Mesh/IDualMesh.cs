@@ -17,7 +17,7 @@ namespace MGroup.XFEM.Geometry.Mesh
         /// <param name="lsmNodeID"></param>
         int MapNodeLsmToFem(int lsmNodeID);
 
-        int MapNodeFemToLsm(int femNodeID);
+        int MapNodeIDFemToLsm(int femNodeID);
 
         int MapElementLsmToFem(int lsmElementID);
 

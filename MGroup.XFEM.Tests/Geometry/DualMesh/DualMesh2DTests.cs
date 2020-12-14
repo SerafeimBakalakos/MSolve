@@ -8,17 +8,58 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
 {
     public static class DualMesh2DTests
     {
+        [Fact]
+        public static void TestFindLsmNodesEdgesOfFemElement()
+        {
+            (DualMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(3);
+
+
+            for (int femElem = 0; femElem < dualMesh.FemMesh.NumElementsTotal; ++femElem)
+            {
+                DualMesh2D.Submesh submeshExpected = ((MockMesh1To3)mockMesh).FindLsmNodesEdgesOfFemElement(femElem);
+                DualMesh2D.Submesh submeshComputed = dualMesh.FindLsmNodesEdgesOfFemElement(femElem);
+
+                // Check nodes
+                Assert.Equal(submeshExpected.LsmNodeIDs.Count, submeshComputed.LsmNodeIDs.Count);
+                for (int i = 0; i < submeshExpected.LsmNodeIDs.Count; ++i)
+                {
+                    Assert.Equal(submeshExpected.LsmNodeIDs[i], submeshComputed.LsmNodeIDs[i]);
+                }
+
+                // Check edges
+                Assert.Equal(submeshExpected.LsmEdgesToNodes.Count, submeshComputed.LsmEdgesToNodes.Count);
+                for (int i = 0; i < submeshExpected.LsmEdgesToNodes.Count; ++i)
+                {
+                    Assert.Equal(submeshExpected.LsmEdgesToNodes[i].Item1, submeshComputed.LsmEdgesToNodes[i].Item1);
+                    Assert.Equal(submeshExpected.LsmEdgesToNodes[i].Item2, submeshComputed.LsmEdgesToNodes[i].Item2);
+                }
+
+                //// Check elements
+                //Assert.Equal(submeshExpected.LsmElementToEdges.Count, submeshComputed.LsmElementToEdges.Count);
+                //for (int i = 0; i < submeshExpected.LsmElementToEdges.Count; ++i)
+                //{
+                //    int[] expectedArray = submeshExpected.LsmElementToEdges[i];
+                //    int[] computedArray = submeshComputed.LsmElementToEdges[i];
+                //    Assert.Equal(expectedArray.Length, computedArray.Length);
+                //    for (int j = 0; j < expectedArray.Length; ++j)
+                //    {
+                //        Assert.Equal(expectedArray[j], computedArray[j]);
+                //    }
+                //}
+            }
+        }
+
         [Theory]
         [InlineData(1)]
         [InlineData(3)]
         public static void TestMapNodeLsmToFem(int multiplicity)
         {
-            (DualMesh2D lsmMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
+            (DualMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
 
-            for (int lsmNode = 0; lsmNode < lsmMesh.LsmMesh.NumNodesTotal; ++lsmNode)
+            for (int lsmNode = 0; lsmNode < dualMesh.LsmMesh.NumNodesTotal; ++lsmNode)
             {
                 int femNodeExpected = mockMesh.MapNodeLsmToFem(lsmNode);
-                int femNodeComputed = lsmMesh.MapNodeLsmToFem(lsmNode);
+                int femNodeComputed = dualMesh.MapNodeLsmToFem(lsmNode);
                 Assert.Equal(femNodeExpected, femNodeComputed);
             }
         }
@@ -28,12 +69,12 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
         [InlineData(3)]
         public static void TestMapNodeFemToLsm(int multiplicity)
         {
-            (DualMesh2D lsmMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
+            (DualMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
 
-            for (int femNode = 0; femNode < lsmMesh.FemMesh.NumNodesTotal; ++femNode)
+            for (int femNode = 0; femNode < dualMesh.FemMesh.NumNodesTotal; ++femNode)
             {
-                int lsmNodeExpected = mockMesh.MapNodeFemToLsm(femNode);
-                int lsmNodeComputed = lsmMesh.MapNodeFemToLsm(femNode);
+                int lsmNodeExpected = mockMesh.MapNodeIDFemToLsm(femNode);
+                int lsmNodeComputed = dualMesh.MapNodeIDFemToLsm(femNode);
                 Assert.Equal(lsmNodeExpected, lsmNodeComputed);
             }
         }
@@ -43,12 +84,12 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
         [InlineData(3)]
         public static void TestMapElementLsmToFem(int multiplicity)
         {
-            (DualMesh2D lsmMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
+            (DualMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
 
-            for (int lsmElem = 0; lsmElem < lsmMesh.LsmMesh.NumElementsTotal; ++lsmElem)
+            for (int lsmElem = 0; lsmElem < dualMesh.LsmMesh.NumElementsTotal; ++lsmElem)
             {
                 int femElemExpected = mockMesh.MapElementLsmToFem(lsmElem);
-                int femElemComputed = lsmMesh.MapElementLsmToFem(lsmElem);
+                int femElemComputed = dualMesh.MapElementLsmToFem(lsmElem);
                 Assert.Equal(femElemExpected, femElemComputed);
             }
         }
@@ -58,12 +99,12 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
         [InlineData(3)]
         public static void TestMapElementFemToLsm(int multiplicity)
         {
-            (DualMesh2D lsmMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
+            (DualMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
 
-            for (int femElem = 0; femElem < lsmMesh.FemMesh.NumElementsTotal; ++femElem)
+            for (int femElem = 0; femElem < dualMesh.FemMesh.NumElementsTotal; ++femElem)
             {
                 int[] lsmElemExpected = mockMesh.MapElementFemToLsm(femElem);
-                int[] lsmElemComputed = lsmMesh.MapElementFemToLsm(femElem);
+                int[] lsmElemComputed = dualMesh.MapElementFemToLsm(femElem);
                 Assert.Equal(lsmElemExpected.Length, lsmElemComputed.Length);
                 for (int i = 0; i < lsmElemExpected.Length; ++i)
                 {
@@ -72,32 +113,32 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
             }
         }
 
-        private static (DualMesh2D lsmMesh, IDualMesh mockMesh) PrepareMeshes(int multiplicity)
+        private static (DualMesh2D dualMesh, IDualMesh mockMesh) PrepareMeshes(int multiplicity)
         {
             var minCoordinates = new double[] { 0, 0 };
             var maxCoordinates = new double[] { 2, 3 };
             var numElementsFem = new int[] { 2, 3 };
 
             IDualMesh mockMesh;
-            DualMesh2D lsmMesh;
+            DualMesh2D dualMesh;
             if (multiplicity == 1)
             {
                 var numElementsLsm = new int[] { 2, 3 };
                 mockMesh = new MockMesh1To1();
-                lsmMesh = new DualMesh2D(minCoordinates, maxCoordinates, numElementsFem, numElementsLsm);
+                dualMesh = new DualMesh2D(minCoordinates, maxCoordinates, numElementsFem, numElementsLsm);
             }
             else if (multiplicity == 3)
             {
                 var numElementsLsm = new int[] { 6, 9 };
                 mockMesh = new MockMesh1To3();
-                lsmMesh = new DualMesh2D(minCoordinates, maxCoordinates, numElementsFem, numElementsLsm);
+                dualMesh = new DualMesh2D(minCoordinates, maxCoordinates, numElementsFem, numElementsLsm);
             }
             else
             {
                 throw new NotImplementedException();
             }
 
-            return (lsmMesh, mockMesh);
+            return (dualMesh, mockMesh);
         }
 
         private class MockMesh1To1 : IDualMesh
@@ -121,7 +162,7 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
                 return lsmElementID;
             }
 
-            public int MapNodeFemToLsm(int femNodeID)
+            public int MapNodeIDFemToLsm(int femNodeID)
             {
                 return femNodeID;
             }
@@ -141,6 +182,155 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
             public DualMeshPoint CalcShapeFunctions(int femElementID, double[] femNaturalCoords)
             {
                 throw new NotImplementedException();
+            }
+
+            public DualMesh2D.Submesh FindLsmNodesEdgesOfFemElement(int femElementID)
+            {
+                // Elements to edges
+                var elements = new List<int[]>();
+                elements.Add(new int[] { 0, 13, 3, 12 });
+                elements.Add(new int[] { 0, 14, 3, 13 });
+                elements.Add(new int[] { 0, 15, 3, 14 });
+                elements.Add(new int[] { 3, 17, 6, 16 });
+                elements.Add(new int[] { 3, 18, 6, 17 });
+                elements.Add(new int[] { 3, 19, 6, 18 });
+                elements.Add(new int[] { 6, 21, 9, 20 });
+                elements.Add(new int[] { 6, 22, 9, 21 });
+                elements.Add(new int[] { 6, 23, 9, 22 });
+
+                if (femElementID == 0)
+                {
+                    var lsmNodes = new List<int>(new int[]
+                    {
+                        0, 1, 2, 3, 7, 8, 9, 10, 14, 15, 16, 17, 21, 22, 23, 24
+                    });
+
+                    var edges = new List<(int, int)>();
+
+                    //Horizontal
+                    edges.Add((0, 1)); edges.Add((1, 2)); edges.Add((2, 3));
+                    edges.Add((7, 8)); edges.Add((8, 9)); edges.Add((9, 10));
+                    edges.Add((14, 15)); edges.Add((15, 16)); edges.Add((16, 17));
+                    edges.Add((21, 22)); edges.Add((22, 23)); edges.Add((23, 24));
+
+                    // Vertical
+                    edges.Add((0, 7)); edges.Add((1, 8)); edges.Add((2, 9)); edges.Add((3, 10));
+                    edges.Add((7, 14)); edges.Add((8, 15)); edges.Add((9, 16)); edges.Add((10, 17));
+                    edges.Add((14, 21)); edges.Add((15, 22)); edges.Add((16, 23)); edges.Add((17, 24));
+
+                    return new DualMesh2D.Submesh(lsmNodes, edges, elements);
+                }
+                else if (femElementID == 1)
+                {
+                    var lsmNodes = new List<int>(new int[]
+                    {
+                        3, 4, 5, 6, 10, 11, 12, 13, 17, 18, 19, 20, 24, 25, 26, 27
+                    });
+
+                    var edges = new List<(int, int)>();
+
+                    //Horizontal
+                    edges.Add((3, 4)); edges.Add((4, 5)); edges.Add((5, 6));
+                    edges.Add((10, 11)); edges.Add((11, 12)); edges.Add((12, 13));
+                    edges.Add((17, 18)); edges.Add((18, 19)); edges.Add((19, 20));
+                    edges.Add((24, 25)); edges.Add((25, 26)); edges.Add((26, 27));
+
+                    // Vertical
+                    edges.Add((3, 10)); edges.Add((4, 11)); edges.Add((5, 12)); edges.Add((6, 13));
+                    edges.Add((10, 17)); edges.Add((11, 18)); edges.Add((12, 19)); edges.Add((13, 20));
+                    edges.Add((17, 24)); edges.Add((18, 25)); edges.Add((19, 26)); edges.Add((20, 27));
+
+                    return new DualMesh2D.Submesh(lsmNodes, edges, elements);
+                }
+                else if (femElementID == 2)
+                {
+                    var lsmNodes = new List<int>(new int[]
+                    {
+                        21, 22, 23, 24, 28, 29, 30, 31, 35, 36, 37, 38, 42, 43, 44, 45
+                    });
+
+                    var edges = new List<(int, int)>();
+
+                    //Horizontal
+                    edges.Add((21, 22)); edges.Add((22, 23)); edges.Add((23, 24));
+                    edges.Add((28, 29)); edges.Add((29, 30)); edges.Add((30, 31));
+                    edges.Add((35, 36)); edges.Add((36, 37)); edges.Add((37, 38));
+                    edges.Add((42, 43)); edges.Add((43, 44)); edges.Add((44, 45));
+
+                    // Vertical
+                    edges.Add((21, 28)); edges.Add((22, 29)); edges.Add((23, 30)); edges.Add((24, 31));
+                    edges.Add((28, 35)); edges.Add((29, 36)); edges.Add((30, 37)); edges.Add((31, 38));
+                    edges.Add((35, 42)); edges.Add((36, 43)); edges.Add((37, 44)); edges.Add((38, 45));
+
+                    return new DualMesh2D.Submesh(lsmNodes, edges, elements);
+                }
+                else if (femElementID == 3)
+                {
+                    var lsmNodes = new List<int>(new int[]
+                    {
+                        24, 25, 26, 27, 31, 32, 33, 34, 38, 39, 40, 41, 45, 46, 47, 48
+                    });
+
+                    var edges = new List<(int, int)>();
+
+                    //Horizontal
+                    edges.Add((24, 25)); edges.Add((25, 26)); edges.Add((26, 27));
+                    edges.Add((31, 32)); edges.Add((32, 33)); edges.Add((33, 34));
+                    edges.Add((38, 39)); edges.Add((39, 40)); edges.Add((40, 41));
+                    edges.Add((45, 46)); edges.Add((46, 47)); edges.Add((47, 48));
+
+                    // Vertical
+                    edges.Add((24, 31)); edges.Add((25, 32)); edges.Add((26, 33)); edges.Add((27, 34));
+                    edges.Add((31, 38)); edges.Add((32, 39)); edges.Add((33, 40)); edges.Add((34, 41));
+                    edges.Add((38, 45)); edges.Add((39, 46)); edges.Add((40, 47)); edges.Add((41, 48));
+
+                    return new DualMesh2D.Submesh(lsmNodes, edges, elements);
+                }
+                else if (femElementID == 4)
+                {
+                    var lsmNodes = new List<int>(new int[]
+                    {
+                        42, 43, 44, 45, 49, 50, 51, 52, 56, 57, 58, 59, 63, 64, 65, 66
+                    });
+
+                    var edges = new List<(int, int)>();
+
+                    //Horizontal
+                    edges.Add((42, 43)); edges.Add((43, 44)); edges.Add((44, 45));
+                    edges.Add((49, 50)); edges.Add((50, 51)); edges.Add((51, 52));
+                    edges.Add((56, 57)); edges.Add((57, 58)); edges.Add((58, 59));
+                    edges.Add((63, 64)); edges.Add((64, 65)); edges.Add((65, 66));
+
+                    // Vertical
+                    edges.Add((42, 49)); edges.Add((43, 50)); edges.Add((44, 51)); edges.Add((45, 52));
+                    edges.Add((49, 56)); edges.Add((50, 57)); edges.Add((51, 58)); edges.Add((52, 59));
+                    edges.Add((56, 63)); edges.Add((57, 64)); edges.Add((58, 65)); edges.Add((59, 66));
+
+                    return new DualMesh2D.Submesh(lsmNodes, edges, elements);
+                }
+                else if (femElementID == 5)
+                {
+                    var lsmNodes = new List<int>(new int[]
+                    {
+                        45, 46, 47, 48, 52, 53, 54, 55, 59, 60, 61, 62, 66, 67, 68, 69
+                    });
+
+                    var edges = new List<(int, int)>();
+
+                    //Horizontal
+                    edges.Add((45, 46)); edges.Add((46, 47)); edges.Add((47, 48));
+                    edges.Add((52, 53)); edges.Add((53, 54)); edges.Add((54, 55));
+                    edges.Add((59, 60)); edges.Add((60, 61)); edges.Add((61, 62));
+                    edges.Add((66, 67)); edges.Add((67, 68)); edges.Add((68, 69));
+
+                    // Vertical
+                    edges.Add((45, 52)); edges.Add((46, 53)); edges.Add((47, 54)); edges.Add((48, 55));
+                    edges.Add((52, 59)); edges.Add((53, 60)); edges.Add((54, 61)); edges.Add((55, 62));
+                    edges.Add((59, 66)); edges.Add((60, 67)); edges.Add((61, 68)); edges.Add((62, 69));
+
+                    return new DualMesh2D.Submesh(lsmNodes, edges, elements);
+                }
+                else throw new IndexOutOfRangeException();
             }
 
             public int[] MapElementFemToLsm(int femElementID)
@@ -222,7 +412,7 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
                 return lsmToFemElements[lsmElementID];
             }
 
-            public int MapNodeFemToLsm(int femNodeID)
+            public int MapNodeIDFemToLsm(int femNodeID)
             {
                 var femToLsmNodes = new int[12];
                 femToLsmNodes[0] = 0;

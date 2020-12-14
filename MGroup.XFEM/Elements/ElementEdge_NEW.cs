@@ -5,21 +5,20 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
 
-//TODO: Replace this with ElementEdge_NEW
 namespace MGroup.XFEM.Elements
 {
-    public class ElementEdge
+    public class ElementEdge_NEW
     {
-        public ElementEdge(int id)
+        public ElementEdge_NEW(int id)
         {
             this.ID = id;
         }
 
-        public ElementEdge(int id, IReadOnlyList<XNode> nodes, IReadOnlyList<double[]> nodesNatural, int start, int end)
+        public ElementEdge_NEW(int id, IReadOnlyList<int> nodes, IReadOnlyList<double[]> nodesNatural, int start, int end)
         {
             this.ID = id;
             CellType = CellType.Line;
-            Nodes = new XNode[] { nodes[start], nodes[end] };
+            NodeIDs = new int[] { nodes[start], nodes[end] };
             NodesNatural = new double[][] { nodesNatural[start], nodesNatural[end] };
         }
 
@@ -30,7 +29,7 @@ namespace MGroup.XFEM.Elements
         /// <summary>
         /// Their order is the same as defined in <see cref="CellType"/>.
         /// </summary>
-        public XNode[] Nodes { get; set; }
+        public int[] NodeIDs { get; set; }
 
         /// <summary>
         /// Their order is the same as defined in <see cref="CellType"/>.
