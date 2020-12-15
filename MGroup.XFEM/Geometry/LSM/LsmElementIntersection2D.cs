@@ -12,7 +12,6 @@ namespace MGroup.XFEM.Geometry.LSM
 {
     /// <summary>
     /// A curve resulting from the intersection of a parent curve with a 2D element.
-    /// Degenerate cases are also possible: null or single point.
     /// </summary>
     public class LsmElementIntersection2D : IElementDiscontinuityInteraction
     {
@@ -41,7 +40,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IIntersectionMesh ApproximateGlobalCartesian()
         {
-            var meshCartesian = new IntersectionMesh();
+            var meshCartesian = new IntersectionMesh3D();
             meshCartesian.Vertices.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, startNatural));
             meshCartesian.Vertices.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, endNatural));
             meshCartesian.Cells.Add((CellType.Line, new int[] { 0, 1 }));

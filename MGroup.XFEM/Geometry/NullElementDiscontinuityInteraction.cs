@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Elements;
-using MGroup.XFEM.Geometry.LSM;
 
 namespace MGroup.XFEM.Geometry
 {
@@ -23,8 +22,6 @@ namespace MGroup.XFEM.Geometry
 
         public bool TipInteractsWithElement => false;
 
-        public IntersectionMesh ApproximateGlobalCartesian() => new IntersectionMesh();
-
         public IReadOnlyList<GaussPoint> GetBoundaryIntegrationPoints(int numPoints)
         {
             return new GaussPoint[0];
@@ -35,6 +32,6 @@ namespace MGroup.XFEM.Geometry
             return new double[0][];
         }
 
-        IIntersectionMesh IElementDiscontinuityInteraction.ApproximateGlobalCartesian() => new IntersectionMesh();
+        IIntersectionMesh IElementDiscontinuityInteraction.ApproximateGlobalCartesian() => new IntersectionMesh3D();
     }
 }

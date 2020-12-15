@@ -6,12 +6,10 @@ using System.Text;
 using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Integration.Quadratures;
-using MGroup.XFEM.Integration;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
@@ -21,10 +19,10 @@ namespace MGroup.XFEM.Geometry.LSM
     /// </summary>
     public class LsmElementIntersection3D : IElementDiscontinuityInteraction
     {
-        private readonly IntersectionMesh intersectionMeshNatural;
+        private readonly IntersectionMesh3D intersectionMeshNatural;
 
         public LsmElementIntersection3D(int parentGeometryID, RelativePositionCurveElement relativePosition, 
-            IXFiniteElement element, IntersectionMesh intersectionMeshNatural)
+            IXFiniteElement element, IntersectionMesh3D intersectionMeshNatural)
         {
             this.ParentGeometryID = parentGeometryID;
             this.RelativePosition = relativePosition;
@@ -39,7 +37,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IIntersectionMesh ApproximateGlobalCartesian()
         {
-            var meshCartesian = new IntersectionMesh();
+            var meshCartesian = new IntersectionMesh3D();
             foreach (double[] vertexNatural in intersectionMeshNatural.Vertices)
             {
                 double[] vertexCartesian = Element.Interpolation.TransformNaturalToCartesian(

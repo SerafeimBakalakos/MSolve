@@ -21,7 +21,7 @@ namespace MGroup.XFEM.Phases
             this.physicalModel = physicalModel;
         }
 
-        public bool EnableOptimizations { get; set; }
+        public bool EnableOptimizations { get; set; } = false;
 
         public INodeEnricher Enricher { get; set; }
 
