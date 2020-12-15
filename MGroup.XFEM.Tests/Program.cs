@@ -1,4 +1,5 @@
 ﻿using System;
+using MGroup.XFEM.Tests.Multiphase;
 
 namespace MGroup.XFEM.Tests
 {

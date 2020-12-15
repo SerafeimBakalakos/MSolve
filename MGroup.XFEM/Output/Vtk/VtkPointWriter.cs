@@ -68,7 +68,10 @@ namespace MGroup.XFEM.Output.Vtk
             writer.WriteLine($"POINTS {nodalValues.Count} double");
             foreach (var point in nodalValues.Keys)
             {
-                writer.WriteLine($"{point.X} {point.Y} {point.Z}");
+                double[] coords = point.Coordinates();
+                if (coords.Length == 2) writer.WriteLine($"{coords[0]} {coords[1]} 0.0");
+                else if (coords.Length == 3) writer.WriteLine($"{coords[0]} {coords[1]} {coords[2]}");
+                else throw new NotImplementedException();
             }
 
             // Values

@@ -6,7 +6,6 @@ using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
@@ -235,6 +234,7 @@ namespace MGroup.XFEM.Elements
                 {
                     XPoint point = new XPoint(2);
                     point.Element = this;
+                    point.Coordinates[CoordinateSystem.ElementNatural] = gaussPointsBulk[i].Coordinates;
                     point.ShapeFunctions = evalInterpolationsAtGPsVolume[i].ShapeFunctions;
                     IPhase phase = this.FindPhaseAt(point);
                     point.PhaseID = phase.ID;
