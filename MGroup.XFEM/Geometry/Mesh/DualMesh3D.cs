@@ -5,9 +5,9 @@ using System.Text;
 
 namespace MGroup.XFEM.Geometry.Mesh
 {
-    public class LsmMesh3D : LsmMeshBase
+    public class DualMesh3D : DualMeshBase
     {
-        public LsmMesh3D(double[] minCoordinates, double[] maxCoordinates, int[] numElementsLsm, int[] numElementsFem) 
+        public DualMesh3D(double[] minCoordinates, double[] maxCoordinates, int[] numElementsFem, int[] numElementsLsm) 
             : base(3, new UniformMesh3D(minCoordinates, maxCoordinates, numElementsFem),
                   new UniformMesh3D(minCoordinates, maxCoordinates, numElementsLsm))
         {
@@ -25,7 +25,7 @@ namespace MGroup.XFEM.Geometry.Mesh
                 {
                     for (int i = 0; i < multiple[0]; ++i)
                     {
-                        // Offset from the lsm element that has the same first node as the physical one
+                        // Offset from the lsm element that has the same first node as the FEM element
                         int[] offset = { i, j, k };
                         elementNeighbors.Add(offset);
                     }

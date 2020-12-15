@@ -30,7 +30,7 @@ namespace MGroup.XFEM.Geometry.Mesh
 
         int GetElementID(int[] elementIdx);
 
-        int[] GetElementIdx(int elementIdx);
+        int[] GetElementIdx(int elementID);
 
         int[] GetElementConnectivity(int[] elementIdx);
     }
