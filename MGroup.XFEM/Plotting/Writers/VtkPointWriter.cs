@@ -72,7 +72,14 @@ namespace MGroup.XFEM.Plotting.Writers
             writer.WriteLine($"POINTS {nodalValues.Count} double");
             foreach (var point in nodalValues.Keys)
             {
-                writer.WriteLine($"{point.X} {point.Y} {point.Z}");
+                if (point.Coordinates().Length == 2)
+                {
+                    writer.WriteLine($"{point.X} {point.Y} {0}");
+                }
+                else
+                {
+                    writer.WriteLine($"{point.X} {point.Y} {point.Z}");
+                }
             }
 
             // Values

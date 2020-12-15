@@ -90,10 +90,10 @@ namespace MGroup.XFEM.Entities
                 bool isInside = ContainsCompletely(element);
 
                 #region debug
-                //if (this.ID == 6 && element.ID == 5973)
-                //{
-                //    Console.WriteLine();
-                //}
+                if (/*this.ID == 6 &&*/ element.ID == 5)
+                {
+                    Console.WriteLine();
+                }
 
                 //if (this.ID == 6 && element.Nodes[0].ID == 5973)
                 //{

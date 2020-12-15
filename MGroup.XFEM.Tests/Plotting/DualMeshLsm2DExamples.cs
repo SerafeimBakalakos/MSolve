@@ -4,11 +4,17 @@ using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 using MGroup.XFEM.Elements;
+using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.Enrichment.SingularityResolution;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
+using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Mesh;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Integration;
+using MGroup.XFEM.Integration.Quadratures;
+using MGroup.XFEM.Plotting;
 using MGroup.XFEM.Plotting.Mesh;
 using MGroup.XFEM.Plotting.Writers;
 
@@ -23,6 +29,7 @@ namespace MGroup.XFEM.Tests.Plotting
         private static readonly int[] numElementsFem = { 4, 4 };
         private static readonly int[] numElementsLsm = { 20, 20 };
         private static readonly Circle2D initialCurve = new Circle2D(0.0, 0.0, 0.49);
+        private const int boundaryIntegrationOrder = 2;
 
 
         public static void PlotIndividualMeshesLevelSets()
@@ -116,18 +123,70 @@ namespace MGroup.XFEM.Tests.Plotting
         public static void PlotElementCurveIntersections()
         {
             var mesh = new DualMesh2D(minCoords, maxCoords, numElementsFem, numElementsLsm);
-            XModel coarseModel = CreateModel(mesh.FemMesh);
+            XModel model = CreateModel(mesh.FemMesh);
 
             var dualMeshLsm = new DualMeshLsm2D(0, mesh, initialCurve);
             var lsmCurves = new IImplicitGeometry[] { dualMeshLsm };
 
             // Plot intersections between level set curves and elements
             Dictionary<IXFiniteElement, List<IElementGeometryIntersection>> elementIntersections
-                = Utilities.Plotting.CalcIntersections(coarseModel, lsmCurves);
+                = Utilities.Plotting.CalcIntersections(model, lsmCurves);
             var allIntersections = new List<IElementGeometryIntersection>();
             foreach (var intersections in elementIntersections.Values) allIntersections.AddRange(intersections);
             var intersectionPlotter = new LsmElementIntersectionsPlotter();
             intersectionPlotter.PlotIntersections(outputDirectory + "\\intersections.vtk", allIntersections);
+
+            // Plot conforming mesh
+            Dictionary<IXFiniteElement, IElementSubcell[]> triangulation =
+                Utilities.Plotting.CreateConformingMesh(2, elementIntersections);
+            var conformingMesh = new ConformingOutputMesh(model.Nodes, model.Elements, triangulation);
+            using (var writer = new VtkFileWriter(outputDirectory + "\\conforming_mesh.vtk"))
+            {
+                writer.WriteMesh(conformingMesh);
+            }
+
+            // Plot bulk integration points
+            var integrationBulk = new IntegrationWithConformingSubtriangles2D(GaussLegendre2D.GetQuadratureWithOrder(2, 2),
+                TriangleQuadratureSymmetricGaussian.Order2Points3);
+            foreach (IXFiniteElement element in model.Elements)
+            {
+                if (element is MockElement mock) mock.IntegrationBulk = integrationBulk;
+            }
+            var integrationPlotter = new IntegrationPlotter(model);
+            integrationPlotter.PlotBulkIntegrationPoints(outputDirectory + "\\gauss_points_bulk.vtk");
+
+            // Plot boundary integration points
+            integrationPlotter.PlotBoundaryIntegrationPoints(outputDirectory + "\\gauss_points_boundary.vtk", boundaryIntegrationOrder);
+
+            // Create phases
+            var geometricModel = new GeometricModel(2, model);
+            geometricModel.Phases.Add(new DefaultPhase(0));
+            geometricModel.Phases.Add(new LsmPhase(1, geometricModel, -1));
+            var boundary = new PhaseBoundary(dualMeshLsm, geometricModel.Phases[1], geometricModel.Phases[0]);
+            geometricModel.Phases[0].ExternalBoundaries.Add(boundary);
+            geometricModel.Phases[0].Neighbors.Add(geometricModel.Phases[1]);
+            geometricModel.Phases[1].ExternalBoundaries.Add(boundary);
+            geometricModel.Phases[1].Neighbors.Add(geometricModel.Phases[0]);
+
+            // Phases-mesh interaction
+            geometricModel.InteractWithNodes();
+            geometricModel.InteractWithElements();
+            geometricModel.FindConformingMesh();
+
+            // Plot phases
+            var phasePlotter = new PhasePlotter(model, geometricModel, 0);
+            phasePlotter.PlotNodes(outputDirectory + "\\phases_of_nodes.vtk");
+            phasePlotter.PlotElements(outputDirectory + "\\phases_of_elements.vtk", conformingMesh);
+
+            // Enrichment
+            var nodeEnricher = new NodeEnricherMultiphase(geometricModel, new NullSingularityResolver());
+            nodeEnricher.ApplyEnrichments();
+            model.UpdateDofs();
+            model.UpdateMaterials();
+
+            double elementSize = (maxCoords[0] - minCoords[0]) / numElementsFem[0];
+            var enrichmentPlotter = new EnrichmentPlotter(model, elementSize, false);
+            enrichmentPlotter.PlotStepEnrichedNodes(outputDirectory + "\\enriched_nodes_step.vtk");
         }
 
         private static XModel CreateModel(IStructuredMesh mesh)
