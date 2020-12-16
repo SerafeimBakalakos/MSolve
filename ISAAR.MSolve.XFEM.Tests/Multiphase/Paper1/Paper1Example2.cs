@@ -39,7 +39,7 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
 
 
         //private const int numElements = 350;
-        private const int numElements = 200;
+        private const int numElements = 300;
         private const int numElementsX = numElements, numElementsY = numElements;
         private const int subdomainID = 0;
         private const double minX = 0, minY = 0, maxX = 2000, maxY = 2000;

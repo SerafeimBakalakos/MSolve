@@ -16,8 +16,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests
             //Multiphase.Paper1.Paper1Example1.RunSingleAnalysisAndPlotting();
             //Multiphase.Paper1.Paper1Example1.RunHomogenization();
 
-            Multiphase.Paper1.Paper1Example2.RunParametricHomogenization();
-            //Multiphase.Paper1.Paper1Example2.RunSingleAnalysisAndPlotting();
+            //Multiphase.Paper1.Paper1Example2.RunParametricHomogenization();
+            Multiphase.Paper1.Paper1Example2.RunSingleAnalysisAndPlotting();
             //HomogenizationExamples.RunHomogenizationAnalysis();
 
             //HexagonalTests.GenerateVoronoiSeeds();

@@ -172,11 +172,18 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
             foreach (IPhase phase in element.Phases)
             {
                 //Debug.Assert(phaseInteractions[phase].Count >= 1);
-                if (phaseInteractions[phase].Count == 1)
+                try
                 {
-                    IPhase neighbor = phaseInteractions[phase].First();
-                    phaseInteractions.Remove(phase);
-                    phaseInteractions[neighbor].Remove(phase);
+                    if (phaseInteractions[phase].Count == 1)
+                    {
+                        IPhase neighbor = phaseInteractions[phase].First();
+                        phaseInteractions.Remove(phase);
+                        phaseInteractions[neighbor].Remove(phase);
+                    }
+                }
+                catch (Exception)
+                {
+
                 }
             }
         }

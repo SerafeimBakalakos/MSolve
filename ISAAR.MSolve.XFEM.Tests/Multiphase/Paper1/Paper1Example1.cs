@@ -106,8 +106,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
         public static void RunSingleAnalysisAndPlotting()
         {
             var input = new ProblemInput();
-            input.GrainSize = 50;
-            input.NumElements = new int[] { 100, 100 };
+            input.GrainSize = 1000;
+            input.NumElements = new int[] { 50, 50 };
             input.MinCoords = new double[] { 1 * input.GrainSize, -3 * input.GrainSize };
             input.MaxCoords = new double[] { 21 * input.GrainSize, 17 * input.GrainSize };
             input.Thickness = 1; //Paper 4.65E-1 nm, it should not matter
