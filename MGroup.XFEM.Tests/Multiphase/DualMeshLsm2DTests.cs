@@ -25,7 +25,7 @@ using Xunit;
 
 namespace MGroup.XFEM.Tests.Multiphase
 {
-    public static class DualMeshLsm2DExamples
+    public static class DualMeshLsm2DTests
     {
         private static readonly string outputDirectory = Path.Combine(
             Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "dual_mesh_lsm_2D_temp");
@@ -36,7 +36,7 @@ namespace MGroup.XFEM.Tests.Multiphase
         private static readonly double[] maxCoords = { +1.0, +1.0 };
         private static readonly int[] numElementsFem = { 4, 4 };
         private static readonly int[] numElementsLsm = { 20, 20 };
-        private static readonly Circle2D initialCurve = new Circle2D(0.0, 0.0, 0.49);
+        private static readonly Circle2D initialCurve = new Circle2D(0.0, 0.0, 0.50);
         private const int defaultPhaseID = 0;
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 

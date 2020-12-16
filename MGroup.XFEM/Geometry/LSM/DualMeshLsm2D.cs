@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Commons;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Mesh;
@@ -10,7 +11,10 @@ namespace MGroup.XFEM.Geometry.LSM
 {
     public class DualMeshLsm2D : IClosedGeometry
     {
+        private const int dim = 2;
+
         private readonly DualMesh2D dualMesh;
+        private readonly ValueComparer comparer;
 
         public DualMeshLsm2D(int id, DualMesh2D dualMesh, ICurve2D closedCurve)
         {
@@ -23,6 +27,8 @@ namespace MGroup.XFEM.Geometry.LSM
                 double[] node = lsmMesh.GetNodeCoordinates(lsmMesh.GetNodeIdx(n));
                 NodalLevelSets[n] = closedCurve.SignedDistanceOf(node);
             }
+
+            this.comparer = new ValueComparer(1E-6);
         }
 
         public double[] NodalLevelSets { get; }
@@ -32,6 +38,13 @@ namespace MGroup.XFEM.Geometry.LSM
         //TODO: How can I check and what to do if the intersection mesh or part of it conforms to the element edges?
         public IElementDiscontinuityInteraction Intersect(IXFiniteElement element)
         {
+            #region debug
+            if (element.ID == 5)
+            {
+                Console.WriteLine();
+            }
+            #endregion
+
             if (IsFemElementDisjoint(element))
             {
                 return new NullElementDiscontinuityInteraction(this.ID, element);
@@ -42,13 +55,17 @@ namespace MGroup.XFEM.Geometry.LSM
             foreach (int lsmElementID in lsmElementIDs)
             {
                 var intersections = IntersectLsmElement(lsmElementID);
-                if (intersections.Count > 0)
+                if (intersections.Count == 2)
                 {
                     intersectionsOfElements[lsmElementID] = intersections;
                 }
             }
 
             // Combine the line segments into a mesh
+            if (intersectionsOfElements.Count == 0)
+            {
+                return new NullElementDiscontinuityInteraction(this.ID, element);
+            }
             var mesh = IntersectionMesh2D_NEW.CreateMesh(intersectionsOfElements);
             return new LsmElementIntersection2D_NEW(this.ID, RelativePositionCurveElement.Intersecting, element, mesh);
         }
@@ -121,7 +138,7 @@ namespace MGroup.XFEM.Geometry.LSM
                     double xi = node0Natural[0] + k * (node1Natural[0] - node0Natural[0]);
                     double eta = node0Natural[1] + k * (node1Natural[1] - node0Natural[1]);
 
-                    intersections.Add(new double[] { xi, eta });
+                    AddPossiblyDuplicateIntersectionPoint(new double[] { xi, eta }, intersections);
                 }
                 else if ((levelSet0 == 0) && (levelSet1 == 0)) // This edge of the element conforms to the curve.
                 {
@@ -132,31 +149,35 @@ namespace MGroup.XFEM.Geometry.LSM
                 }
                 else if ((levelSet0 == 0) && (levelSet1 != 0)) // Curve runs through a node. Not sure if it is tangent yet.
                 {
-                    intersections.Add(node0Natural);
+                    // Check if this node is already added. If not add it.
+                    AddPossiblyDuplicateIntersectionPoint(node0Natural, intersections);
                 }
                 else /*if ((levelSet0 != 0) && (levelSet1 == 0))*/ // Curve runs through a node. Not sure if it is tangent yet.
                 {
-                    intersections.Add(node1Natural);
+                    // Check if this node is already added. If not add it.
+                    AddPossiblyDuplicateIntersectionPoint(node1Natural, intersections);
                 }
             }
 
-            if (intersections.Count == 1) // Curve is tangent to the element at a single node
+            // Convert the coordinates of the intersection points from the natural system of the LSM element to the natural
+            // system of the FEM element.
+            for (int p = 0; p < intersections.Count; ++p)
             {
-                throw new NotImplementedException();
-                //TODO: Make sure the intersection point is a node (debug only)
-                //return new NullElementIntersection(ID, element);
+                intersections[p] = dualMesh.MapPointLsmNaturalToFemNatural(lsmElementIdx, intersections[p]);
             }
-            else if (intersections.Count == 2)
+            return intersections;
+        }
+
+        private void AddPossiblyDuplicateIntersectionPoint(double[] newPoint, List<double[]> currentIntersectionPoints)
+        {
+            foreach (double[] point in currentIntersectionPoints)
             {
-                // Convert the coordinates of the intersection points from the natural system of the LSM element to the natural
-                // system of the FEM element.
-                for (int p = 0; p < intersections.Count; ++p)
+                if (PointsCoincide(point, newPoint))
                 {
-                    intersections[p] = dualMesh.MapPointLsmNaturalToFemNatural(lsmElementIdx, intersections[p]);
+                    return;
                 }
-                return intersections;
             }
-            else throw new Exception("This should not have happened");
+            currentIntersectionPoints.Add(newPoint); // If this code is reached, then the new point has no duplicate.
         }
 
         /// <summary>
@@ -201,6 +222,19 @@ namespace MGroup.XFEM.Geometry.LSM
 
             if (minLevelSet * maxLevelSet > 0.0) return true;
             else return false;
+        }
+
+        private bool PointsCoincide(double[] point0, double[] point1)
+        {
+            //TODO: Possibly add some tolerance
+            for (int d = 0; d < dim; ++d)
+            {
+                if (!comparer.AreEqual(point0[d], point1[d]))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }
