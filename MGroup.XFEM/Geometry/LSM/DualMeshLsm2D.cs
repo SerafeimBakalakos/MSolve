@@ -38,13 +38,6 @@ namespace MGroup.XFEM.Geometry.LSM
         //TODO: How can I check and what to do if the intersection mesh or part of it conforms to the element edges?
         public IElementDiscontinuityInteraction Intersect(IXFiniteElement element)
         {
-            #region debug
-            if (element.ID == 5)
-            {
-                Console.WriteLine();
-            }
-            #endregion
-
             if (IsFemElementDisjoint(element))
             {
                 return new NullElementDiscontinuityInteraction(this.ID, element);

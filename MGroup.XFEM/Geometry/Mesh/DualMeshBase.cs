@@ -145,7 +145,7 @@ namespace MGroup.XFEM.Geometry.Mesh
             }
 
             // Calculate the shape functions in this LSM element
-            double[] shapeFunctions = InterpolationQuad4.UniqueInstance.EvaluateFunctionsAt(lsmNaturalCoords);
+            double[] shapeFunctions = ElementInterpolation.EvaluateFunctionsAt(lsmNaturalCoords);
 
             var result = new DualMeshPoint();
             result.LsmNaturalCoordinates = lsmNaturalCoords;
@@ -160,6 +160,8 @@ namespace MGroup.XFEM.Geometry.Mesh
 
             return result;
         }
+
+        protected abstract IIsoparametricInterpolation ElementInterpolation { get; }
 
         /// <summary>
         /// A group of nearby LSM elements, that correspond to the same FEM element. 

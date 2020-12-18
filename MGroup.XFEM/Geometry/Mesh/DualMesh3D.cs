@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using MGroup.XFEM.Interpolation;
 
 namespace MGroup.XFEM.Geometry.Mesh
 {
@@ -13,6 +14,8 @@ namespace MGroup.XFEM.Geometry.Mesh
         {
             ElementNeighbors = FindElementNeighbors(base.multiple);
         }
+
+        protected override IIsoparametricInterpolation ElementInterpolation => InterpolationHexa8.UniqueInstance;
 
         protected override List<int[]> ElementNeighbors { get; }
 

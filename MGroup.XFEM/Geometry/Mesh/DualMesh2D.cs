@@ -94,6 +94,8 @@ namespace MGroup.XFEM.Geometry.Mesh
             return new Submesh(lsmNodeIDs, edges, elementToEdges);
         }
 
+        protected override IIsoparametricInterpolation ElementInterpolation => InterpolationQuad4.UniqueInstance;
+
         protected override List<int[]> ElementNeighbors { get; }
 
         private List<int[]> FindElementNeighbors(int[] multiple)
