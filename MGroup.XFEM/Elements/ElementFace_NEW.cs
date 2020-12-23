@@ -7,24 +7,11 @@ using MGroup.XFEM.Entities;
 
 namespace MGroup.XFEM.Elements
 {
-    public class ElementEdge_NEW
+    public class ElementFace_NEW
     {
-        public ElementEdge_NEW(int id)
-        {
-            this.ID = id;
-        }
-
-        public ElementEdge_NEW(int id, IReadOnlyList<int> nodeIDs, IReadOnlyList<double[]> nodesNatural, int start, int end)
-        {
-            this.ID = id;
-            CellType = CellType.Line;
-            NodeIDs = new int[] { nodeIDs[start], nodeIDs[end] };
-            NodesNatural = new double[][] { nodesNatural[start], nodesNatural[end] };
-        }
+        public int ID { get; set; }
 
         public CellType CellType { get; set; }
-
-        public int ID { get; }
 
         /// <summary>
         /// Their order is the same as defined in <see cref="CellType"/>.
@@ -35,5 +22,7 @@ namespace MGroup.XFEM.Elements
         /// Their order is the same as defined in <see cref="CellType"/>.
         /// </summary>
         public IReadOnlyList<double[]> NodesNatural { get; set; }
+
+        public ElementEdge_NEW[] Edges { get; set; }
     }
 }

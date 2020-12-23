@@ -49,12 +49,12 @@ namespace MGroup.XFEM.Geometry.LSM
             }
             else if (position == RelativePositionCurveElement.Conforming)
             {
-                IntersectionMesh3D intersectionMesh = FindIntersectionConforming(element);
+                IntersectionMesh3D intersectionMesh = FindInteractionConforming(element);
                 return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Conforming, element, intersectionMesh);
             }
             else if (position == RelativePositionCurveElement.Intersecting)
             {
-                var intersectionMesh = FindIntersectionIntersecting(element, levelSetSubset);
+                var intersectionMesh = FindInteractionIntersecting(element, levelSetSubset);
                 return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Intersecting, element, intersectionMesh);
             }
             else throw new NotImplementedException();
@@ -90,7 +90,7 @@ namespace MGroup.XFEM.Geometry.LSM
             else throw new ArgumentException("Incompatible Level Set geometry");
         }
 
-        protected IntersectionMesh3D FindIntersectionConforming(IXFiniteElement element)
+        protected IntersectionMesh3D FindInteractionConforming(IXFiniteElement element)
         {
             // Find the nodes that lie on the surface
             var zeroNodes = new HashSet<XNode>();
@@ -116,7 +116,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 "Element marked as conforming, but the zero nodes of the element do not belong to a single face.");
         }
 
-        protected IntersectionMesh3D FindIntersectionIntersecting(IXFiniteElement element, Dictionary<int, double> levelSetSubset)
+        protected IntersectionMesh3D FindInteractionIntersecting(IXFiniteElement element, Dictionary<int, double> levelSetSubset)
         {
             ElementFace[] allFaces = element.Faces;
             var intersectionPoints = new Dictionary<double[], HashSet<ElementFace>>();
@@ -184,7 +184,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 // The surface is assumed to be a plane. In rare cases, it can go through 1 node or 1 edge. 
                 // Even then, no surface segment can be defined.
                 //TODO: Is the assumption that surface == plane correct? 
-                return RelativePositionCurveElement.Disjoint;
+                return RelativePositionCurveElement.Disjoint; //TODO: Change this to RelativePositionCurveElement.Tangent. Also change the code that processes each case.
             }
             else
             {

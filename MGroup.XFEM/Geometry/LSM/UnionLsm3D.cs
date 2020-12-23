@@ -40,7 +40,7 @@ namespace MGroup.XFEM.Geometry.LSM
                     }
                     else if (position == RelativePositionCurveElement.Intersecting)
                     {
-                        var intersectionMesh = FindIntersectionIntersecting(element, levelSetSubset);
+                        var intersectionMesh = FindInteractionIntersecting(element, levelSetSubset);
                         unionIntersectionMesh.MergeWith(intersectionMesh);
                     }
                     else throw new NotImplementedException();

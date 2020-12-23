@@ -192,83 +192,83 @@ namespace MGroup.XFEM.Tests.Multiphase
             }
         }
 
-        //[Fact]
-        //public static void TestModel()
-        //{
-        //    try
-        //    {
-        //        if (!Directory.Exists(outputDirectory))
-        //        {
-        //            Directory.CreateDirectory(outputDirectory);
-        //        }
+        [Fact]
+        public static void TestModel()
+        {
+            try
+            {
+                if (!Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
 
-        //        // Create model and LSM
-        //        var mesh = new DualMesh2D(minCoords, maxCoords, numElementsFem, numElementsLsm);
-        //        XModel<IXMultiphaseElement> model = CreateModel(mesh.FemMesh);
-        //        model.FindConformingSubcells = true;
-        //        PhaseGeometryModel geometryModel = CreatePhases(model, mesh);
+                // Create model and LSM
+                var mesh = new DualMesh3D(minCoords, maxCoords, numElementsFem, numElementsLsm);
+                XModel<IXMultiphaseElement> model = CreateModel(mesh.FemMesh);
+                model.FindConformingSubcells = true;
+                PhaseGeometryModel geometryModel = CreatePhases(model, mesh);
 
-        //        // Plot phases of nodes
-        //        geometryModel.InteractionObservers.Add(new NodalPhasesPlotter(outputDirectory, model));
+                // Plot phases of nodes
+                geometryModel.InteractionObservers.Add(new NodalPhasesPlotter(outputDirectory, model));
 
-        //        // Plot element - phase boundaries interactions
-        //        geometryModel.InteractionObservers.Add(new LsmElementIntersectionsPlotter(outputDirectory, model));
+                // Plot element - phase boundaries interactions
+                geometryModel.InteractionObservers.Add(new LsmElementIntersectionsPlotter(outputDirectory, model));
 
-        //        // Plot element subcells
-        //        model.ModelObservers.Add(new ConformingMeshPlotter(outputDirectory, model));
+                // Plot element subcells
+                model.ModelObservers.Add(new ConformingMeshPlotter(outputDirectory, model));
 
-        //        // Plot phases of each element subcell
-        //        model.ModelObservers.Add(new ElementPhasePlotter(outputDirectory, model, geometryModel, defaultPhaseID));
+                // Plot phases of each element subcell
+                model.ModelObservers.Add(new ElementPhasePlotter(outputDirectory, model, geometryModel, defaultPhaseID));
 
-        //        // Write the size of each phase
-        //        model.ModelObservers.Add(new PhasesSizeWriter(outputDirectory, model, geometryModel));
+                // Write the size of each phase
+                model.ModelObservers.Add(new PhasesSizeWriter(outputDirectory, model, geometryModel));
 
-        //        // Plot bulk and boundary integration points of each element
-        //        model.ModelObservers.Add(new IntegrationPointsPlotter(outputDirectory, model));
+                // Plot bulk and boundary integration points of each element
+                model.ModelObservers.Add(new IntegrationPointsPlotter(outputDirectory, model));
 
-        //        // Plot enrichments
-        //        double elementSize = (maxCoords[0] - minCoords[0]) / numElementsFem[0];
-        //        model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 2));
+                // Plot enrichments
+                double elementSize = (maxCoords[0] - minCoords[0]) / numElementsFem[0];
+                model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 2));
 
-        //        // Initialize model state so that everything described above can be tracked
-        //        model.Initialize();
+                // Initialize model state so that everything described above can be tracked
+                model.Initialize();
 
-        //        // Compare output
-        //        var computedFiles = new List<string>();
-        //        computedFiles.Add(Path.Combine(outputDirectory, "nodal_phases_t0.vtk"));
-        //        computedFiles.Add(Path.Combine(outputDirectory, "intersections_t0.vtk"));
-        //        computedFiles.Add(Path.Combine(outputDirectory, "conforming_mesh_t0.vtk"));
-        //        computedFiles.Add(Path.Combine(outputDirectory, "element_phases_t0.vtk"));
-        //        computedFiles.Add(Path.Combine(outputDirectory, "phase_sizes_t0.txt"));
-        //        computedFiles.Add(Path.Combine(outputDirectory, "gauss_points_bulk_t0.vtk"));
-        //        computedFiles.Add(Path.Combine(outputDirectory, "gauss_points_boundary_t0.vtk"));
-        //        computedFiles.Add(Path.Combine(outputDirectory, "enriched_nodes_heaviside_t0.vtk"));
+                // Compare output
+                var computedFiles = new List<string>();
+                computedFiles.Add(Path.Combine(outputDirectory, "nodal_phases_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "intersections_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "conforming_mesh_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "element_phases_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "phase_sizes_t0.txt"));
+                computedFiles.Add(Path.Combine(outputDirectory, "gauss_points_bulk_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "gauss_points_boundary_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "enriched_nodes_heaviside_t0.vtk"));
 
-        //        var expectedFiles = new List<string>();
-        //        expectedFiles.Add(Path.Combine(expectedDirectory, "nodal_phases_t0.vtk"));
-        //        expectedFiles.Add(Path.Combine(expectedDirectory, "intersections_t0.vtk"));
-        //        expectedFiles.Add(Path.Combine(expectedDirectory, "conforming_mesh_t0.vtk"));
-        //        expectedFiles.Add(Path.Combine(expectedDirectory, "element_phases_t0.vtk"));
-        //        expectedFiles.Add(Path.Combine(expectedDirectory, "phase_sizes_t0.txt"));
-        //        expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_bulk_t0.vtk"));
-        //        expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_boundary_t0.vtk"));
-        //        expectedFiles.Add(Path.Combine(expectedDirectory, "enriched_nodes_heaviside_t0.vtk"));
+                var expectedFiles = new List<string>();
+                expectedFiles.Add(Path.Combine(expectedDirectory, "nodal_phases_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "intersections_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "conforming_mesh_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "element_phases_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "phase_sizes_t0.txt"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_bulk_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_boundary_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "enriched_nodes_heaviside_t0.vtk"));
 
-        //        double tolerance = 1E-6;
-        //        for (int i = 0; i < expectedFiles.Count; ++i)
-        //        {
-        //            Assert.True(IOUtilities.AreDoubleValueFilesEquivalent(expectedFiles[i], computedFiles[i], tolerance));
-        //        }
-        //    }
-        //    finally
-        //    {
-        //        if (Directory.Exists(outputDirectory))
-        //        {
-        //            DirectoryInfo di = new DirectoryInfo(outputDirectory);
-        //            di.Delete(true);//true means delete subdirectories and files
-        //        }
-        //    }
-        //}
+                double tolerance = 1E-6;
+                for (int i = 0; i < expectedFiles.Count; ++i)
+                {
+                    Assert.True(IOUtilities.AreDoubleValueFilesEquivalent(expectedFiles[i], computedFiles[i], tolerance));
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(outputDirectory))
+                {
+                    DirectoryInfo di = new DirectoryInfo(outputDirectory);
+                    di.Delete(true);//true means delete subdirectories and files
+                }
+            }
+        }
 
         private static XModel<IXMultiphaseElement> CreateModel(IStructuredMesh mesh)
         {
