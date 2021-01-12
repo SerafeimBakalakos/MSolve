@@ -17,7 +17,7 @@ namespace MGroup.XFEM.Elements
         //private static readonly IReadOnlyDictionary<CellType, IQuadrature3D> integrationsForMass;
         private static readonly IReadOnlyDictionary<CellType, IIsoparametricInterpolation> interpolations;
 
-        private readonly int integrationBoundaryOrder;
+        private readonly int boundaryIntegrationOrder;
         private readonly IBulkIntegration integrationbulk;
         private readonly IThermalMaterialField material;
 
@@ -57,11 +57,11 @@ namespace MGroup.XFEM.Elements
         }
 
         public XThermalElement3DFactory(IThermalMaterialField commonMaterial,
-            IBulkIntegration bulkIntegration, int integrationBoundaryOrder)
+            IBulkIntegration bulkIntegration, int boundaryIntegrationOrder)
         {
             this.material = commonMaterial;
             this.integrationbulk = bulkIntegration;
-            this.integrationBoundaryOrder = integrationBoundaryOrder;
+            this.boundaryIntegrationOrder = boundaryIntegrationOrder;
         }
 
         public XThermalElement3D CreateElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
@@ -71,7 +71,7 @@ namespace MGroup.XFEM.Elements
 #endif
             return new XThermalElement3D(id, nodes, elementGeometries[cellType], material, interpolations[cellType],
                 extrapolations[cellType], standardIntegrationsForConductivity[cellType], integrationbulk, 
-                integrationBoundaryOrder);
+                boundaryIntegrationOrder);
         }
     }
 }

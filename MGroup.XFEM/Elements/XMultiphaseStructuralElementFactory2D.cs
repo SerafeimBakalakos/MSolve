@@ -9,7 +9,7 @@ using MGroup.XFEM.Materials;
 
 namespace MGroup.XFEM.Elements
 {
-    public class XThermalElement2DFactory
+    public class XMultiphaseStructuralElementFactory2D : IXElementFactory<XMultiphaseStructuralElement2D>
     {
         private static readonly IReadOnlyDictionary<CellType, IElementGeometry> elementGeometries;
         private static readonly IReadOnlyDictionary<CellType, IGaussPointExtrapolation> extrapolations;
@@ -18,11 +18,11 @@ namespace MGroup.XFEM.Elements
         private static readonly IReadOnlyDictionary<CellType, IIsoparametricInterpolation> interpolations;
 
         private readonly int boundaryIntegrationOrder;
-        private readonly IBulkIntegration integrationbulk;
-        private readonly IThermalMaterialField material;
+        private readonly IBulkIntegration bulkIntegration;
+        private readonly IStructuralMaterialField material;
         private readonly double thickness;
 
-        static XThermalElement2DFactory()
+        static XMultiphaseStructuralElementFactory2D()
         {
             // Mass integrations require as many Gauss points as there are nodes, in order for the consistent mass matrix to be
             // of full rank (and symmetric positive definite)
@@ -71,31 +71,30 @@ namespace MGroup.XFEM.Elements
             //elementGeometries.Add(CellType.Tri6, new ElementTri6Geometry());
 
             // Static field assignments
-            XThermalElement2DFactory.interpolations = interpolations;
-            XThermalElement2DFactory.extrapolations = extrapolations;
-            XThermalElement2DFactory.standardIntegrationsForConductivity = standardIntegrationsForConductivity;
-            //XContinuumElement2DFactory.integrationsForMass = integrationsForMass;
-            XThermalElement2DFactory.elementGeometries = elementGeometries;
+            XMultiphaseStructuralElementFactory2D.interpolations = interpolations;
+            XMultiphaseStructuralElementFactory2D.extrapolations = extrapolations;
+            XMultiphaseStructuralElementFactory2D.standardIntegrationsForConductivity = standardIntegrationsForConductivity;
+            //XMultiphaseStructuralElementFactory2D.integrationsForMass = integrationsForMass;
+            XMultiphaseStructuralElementFactory2D.elementGeometries = elementGeometries;
 
         }
 
-        public XThermalElement2DFactory(IThermalMaterialField commonMaterial, double thickness,
+        public XMultiphaseStructuralElementFactory2D(IStructuralMaterialField commonMaterial, double thickness,
             IBulkIntegration bulkIntegration, int boundaryIntegrationOrder)
         {
             this.material = commonMaterial;
             this.thickness = thickness;
-            this.integrationbulk = bulkIntegration;
+            this.bulkIntegration = bulkIntegration;
             this.boundaryIntegrationOrder = boundaryIntegrationOrder;
         }
 
-        public XThermalElement2D CreateElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
+        public XMultiphaseStructuralElement2D CreateElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
         {
 #if DEBUG
             interpolations[cellType].CheckElementNodes(nodes);
 #endif
-            return new XThermalElement2D(id, nodes, thickness, elementGeometries[cellType], material, interpolations[cellType],
-                extrapolations[cellType], standardIntegrationsForConductivity[cellType], integrationbulk, 
-                boundaryIntegrationOrder);
+            return new XMultiphaseStructuralElement2D(id, nodes, thickness, elementGeometries[cellType], material, interpolations[cellType],
+                extrapolations[cellType], standardIntegrationsForConductivity[cellType], bulkIntegration, boundaryIntegrationOrder);
         }
     }
 }

@@ -37,7 +37,7 @@ namespace MGroup.XFEM.Elements
         private IReadOnlyList<GaussPoint> gaussPointsBulk;
 
         //TODO: this can be cached once for all standard elements of the same type
-        private EvalInterpolation[] evalInterpolationsAtGPsVolume;
+        private EvalInterpolation[] evalInterpolationsAtGPsBulk;
 
         /// <summary>
         /// In the same order as their corresponding <see cref="gaussPointsBoundary"/>.
@@ -210,32 +210,32 @@ namespace MGroup.XFEM.Elements
         {
             // Bulk integration
             this.gaussPointsBulk = IntegrationBulk.GenerateIntegrationPoints(this);
-            int numPointsVolume = gaussPointsBulk.Count;
+            int numPointsBulk = gaussPointsBulk.Count;
 
             // Calculate and cache standard interpolation at integration points.
             //TODO: for all standard elements of the same type, this should be cached only once
-            this.evalInterpolationsAtGPsVolume = new EvalInterpolation[numPointsVolume];
-            for (int i = 0; i < numPointsVolume; ++i)
+            this.evalInterpolationsAtGPsBulk = new EvalInterpolation[numPointsBulk];
+            for (int i = 0; i < numPointsBulk; ++i)
             {
-                evalInterpolationsAtGPsVolume[i] = Interpolation.EvaluateAllAt(Nodes, gaussPointsBulk[i].Coordinates);
+                evalInterpolationsAtGPsBulk[i] = Interpolation.EvaluateAllAt(Nodes, gaussPointsBulk[i].Coordinates);
             }
 
             // Find and cache the phase at integration points.
-            this.phasesAtGPsVolume = new IPhase[numPointsVolume];
+            this.phasesAtGPsVolume = new IPhase[numPointsBulk];
             Debug.Assert(Phases.Count != 0);
             if (Phases.Count == 1)
             {
                 IPhase commonPhase = Phases.First();
-                for (int i = 0; i < numPointsVolume; ++i) this.phasesAtGPsVolume[i] = commonPhase;
+                for (int i = 0; i < numPointsBulk; ++i) this.phasesAtGPsVolume[i] = commonPhase;
             }
             else
             {
-                for (int i = 0; i < numPointsVolume; ++i)
+                for (int i = 0; i < numPointsBulk; ++i)
                 {
                     XPoint point = new XPoint(2);
                     point.Element = this;
                     point.Coordinates[CoordinateSystem.ElementNatural] = gaussPointsBulk[i].Coordinates;
-                    point.ShapeFunctions = evalInterpolationsAtGPsVolume[i].ShapeFunctions;
+                    point.ShapeFunctions = evalInterpolationsAtGPsBulk[i].ShapeFunctions;
                     IPhase phase = this.FindPhaseAt(point);
                     point.PhaseID = phase.ID;
                     this.phasesAtGPsVolume[i] = phase;
@@ -243,8 +243,8 @@ namespace MGroup.XFEM.Elements
             }
 
             // Create and cache materials at integration points.
-            this.materialsAtGPsBulk = new ThermalMaterial[numPointsVolume];
-            for (int i = 0; i < numPointsVolume; ++i)
+            this.materialsAtGPsBulk = new ThermalMaterial[numPointsBulk];
+            for (int i = 0; i < numPointsBulk; ++i)
             {
                 this.materialsAtGPsBulk[i] = MaterialField.FindMaterialAt(this.phasesAtGPsVolume[i]);
             }
@@ -297,7 +297,7 @@ namespace MGroup.XFEM.Elements
             for (int i = 0; i < gaussPointsBulk.Count; ++i)
             {
                 GaussPoint gaussPoint = gaussPointsBulk[i];
-                EvalInterpolation evalInterpolation = evalInterpolationsAtGPsVolume[i];
+                EvalInterpolation evalInterpolation = evalInterpolationsAtGPsBulk[i];
 
                 var gaussPointAlt = new XPoint(2);
                 gaussPointAlt.Element = this;
@@ -310,8 +310,7 @@ namespace MGroup.XFEM.Elements
 
                 // Deformation matrices: Bs = grad(Ns), Be = grad(Ne)
                 Matrix Bstd = CalcDeformationMatrixStandard(evalInterpolation);
-                IPhase phase = phasesAtGPsVolume[i];
-                Matrix Benr = CalculateDeformationMatrixEnriched(numEnrichedDofs, phase, gaussPointAlt, evalInterpolation);
+                Matrix Benr = CalculateDeformationMatrixEnriched(numEnrichedDofs, gaussPointAlt, evalInterpolation);
 
                 // Contribution of this gauss point to the element stiffness matrices: 
                 // Kee = SUM(Benr^T * c * Benr  *  dV*w), Kse = SUM(Bstd^T * c * Benr  *  dV*w)
@@ -384,7 +383,7 @@ namespace MGroup.XFEM.Elements
             for (int i = 0; i < gaussPointsBulk.Count; ++i)
             {
                 GaussPoint gaussPoint = gaussPointsBulk[i];
-                EvalInterpolation evalInterpolation = evalInterpolationsAtGPsVolume[i];
+                EvalInterpolation evalInterpolation = evalInterpolationsAtGPsBulk[i];
                 double dV = evalInterpolation.Jacobian.DirectDeterminant * Thickness;
                 //TODO: The thickness is constant per element in FEM, but what about XFEM? Different materials within the same 
                 //      element are possible. Yeah but the thickness is a geometric porperty, rather than a material one.
@@ -402,7 +401,7 @@ namespace MGroup.XFEM.Elements
             return Kss;
         }
 
-        private Matrix CalculateDeformationMatrixEnriched(int numEnrichedDofs, IPhase phaseAtGaussPoint, XPoint gaussPoint,
+        private Matrix CalculateDeformationMatrixEnriched(int numEnrichedDofs, XPoint gaussPoint,
             EvalInterpolation evaluatedInterpolation)
         {
             // For each node and with all derivatives w.r.t. cartesian coordinates, the enrichment derivatives 

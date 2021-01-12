@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
+using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
-using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
@@ -23,8 +24,11 @@ using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Elements
 {
-    public class XCrackElement2D : IXCrackElement
+    public class XMultiphaseStructuralElement2D : IXMultiphaseElement
     {
+        private const int dim = 2;
+
+        private readonly int boundaryIntegrationOrder;
         private readonly IElementGeometry elementGeometry;
         private readonly int id;
         private readonly int numStandardDofs;
@@ -32,11 +36,16 @@ namespace MGroup.XFEM.Elements
 
         private IDofType[][] allDofTypes;
 
-        private Dictionary<ClosedPhaseBoundary, IReadOnlyList<GaussPoint>> gaussPointsBoundary;
+        private Dictionary<IPhaseBoundary, IReadOnlyList<GaussPoint>> gaussPointsBoundary;
         private IReadOnlyList<GaussPoint> gaussPointsBulk;
 
         //TODO: this can be cached once for all standard elements of the same type
-        private EvalInterpolation[] evalInterpolationsAtGPsVolume;
+        private EvalInterpolation[] evalInterpolationsAtGPsBulk;
+
+        /// <summary>
+        /// In the same order as their corresponding <see cref="gaussPointsBoundary"/>.
+        /// </summary>
+        private Dictionary<IPhaseBoundary, StructuralInterfaceMaterial[]> materialsAtGPsBoundary;
 
         /// <summary>
         /// In the same order as their corresponding <see cref="gaussPointsBulk"/>.
@@ -45,10 +54,15 @@ namespace MGroup.XFEM.Elements
 
         private int numEnrichedDofs;
 
-        public XCrackElement2D(int id, IReadOnlyList<XNode> nodes, double thickness, IElementGeometry elementGeometry,
-            IFractureMaterialField materialField, IIsoparametricInterpolation interpolation, 
+        /// <summary>
+        /// In the same order as their corresponding <see cref="gaussPointsBulk"/>.
+        /// </summary>
+        private IPhase[] phasesAtGPsVolume;
+
+        public XMultiphaseStructuralElement2D(int id, IReadOnlyList<XNode> nodes, double thickness, IElementGeometry elementGeometry,
+            IStructuralMaterialField materialField, IIsoparametricInterpolation interpolation,
             IGaussPointExtrapolation gaussPointExtrapolation, IQuadrature standardQuadrature,
-            CrackElementIntegrationStrategy bulkIntegration)
+            IBulkIntegration bulkIntegration, int boundaryIntegrationOrder)
         {
             this.id = id;
             this.Nodes = nodes;
@@ -59,16 +73,32 @@ namespace MGroup.XFEM.Elements
             this.GaussPointExtrapolation = gaussPointExtrapolation;
             this.IntegrationStandard = standardQuadrature;
             this.IntegrationBulk = bulkIntegration;
+            this.boundaryIntegrationOrder = boundaryIntegrationOrder;
             this.MaterialField = materialField;
 
-            this.numStandardDofs = 2 * nodes.Count;
+            this.numStandardDofs = nodes.Count;
             this.standardDofTypes = new IDofType[nodes.Count][];
             for (int i = 0; i < nodes.Count; ++i)
             {
-                standardDofTypes[i] = new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY };
+                this.standardDofTypes[i] = new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY };
             }
 
             (this.Edges, this.Faces) = elementGeometry.FindEdgesFaces(nodes);
+        }
+
+        public IEnumerable<GaussPoint> BulkIntegrationPoints => gaussPointsBulk;
+
+        public IEnumerable<GaussPoint> BoundaryIntegrationPoints
+        {
+            get
+            {
+                var allBoundaryPoints = new List<GaussPoint>();
+                foreach (var points in gaussPointsBoundary.Values)
+                {
+                    allBoundaryPoints.AddRange(points);
+                }
+                return allBoundaryPoints;
+            }
         }
 
         public CellType CellType => Interpolation.CellType;
@@ -87,6 +117,7 @@ namespace MGroup.XFEM.Elements
 
         public int ID { get => id; set => throw new InvalidOperationException("ID is set at constructor."); }
 
+        //TODO: This should not always be used for Kss. E.g. it doesn't work for bimaterial interface.
         public IQuadrature IntegrationStandard { get; }
 
         public IBulkIntegration IntegrationBulk { get; set; }
@@ -96,7 +127,7 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         public IIsoparametricInterpolation Interpolation { get; }
 
-        public IFractureMaterialField MaterialField { get; }
+        public IStructuralMaterialField MaterialField { get; }
 
         IReadOnlyList<INode> IElement.Nodes => Nodes;
         /// <summary>
@@ -104,95 +135,26 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         public IReadOnlyList<XNode> Nodes { get; }
 
-        public Dictionary<ICrack, IElementOpenGeometryInteraction> InteractingCracks { get; } 
-            = new Dictionary<ICrack, IElementOpenGeometryInteraction>();
-
         public Dictionary<int, IElementDiscontinuityInteraction> InteractingDiscontinuities { get; }
             = new Dictionary<int, IElementDiscontinuityInteraction>();
+
+        public HashSet<IPhase> Phases { get; } = new HashSet<IPhase>();
+
+        public Dictionary<IPhaseBoundary, IElementDiscontinuityInteraction> PhaseIntersections { get; }
+            = new Dictionary<IPhaseBoundary, IElementDiscontinuityInteraction>();
 
         ISubdomain IElement.Subdomain => this.Subdomain;
         public XSubdomain Subdomain { get; set; }
 
         public double Thickness { get; }
 
-        /// <summary>
-        /// Area of the element in the global cartesian coordinate system
-        /// </summary>
         public double CalcBulkSizeCartesian() => elementGeometry.CalcBulkSizeCartesian(Nodes);
 
         public double CalcBulkSizeNatural() => elementGeometry.CalcBulkSizeNatural();
 
-        /// <summary>
-        /// The displacement field derivatives are a 2x2 matrix: gradientU[i,j] = dui/dj where i is the vector component 
-        /// and j is the coordinate, w.r.t which the differentiation is done. The differentation coordinates and the
-        /// vector components refer to the global cartesian system. 
-        /// WARNING: Do not call this method for points on a crack interface.
-        /// </summary>
-        public Matrix CalcDisplacementFieldGradient(XPoint point, Vector nodalDisplacements)
-        {
-            //TODO: There is a lot of duplication between this and the calculation of Bstd, Benr. I could abstract the common 
-            //      code, however that will probably slow down then calculation of Bstd, Benr which is much more important.
-
-            (int[] stdDofIndices, int[] enrDofIndices) = MapDofsFromStdEnrToNodeMajor();
-            Vector uStd = nodalDisplacements.GetSubvector(stdDofIndices);
-            Vector uenr = nodalDisplacements.GetSubvector(enrDofIndices);
-            var displacementGradient = Matrix.CreateZero(2, 2);
-
-            // Standard contributions
-            for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
-            {
-                double ux = uStd[2 * nodeIdx];
-                double uy = uStd[2 * nodeIdx + 1];
-
-                double dNdx = point.ShapeFunctionDerivatives[nodeIdx, 0];
-                double dNdy = point.ShapeFunctionDerivatives[nodeIdx, 1];
-                displacementGradient[0, 0] += dNdx * ux;
-                displacementGradient[0, 1] += dNdy * ux;
-                displacementGradient[1, 0] += dNdx * uy;
-                displacementGradient[1, 1] += dNdy * uy;
-            }
-
-            // Enriched contributions.
-            IReadOnlyDictionary<IEnrichmentFunction, EvaluatedFunction> evalEnrichments =
-                EvaluateEnrichments(point);
-            int dof = 0;
-            for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
-            {
-                double N = point.ShapeFunctions[nodeIdx];
-                double dNdx = point.ShapeFunctionDerivatives[nodeIdx, 0];
-                double dNdy = point.ShapeFunctionDerivatives[nodeIdx, 1];
-
-                foreach (var enrichmentValuePair in Nodes[nodeIdx].EnrichmentFuncs)
-                {
-                    IEnrichmentFunction enrichment = enrichmentValuePair.Key;
-                    double nodalPsi = enrichmentValuePair.Value;
-                    EvaluatedFunction evalEnrichment = evalEnrichments[enrichment];
-
-                    double psi = evalEnrichment.Value;
-                    double[] gradPsi = evalEnrichment.CartesianDerivatives;
-                    double deltaPsi = psi - nodalPsi;
-
-                    double Bx = dNdx * deltaPsi + N * gradPsi[0];
-                    double By = dNdy * deltaPsi + N * gradPsi[1];
-
-                    double enrDisplacementX = uenr[dof++];
-                    double enrDisplacementY = uenr[dof++];
-
-                    displacementGradient[0, 0] += Bx * enrDisplacementX;
-                    displacementGradient[0, 1] += By * enrDisplacementX;
-                    displacementGradient[1, 0] += Bx * enrDisplacementY;
-                    displacementGradient[1, 1] += By * enrDisplacementY;
-                }
-            }
-
-            return displacementGradient;
-        }
-
         public IMatrix DampingMatrix(IElement element) => throw new NotImplementedException();
 
         public IReadOnlyList<IReadOnlyList<IDofType>> GetElementDofTypes(IElement element) => allDofTypes;
-
-        public override int GetHashCode() => ID.GetHashCode();
 
         public XPoint EvaluateFunctionsAt(double[] naturalPoint)
         {
@@ -203,17 +165,27 @@ namespace MGroup.XFEM.Elements
             return result;
         }
 
-        public double[] FindCentroidCartesian() => Utilities.FindCentroidCartesian(2, Nodes);
+        public double[] FindCentroidCartesian() => Utilities.FindCentroidCartesian(dim, Nodes);
+
+
+        public Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<StructuralInterfaceMaterial>)>
+            GetMaterialsForBoundaryIntegration()
+        {
+            var result = new Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<StructuralInterfaceMaterial>)>();
+            foreach (ClosedPhaseBoundary boundary in gaussPointsBoundary.Keys)
+            {
+                result[boundary] = (gaussPointsBoundary[boundary], materialsAtGPsBoundary[boundary]);
+            }
+            return result;
+        }
 
         public (IReadOnlyList<GaussPoint>, IReadOnlyList<ElasticMaterial2D>) GetMaterialsForBulkIntegration()
             => (gaussPointsBulk, materialsAtGPsBulk);
 
-        //TODO: This method should be moved to a base class. Enriched DOFs do not depend on the finite element, but are set globally.
-        //      Also standard dofs per node can be provided be the element in another property 
         public void IdentifyDofs()
         {
             this.numEnrichedDofs = 0;
-            foreach (XNode node in Nodes) this.numEnrichedDofs += 2 * node.EnrichmentFuncs.Count;
+            foreach (XNode node in Nodes) this.numEnrichedDofs += dim * node.EnrichmentFuncs.Count;
 
             if (this.numEnrichedDofs == 0) allDofTypes = standardDofTypes;
             else
@@ -225,10 +197,10 @@ namespace MGroup.XFEM.Elements
                 for (int i = 0; i < Nodes.Count; ++i)
                 {
                     XNode node = Nodes[i];
-                    var nodalDofs = new IDofType[2 + 2 * node.EnrichmentFuncs.Count];
+                    var nodalDofs = new IDofType[dim + dim * node.EnrichmentFuncs.Count];
                     nodalDofs[0] = StructuralDof.TranslationX;
                     nodalDofs[1] = StructuralDof.TranslationY;
-                    int j = 2;
+                    int j = dim;
                     foreach (EnrichmentItem enrichment in node.Enrichments)
                     {
                         foreach (IDofType dof in enrichment.EnrichedDofs)
@@ -245,21 +217,63 @@ namespace MGroup.XFEM.Elements
         {
             // Bulk integration
             this.gaussPointsBulk = IntegrationBulk.GenerateIntegrationPoints(this);
-            int numPointsVolume = gaussPointsBulk.Count;
+            int numPointsBulk = gaussPointsBulk.Count;
 
             // Calculate and cache standard interpolation at integration points.
             //TODO: for all standard elements of the same type, this should be cached only once
-            this.evalInterpolationsAtGPsVolume = new EvalInterpolation[numPointsVolume];
-            for (int i = 0; i < numPointsVolume; ++i)
+            this.evalInterpolationsAtGPsBulk = new EvalInterpolation[numPointsBulk];
+            for (int i = 0; i < numPointsBulk; ++i)
             {
-                evalInterpolationsAtGPsVolume[i] = Interpolation.EvaluateAllAt(Nodes, gaussPointsBulk[i].Coordinates);
+                evalInterpolationsAtGPsBulk[i] = Interpolation.EvaluateAllAt(Nodes, gaussPointsBulk[i].Coordinates);
+            }
+
+            // Find and cache the phase at integration points.
+            this.phasesAtGPsVolume = new IPhase[numPointsBulk];
+            Debug.Assert(Phases.Count != 0);
+            if (Phases.Count == 1)
+            {
+                IPhase commonPhase = Phases.First();
+                for (int i = 0; i < numPointsBulk; ++i) this.phasesAtGPsVolume[i] = commonPhase;
+            }
+            else
+            {
+                for (int i = 0; i < numPointsBulk; ++i)
+                {
+                    XPoint point = new XPoint(dim);
+                    point.Element = this;
+                    point.Coordinates[CoordinateSystem.ElementNatural] = gaussPointsBulk[i].Coordinates;
+                    point.ShapeFunctions = evalInterpolationsAtGPsBulk[i].ShapeFunctions;
+                    IPhase phase = this.FindPhaseAt(point);
+                    point.PhaseID = phase.ID;
+                    this.phasesAtGPsVolume[i] = phase;
+                }
             }
 
             // Create and cache materials at integration points.
-            this.materialsAtGPsBulk = new ElasticMaterial2D[numPointsVolume];
-            for (int i = 0; i < numPointsVolume; ++i)
+            this.materialsAtGPsBulk = new ElasticMaterial2D[numPointsBulk];
+            for (int i = 0; i < numPointsBulk; ++i)
             {
-                this.materialsAtGPsBulk[i] = MaterialField.FindMaterialAt(null);
+                this.materialsAtGPsBulk[i] = MaterialField.FindMaterialAt(this.phasesAtGPsVolume[i]);
+            }
+
+            // Create and cache materials at boundary integration points.
+            this.gaussPointsBoundary = new Dictionary<IPhaseBoundary, IReadOnlyList<GaussPoint>>();
+            this.materialsAtGPsBoundary = new Dictionary<IPhaseBoundary, StructuralInterfaceMaterial[]>();
+            foreach (var boundaryIntersectionPair in PhaseIntersections)
+            {
+                IPhaseBoundary boundary = boundaryIntersectionPair.Key;
+                IElementDiscontinuityInteraction intersection = boundaryIntersectionPair.Value;
+
+                IReadOnlyList<GaussPoint> gaussPoints = intersection.GetBoundaryIntegrationPoints(boundaryIntegrationOrder);
+                int numGaussPoints = gaussPoints.Count;
+                var materials = new StructuralInterfaceMaterial[numGaussPoints];
+
+                //TODO: perhaps I should have one for each Gauss point
+                StructuralInterfaceMaterial material = MaterialField.FindInterfaceMaterialAt(boundary);
+                for (int i = 0; i < numGaussPoints; ++i) materials[i] = material;
+
+                gaussPointsBoundary[boundary] = gaussPoints;
+                materialsAtGPsBoundary[boundary] = materials;
             }
         }
 
@@ -273,6 +287,11 @@ namespace MGroup.XFEM.Elements
             else
             {
                 (Matrix Kee, Matrix Kse) = BuildStiffnessMatricesEnriched();
+                if (PhaseIntersections.Count > 0)
+                {
+                    Matrix Kii = BuildStiffnessMatrixBoundary();
+                    Kee.AddIntoThis(Kii);
+                }
                 Ktotal = JoinStiffnesses(Kss, Kee, Kse);
             }
             return Ktotal;
@@ -285,7 +304,7 @@ namespace MGroup.XFEM.Elements
             for (int i = 0; i < gaussPointsBulk.Count; ++i)
             {
                 GaussPoint gaussPoint = gaussPointsBulk[i];
-                EvalInterpolation evalInterpolation = evalInterpolationsAtGPsVolume[i];
+                EvalInterpolation evalInterpolation = evalInterpolationsAtGPsBulk[i];
 
                 var gaussPointAlt = new XPoint(2);
                 gaussPointAlt.Element = this;
@@ -301,7 +320,7 @@ namespace MGroup.XFEM.Elements
                 Matrix Benr = CalculateDeformationMatrixEnriched(numEnrichedDofs, gaussPointAlt, evalInterpolation);
 
                 // Contribution of this gauss point to the element stiffness matrices: 
-                // Kee = SUM(Benr^T * C * Benr  *  dV*w), Kse = SUM(Bstd^T * C * Benr  *  dV*w)
+                // Kee = SUM(Benr^T * c * Benr  *  dV*w), Kse = SUM(Bstd^T * c * Benr  *  dV*w)
                 Matrix cBe = constitutive.MultiplyRight(Benr); // cache the result
                 Matrix BeCBe = Benr.MultiplyRight(cBe, true, false);  // enriched-enriched part
                 Kee.AxpyIntoThis(BeCBe, dV * gaussPoint.Weight);
@@ -311,19 +330,39 @@ namespace MGroup.XFEM.Elements
             return (Kee, Kse);
         }
 
-        //TODO: A perhaps important optimization would be to use the std integration rule for Kss. However that creates the need 
-        //      to track these integration points separately, which is cumbersome in non-linear problems. Perhaps it can be 
-        //      delegated to an auxiliary class. In problems featuring both multiple phases and cracks, the whole idea may not 
-        //      work at all.
+        private Matrix BuildStiffnessMatrixBoundary()
+        {
+            var Kii = Matrix.CreateZero(numEnrichedDofs, numEnrichedDofs);
+            //foreach (var boundaryGaussPointsPair in gaussPointsBoundary)
+            //{
+            //    IPhaseBoundary boundary = boundaryGaussPointsPair.Key;
+            //    IReadOnlyList<GaussPoint> gaussPoints = boundaryGaussPointsPair.Value;
+            //    ThermalInterfaceMaterial[] materials = materialsAtGPsBoundary[boundary];
+
+            //    // Kii = sum(conductivity * N^T * N * weight * thickness)
+            //    for (int i = 0; i < gaussPoints.Count; ++i)
+            //    {
+            //        GaussPoint gaussPoint = gaussPoints[i];
+            //        double interfaceConductivity = materials[i].InterfaceConductivity;
+            //        double scale = Thickness * interfaceConductivity * gaussPoint.Weight;
+
+            //        Vector N = CalculateEnrichedShapeFunctionVector(gaussPoint.Coordinates, boundary);
+            //        Matrix NtN = N.TensorProduct(N);
+            //        Kii.AxpyIntoThis(NtN, scale);
+            //    }
+            //}
+            return Kii;
+        }
+
         private Matrix BuildStiffnessMatrixStandard()
         {
-            // If the element is has more than 1 phase, then I cannot use the standard quadrature, since the material is  
+            // If the element has more than 1 phase, then I cannot use the standard quadrature, since the material is  
             // different on each phase.
             var Kss = Matrix.CreateZero(numStandardDofs, numStandardDofs);
             for (int i = 0; i < gaussPointsBulk.Count; ++i)
             {
                 GaussPoint gaussPoint = gaussPointsBulk[i];
-                EvalInterpolation evalInterpolation = evalInterpolationsAtGPsVolume[i];
+                EvalInterpolation evalInterpolation = evalInterpolationsAtGPsBulk[i];
                 double dV = evalInterpolation.Jacobian.DirectDeterminant * Thickness;
 
                 // Material properties
@@ -339,8 +378,8 @@ namespace MGroup.XFEM.Elements
             return Kss;
         }
 
-        private Matrix CalculateDeformationMatrixEnriched(int numEnrichedDofs, XPoint gaussPoint, 
-            EvalInterpolation evalInterpolation)
+        private Matrix CalculateDeformationMatrixEnriched(int numEnrichedDofs, XPoint gaussPoint,
+            EvalInterpolation evaluatedInterpolation)
         {
             Dictionary<IEnrichmentFunction, EvaluatedFunction> enrichmentValues = EvaluateEnrichments(gaussPoint);
 
@@ -348,16 +387,16 @@ namespace MGroup.XFEM.Elements
             int currentColumn = 0;
             for (int nodeIdx = 0; nodeIdx < Nodes.Count; ++nodeIdx)
             {
-                double N = evalInterpolation.ShapeFunctions[nodeIdx];
-                double dNdx = evalInterpolation.ShapeGradientsCartesian[nodeIdx, 0];
-                double dNdy = evalInterpolation.ShapeGradientsCartesian[nodeIdx, 1];
+                double N = evaluatedInterpolation.ShapeFunctions[nodeIdx];
+                double dNdx = evaluatedInterpolation.ShapeGradientsCartesian[nodeIdx, 0];
+                double dNdy = evaluatedInterpolation.ShapeGradientsCartesian[nodeIdx, 1];
 
                 foreach (var enrichmentValuePair in Nodes[nodeIdx].EnrichmentFuncs)
                 {
                     IEnrichmentFunction enrichment = enrichmentValuePair.Key;
                     double nodalPsi = enrichmentValuePair.Value;
                     EvaluatedFunction evalEnrichment = enrichmentValues[enrichment];
-                    
+
                     // Bx = enrN,x = N,x(x, y) * [psi(x, y) - psi(node)] + N(x,y) * psi,x(x,y)
                     // By = enrN,y = N,y(x, y) * [psi(x, y) - psi(node)] + N(x,y) * psi,y(x,y)
                     double dPsi = evalEnrichment.Value - nodalPsi;
@@ -403,6 +442,51 @@ namespace MGroup.XFEM.Elements
                 deformation[2, col1] = dNdx;
             }
             return deformation;
+        }
+
+
+        /// <summary>
+        /// The contour integral along a phase boundary is calculated for the enriched dofs that were applied due to that 
+        /// boundary. For example, if there are 2 boundaries and all 3 nodes of the element are enriched due to them, then the 6
+        /// enriched dofs are [node1Boundary1, node1Boundary2, node2Boundary1, node2Boundary2, node3Boundary1, node3Boundary2].
+        /// When integrating along boundary 1 we will compute N^T*N, where N(6x1) = [N1 0 N2 0 N3 0]. If we integrate along
+        /// boundary 2, then N(6x1) = [0 N1 0 N2 0 N3]. 
+        /// 
+        /// Therefore when integrating along a specific boundary, then for every enriched dof of each node i, we need to find 
+        /// if the enrichment was applied due to that boundary. If yes, the corresponding index of the total shape function 
+        /// array gets the value Ni. Otherwise it remains 0. 
+        /// 
+        /// The whole thing also takes care of a) blending enrichments due to boundaries in other elements, 
+        /// b) rare cases where one or more nodes were not enriched like the rest, because their nodal support was almost 
+        /// entirely in one of the two regions.
+        /// </summary>
+        private Vector CalculateEnrichedShapeFunctionMatrix(double[] gaussPoint, IPhaseBoundary boundary)
+        {
+            //TODO: Optimize this: The mapping should be done once per enrichment and reused for all Gauss points of this 
+            //      boundary. That would only work if the jump is independent of the gauss point though, which is not always true.
+            //      See an attempt at MapEnrichedDofIndicesToNodeIndices().
+
+            double[] N = Interpolation.EvaluateFunctionsAt(gaussPoint);
+            var point = new XPoint(2);
+            point.Coordinates[CoordinateSystem.ElementNatural] = gaussPoint;
+            point.ShapeFunctions = N;
+
+            Vector totalShapeFunctions = Vector.CreateZero(numEnrichedDofs);
+            int idx = 0;
+            for (int n = 0; n < Nodes.Count; ++n)
+            {
+                XNode node = Nodes[n];
+                //TODO: VERY FRAGILE CODE. This order of enrichments was used to determine the order of enriched dofs in 
+                //      another method. It works as of the time of writing, but this dependency must be removed. Perhaps use a 
+                //      DofTable.
+                foreach (IEnrichmentFunction enrichment in node.EnrichmentFuncs.Keys)
+                {
+                    double phaseJump = enrichment.EvaluateJumpAcross(boundary, point);
+                    totalShapeFunctions[idx] = phaseJump * N[n];
+                    ++idx; // always move to the next index in the total shape function array
+                }
+            }
+            return totalShapeFunctions;
         }
 
         //TODO: This can be used in all XFEM elements
@@ -474,13 +558,13 @@ namespace MGroup.XFEM.Elements
             for (int n = 0; n < Nodes.Count; ++n)
             {
                 // Std dofs
-                stdDofIndices[2 * n] = totalDofCounter++;
-                stdDofIndices[2 * n + 1] = totalDofCounter++;
+                stdDofIndices[dim * n] = totalDofCounter++;
+                stdDofIndices[dim * n + 1] = totalDofCounter++;
 
                 // Enr dofs
                 for (int e = 0; e < Nodes[n].EnrichmentFuncs.Count; ++e)
                 {
-                    for (int i = 0; i < 2; ++i)
+                    for (int i = 0; i < dim; ++i)
                     {
                         enrDofIndices[enrDofCounter++] = totalDofCounter++;
                     }
