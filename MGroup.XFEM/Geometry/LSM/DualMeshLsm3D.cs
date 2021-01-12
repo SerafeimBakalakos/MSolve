@@ -48,6 +48,12 @@ namespace MGroup.XFEM.Geometry.LSM
             var intersectionsOfElements = new Dictionary<int, IntersectionMesh3D_NEW>();
             foreach (int lsmElementID in lsmElementIDs)
             {
+                #region debug
+                if (lsmElementID == 1789)
+                {
+                    Console.WriteLine();
+                }
+                #endregion
                 int[] lsmElementIdx = dualMesh.LsmMesh.GetElementIdx(lsmElementID);
                 int[] lsmElementNodes = dualMesh.LsmMesh.GetElementConnectivity(lsmElementIdx);
                 RelativePositionCurveElement position = FindRelativePosition(lsmElementNodes);
@@ -115,6 +121,13 @@ namespace MGroup.XFEM.Geometry.LSM
 
         private IntersectionMesh3D_NEW FindInteractionIntersecting(int[] lsmElementIdx, int[] lsmNodeIDs)
         {
+            #region debug
+            if (lsmElementIdx[0] == 9 && lsmElementIdx[1] == 7 && lsmElementIdx[2] == 5)
+            {
+                Console.WriteLine();
+            }
+            #endregion
+
             var elementGeometry = new ElementHexa8Geometry_NEW();
             (ElementEdge_NEW[] edges, ElementFace_NEW[] allFaces) = elementGeometry.FindEdgesFaces(lsmNodeIDs);
             IReadOnlyList<double[]> nodesNatural = InterpolationHexa8.UniqueInstance.NodalNaturalCoordinates;
@@ -122,10 +135,11 @@ namespace MGroup.XFEM.Geometry.LSM
             var intersectionPoints = new Dictionary<double[], HashSet<ElementFace_NEW>>();
 
             // Find any nodes that may lie on the LSM geometry
+            var comparer = new ValueComparer(1E-7);
             for (int n = 0; n < lsmNodeIDs.Length; ++n)
             {
                 int nodeID = lsmNodeIDs[n];
-                if (NodalLevelSets[nodeID] == 0)
+                if (comparer.AreEqual(0, NodalLevelSets[nodeID]))
                 {
                     HashSet<ElementFace_NEW> facesOfNode = Extensions.FindFacesOfNode(nodeID, allFaces);
                     double[] intersection = nodesNatural[n];
@@ -172,9 +186,9 @@ namespace MGroup.XFEM.Geometry.LSM
             foreach (int nodeID in lsmElementNodes)
             {
                 double levelSet = NodalLevelSets[nodeID];
-                if (levelSet > 0) ++numPositiveNodes;
-                else if (levelSet < 0) ++numNegativeNodes;
-                else ++numZeroNodes;
+                if (comparer.AreEqual(0, levelSet)) ++numZeroNodes;
+                else if (levelSet > 0) ++numPositiveNodes;
+                else /*if (levelSet < 0)*/ ++numNegativeNodes;
             }
 
             if ((numPositiveNodes == lsmElementNodes.Length) || (numNegativeNodes == lsmElementNodes.Length))
