@@ -12,12 +12,12 @@ using MGroup.XFEM.Phases;
 //TODO: Remove casts
 namespace MGroup.XFEM.Enrichment.Enrichers
 {
-    public class NodeEnricherMultiphase : INodeEnricher
+    public class NodeEnricherMultiphaseThermal : INodeEnricher
     {
         private readonly PhaseGeometryModel geometricModel;
         private readonly ISingularityResolver singularityResolver;
 
-        public NodeEnricherMultiphase(PhaseGeometryModel geometricModel, ISingularityResolver singularityResolver)
+        public NodeEnricherMultiphaseThermal(PhaseGeometryModel geometricModel, ISingularityResolver singularityResolver)
         {
             this.geometricModel = geometricModel;
             this.singularityResolver = singularityResolver;

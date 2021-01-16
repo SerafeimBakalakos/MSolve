@@ -10,12 +10,12 @@ using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Materials
 {
-    public class BiMaterialField : IThermalMaterialField
+    public class ThermalBiMaterialField : IThermalMaterialField
     {
         private readonly ThermalMaterial material0, material1;
         private readonly double interfaceConductivity;
 
-        public BiMaterialField(ThermalMaterial material0, ThermalMaterial material1, double interfaceConductivity)
+        public ThermalBiMaterialField(ThermalMaterial material0, ThermalMaterial material1, double interfaceConductivity)
         {
             this.material0 = material0;
             this.material1 = material1;

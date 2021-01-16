@@ -140,7 +140,7 @@ namespace MGroup.XFEM.Tests.Multiphase
 
                 // Run analysis
                 model.Initialize();
-                IVectorView solution = Analysis.RunStaticAnalysis(model);
+                IVectorView solution = Analysis.RunThermalStaticAnalysis(model);
 
                 // Plot temperature and heat flux
                 var computedFiles = new List<string>();
@@ -190,7 +190,7 @@ namespace MGroup.XFEM.Tests.Multiphase
         {
             var geometricModel = new PhaseGeometryModel(model);
             model.GeometryModel = geometricModel;
-            geometricModel.Enricher = new NodeEnricherMultiphase(geometricModel, new NullSingularityResolver());
+            geometricModel.Enricher = new NodeEnricherMultiphaseThermal(geometricModel, new NullSingularityResolver());
             List<SimpleLsm2D> lsmCurves = InitializeLSM(model);
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;

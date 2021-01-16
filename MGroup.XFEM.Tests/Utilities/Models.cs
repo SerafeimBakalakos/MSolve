@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Discretization.Mesh.Generation;
 using ISAAR.MSolve.Discretization.Mesh.Generation.Custom;
@@ -91,6 +92,60 @@ namespace MGroup.XFEM.Tests.Utilities
             foreach (var node in model.XNodes.Where(n => Math.Abs(n.X - maxX) <= meshTol))
             {
                 node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = -100 });
+            }
+
+            model.ConnectDataStructures();
+            return model;
+        }
+
+        public static XModel<IXMultiphaseElement> CreateQuad4Model(double[] minCoords, double[] maxCoords, double thickness,
+            int[] numElements, int bulkIntegrationOrder, int boundaryIntegrationOrder, IStructuralMaterialField materialField)
+        {
+            var model = new XModel<IXMultiphaseElement>(2);
+            model.Subdomains[0] = new XSubdomain(0);
+
+            // Mesh generation
+            var meshGen = new UniformMeshGenerator2D<XNode>(minCoords[0], minCoords[1], maxCoords[0], maxCoords[1],
+                numElements[0], numElements[1]);
+            (IReadOnlyList<XNode> nodes, IReadOnlyList<CellConnectivity<XNode>> cells) =
+                meshGen.CreateMesh((id, x, y, z) => new XNode(id, new double[] { x, y, z }));
+
+            // Nodes
+            foreach (XNode node in nodes) model.XNodes.Add(node);
+
+            // Integration
+            var stdQuadrature = GaussLegendre2D.GetQuadratureWithOrder(bulkIntegrationOrder, bulkIntegrationOrder);
+            var subcellQuadrature = TriangleQuadratureSymmetricGaussian.Order2Points3;
+            var integrationBulk = new IntegrationWithConformingSubtriangles2D(subcellQuadrature);
+
+            // Elements
+            var elemFactory = new XMultiphaseStructuralElementFactory2D(
+                materialField, thickness, integrationBulk, boundaryIntegrationOrder);
+            for (int e = 0; e < cells.Count; ++e)
+            {
+                XMultiphaseStructuralElement2D element = elemFactory.CreateElement(e, CellType.Quad4, cells[e].Vertices);
+                model.Elements.Add(element);
+                model.Subdomains[0].Elements.Add(element);
+            }
+
+            // Boundary conditions
+            double meshTol = 1E-7;
+
+            // Left side: Ux=Uy=0
+            double minX = model.XNodes.Select(n => n.X).Min();
+            foreach (var node in model.XNodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
+            {
+                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = 0 });
+                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = 0 });
+            }
+
+            // Right side: Fx = 100
+            double maxX = model.XNodes.Select(n => n.X).Max();
+            XNode[] rightSideNodes = model.XNodes.Where(n => Math.Abs(n.X - maxX) <= meshTol).ToArray();
+            double load = 1.0 / rightSideNodes.Length;
+            foreach (var node in rightSideNodes)
+            {
+                model.NodalLoads.Add(new NodalLoad(node, StructuralDof.TranslationX, load));
             }
 
             model.ConnectDataStructures();

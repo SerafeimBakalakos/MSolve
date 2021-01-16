@@ -14,6 +14,33 @@ namespace MGroup.XFEM.Tests.Utilities
 {
     public class Plotting
     {
+        public static void PlotDisplacements(XModel<IXMultiphaseElement> model, IVectorView solution,
+            string pathDisplacementsAtNodes, string pathDisplacementsAtGaussPoints/*, string pathDisplacementsField*/)
+        {
+            // Displacements at nodes
+            using (var writer = new VtkPointWriter(pathDisplacementsAtNodes))
+            {
+                var displacementsField = new DisplacementsAtNodesField(model);
+                writer.WriteVectorField("displacements", displacementsField.CalcValuesAtVertices(solution));
+            }
+
+            // Displacements at Gauss Points
+            using (var writer = new VtkPointWriter(pathDisplacementsAtGaussPoints))
+            {
+                var displacementsField = new DisplacementsAtGaussPointsField(model);
+                writer.WriteVectorField("temperature", displacementsField.CalcValuesAtVertices(solution));
+            }
+
+            //// Displacements field
+            //var conformingMesh = new ConformingOutputMesh(model);
+            //using (var writer = new VtkFileWriter(pathDisplacementsField))
+            //{
+            //    var temperatureField = new TemperatureField(model, conformingMesh);
+            //    writer.WriteMesh(conformingMesh);
+            //    writer.WriteScalarField("temperature", conformingMesh, temperatureField.CalcValuesAtVertices(solution));
+            //}
+        }
+
         public static void PlotTemperatureAndHeatFlux(XModel<IXMultiphaseElement> model, IVectorView solution,
             string pathTemperatureAtNodes, string pathTemperatureAtGaussPoints, string pathTemperatureField,
             string pathHeatFluxAtGaussPoints)

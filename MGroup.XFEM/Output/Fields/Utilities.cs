@@ -13,6 +13,8 @@ using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Phases;
 
+
+//MODIFICATION NEEDED: This needs splitting up. At the very least separate thermal from structural
 namespace MGroup.XFEM.Output.Fields
 {
     public static class Utilities
@@ -53,6 +55,45 @@ namespace MGroup.XFEM.Output.Fields
             }
 
             return bulkSizes;
+        }
+
+        //TODO: Perhaps this should be implemented by the element itself, where a lot of optimizations can be employed.
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="element"></param>
+        /// <param name="elementDisplacements">
+        /// The order of dofs per node is enrichment major - axis minor.</param>
+        /// <returns></returns>
+        internal static double[] CalcDisplacementsAt(XPoint point, IXFiniteElement element, IList<double[]> elementDisplacements)
+        {
+            int dim = point.Dimension;
+            var displacements = new double[dim];
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                double[] u = elementDisplacements[n];
+                double N = point.ShapeFunctions[n];
+
+                // Standard displacements
+                int currentDof = 0;
+                for (int d = 0; d < dim; ++d)
+                {
+                    displacements[d] += N * u[currentDof++];
+                }
+
+                // Eniched displacements
+                foreach (IEnrichmentFunction enrichment in element.Nodes[n].EnrichmentFuncs.Keys)
+                {
+                    double psiVertex = enrichment.EvaluateAt(point);
+                    double psiNode = element.Nodes[n].EnrichmentFuncs[enrichment];
+                    for (int d = 0; d < dim; ++d)
+                    {
+                        displacements[d] += N * (psiVertex - psiNode) * u[currentDof++];
+                    }
+                }
+            }
+            return displacements;
         }
 
         //TODO: Perhaps this should be implemented by the element itself, where a lot of optimizations can be employed.
@@ -107,6 +148,27 @@ namespace MGroup.XFEM.Output.Fields
             return gradient;
         }
 
+        internal static IList<double[]> ExtractElementDisplacements(IXFiniteElement element, XSubdomain subdomain, 
+            IVectorView solution)
+        {
+            var nodalDisplacements = new List<double[]>(element.Nodes.Count);
+            IReadOnlyList<IReadOnlyList<IDofType>> nodalDofs = element.GetElementDofTypes(element);
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                XNode node = element.Nodes[n];
+                double[] displacementsOfNode = new double[nodalDofs[n].Count];
+                for (int i = 0; i < displacementsOfNode.Length; ++i)
+                {
+                    IDofType dof = nodalDofs[n][i];
+                    bool isFreeDof = subdomain.FreeDofOrdering.FreeDofs.TryGetValue(node, dof, out int idx);
+                    if (isFreeDof) displacementsOfNode[i] = solution[idx];
+                    else displacementsOfNode[i] = node.Constraints.Find(con => con.DOF == dof).Amount;
+                }
+                nodalDisplacements.Add(displacementsOfNode);
+            }
+            return nodalDisplacements.ToArray();
+        }
+
         internal static double[] ExtractNodalTemperatures(IXFiniteElement element, XSubdomain subdomain, IVectorView solution)
         {
             var nodalTemperatures = new List<double>(element.Nodes.Count);
@@ -124,6 +186,14 @@ namespace MGroup.XFEM.Output.Fields
             return nodalTemperatures.ToArray();
         }
 
+        /// <summary>
+        /// Contrary to <see cref="ExtractNodalTemperatures(IXFiniteElement, XSubdomain, IVectorView)"/>, this method only
+        /// finds the nodal temperatures of an element that correspond to standard dofs.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="subdomain"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
         internal static double[] ExtractNodalTemperaturesStandard(IXFiniteElement element, XSubdomain subdomain, IVectorView solution)
         {
             //TODO: Could this be done using FreeDofOrdering.ExtractVectorElementFromSubdomain(...)? What about enriched dofs?

@@ -55,7 +55,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
             try
             {
                 // Create physical model, LSM and phases
-                (XModel<IXMultiphaseElement> model, BiMaterialField materialField) = CreateModel();
+                (XModel<IXMultiphaseElement> model, ThermalBiMaterialField materialField) = CreateModel();
                 model.FindConformingSubcells = true;
                 GeometryPreprocessor2D geometryPreprocessor = CreatePhases(model, materialField);
 
@@ -91,18 +91,18 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
             }
         }
 
-        private static (XModel<IXMultiphaseElement>, BiMaterialField) CreateModel()
+        private static (XModel<IXMultiphaseElement>, ThermalBiMaterialField) CreateModel()
         {
             // Materials
             var epoxyMaterial = new ThermalMaterial(conductEpoxy, specialHeatCoeff);
             var silverMaterial = new ThermalMaterial(conductSilver, specialHeatCoeff);
-            var materialField = new BiMaterialField(epoxyMaterial, silverMaterial, conductBoundaryEpoxySilver);
+            var materialField = new ThermalBiMaterialField(epoxyMaterial, silverMaterial, conductBoundaryEpoxySilver);
 
             return (Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField), materialField);
         }
 
-        private GeometryPreprocessor2D CreatePhases(XModel<IXMultiphaseElement> model, BiMaterialField materialField)
+        private GeometryPreprocessor2D CreatePhases(XModel<IXMultiphaseElement> model, ThermalBiMaterialField materialField)
         {
             var preprocessor = new GeometryPreprocessor2D(model);
             preprocessor.MinCoordinates = minCoords;

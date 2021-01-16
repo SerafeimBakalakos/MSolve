@@ -34,7 +34,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
         public static void RunModelCreation()
         {
             // Create model and LSM
-            (XModel<IXMultiphaseElement> model, BiMaterialField materialField) = CreateModel();
+            (XModel<IXMultiphaseElement> model, ThermalBiMaterialField materialField) = CreateModel();
             model.FindConformingSubcells = true;
             GeometryPreprocessor2D geometryPreprocessor = CreatePhases(model, materialField);
             var geometryModel = geometryPreprocessor.GeometryModel;
@@ -75,13 +75,13 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
             }
 
             // Create model and LSM
-            (XModel<IXMultiphaseElement> model, BiMaterialField materialField) = CreateModel();
+            (XModel<IXMultiphaseElement> model, ThermalBiMaterialField materialField) = CreateModel();
             model.FindConformingSubcells = true;
             GeometryPreprocessor2D geometryPreprocessor = CreatePhases(model, materialField);
 
             // Run analysis
             model.Initialize();
-            IVectorView solution = Analysis.RunStaticAnalysis(model);
+            IVectorView solution = Analysis.RunThermalStaticAnalysis(model);
 
             // Plot temperature and heat flux
             var computedFiles = new List<string>();
@@ -93,18 +93,18 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
                 computedFiles[0], computedFiles[1], computedFiles[2], computedFiles[3]);
         }
 
-        private static (XModel<IXMultiphaseElement>, BiMaterialField) CreateModel()
+        private static (XModel<IXMultiphaseElement>, ThermalBiMaterialField) CreateModel()
         {
             // Materials
             var epoxyMaterial = new ThermalMaterial(conductEpoxy, specialHeatCoeff);
             var silverMaterial = new ThermalMaterial(conductSilver, specialHeatCoeff);
-            var materialField = new BiMaterialField(epoxyMaterial, silverMaterial, conductBoundaryEpoxySilver);
+            var materialField = new ThermalBiMaterialField(epoxyMaterial, silverMaterial, conductBoundaryEpoxySilver);
 
             return (Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField), materialField);
         }
 
-        private static GeometryPreprocessor2D CreatePhases(XModel<IXMultiphaseElement> model, BiMaterialField materialField)
+        private static GeometryPreprocessor2D CreatePhases(XModel<IXMultiphaseElement> model, ThermalBiMaterialField materialField)
         {
             var preprocessor = new GeometryPreprocessor2D(model);
             preprocessor.MinCoordinates = minCoords;

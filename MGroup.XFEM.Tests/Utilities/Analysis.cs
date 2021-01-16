@@ -49,12 +49,28 @@ namespace MGroup.XFEM.Tests.Utilities
             return conductivity;
         }
 
-        public static IVectorView RunStaticAnalysis(IXModel model)
+        public static IVectorView RunThermalStaticAnalysis(IXModel model)
         {
             Console.WriteLine("Starting analysis");
             //SuiteSparseSolver solver = new SuiteSparseSolver.Builder().BuildSolver(model);
             SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(model);
             var problem = new ProblemThermalSteadyState(model, solver);
+            var linearAnalyzer = new LinearAnalyzer(model, solver, problem);
+            var staticAnalyzer = new StaticAnalyzer(model, solver, problem, linearAnalyzer);
+
+            staticAnalyzer.Initialize();
+            staticAnalyzer.Solve();
+
+            Console.WriteLine("Analysis finished");
+            return solver.LinearSystems[0].Solution;
+        }
+
+        public static IVectorView RunStructuralStaticAnalysis(IXModel model)
+        {
+            Console.WriteLine("Starting analysis");
+            //SuiteSparseSolver solver = new SuiteSparseSolver.Builder().BuildSolver(model);
+            SkylineSolver solver = new SkylineSolver.Builder().BuildSolver(model);
+            var problem = new ProblemStructural(model, solver);
             var linearAnalyzer = new LinearAnalyzer(model, solver, problem);
             var staticAnalyzer = new StaticAnalyzer(model, solver, problem, linearAnalyzer);
 

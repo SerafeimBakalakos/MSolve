@@ -76,7 +76,7 @@ namespace MGroup.XFEM.Elements
             this.boundaryIntegrationOrder = boundaryIntegrationOrder;
             this.MaterialField = materialField;
 
-            this.numStandardDofs = nodes.Count;
+            this.numStandardDofs = dim * nodes.Count;
             this.standardDofTypes = new IDofType[nodes.Count][];
             for (int i = 0; i < nodes.Count; ++i)
             {
