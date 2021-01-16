@@ -169,6 +169,38 @@ namespace MGroup.XFEM.Output.Fields
             return nodalDisplacements.ToArray();
         }
 
+        /// <summary>
+        /// Contrary to <see cref="ExtractElementDisplacements(IXFiniteElement, XSubdomain, IVectorView)"/>, this method only
+        /// finds the nodal temperatures of an element that correspond to standard dofs.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="subdomain"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
+        internal static IList<double[]> ExtractElementDisplacementsStandard(int dimension,
+            IXFiniteElement element, XSubdomain subdomain, IVectorView solution)
+        {
+            var dofsPerNode = new IDofType[dimension];
+            dofsPerNode[0] = StructuralDof.TranslationX;
+            if (dimension >= 2) dofsPerNode[1] = StructuralDof.TranslationY;
+            if (dimension == 3) dofsPerNode[2] = StructuralDof.TranslationZ;
+
+            var elementDisplacements = new List<double[]>(element.Nodes.Count);
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                XNode node = element.Nodes[n];
+                var displacementsOfNode = new double[dimension];
+                for (int d = 0; d < dimension; ++d)
+                {
+                    bool isFreeDof = subdomain.FreeDofOrdering.FreeDofs.TryGetValue(node, dofsPerNode[d], out int idx);
+                    if (isFreeDof) displacementsOfNode[d] = solution[idx];
+                    else displacementsOfNode[d] = node.Constraints.Find(con => con.DOF == dofsPerNode[d]).Amount;
+                }
+                elementDisplacements.Add(displacementsOfNode);
+            }
+            return elementDisplacements;
+        }
+
         internal static double[] ExtractNodalTemperatures(IXFiniteElement element, XSubdomain subdomain, IVectorView solution)
         {
             var nodalTemperatures = new List<double>(element.Nodes.Count);

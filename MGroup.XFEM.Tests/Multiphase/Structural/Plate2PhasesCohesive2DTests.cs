@@ -142,9 +142,9 @@ namespace MGroup.XFEM.Tests.Multiphase.Structural
                 var computedFiles = new List<string>();
                 computedFiles.Add(Path.Combine(outputDirectory, "displacement_nodes_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "displacement_gauss_points_t0.vtk"));
-                //computedFiles.Add(Path.Combine(outputDirectory, "temperature_field_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "displacement_field_t0.vtk"));
                 //computedFiles.Add(Path.Combine(outputDirectory, "heat_flux_gauss_points_t0.vtk"));
-                Utilities.Plotting.PlotDisplacements(model, solution, computedFiles[0], computedFiles[1]);
+                Utilities.Plotting.PlotDisplacements(model, solution, computedFiles[0], computedFiles[1], computedFiles[2]);
 
                 // Compare output
                 var expectedFiles = new List<string>();
