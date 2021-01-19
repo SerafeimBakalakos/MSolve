@@ -75,5 +75,34 @@ namespace MGroup.XFEM.Tests.Utilities
                 writer.WriteVectorField("heat_flux", fluxField.CalcValuesAtVertices(solution));
             }
         }
+
+        public static void PlotStrainsStresses(XModel<IXMultiphaseElement> model, IVectorView solution,
+            string pathStrainsAtGaussPoints, string pathStressesAtGaussPoints)
+        {
+            // Strains at Gauss Points
+            var strainStressField = new StrainsStressesAtGaussPointsField(model);
+            (Dictionary<double[], double[]> strains, Dictionary<double[], double[]> stresses) = 
+                strainStressField.CalcTensorsAtPoints(solution);
+
+            using (var writer = new VtkPointWriter(pathStrainsAtGaussPoints))
+            {
+                writer.WriteTensor2DField("strain", strains);
+            }
+
+            // Stresses at Gauss Points
+            using (var writer = new VtkPointWriter(pathStressesAtGaussPoints))
+            {
+                writer.WriteTensor2DField("stress", stresses);
+            }
+
+            //// Displacement field
+            //var conformingMesh = new ConformingOutputMesh(model);
+            //using (var writer = new VtkFileWriter(pathDisplacementsField))
+            //{
+            //    var displacementField = new DisplacementField(model, conformingMesh);
+            //    writer.WriteMesh(conformingMesh);
+            //    writer.WriteVector2DField("displacements", conformingMesh, displacementField.CalcValuesAtVertices(solution));
+            //}
+        }
     }
 }

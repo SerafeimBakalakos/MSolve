@@ -108,7 +108,7 @@ namespace MGroup.XFEM.Tests.Utilities
             var meshGen = new UniformMeshGenerator2D<XNode>(minCoords[0], minCoords[1], maxCoords[0], maxCoords[1],
                 numElements[0], numElements[1]);
             (IReadOnlyList<XNode> nodes, IReadOnlyList<CellConnectivity<XNode>> cells) =
-                meshGen.CreateMesh((id, x, y, z) => new XNode(id, new double[] { x, y, z }));
+                meshGen.CreateMesh((id, x, y, z) => new XNode(id, new double[] { x, y }));
 
             // Nodes
             foreach (XNode node in nodes) model.XNodes.Add(node);

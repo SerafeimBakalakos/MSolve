@@ -117,6 +117,61 @@ namespace MGroup.XFEM.Output.Fields
             return sum;
         }
 
+        /// <summary>
+        /// The gradient is in 2D [Ux,x Ux,y; Uy,x Uy,y] and in 3D [Ux,x Ux,y Ux,z; Uy,x Uy,y Uy,z; Uz,x Uz,y Uz,z].
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="evalInterpolation"></param>
+        /// <param name="element"></param>
+        /// <param name="elementDisplacements"></param>
+        /// <returns></returns>
+        internal static double[,] CalcDisplacementsGradientAt(
+            XPoint point, IXFiniteElement element, IList<double[]> elementDisplacements)
+        {
+            //TODO: Extend this to 3D
+            int dimension = point.Dimension;
+            if (point.Dimension != 2) throw new NotImplementedException();
+            var gradient = new double[dimension, dimension];
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                double[] u = elementDisplacements[n];
+                double N = point.ShapeFunctions[n];
+                var dN = new double[dimension];
+                for (int d = 0; d < dimension; ++d)
+                {
+                    dN[d] = point.ShapeFunctionDerivatives[n, d];
+                }
+
+                // Standard displacements
+                double ux = u[0];
+                double uy = u[1];
+                gradient[0, 0] += dN[0] * ux;
+                gradient[0, 1] += dN[1] * ux;
+                gradient[1, 0] += dN[0] * uy;
+                gradient[1, 1] += dN[1] * uy;
+
+                // Eniched displacements
+                int dof = 2;
+                foreach (IEnrichmentFunction enrichment in element.Nodes[n].EnrichmentFuncs.Keys)
+                {
+                    ux = u[dof++];
+                    uy = u[dof++];
+                    EvaluatedFunction evalEnrichment = enrichment.EvaluateAllAt(point);
+                    double psi = evalEnrichment.Value;
+                    double[] dPsi = evalEnrichment.CartesianDerivatives;
+                    double psiNode = element.Nodes[n].EnrichmentFuncs[enrichment];
+
+                    double Bx = (psi - psiNode) * dN[0] + dPsi[0] * N;
+                    double By = (psi - psiNode) * dN[1] + dPsi[1] * N;
+                    gradient[0, 0] += Bx * ux;
+                    gradient[0, 1] += By * ux;
+                    gradient[1, 0] += Bx * uy;
+                    gradient[1, 1] += By * uy;
+                }
+            }
+            return gradient;
+        }
+
         internal static double[] CalcTemperatureGradientAt(XPoint point, EvalInterpolation evalInterpolation,
             IXFiniteElement element, double[] nodalTemperatures)
         {
@@ -242,14 +297,17 @@ namespace MGroup.XFEM.Output.Fields
 
         internal static double[] TransformNaturalToCartesian(double[] shapeFunctionsAtPoint, IReadOnlyList<XNode> nodes)
         {
-            double x = 0, y = 0, z = 0;
+            int dim = nodes[0].Coordinates.Length;
+            var result = new double[dim];
+
             for (int i = 0; i < nodes.Count; ++i)
             {
-                x += shapeFunctionsAtPoint[i] * nodes[i].X;
-                y += shapeFunctionsAtPoint[i] * nodes[i].Y;
-                z += shapeFunctionsAtPoint[i] * nodes[i].Z;
+                for (int d = 0; d < dim; ++d)
+                {
+                    result[d] += shapeFunctionsAtPoint[i] * nodes[i].Coordinates[d];
+                }
             }
-            return new double[] { x, y, z};
+            return result;
         }
     }
 }

@@ -24,7 +24,7 @@ using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Elements
 {
-    public class XMultiphaseStructuralElement2D : IXMultiphaseElement
+    public class XMultiphaseStructuralElement2D : IXStructuralMultiphaseElement
     {
         private const int dim = 2;
 
