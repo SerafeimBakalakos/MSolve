@@ -104,6 +104,29 @@ namespace MGroup.XFEM.Output.Vtk
             writer.WriteLine();
         }
 
+        public void WriteTensor2DField(string fieldName, IOutputMesh mesh, IEnumerable<double[]> tensorsAtVertices)
+        {
+            WriteFieldsHeader(mesh.NumOutVertices);
+
+            // Component 11
+            writer.WriteLine($"SCALARS {fieldName}_11 double 1");
+            writer.WriteLine("LOOKUP_TABLE default");
+            foreach (double[] tensor in tensorsAtVertices) writer.WriteLine(tensor[0]);
+            writer.WriteLine();
+
+            // Component 22
+            writer.WriteLine($"SCALARS {fieldName}_22 double 1");
+            writer.WriteLine("LOOKUP_TABLE default");
+            foreach (double[] tensor in tensorsAtVertices) writer.WriteLine(tensor[1]);
+            writer.WriteLine();
+
+            // Component 12
+            writer.WriteLine($"SCALARS {fieldName}_12 double 1");
+            writer.WriteLine("LOOKUP_TABLE default");
+            foreach (double[] tensor in tensorsAtVertices) writer.WriteLine(tensor[2]);
+            writer.WriteLine();
+        }
+
         public void WriteVector2DField(string fieldName, IOutputMesh mesh, IEnumerable<double[]> vectorsAtVertices)
         {
             WriteFieldsHeader(mesh.NumOutVertices);

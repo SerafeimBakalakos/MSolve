@@ -15,7 +15,7 @@ namespace MGroup.XFEM.Tests.Utilities
     public class Plotting
     {
         public static void PlotDisplacements(XModel<IXMultiphaseElement> model, IVectorView solution,
-            string pathDisplacementsAtNodes, string pathDisplacementsAtGaussPoints, string pathDisplacementsField)
+            string pathDisplacementsAtNodes, string pathDisplacementsAtGaussPoints)
         {
             // Displacements at nodes
             using (var writer = new VtkPointWriter(pathDisplacementsAtNodes))
@@ -30,14 +30,24 @@ namespace MGroup.XFEM.Tests.Utilities
                 var displacementField = new DisplacementsAtGaussPointsField(model);
                 writer.WriteVectorField("displacements", displacementField.CalcValuesAtVertices(solution));
             }
+        }
 
-            // Displacement field
+        public static void PlotDisplacementStrainStressFields(
+            XModel<IXMultiphaseElement> model, IVectorView solution, string path)
+        {
             var conformingMesh = new ConformingOutputMesh(model);
-            using (var writer = new VtkFileWriter(pathDisplacementsField))
+            using (var writer = new VtkFileWriter(path))
             {
-                var displacementField = new DisplacementField(model, conformingMesh);
                 writer.WriteMesh(conformingMesh);
+
+                var displacementField = new DisplacementField(model, conformingMesh);
                 writer.WriteVector2DField("displacements", conformingMesh, displacementField.CalcValuesAtVertices(solution));
+
+                var strainStressField = new StrainStressField(model, conformingMesh);
+                (IEnumerable<double[]> strains, IEnumerable<double[]> stresses) = strainStressField.CalcTensorsAtVertices(solution);
+
+                writer.WriteTensor2DField("strain", conformingMesh, strains);
+                writer.WriteTensor2DField("stress", conformingMesh, stresses);
             }
         }
 
@@ -76,33 +86,24 @@ namespace MGroup.XFEM.Tests.Utilities
             }
         }
 
-        public static void PlotStrainsStresses(XModel<IXMultiphaseElement> model, IVectorView solution,
+        public static void PlotStrainsStressesAtGaussPoints(XModel<IXMultiphaseElement> model, IVectorView solution,
             string pathStrainsAtGaussPoints, string pathStressesAtGaussPoints)
         {
             // Strains at Gauss Points
-            var strainStressField = new StrainsStressesAtGaussPointsField(model);
-            (Dictionary<double[], double[]> strains, Dictionary<double[], double[]> stresses) = 
-                strainStressField.CalcTensorsAtPoints(solution);
+            var strainStressAtGPs = new StrainsStressesAtGaussPointsField(model);
+            (Dictionary<double[], double[]> strainsAtGPs, Dictionary<double[], double[]> stressesAtGPs) = 
+                strainStressAtGPs.CalcTensorsAtPoints(solution);
 
             using (var writer = new VtkPointWriter(pathStrainsAtGaussPoints))
             {
-                writer.WriteTensor2DField("strain", strains);
+                writer.WriteTensor2DField("strain", strainsAtGPs);
             }
 
             // Stresses at Gauss Points
             using (var writer = new VtkPointWriter(pathStressesAtGaussPoints))
             {
-                writer.WriteTensor2DField("stress", stresses);
+                writer.WriteTensor2DField("stress", stressesAtGPs);
             }
-
-            //// Displacement field
-            //var conformingMesh = new ConformingOutputMesh(model);
-            //using (var writer = new VtkFileWriter(pathDisplacementsField))
-            //{
-            //    var displacementField = new DisplacementField(model, conformingMesh);
-            //    writer.WriteMesh(conformingMesh);
-            //    writer.WriteVector2DField("displacements", conformingMesh, displacementField.CalcValuesAtVertices(solution));
-            //}
         }
     }
 }

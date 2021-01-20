@@ -142,11 +142,12 @@ namespace MGroup.XFEM.Tests.Multiphase.Structural
                 var computedFiles = new List<string>();
                 computedFiles.Add(Path.Combine(outputDirectory, "displacement_nodes_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "displacement_gauss_points_t0.vtk"));
-                computedFiles.Add(Path.Combine(outputDirectory, "displacement_field_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "strains_gauss_points_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "stresses_gauss_points_t0.vtk"));
-                Utilities.Plotting.PlotDisplacements(model, solution, computedFiles[0], computedFiles[1], computedFiles[2]);
-                Utilities.Plotting.PlotStrainsStresses(model, solution, computedFiles[3], computedFiles[4]);
+                computedFiles.Add(Path.Combine(outputDirectory, "displacement_strain_stress_field_t0.vtk"));
+                Utilities.Plotting.PlotDisplacements(model, solution, computedFiles[0], computedFiles[1]);
+                Utilities.Plotting.PlotStrainsStressesAtGaussPoints(model, solution, computedFiles[2], computedFiles[3]);
+                Utilities.Plotting.PlotDisplacementStrainStressFields(model, solution, computedFiles[4]);
 
                 // Compare output
                 var expectedFiles = new List<string>();
