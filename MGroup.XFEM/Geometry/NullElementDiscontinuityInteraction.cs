@@ -27,6 +27,11 @@ namespace MGroup.XFEM.Geometry
             return new GaussPoint[0];
         }
 
+        public IReadOnlyList<double[]> GetNormalsAtBoundaryIntegrationPoints(int order)
+        {
+            return new double[0][];
+        }
+
         public IList<double[]> GetVerticesForTriangulation()
         {
             return new double[0][];

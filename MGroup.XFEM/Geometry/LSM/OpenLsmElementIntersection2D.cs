@@ -43,6 +43,11 @@ namespace MGroup.XFEM.Geometry.LSM
             throw new NotImplementedException();
         }
 
+        public IReadOnlyList<double[]> GetNormalsAtBoundaryIntegrationPoints(int order)
+        {
+            throw new NotImplementedException();
+        }
+
         public IList<double[]> GetVerticesForTriangulation()
         {
             if (RelativePosition == RelativePositionCurveElement.Intersecting) return commonPointsNatural;

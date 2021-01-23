@@ -131,6 +131,11 @@ namespace MGroup.XFEM.Geometry.LSM
             return integrationPoints;
         }
 
+        public IReadOnlyList<double[]> GetNormalsAtBoundaryIntegrationPoints(int order)
+        {
+            throw new NotImplementedException();
+        }
+
         public IList<double[]> GetVerticesForTriangulation()
         {
             return intersectionMeshNatural.Vertices;

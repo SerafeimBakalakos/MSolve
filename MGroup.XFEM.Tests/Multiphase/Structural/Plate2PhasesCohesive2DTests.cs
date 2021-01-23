@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
 using MGroup.XFEM.Elements;
@@ -33,6 +34,8 @@ namespace MGroup.XFEM.Tests.Multiphase.Structural
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 
         private const double E0 = 1, E1 = 2, v = 0.3;
+        private const double cohesivenessNormal = 0, cohesivenessTangent = 0;
+        //private const double cohesivenessNormal = 1, cohesivenessTangent = 1;
 
         private const int defaultPhaseID = 0;
 
@@ -69,7 +72,7 @@ namespace MGroup.XFEM.Tests.Multiphase.Structural
 
 
                 // Plot bulk and boundary integration points of each element
-                model.ModelObservers.Add(new IntegrationPointsPlotter(outputDirectory, model));
+                model.ModelObservers.Add(new IntegrationPointsPlotter(outputDirectory, model, true));
 
                 // Plot enrichments
                 double elementSize = (maxCoords[0] - minCoords[0]) / numElements[0];
@@ -177,7 +180,12 @@ namespace MGroup.XFEM.Tests.Multiphase.Structural
             // Materials
             var material0 = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = E0, PoissonRatio = v };
             var material1 = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = E1, PoissonRatio = v };
-            var materialField = new StructuralBiMaterialField2D(material0, material1);
+            var interfaceMaterial = new CohesiveInterfaceMaterial2D(Matrix.CreateFromArray(new double[,]
+            {
+                { cohesivenessNormal, 0 },
+                { 0, cohesivenessTangent }
+            }));
+            var materialField = new StructuralBiMaterialField2D(material0, material1, interfaceMaterial);
             materialField.PhasesWithMaterial0.Add(0);
             materialField.PhasesWithMaterial1.Add(1);
 

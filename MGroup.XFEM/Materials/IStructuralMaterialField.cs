@@ -9,7 +9,7 @@ namespace MGroup.XFEM.Materials
 {
     public interface IStructuralMaterialField
     {
-        StructuralInterfaceMaterial FindInterfaceMaterialAt(IPhaseBoundary phaseBoundary);
+        CohesiveInterfaceMaterial2D FindInterfaceMaterialAt(IPhaseBoundary phaseBoundary);
 
         ElasticMaterial2D FindMaterialAt(IPhase phase);
     }

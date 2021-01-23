@@ -37,6 +37,7 @@ namespace MGroup.XFEM.Elements
         private IDofType[][] allDofTypes;
 
         private Dictionary<IPhaseBoundary, IReadOnlyList<GaussPoint>> gaussPointsBoundary;
+        private Dictionary<IPhaseBoundary, IReadOnlyList<double[]>> gaussPointsBoundaryNormals;
         private IReadOnlyList<GaussPoint> gaussPointsBulk;
 
         //TODO: this can be cached once for all standard elements of the same type
@@ -45,7 +46,7 @@ namespace MGroup.XFEM.Elements
         /// <summary>
         /// In the same order as their corresponding <see cref="gaussPointsBoundary"/>.
         /// </summary>
-        private Dictionary<IPhaseBoundary, StructuralInterfaceMaterial[]> materialsAtGPsBoundary;
+        private Dictionary<IPhaseBoundary, CohesiveInterfaceMaterial2D[]> materialsAtGPsBoundary;
 
         /// <summary>
         /// In the same order as their corresponding <see cref="gaussPointsBulk"/>.
@@ -86,9 +87,9 @@ namespace MGroup.XFEM.Elements
             (this.Edges, this.Faces) = elementGeometry.FindEdgesFaces(nodes);
         }
 
-        public IEnumerable<GaussPoint> BulkIntegrationPoints => gaussPointsBulk;
+        public IReadOnlyList<GaussPoint> BulkIntegrationPoints => gaussPointsBulk;
 
-        public IEnumerable<GaussPoint> BoundaryIntegrationPoints
+        public IReadOnlyList<GaussPoint> BoundaryIntegrationPoints
         {
             get
             {
@@ -98,6 +99,19 @@ namespace MGroup.XFEM.Elements
                     allBoundaryPoints.AddRange(points);
                 }
                 return allBoundaryPoints;
+            }
+        }
+
+        public IReadOnlyList<double[]> BoundaryIntegrationPointNormals
+        {
+            get
+            {
+                var allNormals = new List<double[]>();
+                foreach (var normals in gaussPointsBoundaryNormals.Values)
+                {
+                    allNormals.AddRange(normals);
+                }
+                return allNormals;
             }
         }
 
@@ -168,10 +182,10 @@ namespace MGroup.XFEM.Elements
         public double[] FindCentroidCartesian() => Utilities.FindCentroidCartesian(dim, Nodes);
 
 
-        public Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<StructuralInterfaceMaterial>)>
+        public Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<CohesiveInterfaceMaterial2D>)>
             GetMaterialsForBoundaryIntegration()
         {
-            var result = new Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<StructuralInterfaceMaterial>)>();
+            var result = new Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<CohesiveInterfaceMaterial2D>)>();
             foreach (ClosedPhaseBoundary boundary in gaussPointsBoundary.Keys)
             {
                 result[boundary] = (gaussPointsBoundary[boundary], materialsAtGPsBoundary[boundary]);
@@ -258,21 +272,25 @@ namespace MGroup.XFEM.Elements
 
             // Create and cache materials at boundary integration points.
             this.gaussPointsBoundary = new Dictionary<IPhaseBoundary, IReadOnlyList<GaussPoint>>();
-            this.materialsAtGPsBoundary = new Dictionary<IPhaseBoundary, StructuralInterfaceMaterial[]>();
+            this.gaussPointsBoundaryNormals = new Dictionary<IPhaseBoundary, IReadOnlyList<double[]>>();
+            this.materialsAtGPsBoundary = new Dictionary<IPhaseBoundary, CohesiveInterfaceMaterial2D[]>();
             foreach (var boundaryIntersectionPair in PhaseIntersections)
             {
                 IPhaseBoundary boundary = boundaryIntersectionPair.Key;
                 IElementDiscontinuityInteraction intersection = boundaryIntersectionPair.Value;
 
                 IReadOnlyList<GaussPoint> gaussPoints = intersection.GetBoundaryIntegrationPoints(boundaryIntegrationOrder);
+                IReadOnlyList<double[]> gaussPointsNormals = 
+                    intersection.GetNormalsAtBoundaryIntegrationPoints(boundaryIntegrationOrder);
                 int numGaussPoints = gaussPoints.Count;
-                var materials = new StructuralInterfaceMaterial[numGaussPoints];
+                var materials = new CohesiveInterfaceMaterial2D[numGaussPoints];
 
                 //TODO: perhaps I should have one for each Gauss point
-                StructuralInterfaceMaterial material = MaterialField.FindInterfaceMaterialAt(boundary);
+                CohesiveInterfaceMaterial2D material = MaterialField.FindInterfaceMaterialAt(boundary);
                 for (int i = 0; i < numGaussPoints; ++i) materials[i] = material;
 
                 gaussPointsBoundary[boundary] = gaussPoints;
+                gaussPointsBoundaryNormals[boundary] = gaussPointsNormals;
                 materialsAtGPsBoundary[boundary] = materials;
             }
         }
@@ -333,24 +351,28 @@ namespace MGroup.XFEM.Elements
         private Matrix BuildStiffnessMatrixBoundary()
         {
             var Kii = Matrix.CreateZero(numEnrichedDofs, numEnrichedDofs);
-            //foreach (var boundaryGaussPointsPair in gaussPointsBoundary)
-            //{
-            //    IPhaseBoundary boundary = boundaryGaussPointsPair.Key;
-            //    IReadOnlyList<GaussPoint> gaussPoints = boundaryGaussPointsPair.Value;
-            //    ThermalInterfaceMaterial[] materials = materialsAtGPsBoundary[boundary];
+            foreach (var boundaryGaussPointsPair in gaussPointsBoundary)
+            {
+                IPhaseBoundary boundary = boundaryGaussPointsPair.Key;
+                IReadOnlyList<GaussPoint> gaussPoints = boundaryGaussPointsPair.Value;
+                IReadOnlyList<double[]> normalVectorsAtGPs = gaussPointsBoundaryNormals[boundary];
+                CohesiveInterfaceMaterial2D[] materials = materialsAtGPsBoundary[boundary];
 
-            //    // Kii = sum(conductivity * N^T * N * weight * thickness)
-            //    for (int i = 0; i < gaussPoints.Count; ++i)
-            //    {
-            //        GaussPoint gaussPoint = gaussPoints[i];
-            //        double interfaceConductivity = materials[i].InterfaceConductivity;
-            //        double scale = Thickness * interfaceConductivity * gaussPoint.Weight;
+                // Kii = sum(N^T * T * N * weight * thickness)
+                for (int i = 0; i < gaussPoints.Count; ++i)
+                {
+                    GaussPoint gaussPoint = gaussPoints[i];
+                    double scale = Thickness * gaussPoint.Weight;
 
-            //        Vector N = CalculateEnrichedShapeFunctionVector(gaussPoint.Coordinates, boundary);
-            //        Matrix NtN = N.TensorProduct(N);
-            //        Kii.AxpyIntoThis(NtN, scale);
-            //    }
-            //}
+                    //MODIFICATION NEEDED: rotate this tensor so that it is parallel to x,y (or xi, eta?)
+                    IMatrix localT = materials[i].ConstitutiveMatrix;
+                    double[] normalVector = normalVectorsAtGPs[i];
+                    Matrix T = RotateInterfaceCohesiveTensor(localT, normalVector);
+                    Matrix N = CalculateEnrichedShapeFunctionMatrix(gaussPoint.Coordinates, boundary);
+                    Matrix partialKii = N.ThisTransposeTimesOtherTimesThis(T);
+                    Kii.AxpyIntoThis(partialKii, scale);
+                }
+            }
             return Kii;
         }
 
@@ -447,10 +469,15 @@ namespace MGroup.XFEM.Elements
 
         /// <summary>
         /// The contour integral along a phase boundary is calculated for the enriched dofs that were applied due to that 
-        /// boundary. For example, if there are 2 boundaries and all 3 nodes of the element are enriched due to them, then the 6
-        /// enriched dofs are [node1Boundary1, node1Boundary2, node2Boundary1, node2Boundary2, node3Boundary1, node3Boundary2].
-        /// When integrating along boundary 1 we will compute N^T*N, where N(6x1) = [N1 0 N2 0 N3 0]. If we integrate along
-        /// boundary 2, then N(6x1) = [0 N1 0 N2 0 N3]. 
+        /// boundary. For example, if there are 2 boundaries and all 3 nodes of the element are enriched due to them, then the 12
+        /// enriched dofs are 
+        /// [ node1Boundary1x, node1Boundary1y, node1Boundary2x, node1Boundary2y, node2Boundary1x, node2Boundary1y, ...
+        /// ... node2Boundary2x, node2Boundary2y, node3Boundary1x, node3Boundary1y, node3Boundary2x, node3Boundary2y ].
+        /// 
+        /// When integrating along boundary 1 we will compute N^T*T*N, where 
+        /// N(12x2) = [ N1 0 0 0  N2 0 0 0  N3 0 0 0; 0 N1 0 0  0 N2 0 0  0 N3 0 0 ]. 
+        /// If we integrate along boundary 2, then 
+        /// N(12x2) = [ 0 0 N1 0  0 0 N2 0  0 0 N3 0; 0 0 0 N1  0 0 0 N2  0 0 0 N3 ]. 
         /// 
         /// Therefore when integrating along a specific boundary, then for every enriched dof of each node i, we need to find 
         /// if the enrichment was applied due to that boundary. If yes, the corresponding index of the total shape function 
@@ -460,19 +487,16 @@ namespace MGroup.XFEM.Elements
         /// b) rare cases where one or more nodes were not enriched like the rest, because their nodal support was almost 
         /// entirely in one of the two regions.
         /// </summary>
-        private Vector CalculateEnrichedShapeFunctionMatrix(double[] gaussPoint, IPhaseBoundary boundary)
+        private Matrix CalculateEnrichedShapeFunctionMatrix(double[] gaussPoint, IPhaseBoundary boundary)
         {
-            //TODO: Optimize this: The mapping should be done once per enrichment and reused for all Gauss points of this 
-            //      boundary. That would only work if the jump is independent of the gauss point though, which is not always true.
-            //      See an attempt at MapEnrichedDofIndicesToNodeIndices().
-
             double[] N = Interpolation.EvaluateFunctionsAt(gaussPoint);
             var point = new XPoint(2);
+            point.Element = this;
             point.Coordinates[CoordinateSystem.ElementNatural] = gaussPoint;
             point.ShapeFunctions = N;
 
-            Vector totalShapeFunctions = Vector.CreateZero(numEnrichedDofs);
-            int idx = 0;
+            var result = Matrix.CreateZero(2, numEnrichedDofs);
+            int col = 0;
             for (int n = 0; n < Nodes.Count; ++n)
             {
                 XNode node = Nodes[n];
@@ -481,12 +505,14 @@ namespace MGroup.XFEM.Elements
                 //      DofTable.
                 foreach (IEnrichmentFunction enrichment in node.EnrichmentFuncs.Keys)
                 {
-                    double phaseJump = enrichment.EvaluateJumpAcross(boundary, point);
-                    totalShapeFunctions[idx] = phaseJump * N[n];
-                    ++idx; // always move to the next index in the total shape function array
+                    // For enrichments that are not affected by this boundary, the next will be 0
+                    double phaseJump = enrichment.EvaluateJumpAcross(boundary, point); 
+                    result[0, col] = phaseJump * N[n]; // x dof
+                    result[1, col + 1] = phaseJump * N[n]; // y dof
+                    col += 2; // always move to the column corresponding to the next enrichment
                 }
             }
-            return totalShapeFunctions;
+            return result;
         }
 
         //TODO: This can be used in all XFEM elements
@@ -571,6 +597,32 @@ namespace MGroup.XFEM.Elements
                 }
             }
             return (stdDofIndices, enrDofIndices);
+        }
+
+        private Matrix RotateInterfaceCohesiveTensor(IMatrix localTensor, double[] normalVector)
+        {
+            //MODIFICATION NEEDED: Take into account the isoparametric system as well. 
+            //  If the normals correspond to the global coordinate system, I think that nothing else is needed.
+            //TODO: Instead of doing in code the derivation of the rotation matrix, write the equations (in comments and in a 
+            //      reference guide) and just implement their final versions in code. Also decide what the local system is (n, s)
+            //      or (s, n)
+
+            // Let theta be the angle from global to local system. Then a = -theta is the angle from local to global system.
+
+            //TODO: debug that the vector has length = 1
+            double cosTheta = normalVector[0];
+            double sinTheta = normalVector[1];
+
+            double cosa = cosTheta;
+            double sina = -sinTheta;
+            var rotation = Matrix.CreateZero(2, 2);
+            rotation[0, 0] = cosa;
+            rotation[0, 1] = -sina;
+            rotation[1, 0] = sina;
+            rotation[1, 1] = cosa;
+
+            Matrix globalTensor = rotation.ThisTransposeTimesOtherTimesThis(localTensor);
+            return globalTensor;
         }
     }
 }

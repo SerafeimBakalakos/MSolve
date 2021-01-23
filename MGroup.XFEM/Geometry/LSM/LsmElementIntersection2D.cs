@@ -7,6 +7,7 @@ using MGroup.XFEM.Elements;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
+using System.Data.SqlTypes;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
@@ -74,6 +75,32 @@ namespace MGroup.XFEM.Geometry.LSM
             }
 
             return integrationPoints;
+        }
+
+        public IReadOnlyList<double[]> GetNormalsAtBoundaryIntegrationPoints(int order)
+        {
+            // Cartesian coordinates of vertices
+            double[] startCartesian = Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, startNatural);
+            double[] endCartesian = Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, endNatural);
+
+            // Orientation of segment and its normal vector
+            double dx = endCartesian[0] - startCartesian[0];
+            double dy = endCartesian[1] - startCartesian[1];
+            double length = Math.Sqrt(dx * dx + dy * dy);
+            double cosa = dx / length;
+            double sina = dy / length;
+            double[] normalVector = { -sina, cosa };
+
+            // Prepare as many normal vectors as there are Gauss points
+            var quadrature1D = GaussLegendre1D.GetQuadratureWithOrder(order);
+            int numGaussPoints = quadrature1D.IntegrationPoints.Count;
+            var normalVectors = new double[numGaussPoints][];
+            for (int i = 0; i < numGaussPoints; ++i)
+            {
+                normalVectors[i] = normalVector;
+            }
+
+            return normalVectors;
         }
 
         public IList<double[]> GetVerticesForTriangulation()

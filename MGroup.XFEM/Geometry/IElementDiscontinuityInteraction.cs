@@ -23,6 +23,13 @@ namespace MGroup.XFEM.Geometry
         /// <param name="order"></param>
         IReadOnlyList<GaussPoint> GetBoundaryIntegrationPoints(int order);
 
+        /// <summary>
+        /// Normal vectors of the discontinuity at each integration point. These vectors refer to the global coordinate system.
+        /// They are in the same order as the <see cref="GaussPoint"/> objects in <see cref="GetBoundaryIntegrationPoints(int)"/>.
+        /// </summary>
+        /// <param name="order"></param>
+        IReadOnlyList<double[]> GetNormalsAtBoundaryIntegrationPoints(int order);
+
         IList<double[]> GetVerticesForTriangulation();
     }
 }

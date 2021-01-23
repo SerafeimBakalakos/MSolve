@@ -90,6 +90,11 @@ namespace MGroup.XFEM.Geometry.Primitives
             throw new NotImplementedException();
         }
 
+        public IReadOnlyList<double[]> GetNormalsAtBoundaryIntegrationPoints(int order)
+        {
+            throw new NotImplementedException();
+        }
+
         public IList<double[]> GetVerticesForTriangulation()
         {
             throw new NotImplementedException();

@@ -10,19 +10,22 @@ namespace MGroup.XFEM.Materials
     public class StructuralBiMaterialField2D : IStructuralMaterialField
     {
         private readonly ElasticMaterial2D material0, material1;
+        private readonly CohesiveInterfaceMaterial2D interfaceMaterial;
 
-        public StructuralBiMaterialField2D(ElasticMaterial2D material0, ElasticMaterial2D material1)
+        public StructuralBiMaterialField2D(ElasticMaterial2D material0, ElasticMaterial2D material1, 
+            CohesiveInterfaceMaterial2D interfaceMaterial)
         {
             this.material0 = material0;
             this.material1 = material1;
+            this.interfaceMaterial = interfaceMaterial;
         }
 
         public HashSet<int> PhasesWithMaterial0 { get; } = new HashSet<int>();
         public HashSet<int> PhasesWithMaterial1 { get; } = new HashSet<int>();
 
-        public StructuralInterfaceMaterial FindInterfaceMaterialAt(IPhaseBoundary phaseBoundary)
+        public CohesiveInterfaceMaterial2D FindInterfaceMaterialAt(IPhaseBoundary phaseBoundary)
         {
-            return new StructuralInterfaceMaterial(double.NaN);
+            return interfaceMaterial;
         }
 
         public ElasticMaterial2D FindMaterialAt(IPhase phase)

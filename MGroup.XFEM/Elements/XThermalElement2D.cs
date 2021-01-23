@@ -80,9 +80,9 @@ namespace MGroup.XFEM.Elements
             (this.Edges, this.Faces) = elementGeometry.FindEdgesFaces(nodes);
         }
 
-        public IEnumerable<GaussPoint> BulkIntegrationPoints => gaussPointsBulk;
+        public IReadOnlyList<GaussPoint> BulkIntegrationPoints => gaussPointsBulk;
 
-        public IEnumerable<GaussPoint> BoundaryIntegrationPoints
+        public IReadOnlyList<GaussPoint> BoundaryIntegrationPoints
         {
             get
             {
@@ -94,6 +94,8 @@ namespace MGroup.XFEM.Elements
                 return allBoundaryPoints;
             }
         }
+
+        public IReadOnlyList<double[]> BoundaryIntegrationPointNormals => new double[0][];
 
         public CellType CellType => Interpolation.CellType;
 
