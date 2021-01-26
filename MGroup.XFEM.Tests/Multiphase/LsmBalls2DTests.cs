@@ -179,7 +179,7 @@ namespace MGroup.XFEM.Tests.Multiphase
             // Materials
             var matrixMaterial = new ThermalMaterial(conductMatrix, specialHeatCoeff);
             var inclusionMaterial = new ThermalMaterial(conductInclusion, specialHeatCoeff);
-            var materialField = new MatrixInclusionsMaterialField(matrixMaterial, inclusionMaterial,
+            var materialField = new MatrixInclusionsThermalMaterialField(matrixMaterial, inclusionMaterial,
                 conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
 
             return Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,

@@ -281,7 +281,7 @@ namespace MGroup.XFEM.Tests.Multiphase
 
             var matrixMaterial = new ThermalMaterial(1, 1);
             var inclusionMaterial = new ThermalMaterial(1, 1);
-            var materialField = new MatrixInclusionsMaterialField(matrixMaterial, inclusionMaterial,
+            var materialField = new MatrixInclusionsThermalMaterialField(matrixMaterial, inclusionMaterial,
                 1, 1, defaultPhaseID);
 
             var subcellQuadrature = TetrahedronQuadrature.Order2Points4;

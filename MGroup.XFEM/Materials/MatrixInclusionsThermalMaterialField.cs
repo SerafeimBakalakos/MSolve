@@ -10,13 +10,13 @@ using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Materials
 {
-    public class MatrixInclusionsMaterialField : IThermalMaterialField
+    public class MatrixInclusionsThermalMaterialField : IThermalMaterialField
     {
         private readonly ThermalMaterial matrixMaterial, inclusionMaterial;
         private readonly double matrixInclusionInterfaceConductivity, inclusionInclusionInterfaceConductivity;
         private readonly int matrixPhaseID;
 
-        public MatrixInclusionsMaterialField(ThermalMaterial matrixMaterial, ThermalMaterial inclusionMaterial, 
+        public MatrixInclusionsThermalMaterialField(ThermalMaterial matrixMaterial, ThermalMaterial inclusionMaterial, 
             double matrixInclusionInterfaceConductivity, double inclusionInclusionInterfaceConductivity, int matrixPhaseID)
         {
             this.matrixMaterial = matrixMaterial;

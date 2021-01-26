@@ -23,23 +23,25 @@ using Xunit;
 
 namespace MGroup.XFEM.Tests.Multiphase.Structural
 {
-    public static class Plate2PhasesCohesive2DTests
+    public static class CohesiveInclusions2DTests
     {
         private static readonly string outputDirectory = Path.Combine(
-            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "plate_2phases_cohesive_2D_temp");
+            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "cohesive_inclusions_2D_temp");
         private static readonly string expectedDirectory = Path.Combine(
-            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "plate_2phases_cohesive_2D");
+            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "cohesive_inclusions_2D");
 
         private static readonly double[] minCoords = { -1.0, -1.0 };
         private static readonly double[] maxCoords = { +1.0, +1.0 };
         private const double thickness = 1.0;
-        private static readonly int[] numElements = { 15, 15 };
+        private static readonly int[] numElements = { 31, 31 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 
-        private const double E0 = 1, E1 = 2, v = 0.3;
+        private const double matrixE = 1, inclusionE = 2, v = 0.3;
         //private const double cohesivenessNormal = 0, cohesivenessTangent = 0;
         private const double cohesivenessNormal = 1000, cohesivenessTangent = 1000;
 
+        private static readonly int[] numBalls = { 2, 1 };
+        private const double ballRadius = 0.25;
         private const int defaultPhaseID = 0;
 
 
@@ -183,16 +185,15 @@ namespace MGroup.XFEM.Tests.Multiphase.Structural
         private static XModel<IXMultiphaseElement> CreateModel()
         {
             // Materials
-            var material0 = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = E0, PoissonRatio = v };
-            var material1 = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = E1, PoissonRatio = v };
+            var materialMatrix = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = matrixE, PoissonRatio = v };
+            var materialInclusion = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = inclusionE, PoissonRatio = v };
             var interfaceMaterial = new CohesiveInterfaceMaterial2D(Matrix.CreateFromArray(new double[,]
             {
                 { cohesivenessNormal, 0 },
                 { 0, cohesivenessTangent }
             }));
-            var materialField = new StructuralBiMaterialField2D(material0, material1, interfaceMaterial);
-            materialField.PhasesWithMaterial0.Add(0);
-            materialField.PhasesWithMaterial1.Add(1);
+            var materialField = new MatrixInclusionsStructuralMaterialField(
+                materialMatrix, materialInclusion, interfaceMaterial, 0);
 
             // Setup model
             XModel<IXMultiphaseElement> model = Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
@@ -202,36 +203,50 @@ namespace MGroup.XFEM.Tests.Multiphase.Structural
             return model;
         }
 
-        /// <summary>
-        /// Bottom phase is the more rigid material
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
         private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model)
         {
             var geometricModel = new PhaseGeometryModel(model);
             model.GeometryModel = geometricModel;
             geometricModel.Enricher = new NodeEnricherMultiphaseStructural(2, geometricModel, new NullSingularityResolver());
-
+            List<SimpleLsm2D> lsmCurves = InitializeLSM(model);
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;
-            var phase1 = new LsmPhase(1, geometricModel, -1);
-            geometricModel.Phases[phase1.ID] = phase1;
+            for (int p = 0; p < lsmCurves.Count; ++p)
+            {
+                SimpleLsm2D curve = lsmCurves[p];
+                var phase = new LsmPhase(p + 1, geometricModel, -1);
+                geometricModel.Phases[phase.ID] = phase;
 
-            double[] start = { minCoords[0] , 0.5 * (minCoords[1] + maxCoords[1]) };
-            double[] end = { maxCoords[0], 0.5 * (minCoords[1] + maxCoords[1]) };
-            var line = new Line2D(start, end);
-            var lsmCurve = new SimpleLsm2D(1, model.XNodes, line);
-            var boundary = new ClosedPhaseBoundary(1, lsmCurve, defaultPhase, phase1);
-            geometricModel.PhaseBoundaries[boundary.ID] = boundary;
-
-            defaultPhase.ExternalBoundaries.Add(boundary);
-            defaultPhase.Neighbors.Add(phase1);
-
-            phase1.ExternalBoundaries.Add(boundary);
-            phase1.Neighbors.Add(defaultPhase);
-
+                var boundary = new ClosedPhaseBoundary(phase.ID, curve, defaultPhase, phase);
+                defaultPhase.ExternalBoundaries.Add(boundary);
+                defaultPhase.Neighbors.Add(phase);
+                phase.ExternalBoundaries.Add(boundary);
+                phase.Neighbors.Add(defaultPhase);
+                geometricModel.PhaseBoundaries[boundary.ID] = boundary;
+            }
             return geometricModel;
+        }
+
+        private static List<SimpleLsm2D> InitializeLSM(XModel<IXMultiphaseElement> model)
+        {
+            double xMin = minCoords[0], xMax = maxCoords[0], yMin = minCoords[1], yMax = maxCoords[1];
+            var curves = new List<SimpleLsm2D>(numBalls[0] * numBalls[1]);
+            double dx = (xMax - xMin) / (numBalls[0] + 1);
+            double dy = (yMax - yMin) / (numBalls[1] + 1);
+            int id = 1;
+            for (int i = 0; i < numBalls[0]; ++i)
+            {
+                double centerX = xMin + (i + 1) * dx;
+                for (int j = 0; j < numBalls[1]; ++j)
+                {
+                    double centerY = yMin + (j + 1) * dy;
+                    var circle = new Circle2D(centerX, centerY, ballRadius);
+                    var lsm = new SimpleLsm2D(id++, model.XNodes, circle);
+                    curves.Add(lsm);
+                }
+            }
+
+            return curves;
         }
     }
 }
