@@ -133,12 +133,55 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IReadOnlyList<double[]> GetNormalsAtBoundaryIntegrationPoints(int order)
         {
-            throw new NotImplementedException();
+            // Cartesian coordinates of vertices
+            var verticesCartesian = new List<double[]>(intersectionMeshNatural.Vertices.Count);
+            foreach (double[] vertexNatural in intersectionMeshNatural.Vertices)
+            {
+                verticesCartesian.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, vertexNatural));
+            }
+
+            // Num points per triangle
+            IQuadrature quadrature2D = ChooseQuadrature(order);
+            int numGaussPointsPerCell = quadrature2D.IntegrationPoints.Count;
+
+            // Find normal vectors of each triangle
+            var allNormals = new List<double[]>();
+            foreach ((CellType cellType, int[] verticesOfCell) in intersectionMeshNatural.Cells)
+            {
+                Debug.Assert(cellType == CellType.Tri3);
+
+                double[] vertex0 = verticesCartesian[verticesOfCell[0]];
+                double[] vertex1 = verticesCartesian[verticesOfCell[1]];
+                double[] vertex2 = verticesCartesian[verticesOfCell[2]];
+                double[] normalVector = CalcNormalOfPlaneThrough(vertex0, vertex1, vertex2);
+
+                for (int i = 0; i < numGaussPointsPerCell; ++i)
+                {
+                    allNormals.Add(normalVector);
+                }
+            }
+
+            return allNormals;
         }
 
         public IList<double[]> GetVerticesForTriangulation()
         {
             return intersectionMeshNatural.Vertices;
+        }
+
+        private double[] CalcNormalOfPlaneThrough(double[] point0, double[] point1, double[] point2)
+        {
+            // Find 2 vectors parallel to plane
+            var parallelVector0 = new double[3];
+            var parallelVector1 = new double[3];
+            for (int d = 0; d < 3; ++d)
+            {
+                parallelVector0[d] = point1[d] - point0[d];
+                parallelVector0[d] = point2[d] - point0[d];
+            }
+
+            // The normal vector is their cross-product
+            return parallelVector0.CrossProduct(parallelVector1);
         }
 
         private TriangleQuadratureSymmetricGaussian ChooseQuadrature(int order)

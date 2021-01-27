@@ -5,6 +5,7 @@ using System.Text;
 using MGroup.XFEM.Integration;
 using ISAAR.MSolve.Discretization.Mesh;
 using MGroup.XFEM.Elements;
+using ISAAR.MSolve.Discretization.Integration.Quadratures;
 
 //TODO: remove duplication between this and Line2D & LineSegment2D. Why can't this inherit from LineSegment2D? 
 //      Or just use LineSegment2D wrapped in a class about Intersection
@@ -92,7 +93,24 @@ namespace MGroup.XFEM.Geometry.Primitives
 
         public IReadOnlyList<double[]> GetNormalsAtBoundaryIntegrationPoints(int order)
         {
-            throw new NotImplementedException();
+            // Orientation of segment and its normal vector
+            double dx = EndGlobalCartesian[0] - StartGlobalCartesian[0];
+            double dy = EndGlobalCartesian[1] - StartGlobalCartesian[1];
+            double length = Math.Sqrt(dx * dx + dy * dy);
+            double cosa = dx / length;
+            double sina = dy / length;
+            double[] normalVector = { -sina, cosa };
+
+            // Prepare as many normal vectors as there are Gauss points
+            var quadrature1D = GaussLegendre1D.GetQuadratureWithOrder(order);
+            int numGaussPoints = quadrature1D.IntegrationPoints.Count;
+            var normalVectors = new double[numGaussPoints][];
+            for (int i = 0; i < numGaussPoints; ++i)
+            {
+                normalVectors[i] = normalVector;
+            }
+
+            return normalVectors;
         }
 
         public IList<double[]> GetVerticesForTriangulation()
