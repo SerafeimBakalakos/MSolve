@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Geometry.Coordinates;
-using MGroup.XFEM.Entities;
 
-namespace MGroup.XFEM.Elements
+namespace MGroup.XFEM.ElementGeometry
 {
     public class ElementFace
     {
@@ -16,7 +15,7 @@ namespace MGroup.XFEM.Elements
         /// <summary>
         /// Their order is the same as defined in <see cref="CellType"/>.
         /// </summary>
-        public XNode[] Nodes { get; set; }
+        public int[] NodeIDs { get; set; }
 
         /// <summary>
         /// Their order is the same as defined in <see cref="CellType"/>.
@@ -24,5 +23,15 @@ namespace MGroup.XFEM.Elements
         public IReadOnlyList<double[]> NodesNatural { get; set; }
 
         public ElementEdge[] Edges { get; set; }
+
+        public static HashSet<ElementFace> FindFacesOfNode(int nodeID, IEnumerable<ElementFace> faces)
+        {
+            var facesOfNode = new HashSet<ElementFace>();
+            foreach (ElementFace face in faces)
+            {
+                if (face.NodeIDs.Contains(nodeID)) facesOfNode.Add(face);
+            }
+            return facesOfNode;
+        }
     }
 }

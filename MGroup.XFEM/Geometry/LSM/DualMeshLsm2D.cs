@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Commons;
+using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Mesh;
@@ -59,8 +60,8 @@ namespace MGroup.XFEM.Geometry.LSM
             {
                 return new NullElementDiscontinuityInteraction(this.ID, element);
             }
-            var mesh = IntersectionMesh2D_NEW.CreateMesh(intersectionsOfElements);
-            return new LsmElementIntersection2D_NEW(this.ID, RelativePositionCurveElement.Intersecting, element, mesh);
+            var mesh = IntersectionMesh2D.CreateMesh(intersectionsOfElements);
+            return new LsmElementIntersection2D(this.ID, RelativePositionCurveElement.Intersecting, element, mesh);
         }
 
         public double SignedDistanceOf(XNode node)
@@ -111,8 +112,8 @@ namespace MGroup.XFEM.Geometry.LSM
                 return intersections;
             }
 
-            var elementGeometry = new ElementQuad4Geometry_NEW();
-            (ElementEdge_NEW[] edges, _)  = elementGeometry.FindEdgesFaces(lsmNodes);
+            var elementGeometry = new ElementQuad4Geometry();
+            (ElementEdge[] edges, _)  = elementGeometry.FindEdgesFaces(lsmNodes);
             for (int i = 0; i < edges.Length; ++i)
             {
                 int node0ID = edges[i].NodeIDs[0];

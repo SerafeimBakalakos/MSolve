@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Commons;
+using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Mesh;
@@ -45,15 +46,9 @@ namespace MGroup.XFEM.Geometry.LSM
             }
 
             int[] lsmElementIDs = dualMesh.MapElementFemToLsm(element.ID);
-            var intersectionsOfElements = new Dictionary<int, IntersectionMesh3D_NEW>();
+            var intersectionsOfElements = new Dictionary<int, IntersectionMesh3D>();
             foreach (int lsmElementID in lsmElementIDs)
             {
-                #region debug
-                if (lsmElementID == 1789)
-                {
-                    Console.WriteLine();
-                }
-                #endregion
                 int[] lsmElementIdx = dualMesh.LsmMesh.GetElementIdx(lsmElementID);
                 int[] lsmElementNodes = dualMesh.LsmMesh.GetElementConnectivity(lsmElementIdx);
                 RelativePositionCurveElement position = FindRelativePosition(lsmElementNodes);
@@ -63,7 +58,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 }
                 else if (position == RelativePositionCurveElement.Intersecting)
                 {
-                    IntersectionMesh3D_NEW intersectionMesh = FindInteractionIntersecting(lsmElementIdx, lsmElementNodes);
+                    IntersectionMesh3D intersectionMesh = FindInteractionIntersecting(lsmElementIdx, lsmElementNodes);
                     intersectionsOfElements[lsmElementID] = intersectionMesh;
                 }
                 else if (position == RelativePositionCurveElement.Conforming)
@@ -78,8 +73,8 @@ namespace MGroup.XFEM.Geometry.LSM
             {
                 return new NullElementDiscontinuityInteraction(this.ID, element);
             }
-            var jointIntersectionMesh = IntersectionMesh3D_NEW.JoinMeshes(intersectionsOfElements);
-            return new LsmElementIntersection3D_NEW(ID, RelativePositionCurveElement.Intersecting, element, jointIntersectionMesh);
+            var jointIntersectionMesh = IntersectionMesh3D.JoinMeshes(intersectionsOfElements);
+            return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Intersecting, element, jointIntersectionMesh);
         }
 
         public double SignedDistanceOf(XNode node)
@@ -119,20 +114,13 @@ namespace MGroup.XFEM.Geometry.LSM
             else throw new ArgumentException("Incompatible Level Set geometry");
         }
 
-        private IntersectionMesh3D_NEW FindInteractionIntersecting(int[] lsmElementIdx, int[] lsmNodeIDs)
+        private IntersectionMesh3D FindInteractionIntersecting(int[] lsmElementIdx, int[] lsmNodeIDs)
         {
-            #region debug
-            if (lsmElementIdx[0] == 9 && lsmElementIdx[1] == 7 && lsmElementIdx[2] == 5)
-            {
-                Console.WriteLine();
-            }
-            #endregion
-
-            var elementGeometry = new ElementHexa8Geometry_NEW();
-            (ElementEdge_NEW[] edges, ElementFace_NEW[] allFaces) = elementGeometry.FindEdgesFaces(lsmNodeIDs);
+            var elementGeometry = new ElementHexa8Geometry();
+            (ElementEdge[] edges, ElementFace[] allFaces) = elementGeometry.FindEdgesFaces(lsmNodeIDs);
             IReadOnlyList<double[]> nodesNatural = InterpolationHexa8.UniqueInstance.NodalNaturalCoordinates;
 
-            var intersectionPoints = new Dictionary<double[], HashSet<ElementFace_NEW>>();
+            var intersectionPoints = new Dictionary<double[], HashSet<ElementFace>>();
 
             // Find any nodes that may lie on the LSM geometry
             var comparer = new ValueComparer(1E-7);
@@ -141,7 +129,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 int nodeID = lsmNodeIDs[n];
                 if (comparer.AreEqual(0, NodalLevelSets[nodeID]))
                 {
-                    HashSet<ElementFace_NEW> facesOfNode = Extensions.FindFacesOfNode(nodeID, allFaces);
+                    HashSet<ElementFace> facesOfNode = ElementFace.FindFacesOfNode(nodeID, allFaces);
                     double[] intersection = nodesNatural[n];
                     if (!PointExistsAlready(intersection, intersectionPoints.Keys))
                     {
@@ -151,14 +139,14 @@ namespace MGroup.XFEM.Geometry.LSM
             }
 
             // Find intersection points that lie on element edges, excluding nodes
-            foreach (ElementEdge_NEW edge in edges)
+            foreach (ElementEdge edge in edges)
             {
                 double[] intersection = IntersectEdgeExcludingNodes(edge);
                 if (intersection != null)
                 {
                     if (!PointExistsAlready(intersection, intersectionPoints.Keys))
                     {
-                        HashSet<ElementFace_NEW> facesOfEdge = edge.FindFacesOfEdge(allFaces);
+                        HashSet<ElementFace> facesOfEdge = edge.FindFacesOfEdge(allFaces);
                         intersectionPoints.Add(intersection, facesOfEdge);
                     }
                 }
@@ -166,7 +154,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
             // Convert the coordinates of the intersection points from the natural system of the LSM element to the natural
             // system of the FEM element.
-            var intersectionPointsFem = new Dictionary<double[], HashSet<ElementFace_NEW>>();
+            var intersectionPointsFem = new Dictionary<double[], HashSet<ElementFace>>();
             foreach (var pair in intersectionPoints)
             {
                 double[] pointLsm = pair.Key;
@@ -175,7 +163,7 @@ namespace MGroup.XFEM.Geometry.LSM
             }
 
             // Create mesh
-            return IntersectionMesh3D_NEW.CreateMultiCellMesh3D(intersectionPointsFem);
+            return IntersectionMesh3D.CreateMultiCellMesh3D(intersectionPointsFem);
         }
 
         private RelativePositionCurveElement FindRelativePosition(int[] lsmElementNodes)
@@ -214,7 +202,7 @@ namespace MGroup.XFEM.Geometry.LSM
             }
         }
 
-        private double[] IntersectEdgeExcludingNodes(ElementEdge_NEW edge)
+        private double[] IntersectEdgeExcludingNodes(ElementEdge edge)
         {
             double levelSet0 = NodalLevelSets[edge.NodeIDs[0]];
             double levelSet1 = NodalLevelSets[edge.NodeIDs[1]];

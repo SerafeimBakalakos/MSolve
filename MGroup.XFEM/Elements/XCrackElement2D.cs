@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
@@ -9,6 +10,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
 using MGroup.XFEM.Cracks.Geometry;
+using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
@@ -68,7 +70,8 @@ namespace MGroup.XFEM.Elements
                 standardDofTypes[i] = new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY };
             }
 
-            (this.Edges, this.Faces) = elementGeometry.FindEdgesFaces(nodes);
+            int[] nodeIDs = nodes.Select(n => n.ID).ToArray();
+            (this.Edges, this.Faces) = elementGeometry.FindEdgesFaces(nodeIDs);
         }
 
         public CellType CellType => Interpolation.CellType;

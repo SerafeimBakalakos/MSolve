@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ISAAR.MSolve.Geometry.Coordinates;
+using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
@@ -47,12 +47,12 @@ namespace MGroup.XFEM.Geometry.LSM
             IReadOnlyList<ElementEdge> edges = element.Edges;
             for (int i = 0; i < edges.Count; ++i)
             {
-                XNode node0Cartesian = edges[i].Nodes[0];
-                XNode node1Cartesian = edges[i].Nodes[1];
+                int node0ID = edges[i].NodeIDs[0];
+                int node1ID = edges[i].NodeIDs[1];
                 double[] node0Natural = edges[i].NodesNatural[0];
                 double[] node1Natural = edges[i].NodesNatural[1];
-                double levelSet0 = CalcLevelSetNearZero(node0Cartesian, tol);
-                double levelSet1 = CalcLevelSetNearZero(node1Cartesian, tol);
+                double levelSet0 = CalcLevelSetNearZero(node0ID, tol);
+                double levelSet1 = CalcLevelSetNearZero(node1ID, tol);
 
                 if (levelSet0 * levelSet1 > 0.0) continue; // Edge is not intersected
                 else if (levelSet0 * levelSet1 < 0.0) // Edge is intersected but not at its nodes
@@ -146,9 +146,9 @@ namespace MGroup.XFEM.Geometry.LSM
             else return false;
         }
 
-        private double CalcLevelSetNearZero(XNode node, double zeroTolerance)
+        private double CalcLevelSetNearZero(int nodeID, double zeroTolerance)
         {
-            double levelSet = NodalLevelSets[node.ID];
+            double levelSet = NodalLevelSets[nodeID];
             if (Math.Abs(levelSet) <= zeroTolerance) return 0.0;
             else return levelSet;
         }

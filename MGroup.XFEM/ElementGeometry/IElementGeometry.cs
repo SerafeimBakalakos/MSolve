@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ISAAR.MSolve.Discretization.Interfaces;
 using MGroup.XFEM.Entities;
 
-namespace MGroup.XFEM.Elements
+namespace MGroup.XFEM.ElementGeometry
 {
     public interface IElementGeometry
     {
@@ -20,6 +19,6 @@ namespace MGroup.XFEM.Elements
         /// <param name="nodes"></param>
         double CalcBulkSizeNatural();
 
-        (ElementEdge[], ElementFace[]) FindEdgesFaces(IReadOnlyList<XNode> nodes);
+        (ElementEdge[], ElementFace[]) FindEdgesFaces(IReadOnlyList<int> nodeIDs);
     }
 }

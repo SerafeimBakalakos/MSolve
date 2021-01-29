@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using MGroup.XFEM.Cracks.Geometry;
+using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
@@ -219,18 +220,18 @@ namespace MGroup.XFEM.Geometry.LSM
             IReadOnlyList<ElementEdge> edges = element.Edges;
             for (int i = 0; i < edges.Count; ++i)
             {
-                XNode node0Cartesian = edges[i].Nodes[0];
-                XNode node1Cartesian = edges[i].Nodes[1];
+                int node0ID = edges[i].NodeIDs[0];
+                int node1ID = edges[i].NodeIDs[1];
                 double[] node0Natural = edges[i].NodesNatural[0];
                 double[] node1Natural = edges[i].NodesNatural[1];
-                double phi0 = bodyLevelSets[node0Cartesian.ID];
-                double phi1 = bodyLevelSets[node1Cartesian.ID];
+                double phi0 = bodyLevelSets[node0ID];
+                double phi1 = bodyLevelSets[node1ID];
 
                 if (phi0 * phi1 > 0.0) continue; // Edge is not intersected
                 else if (phi0 * phi1 < 0.0) // Edge is intersected but not at its nodes
                 {
-                    double psi0 = tipLevelSets[node0Cartesian.ID];
-                    double psi1 = tipLevelSets[node1Cartesian.ID];
+                    double psi0 = tipLevelSets[node0ID];
+                    double psi1 = tipLevelSets[node1ID];
 
                     // The intersection point between these nodes can be found using the linear interpolation, see 
                     // Sukumar 2001

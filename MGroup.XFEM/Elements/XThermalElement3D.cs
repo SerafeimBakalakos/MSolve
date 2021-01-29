@@ -6,10 +6,10 @@ using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
+using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
@@ -78,7 +78,8 @@ namespace MGroup.XFEM.Elements
             this.standardDofTypes = new IDofType[nodes.Count][];
             for (int i = 0; i < nodes.Count; ++i) this.standardDofTypes[i] = new IDofType[] { ThermalDof.Temperature };
 
-            (this.Edges, this.Faces) = elementGeometry.FindEdgesFaces(nodes);
+            int[] nodeIDs = nodes.Select(n => n.ID).ToArray();
+            (this.Edges, this.Faces) = elementGeometry.FindEdgesFaces(nodeIDs);
         }
 
         public IReadOnlyList<GaussPoint> BulkIntegrationPoints => gaussPointsBulk;

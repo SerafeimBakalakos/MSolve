@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Geometry.Coordinates;
-using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
@@ -11,7 +9,6 @@ using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
 using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Interpolation;
-using MGroup.XFEM.Materials;
 
 //TODO: LSM/element interactions should probably be stored in a GeometricModel class
 namespace MGroup.XFEM.Elements

@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Geometry.Coordinates;
-using MGroup.XFEM.Elements;
+using ISAAR.MSolve.LinearAlgebra.Commons;
+using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Exceptions;
 
 namespace MGroup.XFEM.Geometry
 {
     public class IntersectionMesh3D : IIntersectionMesh
     {
+        private const int dim = 3;
+
         public IntersectionMesh3D()
         {
         }
@@ -48,6 +50,61 @@ namespace MGroup.XFEM.Geometry
             int[] connectivity = Enumerable.Range(0, intersectionPoints.Count).ToArray();
             mesh.Cells.Add((cellType, connectivity));
             return mesh;
+        }
+
+        public static IntersectionMesh3D JoinMeshes(Dictionary<int, IntersectionMesh3D> intersectionsOfElements)
+        {
+            var jointMesh = new IntersectionMesh3D();
+            foreach (IntersectionMesh3D mesh in intersectionsOfElements.Values)
+            {
+                int startVertices = jointMesh.Vertices.Count;
+                var vertexIndicesOldToNew = new int[mesh.Vertices.Count];
+                var vertexIsNew = new bool[mesh.Vertices.Count];
+
+                // Add vertices of this partial mesh to the joint mesh 
+                var comparer = new ValueComparer(1E-6);
+                for (int i = 0; i < mesh.Vertices.Count; ++i)
+                {
+                    // Check all existing vertices of the joint mesh, in case they coincide
+                    int newVertexPos = -1;
+                    for (int j = 0; j < startVertices; ++j) // No need to check the vertices of this partial mesh
+                    {
+                        if (PointsCoincide(jointMesh.Vertices[j], mesh.Vertices[i], comparer))
+                        {
+                            newVertexPos = j;
+                            break;
+                        }
+                    }
+
+                    // If this vertex does not exist in the joint mesh, add it
+                    if (newVertexPos == -1)
+                    {
+                        vertexIsNew[i] = true;
+                        newVertexPos = jointMesh.Vertices.Count;
+                        jointMesh.Vertices.Add(mesh.Vertices[i]);
+                    }
+
+                    // Note its new position
+                    vertexIndicesOldToNew[i] = newVertexPos;
+                }
+
+                // Add cells of this partial mesh to the joint mesh
+                foreach ((CellType cellType, int[] oldConnectivity) in mesh.Cells)
+                {
+                    //TODO: Check if there is already a cell of the same type that has the same vertices! 
+                    //      This can happen if the LSM mesh conforms to the curve. 
+
+                    // Each cell has an array containing the positions of its vertices in the list of mesh vertices. 
+                    // This array must be updated to reflect the new positions in the list of joint mesh vertices.
+                    var newConnectivity = new int[oldConnectivity.Length];
+                    for (int i = 0; i < oldConnectivity.Length; ++i)
+                    {
+                        newConnectivity[i] = vertexIndicesOldToNew[oldConnectivity[i]];
+                    }
+                    jointMesh.Cells.Add((cellType, newConnectivity));
+                }
+            }
+            return jointMesh;
         }
 
         public IList<(CellType, int[])> Cells { get; } = new List<(CellType, int[])>();
@@ -136,6 +193,19 @@ namespace MGroup.XFEM.Geometry
                 result[i] = original[i] + offset;
             }
             return result;
+        }
+
+        private static bool PointsCoincide(double[] point0, double[] point1, ValueComparer comparer)
+        {
+            //TODO: Possibly add some tolerance
+            for (int d = 0; d < dim; ++d)
+            {
+                if (!comparer.AreEqual(point0[d], point1[d]))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

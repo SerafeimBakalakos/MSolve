@@ -148,17 +148,6 @@ namespace MGroup.XFEM.Tests.Multiphase
                         point.Coordinates[CoordinateSystem.ElementNatural] = pointsNaturalCoarse[p];
                         double[] cartesianCoords =
                             element.Interpolation.TransformNaturalToCartesian(element.Nodes, pointsNaturalCoarse[p]);
-                        #region debug
-                        //double tol = 1E-4;
-                        //double targetX = -0.05;
-                        //double targetY = -0.05;
-                        //double x = cartesianCoords[0];
-                        //double y = cartesianCoords[1];
-                        //if ((Math.Abs(x - targetX) < tol) && (Math.Abs(y - targetY) < tol))
-                        //{
-                        //    Console.WriteLine();
-                        //}
-                        #endregion
                         allPoints[cartesianCoords] = dualMeshLsm.SignedDistanceOf(point);
                     }
                 }

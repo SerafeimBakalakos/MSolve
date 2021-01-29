@@ -6,6 +6,7 @@ using MGroup.XFEM.Integration;
 using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Interpolation.GaussPointExtrapolation;
 using MGroup.XFEM.Materials;
+using MGroup.XFEM.ElementGeometry;
 
 namespace MGroup.XFEM.Elements
 {

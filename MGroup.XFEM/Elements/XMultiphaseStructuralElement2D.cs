@@ -10,6 +10,7 @@ using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
+using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
@@ -84,7 +85,8 @@ namespace MGroup.XFEM.Elements
                 this.standardDofTypes[i] = new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY };
             }
 
-            (this.Edges, this.Faces) = elementGeometry.FindEdgesFaces(nodes);
+            int[] nodeIDs = nodes.Select(n => n.ID).ToArray();
+            (this.Edges, this.Faces) = elementGeometry.FindEdgesFaces(nodeIDs);
         }
 
         public IReadOnlyList<GaussPoint> BulkIntegrationPoints => gaussPointsBulk;

@@ -6,6 +6,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
+using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
@@ -93,21 +94,20 @@ namespace MGroup.XFEM.Geometry.LSM
         protected IntersectionMesh3D FindInteractionConforming(IXFiniteElement element)
         {
             // Find the nodes that lie on the surface
-            var zeroNodes = new HashSet<XNode>();
+            var zeroNodes = new HashSet<int>();
             foreach (XNode node in element.Nodes)
             {
                 double distance = NodalLevelSets[node.ID];
-                if (distance == 0) zeroNodes.Add(node);
+                if (distance == 0) zeroNodes.Add(node.ID);
             }
 
             // Find which face has exactly these nodes
             foreach (ElementFace face in element.Faces)
             {
-                if (zeroNodes.SetEquals(face.Nodes))
+                if (zeroNodes.SetEquals(face.NodeIDs))
                 {
                     // Intersection segment is a single cell with the same shape, nodes, etc as the face.
                     return IntersectionMesh3D.CreateSingleCellMesh(face.CellType, face.NodesNatural);
-                    
                 }
             }
 
@@ -127,7 +127,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 XNode node = element.Nodes[n];
                 if (NodalLevelSets[node.ID] == 0)
                 {
-                    HashSet<ElementFace> facesOfNode = node.FindFacesOfNode(allFaces);
+                    HashSet<ElementFace> facesOfNode = ElementFace.FindFacesOfNode(node.ID, allFaces);
                     intersectionPoints.Add(element.Interpolation.NodalNaturalCoordinates[n], facesOfNode);
                 }
             }
@@ -196,8 +196,8 @@ namespace MGroup.XFEM.Geometry.LSM
         
         private double[] IntersectEdgeExcludingNodes(ElementEdge edge, Dictionary<int, double> levelSetSubset)
         {
-            double levelSet0 = levelSetSubset[edge.Nodes[0].ID];
-            double levelSet1 = levelSetSubset[edge.Nodes[1].ID];
+            double levelSet0 = levelSetSubset[edge.NodeIDs[0]];
+            double levelSet1 = levelSetSubset[edge.NodeIDs[1]];
             double[] node0 = edge.NodesNatural[0];
             double[] node1 = edge.NodesNatural[1];
 

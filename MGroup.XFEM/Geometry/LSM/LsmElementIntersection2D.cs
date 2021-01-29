@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using MGroup.XFEM.Integration;
-using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Elements;
-using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
-using System.Data.SqlTypes;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
@@ -16,62 +13,97 @@ namespace MGroup.XFEM.Geometry.LSM
     /// </summary>
     public class LsmElementIntersection2D : IElementDiscontinuityInteraction
     {
-        private readonly double[] startNatural;
-        private readonly double[] endNatural;
+        private readonly IntersectionMesh2D intersectionMesh;
 
-        public LsmElementIntersection2D(int parentGeometryID, RelativePositionCurveElement relativePosition, 
+        public LsmElementIntersection2D(int parentGeometryID, RelativePositionCurveElement relativePosition,
             IXFiniteElement element, double[] startNatural, double[] endNatural)
         {
             this.ParentGeometryID = parentGeometryID;
-            if (relativePosition == RelativePositionCurveElement.Disjoint)
+            if ((relativePosition == RelativePositionCurveElement.Disjoint) /*|| (relativePosition == RelativePositionCurveElement.Tangent)*/)
             {
                 throw new ArgumentException("There is no intersection between the curve and element");
             }
             this.RelativePosition = relativePosition;
             this.Element = element;
-            this.startNatural = startNatural;
-            this.endNatural = endNatural;
+
+            this.intersectionMesh = new IntersectionMesh2D();
+            this.intersectionMesh.Vertices.Add(startNatural);
+            this.intersectionMesh.Vertices.Add(endNatural);
+            this.intersectionMesh.Cells.Add((CellType.Line, new int[] { 0, 1 }));
+        }
+
+        public LsmElementIntersection2D(int parentGeometryID, RelativePositionCurveElement relativePosition, 
+            IXFiniteElement element, IntersectionMesh2D intersectionMesh)
+        {
+            this.ParentGeometryID = parentGeometryID;
+            if ((relativePosition == RelativePositionCurveElement.Disjoint) /*|| (relativePosition == RelativePositionCurveElement.Tangent)*/)
+            {
+                throw new ArgumentException("There is no intersection between the curve and element");
+            }
+            this.RelativePosition = relativePosition;
+            this.Element = element;
+            this.intersectionMesh = intersectionMesh;
         }
 
         public RelativePositionCurveElement RelativePosition { get; }
 
-        public IXFiniteElement Element { get; } //TODO: Perhaps this should be defined in the interface. Isn't it the same as ParentGeometryID?
+        public IXFiniteElement Element { get; } //TODO: Perhaps this should be defined in the interface
 
         public int ParentGeometryID { get; }
 
         public IIntersectionMesh ApproximateGlobalCartesian()
         {
-            var meshCartesian = new IntersectionMesh3D();
-            meshCartesian.Vertices.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, startNatural));
-            meshCartesian.Vertices.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, endNatural));
-            meshCartesian.Cells.Add((CellType.Line, new int[] { 0, 1 }));
+            var meshCartesian = new IntersectionMesh2D();
+            foreach (double[] vertexNatural in intersectionMesh.Vertices)
+            {
+                meshCartesian.Vertices.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, vertexNatural));
+            }
+
+            foreach ((CellType, int[]) cell in intersectionMesh.Cells) // same connectivity
+            {
+                meshCartesian.Cells.Add(cell);
+            }
             return meshCartesian;
         }
 
         //TODO: Perhaps a dedicated IBoundaryIntegration component is needed
         public IReadOnlyList<GaussPoint> GetBoundaryIntegrationPoints(int order)
         {
-            // Conforming curves intersect 2 elements, thus the integral will be computed twice. Halve the weights to avoid 
-            // obtaining double the value of the integral.
-            double weightModifier = 1.0;
-            if (RelativePosition == RelativePositionCurveElement.Conforming) weightModifier = 0.5;
+            var integrationPoints = new List<GaussPoint>();
 
-            // Absolute determinant of Jacobian of mapping from auxiliary to cartesian system. Constant for all Gauss points.
-            double[] startCartesian = Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, startNatural);
-            double[] endCartesian = Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, endNatural);
-            double detJ = Math.Abs(0.5 * Utilities.Distance2D(startCartesian, endCartesian));
-
-            var quadrature1D = GaussLegendre1D.GetQuadratureWithOrder(order);
-            int numIntegrationPoints = quadrature1D.IntegrationPoints.Count;
-            var integrationPoints = new GaussPoint[numIntegrationPoints];
-            for (int i = 0; i < numIntegrationPoints; ++i)
+            // Map intersection points to cartesian system
+            var intersectionsCartesian = new List<double[]>(intersectionMesh.Vertices.Count);
+            foreach (double[] vertexNatural in intersectionMesh.Vertices)
             {
-                GaussPoint gp1D = quadrature1D.IntegrationPoints[i];
-                double N0 = 0.5 * (1.0 - gp1D.Coordinates[0]);
-                double N1 = 0.5 * (1.0 + gp1D.Coordinates[0]);
-                double xi = N0 * startNatural[0] + N1 * endNatural[0];
-                double eta = N0 * startNatural[1] + N1 * endNatural[1];
-                integrationPoints[i] = new GaussPoint(new double[] { xi, eta }, gp1D.Weight * detJ * weightModifier);
+                intersectionsCartesian.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, vertexNatural));
+            }
+
+            for (int c = 0; c < intersectionMesh.Cells.Count; ++c)
+            {
+                //TODO: It would be safer to find the vertices from the cells, instead of assuming that they are in order.
+                double[] startNatural = intersectionMesh.Vertices[c];
+                double[] endNatural = intersectionMesh.Vertices[c + 1];
+
+                // Conforming curves intersect 2 elements, thus the integral will be computed twice. Halve the weights to avoid 
+                // obtaining double the value of the integral.
+                double weightModifier = 1.0;
+                if (RelativePosition == RelativePositionCurveElement.Conforming) weightModifier = 0.5; //MODIFICATION NEEDED: This should be different for each segment
+
+                // Absolute determinant of Jacobian of mapping from auxiliary to cartesian system. Constant for all Gauss points.
+                double length = Utilities.Distance2D(intersectionsCartesian[c], intersectionsCartesian[c + 1]);
+                double detJ = Math.Abs(0.5 * length);
+
+                var quadrature1D = GaussLegendre1D.GetQuadratureWithOrder(order);
+                int numIntegrationPoints = quadrature1D.IntegrationPoints.Count;
+                for (int i = 0; i < numIntegrationPoints; ++i)
+                {
+                    GaussPoint gp1D = quadrature1D.IntegrationPoints[i];
+                    double N0 = 0.5 * (1.0 - gp1D.Coordinates[0]);
+                    double N1 = 0.5 * (1.0 + gp1D.Coordinates[0]);
+                    double xi = N0 * startNatural[0] + N1 * endNatural[0];
+                    double eta = N0 * startNatural[1] + N1 * endNatural[1];
+                    integrationPoints.Add(new GaussPoint(new double[] { xi, eta }, gp1D.Weight * detJ * weightModifier));
+                }
             }
 
             return integrationPoints;
@@ -80,10 +112,39 @@ namespace MGroup.XFEM.Geometry.LSM
         public IReadOnlyList<double[]> GetNormalsAtBoundaryIntegrationPoints(int order)
         {
             // Cartesian coordinates of vertices
-            double[] startCartesian = Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, startNatural);
-            double[] endCartesian = Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, endNatural);
+            var verticesCartesian = new List<double[]>(intersectionMesh.Vertices.Count);
+            foreach (double[] vertexNatural in intersectionMesh.Vertices)
+            {
+                verticesCartesian.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, vertexNatural));
+            }
 
-            // Orientation of segment and its normal vector
+            // Num points per segment
+            var quadrature1D = GaussLegendre1D.GetQuadratureWithOrder(order);
+            int numGaussPointsPerSegment = quadrature1D.IntegrationPoints.Count;
+
+            // Find normal vectors of each segment
+            var allNormals = new List<double[]>();
+            for (int c = 0; c < intersectionMesh.Cells.Count; ++c)
+            {
+                //TODO: It would be safer to find the vertices from the cells, instead of assuming that they are in order.
+                double[] startCartesian = verticesCartesian[c];
+                double[] endCartesian = verticesCartesian[c + 1];
+
+                IList<double[]> normalsOfSegment = 
+                    GetNormalVectorsOfSegment(numGaussPointsPerSegment, startCartesian, endCartesian);
+                allNormals.AddRange(normalsOfSegment);
+            }
+
+            return allNormals;
+        }
+
+        public IList<double[]> GetVerticesForTriangulation()
+        {
+            return intersectionMesh.Vertices;
+        }
+
+        private IList<double[]> GetNormalVectorsOfSegment(int numGaussPoints, double[] startCartesian, double[] endCartesian)
+        {
             double dx = endCartesian[0] - startCartesian[0];
             double dy = endCartesian[1] - startCartesian[1];
             double length = Math.Sqrt(dx * dx + dy * dy);
@@ -91,9 +152,6 @@ namespace MGroup.XFEM.Geometry.LSM
             double sina = dy / length;
             double[] normalVector = { -sina, cosa };
 
-            // Prepare as many normal vectors as there are Gauss points
-            var quadrature1D = GaussLegendre1D.GetQuadratureWithOrder(order);
-            int numGaussPoints = quadrature1D.IntegrationPoints.Count;
             var normalVectors = new double[numGaussPoints][];
             for (int i = 0; i < numGaussPoints; ++i)
             {
@@ -101,11 +159,6 @@ namespace MGroup.XFEM.Geometry.LSM
             }
 
             return normalVectors;
-        }
-
-        public IList<double[]> GetVerticesForTriangulation()
-        {
-            return new double[][] { startNatural, endNatural };
         }
     }
 }

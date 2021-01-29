@@ -3,24 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Commons;
-using MGroup.XFEM.Elements;
-using MGroup.XFEM.Exceptions;
 
 namespace MGroup.XFEM.Geometry
 {
-    public class IntersectionMesh2D_NEW : IIntersectionMesh
+    public class IntersectionMesh2D : IIntersectionMesh
     {
         private const int dim = 2;
 
-        public IntersectionMesh2D_NEW()
+        public IntersectionMesh2D()
         {
         }
 
-        public static IntersectionMesh2D_NEW CreateMesh(Dictionary<int, List<double[]>> intersectionsOfElements)
+        public static IntersectionMesh2D CreateMesh(Dictionary<int, List<double[]>> intersectionsOfElements)
         {
-            var mesh = new IntersectionMesh2D_NEW();
+            var mesh = new IntersectionMesh2D();
             if (intersectionsOfElements.Count == 0)
             {
                 throw new ArgumentException("There must be at least 2 intersection points of at least 1 element");
@@ -53,7 +50,7 @@ namespace MGroup.XFEM.Geometry
         /// without taking intersecting cells into account. 
         /// </summary>
         /// <param name="other"></param>
-        public void MergeWith(IntersectionMesh2D_NEW other)
+        public void MergeWith(IntersectionMesh2D other)
         {
             int offset = this.Vertices.Count;
             foreach (double[] vertex in other.Vertices) this.Vertices.Add(vertex);

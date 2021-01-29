@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
-using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Elements
+namespace MGroup.XFEM.ElementGeometry
 {
     public class ElementTet4Geometry : IElementGeometry
     {
@@ -16,7 +15,7 @@ namespace MGroup.XFEM.Elements
         public double CalcBulkSizeNatural() => 1.0 / 6;
 
 
-        public (ElementEdge[], ElementFace[]) FindEdgesFaces(IReadOnlyList<XNode> nodes)
+        public (ElementEdge[], ElementFace[]) FindEdgesFaces(IReadOnlyList<int> nodeIDs)
         {
             throw new NotImplementedException();
         }

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using MGroup.XFEM.Enrichment;
+using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
@@ -51,7 +51,8 @@ namespace MGroup.XFEM.Elements
                 elementGeometry = new ElementHexa8Geometry();
             }
 
-            (Edges, Faces) = elementGeometry.FindEdgesFaces(nodes);
+            int[] nodeIDs = nodes.Select(n => n.ID).ToArray();
+            (Edges, Faces) = elementGeometry.FindEdgesFaces(nodeIDs);
 
         }
 
