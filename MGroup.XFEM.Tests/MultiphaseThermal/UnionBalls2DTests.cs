@@ -15,14 +15,14 @@ using MGroup.XFEM.Output.Writers;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
 
-namespace MGroup.XFEM.Tests.Multiphase
+namespace MGroup.XFEM.Tests.MultiphaseThermal
 {
-    public static class UnionHollowBalls2DTests
+    public static class UnionBalls2DTests
     {
         private static readonly string outputDirectory = Path.Combine(
-            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "union_hollow_balls_2D_temp");
+            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "union_balls_2D_temp");
         private static readonly string expectedDirectory = Path.Combine(
-            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "union_hollow_balls_2D");
+            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "union_balls_2D");
 
         private static readonly double[] minCoords = { -1.0, -1.0 };
         private static readonly double[] maxCoords = { +1.0, +1.0 };
@@ -82,8 +82,6 @@ namespace MGroup.XFEM.Tests.Multiphase
                 // Compare output
                 var computedFiles = new List<string>();
                 computedFiles.Add(Path.Combine(outputDirectory, "level_set1_t0.vtk"));
-                computedFiles.Add(Path.Combine(outputDirectory, "level_set2_t0.vtk"));
-                computedFiles.Add(Path.Combine(outputDirectory, "level_set4_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "nodal_phases_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "intersections_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "conforming_mesh_t0.vtk"));
@@ -95,8 +93,6 @@ namespace MGroup.XFEM.Tests.Multiphase
 
                 var expectedFiles = new List<string>();
                 expectedFiles.Add(Path.Combine(expectedDirectory, "level_set1_t0.vtk"));
-                expectedFiles.Add(Path.Combine(expectedDirectory, "level_set2_t0.vtk"));
-                expectedFiles.Add(Path.Combine(expectedDirectory, "level_set4_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "nodal_phases_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "intersections_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "conforming_mesh_t0.vtk"));
@@ -143,36 +139,21 @@ namespace MGroup.XFEM.Tests.Multiphase
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;
 
-            var ballsInternal = new Circle2D[2];
-            ballsInternal[0] = new Circle2D(-0.3, 0, 0.15);
-            ballsInternal[1] = new Circle2D(+0.3, 0, 0.1);
-            var ballsExternal = new Circle2D[2];
-            ballsExternal[0] = new Circle2D(-0.3, 0, 0.5);
-            ballsExternal[1] = new Circle2D(+0.3, 0, 0.4);
-
-            for (int p = 0; p < ballsInternal.Length; ++p)
+            var balls = new Circle2D[2];
+            balls[0] = new Circle2D(-0.3, 0, 0.5);
+            balls[1] = new Circle2D(+0.3, 0, 0.4);
+            for (int p = 0; p < balls.Length; ++p)
             {
-                var externalPhase = new HollowLsmPhase(2 * p + 1, geometricModel, 0);
-                var externalCurve = new SimpleLsm2D(externalPhase.ID, model.XNodes, ballsExternal[p]);
-                geometricModel.Phases[externalPhase.ID] = externalPhase;
+                var phase = new LsmPhase(p + 1, geometricModel, 0);
+                var curve = new SimpleLsm2D(phase.ID, model.XNodes, balls[p]);
+                geometricModel.Phases[phase.ID] = phase;
 
-                var externalBoundary = new ClosedPhaseBoundary(externalPhase.ID, externalCurve, defaultPhase, externalPhase);
-                defaultPhase.ExternalBoundaries.Add(externalBoundary);
-                defaultPhase.Neighbors.Add(externalPhase);
-                externalPhase.ExternalBoundaries.Add(externalBoundary);
-                externalPhase.Neighbors.Add(defaultPhase);
-                geometricModel.PhaseBoundaries[externalBoundary.ID] = externalBoundary;
-
-                var internalLsm = new SimpleLsm2D(2 * p + 2, model.XNodes, ballsInternal[p]);
-                var internalPhase = new LsmPhase(2 * p + 2, geometricModel, -1);
-                geometricModel.Phases[internalPhase.ID] = internalPhase;
-
-                var internalBoundary = new ClosedPhaseBoundary(internalPhase.ID, internalLsm, externalPhase, internalPhase);
-                externalPhase.InternalBoundaries.Add(internalBoundary);
-                externalPhase.InternalPhases.Add(internalPhase);
-                externalPhase.Neighbors.Add(internalPhase);
-                internalPhase.ExternalBoundaries.Add(internalBoundary);
-                internalPhase.Neighbors.Add(externalPhase);
+                var boundary = new ClosedPhaseBoundary(phase.ID, curve, defaultPhase, phase);
+                defaultPhase.ExternalBoundaries.Add(boundary);
+                defaultPhase.Neighbors.Add(phase);
+                phase.ExternalBoundaries.Add(boundary);
+                phase.Neighbors.Add(defaultPhase);
+                geometricModel.PhaseBoundaries[boundary.ID] = boundary;
             }
             return geometricModel;
         }

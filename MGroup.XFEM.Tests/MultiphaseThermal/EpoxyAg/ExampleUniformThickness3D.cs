@@ -10,21 +10,20 @@ using MGroup.XFEM.Output;
 using MGroup.XFEM.Output.Writers;
 using MGroup.XFEM.Tests.Utilities;
 
-namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
+namespace MGroup.XFEM.Tests.MultiphaseThermal.EpoxyAg
 {
-    public static class ExampleUniformThickness2D
+    public static class ExampleUniformThickness3D
     {
-        private static readonly string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\EpoxyAG\UniformThickness2D\";
+        private static readonly string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\EpoxyAG\UniformThickness3D\";
 
-        private static readonly double[] minCoords = { -1.0, -1.0 };
-        private static readonly double[] maxCoords = { +1.0, +1.0 };
-        private const double thickness = 1.0;
-        private static readonly int[] numElements = { 45, 45 };
+        private static readonly double[] minCoords = { -1.0, -1.0, -1.0 };
+        private static readonly double[] maxCoords = { +1.0, +1.0, +1.0 };
+        private static readonly int[] numElements = { 45, 45, 45 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 
         private const int defaultPhaseID = 0;
 
-        private const int numBalls = 8, rngSeed = 33;
+        private const int numBalls = 8, rngSeed = 1;
         private const double epoxyPhaseRadius = 0.2, silverPhaseThickness = 0.1;
 
         private const double conductEpoxy = 1E0, conductSilver = 1E2;
@@ -36,7 +35,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
             // Create model and LSM
             (XModel<IXMultiphaseElement> model, ThermalBiMaterialField materialField) = CreateModel();
             model.FindConformingSubcells = true;
-            GeometryPreprocessor2D geometryPreprocessor = CreatePhases(model, materialField);
+            GeometryPreprocessor3DUniformThickness geometryPreprocessor = CreatePhases(model, materialField);
             var geometryModel = geometryPreprocessor.GeometryModel;
 
             // Plot level sets
@@ -77,7 +76,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
             // Create model and LSM
             (XModel<IXMultiphaseElement> model, ThermalBiMaterialField materialField) = CreateModel();
             model.FindConformingSubcells = true;
-            GeometryPreprocessor2D geometryPreprocessor = CreatePhases(model, materialField);
+            GeometryPreprocessor3DUniformThickness geometryPreprocessor = CreatePhases(model, materialField);
 
             // Run analysis
             model.Initialize();
@@ -100,13 +99,14 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
             var silverMaterial = new ThermalMaterial(conductSilver, specialHeatCoeff);
             var materialField = new ThermalBiMaterialField(epoxyMaterial, silverMaterial, conductBoundaryEpoxySilver);
 
-            return (Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
+            return (Models.CreateHexa8Model(minCoords, maxCoords, numElements,
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField), materialField);
         }
 
-        private static GeometryPreprocessor2D CreatePhases(XModel<IXMultiphaseElement> model, ThermalBiMaterialField materialField)
+        private static GeometryPreprocessor3DUniformThickness CreatePhases(
+            XModel<IXMultiphaseElement> model, ThermalBiMaterialField materialField)
         {
-            var preprocessor = new GeometryPreprocessor2D(model);
+            var preprocessor = new GeometryPreprocessor3DUniformThickness(model);
             preprocessor.MinCoordinates = minCoords;
             preprocessor.MaxCoordinates = maxCoords;
             preprocessor.NumBalls = numBalls;

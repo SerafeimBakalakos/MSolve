@@ -5,7 +5,7 @@ using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Phases;
 
-namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
+namespace MGroup.XFEM.Tests.MultiphaseThermal.EpoxyAg
 {
     public class GeometryPreprocessorBase
     {

@@ -21,7 +21,7 @@ using MGroup.XFEM.Phases;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
 
-namespace MGroup.XFEM.Tests.Multiphase.Structural
+namespace MGroup.XFEM.Tests.MultiphaseStructural
 {
     public static class CohesiveInclusions2DTests
     {

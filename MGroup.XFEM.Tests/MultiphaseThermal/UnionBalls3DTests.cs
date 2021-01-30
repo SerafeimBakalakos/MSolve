@@ -15,7 +15,7 @@ using MGroup.XFEM.Output.Writers;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
 
-namespace MGroup.XFEM.Tests.Multiphase
+namespace MGroup.XFEM.Tests.MultiphaseThermal
 {
     public static class UnionBalls3DTests
     {

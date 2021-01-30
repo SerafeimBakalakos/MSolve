@@ -17,7 +17,7 @@ using MGroup.XFEM.Output.Writers;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
 
-namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
+namespace MGroup.XFEM.Tests.MultiphaseThermal.EpoxyAg
 {
     public class Benchmark3D
     {

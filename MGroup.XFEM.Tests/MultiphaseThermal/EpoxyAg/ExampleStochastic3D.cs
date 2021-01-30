@@ -8,7 +8,7 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Materials;
 using MGroup.XFEM.Tests.Utilities;
 
-namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
+namespace MGroup.XFEM.Tests.MultiphaseThermal.EpoxyAg
 {
     public class ExampleStochastic3D
     {

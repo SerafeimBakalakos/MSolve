@@ -1,5 +1,5 @@
 ﻿using System;
-using MGroup.XFEM.Tests.Multiphase;
+using MGroup.XFEM.Tests.MultiphaseThermal;
 
 namespace MGroup.XFEM.Tests
 {

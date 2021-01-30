@@ -8,17 +8,20 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Phases;
-using Troschuetz.Random.Distributions.Continuous;
 
-namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
+namespace MGroup.XFEM.Tests.MultiphaseThermal.EpoxyAg
 {
-    public class GeometryPreprocessor3DRandomThickness : GeometryPreprocessorBase
+    public class GeometryPreprocessor2D : GeometryPreprocessorBase
     {
-        public GeometryPreprocessor3DRandomThickness(XModel<IXMultiphaseElement> physicalModel) : base(physicalModel)
+        public GeometryPreprocessor2D(XModel<IXMultiphaseElement> physicalModel) : base(physicalModel)
         {
-            MinCoordinates = new double[] { -1.0, -1.0, -1.0 };
-            MaxCoordinates = new double[] { +1.0, +1.0, +1.0 };
+            MinCoordinates = new double[] { -1.0, -1.0};
+            MaxCoordinates = new double[] { +1.0, +1.0 };
         }
+
+        public double RadiusEpoxyPhase { get; set; } = 0.2;
+
+        public double ThicknessSilverPhase { get; set; } = 0.05;
 
         public void GeneratePhases(XModel<IXMultiphaseElement> physicalModel)
         {
@@ -30,8 +33,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
             GeometryModel.Phases[defaultPhase.ID] = defaultPhase;
             MatrixPhaseID = 0;
 
-            double margin = 0.0;
-            //double margin = 0.01 * (MaxCoordinates[0] - MinCoordinates[0]);
+            double margin = ThicknessSilverPhase;
             var minCoordsExtended = new double[2];
             minCoordsExtended[0] = MinCoordinates[0] - margin;
             minCoordsExtended[1] = MinCoordinates[1] - margin;
@@ -39,37 +41,19 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
             maxCoordsExtended[0] = MaxCoordinates[0] + margin;
             maxCoordsExtended[1] = MaxCoordinates[1] + margin;
 
-            var ballsInternal = new List<Sphere>();
-            var ballsExternal = new List<Sphere>();
+            var ballsInternal = new List<Circle2D>();
+            var ballsExternal = new List<Circle2D>();
 
-            var radiiOfEpoxyDistributionNormal = new NormalDistribution(27644437, 0, 1);
-            double densitySilver = 10.49;
-            double densityEpoxy = 1.2;
-            double weightFraction = 0.3;
-            //double weightFraction = 0.08;
             int b = 0;
             var rng = new Random(RngSeed);
             while (b < NumBalls)
             {
-                var newCenter = new double[3];
+                var newCenter = new double[2];
                 newCenter[0] = rng.NextDouble() * (maxCoordsExtended[0] - minCoordsExtended[0]) + minCoordsExtended[0];
                 newCenter[1] = rng.NextDouble() * (maxCoordsExtended[1] - minCoordsExtended[1]) + minCoordsExtended[1];
-                newCenter[2] = rng.NextDouble() * (maxCoordsExtended[2] - minCoordsExtended[2]) + minCoordsExtended[2];
-
-                double radiusEpoxyPhase = 0.5 * Math.Exp(6.6032 + 0.2462 * radiiOfEpoxyDistributionNormal.NextDouble());
-
-                // This is the correct one
-                //double radiusExternal = Math.Pow(1 + densityEpoxy / densitySilver * weightFraction, 1.0 / 3) * radiusEpoxyPhase;
-                // Hack to test code
-                #region debug
-                //double radiusExternal = Math.Pow(1 + densityEpoxy / densitySilver * weightFraction, 1.0 / 3) * radiusEpoxyPhase + 100;
-                //double radiusExternal = radiusEpoxyPhase + 10;
-                double radiusExternal = radiusEpoxyPhase + 15;
-                #endregion
-
-                var newBallInternal = new Sphere(newCenter, radiusEpoxyPhase);
-                var newBallExternal = new Sphere(newCenter, radiusExternal);
-
+                var newBallInternal = new Circle2D(newCenter, RadiusEpoxyPhase);
+                var newBallExternal = new Circle2D(newCenter, RadiusEpoxyPhase + ThicknessSilverPhase);
+                
                 if (CollidesWithOtherBalls(newBallInternal, newBallExternal, ballsInternal, ballsExternal)) continue;
                 ballsInternal.Add(newBallInternal);
                 ballsExternal.Add(newBallExternal);
@@ -83,14 +67,14 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
                 SilverPhaseIDs.Add(phaseExternal.ID);
 
                 // Create phase boundaries
-                var lsmExternal = new SimpleLsm3D(phaseExternal.ID, physicalModel.XNodes, newBallExternal);
+                var lsmExternal = new SimpleLsm2D(phaseExternal.ID, physicalModel.XNodes, newBallExternal);
                 var boundaryExternal = new ClosedPhaseBoundary(phaseExternal.ID, lsmExternal, defaultPhase, phaseExternal);
                 defaultPhase.ExternalBoundaries.Add(boundaryExternal);
                 defaultPhase.Neighbors.Add(phaseExternal);
                 phaseExternal.ExternalBoundaries.Add(boundaryExternal);
                 phaseExternal.Neighbors.Add(defaultPhase);
 
-                var lsmInternal = new SimpleLsm3D(phaseInternal.ID, physicalModel.XNodes, newBallInternal);
+                var lsmInternal = new SimpleLsm2D(phaseInternal.ID, physicalModel.XNodes, newBallInternal);
                 var boundaryInternal = new ClosedPhaseBoundary(phaseInternal.ID, lsmInternal, phaseExternal, phaseInternal);
                 phaseExternal.InternalBoundaries.Add(boundaryInternal);
                 phaseExternal.Neighbors.Add(phaseInternal);
@@ -100,15 +84,15 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
 
                 ++b;
             }
+
         }
 
-        private bool CollidesWithOtherBalls(Sphere newBallInternal, Sphere newBallExternal,
-            List<Sphere> ballsInternal, List<Sphere> ballsExternal)
+        private bool CollidesWithOtherBalls(Circle2D newBallInternal, Circle2D newBallExternal, 
+            List<Circle2D> ballsInternal, List<Circle2D> ballsExternal)
         {
             for (int i = 0; i < ballsInternal.Count; ++i)
             {
-                double centerDistance = XFEM.Geometry.Utilities.Distance3D(newBallInternal.Center, ballsInternal[i].Center);
-                //double centerDistance = XFEM.Geometry.Utilities.Distance2D(newBallInternal.Center, ballsInternal[i].Center);
+                double centerDistance = XFEM.Geometry.Utilities.Distance2D(newBallInternal.Center, ballsInternal[i].Center);
                 if (newBallExternal.Radius + ballsInternal[i].Radius >= centerDistance) return true;
                 if (newBallInternal.Radius + ballsExternal[i].Radius >= centerDistance) return true;
             }

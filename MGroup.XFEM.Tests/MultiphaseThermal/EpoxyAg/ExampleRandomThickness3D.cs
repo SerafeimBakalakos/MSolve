@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
@@ -10,24 +11,27 @@ using MGroup.XFEM.Output;
 using MGroup.XFEM.Output.Writers;
 using MGroup.XFEM.Tests.Utilities;
 
-namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
+namespace MGroup.XFEM.Tests.MultiphaseThermal.EpoxyAg
 {
-    public static class ExampleUniformThickness3D
+    public static class ExampleRandomThickness3D
     {
         private static readonly string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\2020\EpoxyAG\UniformThickness3D\";
 
-        private static readonly double[] minCoords = { -1.0, -1.0, -1.0 };
-        private static readonly double[] maxCoords = { +1.0, +1.0, +1.0 };
-        private static readonly int[] numElements = { 45, 45, 45 };
+        private static readonly double[] minCoords = { -2000.0, -2000.0, -2000.0 };
+        private static readonly double[] maxCoords = { +2000.0, +2000.0, +2000.0 };
+        private static readonly int[] numElements = { 50, 50, 50 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 
         private const int defaultPhaseID = 0;
 
-        private const int numBalls = 8, rngSeed = 1;
-        private const double epoxyPhaseRadius = 0.2, silverPhaseThickness = 0.1;
+        //private const int numBalls = 8, rngSeed = 33; //problems in intersection mesh
+        //private const int numBalls = 8, rngSeed = 13;//problems in intersection mesh
+        //private const int numBalls = 8, rngSeed = 17;
+        private const int numBalls = 100, rngSeed = 33;
+        //private const double epoxyPhaseRadius = 0.2, silverPhaseThickness = 0.1;
 
-        private const double conductEpoxy = 1E0, conductSilver = 1E2;
-        private const double conductBoundaryEpoxySilver = 1E1;
+        private const double conductEpoxy = 0.25, conductSilver = 429;
+        private const double conductBoundaryEpoxySilver = conductEpoxy;
         private const double specialHeatCoeff = 1.0;
 
         public static void RunModelCreation()
@@ -35,7 +39,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
             // Create model and LSM
             (XModel<IXMultiphaseElement> model, ThermalBiMaterialField materialField) = CreateModel();
             model.FindConformingSubcells = true;
-            GeometryPreprocessor3DUniformThickness geometryPreprocessor = CreatePhases(model, materialField);
+            GeometryPreprocessor3DRandomThickness geometryPreprocessor = CreatePhases(model, materialField);
             var geometryModel = geometryPreprocessor.GeometryModel;
 
             // Plot level sets
@@ -76,7 +80,7 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
             // Create model and LSM
             (XModel<IXMultiphaseElement> model, ThermalBiMaterialField materialField) = CreateModel();
             model.FindConformingSubcells = true;
-            GeometryPreprocessor3DUniformThickness geometryPreprocessor = CreatePhases(model, materialField);
+            GeometryPreprocessor3DRandomThickness geometryPreprocessor = CreatePhases(model, materialField);
 
             // Run analysis
             model.Initialize();
@@ -92,6 +96,28 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
                 computedFiles[0], computedFiles[1], computedFiles[2], computedFiles[3]);
         }
 
+        public static void RunHomogenization()
+        {
+            // Create physical model, LSM and phases
+            Console.WriteLine("Creating physical and geometric models");
+            (XModel<IXMultiphaseElement> model, ThermalBiMaterialField materialField) = CreateModel();
+            model.FindConformingSubcells = true;
+            GeometryPreprocessor3DRandomThickness geometryPreprocessor = CreatePhases(model, materialField);
+
+            // Geometric interactions
+            model.Initialize();
+
+            // Write volume fractions
+            Console.WriteLine(geometryPreprocessor.PrintVolumes());
+
+            // Run homogenization analysis
+            IMatrix conductivity = Analysis.RunHomogenizationAnalysis3D(model, minCoords, maxCoords);
+            Console.WriteLine(
+                $"conductivity = [ {conductivity[0, 0]} {conductivity[0, 1]} {conductivity[0, 2]};"
+                + $" {conductivity[1, 0]} {conductivity[1, 1]} {conductivity[1, 2]};"
+                + $" {conductivity[2, 0]} {conductivity[2, 1]} {conductivity[2, 2]} ]");
+        }
+
         private static (XModel<IXMultiphaseElement>, ThermalBiMaterialField) CreateModel()
         {
             // Materials
@@ -103,16 +129,14 @@ namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField), materialField);
         }
 
-        private static GeometryPreprocessor3DUniformThickness CreatePhases(
+        private static GeometryPreprocessor3DRandomThickness CreatePhases(
             XModel<IXMultiphaseElement> model, ThermalBiMaterialField materialField)
         {
-            var preprocessor = new GeometryPreprocessor3DUniformThickness(model);
+            var preprocessor = new GeometryPreprocessor3DRandomThickness(model);
             preprocessor.MinCoordinates = minCoords;
             preprocessor.MaxCoordinates = maxCoords;
             preprocessor.NumBalls = numBalls;
             preprocessor.RngSeed = rngSeed;
-            preprocessor.RadiusEpoxyPhase = epoxyPhaseRadius;
-            preprocessor.ThicknessSilverPhase = silverPhaseThickness;
 
             preprocessor.GeneratePhases(model);
             materialField.PhasesWithMaterial0.Add(preprocessor.MatrixPhaseID);

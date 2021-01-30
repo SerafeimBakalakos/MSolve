@@ -15,18 +15,19 @@ using MGroup.XFEM.Output.Writers;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
 
-namespace MGroup.XFEM.Tests.Multiphase
+namespace MGroup.XFEM.Tests.MultiphaseThermal
 {
-    public static class UnionHollowBalls3DTests
+    public static class UnionHollowBalls2DTests
     {
         private static readonly string outputDirectory = Path.Combine(
-            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "union_hollow_balls_3D_temp");
+            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "union_hollow_balls_2D_temp");
         private static readonly string expectedDirectory = Path.Combine(
-            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "union_hollow_balls_3D");
+            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "union_hollow_balls_2D");
 
-        private static readonly double[] minCoords = { -1.0, -1.0, -1.0 };
-        private static readonly double[] maxCoords = { +1.0, +1.0, +1.0 };
-        private static readonly int[] numElements = { 20, 20, 20 };
+        private static readonly double[] minCoords = { -1.0, -1.0 };
+        private static readonly double[] maxCoords = { +1.0, +1.0 };
+        private const double thickness = 1.0;
+        private static readonly int[] numElements = { 15, 15 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 
         private const int defaultPhaseID = 0;
@@ -73,7 +74,7 @@ namespace MGroup.XFEM.Tests.Multiphase
 
                 // Plot enrichments
                 double elementSize = (maxCoords[0] - minCoords[0]) / numElements[0];
-                model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 3));
+                model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 2));
 
                 // Initialize model state so that everything described above can be tracked
                 model.Initialize();
@@ -129,7 +130,7 @@ namespace MGroup.XFEM.Tests.Multiphase
             var materialField = new MatrixInclusionsThermalMaterialField(matrixMaterial, inclusionMaterial,
                 conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
 
-            return Models.CreateHexa8Model(minCoords, maxCoords, numElements,
+            return Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField);
         }
 
@@ -142,17 +143,17 @@ namespace MGroup.XFEM.Tests.Multiphase
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;
 
-            var ballsInternal = new Sphere[2];
-            ballsInternal[0] = new Sphere(-0.25, 0, 0, 0.2);
-            ballsInternal[1] = new Sphere(+0.25, 0, 0, 0.1);
-            var ballsExternal = new Sphere[2];
-            ballsExternal[0] = new Sphere(-0.25, 0, 0, 0.5);
-            ballsExternal[1] = new Sphere(+0.25, 0, 0, 0.4);
+            var ballsInternal = new Circle2D[2];
+            ballsInternal[0] = new Circle2D(-0.3, 0, 0.15);
+            ballsInternal[1] = new Circle2D(+0.3, 0, 0.1);
+            var ballsExternal = new Circle2D[2];
+            ballsExternal[0] = new Circle2D(-0.3, 0, 0.5);
+            ballsExternal[1] = new Circle2D(+0.3, 0, 0.4);
 
             for (int p = 0; p < ballsInternal.Length; ++p)
             {
                 var externalPhase = new HollowLsmPhase(2 * p + 1, geometricModel, 0);
-                var externalCurve = new SimpleLsm3D(externalPhase.ID, model.XNodes, ballsExternal[p]);
+                var externalCurve = new SimpleLsm2D(externalPhase.ID, model.XNodes, ballsExternal[p]);
                 geometricModel.Phases[externalPhase.ID] = externalPhase;
 
                 var externalBoundary = new ClosedPhaseBoundary(externalPhase.ID, externalCurve, defaultPhase, externalPhase);
@@ -162,7 +163,7 @@ namespace MGroup.XFEM.Tests.Multiphase
                 externalPhase.Neighbors.Add(defaultPhase);
                 geometricModel.PhaseBoundaries[externalBoundary.ID] = externalBoundary;
 
-                var internalLsm = new SimpleLsm3D(2 * p + 2, model.XNodes, ballsInternal[p]);
+                var internalLsm = new SimpleLsm2D(2 * p + 2, model.XNodes, ballsInternal[p]);
                 var internalPhase = new LsmPhase(2 * p + 2, geometricModel, -1);
                 geometricModel.Phases[internalPhase.ID] = internalPhase;
 

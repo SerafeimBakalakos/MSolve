@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Enrichment.SingularityResolution;
@@ -15,20 +16,21 @@ using MGroup.XFEM.Output.Writers;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
 
-namespace MGroup.XFEM.Tests.Multiphase
+namespace MGroup.XFEM.Tests.MultiphaseThermal
 {
-    public static class UnionBalls2DTests
+    public static class LsmBalls3DTests
     {
         private static readonly string outputDirectory = Path.Combine(
-            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "union_balls_2D_temp");
+            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "lsm_balls_3D_temp");
         private static readonly string expectedDirectory = Path.Combine(
-            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "union_balls_2D");
+            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "lsm_balls_3D");
 
-        private static readonly double[] minCoords = { -1.0, -1.0 };
-        private static readonly double[] maxCoords = { +1.0, +1.0 };
-        private const double thickness = 1.0;
-        private static readonly int[] numElements = { 15, 15 };
+        private static readonly double[] minCoords = { -1.0, -1.0, -1.0 };
+        private static readonly double[] maxCoords = { +1.0, +1.0, +1.0 };
+        private static readonly int[] numElements = { 20, 20, 20 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
+        private const int numBallsX = 2, numBallsY = 1, numBallsZ = 1;
+        private const double ballRadius = 0.3;
 
         private const int defaultPhaseID = 0;
 
@@ -74,7 +76,7 @@ namespace MGroup.XFEM.Tests.Multiphase
 
                 // Plot enrichments
                 double elementSize = (maxCoords[0] - minCoords[0]) / numElements[0];
-                model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 2));
+                model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 3));
 
                 // Initialize model state so that everything described above can be tracked
                 model.Initialize();
@@ -82,6 +84,7 @@ namespace MGroup.XFEM.Tests.Multiphase
                 // Compare output
                 var computedFiles = new List<string>();
                 computedFiles.Add(Path.Combine(outputDirectory, "level_set1_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "level_set2_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "nodal_phases_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "intersections_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "conforming_mesh_t0.vtk"));
@@ -93,6 +96,7 @@ namespace MGroup.XFEM.Tests.Multiphase
 
                 var expectedFiles = new List<string>();
                 expectedFiles.Add(Path.Combine(expectedDirectory, "level_set1_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "level_set2_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "nodal_phases_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "intersections_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "conforming_mesh_t0.vtk"));
@@ -118,6 +122,57 @@ namespace MGroup.XFEM.Tests.Multiphase
             }
         }
 
+        [Fact]
+        public static void TestSolution()
+        {
+            try
+            {
+                if (!Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+
+                // Create model and LSM
+                XModel<IXMultiphaseElement> model = CreateModel();
+                model.FindConformingSubcells = true;
+                PhaseGeometryModel geometryModel = CreatePhases(model);
+
+                // Run analysis
+                model.Initialize();
+                IVectorView solution = Analysis.RunThermalStaticAnalysis(model);
+
+                // Plot temperature and heat flux
+                var computedFiles = new List<string>();
+                computedFiles.Add(Path.Combine(outputDirectory, "temperature_nodes_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "temperature_gauss_points_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "temperature_field_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "heat_flux_gauss_points_t0.vtk"));
+                Utilities.Plotting.PlotTemperatureAndHeatFlux(model, solution,
+                    computedFiles[0], computedFiles[1], computedFiles[2], computedFiles[3]);
+
+                // Compare output
+                var expectedFiles = new List<string>();
+                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_nodes_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_gauss_points_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_field_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "heat_flux_gauss_points_t0.vtk"));
+
+                double tolerance = 1E-6;
+                for (int i = 0; i < expectedFiles.Count; ++i)
+                {
+                    Assert.True(IOUtilities.AreDoubleValueFilesEquivalent(expectedFiles[i], computedFiles[i], tolerance));
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(outputDirectory))
+                {
+                    DirectoryInfo di = new DirectoryInfo(outputDirectory);
+                    di.Delete(true);//true means delete subdirectories and files
+                }
+            }
+        }
+
         private static XModel<IXMultiphaseElement> CreateModel()
         {
             // Materials
@@ -126,7 +181,7 @@ namespace MGroup.XFEM.Tests.Multiphase
             var materialField = new MatrixInclusionsThermalMaterialField(matrixMaterial, inclusionMaterial,
                 conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
 
-            return Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
+            return Models.CreateHexa8Model(minCoords, maxCoords, numElements,
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField);
         }
 
@@ -135,20 +190,16 @@ namespace MGroup.XFEM.Tests.Multiphase
             var geometricModel = new PhaseGeometryModel(model);
             model.GeometryModel = geometricModel;
             geometricModel.Enricher = new NodeEnricherMultiphaseThermal(geometricModel, new NullSingularityResolver());
-            geometricModel.MergeOverlappingPhases = true;
+            List<SimpleLsm3D> lsmSurfaces = InitializeLSM(model);
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;
-
-            var balls = new Circle2D[2];
-            balls[0] = new Circle2D(-0.3, 0, 0.5);
-            balls[1] = new Circle2D(+0.3, 0, 0.4);
-            for (int p = 0; p < balls.Length; ++p)
+            for (int p = 0; p < lsmSurfaces.Count; ++p)
             {
-                var phase = new LsmPhase(p + 1, geometricModel, 0);
-                var curve = new SimpleLsm2D(phase.ID, model.XNodes, balls[p]);
+                SimpleLsm3D surface = lsmSurfaces[p];
+                var phase = new LsmPhase(p + 1, geometricModel, -1);
                 geometricModel.Phases[phase.ID] = phase;
 
-                var boundary = new ClosedPhaseBoundary(phase.ID, curve, defaultPhase, phase);
+                var boundary = new ClosedPhaseBoundary(phase.ID, surface, defaultPhase, phase);
                 defaultPhase.ExternalBoundaries.Add(boundary);
                 defaultPhase.Neighbors.Add(phase);
                 phase.ExternalBoundaries.Add(boundary);
@@ -156,6 +207,35 @@ namespace MGroup.XFEM.Tests.Multiphase
                 geometricModel.PhaseBoundaries[boundary.ID] = boundary;
             }
             return geometricModel;
+        }
+
+        private static List<SimpleLsm3D> InitializeLSM(XModel<IXMultiphaseElement> model)
+        {
+            double xMin = minCoords[0], xMax = maxCoords[0];
+            double yMin = minCoords[1], yMax = maxCoords[1]; 
+            double zMin = minCoords[2], zMax = maxCoords[2];
+            var surfaces = new List<SimpleLsm3D>(numBallsX * numBallsY * numBallsZ);
+            double dx = (xMax - xMin) / (numBallsX + 1);
+            double dy = (yMax - yMin) / (numBallsY + 1);
+            double dz = (zMax - yMin) / (numBallsZ + 1);
+            int id = 1;
+            for (int i = 0; i < numBallsX; ++i)
+            {
+                double centerX = xMin + (i + 1) * dx;
+                for (int j = 0; j < numBallsY; ++j)
+                {
+                    double centerY = yMin + (j + 1) * dy;
+                    for (int k = 0; k < numBallsZ; ++k)
+                    {
+                        double centerZ = zMin + (k + 1) * dz;
+                        var sphere = new Sphere(centerX, centerY, centerZ, ballRadius);
+                        var lsm = new SimpleLsm3D(id++, model.XNodes, sphere);
+                        surfaces.Add(lsm);
+                    }
+                }
+            }
+
+            return surfaces;
         }
     }
 }

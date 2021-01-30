@@ -9,7 +9,7 @@ using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Phases;
 
-namespace MGroup.XFEM.Tests.Multiphase.EpoxyAg
+namespace MGroup.XFEM.Tests.MultiphaseThermal.EpoxyAg
 {
     public class GeometryPreprocessor3DUniformThickness : GeometryPreprocessorBase
     {
