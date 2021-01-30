@@ -15,9 +15,8 @@ using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Output.Mesh;
 using MGroup.XFEM.Output.Vtk;
-using MGroup.XFEM.Phases;
 
-//MODIFICATION NEEDED: remove duplication between this and StrainsStressesAtGaussPointsField
+//TODO: Remove duplication between this and StrainsStressesAtGaussPointsField
 //TODO: Refactor these methods. They are too large.
 namespace MGroup.XFEM.Output.Fields
 {
@@ -95,7 +94,7 @@ namespace MGroup.XFEM.Output.Fields
             centroid.Element = element;
             centroid.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(centroidNatural);
             centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural;
-            var materialCentroid = FindMaterialAt(element, centroid);
+            var materialCentroid = StrainsStressesAtGaussPointsField.FindMaterialAt(element, centroid);
 
 
             // Evaluate enrichment functions at triangle centroid and assume it also holds for its vertices
@@ -159,8 +158,6 @@ namespace MGroup.XFEM.Output.Fields
             return allStrainsStresses;
         }
 
-        //HERE: in order for this to work, the enrichments, materials, etc, should be evaluated at the vertices of the triangles
-        //    that lie on the discontinuity
         private (double[] strain, double[] stress) CalcStrainStressAt(
             IXStructuralMultiphaseElement element, double[] pointNatural, IList<double[]> elementDisplacements)
         {
@@ -175,7 +172,8 @@ namespace MGroup.XFEM.Output.Fields
             point.ShapeFunctionDerivatives = evalInterpolation.ShapeGradientsCartesian;
 
             // Strains
-            double[,] gradient = Utilities.CalcDisplacementsGradientAt(point, element, elementDisplacements);
+            double[,] gradient = StrainsStressesAtGaussPointsField.CalcDisplacementsGradientAt(
+                point, element, elementDisplacements);
             double[] strain;
             if (point.Dimension == 2)
             {
@@ -184,30 +182,10 @@ namespace MGroup.XFEM.Output.Fields
             else throw new NotImplementedException();
 
             // Stresses
-            IContinuumMaterial2D elasticity = FindMaterialAt(element, point);
+            IContinuumMaterial2D elasticity = StrainsStressesAtGaussPointsField.FindMaterialAt(element, point);
             double[] stress = elasticity.ConstitutiveMatrix.Multiply(strain);
 
             return (strain, stress);
-        }
-
-        private IContinuumMaterial2D FindMaterialAt(IXStructuralMultiphaseElement element, XPoint point)
-        {
-            // Find the phase at this integration point.
-            IPhase phase = null;
-            Debug.Assert(element.Phases.Count != 0);
-            if (element.Phases.Count == 1)
-            {
-                phase = element.Phases.First();
-                point.PhaseID = phase.ID;
-            }
-            else
-            {
-                phase = element.FindPhaseAt(point);
-                point.PhaseID = phase.ID;
-            }
-
-            // Find the material for this phase
-            return element.MaterialField.FindMaterialAt(phase);
         }
     }
 }

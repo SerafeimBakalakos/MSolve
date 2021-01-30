@@ -366,7 +366,6 @@ namespace MGroup.XFEM.Elements
                     GaussPoint gaussPoint = gaussPoints[i];
                     double scale = Thickness * gaussPoint.Weight;
 
-                    //MODIFICATION NEEDED: rotate this tensor so that it is parallel to x,y (or xi, eta?)
                     IMatrix localT = materials[i].ConstitutiveMatrix;
                     double[] normalVector = normalVectorsAtGPs[i];
                     Matrix T = RotateInterfaceCohesiveTensor(localT, normalVector);
@@ -603,8 +602,6 @@ namespace MGroup.XFEM.Elements
 
         private Matrix RotateInterfaceCohesiveTensor(IMatrix localTensor, double[] normalVector)
         {
-            //MODIFICATION NEEDED: Take into account the isoparametric system as well. 
-            //  If the normals correspond to the global coordinate system, I think that nothing else is needed.
             //TODO: Instead of doing in code the derivation of the rotation matrix, write the equations (in comments and in a 
             //      reference guide) and just implement their final versions in code. Also decide what the local system is (n, s)
             //      or (s, n)

@@ -39,7 +39,7 @@ namespace MGroup.XFEM.Output.Fields
                 if (subtriangles.Count() == 0)
                 {
                     IList<double[]> elementDisplacements = 
-                        Utilities.ExtractElementDisplacementsStandard(model.Dimension, element, subdomain, systemSolution);
+                        ExtractElementDisplacementsStandard(model.Dimension, element, subdomain, systemSolution);
                     Debug.Assert(outMesh.GetOutCellsForOriginal(element).Count() == 1);
                     VtkCell outCell = outMesh.GetOutCellsForOriginal(element).First();
                     for (int n = 0; n < element.Nodes.Count; ++n)
@@ -68,6 +68,38 @@ namespace MGroup.XFEM.Output.Fields
                 }
             }
             return outMesh.OutVertices.Select(v => outDisplacements[v]);
+        }
+
+        /// <summary>
+        /// Contrary to <see cref="Utilities.ExtractElementDisplacements(IXFiniteElement, XSubdomain, IVectorView)"/>, 
+        /// this method only finds the nodal temperatures of an element that correspond to standard dofs.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="subdomain"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
+        public static IList<double[]> ExtractElementDisplacementsStandard(int dimension,
+            IXFiniteElement element, XSubdomain subdomain, IVectorView solution)
+        {
+            var dofsPerNode = new IDofType[dimension];
+            dofsPerNode[0] = StructuralDof.TranslationX;
+            if (dimension >= 2) dofsPerNode[1] = StructuralDof.TranslationY;
+            if (dimension == 3) dofsPerNode[2] = StructuralDof.TranslationZ;
+
+            var elementDisplacements = new List<double[]>(element.Nodes.Count);
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                XNode node = element.Nodes[n];
+                var displacementsOfNode = new double[dimension];
+                for (int d = 0; d < dimension; ++d)
+                {
+                    bool isFreeDof = subdomain.FreeDofOrdering.FreeDofs.TryGetValue(node, dofsPerNode[d], out int idx);
+                    if (isFreeDof) displacementsOfNode[d] = solution[idx];
+                    else displacementsOfNode[d] = node.Constraints.Find(con => con.DOF == dofsPerNode[d]).Amount;
+                }
+                elementDisplacements.Add(displacementsOfNode);
+            }
+            return elementDisplacements;
         }
 
         private IList<double[]> CalcDisplacementFieldInSubtriangle(IXFiniteElement element, IElementSubcell subcell,

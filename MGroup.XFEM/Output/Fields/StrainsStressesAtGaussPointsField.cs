@@ -7,6 +7,7 @@ using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials.Interfaces;
 using MGroup.XFEM.Elements;
+using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
@@ -50,7 +51,7 @@ namespace MGroup.XFEM.Output.Fields
                     point.ShapeFunctionDerivatives = evalInterpolation.ShapeGradientsCartesian;
 
                     // Strains
-                    double[,] gradient = Utilities.CalcDisplacementsGradientAt(point, element, elementDisplacements);
+                    double[,] gradient = CalcDisplacementsGradientAt(point, element, elementDisplacements);
                     double[] strain;
                     if (point.Dimension == 2)
                     {
@@ -67,8 +68,63 @@ namespace MGroup.XFEM.Output.Fields
             return (strains, stresses);
         }
 
+        /// <summary>
+        /// The gradient is in 2D [Ux,x Ux,y; Uy,x Uy,y] and in 3D [Ux,x Ux,y Ux,z; Uy,x Uy,y Uy,z; Uz,x Uz,y Uz,z].
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="evalInterpolation"></param>
+        /// <param name="element"></param>
+        /// <param name="elementDisplacements"></param>
+        /// <returns></returns>
+        public static double[,] CalcDisplacementsGradientAt(
+            XPoint point, IXFiniteElement element, IList<double[]> elementDisplacements)
+        {
+            //TODO: Extend this to 3D
+            int dimension = point.Dimension;
+            if (point.Dimension != 2) throw new NotImplementedException();
+            var gradient = new double[dimension, dimension];
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                double[] u = elementDisplacements[n];
+                double N = point.ShapeFunctions[n];
+                var dN = new double[dimension];
+                for (int d = 0; d < dimension; ++d)
+                {
+                    dN[d] = point.ShapeFunctionDerivatives[n, d];
+                }
+
+                // Standard displacements
+                double ux = u[0];
+                double uy = u[1];
+                gradient[0, 0] += dN[0] * ux;
+                gradient[0, 1] += dN[1] * ux;
+                gradient[1, 0] += dN[0] * uy;
+                gradient[1, 1] += dN[1] * uy;
+
+                // Eniched displacements
+                int dof = 2;
+                foreach (IEnrichmentFunction enrichment in element.Nodes[n].EnrichmentFuncs.Keys)
+                {
+                    ux = u[dof++];
+                    uy = u[dof++];
+                    EvaluatedFunction evalEnrichment = enrichment.EvaluateAllAt(point);
+                    double psi = evalEnrichment.Value;
+                    double[] dPsi = evalEnrichment.CartesianDerivatives;
+                    double psiNode = element.Nodes[n].EnrichmentFuncs[enrichment];
+
+                    double Bx = (psi - psiNode) * dN[0] + dPsi[0] * N;
+                    double By = (psi - psiNode) * dN[1] + dPsi[1] * N;
+                    gradient[0, 0] += Bx * ux;
+                    gradient[0, 1] += By * ux;
+                    gradient[1, 0] += Bx * uy;
+                    gradient[1, 1] += By * uy;
+                }
+            }
+            return gradient;
+        }
+
         //TODO: Do not use this for gauss points, since this work is already done by the element itself
-        private IContinuumMaterial2D FindMaterialAt(IXStructuralMultiphaseElement element, XPoint point)
+        public static IContinuumMaterial2D FindMaterialAt(IXStructuralMultiphaseElement element, XPoint point)
         {
             // Find the phase at this integration point.
             IPhase phase = null;

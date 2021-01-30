@@ -86,8 +86,10 @@ namespace MGroup.XFEM.Geometry.LSM
 
                 // Conforming curves intersect 2 elements, thus the integral will be computed twice. Halve the weights to avoid 
                 // obtaining double the value of the integral.
+                //TODO: This should be decided for each segment (triangle in 3D) separately. Especially in dual-LSM aproach, some
+                //      segments may be conforming, while others intersecting.
                 double weightModifier = 1.0;
-                if (RelativePosition == RelativePositionCurveElement.Conforming) weightModifier = 0.5; //MODIFICATION NEEDED: This should be different for each segment
+                if (RelativePosition == RelativePositionCurveElement.Conforming) weightModifier = 0.5;
 
                 // Absolute determinant of Jacobian of mapping from auxiliary to cartesian system. Constant for all Gauss points.
                 double length = Utilities.Distance2D(intersectionsCartesian[c], intersectionsCartesian[c + 1]);

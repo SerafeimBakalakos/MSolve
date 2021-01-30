@@ -45,7 +45,7 @@ namespace MGroup.XFEM.Tests.Multiphase.Structural
         private const int defaultPhaseID = 0;
 
 
-        [Fact]
+        //[Fact]
         public static void TestModel()
         {
             try
@@ -129,7 +129,7 @@ namespace MGroup.XFEM.Tests.Multiphase.Structural
             }
         }
 
-        [Fact]
+        //[Fact]
         public static void TestSolution()
         {
             try

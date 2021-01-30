@@ -4,6 +4,7 @@ using System.Linq;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
+using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
@@ -47,7 +48,7 @@ namespace MGroup.XFEM.Output.Fields
                     point.Element = element;
                     point.ShapeFunctions = evalInterpolation.ShapeFunctions;
                     double[] gradientTemperature =
-                        Utilities.CalcTemperatureGradientAt(point, evalInterpolation, element, nodalTemperatures);
+                        CalcTemperatureGradientAt(point, evalInterpolation, element, nodalTemperatures);
 
                     double conductivity = materials[i].ThermalConductivity;
                     for (int d = 0; d < gradientTemperature.Length; d++)
@@ -58,6 +59,37 @@ namespace MGroup.XFEM.Output.Fields
                 }
             }
             return result;
+        }
+
+        public static double[] CalcTemperatureGradientAt(XPoint point, EvalInterpolation evalInterpolation,
+            IXFiniteElement element, double[] nodalTemperatures)
+        {
+            int dimension = evalInterpolation.ShapeGradientsCartesian.NumColumns;
+            var gradient = new double[dimension];
+            int idx = 0;
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                // Standard temperatures
+                double stdTi = nodalTemperatures[idx++];
+                for (int i = 0; i < dimension; ++i)
+                {
+                    gradient[i] += evalInterpolation.ShapeGradientsCartesian[n, i] * stdTi;
+                }
+
+                // Eniched temperatures
+                foreach (IEnrichmentFunction enrichment in element.Nodes[n].EnrichmentFuncs.Keys)
+                {
+                    double psiVertex = enrichment.EvaluateAt(point);
+                    double psiNode = element.Nodes[n].EnrichmentFuncs[enrichment];
+                    double enrTij = nodalTemperatures[idx++];
+
+                    for (int i = 0; i < dimension; ++i)
+                    {
+                        gradient[i] += evalInterpolation.ShapeGradientsCartesian[n, i] * (psiVertex - psiNode) * enrTij;
+                    }
+                }
+            }
+            return gradient;
         }
     }
 }

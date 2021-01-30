@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 
-//MODIFICATION NEEDED: use constitutive law
 namespace MGroup.XFEM.Materials
 {
     public class CohesiveInterfaceMaterial2D

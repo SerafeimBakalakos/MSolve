@@ -38,7 +38,7 @@ namespace MGroup.XFEM.Output.Fields
                 IEnumerable<ConformingOutputMesh.Subcell> subtriangles = outMesh.GetSubcellsForOriginal(element);
                 if (subtriangles.Count() == 0)
                 {
-                    double[] nodalTemperatures = Utilities.ExtractNodalTemperaturesStandard(element, subdomain, systemSolution);
+                    double[] nodalTemperatures = ExtractNodalTemperaturesStandard(element, subdomain, systemSolution);
                     Debug.Assert(outMesh.GetOutCellsForOriginal(element).Count() == 1);
                     VtkCell outCell = outMesh.GetOutCellsForOriginal(element).First();
                     for (int n = 0; n < element.Nodes.Count; ++n) outTemperatures[outCell.Vertices[n]] = nodalTemperatures[n];
@@ -116,6 +116,28 @@ namespace MGroup.XFEM.Output.Fields
                 temperaturesAtVertices[v] = sum;
             }
             return temperaturesAtVertices;
+        }
+
+        /// <summary>
+        /// Contrary to <see cref="Utilities.ExtractNodalTemperatures(IXFiniteElement, XSubdomain, IVectorView)"/>, this method only
+        /// finds the nodal temperatures of an element that correspond to standard dofs.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="subdomain"></param>
+        /// <param name="solution"></param>
+        /// <returns></returns>
+        public static double[] ExtractNodalTemperaturesStandard(IXFiniteElement element, XSubdomain subdomain, IVectorView solution)
+        {
+            //TODO: Could this be done using FreeDofOrdering.ExtractVectorElementFromSubdomain(...)? What about enriched dofs?
+            var nodalTemperatures = new double[element.Nodes.Count];
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                XNode node = element.Nodes[n];
+                bool isFreeDof = subdomain.FreeDofOrdering.FreeDofs.TryGetValue(node, ThermalDof.Temperature, out int idx);
+                if (isFreeDof) nodalTemperatures[n] = solution[idx];
+                else nodalTemperatures[n] = node.Constraints.Find(con => con.DOF == ThermalDof.Temperature).Amount;
+            }
+            return nodalTemperatures;
         }
     }
 }

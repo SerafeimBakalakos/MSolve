@@ -9,6 +9,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Primitives;
+using MGroup.XFEM.Enrichment;
 
 namespace MGroup.XFEM.Output.Fields
 {
@@ -38,11 +39,32 @@ namespace MGroup.XFEM.Output.Fields
                     point.Coordinates[CoordinateSystem.ElementNatural] = pointNatural.Coordinates;
                     point.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(pointNatural.Coordinates);
                     double[] coordsCartesian = Utilities.TransformNaturalToCartesian(point.ShapeFunctions, element.Nodes);
-                    double temperature = Utilities.CalcTemperatureAt(point, element, nodalTemperatures);
+                    double temperature = CalcTemperatureAt(point, element, nodalTemperatures);
                     result[coordsCartesian] = temperature;
                 }
             }
             return result;
+        }
+
+        //TODO: Perhaps this should be implemented by the element itself, where a lot of optimizations can be employed.
+        public static double CalcTemperatureAt(XPoint point, IXFiniteElement element, double[] nodalTemperatures)
+        {
+            double sum = 0.0;
+            int idx = 0;
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                // Standard temperatures
+                sum += point.ShapeFunctions[n] * nodalTemperatures[idx++];
+
+                // Eniched temperatures
+                foreach (IEnrichmentFunction enrichment in element.Nodes[n].EnrichmentFuncs.Keys)
+                {
+                    double psiVertex = enrichment.EvaluateAt(point);
+                    double psiNode = element.Nodes[n].EnrichmentFuncs[enrichment];
+                    sum += point.ShapeFunctions[n] * (psiVertex - psiNode) * nodalTemperatures[idx++];
+                }
+            }
+            return sum;
         }
     }
 }

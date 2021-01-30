@@ -15,27 +15,6 @@ namespace MGroup.XFEM.Geometry.Mesh
             ElementNeighbors = FindElementNeighbors(base.multiple);
         }
 
-        //MODIFICATION NEEDED: Delete this
-        //TODO: This should use the same method for creating a List of ElementEdge that FEM Quad4 elements use.
-        public (List<(int, int)> lsmNodeIDsOfEdges, List<(double[], double[])> lsmNodeCoordsNaturalOfEdges) 
-            FindEdgesOfLsmElement(int[] lsmElementIdx)
-        {
-            int[] nodeIDs = LsmMesh.GetElementConnectivity(lsmElementIdx);
-            IReadOnlyList<double[]> nodalNaturalCoords = InterpolationQuad4.UniqueInstance.NodalNaturalCoordinates; 
-
-            var lsmNodeIDsOfEdges = new List<(int, int)>();
-            var lsmNodeCoordsNaturalOfEdges = new List<(double[], double[])>();
-            for (int i = 0; i < nodeIDs.Length; ++i)
-            {
-                int start = i;
-                int end = (i + 1) % nodeIDs.Length;
-                lsmNodeIDsOfEdges.Add((nodeIDs[start], nodeIDs[end]));
-                lsmNodeCoordsNaturalOfEdges.Add((nodalNaturalCoords[start], nodalNaturalCoords[end]));
-            }
-
-            return (lsmNodeIDsOfEdges, lsmNodeCoordsNaturalOfEdges);
-        }
-
         public Submesh FindLsmNodesEdgesOfFemElement(int femElementID)
         {
             int[] femElementIdx = FemMesh.GetElementIdx(femElementID);
