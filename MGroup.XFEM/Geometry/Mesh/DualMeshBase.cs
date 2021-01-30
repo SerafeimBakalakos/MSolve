@@ -11,151 +11,151 @@ namespace MGroup.XFEM.Geometry.Mesh
         protected readonly int dim;
         protected readonly int[] multiple;
 
-        protected DualMeshBase(int dimension, IStructuredMesh femMesh, IStructuredMesh lsmMesh)
+        protected DualMeshBase(int dimension, IStructuredMesh coarseMesh, IStructuredMesh fineMesh)
         {
             this.dim = dimension;
-            this.FemMesh = femMesh;
-            this.LsmMesh = lsmMesh;
+            this.CoarseMesh = coarseMesh;
+            this.FineMesh = fineMesh;
 
             multiple = new int[dim];
             for (int d = 0; d < dim; ++d)
             {
-                if (lsmMesh.NumElements[d] % femMesh.NumElements[d] != 0)
+                if (fineMesh.NumElements[d] % coarseMesh.NumElements[d] != 0)
                 {
-                    throw new ArgumentException("The number of elements in each axis of the LSM mesh must be a multiple of"
-                        + " the number of elements in that axis of the FEM mesh");
+                    throw new ArgumentException("The number of elements in each axis of the fine mesh must be a multiple of"
+                        + " the number of elements in that axis of the coarse mesh");
                 }
-                multiple[d] = lsmMesh.NumElements[d] / femMesh.NumElements[d];
+                multiple[d] = fineMesh.NumElements[d] / coarseMesh.NumElements[d];
             }
         }
 
-        public IStructuredMesh LsmMesh { get; }
+        public IStructuredMesh FineMesh { get; }
 
-        public IStructuredMesh FemMesh { get; }
+        public IStructuredMesh CoarseMesh { get; }
 
         /// <summary>
-        /// If the node in the LSM mesh does not correspond to a node in the FEM mesh, -1 will be returned
+        /// If the node in the fine mesh does not correspond to a node in the coarse mesh, -1 will be returned
         /// </summary>
-        /// <param name="lsmNodeID"></param>
-        public int MapNodeLsmToFem(int lsmNodeID)
+        /// <param name="fineNodeID"></param>
+        public int MapNodeFineToCoarse(int fineNodeID)
         {
-            int[] lsmIdx = LsmMesh.GetNodeIdx(lsmNodeID);
-            var femIdx = new int[dim];
+            int[] fineIdx = FineMesh.GetNodeIdx(fineNodeID);
+            var coarseIdx = new int[dim];
             for (int d = 0; d < dim; d++)
             {
-                if (lsmIdx[d] % multiple[d] != 0) return -1;
-                else femIdx[d] = lsmIdx[d] / multiple[d];
+                if (fineIdx[d] % multiple[d] != 0) return -1;
+                else coarseIdx[d] = fineIdx[d] / multiple[d];
             }
-            return FemMesh.GetNodeID(femIdx);
+            return CoarseMesh.GetNodeID(coarseIdx);
         }
 
-        public int MapNodeIDFemToLsm(int femNodeID)
+        public int MapNodeIDCoarseToFine(int coarseNodeID)
         {
-            int[] femIdx = FemMesh.GetNodeIdx(femNodeID);
-            var lsmIdx = MapNodeIdxFemToLsm(femIdx);
-            return LsmMesh.GetNodeID(lsmIdx);
+            int[] coarseIdx = CoarseMesh.GetNodeIdx(coarseNodeID);
+            var fineIdx = MapNodeIdxCoarseToFine(coarseIdx);
+            return FineMesh.GetNodeID(fineIdx);
         }
 
-        public int[] MapNodeIdxFemToLsm(int[] femNodeIdx)
+        public int[] MapNodeIdxCoarseToFine(int[] coarseNodeIdx)
         {
-            var lsmIdx = new int[dim];
+            var fineIdx = new int[dim];
             for (int d = 0; d < dim; d++)
             {
-                lsmIdx[d] = multiple[d] * femNodeIdx[d];
+                fineIdx[d] = multiple[d] * coarseNodeIdx[d];
             }
-            return lsmIdx;
+            return fineIdx;
         }
 
-        public int MapElementLsmToFem(int lsmElementID)
+        public int MapElementFineToCoarse(int fineElementID)
         {
-            int[] lsmIdx = LsmMesh.GetElementIdx(lsmElementID);
-            var femIdx = new int[dim];
+            int[] fineIdx = FineMesh.GetElementIdx(fineElementID);
+            var coarseIdx = new int[dim];
             for (int d = 0; d < dim; d++)
             {
-                femIdx[d] = lsmIdx[d] / multiple[d];
+                coarseIdx[d] = fineIdx[d] / multiple[d];
             }
-            return FemMesh.GetElementID(femIdx);
+            return CoarseMesh.GetElementID(coarseIdx);
         }
 
-        public int[] MapElementFemToLsm(int femElementID)
+        public int[] MapElementCoarseToFine(int coarseElementID)
         {
-            int[] femIdx = FemMesh.GetElementIdx(femElementID);
+            int[] coarseIdx = CoarseMesh.GetElementIdx(coarseElementID);
             List<int[]> elementNeighbors = ElementNeighbors;
-            var lsmElementIDs = new int[elementNeighbors.Count];
+            var fineElementIDs = new int[elementNeighbors.Count];
             for (int i = 0; i < elementNeighbors.Count; ++i)
             {
-                // Offset from the LSM element that has the same first node as the FEM one
+                // Offset from the fine element that has the same first node as the coarse one
                 int[] offset = elementNeighbors[i];
-                var lsmIdx = new int[dim];
+                var fineIdx = new int[dim];
                 for (int d = 0; d < dim; d++)
                 {
-                    lsmIdx[d] = multiple[d] * femIdx[d] + offset[d];
+                    fineIdx[d] = multiple[d] * coarseIdx[d] + offset[d];
                 }
-                int lsmID = LsmMesh.GetElementID(lsmIdx);
-                lsmElementIDs[i] = lsmID;
+                int fineID = FineMesh.GetElementID(fineIdx);
+                fineElementIDs[i] = fineID;
             }
-            return lsmElementIDs;
+            return fineElementIDs;
         }
 
-        public double[] MapPointLsmNaturalToFemNatural(int[] lsmElementIdx, double[] coordsLsmNatural)
+        public double[] MapPointFineNaturalToCoarseNatural(int[] fineElementIdx, double[] coordsFineNatural)
         {
-            var coordsFemNatural = new double[dim];
+            var coordsCoarseNatural = new double[dim];
             for (int d = 0; d < dim; ++d)
             {
                 // Let: 
-                // x = FEM natural coordinate
-                // x0 = FEM natural coordinate starting from the min point of the axis (-1): x0 = 1 + x
-                // dx = max - min of FEM natural coordinate axis: dx = +1 - (-1) = 2
-                // m = multiplicity of LSM elements per FEM element in this axis
-                // i = index of LSM element starting from the one at the min of the axis: i = 0, 1, ... m-1
-                // r = LSM natural coordinate
-                // r0 = LSM natural coordinate starting from the min point of the axis (-1): r0 = 1 + r
-                // dr = max - min of LSM natural coordinate axis: dr = dx/m
+                // x = coarse natural coordinate
+                // x0 = coarse natural coordinate starting from the min point of the axis (-1): x0 = 1 + x
+                // dx = max - min of coarse natural coordinate axis: dx = +1 - (-1) = 2
+                // m = multiplicity of fine elements per coarse element in this axis
+                // i = index of fine element starting from the one at the min of the axis: i = 0, 1, ... m-1
+                // r = fine natural coordinate
+                // r0 = fine natural coordinate starting from the min point of the axis (-1): r0 = 1 + r
+                // dr = max - min of fine natural coordinate axis: dr = dx/m
                 // x0 = i * dr + r0/m => x = i * dx / m + (1+r) / m - 1
 
-                int i = lsmElementIdx[d] % multiple[d];
-                coordsFemNatural[d] = (i * 2.0 + coordsLsmNatural[d] + 1.0) / multiple[d] - 1.0;
+                int i = fineElementIdx[d] % multiple[d];
+                coordsCoarseNatural[d] = (i * 2.0 + coordsFineNatural[d] + 1.0) / multiple[d] - 1.0;
             }
-            return coordsFemNatural;
+            return coordsCoarseNatural;
         }
 
-        //TODO: Perhaps split this into a function that maps FEM -> LSM and one that calculates shape functions. 
-        public DualMeshPoint CalcShapeFunctions(int femElementID, double[] femNaturalCoords)
+        //TODO: Perhaps split this into a function that maps coarse -> fine and one that calculates shape functions. 
+        public DualMeshPoint CalcShapeFunctions(int coarseElementID, double[] coarseNaturalCoords)
         {
-            // Find the LSM element containing that point and the natural coordinates in that element
+            // Find the fine element containing that point and the natural coordinates in that element
             var subElementsIdx = new int[dim];
-            var lsmNaturalCoords = new double[dim];
+            var fineNaturalCoords = new double[dim];
             for (int d = 0; d < dim; ++d)
             {
                 // Let: 
-                // x = FEM natural coordinate
-                // x0 = FEM natural coordinate starting from the min point of the axis (-1): x0 = 1 + x
-                // dx = max - min of FEM natural coordinate axis: dx = +1 - (-1) = 2
-                // m = multiplicity of LSM elements per FEM element in this axis
-                // i = index of LSM element starting from the one at the min of the axis: i = 0, 1, ... m-1
-                // r = LSM natural coordinate
-                // r0 = LSM natural coordinate starting from the min point of the axis (-1): r0 = 1 + r
-                // dr = max - min of LSM natural coordinate axis: dr = dx/m
+                // x = coarse natural coordinate
+                // x0 = coarse natural coordinate starting from the min point of the axis (-1): x0 = 1 + x
+                // dx = max - min of coarse natural coordinate axis: dx = +1 - (-1) = 2
+                // m = multiplicity of fine elements per coarse element in this axis
+                // i = index of fine element starting from the one at the min of the axis: i = 0, 1, ... m-1
+                // r = fine natural coordinate
+                // r0 = fine natural coordinate starting from the min point of the axis (-1): r0 = 1 + r
+                // dr = max - min of fine natural coordinate axis: dr = dx/m
                 // x0 = i * dr + r0/m => r = m * x - 2 * i + m - 1
                 double dx = 2.0; // [-1, 1]
-                double x0 = 1 + femNaturalCoords[d];
+                double x0 = 1 + coarseNaturalCoords[d];
                 double m = multiple[d];
                 subElementsIdx[d] = (int)Math.Floor(x0 * m / dx);
-                lsmNaturalCoords[d] = m * femNaturalCoords[d] - 2 * subElementsIdx[d] + m - 1;
+                fineNaturalCoords[d] = m * coarseNaturalCoords[d] - 2 * subElementsIdx[d] + m - 1;
             }
 
-            // Calculate the shape functions in this LSM element
-            double[] shapeFunctions = ElementInterpolation.EvaluateFunctionsAt(lsmNaturalCoords);
+            // Calculate the shape functions in this fine element
+            double[] shapeFunctions = ElementInterpolation.EvaluateFunctionsAt(fineNaturalCoords);
 
             var result = new DualMeshPoint();
-            result.LsmNaturalCoordinates = lsmNaturalCoords;
-            result.LsmShapeFunctions = shapeFunctions;
+            result.FineNaturalCoordinates = fineNaturalCoords;
+            result.FineShapeFunctions = shapeFunctions;
 
-            result.LsmElementIdx = new int[dim];
-            int[] femElementIdx = FemMesh.GetElementIdx(femElementID);
+            result.FineElementIdx = new int[dim];
+            int[] coarseElementIdx = CoarseMesh.GetElementIdx(coarseElementID);
             for (int d = 0; d < dim; ++d)
             {
-                result.LsmElementIdx[d] = femElementIdx[d] * multiple[d] + subElementsIdx[d];
+                result.FineElementIdx[d] = coarseElementIdx[d] * multiple[d] + subElementsIdx[d];
             }
 
             return result;
@@ -164,7 +164,7 @@ namespace MGroup.XFEM.Geometry.Mesh
         protected abstract IIsoparametricInterpolation ElementInterpolation { get; }
 
         /// <summary>
-        /// A group of nearby LSM elements, that correspond to the same FEM element. 
+        /// A group of nearby fine elements, that correspond to the same coarse element. 
         /// E.g. 2D-3x3: {0, 0}, {1, 0}, {2, 0}, {0, 1}, {1, 1}, {2, 1}, {0, 2}, {1, 2}, {2, 2}, ...
         /// E.g. 3D-2x2: {0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {1, 1, 0}, {1, 0, 1}, {0, 1, 1}, {1, 1, 1}, ...
         /// </summary>

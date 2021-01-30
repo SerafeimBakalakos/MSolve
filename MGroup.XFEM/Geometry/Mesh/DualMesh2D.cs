@@ -8,35 +8,35 @@ namespace MGroup.XFEM.Geometry.Mesh
 {
     public class DualMesh2D : DualMeshBase
     {
-        public DualMesh2D(double[] minCoordinates, double[] maxCoordinates, int[] numElementsFem, int[] numElementsLsm) 
-            : base(2, new UniformMesh2D(minCoordinates, maxCoordinates, numElementsFem),
-                  new UniformMesh2D(minCoordinates, maxCoordinates, numElementsLsm))
+        public DualMesh2D(double[] minCoordinates, double[] maxCoordinates, int[] numElementsCoarse, int[] numElementsFine) 
+            : base(2, new UniformMesh2D(minCoordinates, maxCoordinates, numElementsCoarse),
+                  new UniformMesh2D(minCoordinates, maxCoordinates, numElementsFine))
         {
             ElementNeighbors = FindElementNeighbors(base.multiple);
         }
 
-        public Submesh FindLsmNodesEdgesOfFemElement(int femElementID)
+        public Submesh FindFineNodesEdgesOfCoarseElement(int coarseElementID)
         {
-            int[] femElementIdx = FemMesh.GetElementIdx(femElementID);
-            int[] femNodeIDs = FemMesh.GetElementConnectivity(femElementIdx);
-            int[] firstFemNodeIdx = FemMesh.GetNodeIdx(femNodeIDs[0]);
-            int[] firstLsmNodeIdx = MapNodeIdxFemToLsm(firstFemNodeIdx);
+            int[] coarseElementIdx = CoarseMesh.GetElementIdx(coarseElementID);
+            int[] coarseNodeIDs = CoarseMesh.GetElementConnectivity(coarseElementIdx);
+            int[] firstCoarseNodeIdx = CoarseMesh.GetNodeIdx(coarseNodeIDs[0]);
+            int[] firstFineNodeIdx = MapNodeIdxCoarseToFine(firstCoarseNodeIdx);
 
             //TODO: Improve the performance of the next:
-            var lsmNodeIDs = new List<int>();
+            var fineNodeIDs = new List<int>();
             var edges = new List<(int, int)>();
             for (int j = 0; j <= multiple[1]; ++j)
             {
                 for (int i = 0; i <= multiple[0]; ++i)
                 {
-                    int[] lsmNodeIdx = { firstLsmNodeIdx[0] + i, firstLsmNodeIdx[1] + j };
-                    lsmNodeIDs.Add(LsmMesh.GetNodeID(lsmNodeIdx));
+                    int[] fineNodeIdx = { firstFineNodeIdx[0] + i, firstFineNodeIdx[1] + j };
+                    fineNodeIDs.Add(FineMesh.GetNodeID(fineNodeIdx));
 
                     // Horizontal edges
                     if (i > 0)
                     {
-                        int last = lsmNodeIDs.Count - 1;
-                        edges.Add((lsmNodeIDs[last - 1], lsmNodeIDs[last]));
+                        int last = fineNodeIDs.Count - 1;
+                        edges.Add((fineNodeIDs[last - 1], fineNodeIDs[last]));
                     }
                 }
             }
@@ -52,12 +52,12 @@ namespace MGroup.XFEM.Geometry.Mesh
                     //int up = (j + 1) * multiple[0] + i;
                     int down = j * stride + i;
                     int up = (j + 1) * stride + i;
-                    edges.Add((lsmNodeIDs[down], lsmNodeIDs[up]));
+                    edges.Add((fineNodeIDs[down], fineNodeIDs[up]));
                 }
             }
 
             // Elements //TODO: This is the same for all elements. It only needs to be defined once, perhaps in Submesh
-            var elementToEdges = new List<int[]>(LsmMesh.NumElementsTotal);
+            var elementToEdges = new List<int[]>(FineMesh.NumElementsTotal);
             for (int j = 0; j < multiple[1]; ++j)
             {
                 for (int i = 0; i < multiple[0]; ++i)
@@ -70,7 +70,7 @@ namespace MGroup.XFEM.Geometry.Mesh
                 }
             }
 
-            return new Submesh(lsmNodeIDs, edges, elementToEdges);
+            return new Submesh(fineNodeIDs, edges, elementToEdges);
         }
 
         protected override IIsoparametricInterpolation ElementInterpolation => InterpolationQuad4.UniqueInstance;
@@ -84,7 +84,7 @@ namespace MGroup.XFEM.Geometry.Mesh
             {
                 for (int i = 0; i < multiple[0]; ++i)
                 {
-                    // Offset from the LSM element that has the same first node as the FEM element
+                    // Offset from the LSM element that has the same first node as the coarse element
                     int[] offset = { i, j };
                     elementNeighbors.Add(offset);
                 }
@@ -93,22 +93,22 @@ namespace MGroup.XFEM.Geometry.Mesh
         }
 
         /// <summary>
-        /// Mesh entities corresponding to a FEM element.
+        /// Mesh entities corresponding to a coarse element.
         /// </summary>
         public class Submesh
         {
-            public Submesh(List<int> lsmNodeIDs, List<(int, int)> lsmEdges, List<int[]> lsmElementToEdges)
+            public Submesh(List<int> fineNodeIDs, List<(int, int)> fineEdges, List<int[]> fineElementToEdges)
             {
-                this.LsmNodeIDs = lsmNodeIDs;
-                this.LsmEdgesToNodes = lsmEdges;
-                this.LsmElementToEdges = lsmElementToEdges;
+                this.FineNodeIDs = fineNodeIDs;
+                this.FineEdgesToNodes = fineEdges;
+                this.FineElementToEdges = fineElementToEdges;
             }
 
-            public List<int> LsmNodeIDs { get; }
+            public List<int> FineNodeIDs { get; }
 
-            public List<(int, int)> LsmEdgesToNodes { get; }
+            public List<(int, int)> FineEdgesToNodes { get; }
 
-            public List<int[]> LsmElementToEdges { get; }
+            public List<int[]> FineElementToEdges { get; }
         }
     }
 }

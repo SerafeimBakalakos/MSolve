@@ -7,22 +7,22 @@ namespace MGroup.XFEM.Geometry.Mesh
 {
     public interface IDualMesh
     {
-        IStructuredMesh FemMesh { get; }
+        IStructuredMesh CoarseMesh { get; }
 
-        IStructuredMesh LsmMesh { get; }
+        IStructuredMesh FineMesh { get; }
 
         /// <summary>
-        /// If the node in the LSM mesh does not correspond to a node in the FEM mesh, -1 will be returned
+        /// If the node in the fine mesh does not correspond to a node in the coarse mesh, -1 will be returned
         /// </summary>
-        /// <param name="lsmNodeID"></param>
-        int MapNodeLsmToFem(int lsmNodeID);
+        /// <param name="fineNodeID"></param>
+        int MapNodeFineToCoarse(int fineNodeID);
 
-        int MapNodeIDFemToLsm(int femNodeID);
+        int MapNodeIDCoarseToFine(int coarseNodeID);
 
-        int MapElementLsmToFem(int lsmElementID);
+        int MapElementFineToCoarse(int fineElementID);
 
-        int[] MapElementFemToLsm(int femElementID);
+        int[] MapElementCoarseToFine(int coarseElementID);
 
-        DualMeshPoint CalcShapeFunctions(int femElementID, double[] femNaturalCoords);
+        DualMeshPoint CalcShapeFunctions(int coarseElementID, double[] coarseNaturalCoords);
     }
 }

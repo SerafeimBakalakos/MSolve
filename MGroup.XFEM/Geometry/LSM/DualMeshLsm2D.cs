@@ -20,12 +20,12 @@ namespace MGroup.XFEM.Geometry.LSM
         public DualMeshLsm2D(int id, DualMesh2D dualMesh, ICurve2D closedCurve)
         {
             this.dualMesh = dualMesh;
-            IStructuredMesh lsmMesh = dualMesh.LsmMesh;
+            IStructuredMesh fineMesh = dualMesh.FineMesh;
             this.ID = id;
-            NodalLevelSets = new double[lsmMesh.NumNodesTotal];
+            NodalLevelSets = new double[fineMesh.NumNodesTotal];
             for (int n = 0; n < NodalLevelSets.Length; ++n)
             {
-                double[] node = lsmMesh.GetNodeCoordinates(lsmMesh.GetNodeIdx(n));
+                double[] node = fineMesh.GetNodeCoordinates(fineMesh.GetNodeIdx(n));
                 NodalLevelSets[n] = closedCurve.SignedDistanceOf(node);
             }
 
@@ -39,19 +39,19 @@ namespace MGroup.XFEM.Geometry.LSM
         //TODO: How can I check and what to do if the intersection mesh or part of it conforms to the element edges?
         public IElementDiscontinuityInteraction Intersect(IXFiniteElement element)
         {
-            if (IsFemElementDisjoint(element))
+            if (IsCoarseElementDisjoint(element))
             {
                 return new NullElementDiscontinuityInteraction(this.ID, element);
             }
 
-            int[] lsmElementIDs = dualMesh.MapElementFemToLsm(element.ID);
+            int[] fineElementIDs = dualMesh.MapElementCoarseToFine(element.ID);
             var intersectionsOfElements = new Dictionary<int, List<double[]>>();
-            foreach (int lsmElementID in lsmElementIDs)
+            foreach (int fineElementID in fineElementIDs)
             {
-                var intersections = IntersectLsmElement(lsmElementID);
+                var intersections = IntersectFineElement(fineElementID);
                 if (intersections.Count == 2)
                 {
-                    intersectionsOfElements[lsmElementID] = intersections;
+                    intersectionsOfElements[fineElementID] = intersections;
                 }
             }
 
@@ -66,21 +66,21 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public double SignedDistanceOf(XNode node)
         {
-            return NodalLevelSets[dualMesh.MapNodeIDFemToLsm(node.ID)];
+            return NodalLevelSets[dualMesh.MapNodeIDCoarseToFine(node.ID)];
         }
 
         public double SignedDistanceOf(XPoint point)
         {
-            int femElementID = point.Element.ID;
-            double[] femNaturalCoords = point.Coordinates[CoordinateSystem.ElementNatural];
-            DualMeshPoint dualMeshPoint = dualMesh.CalcShapeFunctions(femElementID, femNaturalCoords);
-            double[] shapeFunctions = dualMeshPoint.LsmShapeFunctions;
-            int[] lsmNodes = dualMesh.LsmMesh.GetElementConnectivity(dualMeshPoint.LsmElementIdx);
+            int coarseElementID = point.Element.ID;
+            double[] coarseNaturalCoords = point.Coordinates[CoordinateSystem.ElementNatural];
+            DualMeshPoint dualMeshPoint = dualMesh.CalcShapeFunctions(coarseElementID, coarseNaturalCoords);
+            double[] shapeFunctions = dualMeshPoint.FineShapeFunctions;
+            int[] fineNodes = dualMesh.FineMesh.GetElementConnectivity(dualMeshPoint.FineElementIdx);
 
             double result = 0;
-            for (int n = 0; n < lsmNodes.Length; ++n)
+            for (int n = 0; n < fineNodes.Length; ++n)
             {
-                result += shapeFunctions[n] * NodalLevelSets[lsmNodes[n]];
+                result += shapeFunctions[n] * NodalLevelSets[fineNodes[n]];
             }
             return result;
         }
@@ -101,19 +101,19 @@ namespace MGroup.XFEM.Geometry.LSM
             else throw new ArgumentException("Incompatible Level Set geometry");
         }
 
-        private List<double[]> IntersectLsmElement(int lsmElementID)
+        private List<double[]> IntersectFineElement(int fineElementID)
         {
-            int[] lsmElementIdx = dualMesh.LsmMesh.GetElementIdx(lsmElementID);
-            int[] lsmNodes = dualMesh.LsmMesh.GetElementConnectivity(lsmElementIdx);
+            int[] fineElementIdx = dualMesh.FineMesh.GetElementIdx(fineElementID);
+            int[] fineNodes = dualMesh.FineMesh.GetElementConnectivity(fineElementIdx);
 
             var intersections = new List<double[]>();
-            if (IsLsmElementDisjoint(lsmElementIdx)) // Check this first, since it is faster and most elements are in this category 
+            if (IsFineElementDisjoint(fineElementIdx)) // Check this first, since it is faster and most elements are in this category 
             {
                 return intersections;
             }
 
             var elementGeometry = new ElementQuad4Geometry();
-            (ElementEdge[] edges, _)  = elementGeometry.FindEdgesFaces(lsmNodes);
+            (ElementEdge[] edges, _)  = elementGeometry.FindEdgesFaces(fineNodes);
             for (int i = 0; i < edges.Length; ++i)
             {
                 int node0ID = edges[i].NodeIDs[0];
@@ -153,11 +153,11 @@ namespace MGroup.XFEM.Geometry.LSM
                 }
             }
 
-            // Convert the coordinates of the intersection points from the natural system of the LSM element to the natural
+            // Convert the coordinates of the intersection points from the natural system of the fine element to the natural
             // system of the FEM element.
             for (int p = 0; p < intersections.Count; ++p)
             {
-                intersections[p] = dualMesh.MapPointLsmNaturalToFemNatural(lsmElementIdx, intersections[p]);
+                intersections[p] = dualMesh.MapPointFineNaturalToCoarseNatural(fineElementIdx, intersections[p]);
             }
             return intersections;
         }
@@ -179,15 +179,15 @@ namespace MGroup.XFEM.Geometry.LSM
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        private bool IsFemElementDisjoint(IXFiniteElement element)
+        private bool IsCoarseElementDisjoint(IXFiniteElement element)
         {
             double minLevelSet = double.MaxValue;
             double maxLevelSet = double.MinValue;
 
             foreach (XNode node in element.Nodes)
             {
-                int lsmNodeID = dualMesh.MapNodeIDFemToLsm(node.ID);
-                double levelSet = NodalLevelSets[lsmNodeID];
+                int fineNodeID = dualMesh.MapNodeIDCoarseToFine(node.ID);
+                double levelSet = NodalLevelSets[fineNodeID];
                 if (levelSet < minLevelSet) minLevelSet = levelSet;
                 if (levelSet > maxLevelSet) maxLevelSet = levelSet;
             }
@@ -201,13 +201,13 @@ namespace MGroup.XFEM.Geometry.LSM
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        private bool IsLsmElementDisjoint(int[] elementIdx)
+        private bool IsFineElementDisjoint(int[] elementIdx)
         {
             double minLevelSet = double.MaxValue;
             double maxLevelSet = double.MinValue;
 
-            int[] lsmNodes = dualMesh.LsmMesh.GetElementConnectivity(elementIdx);
-            foreach (int nodeId in lsmNodes)
+            int[] fineNodes = dualMesh.FineMesh.GetElementConnectivity(elementIdx);
+            foreach (int nodeId in fineNodes)
             {
                 double levelSet = NodalLevelSets[nodeId];
                 if (levelSet < minLevelSet) minLevelSet = levelSet;

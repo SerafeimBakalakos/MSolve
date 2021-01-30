@@ -6,10 +6,10 @@ namespace MGroup.XFEM.Geometry.Mesh
 {
     public class DualMeshPoint
     {
-        public int[] LsmElementIdx { get; set; }
+        public int[] FineElementIdx { get; set; }
 
-        public double[] LsmNaturalCoordinates { get; set; }
+        public double[] FineNaturalCoordinates { get; set; }
 
-        public double[] LsmShapeFunctions { get; set; }
+        public double[] FineShapeFunctions { get; set; }
     }
 }

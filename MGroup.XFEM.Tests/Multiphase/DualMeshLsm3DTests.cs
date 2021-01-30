@@ -33,8 +33,8 @@ namespace MGroup.XFEM.Tests.Multiphase
 
         private static readonly double[] minCoords = { -1.0, -1.0, -1.0 };
         private static readonly double[] maxCoords = { +1.0, +1.0, +1.0 };
-        private static readonly int[] numElementsFem = { 4, 4, 4 };
-        private static readonly int[] numElementsLsm = { 20, 20, 20 };
+        private static readonly int[] numElementsCoarse = { 4, 4, 4 };
+        private static readonly int[] numElementsFine = { 20, 20, 20 };
         private static readonly Sphere initialSurface = new Sphere(0.0, 0.0, 0.0, 0.49);
         private const int defaultPhaseID = 0;
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
@@ -50,7 +50,7 @@ namespace MGroup.XFEM.Tests.Multiphase
                 }
 
                 // Coarse mesh
-                var coarseMesh = new UniformMesh3D(minCoords, maxCoords, numElementsFem);
+                var coarseMesh = new UniformMesh3D(minCoords, maxCoords, numElementsCoarse);
                 XModel<IXMultiphaseElement> coarseModel = CreateModel(coarseMesh);
                 var coarseOutputMesh = new ContinuousOutputMesh(coarseModel.XNodes, coarseModel.Elements);
                 var coarseLsm = new SimpleLsm3D(0, coarseModel.XNodes, initialSurface);
@@ -72,7 +72,7 @@ namespace MGroup.XFEM.Tests.Multiphase
                 }
 
                 // Fine mesh
-                var fineMesh = new UniformMesh3D(minCoords, maxCoords, numElementsLsm);
+                var fineMesh = new UniformMesh3D(minCoords, maxCoords, numElementsFine);
                 XModel<IXMultiphaseElement> fineModel = CreateModel(fineMesh);
                 var fineOutputMesh = new ContinuousOutputMesh(fineModel.XNodes, fineModel.Elements);
                 var fineLsm = new SimpleLsm3D(0, fineModel.XNodes, initialSurface);
@@ -131,8 +131,8 @@ namespace MGroup.XFEM.Tests.Multiphase
                     Directory.CreateDirectory(outputDirectory);
                 }
 
-                var mesh = new DualMesh3D(minCoords, maxCoords, numElementsFem, numElementsLsm);
-                XModel<IXMultiphaseElement> coarseModel = CreateModel(mesh.FemMesh);
+                var mesh = new DualMesh3D(minCoords, maxCoords, numElementsCoarse, numElementsFine);
+                XModel<IXMultiphaseElement> coarseModel = CreateModel(mesh.CoarseMesh);
                 var dualMeshLsm = new DualMeshLsm3D(0, mesh, initialSurface);
 
                 int numPointsPerElemPerAxis = 10;
@@ -192,8 +192,8 @@ namespace MGroup.XFEM.Tests.Multiphase
                 }
 
                 // Create model and LSM
-                var mesh = new DualMesh3D(minCoords, maxCoords, numElementsFem, numElementsLsm);
-                XModel<IXMultiphaseElement> model = CreateModel(mesh.FemMesh);
+                var mesh = new DualMesh3D(minCoords, maxCoords, numElementsCoarse, numElementsFine);
+                XModel<IXMultiphaseElement> model = CreateModel(mesh.CoarseMesh);
                 model.FindConformingSubcells = true;
                 PhaseGeometryModel geometryModel = CreatePhases(model, mesh);
 
@@ -216,7 +216,7 @@ namespace MGroup.XFEM.Tests.Multiphase
                 model.ModelObservers.Add(new IntegrationPointsPlotter(outputDirectory, model));
 
                 // Plot enrichments
-                double elementSize = (maxCoords[0] - minCoords[0]) / numElementsFem[0];
+                double elementSize = (maxCoords[0] - minCoords[0]) / numElementsCoarse[0];
                 model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 2));
 
                 // Initialize model state so that everything described above can be tracked

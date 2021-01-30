@@ -8,9 +8,9 @@ namespace MGroup.XFEM.Geometry.Mesh
 {
     public class DualMesh3D : DualMeshBase
     {
-        public DualMesh3D(double[] minCoordinates, double[] maxCoordinates, int[] numElementsFem, int[] numElementsLsm) 
-            : base(3, new UniformMesh3D(minCoordinates, maxCoordinates, numElementsFem),
-                  new UniformMesh3D(minCoordinates, maxCoordinates, numElementsLsm))
+        public DualMesh3D(double[] minCoordinates, double[] maxCoordinates, int[] numElementsCoarse, int[] numElementsFine) 
+            : base(3, new UniformMesh3D(minCoordinates, maxCoordinates, numElementsCoarse),
+                  new UniformMesh3D(minCoordinates, maxCoordinates, numElementsFine))
         {
             ElementNeighbors = FindElementNeighbors(base.multiple);
         }
@@ -28,7 +28,7 @@ namespace MGroup.XFEM.Geometry.Mesh
                 {
                     for (int i = 0; i < multiple[0]; ++i)
                     {
-                        // Offset from the lsm element that has the same first node as the FEM element
+                        // Offset from the fine element that has the same first node as the coarse element
                         int[] offset = { i, j, k };
                         elementNeighbors.Add(offset);
                     }
