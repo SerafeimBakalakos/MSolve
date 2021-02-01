@@ -29,14 +29,12 @@ namespace MGroup.XFEM.Geometry
                     throw new ArgumentException("There must be at least 2 intersection points of at least 1 element");
                 }
             }
-            else
+
+            List<double[]> orderedPoints = OrderPoints(intersectionsOfElements);
+            foreach (double[] point in orderedPoints) mesh.Vertices.Add(point);
+            for (int i = 0; i < orderedPoints.Count - 1; ++i)
             {
-                List<double[]> orderedPoints = OrderPoints(intersectionsOfElements);
-                foreach (double[] point in orderedPoints) mesh.Vertices.Add(point);
-                for (int i = 0; i < orderedPoints.Count - 1; ++i)
-                {
-                    mesh.Cells.Add((CellType.Line, new int[] { i, i + 1 }));
-                }
+                mesh.Cells.Add((CellType.Line, new int[] { i, i + 1 }));
             }
             return mesh;
         }

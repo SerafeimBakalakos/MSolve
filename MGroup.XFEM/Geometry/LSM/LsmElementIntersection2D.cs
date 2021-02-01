@@ -40,6 +40,10 @@ namespace MGroup.XFEM.Geometry.LSM
             {
                 throw new ArgumentException("There is no intersection between the curve and element");
             }
+            else if (intersectionMesh.Vertices.Count < 2)
+            {
+                throw new ArgumentException("Invalid intersection mesh.");
+            }
             this.RelativePosition = relativePosition;
             this.Element = element;
             this.intersectionMesh = intersectionMesh;

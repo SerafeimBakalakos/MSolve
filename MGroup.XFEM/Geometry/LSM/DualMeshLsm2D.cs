@@ -89,10 +89,15 @@ namespace MGroup.XFEM.Geometry.LSM
         {
             if (otherGeometry is DualMeshLsm2D otherLsm)
             {
-                if (this.NodalLevelSets.Length != otherLsm.NodalLevelSets.Length)
+                if (this.dualMesh.CoarseMesh != otherLsm.dualMesh.CoarseMesh)
                 {
-                    throw new ArgumentException("Incompatible Level Set geometry");
+                    throw new ArgumentException("The two LSM geometries refer to a different coarse mesh");
                 }
+                else if (this.dualMesh.FineMesh != otherLsm.dualMesh.FineMesh)
+                {
+                    throw new ArgumentException("The two LSM geometries refer to a different fine mesh");
+                }
+
                 for (int i = 0; i < this.NodalLevelSets.Length; ++i)
                 {
                     this.NodalLevelSets[i] = Math.Min(this.NodalLevelSets[i], otherLsm.NodalLevelSets[i]);

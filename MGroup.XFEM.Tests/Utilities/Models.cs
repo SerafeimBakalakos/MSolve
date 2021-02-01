@@ -121,6 +121,55 @@ namespace MGroup.XFEM.Tests.Utilities
             return model;
         }
 
+        public static XModel<IXMultiphaseElement> CreateQuad4Model(IStructuredMesh mesh, int bulkIntegrationOrder,
+            int boundaryIntegrationOrder, IThermalMaterialField materialField)
+        {
+            var model = new XModel<IXMultiphaseElement>(2);
+            model.Subdomains[0] = new XSubdomain(0);
+            for (int n = 0; n < mesh.NumNodesTotal; ++n)
+            {
+                model.XNodes.Add(new XNode(n, mesh.GetNodeCoordinates(mesh.GetNodeIdx(n))));
+            }
+
+            var stdQuadrature = GaussLegendre2D.GetQuadratureWithOrder(bulkIntegrationOrder, bulkIntegrationOrder);
+            var subcellQuadrature = TriangleQuadratureSymmetricGaussian.Order2Points3;
+            var integrationBulk = new IntegrationWithConformingSubtriangles2D(subcellQuadrature);
+
+            var elemFactory = new XThermalElement2DFactory(materialField, 1, integrationBulk, boundaryIntegrationOrder);
+            for (int e = 0; e < mesh.NumElementsTotal; ++e)
+            {
+                var nodes = new List<XNode>();
+                int[] connectivity = mesh.GetElementConnectivity(mesh.GetElementIdx(e));
+                foreach (int n in connectivity)
+                {
+                    nodes.Add(model.XNodes[n]);
+                }
+                XThermalElement2D element = elemFactory.CreateElement(e, CellType.Quad4, nodes);
+                model.Elements.Add(element);
+                model.Subdomains[0].Elements.Add(element);
+            }
+
+            // Boundary conditions
+            double meshTol = 1E-7;
+
+            // Left side: T = +100
+            double minX = model.XNodes.Select(n => n.X).Min();
+            foreach (var node in model.XNodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
+            {
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = +100 });
+            }
+
+            // Right side: T = 100
+            double maxX = model.XNodes.Select(n => n.X).Max();
+            foreach (var node in model.XNodes.Where(n => Math.Abs(n.X - maxX) <= meshTol))
+            {
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = -100 });
+            }
+
+            model.ConnectDataStructures();
+            return model;
+        }
+
         public static XModel<IXMultiphaseElement> CreateQuad4Model(double[] minCoords, double[] maxCoords, double thickness,
             int[] numElements, int bulkIntegrationOrder, int boundaryIntegrationOrder, IStructuralMaterialField materialField)
         {
@@ -203,5 +252,52 @@ namespace MGroup.XFEM.Tests.Utilities
             return model;
         }
 
+        public static XModel<IXMultiphaseElement> CreateHexa8Model(IStructuredMesh mesh,
+            int bulkIntegrationOrder, int boundaryIntegrationOrder, IThermalMaterialField materialField)
+        {
+            var model = new XModel<IXMultiphaseElement>(3);
+            model.Subdomains[0] = new XSubdomain(0);
+            for (int n = 0; n < mesh.NumNodesTotal; ++n)
+            {
+                model.XNodes.Add(new XNode(n, mesh.GetNodeCoordinates(mesh.GetNodeIdx(n))));
+            }
+
+            var subcellQuadrature = TetrahedronQuadrature.Order2Points4;
+            var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(subcellQuadrature);
+
+            var elemFactory = new XThermalElement3DFactory(materialField, integrationBulk, boundaryIntegrationOrder);
+            for (int e = 0; e < mesh.NumElementsTotal; ++e)
+            {
+                var nodes = new List<XNode>();
+                int[] connectivity = mesh.GetElementConnectivity(mesh.GetElementIdx(e));
+                foreach (int n in connectivity)
+                {
+                    nodes.Add(model.XNodes[n]);
+                }
+                XThermalElement3D element = elemFactory.CreateElement(e, ISAAR.MSolve.Discretization.Mesh.CellType.Hexa8, nodes);
+                model.Elements.Add(element);
+                model.Subdomains[0].Elements.Add(element);
+            }
+
+            // Boundary conditions
+            double meshTol = 1E-7;
+
+            // Left side: T = +100
+            double minX = model.XNodes.Select(n => n.X).Min();
+            foreach (var node in model.XNodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
+            {
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = +100 });
+            }
+
+            // Right side: T = 100
+            double maxX = model.XNodes.Select(n => n.X).Max();
+            foreach (var node in model.XNodes.Where(n => Math.Abs(n.X - maxX) <= meshTol))
+            {
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = -100 });
+            }
+
+            model.ConnectDataStructures();
+            return model;
+        }
     }
 }
