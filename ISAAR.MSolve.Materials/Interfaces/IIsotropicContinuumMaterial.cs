@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ISAAR.MSolve.Materials.Interfaces
 {
-    public interface IIsotropicContinuumMaterial3D : IContinuumMaterial3D
+    public interface IIsotropicContinuumMaterial: IContinuumMaterial
     {
     }
 }

@@ -2,7 +2,7 @@
 
 namespace ISAAR.MSolve.Materials.Interfaces
 {
-    public interface IContinuumMaterial3D : IFiniteElementMaterial
+    public interface IContinuumMaterial : IFiniteElementMaterial
     {
         double[] Stresses { get; }
         IMatrixView ConstitutiveMatrix { get; }

@@ -5,7 +5,7 @@ using ISAAR.MSolve.Materials.Interfaces;
 
 namespace ISAAR.MSolve.Materials
 {
-    public class ElasticMaterial3D : IIsotropicContinuumMaterial3D
+    public class ElasticMaterial3D : IIsotropicContinuumMaterial
     {
         //private readonly double[] strains = new double[6];
         private readonly double[] stresses = new double[6];

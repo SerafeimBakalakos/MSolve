@@ -61,7 +61,7 @@ namespace MGroup.XFEM.Output.Fields
                     strains[coordsCartesian] = strain;
 
                     // Stresses
-                    IContinuumMaterial2D elasticity = FindMaterialAt(element, point);
+                    IContinuumMaterial elasticity = FindMaterialAt(element, point);
                     stresses[coordsCartesian] = elasticity.ConstitutiveMatrix.Multiply(strain);
                 }
             }
@@ -124,7 +124,7 @@ namespace MGroup.XFEM.Output.Fields
         }
 
         //TODO: Do not use this for gauss points, since this work is already done by the element itself
-        public static IContinuumMaterial2D FindMaterialAt(IXStructuralMultiphaseElement element, XPoint point)
+        public static IContinuumMaterial FindMaterialAt(IXStructuralMultiphaseElement element, XPoint point)
         {
             // Find the phase at this integration point.
             IPhase phase = null;

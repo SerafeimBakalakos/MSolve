@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.FEM.Elements
         private readonly static IDofType[] nodalDOFTypes = new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ, PorousMediaDof.Pressure };
         private readonly static IDofType[][] dofTypes = new IDofType[][] { nodalDOFTypes, nodalDOFTypes, nodalDOFTypes,
             nodalDOFTypes, nodalDOFTypes, nodalDOFTypes, nodalDOFTypes, nodalDOFTypes };
-        protected IIsotropicContinuumMaterial3D[] materialsAtGaussPoints;
+        protected IIsotropicContinuumMaterial[] materialsAtGaussPoints;
         protected IElementDofEnumerator dofEnumerator = new GenericDofEnumerator();
 
         #region Fortran imports
@@ -102,15 +102,15 @@ namespace ISAAR.MSolve.FEM.Elements
         {
         }
 
-        public Hexa8u8p(IIsotropicContinuumMaterial3D material)
+        public Hexa8u8p(IIsotropicContinuumMaterial material)
         {
             throw new NotImplementedException();
-            //materialsAtGaussPoints = new IIsotropicContinuumMaterial3D[Hexa8u8p.iInt3];
+            //materialsAtGaussPoints = new IIsotropicContinuumMaterial[Hexa8u8p.iInt3];
             //for (int i = 0; i < Hexa8u8p.iInt3; i++)
-            //    materialsAtGaussPoints[i] = (IIsotropicContinuumMaterial3D)material.Clone();
+            //    materialsAtGaussPoints[i] = (IIsotropicContinuumMaterial)material.Clone();
         }
 
-        public Hexa8u8p(IIsotropicContinuumMaterial3D material, IElementDofEnumerator dofEnumerator) : this(material)
+        public Hexa8u8p(IIsotropicContinuumMaterial material, IElementDofEnumerator dofEnumerator) : this(material)
         {
             this.dofEnumerator = dofEnumerator;
         }
@@ -458,7 +458,7 @@ namespace ISAAR.MSolve.FEM.Elements
         {
             get 
             {
-                foreach (IContinuumMaterial3D material in materialsAtGaussPoints)
+                foreach (IContinuumMaterial material in materialsAtGaussPoints)
                     if (material.Modified) return true;
                 return false;
             }
@@ -466,22 +466,22 @@ namespace ISAAR.MSolve.FEM.Elements
 
         public void ResetMaterialModified()
         {
-            foreach (IContinuumMaterial3D material in materialsAtGaussPoints) material.ResetModified();
+            foreach (IContinuumMaterial material in materialsAtGaussPoints) material.ResetModified();
         }
 
         public void ClearMaterialState()
         {
-            foreach (IContinuumMaterial3D m in materialsAtGaussPoints) m.ClearState();
+            foreach (IContinuumMaterial m in materialsAtGaussPoints) m.ClearState();
         }
 
         public void SaveMaterialState()
         {
-            foreach (IContinuumMaterial3D m in materialsAtGaussPoints) m.SaveState();
+            foreach (IContinuumMaterial m in materialsAtGaussPoints) m.SaveState();
         }
 
         public void ClearMaterialStresses()
         {
-            foreach (IContinuumMaterial3D m in materialsAtGaussPoints) m.ClearStresses();
+            foreach (IContinuumMaterial m in materialsAtGaussPoints) m.ClearStresses();
         }
 
         #endregion

@@ -121,7 +121,7 @@ namespace ISAAR.MSolve.IGA.Problems.Structural.Elements
 
                 Matrix B = B1 * B2;
 
-                IMatrixView E = ((IContinuumMaterial3D)nurbsElement.Patch.Material).ConstitutiveMatrix;
+                IMatrixView E = ((IContinuumMaterial)nurbsElement.Patch.Material).ConstitutiveMatrix;
                 Matrix stiffnessMatrixGaussPoint = B.ThisTransposeTimesOtherTimesThis(E) * jacdet * gaussPoints[j].WeightFactor;
 
                 for (int m = 0; m < nurbsElement.ControlPoints.Count * 3; m++)

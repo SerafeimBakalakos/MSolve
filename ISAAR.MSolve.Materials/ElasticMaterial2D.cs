@@ -6,7 +6,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 namespace ISAAR.MSolve.Materials
 {
-    public class ElasticMaterial2D : IIsotropicContinuumMaterial2D
+    public class ElasticMaterial2D : IIsotropicContinuumMaterial
     {
         private readonly double[] strains = new double[3];
         private double[] stresses = new double[3];

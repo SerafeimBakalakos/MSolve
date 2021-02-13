@@ -147,14 +147,14 @@ namespace ISAAR.MSolve.IGA.Elements
 
 				var Bbending = CalculateBendingDeformationMatrix(surfaceBasisVector3, tsplines, j, surfaceBasisVector2, surfaceBasisVectorDerivative1, surfaceBasisVector1, J1, surfaceBasisVectorDerivative2, surfaceBasisVectorDerivative12, shellElement);
 
-				double membraneStiffness = ((IIsotropicContinuumMaterial2D)shellElement.Patch.Material).YoungModulus * shellElement.Patch.Thickness /
-										   (1 - Math.Pow(((IIsotropicContinuumMaterial2D)shellElement.Patch.Material).PoissonRatio, 2));
+				double membraneStiffness = ((IIsotropicContinuumMaterial)shellElement.Patch.Material).YoungModulus * shellElement.Patch.Thickness /
+										   (1 - Math.Pow(((IIsotropicContinuumMaterial)shellElement.Patch.Material).PoissonRatio, 2));
 
 				var Kmembrane = Bmembrane.Transpose() * constitutiveMatrix * Bmembrane * membraneStiffness * J1 *
 								gaussPoints[j].WeightFactor;
 
-				double bendingStiffness = ((IIsotropicContinuumMaterial2D)shellElement.Patch.Material).YoungModulus * Math.Pow(shellElement.Patch.Thickness, 3) /
-										  12 / (1 - Math.Pow(((IIsotropicContinuumMaterial2D)shellElement.Patch.Material).PoissonRatio, 2));
+				double bendingStiffness = ((IIsotropicContinuumMaterial)shellElement.Patch.Material).YoungModulus * Math.Pow(shellElement.Patch.Thickness, 3) /
+										  12 / (1 - Math.Pow(((IIsotropicContinuumMaterial)shellElement.Patch.Material).PoissonRatio, 2));
 
 				var Kbending = Bbending.Transpose() * constitutiveMatrix * Bbending * bendingStiffness * J1 *
 							   gaussPoints[j].WeightFactor;
@@ -175,7 +175,7 @@ namespace ISAAR.MSolve.IGA.Elements
             auxMatrix1[1, 1] = surfaceBasisVector2.DotProduct(surfaceBasisVector2);
             (Matrix inverse, double det) = auxMatrix1.InvertAndDeterminant();
 
-			var material = ((IContinuumMaterial2D)element.Patch.Material);
+			var material = ((IContinuumMaterial)element.Patch.Material);
 			var constitutiveMatrix = Matrix.CreateFromArray(new double[3, 3]
 			{
 				{

@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
     /// Primary multiscale analysis class that connects all nesessary structures for a 3D FE2 simulation
     /// Authors: Gerasimos Sotiropoulos
     /// </summary>
-    public class Microstructure3D : StructuralProblemsMicrostructureBase, IContinuumMaterial3D
+    public class Microstructure3D : StructuralProblemsMicrostructureBase, IContinuumMaterial
     {
         private Model model { get; set; }
         //private readonly Dictionary<int, Node> nodesDictionary = new Dictionary<int, Node>();

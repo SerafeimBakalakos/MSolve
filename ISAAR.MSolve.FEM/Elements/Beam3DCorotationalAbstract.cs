@@ -27,7 +27,7 @@ namespace ISAAR.MSolve.FEM.Elements
         //protected static final List<Set<FreedomDegreeType>> FREEDOM_DEGREE_TYPES =
         //        Collections.nCopies(NODE_COUNT, FreedomDegreeTypeSets.X_Y_Z_ROTX_ROTY_ROTZ);
         protected IElementDofEnumerator dofEnumerator = new GenericDofEnumerator();
-        protected readonly IIsotropicContinuumMaterial3D material;
+        protected readonly IIsotropicContinuumMaterial material;
         protected readonly IList<Node> nodes;
         protected readonly double density;
         protected BeamSection3D beamSection;
@@ -44,7 +44,7 @@ namespace ISAAR.MSolve.FEM.Elements
         public double RayleighAlpha { get; set; }
         public double RayleighBeta { get; set; }
 
-        protected Beam3DCorotationalAbstract(IList<Node> nodes, IIsotropicContinuumMaterial3D material, double density, 
+        protected Beam3DCorotationalAbstract(IList<Node> nodes, IIsotropicContinuumMaterial material, double density, 
             BeamSection3D beamSection)
         {
             this.nodes = nodes;
