@@ -30,15 +30,17 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
         private static readonly string expectedDirectory = Path.Combine(
             Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "plate_2phases_cohesive_2D");
 
-        private static readonly double[] minCoords = { -1.0, -1.0 };
-        private static readonly double[] maxCoords = { +1.0, +1.0 };
+        private static readonly double[] minCoords = { -10.0, -10.0 };
+        private static readonly double[] maxCoords = { +10.0, +10.0 };
         private const double thickness = 1.0;
-        private static readonly int[] numElements = { 15, 15 };
+        private static readonly int[] numElements = { 31, 31 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 
-        private const double E0 = 1, E1 = 2, v = 0.3;
+        private const double load = 1E4;
+        private const double Etop = 2E6, Ebottom = 1E6, v = 0.3;
         //private const double cohesivenessNormal = 0, cohesivenessTangent = 0;
-        private const double cohesivenessNormal = 1000, cohesivenessTangent = 1000;
+        private const double cohesivenessNormal = 1E4, cohesivenessTangent = cohesivenessNormal;
+        //private const double cohesivenessNormal = 1E11, cohesivenessTangent = cohesivenessNormal;
 
         private const int defaultPhaseID = 0;
 
@@ -183,8 +185,8 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
         private static XModel<IXMultiphaseElement> CreateModel()
         {
             // Materials
-            var material0 = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = E0, PoissonRatio = v };
-            var material1 = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = E1, PoissonRatio = v };
+            var material0 = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = Etop, PoissonRatio = v };
+            var material1 = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = Ebottom, PoissonRatio = v };
             var interfaceMaterial = new CohesiveInterfaceMaterial2D(Matrix.CreateFromArray(new double[,]
             {
                 { cohesivenessNormal, 0 },
@@ -197,13 +199,13 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
             // Setup model
             XModel<IXMultiphaseElement> model = Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField);
-            Models.ApplyBoundaryConditionsCantileverTension(model);
+            Models.ApplyBoundaryConditionsCantileverOpening(model, load);
 
             return model;
         }
 
         /// <summary>
-        /// Bottom phase is the more rigid material
+        /// Top phase is the more rigid material
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>

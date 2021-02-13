@@ -48,7 +48,31 @@ namespace MGroup.XFEM.Tests.Utilities
             }
         }
 
-        public static void ApplyBoundaryConditionsCantileverTension(XModel<IXMultiphaseElement> model)
+        public static void ApplyBoundaryConditionsCantileverOpening(XModel<IXMultiphaseElement> model, double pointLoad)
+        {
+            // Boundary conditions
+            double meshTol = 1E-7;
+
+            // Left side: Ux=Uy=0
+            double minX = model.XNodes.Select(n => n.X).Min();
+            foreach (var node in model.XNodes.Where(n => Math.Abs(n.X - minX) <= meshTol))
+            {
+                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = 0 });
+                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = 0 });
+            }
+
+            // Right side: Fx = 100
+            double maxX = model.XNodes.Select(n => n.X).Max();
+            double maxY = model.XNodes.Select(n => n.Y).Max();
+            double minY = model.XNodes.Select(n => n.Y).Min();
+            XNode topRightNode = model.XNodes.Find(n => (Math.Abs(n.X - maxX) <= meshTol) && (Math.Abs(n.Y - maxY) <= meshTol));
+            XNode bottomRightNode = model.XNodes.Find(n => (Math.Abs(n.X - maxX) <= meshTol) && (Math.Abs(n.Y - minY) <= meshTol));
+
+            model.NodalLoads.Add(new NodalLoad(topRightNode, StructuralDof.TranslationY, pointLoad));
+            model.NodalLoads.Add(new NodalLoad(bottomRightNode, StructuralDof.TranslationY, -pointLoad));
+        }
+
+        public static void ApplyBoundaryConditionsCantileverTension(XModel<IXMultiphaseElement> model, double loadXPerNode)
         {
             // Boundary conditions
             double meshTol = 1E-7;
@@ -64,10 +88,10 @@ namespace MGroup.XFEM.Tests.Utilities
             // Right side: Fx = 100
             double maxX = model.XNodes.Select(n => n.X).Max();
             XNode[] rightSideNodes = model.XNodes.Where(n => Math.Abs(n.X - maxX) <= meshTol).ToArray();
-            double load = 1.0 / rightSideNodes.Length;
+            //double load = 1.0 / rightSideNodes.Length;
             foreach (var node in rightSideNodes)
             {
-                model.NodalLoads.Add(new NodalLoad(node, StructuralDof.TranslationX, load));
+                model.NodalLoads.Add(new NodalLoad(node, StructuralDof.TranslationX, loadXPerNode));
             }
         }
 

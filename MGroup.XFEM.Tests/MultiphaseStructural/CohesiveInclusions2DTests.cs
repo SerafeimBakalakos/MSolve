@@ -30,17 +30,20 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
         private static readonly string expectedDirectory = Path.Combine(
             Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "cohesive_inclusions_2D");
 
-        private static readonly double[] minCoords = { -1.0, -1.0 };
-        private static readonly double[] maxCoords = { +1.0, +1.0 };
+        private static readonly double[] minCoords = { -10.0, -10.0 };
+        private static readonly double[] maxCoords = { +10.0, +10.0 };
         private const double thickness = 1.0;
-        private static readonly int[] numElements = { 31, 31 };
+        private static readonly int[] numElements = { 36, 36 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
 
-        private const double matrixE = 1, inclusionE = 2, v = 0.3;
-        //private const double cohesivenessNormal = 0, cohesivenessTangent = 0;
-        private const double cohesivenessNormal = 1000, cohesivenessTangent = 1000;
+        private const double matrixE = 2E6, inclusionE = 2E8, v = 0.3;
+        //private const double cohesivenessNormal = 0, cohesivenessTangent = cohesivenessNormal;
+        private const double cohesivenessNormal = 1E8, cohesivenessTangent = cohesivenessNormal;
+        private const double loadXPerNode = 1E4;
+
 
         private static readonly int[] numBalls = { 2, 1 };
+        private static readonly int numBallsTotal = 25;
         private const double ballRadius = 0.25;
         private const int defaultPhaseID = 0;
 
@@ -198,7 +201,7 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
             // Setup model
             XModel<IXMultiphaseElement> model = Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField);
-            Models.ApplyBoundaryConditionsCantileverTension(model);
+            Models.ApplyBoundaryConditionsCantileverTension(model, loadXPerNode);
 
             return model;
         }
@@ -208,16 +211,16 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
             var geometricModel = new PhaseGeometryModel(model);
             model.GeometryModel = geometricModel;
             geometricModel.Enricher = new NodeEnricherMultiphaseStructural(2, geometricModel, new NullSingularityResolver());
-            List<SimpleLsm2D> lsmCurves = InitializeLSM(model);
+            Circle2D[] circles = CreateCircles();
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;
-            for (int p = 0; p < lsmCurves.Count; ++p)
+            for (int p = 0; p < circles.Length; ++p)
             {
-                SimpleLsm2D curve = lsmCurves[p];
+                var lsm = new SimpleLsm2D(p + 1, model.XNodes, circles[p]);
                 var phase = new LsmPhase(p + 1, geometricModel, -1);
                 geometricModel.Phases[phase.ID] = phase;
 
-                var boundary = new ClosedPhaseBoundary(phase.ID, curve, defaultPhase, phase);
+                var boundary = new ClosedPhaseBoundary(phase.ID, lsm, defaultPhase, phase);
                 defaultPhase.ExternalBoundaries.Add(boundary);
                 defaultPhase.Neighbors.Add(phase);
                 phase.ExternalBoundaries.Add(boundary);
@@ -227,26 +230,105 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
             return geometricModel;
         }
 
-        private static List<SimpleLsm2D> InitializeLSM(XModel<IXMultiphaseElement> model)
-        {
-            double xMin = minCoords[0], xMax = maxCoords[0], yMin = minCoords[1], yMax = maxCoords[1];
-            var curves = new List<SimpleLsm2D>(numBalls[0] * numBalls[1]);
-            double dx = (xMax - xMin) / (numBalls[0] + 1);
-            double dy = (yMax - yMin) / (numBalls[1] + 1);
-            int id = 1;
-            for (int i = 0; i < numBalls[0]; ++i)
-            {
-                double centerX = xMin + (i + 1) * dx;
-                for (int j = 0; j < numBalls[1]; ++j)
-                {
-                    double centerY = yMin + (j + 1) * dy;
-                    var circle = new Circle2D(centerX, centerY, ballRadius);
-                    var lsm = new SimpleLsm2D(id++, model.XNodes, circle);
-                    curves.Add(lsm);
-                }
-            }
+        //private static List<SimpleLsm2D> InitializeLSM(XModel<IXMultiphaseElement> model)
+        //{
+        //    double xMin = minCoords[0], xMax = maxCoords[0], yMin = minCoords[1], yMax = maxCoords[1];
+        //    var curves = new List<SimpleLsm2D>(numBalls[0] * numBalls[1]);
+        //    double dx = (xMax - xMin) / (numBalls[0] + 1);
+        //    double dy = (yMax - yMin) / (numBalls[1] + 1);
+        //    int id = 1;
+        //    for (int i = 0; i < numBalls[0]; ++i)
+        //    {
+        //        double centerX = xMin + (i + 1) * dx;
+        //        for (int j = 0; j < numBalls[1]; ++j)
+        //        {
+        //            double centerY = yMin + (j + 1) * dy;
+        //            var circle = new Circle2D(centerX, centerY, ballRadius);
+        //            var lsm = new SimpleLsm2D(id++, model.XNodes, circle);
+        //            curves.Add(lsm);
+        //        }
+        //    }
 
-            return curves;
+        //    return curves;
+        //}
+
+        private static Circle2D[] CreateCircles()
+        {
+            double radius = 1.1667;
+            var circles = new Circle2D[numBallsTotal];
+            if (numBallsTotal == 1)
+            {
+                circles[0] = new Circle2D(0, 0, radius);
+            }
+            else if (numBallsTotal == 4)
+            {
+                circles[0] = new Circle2D(3.722233, 3.722233, radius);
+                circles[1] = new Circle2D(-3.722233, 3.722233, radius);
+                circles[2] = new Circle2D(3.722233, -3.722233, radius);
+                circles[3] = new Circle2D(-3.722233, -3.722233, radius);
+            }
+            else if (numBallsTotal == 9)
+            {
+                circles[0] = new Circle2D(+5.58335, +5.58335, radius);
+                circles[1] = new Circle2D(8.88E-16, +5.58335, radius);
+                circles[2] = new Circle2D(-5.58335, +5.58335, radius);
+                circles[3] = new Circle2D(+5.58335, 8.88E-16, radius);
+                circles[4] = new Circle2D(8.88E-16, 8.88E-16, radius);
+                circles[5] = new Circle2D(-5.58335, 8.88E-16, radius);
+                circles[6] = new Circle2D(+5.58335, -5.58335, radius);
+                circles[7] = new Circle2D(8.88E-16, -5.58335, radius);
+                circles[8] = new Circle2D(-5.58335, -5.58335, radius);
+            }
+            else if (numBallsTotal == 16)
+            {
+                circles[0] =  new Circle2D( 6.70002,  6.70002, radius);
+                circles[1] =  new Circle2D(2.23E+00,  6.70002, radius);
+                circles[2] =  new Circle2D(-2.23334,  6.70002, radius);
+                circles[3] =  new Circle2D(-6.70002,  6.70E+00, radius);
+                circles[4] =  new Circle2D(6.70E+00,  2.23E+00, radius);
+                circles[5] =  new Circle2D( 2.23334,  2.23E+00, radius);
+                circles[6] =  new Circle2D(-2.23334,  2.23334, radius);
+                circles[7] =  new Circle2D(-6.70E+00, 2.23334, radius);
+                circles[8] =  new Circle2D( 6.70002, -2.23334, radius);
+                circles[9] =  new Circle2D( 2.23334, -2.23334, radius);
+                circles[10] = new Circle2D(-2.23334, -2.23334, radius);
+                circles[11] = new Circle2D(-6.70002, -2.23334, radius);
+                circles[12] = new Circle2D( 6.70002, -6.70002, radius);
+                circles[13] = new Circle2D( 2.23334, -6.70002, radius);
+                circles[14] = new Circle2D(-2.23334, -6.70002, radius);
+                circles[15] = new Circle2D(-6.70002, -6.70002, radius);
+            }
+            else if (numBallsTotal == 25)
+            {
+                circles[0] =  new Circle2D(7.444467, 7.444467, radius);
+                circles[1] =  new Circle2D(3.722233, 7.444467, radius);
+                circles[2] =  new Circle2D(0.00E+00, 7.444467, radius);
+                circles[3] =  new Circle2D(-3.72223, 7.444467, radius);
+                circles[4] =  new Circle2D(-7.44447, 7.44E+00, radius);
+                circles[5] =  new Circle2D(7.44E+00, 3.72E+00, radius);
+                circles[6] =  new Circle2D(3.722233, 3.72E+00, radius);
+                circles[7] =  new Circle2D(0,        3.722233, radius);
+                circles[8] =  new Circle2D(-3.72E+0, 3.722233, radius);
+                circles[9] =  new Circle2D(-7.44447, 3.722233, radius);
+                circles[10] = new Circle2D(7.444467, 0, radius);
+                circles[11] = new Circle2D(3.722233, 0, radius);
+                circles[12] = new Circle2D(0,        0, radius);
+                circles[13] = new Circle2D(-3.72223, 0, radius);
+                circles[14] = new Circle2D(-7.44447, 0, radius);
+                circles[15] = new Circle2D(7.444467, -3.72223, radius);
+                circles[16] = new Circle2D(3.722233, -3.72223, radius);
+                circles[17] = new Circle2D(0,        -3.72223, radius);
+                circles[18] = new Circle2D(-3.72223, -3.72223, radius);
+                circles[19] = new Circle2D(-7.44447, -3.72223, radius);
+                circles[20] = new Circle2D(7.444467, -7.44447, radius);
+                circles[21] = new Circle2D(3.722233, -7.44447, radius);
+                circles[22] = new Circle2D(0,        -7.44447, radius);
+                circles[23] = new Circle2D(-3.72223, -7.44447, radius);
+                circles[24] = new Circle2D(-7.44447, -7.44447, radius);
+            }
+            else throw new NotImplementedException();
+
+            return circles;
         }
     }
 }
