@@ -8,7 +8,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Enrichment;
@@ -21,7 +21,6 @@ using MGroup.XFEM.Integration.Quadratures;
 using MGroup.XFEM.Interpolation;
 using MGroup.XFEM.Interpolation.GaussPointExtrapolation;
 using MGroup.XFEM.Materials;
-using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Elements
 {
@@ -34,7 +33,7 @@ namespace MGroup.XFEM.Elements
 
         private IDofType[][] allDofTypes;
 
-        private Dictionary<ClosedPhaseBoundary, IReadOnlyList<GaussPoint>> gaussPointsBoundary;
+        //private Dictionary<ClosedPhaseBoundary, IReadOnlyList<GaussPoint>> gaussPointsBoundary;
         private IReadOnlyList<GaussPoint> gaussPointsBulk;
 
         //TODO: this can be cached once for all standard elements of the same type
@@ -43,7 +42,7 @@ namespace MGroup.XFEM.Elements
         /// <summary>
         /// In the same order as their corresponding <see cref="gaussPointsBulk"/>.
         /// </summary>
-        private ElasticMaterial2D[] materialsAtGPsBulk;
+        private IContinuumMaterial[] materialsAtGPsBulk;
 
         private int numEnrichedDofs;
 
@@ -208,7 +207,7 @@ namespace MGroup.XFEM.Elements
 
         public double[] FindCentroidCartesian() => Utilities.FindCentroidCartesian(2, Nodes);
 
-        public (IReadOnlyList<GaussPoint>, IReadOnlyList<ElasticMaterial2D>) GetMaterialsForBulkIntegration()
+        public (IReadOnlyList<GaussPoint>, IReadOnlyList<IContinuumMaterial>) GetMaterialsForBulkIntegration()
             => (gaussPointsBulk, materialsAtGPsBulk);
 
         //TODO: This method should be moved to a base class. Enriched DOFs do not depend on the finite element, but are set globally.
@@ -259,7 +258,7 @@ namespace MGroup.XFEM.Elements
             }
 
             // Create and cache materials at integration points.
-            this.materialsAtGPsBulk = new ElasticMaterial2D[numPointsVolume];
+            this.materialsAtGPsBulk = new IContinuumMaterial[numPointsVolume];
             for (int i = 0; i < numPointsVolume; ++i)
             {
                 this.materialsAtGPsBulk[i] = MaterialField.FindMaterialAt(null);

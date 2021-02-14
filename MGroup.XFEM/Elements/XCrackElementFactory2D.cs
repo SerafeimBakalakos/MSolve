@@ -14,8 +14,8 @@ namespace MGroup.XFEM.Elements
     {
         private static readonly IReadOnlyDictionary<CellType, IElementGeometry> elementGeometries;
         private static readonly IReadOnlyDictionary<CellType, IGaussPointExtrapolation> extrapolations;
-        private static readonly IReadOnlyDictionary<CellType, IQuadrature> standardIntegrationsForConductivity;
-        //private static readonly IReadOnlyDictionary<CellType, IQuadrature2D> integrationsForMass;
+        private static readonly IReadOnlyDictionary<CellType, IQuadrature> stdIntegrationsForStiffness;
+        //private static readonly IReadOnlyDictionary<CellType, IQuadratureD> integrationsForMass;
         private static readonly IReadOnlyDictionary<CellType, IIsoparametricInterpolation> interpolations;
 
         //private readonly int integrationBoundaryOrder;
@@ -74,7 +74,7 @@ namespace MGroup.XFEM.Elements
             // Static field assignments
             XCrackElementFactory2D.interpolations = interpolations;
             XCrackElementFactory2D.extrapolations = extrapolations;
-            XCrackElementFactory2D.standardIntegrationsForConductivity = standardIntegrationsForConductivity;
+            XCrackElementFactory2D.stdIntegrationsForStiffness = standardIntegrationsForConductivity;
             //XContinuumElement2DFactory.integrationsForMass = integrationsForMass;
             XCrackElementFactory2D.elementGeometries = elementGeometries;
 
@@ -95,7 +95,7 @@ namespace MGroup.XFEM.Elements
             interpolations[cellType].CheckElementNodes(nodes);
 #endif
             return new XCrackElement2D(id, nodes, thickness, elementGeometries[cellType], material, interpolations[cellType],
-                extrapolations[cellType], standardIntegrationsForConductivity[cellType], integrationbulk);
+                extrapolations[cellType], stdIntegrationsForStiffness[cellType], integrationbulk);
         }
     }
 }

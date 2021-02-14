@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Materials
@@ -13,6 +14,6 @@ namespace MGroup.XFEM.Materials
         double PoissonRatio { get; }
         double EquivalentPoissonRatio { get; }
 
-        ElasticMaterial2D FindMaterialAt(XPoint point);
+        IContinuumMaterial FindMaterialAt(XPoint point);
     }
 }

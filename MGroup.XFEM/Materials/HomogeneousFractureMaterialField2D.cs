@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 using MGroup.XFEM.Geometry.Primitives;
 
 //TODO: Delete thickness from here
@@ -39,6 +40,6 @@ namespace MGroup.XFEM.Materials
         public double EquivalentPoissonRatio { get; }
         public double Thickness { get; }
 
-        public ElasticMaterial2D FindMaterialAt(XPoint point) => material;
+        public IContinuumMaterial FindMaterialAt(XPoint point) => material;
     }
 }
