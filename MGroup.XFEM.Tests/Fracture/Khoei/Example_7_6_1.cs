@@ -430,6 +430,8 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
             public EnrichmentItem CrackTipEnrichments => crack.CrackTipEnrichments;
 
+            public int Dimension => crack.Dimension;
+
             public HashSet<IXCrackElement> IntersectedElements => crack.IntersectedElements;
 
             public double[] TipCoordinates => crack.TipCoordinates;

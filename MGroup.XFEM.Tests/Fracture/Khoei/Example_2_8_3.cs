@@ -206,7 +206,6 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 });
             }
             else throw new ArgumentException();
-            
         }
 
         private static Vector GetExpectedSolution()

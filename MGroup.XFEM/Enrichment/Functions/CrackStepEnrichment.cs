@@ -12,18 +12,20 @@ namespace MGroup.XFEM.Enrichment.Functions
     {
         private readonly ICrack crack;
         private readonly IXGeometryDescription crackGeometry;
+        private readonly int dimension;
 
         public CrackStepEnrichment(ICrack crack)
         {
             this.crack = crack;
             this.crackGeometry = crack.CrackGeometry;
+            this.dimension = crack.Dimension;
         }
 
         public EvaluatedFunction EvaluateAllAt(XPoint point)
         {
             double distance = crackGeometry.SignedDistanceOf(point);
-            if (distance >= 0) return new EvaluatedFunction(+1, new double[2]);
-            else return new EvaluatedFunction(-1, new double[2]);
+            if (distance >= 0) return new EvaluatedFunction(+1, new double[dimension]);
+            else return new EvaluatedFunction(-1, new double[dimension]);
         }
 
         public double EvaluateAt(XNode node)

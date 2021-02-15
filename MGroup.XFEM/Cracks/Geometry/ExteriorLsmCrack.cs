@@ -45,6 +45,8 @@ namespace MGroup.XFEM.Cracks.Geometry
 
         public EnrichmentItem CrackTipEnrichments { get; private set; }
 
+        public int Dimension => 2;
+
         public HashSet<IXCrackElement> IntersectedElements { get; } = new HashSet<IXCrackElement>();
 
         public int ID { get; }

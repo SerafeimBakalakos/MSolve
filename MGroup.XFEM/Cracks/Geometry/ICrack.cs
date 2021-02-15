@@ -28,6 +28,8 @@ namespace MGroup.XFEM.Cracks.Geometry
 
         EnrichmentItem CrackTipEnrichments { get; }
 
+        int Dimension { get; }
+
         /// <summary>
         /// Elements that are intersected by the crack, but do not belong to <see cref="TipElements"/>.
         /// </summary>
