@@ -23,19 +23,19 @@ namespace MGroup.XFEM.Integration
             // Standard elements
             if (element.ConformingSubcells == null) return element.IntegrationStandard.IntegrationPoints;
 
-            // Create integration points for all subtriangles
+            // Create integration points for all subtetrahedra
             var integrationPoints = new List<GaussPoint>();
             foreach (ElementSubtetrahedron3D tetra in element.ConformingSubcells)
             {
-                integrationPoints.AddRange(GenerateIntegrationPointsOfSubtriangle(tetra));
+                integrationPoints.AddRange(GenerateIntegrationPointsOfSubtetrahedron(tetra));
             }
             return integrationPoints;
         }
 
-        // These triangles are output by the delauny triangulation and the order of their nodes might be 
+        // These tetrahedra are output by the delauny triangulation and the order of their nodes might be 
         // counter-clockwise or clockwise. In the second case the jacobian will be negative, 
         // but it doesn't matter otherwise. 
-        private IReadOnlyList<GaussPoint> GenerateIntegrationPointsOfSubtriangle(ElementSubtetrahedron3D tetra)
+        private IReadOnlyList<GaussPoint> GenerateIntegrationPointsOfSubtetrahedron(ElementSubtetrahedron3D tetra)
         {
             // Determinant of the Jacobian of the linear mapping from the natural system of the tetrahedron to the 
             // natural system of the element. We will take the absolute, so the vertex order is irrelevant.
