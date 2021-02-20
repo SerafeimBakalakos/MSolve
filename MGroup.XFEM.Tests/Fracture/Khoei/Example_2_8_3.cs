@@ -112,7 +112,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             foreach (XNode node in nodes) model.XNodes.Add(node);
 
             var material = new HomogeneousFractureMaterialField2D(E, v, thickness, planeStress);
-            var enrichedIntegration = new IntegrationWithNonconformingQuads2D(2, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
+            var enrichedIntegration = new IntegrationWithNonconformingSubquads2D(2, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
             var bulkIntegration = new CrackElementIntegrationStrategy(
                 enrichedIntegration, enrichedIntegration, enrichedIntegration);
             var factory = new XCrackElementFactory2D(material, thickness, bulkIntegration);

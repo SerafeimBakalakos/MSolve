@@ -269,7 +269,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             var material = new HomogeneousFractureMaterialField2D(E, v, thickness, false);
             var jIntegrationRule = new JintegrationStrategy(
                 GaussLegendre2D.GetQuadratureWithOrder(4, 4),
-                new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)));
+                new IntegrationWithNonconformingSubquads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2)));
 
             double elementSize = Math.Max(maxCoords[0] / numElements[0], maxCoords[1] / numElements[1]);
 
@@ -331,7 +331,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 { 4, 5, 6, 7 }
             };
             var material = new HomogeneousFractureMaterialField2D(E, v, thickness, false);
-            var enrichedIntegration = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
+            var enrichedIntegration = new IntegrationWithNonconformingSubquads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
             var bulkIntegration = new CrackElementIntegrationStrategy(
                 enrichedIntegration, enrichedIntegration, enrichedIntegration);
             var factory = new XCrackElementFactory2D(material, thickness, bulkIntegration);
@@ -366,7 +366,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
             // Materials, integration
             var material = new HomogeneousFractureMaterialField2D(E, v, thickness, false);
-            var enrichedIntegration = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
+            var enrichedIntegration = new IntegrationWithNonconformingSubquads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
             var bulkIntegration = new CrackElementIntegrationStrategy(
                 enrichedIntegration, enrichedIntegration, enrichedIntegration);
             var factory = new XCrackElementFactory2D(material, thickness, bulkIntegration);

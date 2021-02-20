@@ -243,7 +243,7 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
             // Elements
             var material = new HomogeneousFractureMaterialField2D(E, v, t, planeStress);
             var cutIntegration = new IntegrationWithConformingSubtriangles2D(TriangleQuadratureSymmetricGaussian.Order2Points3);
-            var tipIntegration = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
+            var tipIntegration = new IntegrationWithNonconformingSubquads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
             var bulkIntegration = new CrackElementIntegrationStrategy(
                 cutIntegration, tipIntegration, tipIntegration);
             var factory = new XCrackElementFactory2D(material, t, bulkIntegration);
@@ -263,7 +263,7 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
             model.GeometryModel = geometryModel;
             geometryModel.Enricher = new NodeEnricherIndependentCracks(
                 geometryModel, new RelativeAreaSingularityResolver(heavisideTol), tipEnrichmentArea);
-            var jIntegrationRule = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(4, 4));
+            var jIntegrationRule = new IntegrationWithNonconformingSubquads2D(8, GaussLegendre2D.GetQuadratureWithOrder(4, 4));
             var leftPropagator = new JintegralPropagator2D(jIntegralRadiusRatio, jIntegrationRule, material,
                 new MaximumCircumferentialTensileStressCriterion(), new ConstantIncrement2D(growthLength));
             var leftCrack = new ExteriorLsmCrack(0, new PolyLine2D(leftCrackMouth, leftCrackTip), model, leftPropagator);

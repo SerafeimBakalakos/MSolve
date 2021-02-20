@@ -222,7 +222,7 @@ namespace MGroup.XFEM.Tests.Fracture.Observers
             // Materials, integration
             double E = 2E6, v = 0.3, thickness = 1.0;
             var material = new HomogeneousFractureMaterialField2D(E, v, thickness, true);
-            var enrichedIntegration = new IntegrationWithNonconformingQuads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
+            var enrichedIntegration = new IntegrationWithNonconformingSubquads2D(8, GaussLegendre2D.GetQuadratureWithOrder(2, 2));
             var bulkIntegration = new CrackElementIntegrationStrategy(
                 enrichedIntegration, enrichedIntegration, enrichedIntegration);
             var factory = new XCrackElementFactory2D(material, thickness, bulkIntegration);

@@ -4,17 +4,17 @@ using MGroup.XFEM.Integration.Quadratures;
 
 namespace MGroup.XFEM.Integration
 {
-    public class IntegrationWithNonconformingQuads2D : IBulkIntegration
+    public class IntegrationWithNonconformingSubquads2D : IBulkIntegration
     {
         private readonly int quadsPerAxis;
         private readonly GaussLegendre2D  gaussQuadrature;
 
-        public IntegrationWithNonconformingQuads2D(int quadsPerAxis) : 
+        public IntegrationWithNonconformingSubquads2D(int quadsPerAxis) : 
             this(quadsPerAxis, GaussLegendre2D.GetQuadratureWithOrder(2,2))
         {
         }
 
-        public IntegrationWithNonconformingQuads2D(int quadsPerAxis, GaussLegendre2D quadratureInQuads)
+        public IntegrationWithNonconformingSubquads2D(int quadsPerAxis, GaussLegendre2D quadratureInQuads)
         {
             this.quadsPerAxis = quadsPerAxis;
             this.gaussQuadrature = quadratureInQuads;

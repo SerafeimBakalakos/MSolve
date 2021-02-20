@@ -8,6 +8,6 @@ namespace MGroup.XFEM.Geometry.LSM
 {
     public interface ISingleTipLsmGeometry : ILsmGeometry
     {
-        Dictionary<int, double> LevelSetsTip { get; }
+        Dictionary<int, double> LevelSetsTip { get; } //TODO: rename to crack front so that it has meaning for 3D as well.
     }
 }
