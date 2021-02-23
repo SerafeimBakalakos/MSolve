@@ -9,6 +9,7 @@ using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry.LSM.Utilities;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Geometry.Tolerances;
 
@@ -50,7 +51,7 @@ namespace MGroup.XFEM.Geometry.LSM
             }
             else if (position == RelativePositionCurveElement.Conforming)
             {
-                IntersectionMesh3D intersectionMesh = FindInteractionConforming(element);
+                IntersectionMesh3D intersectionMesh = FindInteractionConforming(element, levelSetSubset);
                 return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Conforming, element, intersectionMesh);
             }
             else if (position == RelativePositionCurveElement.Intersecting)
@@ -91,13 +92,13 @@ namespace MGroup.XFEM.Geometry.LSM
             else throw new ArgumentException("Incompatible Level Set geometry");
         }
 
-        protected IntersectionMesh3D FindInteractionConforming(IXFiniteElement element)
+        protected IntersectionMesh3D FindInteractionConforming(IXFiniteElement element, Dictionary<int, double> levelSetSubset)
         {
             // Find the nodes that lie on the surface
             var zeroNodes = new HashSet<int>();
             foreach (XNode node in element.Nodes)
             {
-                double distance = NodalLevelSets[node.ID];
+                double distance = levelSetSubset[node.ID];
                 if (distance == 0) zeroNodes.Add(node.ID);
             }
 
@@ -119,27 +120,30 @@ namespace MGroup.XFEM.Geometry.LSM
         protected IntersectionMesh3D FindInteractionIntersecting(IXFiniteElement element, Dictionary<int, double> levelSetSubset)
         {
             ElementFace[] allFaces = element.Faces;
-            var intersectionPoints = new Dictionary<double[], HashSet<ElementFace>>();
+            var intersectionPoints = new List<IntersectionPoint>();
 
             // Find any nodes that may lie on the LSM geometry
             for (int n = 0; n < element.Nodes.Count; ++n)
             {
                 XNode node = element.Nodes[n];
-                if (NodalLevelSets[node.ID] == 0)
+                if (levelSetSubset[node.ID] == 0)
                 {
-                    HashSet<ElementFace> facesOfNode = ElementFace.FindFacesOfNode(node.ID, allFaces);
-                    intersectionPoints.Add(element.Interpolation.NodalNaturalCoordinates[n], facesOfNode);
+                    var intersection = new IntersectionPoint();
+                    intersection.CoordinatesNatural = element.Interpolation.NodalNaturalCoordinates[n];
+                    intersection.Faces = ElementFace.FindFacesOfNode(node.ID, allFaces);
+                    intersectionPoints.Add(intersection);
                 }
             }
 
             // Find intersection points that lie on element edges, excluding nodes
             foreach (ElementEdge edge in element.Edges)
             {
-                double[] intersection = IntersectEdgeExcludingNodes(edge, levelSetSubset);
-                if (intersection != null)
+                var intersection = new IntersectionPoint();
+                intersection.CoordinatesNatural = IntersectEdgeExcludingNodes(edge, levelSetSubset);
+                if (intersection.CoordinatesNatural != null)
                 {
-                    HashSet<ElementFace> facesOfEdge = edge.FindFacesOfEdge(allFaces);
-                    intersectionPoints.Add(intersection, facesOfEdge);
+                    intersection.Faces = edge.FindFacesOfEdge(allFaces);
+                    intersectionPoints.Add(intersection);
                 }
             }
 

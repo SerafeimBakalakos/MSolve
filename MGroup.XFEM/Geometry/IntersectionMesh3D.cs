@@ -6,6 +6,7 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Commons;
 using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Exceptions;
+using MGroup.XFEM.Geometry.LSM.Utilities;
 
 namespace MGroup.XFEM.Geometry
 {
@@ -17,21 +18,45 @@ namespace MGroup.XFEM.Geometry
         {
         }
 
-        public static IntersectionMesh3D CreateMultiCellMesh3D(Dictionary<double[], HashSet<ElementFace>> intersectionPoints)
+        public static IntersectionMesh3D CreateTriagleMeshForElementFace(CellType cellType, IReadOnlyList<double[]> faceNodes)
+        {
+            if (cellType == CellType.Tri3) return CreateSingleCellMesh(cellType, faceNodes);
+            else if (cellType == CellType.Quad4)
+            {
+                var mesh = new IntersectionMesh3D();
+                foreach (double[] point in faceNodes) mesh.Vertices.Add(point);
+                double diagonal02 = Geometry.Utilities.Distance3D(faceNodes[0], faceNodes[1]);
+                double diagonal13 = Geometry.Utilities.Distance3D(faceNodes[1], faceNodes[3]);
+                if (diagonal02 < diagonal13)
+                {
+                    mesh.Cells.Add((CellType.Tri3, new int[] { 0, 1, 2 }));
+                    mesh.Cells.Add((CellType.Tri3, new int[] { 0, 2, 3 }));
+                }
+                else
+                {
+                    mesh.Cells.Add((CellType.Tri3, new int[] { 0, 1, 3 }));
+                    mesh.Cells.Add((CellType.Tri3, new int[] { 1, 2, 3 }));
+                }
+                return mesh;
+            }
+            else throw new NotImplementedException();
+        }
+
+        public static IntersectionMesh3D CreateMultiCellMesh3D(IList<IntersectionPoint> intersectionPoints)
         {
             var mesh = new IntersectionMesh3D();
             if (intersectionPoints.Count < 3) throw new ArgumentException("There must be at least 3 points");
             else if (intersectionPoints.Count == 3)
             {
-                foreach (double[] point in intersectionPoints.Keys) mesh.Vertices.Add(point);
+                foreach (IntersectionPoint point in intersectionPoints) mesh.Vertices.Add(point.CoordinatesNatural);
                 mesh.Cells.Add((CellType.Tri3, new int[] { 0, 1, 2 }));
             }
             else
             {
-                List<double[]> orderedPoints = OrderPoints3D(intersectionPoints);
-                foreach (double[] point in orderedPoints) mesh.Vertices.Add(point);
+                List<IntersectionPoint> orderedPoints = OrderPoints3D(intersectionPoints);
+                foreach (IntersectionPoint point in orderedPoints) mesh.Vertices.Add(point.CoordinatesNatural);
 
-                // Create triangles that contain the first points and 2 others
+                // Create triangles that contain the first point and 2 others
                 for (int j = 1; j < orderedPoints.Count - 1; ++j)
                 {
                     mesh.Cells.Add((CellType.Tri3, new int[] { 0, j, j + 1 }));
@@ -127,10 +152,10 @@ namespace MGroup.XFEM.Geometry
             }
         }
 
-        private static List<double[]> OrderPoints3D(Dictionary<double[], HashSet<ElementFace>> facesOfPoints)
+        private static List<IntersectionPoint> OrderPoints3D(IList<IntersectionPoint> intersectionPoints)
         {
-            var orderedPoints = new List<double[]>();
-            List<double[]> leftoverPoints = facesOfPoints.Keys.ToList();
+            var orderedPoints = new List<IntersectionPoint>();
+            var leftoverPoints = new List<IntersectionPoint>(intersectionPoints);
 
             // First point
             orderedPoints.Add(leftoverPoints[0]);
@@ -139,9 +164,8 @@ namespace MGroup.XFEM.Geometry
             // Rest of the points
             while (leftoverPoints.Count > 0)
             {
-                double[] pointI = orderedPoints[orderedPoints.Count - 1];
-                HashSet<ElementFace> phasesI = facesOfPoints[pointI];
-                int j = FindPointWithCommonFace(phasesI, leftoverPoints, facesOfPoints);
+                IntersectionPoint pointI = orderedPoints[orderedPoints.Count - 1];
+                int j = FindPointWithCommonFace(pointI, leftoverPoints);
                 if (j >= 0)
                 {
                     orderedPoints.Add(leftoverPoints[j]);
@@ -155,9 +179,9 @@ namespace MGroup.XFEM.Geometry
             }
 
             // Make sure the last point and the first one lie on the same face
-            var facesFirst = facesOfPoints[orderedPoints[0]];
-            var facesLast = facesOfPoints[orderedPoints[orderedPoints.Count - 1]];
-            if (!HaveCommonEntries(facesFirst, facesLast))
+            IntersectionPoint firstPoint = orderedPoints[0];
+            IntersectionPoint lastPoint = orderedPoints[orderedPoints.Count - 1];
+            if (!HaveCommonEntries(firstPoint.Faces, lastPoint.Faces))
             {
                 throw new InvalidElementGeometryIntersectionException("The first and last point do not lie on the same face");
             }
@@ -165,13 +189,12 @@ namespace MGroup.XFEM.Geometry
             return orderedPoints;
         }
 
-        private static int FindPointWithCommonFace(HashSet<ElementFace> phasesI, List<double[]> leftoverPoints, 
-            Dictionary<double[], HashSet<ElementFace>> facesOfPoints)
+        private static int FindPointWithCommonFace(IntersectionPoint point, List<IntersectionPoint> leftoverPoints)
         {
             for (int j = 0; j < leftoverPoints.Count; ++j)
             {
-                HashSet<ElementFace> phasesJ = facesOfPoints[leftoverPoints[j]];
-                if (HaveCommonEntries(phasesI, phasesJ)) return j;
+                IntersectionPoint otherPoint = leftoverPoints[j]; 
+                if (HaveCommonEntries(point.Faces, otherPoint.Faces)) return j;
             }
             return -1;
         }

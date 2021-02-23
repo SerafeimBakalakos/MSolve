@@ -5,6 +5,7 @@ using System.Text;
 using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry.LSM.Utilities;
 using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Geometry.LSM
@@ -59,17 +60,9 @@ namespace MGroup.XFEM.Geometry.LSM
             //3: Determine if the element is intersected, tip or false positive/disjoint
             (bool isIntersected, bool containsFront) = CategorizeElementIntersectedByZeroPhi(intersectionPoints);
 
-            //4: The subtetrahedra will be created by a separate class. Move the appropriate comments there.
+            
 
-            //5: There use the intersection points of each phase to define the above/below crack subarea in each element face
-
-            //6: Find the centroid of each subarea and connect it with the appropriate nodes and intersection points, creating conforming triangles
-
-            //7: Define the above/below crack subvolume of the whole element
-
-            //8: Find the centroid each subvolume and connect it to the vertices of the triangles on each face to create conforming subtetrahedra
-
-            //9: Delete these comments
+            //4: Delete these comments
 
             throw new NotImplementedException();
         }
@@ -183,7 +176,10 @@ namespace MGroup.XFEM.Geometry.LSM
                 }
                 double psi = psi0 + k * (psi1 - psi0);
 
-                return new IntersectionPoint() { CoordinatesNatural = intersectionNatural, Edge = edge, TipLevelSet = psi };
+                return new IntersectionPoint() 
+                { 
+                    CoordinatesNatural = intersectionNatural, Edge = edge, TipLevelSet = psi 
+                };
             }
             else return null;
         }
@@ -212,16 +208,6 @@ namespace MGroup.XFEM.Geometry.LSM
             if (minBodyLS * maxBodyLS > 0.0) return true;
             else if (minTipLS > 0.0) return true;
             else return false;
-        }
-
-        //TODO: This is repeated in 2D crack LSM class
-        public class IntersectionPoint
-        {
-            public double[] CoordinatesNatural { get; set; }
-
-            public ElementEdge Edge { get; set; }
-
-            public double TipLevelSet { get; set; }
         }
     }
 }

@@ -6,6 +6,7 @@ using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry.LSM.Utilities;
 using MGroup.XFEM.Geometry.Primitives;
 
 //TODO: Nodes define the state of this object, don't they? Therefore shouldn't they be stored in it, instead of being passed into
@@ -64,17 +65,16 @@ namespace MGroup.XFEM.Geometry.LSM
         /// <param name="element"></param>
         public IElementOpenGeometryInteraction Intersect(IXFiniteElement element)
         {
-            (Dictionary<int, double> nodalBodyLevelSets, Dictionary<int, double> nodalTipLevelSets) = 
-                FindLevelSetsOfElementNodes(element);
+            var elementLevelSets = new ElementLevelSets(element, LevelSetsBody, LevelSetsTip);
 
             // Check this first, since it is faster and most elements belong to this category 
-            if (IsElementDisjoint(element, nodalBodyLevelSets, nodalTipLevelSets)) 
+            if (IsElementDisjoint(element, elementLevelSets)) 
             {
                 return new NullElementDiscontinuityInteraction(ID, element);
             }
 
             (bool conforming, List<IntersectionPoint> intersections) = 
-                FindIntersectionPoints(element, nodalBodyLevelSets, nodalTipLevelSets);
+                FindIntersectionPoints(element, elementLevelSets);
 
             if (intersections.Count == 1) // The only common point is a node 
             {
@@ -185,7 +185,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public void Update(IEnumerable<XNode> nodes, double localGrowthAngle, double growthLength)
         {
-            double globalGrowthAngle = Utilities.WrapAngle(localGrowthAngle + TipSystem.RotationAngle);
+            double globalGrowthAngle = MGroup.XFEM.Geometry.Utilities.WrapAngle(localGrowthAngle + TipSystem.RotationAngle);
             double dx = growthLength * Math.Cos(globalGrowthAngle);
             double dy = growthLength * Math.Sin(globalGrowthAngle);
             var oldTip = this.Tip;
@@ -196,8 +196,8 @@ namespace MGroup.XFEM.Geometry.LSM
             levelSetUpdater.Update(oldTip, newTip, nodes, LevelSetsBody, LevelSetsTip);
         }
 
-        private static (bool conforming, List<IntersectionPoint> intersections) FindIntersectionPoints(IXFiniteElement element, 
-            Dictionary<int, double> bodyLevelSets, Dictionary<int, double> tipLevelSets)
+        private static (bool conforming, List<IntersectionPoint> intersections) FindIntersectionPoints(
+            IXFiniteElement element, ElementLevelSets elementLevelSets)
         {
             var intersections = new List<IntersectionPoint>(2);
 
@@ -206,12 +206,12 @@ namespace MGroup.XFEM.Geometry.LSM
             for (int n = 0; n < element.Nodes.Count; ++n)
             {
                 XNode node = element.Nodes[n];
-                if (bodyLevelSets[node.ID] == 0)
+                if (elementLevelSets.BodyLevelSets[node.ID] == 0)
                 {
                     intersections.Add(new IntersectionPoint() 
                     { 
                         CoordinatesNatural = nodesNatural[n], 
-                        TipLevelSet = tipLevelSets[node.ID] 
+                        TipLevelSet = elementLevelSets.TipLevelSets[node.ID] 
                     });
                 }
             }
@@ -224,14 +224,14 @@ namespace MGroup.XFEM.Geometry.LSM
                 int node1ID = edges[i].NodeIDs[1];
                 double[] node0Natural = edges[i].NodesNatural[0];
                 double[] node1Natural = edges[i].NodesNatural[1];
-                double phi0 = bodyLevelSets[node0ID];
-                double phi1 = bodyLevelSets[node1ID];
+                double phi0 = elementLevelSets.BodyLevelSets[node0ID];
+                double phi1 = elementLevelSets.BodyLevelSets[node1ID];
 
                 if (phi0 * phi1 > 0.0) continue; // Edge is not intersected
                 else if (phi0 * phi1 < 0.0) // Edge is intersected but not at its nodes
                 {
-                    double psi0 = tipLevelSets[node0ID];
-                    double psi1 = tipLevelSets[node1ID];
+                    double psi0 = elementLevelSets.TipLevelSets[node0ID];
+                    double psi1 = elementLevelSets.TipLevelSets[node1ID];
 
                     // The intersection point between these nodes can be found using the linear interpolation, see 
                     // Sukumar 2001
@@ -258,27 +258,11 @@ namespace MGroup.XFEM.Geometry.LSM
             return (false, intersections);
         }
 
-        private (Dictionary<int, double> bodyLevelSets, Dictionary<int, double> tipLevelSets) FindLevelSetsOfElementNodes(
-            IXFiniteElement element)
-        {
-            int numNodes = element.Nodes.Count;
-            var bodyLevelSets = new Dictionary<int, double>(numNodes);
-            var tipLevelSets = new Dictionary<int, double>(numNodes);
-            for (int n = 0; n < numNodes; ++n)
-            {
-                int nodeID = element.Nodes[n].ID;
-                bodyLevelSets[nodeID] = LevelSetsBody[nodeID];
-                tipLevelSets[nodeID] = LevelSetsTip[nodeID];
-            }
-            return (bodyLevelSets, tipLevelSets);
-        }
-
         /// <summary>
         /// Optimization for most elements. It is possible for this method to return false, even if the element is disjoint.
         /// </summary>
         /// <param name="element"></param>
-        private static bool IsElementDisjoint(IXFiniteElement element, 
-            Dictionary<int, double> nodalBodyLevelSets, Dictionary<int, double> nodalTipLevelSets)
+        private static bool IsElementDisjoint(IXFiniteElement element, ElementLevelSets elementLevelSets)
         {
             double minBodyLS = double.MaxValue;
             double maxBodyLS = double.MinValue;
@@ -286,24 +270,17 @@ namespace MGroup.XFEM.Geometry.LSM
 
             foreach (XNode node in element.Nodes)
             {
-                double bodyLS = nodalBodyLevelSets[node.ID];
+                double bodyLS = elementLevelSets.BodyLevelSets[node.ID];
                 if (bodyLS < minBodyLS) minBodyLS = bodyLS;
                 if (bodyLS > maxBodyLS) maxBodyLS = bodyLS;
 
-                double tipLS = nodalTipLevelSets[node.ID];
+                double tipLS = elementLevelSets.TipLevelSets[node.ID];
                 if (tipLS < minTipLS) minTipLS = tipLS;
             }
 
             if (minBodyLS * maxBodyLS > 0.0) return true;
             else if (minTipLS > 0.0) return true;
             else return false;
-        }
-
-        private class IntersectionPoint
-        {
-            public double[] CoordinatesNatural { get; set; }
-
-            public double TipLevelSet { get; set; }
         }
     }
 }

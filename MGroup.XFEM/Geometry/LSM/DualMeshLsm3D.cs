@@ -5,6 +5,7 @@ using ISAAR.MSolve.LinearAlgebra.Commons;
 using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
+using MGroup.XFEM.Geometry.LSM.Utilities;
 using MGroup.XFEM.Geometry.Mesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Interpolation;
@@ -125,7 +126,7 @@ namespace MGroup.XFEM.Geometry.LSM
             (ElementEdge[] edges, ElementFace[] allFaces) = elementGeometry.FindEdgesFaces(fineNodeIDs);
             IReadOnlyList<double[]> nodesNatural = InterpolationHexa8.UniqueInstance.NodalNaturalCoordinates;
 
-            var intersectionPoints = new Dictionary<double[], HashSet<ElementFace>>();
+            var intersectionPoints = new List<IntersectionPoint>();
 
             // Find any nodes that may lie on the LSM geometry
             var comparer = new ValueComparer(1E-7);
@@ -134,11 +135,12 @@ namespace MGroup.XFEM.Geometry.LSM
                 int nodeID = fineNodeIDs[n];
                 if (comparer.AreEqual(0, NodalLevelSets[nodeID]))
                 {
-                    HashSet<ElementFace> facesOfNode = ElementFace.FindFacesOfNode(nodeID, allFaces);
-                    double[] intersection = nodesNatural[n];
-                    if (!PointExistsAlready(intersection, intersectionPoints.Keys))
+                    var intersection = new IntersectionPoint();
+                    intersection.CoordinatesNatural = nodesNatural[n];
+                    if (!PointExistsAlready(intersection, intersectionPoints))
                     {
-                        intersectionPoints.Add(nodesNatural[n], facesOfNode);
+                        intersection.Faces = ElementFace.FindFacesOfNode(nodeID, allFaces);
+                        intersectionPoints.Add(intersection);
                     }
                 }
             }
@@ -146,29 +148,30 @@ namespace MGroup.XFEM.Geometry.LSM
             // Find intersection points that lie on element edges, excluding nodes
             foreach (ElementEdge edge in edges)
             {
-                double[] intersection = IntersectEdgeExcludingNodes(edge);
-                if (intersection != null)
+                var intersection = new IntersectionPoint();
+                intersection.CoordinatesNatural = IntersectEdgeExcludingNodes(edge);
+                if (intersection.CoordinatesNatural != null)
                 {
-                    if (!PointExistsAlready(intersection, intersectionPoints.Keys))
+                    if (!PointExistsAlready(intersection, intersectionPoints))
                     {
-                        HashSet<ElementFace> facesOfEdge = edge.FindFacesOfEdge(allFaces);
-                        intersectionPoints.Add(intersection, facesOfEdge);
+                        intersection.Faces = edge.FindFacesOfEdge(allFaces);
+                        intersectionPoints.Add(intersection);
                     }
                 }
             }
 
             // Convert the coordinates of the intersection points from the natural system of the fine element to the natural
             // system of the FEM element.
-            var intersectionPointsCoarse = new Dictionary<double[], HashSet<ElementFace>>();
-            foreach (var pair in intersectionPoints)
+            foreach (IntersectionPoint point in intersectionPoints)
             {
-                double[] pointFine = pair.Key;
-                double[] pointCoarse = dualMesh.MapPointFineNaturalToCoarseNatural(fineElementIdx, pointFine);
-                intersectionPointsCoarse[pointCoarse] = pair.Value;
+                double[] coordsFine = point.CoordinatesNatural;
+                double[] coordsCoarse = dualMesh.MapPointFineNaturalToCoarseNatural(fineElementIdx, coordsFine);
+                point.CoordinatesNatural = coordsCoarse;
+
             }
 
             // Create mesh
-            return IntersectionMesh3D.CreateMultiCellMesh3D(intersectionPointsCoarse);
+            return IntersectionMesh3D.CreateMultiCellMesh3D(intersectionPoints);
         }
 
         private RelativePositionCurveElement FindRelativePosition(int[] fineElementNodes)
@@ -251,24 +254,11 @@ namespace MGroup.XFEM.Geometry.LSM
             else return false;
         }
 
-        private bool PointsCoincide(double[] point0, double[] point1)
+        private bool PointExistsAlready(IntersectionPoint newPoint, IEnumerable<IntersectionPoint> currentIntersectionPoints)
         {
-            //TODO: Possibly add some tolerance
-            for (int d = 0; d < dim; ++d)
+            foreach (IntersectionPoint point in currentIntersectionPoints)
             {
-                if (!comparer.AreEqual(point0[d], point1[d]))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        private bool PointExistsAlready(double[] newPoint, IEnumerable<double[]> currentIntersectionPoints)
-        {
-            foreach (double[] point in currentIntersectionPoints)
-            {
-                if (PointsCoincide(point, newPoint))
+                if (point.CoincidesWith(newPoint, comparer))
                 {
                     return true;
                 }

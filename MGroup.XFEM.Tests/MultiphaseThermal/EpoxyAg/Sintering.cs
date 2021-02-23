@@ -42,7 +42,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.EpoxyAg
         private const int seed = 13;
         private const double ballRadiusMin = 0.1, ballRadiusMax = 0.3;
 
-        [Fact]
+        //[Fact]
         public static void TestModel()
         {
             try

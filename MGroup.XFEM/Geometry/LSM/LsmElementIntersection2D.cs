@@ -96,7 +96,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 if (RelativePosition == RelativePositionCurveElement.Conforming) weightModifier = 0.5;
 
                 // Absolute determinant of Jacobian of mapping from auxiliary to cartesian system. Constant for all Gauss points.
-                double length = Utilities.Distance2D(intersectionsCartesian[c], intersectionsCartesian[c + 1]);
+                double length = Geometry.Utilities.Distance2D(intersectionsCartesian[c], intersectionsCartesian[c + 1]);
                 double detJ = Math.Abs(0.5 * length);
 
                 var quadrature1D = GaussLegendre1D.GetQuadratureWithOrder(order);
