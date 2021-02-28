@@ -68,7 +68,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 else if ((levelSet0 == 0) && (levelSet1 == 0)) // Curve is tangent to the element. Edge lies on the curve.
                 {
                     //TODO: also check (DEBUG only) that all other edges are not intersected unless its is at these 2 nodes
-                    return new LsmElementIntersection2D(ID, RelativePositionCurveElement.Conforming, element,
+                    return new LsmElementIntersection2D(ID, element, RelativePositionCurveElement.Conforming, 
                         node0Natural, node1Natural);
                 }
                 else if ((levelSet0 == 0) && (levelSet1 != 0)) // Curve runs through a node. Not sure if it is tangent yet.
@@ -89,8 +89,8 @@ namespace MGroup.XFEM.Geometry.LSM
             else if (intersections.Count == 2)
             {
                 double[][] points = intersections.ToArray();
-                return new LsmElementIntersection2D(ID, RelativePositionCurveElement.Intersecting, 
-                    element, points[0], points[1]);
+                return new LsmElementIntersection2D(ID, element, RelativePositionCurveElement.Intersecting, 
+                    points[0], points[1]);
             }
             else throw new Exception("This should not have happened");
         }

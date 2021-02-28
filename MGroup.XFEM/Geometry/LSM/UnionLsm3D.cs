@@ -47,8 +47,8 @@ namespace MGroup.XFEM.Geometry.LSM
                 }
                 if (unionIntersectionMesh.Vertices.Count > 0)
                 {
-                    return new LsmElementIntersection3D(ID, 
-                        RelativePositionCurveElement.Intersecting, element, unionIntersectionMesh);
+                    return new LsmElementIntersection3D(ID, element,
+                        RelativePositionCurveElement.Intersecting, unionIntersectionMesh);
                 }
                 else throw new InvalidElementGeometryIntersectionException("None merged LSM intersects the element");
             }

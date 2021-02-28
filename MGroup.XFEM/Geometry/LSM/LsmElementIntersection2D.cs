@@ -15,16 +15,16 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         private readonly IntersectionMesh2D intersectionMesh;
 
-        public LsmElementIntersection2D(int parentGeometryID, RelativePositionCurveElement relativePosition,
-            IXFiniteElement element, double[] startNatural, double[] endNatural)
+        public LsmElementIntersection2D(int parentGeometryID, IXFiniteElement element, 
+            RelativePositionCurveElement relativePosition, double[] startNatural, double[] endNatural)
         {
             this.ParentGeometryID = parentGeometryID;
             if ((relativePosition == RelativePositionCurveElement.Disjoint) /*|| (relativePosition == RelativePositionCurveElement.Tangent)*/)
             {
                 throw new ArgumentException("There is no intersection between the curve and element");
             }
-            this.RelativePosition = relativePosition;
             this.Element = element;
+            this.RelativePosition = relativePosition;
 
             this.intersectionMesh = new IntersectionMesh2D();
             this.intersectionMesh.Vertices.Add(startNatural);
@@ -49,9 +49,9 @@ namespace MGroup.XFEM.Geometry.LSM
             this.intersectionMesh = intersectionMesh;
         }
 
-        public RelativePositionCurveElement RelativePosition { get; }
+        public IXFiniteElement Element { get; }
 
-        public IXFiniteElement Element { get; } //TODO: Perhaps this should be defined in the interface
+        public RelativePositionCurveElement RelativePosition { get; }
 
         public int ParentGeometryID { get; }
 

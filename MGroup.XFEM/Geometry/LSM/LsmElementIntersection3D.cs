@@ -21,19 +21,20 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         private readonly IntersectionMesh3D intersectionMeshNatural;
 
-        public LsmElementIntersection3D(int parentGeometryID, RelativePositionCurveElement relativePosition, 
-            IXFiniteElement element, IntersectionMesh3D intersectionMeshNatural)
+        public LsmElementIntersection3D(int parentGeometryID, IXFiniteElement element, 
+            RelativePositionCurveElement relativePosition, IntersectionMesh3D intersectionMeshNatural)
         {
             this.ParentGeometryID = parentGeometryID;
-            this.RelativePosition = relativePosition;
             this.Element = element;
+            this.RelativePosition = relativePosition;
             this.intersectionMeshNatural = intersectionMeshNatural;
         }
+
+        public IXFiniteElement Element { get; } 
+
         public int ParentGeometryID { get; }
 
         public RelativePositionCurveElement RelativePosition { get; }
-
-        public IXFiniteElement Element { get; } //TODO: Perhaps this should be defined in the interface
 
         public IIntersectionMesh ApproximateGlobalCartesian()
         {

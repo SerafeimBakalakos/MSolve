@@ -94,7 +94,7 @@ namespace MGroup.XFEM.Geometry
                     int newVertexPos = -1;
                     for (int j = 0; j < startVertices; ++j) // No need to check the vertices of this partial mesh
                     {
-                        if (PointsCoincide(jointMesh.Vertices[j], mesh.Vertices[i], comparer))
+                        if (Utilities.PointsCoincide(jointMesh.Vertices[j], mesh.Vertices[i], comparer))
                         {
                             newVertexPos = j;
                             break;
@@ -147,7 +147,7 @@ namespace MGroup.XFEM.Geometry
             foreach (double[] vertex in other.Vertices) this.Vertices.Add(vertex);
             foreach ((CellType cellType, int[] originalConnectivity) in other.Cells)
             {
-                int[] offsetConnectivity = OffsetArray(originalConnectivity, offset);
+                int[] offsetConnectivity = Utilities.OffsetArray(originalConnectivity, offset);
                 this.Cells.Add((cellType, offsetConnectivity));
             }
         }
@@ -181,7 +181,7 @@ namespace MGroup.XFEM.Geometry
             // Make sure the last point and the first one lie on the same face
             IntersectionPoint firstPoint = orderedPoints[0];
             IntersectionPoint lastPoint = orderedPoints[orderedPoints.Count - 1];
-            if (!HaveCommonEntries(firstPoint.Faces, lastPoint.Faces))
+            if (!Utilities.HaveCommonEntries(firstPoint.Faces, lastPoint.Faces))
             {
                 throw new InvalidElementGeometryIntersectionException("The first and last point do not lie on the same face");
             }
@@ -194,41 +194,9 @@ namespace MGroup.XFEM.Geometry
             for (int j = 0; j < leftoverPoints.Count; ++j)
             {
                 IntersectionPoint otherPoint = leftoverPoints[j]; 
-                if (HaveCommonEntries(point.Faces, otherPoint.Faces)) return j;
+                if (Utilities.HaveCommonEntries(point.Faces, otherPoint.Faces)) return j;
             }
             return -1;
-        }
-
-        private static bool HaveCommonEntries(HashSet<ElementFace> facesSet0, HashSet<ElementFace> facesSet1)
-        {
-            foreach (var entry in facesSet0)
-            {
-                if (facesSet1.Contains(entry)) return true;
-            }
-            return false;
-        }
-
-        private static int[] OffsetArray(int[] original, int offset)
-        {
-            var result = new int[original.Length];
-            for (int i = 0; i < original.Length; i++)
-            {
-                result[i] = original[i] + offset;
-            }
-            return result;
-        }
-
-        private static bool PointsCoincide(double[] point0, double[] point1, ValueComparer comparer)
-        {
-            //TODO: Possibly add some tolerance
-            for (int d = 0; d < dim; ++d)
-            {
-                if (!comparer.AreEqual(point0[d], point1[d]))
-                {
-                    return false;
-                }
-            }
-            return true;
         }
     }
 }

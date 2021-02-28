@@ -52,12 +52,12 @@ namespace MGroup.XFEM.Geometry.LSM
             else if (position == RelativePositionCurveElement.Conforming)
             {
                 IntersectionMesh3D intersectionMesh = FindInteractionConforming(element, levelSetSubset);
-                return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Conforming, element, intersectionMesh);
+                return new LsmElementIntersection3D(ID, element, RelativePositionCurveElement.Conforming, intersectionMesh);
             }
             else if (position == RelativePositionCurveElement.Intersecting)
             {
                 var intersectionMesh = FindInteractionIntersecting(element, levelSetSubset);
-                return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Intersecting, element, intersectionMesh);
+                return new LsmElementIntersection3D(ID, element, RelativePositionCurveElement.Intersecting, intersectionMesh);
             }
             else throw new NotImplementedException();
         }

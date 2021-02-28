@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
+using ISAAR.MSolve.LinearAlgebra.Commons;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
@@ -125,6 +126,15 @@ namespace MGroup.XFEM.Geometry
             return centroid;
         }
 
+        public static bool HaveCommonEntries<T>(HashSet<T> set0, HashSet<T> set1)
+        {
+            foreach (var entry in set0)
+            {
+                if (set1.Contains(entry)) return true;
+            }
+            return false;
+        }
+
         public static int IndexOfMinAbs(IReadOnlyList<double> values)
         {
             double min = double.MaxValue;
@@ -139,6 +149,29 @@ namespace MGroup.XFEM.Geometry
                 }
             }
             return pos;
+        }
+
+        public static int[] OffsetArray(int[] original, int offset)
+        {
+            var result = new int[original.Length];
+            for (int i = 0; i < original.Length; i++)
+            {
+                result[i] = original[i] + offset;
+            }
+            return result;
+        }
+
+        public static bool PointsCoincide(double[] point0, double[] point1, ValueComparer comparer)
+        {
+            if (point0.Length != point1.Length) throw new ArgumentException("The 2 points have different number of coordinates");
+            for (int d = 0; d < point0.Length; ++d)
+            {
+                if (!comparer.AreEqual(point0[d], point1[d]))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /// <summary>

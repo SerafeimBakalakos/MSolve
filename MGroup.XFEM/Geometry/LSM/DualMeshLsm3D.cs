@@ -75,7 +75,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 return new NullElementDiscontinuityInteraction(this.ID, element);
             }
             var jointIntersectionMesh = IntersectionMesh3D.JoinMeshes(intersectionsOfElements);
-            return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Intersecting, element, jointIntersectionMesh);
+            return new LsmElementIntersection3D(ID, element, RelativePositionCurveElement.Intersecting, jointIntersectionMesh);
         }
 
         public double SignedDistanceOf(XNode node)
