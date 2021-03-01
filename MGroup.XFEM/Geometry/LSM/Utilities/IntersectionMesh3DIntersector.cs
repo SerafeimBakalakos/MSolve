@@ -78,9 +78,10 @@ namespace MGroup.XFEM.Geometry.LSM.Utilities
                             break;
                         }
                     }
-                    if (this == null)
+                    if (thisEdge == null)
                     {
-                        oldEdges.Add(new Edge(point0, point1));
+                        thisEdge = new Edge(point0, point1);
+                        oldEdges.Add(thisEdge);
                     }
 
                     // Associate this edge with the cell
