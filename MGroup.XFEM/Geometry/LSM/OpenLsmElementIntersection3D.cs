@@ -1,101 +1,195 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Text;
-//using ISAAR.MSolve.Discretization.Integration.Quadratures;
-//using MGroup.XFEM.Elements;
-//using MGroup.XFEM.Geometry;
-//using MGroup.XFEM.Integration;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
+using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Mesh;
+using ISAAR.MSolve.LinearAlgebra;
+using MGroup.XFEM.Elements;
+using MGroup.XFEM.Geometry;
+using MGroup.XFEM.Integration;
+using MGroup.XFEM.Integration.Quadratures;
 
-//must be updated for 3D
-//namespace MGroup.XFEM.Geometry.LSM
-//{
-//    public class OpenLsmElementIntersection3D : IElementOpenGeometryInteraction
-//    {
-//        private readonly IList<double[]> commonPointsNatural;
+//TODO: Avoid duplication between this and the version for closed LSM geometries
+namespace MGroup.XFEM.Geometry.LSM
+{
+    public class OpenLsmElementIntersection3D : IElementOpenGeometryInteraction
+    {
+        private readonly IntersectionMesh3D intersectionMeshNatural;
 
-//        public OpenLsmElementIntersection3D(int parentGeometryID, IXFiniteElement element, 
-//            RelativePositionCurveElement relativePosition, bool tipInteractsWithElement, IList<double[]> commonPointsNatural)
-//        {
-//            this.ParentGeometryID = parentGeometryID;
-//            this.Element = element;
-//            if (relativePosition == RelativePositionCurveElement.Disjoint)
-//            {
-//                throw new ArgumentException("There is no intersection between the curve and element");
-//            }
-//            this.RelativePosition = relativePosition;
-//            this.TipInteractsWithElement = tipInteractsWithElement;
-//            this.commonPointsNatural = commonPointsNatural;
-//        }
+        public OpenLsmElementIntersection3D(int parentGeometryID, IXFiniteElement element, 
+            RelativePositionCurveElement relativePosition, bool tipInteractsWithElement,
+            IntersectionMesh3D intersectionMeshNatural)
+        {
+            this.ParentGeometryID = parentGeometryID;
+            this.Element = element;
+            this.RelativePosition = relativePosition;
+            this.intersectionMeshNatural = intersectionMeshNatural;
+        }
 
-//        public IXFiniteElement Element { get; }
+        public IXFiniteElement Element { get; }
 
-//        public int ParentGeometryID { get; }
+        public int ParentGeometryID { get; }
 
-//        public RelativePositionCurveElement RelativePosition { get; }
+        public RelativePositionCurveElement RelativePosition { get; }
 
-//        public bool TipInteractsWithElement { get; }
+        public bool TipInteractsWithElement { get; }
 
-//        public IIntersectionMesh ApproximateGlobalCartesian()
-//        {
-//            throw new NotImplementedException();
-//        }
+        public IIntersectionMesh ApproximateGlobalCartesian()
+        {
+            var meshCartesian = new IntersectionMesh3D();
+            foreach (double[] vertexNatural in intersectionMeshNatural.Vertices)
+            {
+                double[] vertexCartesian = Element.Interpolation.TransformNaturalToCartesian(
+                    Element.Nodes, vertexNatural);
+                meshCartesian.Vertices.Add(vertexCartesian);
+            }
+            foreach ((CellType cellType, int[] connectivity) in intersectionMeshNatural.Cells)
+            {
+                meshCartesian.Cells.Add((cellType, connectivity));
+            }
+            return meshCartesian;
+        }
 
-//        public IReadOnlyList<GaussPoint> GetBoundaryIntegrationPoints(int order)
-//        {
-//            throw new NotImplementedException();
-//        }
+        //TODO: Perhaps a dedicated IBoundaryIntegration component is needed,
+        //      along with dedicated concrete integrations for triangles, quads, etc
+        public IReadOnlyList<GaussPoint> GetBoundaryIntegrationPoints(int order)
+        {
+            if ((((IElementType)Element).CellType != CellType.Hexa8) && (((IElementType)Element).CellType != CellType.Tet4))
+            {
+                throw new NotImplementedException();
+            }
 
-//        public IReadOnlyList<double[]> GetNormalsAtBoundaryIntegrationPoints(int order)
-//        {
-//            // Cartesian coordinates of vertices
-//            var verticesCartesian = new List<double[]>(commonPointsNatural.Count);
-//            foreach (double[] vertexNatural in commonPointsNatural)
-//            {
-//                verticesCartesian.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, vertexNatural));
-//            }
+            // Conforming surfaces intersect 2 elements, thus the integral will be computed twice. Halve the weights to avoid 
+            // obtaining double the value of the integral.
+            double weightModifier = 1.0;
+            if (RelativePosition == RelativePositionCurveElement.Conforming) weightModifier = 0.5;
 
-//            // Num points per segment
-//            var quadrature1D = GaussLegendre1D.GetQuadratureWithOrder(order);
-//            int numGaussPointsPerSegment = quadrature1D.IntegrationPoints.Count;
+            var integrationPoints = new List<GaussPoint>();
+            IList<double[]> allVertices = intersectionMeshNatural.Vertices;
+            foreach ((CellType cellType, int[] cellConnectivity) in intersectionMeshNatural.Cells)
+            {
+                if (cellType == CellType.Tri3)
+                {
+                    // Vertices of triangle in natural system
+                    var verticesNatural = new double[][]
+                    {
+                        allVertices[cellConnectivity[0]], allVertices[cellConnectivity[1]], allVertices[cellConnectivity[2]]
+                    };
 
-//            // Find normal vectors of each segment
-//            var allNormals = new List<double[]>();
-//            for (int c = 0; c < commonPointsNatural.Count; ++c)
-//            {
-//                //TODO: It would be safer to find the vertices from the cells, instead of assuming that they are in order.
-//                double[] startCartesian = verticesCartesian[c];
-//                double[] endCartesian = verticesCartesian[c + 1];
+                    // Vertices of triangle in cartesian system
+                    var verticesCartesian = new double[3][];
+                    for (int v = 0; v < 3; ++v)
+                    {
+                        verticesCartesian[v] = Element.Interpolation.TransformNaturalToCartesian(
+                            Element.Nodes, verticesNatural[v]);
+                    }
 
-//                IList<double[]> normalsOfSegment =
-//                    GetNormalVectorsOfSegment(numGaussPointsPerSegment, startCartesian, endCartesian);
-//                allNormals.AddRange(normalsOfSegment);
-//            }
+                    // Determinant of jacobian from auxiliary system of triangle to global cartesian system.
+                    // This is possible because the mappings auxiliary -> natural and natural -> cartesian are both affine.
+                    // Therefore the normalized triangle in auxiliary system will be projected onto a triangle in global 
+                    // cartesian system.
+                    var side0 = new double[3];
+                    for (int i = 0; i < 3; ++i)
+                    {
+                        side0[i] = verticesCartesian[1][i] - verticesCartesian[0][i];
+                    }
+                    var side1 = new double[3];
+                    for (int i = 0; i < 3; ++i)
+                    {
+                        side1[i] = verticesCartesian[2][i] - verticesCartesian[0][i];
+                    }
+                    double triangleArea = 0.5 * side0.CrossProduct(side1).Norm2();
+                    double detJAuxiliaryNatural = 2 * triangleArea;
 
-//            return allNormals;
-//        }
+                    TriangleQuadratureSymmetricGaussian quadrature = ChooseQuadrature(order);
+                    foreach (GaussPoint gpAuxiliary in quadrature.IntegrationPoints)
+                    {
+                        var shapeFuncs = new double[3];
+                        shapeFuncs[0] = 1 - gpAuxiliary.Coordinates[0] - gpAuxiliary.Coordinates[1];
+                        shapeFuncs[1] = gpAuxiliary.Coordinates[0];
+                        shapeFuncs[2] = gpAuxiliary.Coordinates[1];
+                        var gpNatural = new double[3];
+                        for (int n = 0; n < shapeFuncs.Length; ++n)
+                        {
+                            for (int i = 0; i < 3; ++i)
+                            {
+                                gpNatural[i] += shapeFuncs[n] * verticesNatural[n][i];
+                            }
+                        }
 
-//        public IList<double[]> GetVerticesForTriangulation()
-//        {
-//            if (RelativePosition == RelativePositionCurveElement.Intersecting) return commonPointsNatural;
-//            else return new double[0][];
-//        }
+                        double weight = gpAuxiliary.Weight * detJAuxiliaryNatural * weightModifier;
+                        integrationPoints.Add(new GaussPoint(gpNatural, weight));
+                    }
 
-//        private IList<double[]> GetNormalVectorsOfSegment(int numGaussPoints, double[] startCartesian, double[] endCartesian)
-//        {
-//            double dx = endCartesian[0] - startCartesian[0];
-//            double dy = endCartesian[1] - startCartesian[1];
-//            double length = Math.Sqrt(dx * dx + dy * dy);
-//            double cosa = dx / length;
-//            double sina = dy / length;
-//            double[] normalVector = { -sina, cosa };
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+            }
+            return integrationPoints;
+        }
 
-//            var normalVectors = new double[numGaussPoints][];
-//            for (int i = 0; i < numGaussPoints; ++i)
-//            {
-//                normalVectors[i] = normalVector;
-//            }
+        public IReadOnlyList<double[]> GetNormalsAtBoundaryIntegrationPoints(int order)
+        {
+            // Cartesian coordinates of vertices
+            var verticesCartesian = new List<double[]>(intersectionMeshNatural.Vertices.Count);
+            foreach (double[] vertexNatural in intersectionMeshNatural.Vertices)
+            {
+                verticesCartesian.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, vertexNatural));
+            }
 
-//            return normalVectors;
-//        }
-//    }
-//}
+            // Num points per triangle
+            IQuadrature quadrature2D = ChooseQuadrature(order);
+            int numGaussPointsPerCell = quadrature2D.IntegrationPoints.Count;
+
+            // Find normal vectors of each triangle
+            var allNormals = new List<double[]>();
+            foreach ((CellType cellType, int[] verticesOfCell) in intersectionMeshNatural.Cells)
+            {
+                Debug.Assert(cellType == CellType.Tri3);
+
+                double[] vertex0 = verticesCartesian[verticesOfCell[0]];
+                double[] vertex1 = verticesCartesian[verticesOfCell[1]];
+                double[] vertex2 = verticesCartesian[verticesOfCell[2]];
+                double[] normalVector = CalcNormalOfPlaneThrough(vertex0, vertex1, vertex2);
+
+                for (int i = 0; i < numGaussPointsPerCell; ++i)
+                {
+                    allNormals.Add(normalVector);
+                }
+            }
+
+            return allNormals;
+        }
+
+        public IList<double[]> GetVerticesForTriangulation()
+        {
+            return intersectionMeshNatural.Vertices;
+        }
+
+        private double[] CalcNormalOfPlaneThrough(double[] point0, double[] point1, double[] point2)
+        {
+            // Find 2 vectors parallel to plane
+            var parallelVector0 = new double[3];
+            var parallelVector1 = new double[3];
+            for (int d = 0; d < 3; ++d)
+            {
+                parallelVector0[d] = point1[d] - point0[d];
+                parallelVector0[d] = point2[d] - point0[d];
+            }
+
+            // The normal vector is their cross-product
+            return parallelVector0.CrossProduct(parallelVector1);
+        }
+
+        private TriangleQuadratureSymmetricGaussian ChooseQuadrature(int order)
+        {
+            if (order <= 1) return TriangleQuadratureSymmetricGaussian.Order1Point1;
+            else if (order == 2) return TriangleQuadratureSymmetricGaussian.Order2Points3;
+            else if (order == 3) return TriangleQuadratureSymmetricGaussian.Order3Points4;
+            else throw new NotImplementedException();
+        }
+    }
+}
