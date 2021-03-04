@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
+using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Geometry.LSM.Utilities
 {
@@ -13,7 +14,7 @@ namespace MGroup.XFEM.Geometry.LSM.Utilities
     public class IntersectionMesh3DIntersector
     {
         private readonly IntersectionMesh3D oldMesh;
-        private readonly double[] psiLevelSetsOfOriginalVertices;
+        private readonly double[] levelSetsOfOldVertices;
 
         //TODO: Perhaps depending on the order of "allVertices" and "allCells" can be avoided by using Dictionary
         private List<Vertex> allVertices; // Vertices from the old mesh are listed first in the same order as in the mesh.
@@ -21,10 +22,27 @@ namespace MGroup.XFEM.Geometry.LSM.Utilities
         private List<Edge> oldEdges; 
         private IntersectionMesh3D newMesh;
 
+        /// <summary>
+        /// Warning if the <paramref name="levelSetsOfVertices"/> are calculated from a curved distance, then the intersection
+        /// points of some edges will be at least slightly inaccurate. 
+        /// </summary>
+        /// <param name="originalMesh"></param>
+        /// <param name="levelSetsOfVertices"></param>
         public IntersectionMesh3DIntersector(IntersectionMesh3D originalMesh, double[] levelSetsOfVertices)
         {
             this.oldMesh = originalMesh;
-            this.psiLevelSetsOfOriginalVertices = levelSetsOfVertices;
+            this.levelSetsOfOldVertices = levelSetsOfVertices;
+        }
+
+        public IntersectionMesh3DIntersector(IntersectionMesh3D originalMesh, Plane3D intersectionPlane)
+        {
+            this.oldMesh = originalMesh;
+
+            this.levelSetsOfOldVertices = new double[originalMesh.Vertices.Count];
+            for (int v = 0; v < originalMesh.Vertices.Count; ++v)
+            {
+                levelSetsOfOldVertices[v] = intersectionPlane.SignedDistanceOf(originalMesh.Vertices[v]);
+            }
         }
 
         public IntersectionMesh3D IntersectMesh()
@@ -94,11 +112,11 @@ namespace MGroup.XFEM.Geometry.LSM.Utilities
         {
             foreach (Vertex vertex in cell.Vertices)
             {
-                if (psiLevelSetsOfOriginalVertices[vertex.IdxOld] < 0)
+                if (levelSetsOfOldVertices[vertex.IdxOld] < 0)
                 {
                     cell.VerticesWithNegativePsi.Add(vertex);
                 }
-                else if (psiLevelSetsOfOriginalVertices[vertex.IdxOld] > 0)
+                else if (levelSetsOfOldVertices[vertex.IdxOld] > 0)
                 {
                     cell.VerticesWithPositivePsi.Add(vertex);
                 }
@@ -116,13 +134,14 @@ namespace MGroup.XFEM.Geometry.LSM.Utilities
         {
             foreach (Edge edge in oldEdges)
             {
-                double psi0 = psiLevelSetsOfOriginalVertices[edge.Start.IdxOld];
-                double psi1 = psiLevelSetsOfOriginalVertices[edge.End.IdxOld];
+                double psi0 = levelSetsOfOldVertices[edge.Start.IdxOld];
+                double psi1 = levelSetsOfOldVertices[edge.End.IdxOld];
 
-                //TODO: Intersections that lie on edges of the original FE mesh are accurate. However intersections done on
-                //      other lines (edges of the triangles) are slightly wrong, unless the edges are parallel to xi or eta.
-                //      This is due to the fact that psi are calculated accurately from the curved initial geometry.
-                //      The next formula would be correct if psi0, psi1 were the distances from the linearized initial curve.
+                // The following only applies if the signed distances are calculated from a curved surface:
+                // Intersections that lie on edges of the original FE mesh are accurate. However intersections found on
+                // other lines (edges of the triangles) are slightly wrong, unless the edges are parallel to xi or eta.
+                // This is due to the fact that psi are calculated accurately from the curved initial geometry.
+                // The next formula would be correct if psi0, psi1 were the distances from the linearized initial curve.
                 if (psi0 * psi1 < 0)
                 {
                     // There is 1 intersection point that does not coincide with nodes 
@@ -176,7 +195,7 @@ namespace MGroup.XFEM.Geometry.LSM.Utilities
             newMesh = new IntersectionMesh3D();
             for (int v = 0; v < oldMesh.Vertices.Count; ++v)
             {
-                if (psiLevelSetsOfOriginalVertices[v] <= 0)
+                if (levelSetsOfOldVertices[v] <= 0)
                 {
                     int newVertexIdx = newMesh.Vertices.Count;
                     newMesh.Vertices.Add(oldMesh.Vertices[v]);

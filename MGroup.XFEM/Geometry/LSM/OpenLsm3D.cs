@@ -82,8 +82,8 @@ namespace MGroup.XFEM.Geometry.LSM
                 {
                     // The crack front lies inside the element
                     // Take the intersection the mesh between the element and phi=0 and intersect it again with psi=0.
-                    double[] tiplLevelSets = FindTipLevelSetsOfInteractionMeshVertices(intersectionMesh, intersectionPoints);
-                    var intersector = new IntersectionMesh3DIntersector(intersectionMesh, tiplLevelSets);
+                    Plane3D psi0Plane = IntersectElementWithTipLevelSet(element, elementLevelSets);
+                    var intersector = new IntersectionMesh3DIntersector(intersectionMesh, psi0Plane);
                     IntersectionMesh3D finalMesh = intersector.IntersectMesh();
 
                     var pos = isConforming ? RelativePositionCurveElement.Conforming : RelativePositionCurveElement.Intersecting;
@@ -132,7 +132,7 @@ namespace MGroup.XFEM.Geometry.LSM
             ElementFace[] allFaces = element.Faces;
             var intersectionPoints = new List<IntersectionPoint>();
 
-            // Find any nodes that may lie on the LSM geometry
+            // Find any nodes that may lie on phi=0
             for (int n = 0; n < element.Nodes.Count; ++n)
             {
                 XNode node = element.Nodes[n];
@@ -160,33 +160,6 @@ namespace MGroup.XFEM.Geometry.LSM
             // Create mesh
             var intersectionMesh = IntersectionMesh3D.CreateMultiCellMesh3D(intersectionPoints);
             return (intersectionPoints, intersectionMesh);
-        }
-
-        //TODO: This operates on the knowledge that the IntersectionMesh3D will take all IntersectionPoint and use its
-        //      IntersectionPoint.CoordinatesNatural as vertices, without adding new vertices or copying the underlying 
-        //      double[] arrays. This is not safe at all.
-        private double[] FindTipLevelSetsOfInteractionMeshVertices(IntersectionMesh3D mesh, 
-            List<IntersectionPoint> intersectionPoints)
-        {
-            var tipLevelSets = new double[mesh.Vertices.Count];
-            for (int i = 0; i < mesh.Vertices.Count; ++i)
-            {
-                bool matchExists = false;
-                foreach (IntersectionPoint intersectionPoint in intersectionPoints)
-                {
-                    if (intersectionPoint.CoordinatesNatural == mesh.Vertices[i])
-                    {
-                        matchExists = true;
-                        tipLevelSets[i] = intersectionPoint.TipLevelSet;
-                    }
-                }
-                if (!matchExists)
-                {
-                    throw new Exception($"Vertex {i} of the intersection mesh does not correspond to"
-                        + "an intersection point between the LSM geometry and the element");
-                }
-            }
-            return tipLevelSets;
         }
 
         private IntersectionPoint IntersectEdgeExcludingNodesWithBodyLevelSet(ElementEdge edge,
@@ -221,6 +194,71 @@ namespace MGroup.XFEM.Geometry.LSM
             else return null;
         }
 
+        //TODO: This operates on the knowledge that the IntersectionMesh3D will take all IntersectionPoint and use its
+        //      IntersectionPoint.CoordinatesNatural as vertices, without adding new vertices or copying the underlying 
+        //      double[] arrays. This is not safe at all.
+        private Plane3D IntersectElementWithTipLevelSet(IXFiniteElement element, ElementLevelSets elementLevelSets)
+        {
+            // Using the psi level sets of the intersection points to further intersect the triangles of the intersection mesh 
+            // would cause inaccuracies due to them being calculated from the curved surface. Instead find the plane defined as 
+            // the intersection of psi=0 and the element and use that to calculated signed distances.
+            var intersections = new List<double[]>();
+
+            // Find any nodes that may lie on psi=0
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                XNode node = element.Nodes[n];
+                if (elementLevelSets.TipLevelSets[node.ID] == 0)
+                {
+                    intersections.Add(element.Interpolation.NodalNaturalCoordinates[n]);
+                }
+            }
+
+            // Find intersection points that lie on element edges, excluding nodes
+            foreach (ElementEdge edge in element.Edges)
+            {
+                double[] node0 = edge.NodesNatural[0];
+                double[] node1 = edge.NodesNatural[1];
+                double psi0 = elementLevelSets.TipLevelSets[edge.NodeIDs[0]];
+                double psi1 = elementLevelSets.TipLevelSets[edge.NodeIDs[1]];
+
+                if (psi0 * psi1 < 0.0) // Edge is intersected but not at its nodes
+                {
+                    // The intersection point between these nodes can be found using the linear interpolation, see 
+                    // Sukumar 2001
+                    double k = -psi0 / (psi1 - psi0);
+                    var intersectionNatural = new double[3];
+                    for (int d = 0; d < 3; ++d)
+                    {
+                        intersectionNatural[d] = node0[d] + k * (node1[d] - node0[d]);
+                    }
+
+                    intersections.Add(intersectionNatural);
+                }
+            }
+
+            // Find a point with psi>0 or psi<0 to define the positive and negative halfspaces. 
+            // Preferably the node with max |psi|
+            double[] pointOffPlane = null;
+            double signedDistanceOfPointOffPlane = 0.0;
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                XNode node = element.Nodes[n];
+                if (Math.Abs(elementLevelSets.TipLevelSets[node.ID]) > Math.Abs(signedDistanceOfPointOffPlane))
+                {
+                    signedDistanceOfPointOffPlane = elementLevelSets.TipLevelSets[node.ID];
+                    pointOffPlane = element.Interpolation.NodalNaturalCoordinates[n];
+                }
+            }
+            Debug.Assert(pointOffPlane != null);
+            Debug.Assert(signedDistanceOfPointOffPlane != 0.0);
+
+            // Find a plane that goes through these intersection points and has a unit nomal directed towards psi>0 
+            var plane = Plane3D.FitPlaneThroughPoints(intersections, pointOffPlane, signedDistanceOfPointOffPlane);
+
+            return plane;
+        }
+
         /// <summary>
         /// Optimization for most elements. It is possible for this method to return false, even if the element is disjoint.
         /// </summary>
@@ -249,7 +287,7 @@ namespace MGroup.XFEM.Geometry.LSM
         private bool TryFindInteractionConforming(IXFiniteElement element, ElementLevelSets elementLevelSets,
             out List<IntersectionPoint> intersectionPoints, out IntersectionMesh3D intersectionMesh)
         {
-            // Find the nodes that lie on the surface
+            // Find the nodes that lie on phi=0
             var zeroNodes = new HashSet<int>();
             foreach (XNode node in element.Nodes)
             {
