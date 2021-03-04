@@ -119,11 +119,16 @@ namespace MGroup.XFEM.Geometry.LSM.Utilities
                 double psi0 = psiLevelSetsOfOriginalVertices[edge.Start.IdxOld];
                 double psi1 = psiLevelSetsOfOriginalVertices[edge.End.IdxOld];
 
+                //TODO: Intersections that lie on edges of the original FE mesh are accurate. However intersections done on
+                //      other lines (edges of the triangles) are slightly wrong, unless the edges are parallel to xi or eta.
+                //      This is due to the fact that psi are calculated accurately from the curved initial geometry.
+                //      The next formula would be correct if psi0, psi1 were the distances from the linearized initial curve.
                 if (psi0 * psi1 < 0)
                 {
                     // There is 1 intersection point that does not coincide with nodes 
                     double[] x0 = edge.Start.Coords;
                     double[] x1 = edge.End.Coords;
+
                     var w = new double[3];
                     double ratio = -psi0 / (psi1 - psi0);
                     for (int d = 0; d < 3; ++d)

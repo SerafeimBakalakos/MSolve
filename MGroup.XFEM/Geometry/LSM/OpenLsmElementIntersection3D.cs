@@ -24,6 +24,7 @@ namespace MGroup.XFEM.Geometry.LSM
             this.ParentGeometryID = parentGeometryID;
             this.Element = element;
             this.RelativePosition = relativePosition;
+            this.TipInteractsWithElement = tipInteractsWithElement;
             this.intersectionMeshNatural = intersectionMeshNatural;
         }
 

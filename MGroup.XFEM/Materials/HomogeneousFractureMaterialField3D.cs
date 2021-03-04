@@ -5,7 +5,6 @@ using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.Materials.Interfaces;
 using MGroup.XFEM.Geometry.Primitives;
 
-//TODO: Delete thickness from here
 namespace MGroup.XFEM.Materials
 {
     public class HomogeneousFractureMaterialField3D : IFractureMaterialField

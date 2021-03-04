@@ -20,7 +20,7 @@ namespace MGroup.XFEM.Output.Mesh
         private readonly Dictionary<IXFiniteElement, HashSet<Subcell>> originalCells2Subcells;
         //private readonly Dictionary<XNode, HashSet<VtkPoint>> original2OutVertices;
 
-        public ConformingOutputMesh(IXModel model)
+        public ConformingOutputMesh(IXModel model, bool plotOnlyIntersectedElements = false)
         {
             List<XNode> originalVertices = model.XNodes;
             List<IXFiniteElement> originalCells = model.EnumerateElements().ToList();
@@ -56,7 +56,7 @@ namespace MGroup.XFEM.Output.Mesh
                         originalCells2Subcells[element].Add(new Subcell(element, subcell, subvertices));
                     }
                 }
-                else
+                else if (!plotOnlyIntersectedElements)
                 {
                     var verticesOfCell = new VtkPoint[element.Nodes.Count];
                     for (int i = 0; i < element.Nodes.Count; ++i)

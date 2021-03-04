@@ -12,7 +12,7 @@ using MGroup.XFEM.Phases;
 
 namespace MGroup.XFEM.Output.Writers
 {
-    public class NodalPhasesPlotter : IPhaseMeshInteractionObserver
+    public class NodalPhasesPlotter : IGeometryMeshInteractionObserver
     {
         private readonly double colorForDefaultPhase;
         private readonly XModel<IXMultiphaseElement> model;

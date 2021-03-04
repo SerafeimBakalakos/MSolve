@@ -17,7 +17,7 @@ namespace MGroup.XFEM.Geometry.LSM
     /// Based on "Non-planar 3D crack growth by the extended finite element and level sets—Part II: Level set update, 2002, 
     /// Gravouli et al.:.
     /// </summary>
-    public class OpenLsm3D : ISingleTipLsmGeometry
+    public class OpenLsm3D : IOpenLsmGeometry
     {
         public OpenLsm3D(int id)
         {

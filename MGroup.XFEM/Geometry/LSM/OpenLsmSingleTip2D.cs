@@ -15,7 +15,7 @@ using MGroup.XFEM.Geometry.Primitives;
 //      for this class to manage the decomposition. Perhaps it is necessary though.
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public class OpenLsmSingleTip2D : ISingleTipLsmGeometry
+    public class OpenLsmSingleTip2D : IOpenLsmGeometry
     {
         private readonly IOpenLevelSetUpdater levelSetUpdater;
 

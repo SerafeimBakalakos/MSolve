@@ -14,7 +14,7 @@ using MGroup.XFEM.Output.Vtk;
 
 namespace MGroup.XFEM.Output.Writers
 {
-    public class LsmElementIntersectionsPlotter : IPhaseMeshInteractionObserver
+    public class LsmElementIntersectionsPlotter : IModelObserver
     {
         private readonly string outputDirectory;
         private readonly IXModel model;

@@ -409,7 +409,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
 
         private class Crack : ICrack
         {
-            private readonly ExteriorLsmCrack crack;
+            private readonly LsmCrack2DExterior crack;
             private readonly double[] mouth, tip;
             private readonly XModel<IXCrackElement> model;
 
@@ -418,7 +418,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
                 this.mouth = new double[] { maxCoords[0], 0.5 * maxCoords[1] };
                 this.tip = new double[] { 0.5 * maxCoords[0], 0.5 * maxCoords[1] };
                 var initialGeom = new PolyLine2D(mouth, tip);
-                this.crack = new ExteriorLsmCrack(0, initialGeom, model, null);
+                this.crack = new LsmCrack2DExterior(0, initialGeom, model, null);
                 this.model = model;
             }
 

@@ -58,7 +58,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
                 geometryModel.InteractionObservers.Add(new NodalPhasesPlotter(outputDirectory, model));
 
                 // Plot element - phase boundaries interactions
-                geometryModel.InteractionObservers.Add(new LsmElementIntersectionsPlotter(outputDirectory, model));
+                model.ModelObservers.Add(new LsmElementIntersectionsPlotter(outputDirectory, model));
 
                 // Plot element subcells
                 model.ModelObservers.Add(new ConformingMeshPlotter(outputDirectory, model));

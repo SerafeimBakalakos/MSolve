@@ -6,17 +6,18 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Output.Mesh;
 using MGroup.XFEM.Output.Vtk;
 using MGroup.XFEM.Cracks.Geometry;
+using MGroup.XFEM.Geometry.LSM;
 
 namespace MGroup.XFEM.Output.Writers
 {
     public class CrackLevelSetPlotter : ICrackObserver
     {
-        private readonly ExteriorLsmCrack crack;
+        private readonly ICrack crack;
         private readonly ContinuousOutputMesh mesh;
         private readonly string outputDirectory;
         private int iteration;
 
-        public CrackLevelSetPlotter(ExteriorLsmCrack crack, ContinuousOutputMesh mesh, string outputDirectory)
+        public CrackLevelSetPlotter(ICrack crack, ContinuousOutputMesh mesh, string outputDirectory)
         {
             this.crack = crack;
             this.mesh = mesh;
@@ -26,12 +27,6 @@ namespace MGroup.XFEM.Output.Writers
 
         public void Update()
         {
-            // Log the crack path
-            using (var crackWriter = new VtkPolylineWriter($"{outputDirectory}\\crack_path_{iteration}.vtk"))
-            {
-                crackWriter.WritePolyline(crack.CrackPath);
-            }
-
             // Log the level sets
             using (var lsmWriter = new VtkFileWriter($"{outputDirectory}\\level_sets_{iteration}.vtk"))
             {
@@ -44,10 +39,11 @@ namespace MGroup.XFEM.Output.Writers
                 var levelSetsBody = new double[mesh.NumOutVertices];
                 var levelSetsTip = new double[mesh.NumOutVertices];
                 int i = 0;
+                var lsmGeometry = (IOpenLsmGeometry)(crack.CrackGeometry);
                 foreach (XNode node in mesh.OriginalVertices)
                 {
-                    levelSetsBody[i] = crack.LsmGeometry.LevelSets[node.ID];
-                    levelSetsTip[i] = crack.LsmGeometry.LevelSetsTip[node.ID];
+                    levelSetsBody[i] = lsmGeometry.LevelSets[node.ID];
+                    levelSetsTip[i] = lsmGeometry.LevelSetsTip[node.ID];
                     ++i;
                 }
 

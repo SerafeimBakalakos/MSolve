@@ -13,11 +13,11 @@ namespace MGroup.XFEM.Output.EnrichmentObservers
     /// </summary>
     public class CrackBodyNodesWithModifiedLevelSetObserver : IEnrichmentObserver
     {
-        private readonly ExteriorLsmCrack crack;
+        private readonly LsmCrack2DExterior crack;
         private readonly PreviousEnrichmentsObserver previousEnrichmentsObserver;
         private readonly CrackBodyNodesObserver bodyNodesObserver;
 
-        public CrackBodyNodesWithModifiedLevelSetObserver(ExteriorLsmCrack crack, 
+        public CrackBodyNodesWithModifiedLevelSetObserver(LsmCrack2DExterior crack, 
             PreviousEnrichmentsObserver previousEnrichmentsObserver, CrackBodyNodesObserver bodyNodesObserver)
         {
             this.crack = crack;

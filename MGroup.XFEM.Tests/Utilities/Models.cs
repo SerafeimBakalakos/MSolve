@@ -20,7 +20,7 @@ namespace MGroup.XFEM.Tests.Utilities
     public static class Models
     {
         public static void AddNodesElements<TElement>(
-            XModel<TElement> model, UniformMesh2D mesh, IXElementFactory<TElement> factory) 
+            XModel<TElement> model, IStructuredMesh mesh, IXElementFactory<TElement> factory) 
             where TElement : class, IXFiniteElement
         {
             int subdomainID = model.Subdomains.First().Key;
@@ -34,6 +34,7 @@ namespace MGroup.XFEM.Tests.Utilities
             }
 
             // Elements
+            CellType cellType = model.Dimension == 2 ? CellType.Quad4 : CellType.Hexa8;
             for (int elemID = 0; elemID < mesh.NumElementsTotal; ++elemID)
             {
                 var nodes = new List<XNode>();
@@ -42,7 +43,7 @@ namespace MGroup.XFEM.Tests.Utilities
                 {
                     nodes.Add(model.XNodes[n]);
                 }
-                var element = factory.CreateElement(elemID, CellType.Quad4, nodes);
+                var element = factory.CreateElement(elemID, cellType, nodes);
                 model.Elements.Add(element);
                 model.Subdomains[subdomainID].Elements.Add(element);
             }

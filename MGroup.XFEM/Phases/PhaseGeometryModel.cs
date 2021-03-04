@@ -27,7 +27,7 @@ namespace MGroup.XFEM.Phases
 
         public List<IPhaseGeometryObserver> GeometryObservers { get; } = new List<IPhaseGeometryObserver>();
 
-        public List<IPhaseMeshInteractionObserver> InteractionObservers { get; } = new List<IPhaseMeshInteractionObserver>();
+        public List<IGeometryMeshInteractionObserver> InteractionObservers { get; } = new List<IGeometryMeshInteractionObserver>();
 
         public bool MergeOverlappingPhases { get; set; } = true;
 
@@ -67,7 +67,7 @@ namespace MGroup.XFEM.Phases
             }
             if (defaultPhase != null) defaultPhase.InteractWithElements(physicalModel.Elements);
 
-            foreach (IPhaseMeshInteractionObserver observer in InteractionObservers) observer.Update();
+            foreach (IGeometryMeshInteractionObserver observer in InteractionObservers) observer.Update();
         }
 
         public void UpdateGeometry(Dictionary<int, Vector> subdomainFreeDisplacements)

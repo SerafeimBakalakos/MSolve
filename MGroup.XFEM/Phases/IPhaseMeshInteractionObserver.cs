@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MGroup.XFEM.Phases
 {
-    public interface IPhaseMeshInteractionObserver
+    public interface IGeometryMeshInteractionObserver
     {
         void Update(); 
     }

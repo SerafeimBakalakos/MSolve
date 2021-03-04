@@ -88,7 +88,7 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
         {
             XModel<IXCrackElement> model = CreateModel(rigidBCs);
             RunAnalysis(model);
-            var crack = (ExteriorLsmCrack)model.GeometryModel.GetDiscontinuity(0);
+            var crack = (LsmCrack2DExterior)model.GeometryModel.GetDiscontinuity(0);
 
             // Expected propagation path
             var expectedPath = new List<double[]>();
@@ -217,7 +217,7 @@ namespace MGroup.XFEM.Tests.Fracture.Benchmarks
             var jIntegrationRule = new IntegrationWithNonconformingSubquads2D(8, GaussLegendre2D.GetQuadratureWithOrder(4, 4));
             var propagator = new JintegralPropagator2D(jIntegralRadiusRatio, jIntegrationRule, material,
                 new MaximumCircumferentialTensileStressCriterion(), new ConstantIncrement2D(growthLength));
-            var crack = new ExteriorLsmCrack(0, initialCrack, model, propagator);
+            var crack = new LsmCrack2DExterior(0, initialCrack, model, propagator);
             geometryModel.Cracks[crack.ID] = crack;
 
             return model;
