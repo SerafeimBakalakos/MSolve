@@ -330,7 +330,7 @@ namespace MGroup.XFEM.Tests.Fracture.ThreeDimensional
 
             public HashSet<IXCrackElement> TipElements => throw new NotImplementedException();
 
-            public TipCoordinateSystem TipSystem => throw new NotImplementedException();
+            public TipCoordinateSystemExplicit TipSystem => throw new NotImplementedException();
 
             public int ID => 0;
 

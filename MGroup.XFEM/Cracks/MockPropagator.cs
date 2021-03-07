@@ -56,7 +56,7 @@ namespace MGroup.XFEM.Cracks
 
         
         public (double growthAngle, double growthLength) Propagate(Dictionary<int, Vector> subdomainFreeDisplacements, 
-            double[] crackTipGlobal, TipCoordinateSystem tipSystem, IEnumerable<IXCrackElement> tipElements)
+            double[] crackTipGlobal, TipCoordinateSystemExplicit tipSystem, IEnumerable<IXCrackElement> tipElements)
         {
             if (iteration >= Logger.GrowthLengths.Count)
             {
