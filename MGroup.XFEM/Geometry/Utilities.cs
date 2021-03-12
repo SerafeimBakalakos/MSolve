@@ -4,6 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Commons;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 
@@ -21,6 +22,17 @@ namespace MGroup.XFEM.Geometry
                 sum += pointA[0] * pointB[1] - pointB[0] * pointA[1];
             }
             return 0.5 * Math.Abs(sum);
+        }
+
+        public static double CalcTriangle3DArea(double[] point0, double[] point1, double[] point2)
+        {
+            var p0 = Vector.CreateFromArray(point0);
+            var p1 = Vector.CreateFromArray(point1);
+            var p2 = Vector.CreateFromArray(point2);
+            Vector p0p1 = p0 - p1;
+            Vector p0p2 = p0 - p2;
+            Vector normal = p0p1.CrossProduct(p0p2);
+            return 0.5 * normal.Norm2();
         }
 
         public static double CalcTetrahedronVolume(IList<double[]> vertices)
