@@ -92,7 +92,8 @@ namespace MGroup.XFEM.Tests.Utilities
         }
 
         public static XModel<IXMultiphaseElement> CreateQuad4Model(double[] minCoords, double[] maxCoords, double thickness,
-            int[] numElements, int bulkIntegrationOrder, int boundaryIntegrationOrder, IThermalMaterialField materialField)
+            int[] numElements, int bulkIntegrationOrder, int boundaryIntegrationOrder, IThermalMaterialField materialField,
+            bool cohesiveInterfaces)
         {
             var model = new XModel<IXMultiphaseElement>(2);
             model.Subdomains[0] = new XSubdomain(0);
@@ -112,7 +113,8 @@ namespace MGroup.XFEM.Tests.Utilities
             var integrationBulk = new IntegrationWithConformingSubtriangles2D(subcellQuadrature);
 
             // Elements
-            var elemFactory = new XThermalElement2DFactory(materialField, thickness, integrationBulk, boundaryIntegrationOrder);
+            var elemFactory = new XThermalElement2DFactory(
+                materialField, thickness, integrationBulk, boundaryIntegrationOrder, cohesiveInterfaces);
             for (int e = 0; e < cells.Count; ++e)
             {
                 XThermalElement2D element = elemFactory.CreateElement(e, CellType.Quad4, cells[e].Vertices);
@@ -142,7 +144,8 @@ namespace MGroup.XFEM.Tests.Utilities
         }
 
         public static XModel<IXMultiphaseElement> CreateQuad4Model(double[] minCoords, double[] maxCoords, double thickness,
-            int[] numElements, int bulkIntegrationOrder, int boundaryIntegrationOrder, IStructuralMaterialField materialField)
+            int[] numElements, int bulkIntegrationOrder, int boundaryIntegrationOrder, IStructuralMaterialField materialField,
+            bool cohesiveInterfaces)
         {
             var model = new XModel<IXMultiphaseElement>(2);
             model.Subdomains[0] = new XSubdomain(0);
@@ -163,7 +166,7 @@ namespace MGroup.XFEM.Tests.Utilities
 
             // Elements
             var elemFactory = new XMultiphaseStructuralElementFactory2D(
-                materialField, thickness, integrationBulk, boundaryIntegrationOrder);
+                materialField, thickness, integrationBulk, boundaryIntegrationOrder, cohesiveInterfaces);
             for (int e = 0; e < cells.Count; ++e)
             {
                 XMultiphaseStructuralElement2D element = elemFactory.CreateElement(e, CellType.Quad4, cells[e].Vertices);
@@ -175,7 +178,7 @@ namespace MGroup.XFEM.Tests.Utilities
         }
 
         public static XModel<IXMultiphaseElement> CreateHexa8Model(double[] minCoords, double[] maxCoords,int[] numElements,
-            int bulkIntegrationOrder, int boundaryIntegrationOrder, IThermalMaterialField materialField)
+            int bulkIntegrationOrder, int boundaryIntegrationOrder, IThermalMaterialField materialField, bool cohesiveInterfaces)
         {
             var model = new XModel<IXMultiphaseElement>(3);
             model.Subdomains[0] = new XSubdomain(0);
@@ -194,7 +197,8 @@ namespace MGroup.XFEM.Tests.Utilities
             var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(subcellQuadrature);
 
             // Elements
-            var elemFactory = new XThermalElement3DFactory(materialField, integrationBulk, boundaryIntegrationOrder);
+            var elemFactory = new XThermalElement3DFactory(
+                materialField, integrationBulk, boundaryIntegrationOrder, cohesiveInterfaces);
             for (int e = 0; e < cells.Count; ++e)
             {
                 XThermalElement3D element = elemFactory.CreateElement(e, CellType.Hexa8, cells[e].Vertices);

@@ -23,6 +23,7 @@ using MGroup.XFEM.Interpolation.GaussPointExtrapolation;
 using MGroup.XFEM.Materials;
 using MGroup.XFEM.Phases;
 
+//TODO: A lot of duplication between this and thermal elements.
 namespace MGroup.XFEM.Elements
 {
     public class XMultiphaseStructuralElement2D : IXStructuralMultiphaseElement
@@ -30,6 +31,7 @@ namespace MGroup.XFEM.Elements
         private const int dim = 2;
 
         private readonly int boundaryIntegrationOrder;
+        private readonly bool cohesiveInterfaces;
         private readonly IElementGeometry elementGeometry;
         private readonly int id;
         private readonly int numStandardDofs;
@@ -64,7 +66,7 @@ namespace MGroup.XFEM.Elements
         public XMultiphaseStructuralElement2D(int id, IReadOnlyList<XNode> nodes, double thickness, IElementGeometry elementGeometry,
             IStructuralMaterialField materialField, IIsoparametricInterpolation interpolation,
             IGaussPointExtrapolation gaussPointExtrapolation, IQuadrature standardQuadrature,
-            IBulkIntegration bulkIntegration, int boundaryIntegrationOrder)
+            IBulkIntegration bulkIntegration, int boundaryIntegrationOrder, bool cohesiveInterfaces)
         {
             this.id = id;
             this.Nodes = nodes;
@@ -76,6 +78,7 @@ namespace MGroup.XFEM.Elements
             this.IntegrationStandard = standardQuadrature;
             this.IntegrationBulk = bulkIntegration;
             this.boundaryIntegrationOrder = boundaryIntegrationOrder;
+            this.cohesiveInterfaces = cohesiveInterfaces;
             this.MaterialField = materialField;
 
             this.numStandardDofs = dim * nodes.Count;
@@ -235,7 +238,7 @@ namespace MGroup.XFEM.Elements
             this.gaussPointsBulk = IntegrationBulk.GenerateIntegrationPoints(this);
             int numPointsBulk = gaussPointsBulk.Count;
 
-            // Calculate and cache standard interpolation at integration points.
+            // Calculate and cache standard interpolation at bulk integration points.
             //TODO: for all standard elements of the same type, this should be cached only once
             this.evalInterpolationsAtGPsBulk = new EvalInterpolation[numPointsBulk];
             for (int i = 0; i < numPointsBulk; ++i)
@@ -243,7 +246,7 @@ namespace MGroup.XFEM.Elements
                 evalInterpolationsAtGPsBulk[i] = Interpolation.EvaluateAllAt(Nodes, gaussPointsBulk[i].Coordinates);
             }
 
-            // Find and cache the phase at integration points.
+            // Find and cache the phase at bulk integration points.
             this.phasesAtGPsVolume = new IPhase[numPointsBulk];
             Debug.Assert(Phases.Count != 0);
             if (Phases.Count == 1)
@@ -265,7 +268,7 @@ namespace MGroup.XFEM.Elements
                 }
             }
 
-            // Create and cache materials at integration points.
+            // Create and cache materials at bulk integration points.
             this.materialsAtGPsBulk = new ElasticMaterial2D[numPointsBulk];
             for (int i = 0; i < numPointsBulk; ++i)
             {
@@ -273,6 +276,7 @@ namespace MGroup.XFEM.Elements
             }
 
             // Create and cache materials at boundary integration points.
+            if (!cohesiveInterfaces) return;
             this.gaussPointsBoundary = new Dictionary<IPhaseBoundary, IReadOnlyList<GaussPoint>>();
             this.gaussPointsBoundaryNormals = new Dictionary<IPhaseBoundary, IReadOnlyList<double[]>>();
             this.materialsAtGPsBoundary = new Dictionary<IPhaseBoundary, CohesiveInterfaceMaterial2D[]>();
@@ -307,7 +311,7 @@ namespace MGroup.XFEM.Elements
             else
             {
                 (Matrix Kee, Matrix Kse) = BuildStiffnessMatricesEnriched();
-                if (PhaseIntersections.Count > 0)
+                if (cohesiveInterfaces && (PhaseIntersections.Count > 0))
                 {
                     Matrix Kii = BuildStiffnessMatrixBoundary();
                     Kee.AddIntoThis(Kii);

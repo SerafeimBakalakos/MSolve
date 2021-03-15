@@ -197,7 +197,7 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
 
             // Setup model
             XModel<IXMultiphaseElement> model = Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
-                bulkIntegrationOrder, boundaryIntegrationOrder, materialField);
+                bulkIntegrationOrder, boundaryIntegrationOrder, materialField, true);
             Models.ApplyBCsCantileverTension(model);
 
             return model;

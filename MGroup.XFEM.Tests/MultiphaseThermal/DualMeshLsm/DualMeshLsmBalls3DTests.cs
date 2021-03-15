@@ -276,7 +276,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
             var subcellQuadrature = TetrahedronQuadrature.Order2Points4;
             var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(subcellQuadrature);
 
-            var elemFactory = new XThermalElement3DFactory(materialField, integrationBulk, boundaryIntegrationOrder);
+            var elemFactory = new XThermalElement3DFactory(materialField, integrationBulk, boundaryIntegrationOrder, true);
             for (int e = 0; e < mesh.NumElementsTotal; ++e)
             {
                 var nodes = new List<XNode>();

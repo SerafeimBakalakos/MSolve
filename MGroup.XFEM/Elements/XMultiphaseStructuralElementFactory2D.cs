@@ -19,6 +19,7 @@ namespace MGroup.XFEM.Elements
         private static readonly IReadOnlyDictionary<CellType, IIsoparametricInterpolation> interpolations;
 
         private readonly int boundaryIntegrationOrder;
+        private readonly bool cohesiveInterfaces;
         private readonly IBulkIntegration bulkIntegration;
         private readonly IStructuralMaterialField material;
         private readonly double thickness;
@@ -81,12 +82,13 @@ namespace MGroup.XFEM.Elements
         }
 
         public XMultiphaseStructuralElementFactory2D(IStructuralMaterialField commonMaterial, double thickness,
-            IBulkIntegration bulkIntegration, int boundaryIntegrationOrder)
+            IBulkIntegration bulkIntegration, int boundaryIntegrationOrder, bool cohesiveInterfaces)
         {
             this.material = commonMaterial;
             this.thickness = thickness;
             this.bulkIntegration = bulkIntegration;
             this.boundaryIntegrationOrder = boundaryIntegrationOrder;
+            this.cohesiveInterfaces = cohesiveInterfaces;
         }
 
         public XMultiphaseStructuralElement2D CreateElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
@@ -94,8 +96,9 @@ namespace MGroup.XFEM.Elements
 #if DEBUG
             interpolations[cellType].CheckElementNodes(nodes);
 #endif
-            return new XMultiphaseStructuralElement2D(id, nodes, thickness, elementGeometries[cellType], material, interpolations[cellType],
-                extrapolations[cellType], standardIntegrationsForConductivity[cellType], bulkIntegration, boundaryIntegrationOrder);
+            return new XMultiphaseStructuralElement2D(id, nodes, thickness, elementGeometries[cellType], material, 
+                interpolations[cellType], extrapolations[cellType], standardIntegrationsForConductivity[cellType], 
+                bulkIntegration, boundaryIntegrationOrder, cohesiveInterfaces);
         }
     }
 }

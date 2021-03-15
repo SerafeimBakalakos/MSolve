@@ -146,7 +146,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
                 conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
 
             var model = Models.CreateHexa8Model(minCoords, maxCoords, numElements,
-                bulkIntegrationOrder, boundaryIntegrationOrder, materialField);
+                bulkIntegrationOrder, boundaryIntegrationOrder, materialField, true); // perhaps I should not use cohesive here
             Models.ApplyBCsTemperatureDiffAlongX(model, 0, 1);
             return model;
         }

@@ -101,7 +101,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.EpoxyAg
             var materialField = new ThermalBiMaterialField(epoxyMaterial, silverMaterial, conductBoundaryEpoxySilver);
 
             return (Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
-                bulkIntegrationOrder, boundaryIntegrationOrder, materialField), materialField);
+                bulkIntegrationOrder, boundaryIntegrationOrder, materialField, true), materialField);
         }
 
         private static GeometryPreprocessor2D CreatePhases(XModel<IXMultiphaseElement> model, ThermalBiMaterialField materialField)

@@ -19,6 +19,7 @@ namespace MGroup.XFEM.Elements
         private static readonly IReadOnlyDictionary<CellType, IIsoparametricInterpolation> interpolations;
 
         private readonly int boundaryIntegrationOrder;
+        private readonly bool cohesiveInterfaces;
         private readonly IBulkIntegration integrationbulk;
         private readonly IThermalMaterialField material;
         private readonly double thickness;
@@ -81,12 +82,13 @@ namespace MGroup.XFEM.Elements
         }
 
         public XThermalElement2DFactory(IThermalMaterialField commonMaterial, double thickness,
-            IBulkIntegration bulkIntegration, int boundaryIntegrationOrder)
+            IBulkIntegration bulkIntegration, int boundaryIntegrationOrder, bool cohesiveInterfaces)
         {
             this.material = commonMaterial;
             this.thickness = thickness;
             this.integrationbulk = bulkIntegration;
             this.boundaryIntegrationOrder = boundaryIntegrationOrder;
+            this.cohesiveInterfaces = cohesiveInterfaces;
         }
 
         public XThermalElement2D CreateElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
@@ -96,7 +98,7 @@ namespace MGroup.XFEM.Elements
 #endif
             return new XThermalElement2D(id, nodes, thickness, elementGeometries[cellType], material, interpolations[cellType],
                 extrapolations[cellType], standardIntegrationsForConductivity[cellType], integrationbulk, 
-                boundaryIntegrationOrder);
+                boundaryIntegrationOrder, cohesiveInterfaces);
         }
     }
 }

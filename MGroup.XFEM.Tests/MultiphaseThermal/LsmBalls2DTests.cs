@@ -183,7 +183,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
                 conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
 
             return Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
-                bulkIntegrationOrder, boundaryIntegrationOrder, materialField);
+                bulkIntegrationOrder, boundaryIntegrationOrder, materialField, true);
         }
 
         private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model)
