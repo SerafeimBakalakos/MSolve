@@ -125,8 +125,10 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
             var materialField = new MatrixInclusionsThermalMaterialField(matrixMaterial, inclusionMaterial,
                 conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
 
-            return Models.CreateHexa8Model(minCoords, maxCoords, numElements,
+            var model = Models.CreateHexa8Model(minCoords, maxCoords, numElements,
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField);
+            Models.ApplyBCsTemperatureDiffAlongX(model, 100, -100);
+            return model;
         }
 
         private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model)

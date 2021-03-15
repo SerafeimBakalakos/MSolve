@@ -94,8 +94,10 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.EpoxyAg
             var silverMaterial = new ThermalMaterial(conductSilver, specialHeatCoeff);
             var materialField = new ThermalBiMaterialField(epoxyMaterial, silverMaterial, conductBoundaryEpoxySilver);
 
-            return (Models.CreateHexa8Model(minCoords, maxCoords, numElements,
-                bulkIntegrationOrder, boundaryIntegrationOrder, materialField), materialField);
+            var model = Models.CreateHexa8Model(minCoords, maxCoords, numElements,
+                bulkIntegrationOrder, boundaryIntegrationOrder, materialField);
+            Models.ApplyBCsTemperatureDiffAlongX(model, +100, -100);
+            return (model, materialField);
         }
 
         private GeometryPreprocessor3DRandomThickness CreatePhases(
