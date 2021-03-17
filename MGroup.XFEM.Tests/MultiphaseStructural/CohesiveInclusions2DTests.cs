@@ -207,7 +207,7 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
         {
             var geometricModel = new PhaseGeometryModel(model);
             model.GeometryModel = geometricModel;
-            geometricModel.Enricher = new NodeEnricherMultiphaseStructuralCohesive(2, geometricModel);
+            geometricModel.Enricher = NodeEnricherMultiphaseNoJunctions.CreateStructuralStep(geometricModel, 2);
             List<SimpleLsm2D> lsmCurves = InitializeLSM(model);
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;

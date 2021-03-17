@@ -138,7 +138,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
         {
             var geometricModel = new PhaseGeometryModel(model);
             model.GeometryModel = geometricModel;
-            geometricModel.Enricher = new NodeEnricherMultiphaseNoJunctions(geometricModel);
+            geometricModel.Enricher = NodeEnricherMultiphaseNoJunctions.CreateThermalStep(geometricModel);
             geometricModel.MergeOverlappingPhases = true;
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;

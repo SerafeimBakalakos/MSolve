@@ -163,7 +163,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
 
             PhaseGeometryModel geometricModel = geometryPreprocessor.GeometryModel;
             model.GeometryModel = geometricModel;
-            geometricModel.Enricher = new NodeEnricherMultiphaseNoJunctions(geometricModel);
+            geometricModel.Enricher = NodeEnricherMultiphaseNoJunctions.CreateThermalStep(geometricModel);
             return geometricModel;
         }
     }

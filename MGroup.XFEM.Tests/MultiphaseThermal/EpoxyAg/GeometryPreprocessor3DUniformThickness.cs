@@ -27,7 +27,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.EpoxyAg
         {
             GeometryModel = new PhaseGeometryModel(physicalModel);
             physicalModel.GeometryModel = GeometryModel;
-            GeometryModel.Enricher = new NodeEnricherMultiphaseNoJunctions(GeometryModel);
+            GeometryModel.Enricher = NodeEnricherMultiphaseNoJunctions.CreateThermalStep(GeometryModel);
             GeometryModel.MergeOverlappingPhases = true;
             var defaultPhase = new DefaultPhase();
             GeometryModel.Phases[defaultPhase.ID] = defaultPhase;

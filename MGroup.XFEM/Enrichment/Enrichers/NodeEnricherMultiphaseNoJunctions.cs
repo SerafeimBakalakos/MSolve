@@ -10,29 +10,85 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Phases;
 
 //TODO: Determine whether to use step or ridge enrichments based on if each interface is cohesive or coherent.
-//TODO: Resolving singularities is only needed in step enrichment (cohesive interfaces).
 namespace MGroup.XFEM.Enrichment.Enrichers
 {
     public class NodeEnricherMultiphaseNoJunctions : INodeEnricher
     {
+        private readonly Func<IPhaseBoundary, IEnrichmentFunction> createEnrichment;
         private readonly PhaseGeometryModel geometricModel;
         private readonly ISingularityResolver singularityResolver;
-        private static readonly IDofType[] stdDofs = new IDofType[] { ThermalDof.Temperature };
+        private readonly IDofType[] stdDofs;
 
         private Dictionary<EnrichmentItem, IPhaseBoundary> enrichments;
 
-        public NodeEnricherMultiphaseNoJunctions(PhaseGeometryModel geometricModel)
-            : this(geometricModel, new NullSingularityResolver())
-        {
-        }
-
-        public NodeEnricherMultiphaseNoJunctions(PhaseGeometryModel geometricModel, 
-            ISingularityResolver singularityResolver)
+        public NodeEnricherMultiphaseNoJunctions(PhaseGeometryModel geometricModel, IDofType[] stdDofs, 
+            Func<IPhaseBoundary, IEnrichmentFunction> createEnrichment, ISingularityResolver singularityResolver)
         {
             this.geometricModel = geometricModel;
+            this.stdDofs = stdDofs;
+            this.createEnrichment = createEnrichment;
             this.singularityResolver = singularityResolver;
         }
 
+        public static NodeEnricherMultiphaseNoJunctions CreateStructuralRidge(PhaseGeometryModel geometryModel, int dimension)
+        {
+            IDofType[] stdDofs;
+            if (dimension == 1) stdDofs = new IDofType[] { StructuralDof.TranslationX };
+            else if (dimension == 2) stdDofs = new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY };
+            else if (dimension == 3)
+            {
+                stdDofs = new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ };
+            }
+            else throw new ArgumentException("Dimension must be 1, 2 or 3");
+
+            Func<IPhaseBoundary, IEnrichmentFunction> createEnrichment = (boundary) => new RidgeEnrichment(boundary);
+            var resolver = new NullSingularityResolver(); // ridge enrichment does not produce singularities in the stiffness
+            return new NodeEnricherMultiphaseNoJunctions(geometryModel, stdDofs, createEnrichment, resolver);
+        }
+
+        public static NodeEnricherMultiphaseNoJunctions CreateStructuralStep(PhaseGeometryModel geometryModel, int dimension)
+        {
+            // The singularity resolver is usually not necessary, unlike cracks.
+            return CreateStructuralStep(geometryModel, dimension, new NullSingularityResolver());
+        }
+
+        public static NodeEnricherMultiphaseNoJunctions CreateStructuralStep(PhaseGeometryModel geometryModel, int dimension,
+            ISingularityResolver singularityResolver)
+        {
+            IDofType[] stdDofs;
+            if (dimension == 1) stdDofs = new IDofType[] { StructuralDof.TranslationX };
+            else if (dimension == 2) stdDofs = new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY };
+            else if (dimension == 3)
+            {
+                stdDofs = new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY, StructuralDof.TranslationZ };
+            }
+            else throw new ArgumentException("Dimension must be 1, 2 or 3");
+
+            Func<IPhaseBoundary, IEnrichmentFunction> createEnrichment = (boundary) => new PhaseStepEnrichment(boundary);
+            return new NodeEnricherMultiphaseNoJunctions(geometryModel, stdDofs, createEnrichment, singularityResolver);
+        }
+
+        public static NodeEnricherMultiphaseNoJunctions CreateThermalRidge(PhaseGeometryModel geometryModel)
+        {
+            var stdDofs = new IDofType[] { ThermalDof.Temperature };
+            Func<IPhaseBoundary, IEnrichmentFunction> createEnrichment = (boundary) => new RidgeEnrichment(boundary);
+            var resolver = new NullSingularityResolver(); // ridge enrichment does not produce singularities in the stiffness
+            return new NodeEnricherMultiphaseNoJunctions(geometryModel, stdDofs, createEnrichment, resolver);
+        }
+
+        public static NodeEnricherMultiphaseNoJunctions CreateThermalStep(PhaseGeometryModel geometryModel)
+        {
+            // The singularity resolver is usually not necessary, unlike cracks.
+            return CreateThermalStep(geometryModel, new NullSingularityResolver());
+        }
+
+        public static NodeEnricherMultiphaseNoJunctions CreateThermalStep(PhaseGeometryModel geometryModel, 
+            ISingularityResolver singularityResolver)
+        {
+            var stdDofs = new IDofType[] { ThermalDof.Temperature };
+            Func<IPhaseBoundary, IEnrichmentFunction> createEnrichment = (boundary) => new PhaseStepEnrichment(boundary);
+            return new NodeEnricherMultiphaseNoJunctions(geometryModel, stdDofs, createEnrichment, singularityResolver);
+        }
 
         public void ApplyEnrichments()
         {
@@ -89,7 +145,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
                 }
                 IPhaseBoundary boundary = phase.ExternalBoundaries[0];
 
-                var enrFunc = new PhaseStepEnrichment(boundary);
+                IEnrichmentFunction enrFunc = createEnrichment(boundary); // e.g. step, ramp or ridge enrichment
                 var enrDofs = new IDofType[stdDofs.Length];
                 for (int i = 0; i < stdDofs.Length; ++i) enrDofs[i] = new EnrichedDof(enrFunc, stdDofs[i]);
                 var enrItem = new EnrichmentItem(this.enrichments.Count, new IEnrichmentFunction[] { enrFunc }, enrDofs);
