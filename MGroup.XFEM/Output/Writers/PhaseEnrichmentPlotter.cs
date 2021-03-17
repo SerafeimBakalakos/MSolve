@@ -33,6 +33,9 @@ namespace MGroup.XFEM.Output.Writers
             PlotEnrichedNodesCategory(enr => enr.EnrichmentFunctions[0] is PhaseStepEnrichment, 
                 Path.Combine(outputDirectory, $"enriched_nodes_heaviside_t{iteration}.vtk"), "enriched_nodes_heaviside");
 
+            PlotEnrichedNodesCategory(enr => enr.EnrichmentFunctions[0] is RidgeEnrichment,
+                Path.Combine(outputDirectory, $"enriched_nodes_ridge_t{iteration}.vtk"), "enriched_nodes_ridge");
+
             PlotEnrichedNodesCategory(enr => enr.EnrichmentFunctions[0] is JunctionEnrichment, 
                 Path.Combine(outputDirectory, $"enriched_nodes_junction_t{iteration}.vtk"), "enriched_nodes_junction");
 

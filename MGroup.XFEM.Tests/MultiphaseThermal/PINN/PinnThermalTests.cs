@@ -33,11 +33,12 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
 
         private const int defaultPhaseID = 0;
 
+        private const bool cohesiveInterfaces = true;
         private const double conductMatrix = 0.25, conductInclusion = 429; //Wμ/K
         private const double conductBoundaryMatrixInclusion = 1E15, conductBoundaryInclusionInclusion = 0;
         private const double specialHeatCoeff = 1.0;
 
-        [Fact]
+        //[Fact]
         public static void TestModel()
         {
             if (!Directory.Exists(outputDirectory))
@@ -79,7 +80,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
             model.Initialize();
         }
 
-        [Fact]
+        //[Fact]
         public static void TestSolution()
         {
             if (!Directory.Exists(outputDirectory))
@@ -106,7 +107,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
                 computedFiles[0], computedFiles[1], computedFiles[2], computedFiles[3]);
         }
 
-        [Fact]
+        //[Fact]
         public static void TestHomogenization()
         {
             if (!Directory.Exists(outputDirectory))
@@ -146,7 +147,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
                 conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
 
             var model = Models.CreateHexa8Model(minCoords, maxCoords, numElements,
-                bulkIntegrationOrder, boundaryIntegrationOrder, materialField, true); // perhaps I should not use cohesive here
+                bulkIntegrationOrder, boundaryIntegrationOrder, materialField, cohesiveInterfaces);
             Models.ApplyBCsTemperatureDiffAlongX(model, 0, 1);
             return model;
         }
@@ -162,7 +163,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
 
             PhaseGeometryModel geometricModel = geometryPreprocessor.GeometryModel;
             model.GeometryModel = geometricModel;
-            geometricModel.Enricher = new NodeEnricherMultiphaseThermal(geometricModel, new NullSingularityResolver());
+            geometricModel.Enricher = new NodeEnricherMultiphaseNoJunctions(geometricModel);
             return geometricModel;
         }
     }

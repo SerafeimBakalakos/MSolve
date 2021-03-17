@@ -45,6 +45,8 @@ namespace MGroup.XFEM.Geometry.LSM
             this.intersectionMesh = intersectionMesh;
         }
 
+        public bool BoundaryOfGeometryInteractsWithElement => false;
+
         public RelativePositionCurveElement RelativePosition { get; }
 
         public IXFiniteElement Element { get; } //TODO: Perhaps this should be defined in the interface

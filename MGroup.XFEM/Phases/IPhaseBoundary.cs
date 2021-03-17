@@ -11,7 +11,7 @@ namespace MGroup.XFEM.Phases
     {
         IClosedGeometry Geometry { get; }
 
-        EnrichmentItem StepEnrichment { get; set; }
+        EnrichmentItem StepEnrichment { get; set; } //TODO: Not only step enrichment. Also ramp or ridge.
 
         IPhase NegativePhase { get; set; }
         IPhase PositivePhase { get; set; }

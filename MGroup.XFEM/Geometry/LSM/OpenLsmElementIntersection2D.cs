@@ -8,7 +8,7 @@ using MGroup.XFEM.Integration;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public class OpenLsmElementIntersection2D : IElementOpenGeometryInteraction
+    public class OpenLsmElementIntersection2D : IElementDiscontinuityInteraction
     {
         private readonly IList<double[]> commonPointsNatural;
 
@@ -22,7 +22,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 throw new ArgumentException("There is no intersection between the curve and element");
             }
             this.RelativePosition = relativePosition;
-            this.TipInteractsWithElement = tipInteractsWithElement;
+            this.BoundaryOfGeometryInteractsWithElement = tipInteractsWithElement;
             this.commonPointsNatural = commonPointsNatural;
         }
 
@@ -32,7 +32,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public RelativePositionCurveElement RelativePosition { get; }
 
-        public bool TipInteractsWithElement { get; }
+        public bool BoundaryOfGeometryInteractsWithElement { get; }
 
         public IIntersectionMesh ApproximateGlobalCartesian()
         {

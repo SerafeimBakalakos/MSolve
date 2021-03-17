@@ -62,7 +62,7 @@ namespace MGroup.XFEM.Geometry.LSM
         /// <remarks>Stolarska has proposed a simpler approach for the characterization (tip element, cut or standard), but that  
         /// is not always correct.</remarks>
         /// <param name="element"></param>
-        public IElementOpenGeometryInteraction Intersect(IXFiniteElement element)
+        public IElementDiscontinuityInteraction Intersect(IXFiniteElement element)
         {
             (Dictionary<int, double> nodalBodyLevelSets, Dictionary<int, double> nodalTipLevelSets) = 
                 FindLevelSetsOfElementNodes(element);

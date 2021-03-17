@@ -17,7 +17,7 @@ namespace MGroup.XFEM.Geometry
         //      which can also be mutated. 
         int ID { get; }
 
-        IElementOpenGeometryInteraction Intersect(IXFiniteElement element);
+        IElementDiscontinuityInteraction Intersect(IXFiniteElement element);
 
         double SignedDistanceOf(XNode node);
 

@@ -10,14 +10,22 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Phases;
 
 //TODO: Remove casts
+//TODO: Determine whether to use step or ridge enrichments based on if each interface is cohesive or coherent.
+//TODO: Resolving singularities is only needed in step enrichment (cohesive interfaces).
 namespace MGroup.XFEM.Enrichment.Enrichers
 {
-    public class NodeEnricherMultiphaseThermal : INodeEnricher
+    public class NodeEnricherMultiphaseThermalJunctions : INodeEnricher
     {
         private readonly PhaseGeometryModel geometricModel;
         private readonly ISingularityResolver singularityResolver;
 
-        public NodeEnricherMultiphaseThermal(PhaseGeometryModel geometricModel, ISingularityResolver singularityResolver)
+        public NodeEnricherMultiphaseThermalJunctions(PhaseGeometryModel geometricModel)
+            : this(geometricModel, new NullSingularityResolver())
+        {
+        }
+
+        public NodeEnricherMultiphaseThermalJunctions(PhaseGeometryModel geometricModel, 
+            ISingularityResolver singularityResolver)
         {
             this.geometricModel = geometricModel;
             this.singularityResolver = singularityResolver;
@@ -49,7 +57,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
                     {
                         // Find the nodes to potentially be enriched by this step enrichment 
                         EnrichmentItem stepEnrichment = boundary.StepEnrichment;
-                        var stepEnrichmentFunc = (PhaseStepEnrichment)stepEnrichment.EnrichmentFunctions[0]; //TODO: remove the cast
+                        var stepEnrichmentFunc = (PhaseStepEnrichmentOLD)stepEnrichment.EnrichmentFunctions[0]; //TODO: remove the cast
                         bool exists = nodesPerStepEnrichment.TryGetValue(stepEnrichment, out HashSet<XNode> nodesToEnrich);
                         if (!exists)
                         {
@@ -216,28 +224,28 @@ namespace MGroup.XFEM.Enrichment.Enrichers
             }
         }
 
-        private PhaseStepEnrichment DefineStepEnrichment(IPhaseBoundary boundary)
+        private PhaseStepEnrichmentOLD DefineStepEnrichment(IPhaseBoundary boundary)
         {
             //TODO: This is horrible
             if (boundary.NegativePhase is DefaultPhase)
             {
-                return new PhaseStepEnrichment(boundary.PositivePhase, boundary.NegativePhase);
+                return new PhaseStepEnrichmentOLD(boundary.PositivePhase, boundary.NegativePhase);
             }
             else if (boundary.PositivePhase is DefaultPhase)
             {
-                return new PhaseStepEnrichment(boundary.NegativePhase, boundary.PositivePhase);
+                return new PhaseStepEnrichmentOLD(boundary.NegativePhase, boundary.PositivePhase);
             }
             else if (/*boundary.PositivePhase is HollowPhase &&*/ boundary.NegativePhase is ConvexPhase)
             {
-                return new PhaseStepEnrichment(boundary.NegativePhase, boundary.PositivePhase);
+                return new PhaseStepEnrichmentOLD(boundary.NegativePhase, boundary.PositivePhase);
             }
             else if (/*boundary.NegativePhase is HollowPhase &&*/ boundary.PositivePhase is ConvexPhase)
             {
-                return new PhaseStepEnrichment(boundary.PositivePhase, boundary.NegativePhase);
+                return new PhaseStepEnrichmentOLD(boundary.PositivePhase, boundary.NegativePhase);
             }
             else // Does not matter which phase will be internal/external
             {
-                return new PhaseStepEnrichment(boundary.NegativePhase, boundary.PositivePhase);
+                return new PhaseStepEnrichmentOLD(boundary.NegativePhase, boundary.PositivePhase);
             }
         }
 
@@ -263,7 +271,7 @@ namespace MGroup.XFEM.Enrichment.Enrichers
             }
         }
 
-        private bool HasCorrespondingJunction(XNode node, PhaseStepEnrichment stepEnrichment) 
+        private bool HasCorrespondingJunction(XNode node, PhaseStepEnrichmentOLD stepEnrichment) 
         {
             //TODO: Alternatively I could compare phase boundaries (discontinuities in general) instead of phases.
             foreach (IEnrichmentFunction enrichment in node.EnrichmentFuncs.Keys)

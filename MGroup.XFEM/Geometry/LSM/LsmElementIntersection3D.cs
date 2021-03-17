@@ -29,6 +29,9 @@ namespace MGroup.XFEM.Geometry.LSM
             this.Element = element;
             this.intersectionMeshNatural = intersectionMeshNatural;
         }
+
+        public bool BoundaryOfGeometryInteractsWithElement => false;
+
         public int ParentGeometryID { get; }
 
         public RelativePositionCurveElement RelativePosition { get; }

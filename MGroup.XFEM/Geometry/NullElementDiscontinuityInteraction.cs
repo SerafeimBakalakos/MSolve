@@ -6,7 +6,7 @@ using MGroup.XFEM.Elements;
 
 namespace MGroup.XFEM.Geometry
 {
-    public class NullElementDiscontinuityInteraction : IElementDiscontinuityInteraction, IElementOpenGeometryInteraction
+    public class NullElementDiscontinuityInteraction : IElementDiscontinuityInteraction
     {
         public NullElementDiscontinuityInteraction(int parentGeometryID, IXFiniteElement element)
         {
@@ -20,7 +20,7 @@ namespace MGroup.XFEM.Geometry
 
         public IXFiniteElement Element { get; }
 
-        public bool TipInteractsWithElement => false;
+        public bool BoundaryOfGeometryInteractsWithElement => false;
 
         public IReadOnlyList<GaussPoint> GetBoundaryIntegrationPoints(int numPoints)
         {

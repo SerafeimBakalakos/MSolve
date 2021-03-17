@@ -191,7 +191,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
         {
             var geometricModel = new PhaseGeometryModel(model);
             model.GeometryModel = geometricModel;
-            geometricModel.Enricher = new NodeEnricherMultiphaseThermal(geometricModel, new NullSingularityResolver());
+            geometricModel.Enricher = new NodeEnricherMultiphaseNoJunctions(geometricModel);
             List<SimpleLsm3D> lsmSurfaces = InitializeLSM(model);
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;

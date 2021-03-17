@@ -107,8 +107,8 @@ namespace MGroup.XFEM.Elements
         /// </summary>
         public IReadOnlyList<XNode> Nodes { get; }
 
-        public Dictionary<ICrack, IElementOpenGeometryInteraction> InteractingCracks { get; } 
-            = new Dictionary<ICrack, IElementOpenGeometryInteraction>();
+        public Dictionary<ICrack, IElementDiscontinuityInteraction> InteractingCracks { get; } 
+            = new Dictionary<ICrack, IElementDiscontinuityInteraction>();
 
         public Dictionary<int, IElementDiscontinuityInteraction> InteractingDiscontinuities { get; }
             = new Dictionary<int, IElementDiscontinuityInteraction>();

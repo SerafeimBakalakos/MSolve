@@ -8,6 +8,12 @@ namespace MGroup.XFEM.Geometry
 {
     public interface IElementDiscontinuityInteraction
     {
+        //TODO: Perhaps this should be included into RelativePositionCurveElement
+        /// <summary>
+        /// Examples of such boundaries: crack tips in 2D, crack fronts in 3D.
+        /// </summary>
+        bool BoundaryOfGeometryInteractsWithElement { get; } 
+
         IXFiniteElement Element { get; }
 
         int ParentGeometryID { get; }

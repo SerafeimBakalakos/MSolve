@@ -17,7 +17,7 @@ namespace MGroup.XFEM.Elements
     public interface IXCrackElement : IXFiniteElement
     {
         
-        Dictionary<ICrack, IElementOpenGeometryInteraction> InteractingCracks { get; }
+        Dictionary<ICrack, IElementDiscontinuityInteraction> InteractingCracks { get; }
 
         Matrix CalcDisplacementFieldGradient(XPoint point, Vector nodalDisplacements);
     }
@@ -42,7 +42,7 @@ namespace MGroup.XFEM.Elements
             if (element.InteractingCracks.Count == 0) return false;
             else if (element.InteractingCracks.Count == 1)
             {
-                IElementOpenGeometryInteraction interaction = element.InteractingCracks.First().Value;
+                IElementDiscontinuityInteraction interaction = element.InteractingCracks.First().Value;
                 return interaction.RelativePosition == RelativePositionCurveElement.Intersecting;
             }
             else
@@ -56,8 +56,8 @@ namespace MGroup.XFEM.Elements
             if (element.InteractingCracks.Count == 0) return false;
             else if (element.InteractingCracks.Count == 1)
             {
-                IElementOpenGeometryInteraction interaction = element.InteractingCracks.First().Value;
-                return interaction.TipInteractsWithElement;
+                IElementDiscontinuityInteraction interaction = element.InteractingCracks.First().Value;
+                return interaction.BoundaryOfGeometryInteractsWithElement;
             }
             else
             {
@@ -66,7 +66,7 @@ namespace MGroup.XFEM.Elements
         }
 
         public static void RegisterInteractionWithCrack(this IXCrackElement element, 
-            ICrack crack, IElementOpenGeometryInteraction interaction)
+            ICrack crack, IElementDiscontinuityInteraction interaction)
         {
             element.InteractingCracks[crack] = interaction;
             element.InteractingDiscontinuities[crack.ID] = interaction;

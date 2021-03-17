@@ -21,11 +21,11 @@ namespace MGroup.XFEM.Enrichment.Functions
     /// </remarks>
     public class RidgeEnrichment : IEnrichmentFunction
     {
-        private readonly IClosedGeometry geometry;
+        private readonly IPhaseBoundary boundary;
 
-        public RidgeEnrichment(IClosedGeometry geometry)
+        public RidgeEnrichment(IPhaseBoundary boundary)
         {
-            this.geometry = geometry;
+            this.boundary = boundary;
         }
 
         public EvaluatedFunction EvaluateAllAt(XPoint point)
@@ -42,7 +42,7 @@ namespace MGroup.XFEM.Enrichment.Functions
             for (int n = 0; n < point.Element.Nodes.Count; ++n)
             {
                 XNode node = point.Element.Nodes[n];
-                double phi = geometry.SignedDistanceOf(node);
+                double phi = boundary.Geometry.SignedDistanceOf(node);
                 double absPhi = Math.Abs(phi);
                 double N = point.ShapeFunctions[n];
 
@@ -81,7 +81,7 @@ namespace MGroup.XFEM.Enrichment.Functions
             for (int n = 0; n < point.Element.Nodes.Count; ++n)
             {
                 XNode node = point.Element.Nodes[n];
-                double phi = geometry.SignedDistanceOf(node);
+                double phi = boundary.Geometry.SignedDistanceOf(node);
                 double N = point.ShapeFunctions[n];
                 sum1 += Math.Abs(phi) * N;
                 sum2 += phi * N;
@@ -91,7 +91,7 @@ namespace MGroup.XFEM.Enrichment.Functions
 
         public double EvaluateJumpAcross(IXDiscontinuity discontinuity, XPoint point)
         {
-            // There is no jump. Do not use it for problems with discontinuous primary fields. 
+            // There is no jump. Do not use this enrichment for problems with discontinuous primary fields. 
             return 0;
         }
     }

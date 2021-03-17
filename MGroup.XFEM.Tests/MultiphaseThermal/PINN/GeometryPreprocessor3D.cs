@@ -58,7 +58,6 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
         {
             GeometryModel = new PhaseGeometryModel(physicalModel);
             physicalModel.GeometryModel = GeometryModel;
-            GeometryModel.Enricher = new NodeEnricherMultiphaseThermal(GeometryModel, new NullSingularityResolver());
             GeometryModel.MergeOverlappingPhases = true;
             var defaultPhase = new DefaultPhase();
             GeometryModel.Phases[defaultPhase.ID] = defaultPhase;

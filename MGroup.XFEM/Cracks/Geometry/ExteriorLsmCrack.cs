@@ -116,8 +116,8 @@ namespace MGroup.XFEM.Cracks.Geometry
             TipElements.Clear(); 
             foreach (IXCrackElement element in model.Elements)
             {
-                IElementOpenGeometryInteraction interaction = lsmGeometry.Intersect(element);
-                if (interaction.TipInteractsWithElement)
+                IElementDiscontinuityInteraction interaction = lsmGeometry.Intersect(element);
+                if (interaction.BoundaryOfGeometryInteractsWithElement)
                 {
                     TipElements.Add(element);
                     element.RegisterInteractionWithCrack(this, interaction);

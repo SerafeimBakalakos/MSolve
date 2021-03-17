@@ -62,6 +62,9 @@ namespace MGroup.XFEM.Geometry.Primitives
             this.originLocal[1] = sina * start[0] - cosa * start[1];
         }
 
+        public bool BoundaryOfGeometryInteractsWithElement => throw new NotImplementedException();
+
+
         public int ParentGeometryID { get; }
 
         public RelativePositionCurveElement RelativePosition { get; }

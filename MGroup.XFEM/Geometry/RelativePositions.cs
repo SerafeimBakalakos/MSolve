@@ -5,7 +5,10 @@
         Disjoint, Intersecting, Tangent, Conforming
     }
 
-    public enum RelativePositionCurveElement
+    //TODO: rename this. It is not only for curves, but also for surfaces
+    //TODO: the interaction of the element with the boundary (tip/front) of the geometry (curve/surface respectively) should
+    //      be described by this component, instead of needing a separate bool flag (see IElementDiscontinuityInteraction)
+    public enum RelativePositionCurveElement 
     {
         /// <summary>
         /// There are no common points.
