@@ -5,9 +5,9 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 
 namespace MGroup.XFEM.Materials
 {
-    public class CohesiveInterfaceMaterial2D
+    public class CohesiveInterfaceMaterial
     {
-        public CohesiveInterfaceMaterial2D(IMatrix interfaceConductivity)
+        public CohesiveInterfaceMaterial(IMatrix interfaceConductivity)
         {
             this.ConstitutiveMatrix = interfaceConductivity;
         }
@@ -18,6 +18,6 @@ namespace MGroup.XFEM.Materials
         /// </summary>
         public IMatrix ConstitutiveMatrix { get; }
 
-        public CohesiveInterfaceMaterial2D Clone() => new CohesiveInterfaceMaterial2D(ConstitutiveMatrix.Copy());
+        public CohesiveInterfaceMaterial Clone() => new CohesiveInterfaceMaterial(ConstitutiveMatrix.Copy());
     }
 }

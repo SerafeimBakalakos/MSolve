@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Phases;
 
@@ -9,8 +10,8 @@ namespace MGroup.XFEM.Materials
 {
     public interface IStructuralMaterialField
     {
-        CohesiveInterfaceMaterial2D FindInterfaceMaterialAt(IPhaseBoundary phaseBoundary);
+        CohesiveInterfaceMaterial FindInterfaceMaterialAt(IPhaseBoundary phaseBoundary);
 
-        ElasticMaterial2D FindMaterialAt(IPhase phase);
+        IContinuumMaterial FindMaterialAt(IPhase phase);
     }
 }

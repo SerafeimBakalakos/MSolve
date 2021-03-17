@@ -21,7 +21,7 @@ namespace ISAAR.MSolve.MultiscaleAnalysis
     /// Primary multiscale analysis class that connects all nesessary structures for a FE2 simulation (with an 3D to 2D degenerate Rve)
     /// Authors: Gerasimos Sotiropoulos
     /// </summary>
-    public class Microstructure2DplaneStress : StructuralProblemsMicrostructureBase, IContinuumMaterial2D
+    public class Microstructure2DplaneStress : StructuralProblemsMicrostructureBase, IContinuumMaterial
     {
         private Model model { get; set; }
         //private readonly Dictionary<int, Node> nodesDictionary = new Dictionary<int, Node>();

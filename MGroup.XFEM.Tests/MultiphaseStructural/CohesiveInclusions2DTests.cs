@@ -187,7 +187,7 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
             // Materials
             var materialMatrix = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = matrixE, PoissonRatio = v };
             var materialInclusion = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = inclusionE, PoissonRatio = v };
-            var interfaceMaterial = new CohesiveInterfaceMaterial2D(Matrix.CreateFromArray(new double[,]
+            var interfaceMaterial = new CohesiveInterfaceMaterial(Matrix.CreateFromArray(new double[,]
             {
                 { cohesivenessNormal, 0 },
                 { 0, cohesivenessTangent }

@@ -182,7 +182,7 @@ namespace MGroup.XFEM.Output.Fields
             else throw new NotImplementedException();
 
             // Stresses
-            IContinuumMaterial2D elasticity = StrainsStressesAtGaussPointsField.FindMaterialAt(element, point);
+            IContinuumMaterial elasticity = StrainsStressesAtGaussPointsField.FindMaterialAt(element, point);
             double[] stress = elasticity.ConstitutiveMatrix.Multiply(strain);
 
             return (strain, stress);

@@ -175,7 +175,7 @@ namespace ISAAR.MSolve.IGA.Elements
             auxMatrix1[1, 1] = surfaceBasisVector2.DotProduct(surfaceBasisVector2);
             (Matrix inverse, double det) = auxMatrix1.InvertAndDeterminant();
 
-			var material = ((IContinuumMaterial2D)element.Patch.Material);
+			var material = ((IContinuumMaterial)element.Patch.Material);
 			var constitutiveMatrix = Matrix.CreateFromArray(new double[3, 3]
 			{
 				{

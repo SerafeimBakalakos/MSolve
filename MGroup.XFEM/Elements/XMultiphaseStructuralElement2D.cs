@@ -10,6 +10,7 @@ using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
@@ -49,12 +50,12 @@ namespace MGroup.XFEM.Elements
         /// <summary>
         /// In the same order as their corresponding <see cref="gaussPointsBoundary"/>.
         /// </summary>
-        private Dictionary<IPhaseBoundary, CohesiveInterfaceMaterial2D[]> materialsAtGPsBoundary;
+        private Dictionary<IPhaseBoundary, CohesiveInterfaceMaterial[]> materialsAtGPsBoundary;
 
         /// <summary>
         /// In the same order as their corresponding <see cref="gaussPointsBulk"/>.
         /// </summary>
-        private ElasticMaterial2D[] materialsAtGPsBulk;
+        private IContinuumMaterial[] materialsAtGPsBulk;
 
         private int numEnrichedDofs;
 
@@ -177,7 +178,7 @@ namespace MGroup.XFEM.Elements
 
         public XPoint EvaluateFunctionsAt(double[] naturalPoint)
         {
-            var result = new XPoint(2);
+            var result = new XPoint(dim);
             result.Coordinates[CoordinateSystem.ElementNatural] = naturalPoint;
             result.Element = this;
             result.ShapeFunctions = Interpolation.EvaluateFunctionsAt(naturalPoint);
@@ -187,10 +188,10 @@ namespace MGroup.XFEM.Elements
         public double[] FindCentroidCartesian() => Utilities.FindCentroidCartesian(dim, Nodes);
 
 
-        public Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<CohesiveInterfaceMaterial2D>)>
+        public Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<CohesiveInterfaceMaterial>)>
             GetMaterialsForBoundaryIntegration()
         {
-            var result = new Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<CohesiveInterfaceMaterial2D>)>();
+            var result = new Dictionary<IPhaseBoundary, (IReadOnlyList<GaussPoint>, IReadOnlyList<CohesiveInterfaceMaterial>)>();
             foreach (ClosedPhaseBoundary boundary in gaussPointsBoundary.Keys)
             {
                 result[boundary] = (gaussPointsBoundary[boundary], materialsAtGPsBoundary[boundary]);
@@ -198,7 +199,7 @@ namespace MGroup.XFEM.Elements
             return result;
         }
 
-        public (IReadOnlyList<GaussPoint>, IReadOnlyList<ElasticMaterial2D>) GetMaterialsForBulkIntegration()
+        public (IReadOnlyList<GaussPoint>, IReadOnlyList<IContinuumMaterial>) GetMaterialsForBulkIntegration()
             => (gaussPointsBulk, materialsAtGPsBulk);
 
         public void IdentifyDofs()
@@ -279,7 +280,7 @@ namespace MGroup.XFEM.Elements
             if (!cohesiveInterfaces) return;
             this.gaussPointsBoundary = new Dictionary<IPhaseBoundary, IReadOnlyList<GaussPoint>>();
             this.gaussPointsBoundaryNormals = new Dictionary<IPhaseBoundary, IReadOnlyList<double[]>>();
-            this.materialsAtGPsBoundary = new Dictionary<IPhaseBoundary, CohesiveInterfaceMaterial2D[]>();
+            this.materialsAtGPsBoundary = new Dictionary<IPhaseBoundary, CohesiveInterfaceMaterial[]>();
             foreach (var boundaryIntersectionPair in PhaseIntersections)
             {
                 IPhaseBoundary boundary = boundaryIntersectionPair.Key;
@@ -289,10 +290,10 @@ namespace MGroup.XFEM.Elements
                 IReadOnlyList<double[]> gaussPointsNormals = 
                     intersection.GetNormalsAtBoundaryIntegrationPoints(boundaryIntegrationOrder);
                 int numGaussPoints = gaussPoints.Count;
-                var materials = new CohesiveInterfaceMaterial2D[numGaussPoints];
+                var materials = new CohesiveInterfaceMaterial[numGaussPoints];
 
                 //TODO: perhaps I should have one for each Gauss point
-                CohesiveInterfaceMaterial2D material = MaterialField.FindInterfaceMaterialAt(boundary);
+                CohesiveInterfaceMaterial material = MaterialField.FindInterfaceMaterialAt(boundary);
                 for (int i = 0; i < numGaussPoints; ++i) materials[i] = material;
 
                 gaussPointsBoundary[boundary] = gaussPoints;
@@ -362,7 +363,7 @@ namespace MGroup.XFEM.Elements
                 IPhaseBoundary boundary = boundaryGaussPointsPair.Key;
                 IReadOnlyList<GaussPoint> gaussPoints = boundaryGaussPointsPair.Value;
                 IReadOnlyList<double[]> normalVectorsAtGPs = gaussPointsBoundaryNormals[boundary];
-                CohesiveInterfaceMaterial2D[] materials = materialsAtGPsBoundary[boundary];
+                CohesiveInterfaceMaterial[] materials = materialsAtGPsBoundary[boundary];
 
                 // Kii = sum(N^T * T * N * weight * thickness)
                 for (int i = 0; i < gaussPoints.Count; ++i)

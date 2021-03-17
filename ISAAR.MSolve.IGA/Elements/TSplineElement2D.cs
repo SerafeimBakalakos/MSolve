@@ -20,7 +20,7 @@ namespace ISAAR.MSolve.IGA.Elements
 	{
 		protected readonly static IDofType[] controlPointDOFTypes = new IDofType[] { StructuralDof.TranslationX, StructuralDof.TranslationY };
 		protected IDofType[][] dofTypes;
-		private IReadOnlyList<IContinuumMaterial2D> materialsAtGaussPoints;
+		private IReadOnlyList<IContinuumMaterial> materialsAtGaussPoints;
 		private DynamicMaterial dynamicProperties;
         public CellType CellType { get; } = CellType.Unknown;
 

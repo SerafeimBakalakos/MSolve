@@ -6,6 +6,7 @@ using System.Text;
 
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Phases;
 
@@ -14,11 +15,11 @@ namespace MGroup.XFEM.Materials
     public class MatrixInclusionsStructuralMaterialField : IStructuralMaterialField
     {
         private readonly ElasticMaterial2D matrixMaterial, inclusionMaterial;
-        private readonly CohesiveInterfaceMaterial2D interfaceMaterial;
+        private readonly CohesiveInterfaceMaterial interfaceMaterial;
         private readonly int matrixPhaseID;
 
         public MatrixInclusionsStructuralMaterialField(ElasticMaterial2D matrixMaterial, ElasticMaterial2D inclusionMaterial,
-            CohesiveInterfaceMaterial2D interfaceMaterial, int matrixPhaseID)
+            CohesiveInterfaceMaterial interfaceMaterial, int matrixPhaseID)
         {
             this.matrixMaterial = matrixMaterial;
             this.inclusionMaterial = inclusionMaterial;
@@ -26,12 +27,12 @@ namespace MGroup.XFEM.Materials
             this.matrixPhaseID = matrixPhaseID;
         }
 
-        public CohesiveInterfaceMaterial2D FindInterfaceMaterialAt(IPhaseBoundary phaseBoundary)
+        public CohesiveInterfaceMaterial FindInterfaceMaterialAt(IPhaseBoundary phaseBoundary)
         {
             return interfaceMaterial.Clone();
         }
 
-        public ElasticMaterial2D FindMaterialAt(IPhase phase)
+        public IContinuumMaterial FindMaterialAt(IPhase phase)
         {
             if (phase.ID == matrixPhaseID) return matrixMaterial.Clone();
             else return inclusionMaterial.Clone();

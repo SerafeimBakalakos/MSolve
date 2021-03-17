@@ -131,7 +131,7 @@ namespace ISAAR.MSolve.IGA.Problems.Structural.Elements
 				}
 
 				Matrix B = B1 * B2;
-				IMatrixView ElasticityMatrix = ((IContinuumMaterial2D)nurbsElement.Patch.Material).ConstitutiveMatrix;
+				IMatrixView ElasticityMatrix = ((IContinuumMaterial)nurbsElement.Patch.Material).ConstitutiveMatrix;
 				Matrix stiffnessMatrixGaussPoint = B.ThisTransposeTimesOtherTimesThis(ElasticityMatrix);
 				stiffnessMatrixGaussPoint = stiffnessMatrixGaussPoint *
 				                            (jacdet * gaussPoints[j].WeightFactor * nurbsElement.Patch.Thickness);
