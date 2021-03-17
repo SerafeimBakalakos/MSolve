@@ -270,7 +270,7 @@ namespace MGroup.XFEM.Elements
             }
 
             // Create and cache materials at bulk integration points.
-            this.materialsAtGPsBulk = new ElasticMaterial2D[numPointsBulk];
+            this.materialsAtGPsBulk = new IContinuumMaterial[numPointsBulk];
             for (int i = 0; i < numPointsBulk; ++i)
             {
                 this.materialsAtGPsBulk[i] = MaterialField.FindMaterialAt(this.phasesAtGPsVolume[i]);
@@ -331,7 +331,7 @@ namespace MGroup.XFEM.Elements
                 GaussPoint gaussPoint = gaussPointsBulk[i];
                 EvalInterpolation evalInterpolation = evalInterpolationsAtGPsBulk[i];
 
-                var gaussPointAlt = new XPoint(2);
+                var gaussPointAlt = new XPoint(dim);
                 gaussPointAlt.Element = this;
                 gaussPointAlt.ShapeFunctions = evalInterpolation.ShapeFunctions;
 
@@ -369,14 +369,14 @@ namespace MGroup.XFEM.Elements
                 for (int i = 0; i < gaussPoints.Count; ++i)
                 {
                     GaussPoint gaussPoint = gaussPoints[i];
-                    double scale = Thickness * gaussPoint.Weight;
+                    double dA = Thickness * gaussPoint.Weight;
 
                     IMatrix localT = materials[i].ConstitutiveMatrix;
                     double[] normalVector = normalVectorsAtGPs[i];
                     Matrix T = RotateInterfaceCohesiveTensor(localT, normalVector);
                     Matrix N = CalculateEnrichedShapeFunctionMatrix(gaussPoint.Coordinates, boundary);
                     Matrix partialKii = N.ThisTransposeTimesOtherTimesThis(T);
-                    Kii.AxpyIntoThis(partialKii, scale);
+                    Kii.AxpyIntoThis(partialKii, dA);
                 }
             }
             return Kii;
@@ -496,12 +496,12 @@ namespace MGroup.XFEM.Elements
         private Matrix CalculateEnrichedShapeFunctionMatrix(double[] gaussPoint, IPhaseBoundary boundary)
         {
             double[] N = Interpolation.EvaluateFunctionsAt(gaussPoint);
-            var point = new XPoint(2);
+            var point = new XPoint(dim);
             point.Element = this;
             point.Coordinates[CoordinateSystem.ElementNatural] = gaussPoint;
             point.ShapeFunctions = N;
 
-            var result = Matrix.CreateZero(2, numEnrichedDofs);
+            var result = Matrix.CreateZero(dim, numEnrichedDofs);
             int col = 0;
             for (int n = 0; n < Nodes.Count; ++n)
             {

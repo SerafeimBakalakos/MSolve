@@ -14,11 +14,11 @@ namespace MGroup.XFEM.Materials
 {
     public class MatrixInclusionsStructuralMaterialField : IStructuralMaterialField
     {
-        private readonly ElasticMaterial2D matrixMaterial, inclusionMaterial;
+        private readonly IContinuumMaterial matrixMaterial, inclusionMaterial;
         private readonly CohesiveInterfaceMaterial interfaceMaterial;
         private readonly int matrixPhaseID;
 
-        public MatrixInclusionsStructuralMaterialField(ElasticMaterial2D matrixMaterial, ElasticMaterial2D inclusionMaterial,
+        public MatrixInclusionsStructuralMaterialField(IContinuumMaterial matrixMaterial, IContinuumMaterial inclusionMaterial,
             CohesiveInterfaceMaterial interfaceMaterial, int matrixPhaseID)
         {
             this.matrixMaterial = matrixMaterial;
@@ -34,8 +34,8 @@ namespace MGroup.XFEM.Materials
 
         public IContinuumMaterial FindMaterialAt(IPhase phase)
         {
-            if (phase.ID == matrixPhaseID) return matrixMaterial.Clone();
-            else return inclusionMaterial.Clone();
+            if (phase.ID == matrixPhaseID) return (IContinuumMaterial)matrixMaterial.Clone();
+            else return (IContinuumMaterial)inclusionMaterial.Clone();
         }
     }
 }

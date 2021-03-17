@@ -10,10 +10,10 @@ namespace MGroup.XFEM.Materials
 {
     public class StructuralBiMaterialField2D : IStructuralMaterialField
     {
-        private readonly ElasticMaterial2D material0, material1;
+        private readonly IContinuumMaterial material0, material1;
         private readonly CohesiveInterfaceMaterial interfaceMaterial;
 
-        public StructuralBiMaterialField2D(ElasticMaterial2D material0, ElasticMaterial2D material1, 
+        public StructuralBiMaterialField2D(IContinuumMaterial material0, IContinuumMaterial material1, 
             CohesiveInterfaceMaterial interfaceMaterial)
         {
             this.material0 = material0;
@@ -31,11 +31,11 @@ namespace MGroup.XFEM.Materials
 
         public IContinuumMaterial FindMaterialAt(IPhase phase)
         {
-            if (PhasesWithMaterial0.Contains(phase.ID)) return material0.Clone();
+            if (PhasesWithMaterial0.Contains(phase.ID)) return (IContinuumMaterial)material0.Clone();
             else
             {
                 Debug.Assert(PhasesWithMaterial1.Contains(phase.ID));
-                return material1.Clone();
+                return (IContinuumMaterial)material1.Clone();
             }
         }
     }
