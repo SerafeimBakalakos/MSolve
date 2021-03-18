@@ -9,7 +9,11 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.ConformingMesh;
 using MGroup.XFEM.Output.Vtk;
 
-//TODO: Needs tidying up.
+//TODO: In blending elements the FE interpolation is not accurate. The user should have the option to split them up into subcells.
+//      This way the fields are calculated at more points/vertices of subcells and the plot is more accurate. 
+//      Step and ridge enrichments do not need it.
+//TODO: This is also the case for intersected elements. These are already divided into triangles/tetrahedra, but can be 
+//      subdivided more. Step enrichment does not need it, but ridge and crack tips do.
 namespace MGroup.XFEM.Output.Mesh
 {
     public class ConformingOutputMesh : IOutputMesh

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
@@ -70,6 +71,26 @@ namespace MGroup.XFEM.Geometry
             double dx1 = pointB[1] - pointA[1];
             double dx2 = pointB[2] - pointA[2];
             return Math.Sqrt(dx0 * dx0 + dx1 * dx1 + dx2 * dx2);
+        }
+
+        public static double[] FindCentroid(IEnumerable<double[]> vertices)
+        {
+            int dimension = vertices.First().Length;
+            int count = 0;
+            var centroid = new double[dimension];
+            foreach (double[] vertex in vertices)
+            {
+                ++count;
+                for (int d = 0; d < dimension; ++d)
+                {
+                    centroid[d] += vertex[d];
+                }
+            }
+            for (int d = 0; d < dimension; ++d)
+            {
+                centroid[d] /= count;
+            }
+            return centroid;
         }
 
         public static double[] FindCentroid(IReadOnlyList<double[]> vertices)
