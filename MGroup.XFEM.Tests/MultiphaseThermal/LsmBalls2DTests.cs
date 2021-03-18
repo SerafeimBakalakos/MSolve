@@ -30,7 +30,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
         private const double thickness = 1.0;
         private static readonly int[] numElements = { 15, 15 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
-        private const int numBallsX = 2, numBallsY = 1;
+        private static readonly int[] numBalls = { 2, 1 };
         private const double ballRadius = 0.3;
 
         private const int defaultPhaseID = 0;
@@ -188,48 +188,9 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
 
         private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model)
         {
-            var geometricModel = new PhaseGeometryModel(model);
-            model.GeometryModel = geometricModel;
-            geometricModel.Enricher = NodeEnricherMultiphaseNoJunctions.CreateThermalStep(geometricModel);
-            List<SimpleLsm2D> lsmCurves = InitializeLSM(model);
-            var defaultPhase = new DefaultPhase();
-            geometricModel.Phases[defaultPhase.ID] = defaultPhase;
-            for (int p = 0; p < lsmCurves.Count; ++p)
-            {
-                SimpleLsm2D curve = lsmCurves[p];
-                var phase = new LsmPhase(p + 1, geometricModel, -1);
-                geometricModel.Phases[phase.ID] = phase;
-
-                var boundary = new ClosedPhaseBoundary(phase.ID, curve, defaultPhase, phase);
-                defaultPhase.ExternalBoundaries.Add(boundary);
-                defaultPhase.Neighbors.Add(phase);
-                phase.ExternalBoundaries.Add(boundary);
-                phase.Neighbors.Add(defaultPhase);
-                geometricModel.PhaseBoundaries[boundary.ID] = boundary;
-            }
-            return geometricModel;
-        }
-
-        private static List<SimpleLsm2D> InitializeLSM(XModel<IXMultiphaseElement> model)
-        {
-            double xMin = minCoords[0], xMax = maxCoords[0], yMin = minCoords[1], yMax = maxCoords[1];
-            var curves = new List<SimpleLsm2D>(numBallsX * numBallsY);
-            double dx = (xMax - xMin) / (numBallsX + 1);
-            double dy = (yMax - yMin) / (numBallsY + 1);
-            int id = 1;
-            for (int i = 0; i < numBallsX; ++i)
-            {
-                double centerX = xMin + (i + 1) * dx;
-                for (int j = 0; j < numBallsY; ++j)
-                {
-                    double centerY = yMin + (j + 1) * dy;
-                    var circle = new Circle2D(centerX, centerY, ballRadius);
-                    var lsm = new SimpleLsm2D(id++, model.XNodes, circle);
-                    curves.Add(lsm);
-                }
-            }
-
-            return curves;
+            List<ICurve2D> balls = Utilities.Phases.CreateBallsStructured2D(minCoords, maxCoords, numBalls, ballRadius, 1.0);
+            return Utilities.Phases.CreateLsmPhases2D(
+                model, balls, gm => NodeEnricherMultiphaseNoJunctions.CreateThermalStep(gm));
         }
     }
 }

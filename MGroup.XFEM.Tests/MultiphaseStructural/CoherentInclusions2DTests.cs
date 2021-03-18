@@ -2,42 +2,41 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
+using ISAAR.MSolve.Materials;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Enrichers;
-using MGroup.XFEM.Enrichment.SingularityResolution;
 using MGroup.XFEM.Entities;
-using MGroup.XFEM.Geometry.LSM;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Materials;
-using MGroup.XFEM.Phases;
 using MGroup.XFEM.Output;
 using MGroup.XFEM.Output.Writers;
+using MGroup.XFEM.Phases;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
-using System.Diagnostics;
 
-namespace MGroup.XFEM.Tests.MultiphaseThermal
+namespace MGroup.XFEM.Tests.MultiphaseStructural
 {
-    public static class LsmBalls3DTests
+    public class CoherentInclusions2DTests
     {
         private static readonly string outputDirectory = Path.Combine(
-            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "lsm_balls_3D_temp");
+            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "structural_coherent_2D_temp");
         private static readonly string expectedDirectory = Path.Combine(
-            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "lsm_balls_3D");
+            Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "Resources", "structural_coherent_2D");
 
-        private static readonly double[] minCoords = { -1.0, -1.0, -1.0 };
-        private static readonly double[] maxCoords = { +1.0, +1.0, +1.0 };
-        private static readonly int[] numElements = { 20, 20, 20 };
+        private const int dim = 2;
+        private static readonly double[] minCoords = { -1.0, -1.0 };
+        private static readonly double[] maxCoords = { +1.0, +1.0 };
+        private const double thickness = 1.0;
+        private static readonly int[] numElements = { 15, 15 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
-        private static readonly int[] numBalls = { 2, 1, 1 };
+        private static readonly int[] numBalls = { 2, 1 };
         private const double ballRadius = 0.3;
 
         private const int defaultPhaseID = 0;
 
-        private const double conductMatrix = 1E0, conductInclusion = 1E5;
-        private const double conductBoundaryMatrixInclusion = 1E1, conductBoundaryInclusionInclusion = 1E2;
-        private const double specialHeatCoeff = 1.0;
+        private const double matrixE = 1, inclusionE = 2, v = 0.3;
 
         [Fact]
         public static void TestModel()
@@ -77,7 +76,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
 
                 // Plot enrichments
                 double elementSize = (maxCoords[0] - minCoords[0]) / numElements[0];
-                model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 3));
+                model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 2));
 
                 // Initialize model state so that everything described above can be tracked
                 model.Initialize();
@@ -92,7 +91,6 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
                 computedFiles.Add(Path.Combine(outputDirectory, "element_phases_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "phase_sizes_t0.txt"));
                 computedFiles.Add(Path.Combine(outputDirectory, "gauss_points_bulk_t0.vtk"));
-                computedFiles.Add(Path.Combine(outputDirectory, "gauss_points_boundary_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "enriched_nodes_heaviside_t0.vtk"));
 
                 var expectedFiles = new List<string>();
@@ -104,7 +102,6 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
                 expectedFiles.Add(Path.Combine(expectedDirectory, "element_phases_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "phase_sizes_t0.txt"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_bulk_t0.vtk"));
-                expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_boundary_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "enriched_nodes_heaviside_t0.vtk"));
 
                 double tolerance = 1E-6;
@@ -140,23 +137,25 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
 
                 // Run analysis
                 model.Initialize();
-                IVectorView solution = Analysis.RunThermalStaticAnalysis(model);
+                IVectorView solution = Analysis.RunStructuralStaticAnalysis(model);
 
-                // Plot temperature and heat flux
+                // Plot displacements, strains, stresses
                 var computedFiles = new List<string>();
-                computedFiles.Add(Path.Combine(outputDirectory, "temperature_nodes_t0.vtk"));
-                computedFiles.Add(Path.Combine(outputDirectory, "temperature_gauss_points_t0.vtk"));
-                computedFiles.Add(Path.Combine(outputDirectory, "temperature_field_t0.vtk"));
-                computedFiles.Add(Path.Combine(outputDirectory, "heat_flux_gauss_points_t0.vtk"));
-                Utilities.Plotting.PlotTemperatureAndHeatFlux(model, solution,
-                    computedFiles[0], computedFiles[1], computedFiles[2], computedFiles[3]);
+                computedFiles.Add(Path.Combine(outputDirectory, "displacement_nodes_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "displacement_gauss_points_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "strains_gauss_points_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "stresses_gauss_points_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "displacement_strain_stress_field_t0.vtk"));
+                Utilities.Plotting.PlotDisplacements(model, solution, computedFiles[0], computedFiles[1]);
+                Utilities.Plotting.PlotStrainsStressesAtGaussPoints(model, solution, computedFiles[2], computedFiles[3]);
+                Utilities.Plotting.PlotDisplacementStrainStressFields(model, solution, computedFiles[4]);
 
                 // Compare output
                 var expectedFiles = new List<string>();
-                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_nodes_t0.vtk"));
-                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_gauss_points_t0.vtk"));
-                expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_field_t0.vtk"));
-                expectedFiles.Add(Path.Combine(expectedDirectory, "heat_flux_gauss_points_t0.vtk"));
+                //expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_nodes_t0.vtk"));
+                //expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_gauss_points_t0.vtk"));
+                //expectedFiles.Add(Path.Combine(expectedDirectory, "temperature_field_t0.vtk"));
+                //expectedFiles.Add(Path.Combine(expectedDirectory, "heat_flux_gauss_points_t0.vtk"));
 
                 double tolerance = 1E-6;
                 for (int i = 0; i < expectedFiles.Count; ++i)
@@ -177,22 +176,25 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
         private static XModel<IXMultiphaseElement> CreateModel()
         {
             // Materials
-            var matrixMaterial = new ThermalMaterial(conductMatrix, specialHeatCoeff);
-            var inclusionMaterial = new ThermalMaterial(conductInclusion, specialHeatCoeff);
-            var materialField = new MatrixInclusionsThermalMaterialField(matrixMaterial, inclusionMaterial,
-                conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
+            var materialMatrix = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = matrixE, PoissonRatio = v };
+            var materialInclusion = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = inclusionE, PoissonRatio = v };
+            CohesiveInterfaceMaterial interfaceMaterial = null;
+            var materialField = new MatrixInclusionsStructuralMaterialField(
+                materialMatrix, materialInclusion, interfaceMaterial, 0);
 
-            var model = Models.CreateHexa8Model(minCoords, maxCoords, numElements,
-                bulkIntegrationOrder, boundaryIntegrationOrder, materialField, true);
-            Models.ApplyBCsTemperatureDiffAlongX(model, +100, -100);
+            // Setup model
+            XModel<IXMultiphaseElement> model = Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
+                bulkIntegrationOrder, boundaryIntegrationOrder, materialField, false);
+            Models.ApplyBCsCantileverTension(model);
+
             return model;
         }
 
         private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model)
         {
-            List<ISurface3D> balls = Utilities.Phases.CreateBallsStructured3D(minCoords, maxCoords, numBalls, ballRadius, 1.0);
-            return Utilities.Phases.CreateLsmPhases3D(
-                model, balls, gm => NodeEnricherMultiphaseNoJunctions.CreateThermalStep(gm));
+            List<ICurve2D> balls = Utilities.Phases.CreateBallsStructured2D(minCoords, maxCoords, numBalls, ballRadius, 1.0);
+            return Utilities.Phases.CreateLsmPhases2D(
+                model, balls, gm => NodeEnricherMultiphaseNoJunctions.CreateStructuralRidge(gm, dim));
         }
     }
 }

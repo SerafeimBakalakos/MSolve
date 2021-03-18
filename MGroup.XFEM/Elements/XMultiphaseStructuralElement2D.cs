@@ -100,9 +100,12 @@ namespace MGroup.XFEM.Elements
             get
             {
                 var allBoundaryPoints = new List<GaussPoint>();
-                foreach (var points in gaussPointsBoundary.Values)
+                if (gaussPointsBoundary != null)
                 {
-                    allBoundaryPoints.AddRange(points);
+                    foreach (var points in gaussPointsBoundary.Values)
+                    {
+                        allBoundaryPoints.AddRange(points);
+                    }
                 }
                 return allBoundaryPoints;
             }
@@ -113,9 +116,12 @@ namespace MGroup.XFEM.Elements
             get
             {
                 var allNormals = new List<double[]>();
-                foreach (var normals in gaussPointsBoundaryNormals.Values)
+                if (gaussPointsBoundaryNormals != null)
                 {
-                    allNormals.AddRange(normals);
+                    foreach (var normals in gaussPointsBoundaryNormals.Values)
+                    {
+                        allNormals.AddRange(normals);
+                    }
                 }
                 return allNormals;
             }
@@ -263,6 +269,7 @@ namespace MGroup.XFEM.Elements
                     point.Element = this;
                     point.Coordinates[CoordinateSystem.ElementNatural] = gaussPointsBulk[i].Coordinates;
                     point.ShapeFunctions = evalInterpolationsAtGPsBulk[i].ShapeFunctions;
+                    point.ShapeFunctionDerivatives = evalInterpolationsAtGPsBulk[i].ShapeGradientsCartesian;
                     IPhase phase = this.FindPhaseAt(point);
                     point.PhaseID = phase.ID;
                     this.phasesAtGPsVolume[i] = phase;
@@ -334,6 +341,7 @@ namespace MGroup.XFEM.Elements
                 var gaussPointAlt = new XPoint(dim);
                 gaussPointAlt.Element = this;
                 gaussPointAlt.ShapeFunctions = evalInterpolation.ShapeFunctions;
+                gaussPointAlt.ShapeFunctionDerivatives = evalInterpolationsAtGPsBulk[i].ShapeGradientsCartesian;
 
                 double dV = evalInterpolation.Jacobian.DirectDeterminant * Thickness;
 
