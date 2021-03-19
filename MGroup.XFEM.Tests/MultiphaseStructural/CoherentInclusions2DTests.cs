@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Output;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
 using MGroup.XFEM.Elements;
@@ -191,23 +192,25 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
             IMatrix elasticity = Analysis.RunHomogenizationAnalysisStructural2D(model, minCoords, maxCoords, thickness);
 
             // Print results
-            IMatrix elasticityHomogeneous = ConstitutiveHomogeneousPlaneStress;
+            var matrixWriter = new FullMatrixWriter();
             string pathResults = outputDirectory + "\\equivalent_elasticity.txt";
             using (var writer = new StreamWriter(pathResults, true))
             {
                 writer.WriteLine();
                 writer.WriteLine("#################################################################");
                 writer.WriteLine("Date = " + DateTime.Now);
-                writer.WriteLine(
-                    $"elasticity = [ {elasticity[0, 0]} {elasticity[0, 1]} {elasticity[0, 2]}; \n" +
-                    $" {elasticity[1, 0]} {elasticity[1, 1]} {elasticity[1, 2]}; \n" +
-                    $" {elasticity[2, 0]} {elasticity[2, 1]} {elasticity[2, 2]}]");
-                writer.WriteLine();
-                writer.WriteLine(
-                    $"elasticity of matrix = [ {elasticityHomogeneous[0, 0]} {elasticityHomogeneous[0, 1]} {elasticityHomogeneous[0, 2]}; \n" +
-                    $" {elasticityHomogeneous[1, 0]} {elasticityHomogeneous[1, 1]} {elasticityHomogeneous[1, 2]}; \n" +
-                    $" {elasticityHomogeneous[2, 0]} {elasticityHomogeneous[2, 1]} {elasticityHomogeneous[2, 2]}]");
+                writer.WriteLine("elasticity = ");
             }
+            matrixWriter.WriteToFile(elasticity, pathResults, true);
+
+            // Print the constitutive matrix of the matrix material for comparison
+            using (var writer = new StreamWriter(pathResults, true))
+            {
+                writer.WriteLine();
+                writer.WriteLine("elasticity of matrix = ");
+            }
+            var matrixMaterial = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = matrixE, PoissonRatio = v };
+            matrixWriter.WriteToFile(matrixMaterial.ConstitutiveMatrix, pathResults, true);
         }
 
         private static XModel<IXMultiphaseElement> CreateModel()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Output;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Materials;
 using MGroup.XFEM.Elements;
@@ -171,6 +172,45 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
                     di.Delete(true);//true means delete subdirectories and files
                 }
             }
+        }
+
+        [Fact]
+        public static void TestHomogenization()
+        {
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            // Create model and LSM
+            XModel<IXMultiphaseElement> model = CreateModel();
+            model.FindConformingSubcells = true;
+            PhaseGeometryModel geometryModel = CreatePhases(model);
+
+            // Run analysis
+            model.Initialize();
+            IMatrix elasticity = Analysis.RunHomogenizationAnalysisStructural3D(model, minCoords, maxCoords);
+
+            // Print results
+            var matrixWriter = new FullMatrixWriter();
+            string pathResults = outputDirectory + "\\equivalent_elasticity.txt";
+            using (var writer = new StreamWriter(pathResults, true))
+            {
+                writer.WriteLine();
+                writer.WriteLine("#################################################################");
+                writer.WriteLine("Date = " + DateTime.Now);
+                writer.WriteLine("elasticity = ");
+            }
+            matrixWriter.WriteToFile(elasticity, pathResults, true);
+
+            // Print the constitutive matrix of the matrix material for comparison
+            using (var writer = new StreamWriter(pathResults, true))
+            {
+                writer.WriteLine();
+                writer.WriteLine("elasticity of matrix = ");
+            }
+            var matrixMaterial = new ElasticMaterial3D() { YoungModulus = matrixE, PoissonRatio = v };
+            matrixWriter.WriteToFile(matrixMaterial.ConstitutiveMatrix, pathResults, true);
         }
 
         private static XModel<IXMultiphaseElement> CreateModel()

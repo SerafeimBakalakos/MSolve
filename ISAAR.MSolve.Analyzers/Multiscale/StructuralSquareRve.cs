@@ -19,8 +19,6 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
     /// </summary>
     public class StructuralSquareRve : IReferenceVolumeElement
     {
-        private const int numDimensions = 2;
-
         private readonly IStructuralModel model;
         private readonly double xMin, yMin, xMax, yMax;
         private readonly double thickness;

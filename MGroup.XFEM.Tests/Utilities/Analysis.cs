@@ -32,6 +32,22 @@ namespace MGroup.XFEM.Tests.Utilities
             return conductivity;
         }
 
+        public static IMatrix RunHomogenizationAnalysisStructural3D(IXModel model, double[] minCoords, double[] maxCoords)
+        {
+            Console.WriteLine("Starting homogenization analysis");
+            var solver = (new SuiteSparseSolver.Builder()).BuildSolver(model);
+            var provider = new ProblemStructural(model, solver);
+            var rve = new StructuralCubicRve(model, minCoords, maxCoords);
+            var homogenization = new HomogenizationAnalyzer(model, solver, provider, rve);
+
+            homogenization.Initialize();
+            homogenization.Solve();
+            IMatrix conductivity = homogenization.EffectiveConstitutiveTensors[model.Subdomains[0].ID];
+
+            Console.WriteLine("Analysis finished");
+            return conductivity;
+        }
+
         public static IMatrix RunHomogenizationAnalysisThermal2D(IXModel model, 
             double[] minCoords, double[] maxCoords, double thickness)
         {

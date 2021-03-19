@@ -14,12 +14,11 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 namespace ISAAR.MSolve.Analyzers.Multiscale
 {
     /// <summary>
-    /// This works only for cubic (3D) RVEs, centered at (0,0,0), with 1 thermal dof per node and linear boundary conditions.
+    /// This works only for cubic (3D) RVEs, centered at (0,0,0), with translation dofs along x, y and z per node and 
+    /// linear boundary conditions.
     /// </summary>
-    public class ThermalCubicRve : IReferenceVolumeElement
+    public class StructuralCubicRve : IReferenceVolumeElement
     {
-        private const int numDimensions = 3;
-
         private readonly IStructuralModel model;
         private readonly double xMin, yMin, zMin, xMax, yMax, zMax;
         private readonly HashSet<INode> minXnodes, maxXnodes, minYnodes, maxYnodes, minZnodes, maxZnodes;
@@ -30,7 +29,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         /// <param name="minCornerCoords"></param>
         /// <param name="maxCornerCoords"></param>
         /// <param name="meshTolerance">The default is 1E-10 * min(|xMax-xMin|, |yMax-yMin|)</param>
-        public ThermalCubicRve(IStructuralModel model, double[] minCornerCoords, double[] maxCornerCoords, double meshTolerance)
+        public StructuralCubicRve(IStructuralModel model, double[] minCornerCoords, double[] maxCornerCoords, double meshTolerance)
         {
             this.model = model;
             this.xMin = minCornerCoords[0]; 
@@ -59,7 +58,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
             }
         }
 
-        public ThermalCubicRve(IStructuralModel model, double[] minCornerCoords, double[] maxCornerCoords) : 
+        public StructuralCubicRve(IStructuralModel model, double[] minCornerCoords, double[] maxCornerCoords) : 
             this(model, minCornerCoords, maxCornerCoords, 
                 1E-10 * Vector.CreateFromArray(maxCornerCoords).Subtract(Vector.CreateFromArray(minCornerCoords)).MinAbsolute())
         {
@@ -67,12 +66,14 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
 
         public void ApplyBoundaryConditions()
         {
-            foreach (var node in minXnodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
-            foreach (var node in minZnodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
-            foreach (var node in minYnodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
-            foreach (var node in maxXnodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
-            foreach (var node in maxZnodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
-            foreach (var node in maxYnodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
+            IEnumerable<INode> boundaryNodes =
+                minXnodes.Concat(minZnodes).Concat(minYnodes).Concat(maxXnodes).Concat(maxZnodes).Concat(maxYnodes);
+            foreach (var node in boundaryNodes)
+            {
+                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = 0.0 });
+                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = 0.0 });
+                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationZ, Amount = 0.0 });
+            }
         }
 
         public double CalculateRveVolume() => (xMax - xMin) * (yMax - yMin) * (zMax - zMin);
@@ -80,7 +81,7 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         public IMatrixView CalculateKinematicRelationsMatrix(ISubdomain subdomain)
         {
             ISubdomainConstrainedDofOrdering constrainedDofOrdering = subdomain.ConstrainedDofOrdering;
-            var kinematicRelations = Matrix.CreateZero(numDimensions, constrainedDofOrdering.NumConstrainedDofs);
+            var kinematicRelations = Matrix.CreateZero(6, constrainedDofOrdering.NumConstrainedDofs);
             CalculateKinematicsOfFace(constrainedDofOrdering, minZnodes, kinematicRelations);
             CalculateKinematicsOfFace(constrainedDofOrdering, minXnodes, kinematicRelations);
             CalculateKinematicsOfFace(constrainedDofOrdering, minYnodes, kinematicRelations);
@@ -95,10 +96,22 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         {
             foreach (INode node in faceNodes)
             {
-                int dofIdx = constrainedDofOrdering.ConstrainedDofs[node, ThermalDof.Temperature];
-                kinematicRelations[0, dofIdx] = node.X;
-                kinematicRelations[1, dofIdx] = node.Y;
-                kinematicRelations[2, dofIdx] = node.Z;
+                int dofX = constrainedDofOrdering.ConstrainedDofs[node, StructuralDof.TranslationX];
+                int dofY = constrainedDofOrdering.ConstrainedDofs[node, StructuralDof.TranslationY];
+                int dofZ = constrainedDofOrdering.ConstrainedDofs[node, StructuralDof.TranslationZ];
+
+                kinematicRelations[0, dofX] = node.X;
+                kinematicRelations[1, dofY] = node.Y;
+                kinematicRelations[2, dofZ] = node.Z;
+
+                kinematicRelations[3, dofX] = 0.5 * node.Y;
+                kinematicRelations[3, dofY] = 0.5 * node.X;
+
+                kinematicRelations[4, dofY] = 0.5 * node.Z;
+                kinematicRelations[4, dofZ] = 0.5 * node.Y;
+
+                kinematicRelations[5, dofZ] = 0.5 * node.X;
+                kinematicRelations[5, dofX] = 0.5 * node.Z;
             }
         }
     }
