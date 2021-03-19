@@ -2,6 +2,7 @@
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using MGroup.XFEM.ElementGeometry;
+using MGroup.XFEM.Enrichment;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
 using MGroup.XFEM.Geometry.ConformingMesh;
@@ -53,6 +54,13 @@ namespace MGroup.XFEM.Elements
     //TODO: These should be converted to default interface implementations
     public static class XFiniteElementExtensions
     {
+        public static HashSet<IEnrichmentFunction> FindEnrichments(this IXFiniteElement element)
+        {
+            var elementEnrichments = new HashSet<IEnrichmentFunction>();
+            foreach (XNode node in element.Nodes) elementEnrichments.UnionWith(node.EnrichmentFuncs.Keys);
+            return elementEnrichments;
+        }
+
         public static bool HasEnrichedNodes(this IXFiniteElement element)
         {
             foreach (XNode node in element.Nodes)

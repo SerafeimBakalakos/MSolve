@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
+using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.XFEM.Elements;
@@ -13,16 +14,23 @@ using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Output.Mesh;
 using MGroup.XFEM.Output.Vtk;
 
+//TODO: offset only vertices (which may include original nodes or anything created only for visualization) that actually lie on
+//      interfaces. Furthermore these vertices should exist twice: once for each side of the interface, instead of each subcell
+//      having its own instance. These should be done in ConformingMesh.
 namespace MGroup.XFEM.Output.Fields
 {
     public class DisplacementField
     {
+        private const double offsetTol = 1E-6;
+
+        private readonly int dimension;
         private readonly XModel<IXMultiphaseElement> model;
         private readonly ConformingOutputMesh outMesh;
 
         public DisplacementField(XModel<IXMultiphaseElement> model, ConformingOutputMesh outMesh)
         {
             this.model = model;
+            this.dimension = model.Dimension;
             this.outMesh = outMesh;
         }
 
@@ -38,6 +46,11 @@ namespace MGroup.XFEM.Output.Fields
                 IEnumerable<ConformingOutputMesh.Subcell> subtriangles = outMesh.GetSubcellsForOriginal(element);
                 if (subtriangles.Count() == 0)
                 {
+                    //TODO: This is incorrect for blending elements: 1) enriched dofs are not irrelevant, 2) using the
+                    //      FEM interpolation is not accurate, 3) they should be subdivided into subcells to accurately 
+                    //      calculate the displacement at their vertices and then let ParaView interpolate that (inaccurately).
+                    //      However some enrichments (step, ridge) do not produce blending elements (although in code, there will
+                    //      be elements where only some nodes are enriched). Thus the user should choose for now.
                     IList<double[]> elementDisplacements = 
                         ExtractElementDisplacementsStandard(model.Dimension, element, subdomain, systemSolution);
                     Debug.Assert(outMesh.GetOutCellsForOriginal(element).Count() == 1);
@@ -51,18 +64,35 @@ namespace MGroup.XFEM.Output.Fields
                 {
                     IList<double[]> elementDisplacements = 
                         Utilities.ExtractElementDisplacements(element, subdomain, systemSolution);
+                    HashSet<IEnrichmentFunction> elementEnrichments = element.FindEnrichments();
+
                     foreach (ConformingOutputMesh.Subcell subcell in subtriangles)
                     {
-                        Debug.Assert(subcell.OutVertices.Count == 3 || subcell.OutVertices.Count == 4); //TODO: Not sure what happens for 2nd order elements
+                        //TODO: Not sure what happens for 2nd order elements
+                        Debug.Assert(subcell.OriginalSubcell.CellType == CellType.Tri3 
+                            || subcell.OriginalSubcell.CellType == CellType.Quad4
+                            || subcell.OriginalSubcell.CellType == CellType.Tet4
+                            || subcell.OriginalSubcell.CellType == CellType.Hexa8);
 
-                        // We must interpolate the nodal values, taking into account the enrichements.
-                        IList<double[]> temperatureAtVertices = CalcDisplacementFieldInSubtriangle(element,
-                            subcell.OriginalSubcell, elementDisplacements);
+                        // Find centroid of subcell
+                        IList<double[]> verticesNatural = subcell.OriginalSubcell.VerticesNatural;
+                        double[] centroid = subcell.OriginalSubcell.FindCentroidNatural();
 
-                        for (int v = 0; v < subcell.OutVertices.Count; ++v)
+                        for (int v = 0; v < verticesNatural.Count; ++v)
                         {
+                            // Slightly offset point towards its centroid
+                            double[] vertex = verticesNatural[v];
+                            var vertexOffset = new double[dimension];
+                            for (int d = 0; d < dimension; ++d)
+                            {
+                                vertexOffset[d] = vertex[d] + offsetTol * (centroid[d] - vertex[d]);
+                            }
+
+                            // Interpolate the nodal values, taking into account the enrichments.
+                            double[] u = CalcDisplacementsAtPoint(
+                                vertexOffset, element, elementDisplacements, elementEnrichments);
                             VtkPoint vertexOut = subcell.OutVertices[v];
-                            outDisplacements[vertexOut] = temperatureAtVertices[v];
+                            outDisplacements[vertexOut] = u;
                         }
                     }
                 }
@@ -102,66 +132,52 @@ namespace MGroup.XFEM.Output.Fields
             return elementDisplacements;
         }
 
-        private IList<double[]> CalcDisplacementFieldInSubtriangle(IXFiniteElement element, IElementSubcell subcell,
-            IList<double[]> elementDisplacements)
+        //TODO: perhaps this can be in an element class
+        private double[] CalcDisplacementsAtPoint(double[] pointNatural, IXFiniteElement element, 
+            IList<double[]> elementDisplacements, IEnumerable<IEnrichmentFunction> elementEnrichments)
         {
-            // Evaluate shape functions
-            var shapeFunctionsAtVertices = new List<double[]>(subcell.VerticesNatural.Count);
-            for (int v = 0; v < subcell.VerticesNatural.Count; ++v)
-            {
-                double[] vertex = subcell.VerticesNatural[v];
-                shapeFunctionsAtVertices.Add(element.Interpolation.EvaluateFunctionsAt(vertex));
-            }
+            // Shape functions at this point
+            double[] N = element.Interpolation.EvaluateFunctionsAt(pointNatural);
 
-            // Locate centroid
-            double[] centroidNatural = subcell.FindCentroidNatural();
-            int dimension = centroidNatural.Length;
-            var centroid = new XPoint(dimension);
-            centroid.Element = element;
-            centroid.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(centroidNatural);
+            // More details about this point
+            var point = new XPoint(dimension);
+            point.Element = element;
+            point.Coordinates[CoordinateSystem.ElementNatural] = pointNatural;
+            point.ShapeFunctions = N;
 
-            // Evaluate enrichment functions at triangle centroid and assume it also holds for its vertices
-            var enrichments = new HashSet<IEnrichmentFunction>();
-            foreach (XNode node in element.Nodes) enrichments.UnionWith(node.EnrichmentFuncs.Keys);
+            // Enrichment functions at this point
             var enrichmentValues = new Dictionary<IEnrichmentFunction, double>();
-            foreach (IEnrichmentFunction enrichment in enrichments)
+            foreach (IEnrichmentFunction enrichment in elementEnrichments)
             {
-                enrichmentValues[enrichment] = enrichment.EvaluateAt(centroid);
-                //enrichmentValues[enrichment] = EvaluateFunctionsAtSubtriangleVertices(
-                //    element, shapeFunctionsAtVertices, shapeFunctionsAtCentroid);
+                enrichmentValues[enrichment] = enrichment.EvaluateAt(point);
             }
 
             // u(x) = sum_over_nodes(Ni(x) * u_i) + sum_over_enriched_nodes( N_j(x) * (psi(x) - psi_j)*a_j )
-            var displacementsAtVertices = new List<double[]>(subcell.VerticesNatural.Count);
-            for (int v = 0; v < subcell.VerticesNatural.Count; ++v)
+            var u = new double[dimension];
+            for (int n = 0; n < element.Nodes.Count; ++n)
             {
-                double[] N = shapeFunctionsAtVertices[v];
-                var sums = new double[dimension];
-                for (int n = 0; n < element.Nodes.Count; ++n)
-                {
-                    double[] u = elementDisplacements[n];
+                double[] uStd = elementDisplacements[n];
 
-                    // Standard temperatures
-                    int dof = 0;
+                // Standard displacement
+                int dof = 0;
+                for (int d = 0; d < dimension; ++d)
+                {
+                    u[d] += N[n] * uStd[dof++];
+                }
+
+                // Enriched displacement
+                foreach (IEnrichmentFunction enrichment in element.Nodes[n].EnrichmentFuncs.Keys)
+                {
+                    double psiVertex = enrichmentValues[enrichment];
+                    double psiNode = element.Nodes[n].EnrichmentFuncs[enrichment];
                     for (int d = 0; d < dimension; ++d)
                     {
-                        sums[d] += N[n] * u[dof++];
-                    }
-
-                    // Eniched temperatures
-                    foreach (IEnrichmentFunction enrichment in element.Nodes[n].EnrichmentFuncs.Keys)
-                    {
-                        double psiVertex = enrichmentValues[enrichment];
-                        double psiNode = element.Nodes[n].EnrichmentFuncs[enrichment];
-                        for (int d = 0; d < dimension; ++d)
-                        {
-                            sums[d] += N[n] * (psiVertex - psiNode) * u[dof++];
-                        }
+                        u[d] += N[n] * (psiVertex - psiNode) * uStd[dof++];
                     }
                 }
-                displacementsAtVertices.Add(sums);
             }
-            return displacementsAtVertices;
+
+            return u;
         }
     }
 }

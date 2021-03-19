@@ -40,14 +40,14 @@ namespace MGroup.XFEM.Tests.Utilities
             {
                 writer.WriteMesh(conformingMesh);
 
-                var displacementField = new DisplacementField_v2(model, conformingMesh);
+                var displacementField = new DisplacementField(model, conformingMesh);
                 writer.WriteVector2DField("displacements", conformingMesh, displacementField.CalcValuesAtVertices(solution));
 
-                //var strainStressField = new StrainStressField(model, conformingMesh);
-                //(IEnumerable<double[]> strains, IEnumerable<double[]> stresses) = strainStressField.CalcTensorsAtVertices(solution);
+                var strainStressField = new StrainStressField(model, conformingMesh);
+                (IEnumerable<double[]> strains, IEnumerable<double[]> stresses) = strainStressField.CalcTensorsAtVertices(solution);
 
-                //writer.WriteTensor2DField("strain", conformingMesh, strains);
-                //writer.WriteTensor2DField("stress", conformingMesh, stresses);
+                writer.WriteTensor2DField("strain", conformingMesh, strains);
+                writer.WriteTensor2DField("stress", conformingMesh, stresses);
             }
         }
 

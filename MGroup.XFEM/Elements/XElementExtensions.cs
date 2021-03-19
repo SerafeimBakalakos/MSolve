@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.Entities;
@@ -11,31 +12,6 @@ namespace MGroup.XFEM.Elements
 {
     public static class XElementExtensions
     {
-        public static IPhase FindPhaseAt(this IXMultiphaseElement element, XPoint point)
-        {
-            IPhase defaultPhase = null;
-            foreach (IPhase phase in element.Phases)
-            {
-                // Avoid searching for the point in the default phase, since its shape is higly irregular.
-                if (phase is DefaultPhase)
-                {
-                    defaultPhase = phase;
-                    continue;
-                }
-                else if (phase.Contains(point))
-                {
-                    return phase;
-                }
-            }
-
-            // If the point is not contained in any other phases, it must be in the default phase 
-            if (defaultPhase == null)
-            {
-                throw new ArgumentException("The provided point does not belong to any of this element's phases");
-            }
-            return defaultPhase;
-        }
-
         private static void PreparePoint(IXFiniteElement element, XPoint point)
         {
             if (point.Element == null) point.Element = element;
