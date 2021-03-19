@@ -64,7 +64,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.EpoxyAg
                 model.Initialize();
 
                 // Run homogenization analysis
-                IMatrix conductivity = Analysis.RunHomogenizationAnalysis2D(model, minCoords, maxCoords, thickness);
+                IMatrix conductivity = Analysis.RunHomogenizationAnalysisThermal2D(model, minCoords, maxCoords, thickness);
 
                 // Print results
                 using (var writer = new StreamWriter(pathResults, true))

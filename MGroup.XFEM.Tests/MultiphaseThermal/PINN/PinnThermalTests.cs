@@ -122,7 +122,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
 
             // Run homogenization analysis
             model.Initialize();
-            IMatrix conductivity = Analysis.RunHomogenizationAnalysis3D(model, minCoords, maxCoords);
+            IMatrix conductivity = Analysis.RunHomogenizationAnalysisThermal3D(model, minCoords, maxCoords);
 
             // Print results
             string pathResults = outputDirectory + "\\equiv_cond.txt";

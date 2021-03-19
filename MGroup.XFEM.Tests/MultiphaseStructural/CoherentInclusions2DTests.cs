@@ -29,14 +29,14 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
         private static readonly double[] minCoords = { -1.0, -1.0 };
         private static readonly double[] maxCoords = { +1.0, +1.0 };
         private const double thickness = 1.0;
-        private static readonly int[] numElements = { 15, 15 };
+        private static readonly int[] numElements = { 35, 35 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
         private static readonly int[] numBalls = { 2, 1 };
         private const double ballRadius = 0.3;
 
         private const int defaultPhaseID = 0;
 
-        private const double matrixE = 1, inclusionE = 2, v = 0.3;
+        private const double matrixE = 1, inclusionE = 10000, v = 0.3;
 
         [Fact]
         public static void TestModel()
@@ -173,6 +173,43 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
             }
         }
 
+        [Fact]
+        public static void TestHomogenization()
+        {
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            // Create model and LSM
+            XModel<IXMultiphaseElement> model = CreateModel();
+            model.FindConformingSubcells = true;
+            PhaseGeometryModel geometryModel = CreatePhases(model);
+
+            // Run analysis
+            model.Initialize();
+            IMatrix elasticity = Analysis.RunHomogenizationAnalysisStructural2D(model, minCoords, maxCoords, thickness);
+
+            // Print results
+            IMatrix elasticityHomogeneous = ConstitutiveHomogeneousPlaneStress;
+            string pathResults = outputDirectory + "\\equivalent_elasticity.txt";
+            using (var writer = new StreamWriter(pathResults, true))
+            {
+                writer.WriteLine();
+                writer.WriteLine("#################################################################");
+                writer.WriteLine("Date = " + DateTime.Now);
+                writer.WriteLine(
+                    $"elasticity = [ {elasticity[0, 0]} {elasticity[0, 1]} {elasticity[0, 2]}; \n" +
+                    $" {elasticity[1, 0]} {elasticity[1, 1]} {elasticity[1, 2]}; \n" +
+                    $" {elasticity[2, 0]} {elasticity[2, 1]} {elasticity[2, 2]}]");
+                writer.WriteLine();
+                writer.WriteLine(
+                    $"elasticity of matrix = [ {elasticityHomogeneous[0, 0]} {elasticityHomogeneous[0, 1]} {elasticityHomogeneous[0, 2]}; \n" +
+                    $" {elasticityHomogeneous[1, 0]} {elasticityHomogeneous[1, 1]} {elasticityHomogeneous[1, 2]}; \n" +
+                    $" {elasticityHomogeneous[2, 0]} {elasticityHomogeneous[2, 1]} {elasticityHomogeneous[2, 2]}]");
+            }
+        }
+
         private static XModel<IXMultiphaseElement> CreateModel()
         {
             // Materials
@@ -195,6 +232,21 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
             List<ICurve2D> balls = Utilities.Phases.CreateBallsStructured2D(minCoords, maxCoords, numBalls, ballRadius, 1.0);
             return Utilities.Phases.CreateLsmPhases2D(
                 model, balls, gm => NodeEnricherMultiphaseNoJunctions.CreateStructuralRidge(gm, dim));
+        }
+
+        private static IMatrix ConstitutiveHomogeneousPlaneStress 
+        { 
+            get
+            {
+                var matrix = Matrix.CreateZero(3, 3);
+                double aux = matrixE / (1 - v * v);
+                matrix[0, 0] = aux;
+                matrix[1, 1] = aux;
+                matrix[0, 1] = v * aux;
+                matrix[1, 0] = v * aux;
+                matrix[2, 2] = (1 - v) / 2 * aux;
+                return matrix;
+            }
         }
     }
 }
