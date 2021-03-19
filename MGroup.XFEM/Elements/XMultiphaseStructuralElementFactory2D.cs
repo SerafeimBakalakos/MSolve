@@ -10,17 +10,17 @@ using MGroup.XFEM.ElementGeometry;
 
 namespace MGroup.XFEM.Elements
 {
-    public class XMultiphaseStructuralElementFactory2D : IXElementFactory<XMultiphaseStructuralElement2D>
+    public class XMultiphaseStructuralElementFactory2D : IXElementFactory<IXStructuralMultiphaseElement>
     {
         private static readonly IReadOnlyDictionary<CellType, IElementGeometry> elementGeometries;
         private static readonly IReadOnlyDictionary<CellType, IGaussPointExtrapolation> extrapolations;
-        private static readonly IReadOnlyDictionary<CellType, IQuadrature> standardIntegrationsForConductivity;
+        private static readonly IReadOnlyDictionary<CellType, IQuadrature> standardIntegrationsForStiffness;
         //private static readonly IReadOnlyDictionary<CellType, IQuadrature2D> integrationsForMass;
         private static readonly IReadOnlyDictionary<CellType, IIsoparametricInterpolation> interpolations;
 
         private readonly int boundaryIntegrationOrder;
-        private readonly bool cohesiveInterfaces;
         private readonly IBulkIntegration bulkIntegration;
+        private readonly bool cohesiveInterfaces;
         private readonly IStructuralMaterialField material;
         private readonly double thickness;
 
@@ -75,7 +75,7 @@ namespace MGroup.XFEM.Elements
             // Static field assignments
             XMultiphaseStructuralElementFactory2D.interpolations = interpolations;
             XMultiphaseStructuralElementFactory2D.extrapolations = extrapolations;
-            XMultiphaseStructuralElementFactory2D.standardIntegrationsForConductivity = standardIntegrationsForConductivity;
+            XMultiphaseStructuralElementFactory2D.standardIntegrationsForStiffness = standardIntegrationsForConductivity;
             //XMultiphaseStructuralElementFactory2D.integrationsForMass = integrationsForMass;
             XMultiphaseStructuralElementFactory2D.elementGeometries = elementGeometries;
 
@@ -91,13 +91,13 @@ namespace MGroup.XFEM.Elements
             this.cohesiveInterfaces = cohesiveInterfaces;
         }
 
-        public XMultiphaseStructuralElement2D CreateElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
+        public IXStructuralMultiphaseElement CreateElement(int id, CellType cellType, IReadOnlyList<XNode> nodes)
         {
 #if DEBUG
             interpolations[cellType].CheckElementNodes(nodes);
 #endif
             return new XMultiphaseStructuralElement2D(id, nodes, thickness, elementGeometries[cellType], material, 
-                interpolations[cellType], extrapolations[cellType], standardIntegrationsForConductivity[cellType], 
+                interpolations[cellType], extrapolations[cellType], standardIntegrationsForStiffness[cellType], 
                 bulkIntegration, boundaryIntegrationOrder, cohesiveInterfaces);
         }
     }

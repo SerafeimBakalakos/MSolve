@@ -102,9 +102,12 @@ namespace MGroup.XFEM.Elements
             get
             {
                 var allBoundaryPoints = new List<GaussPoint>();
-                foreach (var points in gaussPointsBoundary.Values)
+                if (gaussPointsBoundary != null)
                 {
-                    allBoundaryPoints.AddRange(points);
+                    foreach (var points in gaussPointsBoundary.Values)
+                    {
+                        allBoundaryPoints.AddRange(points);
+                    }
                 }
                 return allBoundaryPoints;
             }
@@ -115,9 +118,12 @@ namespace MGroup.XFEM.Elements
             get
             {
                 var allNormals = new List<double[]>();
-                foreach (var normals in gaussPointsBoundaryNormals.Values)
+                if (gaussPointsBoundaryNormals != null)
                 {
-                    allNormals.AddRange(normals);
+                    foreach (var normals in gaussPointsBoundaryNormals.Values)
+                    {
+                        allNormals.AddRange(normals);
+                    }
                 }
                 return allNormals;
             }

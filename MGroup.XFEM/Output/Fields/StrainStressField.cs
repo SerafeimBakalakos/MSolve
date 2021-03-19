@@ -107,7 +107,6 @@ namespace MGroup.XFEM.Output.Fields
 
         /// <summary>
         /// 2D displacement gradient: [Ux,x Ux,y; Uy,x Uy,y].
-        /// 3D displacement gradient: [Ux,x Ux,y Ux,z; Uy,x Uy,y Uy,z; Uz,x Uz,y Uz,z].
         /// </summary>
         /// <returns></returns>
         private double[,] CalcDisplacementGradient2DAt(XPoint point,  
@@ -144,7 +143,7 @@ namespace MGroup.XFEM.Output.Fields
                 gradient[1, 1] += dN[1] * uy;
 
                 // Eniched displacements
-                int dof = 2;
+                int dof = dimension;
                 foreach (IEnrichmentFunction enrichment in element.Nodes[n].EnrichmentFuncs.Keys)
                 {
                     ux = uStd[dof++];
@@ -166,8 +165,79 @@ namespace MGroup.XFEM.Output.Fields
         }
 
         /// <summary>
+        /// 3D displacement gradient: [Ux,x Ux,y Ux,z; Uy,x Uy,y Uy,z; Uz,x Uz,y Uz,z].
+        /// </summary>
+        /// <returns></returns>
+        private double[,] CalcDisplacementGradient3DAt(XPoint point,
+            IList<double[]> elementDisplacements, IEnumerable<IEnrichmentFunction> elementEnrichments) //TODO: Extend this to 3D
+        {
+            IXFiniteElement element = point.Element;
+
+            // Enrichment functions and derivatives at this point
+            var enrichmentValues = new Dictionary<IEnrichmentFunction, EvaluatedFunction>();
+            foreach (IEnrichmentFunction enrichment in elementEnrichments)
+            {
+                enrichmentValues[enrichment] = enrichment.EvaluateAllAt(point);
+            }
+
+            // u,x(x) = sum_over_nodes(Ni,x(x) * u_i) 
+            //  + sum_over_enriched_nodes( (N_j,x(x) * (psi(x) - psi_j) N_j(x) * + psi,x(x) )*a_j )
+            var gradient = new double[dimension, dimension];
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                double[] uStd = elementDisplacements[n];
+                double N = point.ShapeFunctions[n];
+                var dN = new double[dimension];
+                for (int d = 0; d < dimension; ++d)
+                {
+                    dN[d] = point.ShapeFunctionDerivatives[n, d];
+                }
+
+                // Standard displacements
+                double ux = uStd[0];
+                double uy = uStd[1];
+                double uz = uStd[2];
+                gradient[0, 0] += dN[0] * ux;
+                gradient[0, 1] += dN[1] * ux;
+                gradient[0, 2] += dN[2] * ux;
+                gradient[1, 0] += dN[0] * uy;
+                gradient[1, 1] += dN[1] * uy;
+                gradient[1, 2] += dN[2] * uy;
+                gradient[2, 0] += dN[0] * uz;
+                gradient[2, 1] += dN[1] * uz;
+                gradient[2, 2] += dN[2] * uz;
+
+                // Eniched displacements
+                int dof = dimension;
+                foreach (IEnrichmentFunction enrichment in element.Nodes[n].EnrichmentFuncs.Keys)
+                {
+                    ux = uStd[dof++];
+                    uy = uStd[dof++];
+                    uz = uStd[dof++];
+                    EvaluatedFunction evalEnrichment = enrichmentValues[enrichment];
+                    double psi = evalEnrichment.Value;
+                    double[] dPsi = evalEnrichment.CartesianDerivatives;
+                    double psiNode = element.Nodes[n].EnrichmentFuncs[enrichment];
+
+                    double Bx = (psi - psiNode) * dN[0] + dPsi[0] * N;
+                    double By = (psi - psiNode) * dN[1] + dPsi[1] * N;
+                    double Bz = (psi - psiNode) * dN[2] + dPsi[2] * N;
+                    gradient[0, 0] += Bx * ux;
+                    gradient[0, 1] += By * ux;
+                    gradient[0, 2] += Bz * ux;
+                    gradient[1, 0] += Bx * uy;
+                    gradient[1, 1] += By * uy;
+                    gradient[1, 2] += Bz * uy;
+                    gradient[2, 0] += Bx * uz;
+                    gradient[2, 1] += By * uz;
+                    gradient[2, 2] += Bz * uz;
+                }
+            }
+            return gradient;
+        }
+
+        /// <summary>
         /// 2D strains: [ex; ey; exy] = [Ux,x; Uy,y; Ux,y + Uy,x].
-        /// 3D strains: [ex; ey; ez; exy; eyz; ezx] = [Ux,x; Uy,y; Uz,z; Ux,y + Uy,x; Uy,z + Uz,y; Uz,x + Ux,z].
         /// </summary>
         /// <returns></returns>
         private double[] CalcStrains2DAt(XPoint point,
@@ -179,6 +249,26 @@ namespace MGroup.XFEM.Output.Fields
                 gradient[0, 0],
                 gradient[1, 1],
                 gradient[0, 1] + gradient[1, 0]
+            };
+            return strains;
+        }
+
+        /// <summary>
+        /// 3D strains: [ex; ey; ez; exy; eyz; ezx] = [Ux,x; Uy,y; Uz,z; Ux,y + Uy,x; Uy,z + Uz,y; Uz,x + Ux,z].
+        /// </summary>
+        /// <returns></returns>
+        private double[] CalcStrains3DAt(XPoint point,
+            IList<double[]> elementDisplacements, IEnumerable<IEnrichmentFunction> elementEnrichments)
+        {
+            double[,] gradient = CalcDisplacementGradient2DAt(point, elementDisplacements, elementEnrichments);
+            double[] strains =
+            {
+                gradient[0, 0],
+                gradient[1, 1],
+                gradient[2, 2],
+                gradient[0, 1] + gradient[1, 0],
+                gradient[1, 2] + gradient[2, 1],
+                gradient[2, 0] + gradient[0, 2]
             };
             return strains;
         }
@@ -198,7 +288,16 @@ namespace MGroup.XFEM.Output.Fields
             point.ShapeFunctionDerivatives = interpolation.ShapeGradientsCartesian;
 
             // Calculate strains
-            double[] strains = CalcStrains2DAt(point, elementDisplacements, elementEnrichments);
+            double[] strains;
+            if (dimension == 2)
+            {
+                strains = CalcStrains2DAt(point, elementDisplacements, elementEnrichments);
+            }
+            else if (dimension == 3)
+            {
+                strains = CalcStrains3DAt(point, elementDisplacements, elementEnrichments);
+            }
+            else throw new NotImplementedException();
 
             // Material
             IPhase phase = element.FindPhaseAt(point);
