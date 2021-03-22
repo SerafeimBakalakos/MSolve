@@ -191,8 +191,9 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
         private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model)
         {
             List<ISurface3D> balls = Utilities.Phases.CreateBallsStructured3D(minCoords, maxCoords, numBalls, ballRadius, 1.0);
-            return Utilities.Phases.CreateLsmPhases3D(
-                model, balls, gm => NodeEnricherMultiphaseNoJunctions.CreateThermalStep(gm));
+            PhaseGeometryModel geometryModel = Utilities.Phases.CreateLsmPhases3D(model, balls);
+            geometryModel.Enricher = NodeEnricherMultiphaseNoJunctions.CreateThermalStep(geometryModel);
+            return geometryModel;
         }
     }
 }

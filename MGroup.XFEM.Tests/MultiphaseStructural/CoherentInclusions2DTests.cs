@@ -17,6 +17,7 @@ using MGroup.XFEM.Phases;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
 
+//TODO: Is the intagration order enough for ridge enrichment?
 namespace MGroup.XFEM.Tests.MultiphaseStructural
 {
     public class CoherentInclusions2DTests
@@ -233,23 +234,9 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
         private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model)
         {
             List<ICurve2D> balls = Utilities.Phases.CreateBallsStructured2D(minCoords, maxCoords, numBalls, ballRadius, 1.0);
-            return Utilities.Phases.CreateLsmPhases2D(
-                model, balls, gm => NodeEnricherMultiphaseNoJunctions.CreateStructuralRidge(gm, dim));
-        }
-
-        private static IMatrix ConstitutiveHomogeneousPlaneStress 
-        { 
-            get
-            {
-                var matrix = Matrix.CreateZero(3, 3);
-                double aux = matrixE / (1 - v * v);
-                matrix[0, 0] = aux;
-                matrix[1, 1] = aux;
-                matrix[0, 1] = v * aux;
-                matrix[1, 0] = v * aux;
-                matrix[2, 2] = (1 - v) / 2 * aux;
-                return matrix;
-            }
+            PhaseGeometryModel geometryModel = Utilities.Phases.CreateLsmPhases2D(model, balls);
+            geometryModel.Enricher = NodeEnricherMultiphaseNoJunctions.CreateStructuralRidge(geometryModel, dim);
+            return geometryModel;
         }
     }
 }

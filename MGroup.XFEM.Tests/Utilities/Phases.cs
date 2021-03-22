@@ -62,12 +62,29 @@ namespace MGroup.XFEM.Tests.Utilities
             return balls;
         }
 
-        public static PhaseGeometryModel CreateLsmPhases2D(XModel<IXMultiphaseElement> model,
-            List<ICurve2D> inclusionGeometries, Func<PhaseGeometryModel, INodeEnricher> createNodeEnricher)
+        public static List<ICurve2D> CreateHalfSpace2D(double[] minCoords, double[] maxCoords, bool bottomIsMatrix)
+        {
+            double[] point0 = { minCoords[0], 0.5 * (minCoords[0] + maxCoords[1])};
+            double[] point1 = { maxCoords[0], 0.5 * (minCoords[0] + maxCoords[1]) };
+            var curves = new List<ICurve2D>();
+            if (bottomIsMatrix)
+            {
+                var line = new Line2D(point1, point0); // negative towards top, which is the inclusion phase
+                curves.Add(line);
+            }
+            else
+            {
+                var line = new Line2D(point0, point1); // negative towards bottom, which is the inclusion phase
+                curves.Add(line);
+            }
+
+            return curves;
+        }
+
+        public static PhaseGeometryModel CreateLsmPhases2D(XModel<IXMultiphaseElement> model, List<ICurve2D> inclusionGeometries)
         {
             var geometricModel = new PhaseGeometryModel(model);
             model.GeometryModel = geometricModel;
-            geometricModel.Enricher = createNodeEnricher(geometricModel);
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;
             for (int p = 0; p < inclusionGeometries.Count; ++p)
@@ -86,12 +103,11 @@ namespace MGroup.XFEM.Tests.Utilities
             return geometricModel;
         }
 
-        public static PhaseGeometryModel CreateLsmPhases3D(XModel<IXMultiphaseElement> model,
-            List<ISurface3D> inclusionGeometries, Func<PhaseGeometryModel, INodeEnricher> createNodeEnricher)
+        public static PhaseGeometryModel CreateLsmPhases3D(XModel<IXMultiphaseElement> model, 
+            List<ISurface3D> inclusionGeometries)
         {
             var geometricModel = new PhaseGeometryModel(model);
             model.GeometryModel = geometricModel;
-            geometricModel.Enricher = createNodeEnricher(geometricModel);
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;
             for (int p = 0; p < inclusionGeometries.Count; ++p)
