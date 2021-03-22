@@ -368,27 +368,27 @@ namespace MGroup.XFEM.Elements
         private Matrix BuildStiffnessMatrixBoundary()
         {
             var Kii = Matrix.CreateZero(numEnrichedDofs, numEnrichedDofs);
-            foreach (var boundaryGaussPointsPair in gaussPointsBoundary)
-            {
-                IPhaseBoundary boundary = boundaryGaussPointsPair.Key;
-                IReadOnlyList<GaussPoint> gaussPoints = boundaryGaussPointsPair.Value;
-                IReadOnlyList<double[]> normalVectorsAtGPs = gaussPointsBoundaryNormals[boundary];
-                CohesiveInterfaceMaterial[] materials = materialsAtGPsBoundary[boundary];
+            //foreach (var boundaryGaussPointsPair in gaussPointsBoundary)
+            //{
+            //    IPhaseBoundary boundary = boundaryGaussPointsPair.Key;
+            //    IReadOnlyList<GaussPoint> gaussPoints = boundaryGaussPointsPair.Value;
+            //    IReadOnlyList<double[]> normalVectorsAtGPs = gaussPointsBoundaryNormals[boundary];
+            //    CohesiveInterfaceMaterial[] materials = materialsAtGPsBoundary[boundary];
 
-                // Kii = sum(N^T * T * N * weight * thickness)
-                for (int i = 0; i < gaussPoints.Count; ++i)
-                {
-                    GaussPoint gaussPoint = gaussPoints[i];
-                    double dA = gaussPoint.Weight;
+            //    // Kii = sum(N^T * T * N * weight * thickness)
+            //    for (int i = 0; i < gaussPoints.Count; ++i)
+            //    {
+            //        GaussPoint gaussPoint = gaussPoints[i];
+            //        double dA = gaussPoint.Weight;
 
-                    IMatrix localT = materials[i].ConstitutiveMatrix;
-                    double[] normalVector = normalVectorsAtGPs[i];
-                    Matrix T = RotateInterfaceCohesiveTensor(localT, normalVector);
-                    Matrix N = CalculateEnrichedShapeFunctionMatrix(gaussPoint.Coordinates, boundary);
-                    Matrix partialKii = N.ThisTransposeTimesOtherTimesThis(T);
-                    Kii.AxpyIntoThis(partialKii, dA);
-                }
-            }
+            //        IMatrix localT = materials[i].ConstitutiveMatrix;
+            //        double[] normalVector = normalVectorsAtGPs[i];
+            //        Matrix T = RotateInterfaceCohesiveTensor(localT, normalVector);
+            //        Matrix N = CalculateEnrichedShapeFunctionMatrix(gaussPoint.Coordinates, boundary);
+            //        Matrix partialKii = N.ThisTransposeTimesOtherTimesThis(T);
+            //        Kii.AxpyIntoThis(partialKii, dA);
+            //    }
+            //}
             return Kii;
         }
 
@@ -406,7 +406,7 @@ namespace MGroup.XFEM.Elements
                 // Material properties
                 IMatrixView constitutive = materialsAtGPsBulk[i].ConstitutiveMatrix;
 
-                // Deformation matrix:  Bs = grad(Ns)
+                // Deformation matrix: Bs = grad(Ns)
                 Matrix deformation = CalcDeformationMatrixStandard(evalInterpolation);
 
                 // Contribution of this gauss point to the element stiffness matrix: Kss = sum(Bs^T * c * Bs  *  dV*w)
@@ -581,6 +581,7 @@ namespace MGroup.XFEM.Elements
                 // Std dofs
                 stdDofIndices[dim * n] = totalDofCounter++;
                 stdDofIndices[dim * n + 1] = totalDofCounter++;
+                stdDofIndices[dim * n + 2] = totalDofCounter++;
 
                 // Enr dofs
                 for (int e = 0; e < Nodes[n].EnrichmentFuncs.Count; ++e)
