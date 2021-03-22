@@ -62,8 +62,9 @@ namespace MGroup.XFEM.Output.Fields
                     for (int n = 0; n < element.Nodes.Count; ++n)
                     {
                         double[] nodeNatural = element.Interpolation.NodalNaturalCoordinates[n];
+                        XPoint point = PreparePoint(nodeNatural, element);
                         (double[] strains, double[] stresses) tensors = CalcStrainsStressesAt(
-                                nodeNatural, element, elementDisplacements, elementEnrichments); //TODO: optimizations are possible for nodes
+                                point, element, elementDisplacements, elementEnrichments); //TODO: optimizations are possible for nodes
                         VtkPoint vertexOut = outCell.Vertices[n];
                         outTensors[vertexOut] = tensors;
                     }
@@ -93,8 +94,9 @@ namespace MGroup.XFEM.Output.Fields
                             }
 
                             // Interpolate the nodal values, taking into account the enrichments.
+                            XPoint point = PreparePoint(vertexOffset, element);
                             (double[] strains, double[] stresses) tensors = CalcStrainsStressesAt(
-                                vertexOffset, element, elementDisplacements, elementEnrichments);
+                                point, element, elementDisplacements, elementEnrichments);
                             VtkPoint vertexOut = subcell.OutVertices[v];
                             outTensors[vertexOut] = tensors;
                         }
@@ -109,9 +111,10 @@ namespace MGroup.XFEM.Output.Fields
         /// 2D displacement gradient: [Ux,x Ux,y; Uy,x Uy,y].
         /// </summary>
         /// <returns></returns>
-        private double[,] CalcDisplacementGradient2DAt(XPoint point,  
+        public static double[,] CalcDisplacementGradient2DAt(XPoint point,  
             IList<double[]> elementDisplacements, IEnumerable<IEnrichmentFunction> elementEnrichments) //TODO: Extend this to 3D
         {
+            int dimension = point.Dimension;
             IXFiniteElement element = point.Element;
 
             // Enrichment functions and derivatives at this point
@@ -168,9 +171,10 @@ namespace MGroup.XFEM.Output.Fields
         /// 3D displacement gradient: [Ux,x Ux,y Ux,z; Uy,x Uy,y Uy,z; Uz,x Uz,y Uz,z].
         /// </summary>
         /// <returns></returns>
-        private double[,] CalcDisplacementGradient3DAt(XPoint point,
+        public static double[,] CalcDisplacementGradient3DAt(XPoint point,
             IList<double[]> elementDisplacements, IEnumerable<IEnrichmentFunction> elementEnrichments) //TODO: Extend this to 3D
         {
+            int dimension = point.Dimension;
             IXFiniteElement element = point.Element;
 
             // Enrichment functions and derivatives at this point
@@ -240,7 +244,7 @@ namespace MGroup.XFEM.Output.Fields
         /// 2D strains: [ex; ey; exy] = [Ux,x; Uy,y; Ux,y + Uy,x].
         /// </summary>
         /// <returns></returns>
-        private double[] CalcStrains2DAt(XPoint point,
+        public static double[] CalcStrains2DAt(XPoint point,
             IList<double[]> elementDisplacements, IEnumerable<IEnrichmentFunction> elementEnrichments)
         {
             double[,] gradient = CalcDisplacementGradient2DAt(point, elementDisplacements, elementEnrichments);
@@ -257,7 +261,7 @@ namespace MGroup.XFEM.Output.Fields
         /// 3D strains: [ex; ey; ez; exy; eyz; ezx] = [Ux,x; Uy,y; Uz,z; Ux,y + Uy,x; Uy,z + Uz,y; Uz,x + Ux,z].
         /// </summary>
         /// <returns></returns>
-        private double[] CalcStrains3DAt(XPoint point,
+        public static double[] CalcStrains3DAt(XPoint point,
             IList<double[]> elementDisplacements, IEnumerable<IEnrichmentFunction> elementEnrichments)
         {
             double[,] gradient = CalcDisplacementGradient2DAt(point, elementDisplacements, elementEnrichments);
@@ -273,19 +277,12 @@ namespace MGroup.XFEM.Output.Fields
             return strains;
         }
 
-        //TODO: extend to 3D
         //TODO: Investigate using Bstd, Benr
-        private (double[] strains, double[] stresss) CalcStrainsStressesAt(double[] pointNatural,
+        public static (double[] strains, double[] stresss) CalcStrainsStressesAt(XPoint point,
             IXStructuralMultiphaseElement element, IList<double[]> elementDisplacements, 
             IEnumerable<IEnrichmentFunction> elementEnrichments)
         {
-            // Prepare this point
-            var point = new XPoint(dimension);
-            point.Element = element;
-            point.Coordinates[CoordinateSystem.ElementNatural] = pointNatural;
-            EvalInterpolation interpolation = element.Interpolation.EvaluateAllAt(element.Nodes, pointNatural);
-            point.ShapeFunctions = interpolation.ShapeFunctions;
-            point.ShapeFunctionDerivatives = interpolation.ShapeGradientsCartesian;
+            int dimension = point.Dimension;
 
             // Calculate strains
             double[] strains;
@@ -307,6 +304,18 @@ namespace MGroup.XFEM.Output.Fields
             double[] stresses = material.ConstitutiveMatrix.Multiply(strains);
 
             return (strains, stresses);
+        }
+
+        public static XPoint PreparePoint(double[] pointNatural, IXStructuralMultiphaseElement element)
+        {
+            int dimension = pointNatural.Length;
+            var point = new XPoint(dimension);
+            point.Element = element;
+            point.Coordinates[CoordinateSystem.ElementNatural] = pointNatural;
+            EvalInterpolation interpolation = element.Interpolation.EvaluateAllAt(element.Nodes, pointNatural);
+            point.ShapeFunctions = interpolation.ShapeFunctions;
+            point.ShapeFunctionDerivatives = interpolation.ShapeGradientsCartesian;
+            return point;
         }
     }
 }

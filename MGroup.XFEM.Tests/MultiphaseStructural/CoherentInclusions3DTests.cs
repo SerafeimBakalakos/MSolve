@@ -33,7 +33,7 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
         private const double thickness = 1.0;
         private static readonly int[] numElements = { 19, 19, 19 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
-        private static readonly int[] numBalls = { 1, 1, 1 };
+        private static readonly int[] numBalls = { 2, 1, 1 };
         private const double ballRadius = 0.3;
 
         private const int defaultPhaseID = 0;
@@ -149,7 +149,7 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
                 computedFiles.Add(Path.Combine(outputDirectory, "stresses_gauss_points_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "displacement_strain_stress_field_t0.vtk"));
                 //Utilities.Plotting.PlotDisplacements(model, solution, computedFiles[0], computedFiles[1]);
-                //Utilities.Plotting.PlotStrainsStressesAtGaussPoints(model, solution, computedFiles[2], computedFiles[3]);
+                Utilities.Plotting.PlotStrainsStressesAtGaussPoints(model, solution, computedFiles[2], computedFiles[3]);
                 Utilities.Plotting.PlotDisplacementStrainStressFields(model, solution, computedFiles[4]);
 
                 // Compare output
