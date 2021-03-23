@@ -21,11 +21,6 @@ namespace MGroup.XFEM.Geometry.Primitives
         public double[] Center { get; }
         public double Radius { get; }
 
-        public IElementDiscontinuityInteraction IntersectPolygon(IList<double[]> nodes)
-        {
-            throw new NotImplementedException();
-        }
-
         public double SignedDistanceOf(double[] point) => Utilities.Distance3D(Center, point) - Radius;
     }
 }

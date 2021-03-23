@@ -213,7 +213,7 @@ namespace MGroup.XFEM.Tests.Utilities
             return model;
         }
 
-        public static XModel<IXMultiphaseElement> CreateHexa8Model(double[] minCoords, double[] maxCoords, double thickness,
+        public static XModel<IXMultiphaseElement> CreateHexa8Model(double[] minCoords, double[] maxCoords,
             int[] numElements, int bulkIntegrationOrder, int boundaryIntegrationOrder, IStructuralMaterialField materialField,
             bool cohesiveInterfaces)
         {

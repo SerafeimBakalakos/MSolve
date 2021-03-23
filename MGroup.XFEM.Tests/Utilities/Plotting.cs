@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Output;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
+using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Output.Fields;
@@ -104,6 +109,40 @@ namespace MGroup.XFEM.Tests.Utilities
             {
                 writer.WriteTensor2DField("stress", stressesAtGPs);
             }
+        }
+
+        public static void PrintElasticityTensor(string path, IMatrix elasticity)
+        {
+            using (var writer = new StreamWriter(path, true))
+            {
+                writer.WriteLine();
+                writer.WriteLine("#################################################################");
+                writer.WriteLine("Date = " + DateTime.Now);
+                writer.WriteLine("elasticity = ");
+            }
+            var matrixWriter = new FullMatrixWriter();
+            matrixWriter.WriteToFile(elasticity, path, true);
+        }
+
+        public static void PrintElasticityTensor(string path, double E, double v, int dimension)
+        {
+            // Print the constitutive matrix of the matrix material for comparison
+            using (var writer = new StreamWriter(path, true))
+            {
+                writer.WriteLine();
+                writer.WriteLine($"elasticity of material E = {E}, v = {v}");
+            }
+            IContinuumMaterial material;
+            if (dimension == 2)
+            {
+                material = new ElasticMaterial2D(StressState2D.PlaneStress) { YoungModulus = E, PoissonRatio = v };
+            }
+            else
+            {
+                material = new ElasticMaterial3D() { YoungModulus = E, PoissonRatio = v };
+            }
+            var matrixWriter = new FullMatrixWriter();
+            matrixWriter.WriteToFile(material.ConstitutiveMatrix, path, true);
         }
     }
 }

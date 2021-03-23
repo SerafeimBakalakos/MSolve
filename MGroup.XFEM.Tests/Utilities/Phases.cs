@@ -64,8 +64,8 @@ namespace MGroup.XFEM.Tests.Utilities
 
         public static List<ICurve2D> CreateHalfSpace2D(double[] minCoords, double[] maxCoords, bool bottomIsMatrix)
         {
-            double[] point0 = { minCoords[0], 0.5 * (minCoords[0] + maxCoords[1])};
-            double[] point1 = { maxCoords[0], 0.5 * (minCoords[0] + maxCoords[1]) };
+            double[] point0 = { minCoords[0], 0.5 * (minCoords[1] + maxCoords[1])};
+            double[] point1 = { maxCoords[0], 0.5 * (minCoords[1] + maxCoords[1]) };
             var curves = new List<ICurve2D>();
             if (bottomIsMatrix)
             {
@@ -79,6 +79,25 @@ namespace MGroup.XFEM.Tests.Utilities
             }
 
             return curves;
+        }
+
+        public static List<ISurface3D> CreateHalfSpace3D(double[] minCoords, double[] maxCoords, bool bottomIsMatrix)
+        {
+            var center = new double[3];
+            for (int d = 0; d < 3; ++d) center[d] = 0.5 * (minCoords[d] + maxCoords[d]);
+            var surfaces = new List<ISurface3D>();
+            double[] normal;
+            if (bottomIsMatrix)
+            {
+                normal = new double[] { 0, -1, 0 }; // positive towards the matrix phase
+            }
+            else
+            {
+                normal = new double[] { 0, 1, 0 }; // positive towards the matrix phase
+            }
+            var plane = Plane3D.CreatePlaneThroughPointWithPositiveNormal(center, normal);
+            surfaces.Add(plane);
+            return surfaces;
         }
 
         public static PhaseGeometryModel CreateLsmPhases2D(XModel<IXMultiphaseElement> model, List<ICurve2D> inclusionGeometries)

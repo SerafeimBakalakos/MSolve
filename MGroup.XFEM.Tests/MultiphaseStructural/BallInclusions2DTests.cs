@@ -17,12 +17,12 @@ using MGroup.XFEM.Phases;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
 
-//TODO: Is the intagration order enough for ridge enrichment?
+//TODO: Is the integration order enough for ridge enrichment?
 namespace MGroup.XFEM.Tests.MultiphaseStructural
 {
-    public class HalfAndHalf2D
+    public class BallInclusions2DTests
     {
-        private static readonly string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\elasticity\half_half_2D";
+        private static readonly string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\elasticity\ball_inclusions_2D";
 
         private const int dim = 2;
         private static readonly double[] minCoords = { -1.0, -1.0 };
@@ -30,13 +30,12 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
         private const double thickness = 1.0;
         private static readonly int[] numElements = { 35, 35 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
+        private static readonly int[] numBalls = { 2, 1 };
+        private const double ballRadius = 0.3;
 
         private const int defaultPhaseID = 0;
 
         private const double matrixE = 1, v = 0.3;
-        //private const double inclusionE = 2;
-        //private const bool cohesiveInterfaces = false;
-        //private const double cohesiveness = 1E8;
 
         //[Fact]
         public static void TestModel()
@@ -106,18 +105,18 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
             IVectorView solution = Analysis.RunStructuralStaticAnalysis(model);
 
             // Plot displacements, strains, stresses
-            var outputFiles = new List<string>();
-            outputFiles.Add(Path.Combine(outputDirectory, "displacement_nodes_t0.vtk"));
-            outputFiles.Add(Path.Combine(outputDirectory, "displacement_gauss_points_t0.vtk"));
-            outputFiles.Add(Path.Combine(outputDirectory, "strains_gauss_points_t0.vtk"));
-            outputFiles.Add(Path.Combine(outputDirectory, "stresses_gauss_points_t0.vtk"));
-            outputFiles.Add(Path.Combine(outputDirectory, "displacement_strain_stress_field_t0.vtk"));
-            Utilities.Plotting.PlotDisplacements(model, solution, outputFiles[0], outputFiles[1]);
-            Utilities.Plotting.PlotStrainsStressesAtGaussPoints(model, solution, outputFiles[2], outputFiles[3]);
-            Utilities.Plotting.PlotDisplacementStrainStressFields(model, solution, outputFiles[4]);
+            var computedFiles = new List<string>();
+            computedFiles.Add(Path.Combine(outputDirectory, "displacement_nodes_t0.vtk"));
+            computedFiles.Add(Path.Combine(outputDirectory, "displacement_gauss_points_t0.vtk"));
+            computedFiles.Add(Path.Combine(outputDirectory, "strains_gauss_points_t0.vtk"));
+            computedFiles.Add(Path.Combine(outputDirectory, "stresses_gauss_points_t0.vtk"));
+            computedFiles.Add(Path.Combine(outputDirectory, "displacement_strain_stress_field_t0.vtk"));
+            Utilities.Plotting.PlotDisplacements(model, solution, computedFiles[0], computedFiles[1]);
+            Utilities.Plotting.PlotStrainsStressesAtGaussPoints(model, solution, computedFiles[2], computedFiles[3]);
+            Utilities.Plotting.PlotDisplacementStrainStressFields(model, solution, computedFiles[4]);
         }
 
-        [Theory] //TODO: Add more test cases
+        [Theory]
         [InlineData(matrixE, false, 0)]
         [InlineData(matrixE, true, 1E8)]
         public static void TestHomogenization(double inclusionE, bool cohesiveInterfaces, double cohesiveness)
@@ -163,7 +162,7 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
 
             // Setup model
             XModel<IXMultiphaseElement> model = Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
-                bulkIntegrationOrder, boundaryIntegrationOrder, materialField, cohesiveInterfaces);
+                bulkIntegrationOrder, boundaryIntegrationOrder, materialField, false);
             Models.ApplyBCsCantileverTension(model);
 
             return model;
@@ -171,8 +170,8 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
 
         private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model, bool cohesiveInterfaces)
         {
-            List<ICurve2D> discontinuities = Utilities.Phases.CreateHalfSpace2D(minCoords, maxCoords, true);
-            PhaseGeometryModel geometryModel = Utilities.Phases.CreateLsmPhases2D(model, discontinuities);
+            List<ICurve2D> balls = Utilities.Phases.CreateBallsStructured2D(minCoords, maxCoords, numBalls, ballRadius, 1.0);
+            PhaseGeometryModel geometryModel = Utilities.Phases.CreateLsmPhases2D(model, balls);
             if (cohesiveInterfaces)
             {
                 geometryModel.Enricher = NodeEnricherMultiphaseNoJunctions.CreateStructuralStep(geometryModel, dim);
