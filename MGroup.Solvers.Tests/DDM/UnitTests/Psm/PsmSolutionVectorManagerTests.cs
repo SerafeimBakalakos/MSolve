@@ -80,6 +80,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			{
 				int s = subdomain.ID;
 				linearSystems[s] = matrixManagerBasic.GetLinearSystem(s);
+				linearSystems[s].Reset();
 				Vector Ff = Example4x4ExpectedResults.GetRhsFfHomogeneous(s);
 				linearSystems[s].RhsVector = Ff;
 			}

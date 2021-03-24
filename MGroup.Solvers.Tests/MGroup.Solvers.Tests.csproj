@@ -25,4 +25,6 @@
     <ProjectReference Include="..\MGroup.Solvers\MGroup.Solvers.csproj" />
   </ItemGroup>
 
+  
+
 </Project>

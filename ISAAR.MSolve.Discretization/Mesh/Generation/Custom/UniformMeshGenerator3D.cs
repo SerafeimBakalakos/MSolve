@@ -39,6 +39,8 @@ namespace ISAAR.MSolve.Discretization.Mesh.Generation.Custom
 
         public bool StartIDsAt0 { get; set; } = true;
 
+        public bool BatheOrdering { get; set; } = false;
+
         /// <summary>
         /// Generates a uniform mesh with the dimensions and density defined in the constructor.
         /// </summary>
@@ -81,7 +83,7 @@ namespace ISAAR.MSolve.Discretization.Mesh.Generation.Custom
                     {
                         int cell = k * cellsPerX * cellsPerY + j * cellsPerX + i;
                         int firstVertex = k * verticesPerX * verticesPerY + j * verticesPerX + i;
-                        var verticesOfCell = new int[]                                 // Node order for Hexa8
+                        var verticesOfCell = new int[]                                      // Node order for Hexa8
                         {
                             firstVertex,                                                    // (-1, -1, -1)
                             firstVertex + 1,                                                // ( 1, -1, -1)
@@ -92,12 +94,41 @@ namespace ISAAR.MSolve.Discretization.Mesh.Generation.Custom
                             firstVertex + verticesPerX * verticesPerY + verticesPerY + 1,   // ( 1,  1,  1)
                             firstVertex + verticesPerX * verticesPerY + verticesPerY        // (-1,  1,  1)
                         };
+                        if (BatheOrdering)
+                        {
+                            verticesOfCell = ReorderHexa8NodesRegularToBathe(verticesOfCell);
+                        }
                         cells[cell] = new CellConnectivity<TNode>(CellType.Hexa8, 
                             verticesOfCell.Select(idx => allVertices[idx]).ToArray()); // row major
                     }
                 }
             }
             return cells;
+        }
+
+        private static int[] ReorderHexa8NodesRegularToBathe(int[] nodesRegular)
+        {
+            // idx Regular			    Bathe
+            // 0   (-1, -1, -1)		    (+1, +1, +1)
+            // 1   (+1, -1, -1)		    (-1, +1, +1)
+            // 2   (+1, +1, -1)		    (-1, -1, +1)
+            // 3   (-1, +1, -1)		    (+1, -1, +1)
+            // 4   (-1, -1, +1)		    (+1, +1, -1)
+            // 5   (+1, -1, +1)		    (-1, +1, -1)
+            // 6   (+1, +1, +1)		    (-1, -1, -1)
+            // 7   (-1, +1, +1)		    (+1, -1, -1)
+
+            var nodesBathe = new int[8];
+            nodesBathe[0] = nodesRegular[6];
+            nodesBathe[1] = nodesRegular[7];
+            nodesBathe[2] = nodesRegular[4];
+            nodesBathe[3] = nodesRegular[5];
+            nodesBathe[4] = nodesRegular[2];
+            nodesBathe[5] = nodesRegular[3];
+            nodesBathe[6] = nodesRegular[0];
+            nodesBathe[7] = nodesRegular[1];
+
+            return nodesBathe;
         }
     }
 }

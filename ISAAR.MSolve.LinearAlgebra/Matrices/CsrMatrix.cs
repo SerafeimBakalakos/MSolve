@@ -390,7 +390,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
         public bool Equals(IIndexable2D other, double tolerance = 1e-13)
         {
             if ((this.NumRows != other.NumRows) || (this.NumColumns != other.NumColumns)) return false;
-            var comparer = new ValueComparer(1e-13);
+            var comparer = new ValueComparer(tolerance);
             for (int i = 0; i < NumRows; ++i)
             {
                 int rowStart = rowOffsets[i]; //inclusive
@@ -401,9 +401,15 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
                     int col = colIndices[k];
                     for (int j = previousCol; j < col; ++j) // zero entries between the stored ones
                     {
-                        if (!comparer.AreEqual(0.0, other[i, j])) return false;
+                        if (!comparer.AreEqual(0.0, other[i, j]))
+                        {
+                            return false;
+                        }
                     }
-                    if (!comparer.AreEqual(values[k], other[i, col])) return false; // Non zero entry
+                    if (!comparer.AreEqual(values[k], other[i, col])) // Non zero entry
+                    {
+                        return false;
+                    }
                     previousCol = col + 1;
                 }
             }
