@@ -1,0 +1,95 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Providers;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
+using MGroup.Solvers.DDM;
+using MGroup.Solvers.DDM.Dofs;
+using MGroup.Solvers.DDM.Environments;
+using MGroup.Solvers.DDM.Psm.Dofs;
+using MGroup.Solvers.DDM.Psm.StiffnessDistribution;
+using MGroup.Solvers.DDM.Psm.StiffnessMatrices;
+using MGroup.Tests.DDM.UnitTests.Models;
+using Xunit;
+
+namespace MGroup.Tests.DDM.UnitTests.Psm
+{
+	public static class StiffnessDistributionTests
+	{
+		[Theory]
+		[InlineData(EnvironmentChoice.ManagedSeqSubSingleClus)]
+		[InlineData(EnvironmentChoice.ManagedParSubSingleClus)]
+		public static void TestMappingMatricesHomogeneous(EnvironmentChoice env)
+		{
+			IProcessingEnvironment environment = env.Create();
+
+			// Create model
+			AllDofs.AddStructuralDofs();
+			IStructuralModel model = Example4x4Model.CreateModelHomogeneous();
+			Cluster[] clusters = Example4x4Model.CreateClusters(model);
+			Example4x4Model.OrderDofs(model);
+
+			#region mock these
+			// Dof separation
+			var dofSeparator = new PsmDofSeparator(environment, model, clusters);
+			dofSeparator.SeparateBoundaryInternalDofs();
+			dofSeparator.MapBoundaryDofs();
+			#endregion
+
+			// Stiffness distribution
+			var stiffnessDistribution = new HomogeneousStiffnessDistribution(environment, clusters, dofSeparator);
+			stiffnessDistribution.CalcSubdomainScaling();
+
+			// Check
+			foreach (ISubdomain sub in model.Subdomains)
+			{
+				Matrix computedLpb = stiffnessDistribution.GetDofMappingBoundaryClusterToSubdomain(sub.ID).CopyToFullMatrix();
+				Matrix expectedLpb = Example4x4ExpectedResults.GetMatrixLpbHomogeneous(sub.ID);
+				Assert.True(expectedLpb.Equals(computedLpb));
+			}
+		}
+
+		[Theory]
+		[InlineData(EnvironmentChoice.ManagedSeqSubSingleClus)]
+		[InlineData(EnvironmentChoice.ManagedParSubSingleClus)]
+		public static void TestMappingMatricesHeterogeneous(EnvironmentChoice env)
+		{
+			IProcessingEnvironment environment = env.Create();
+
+			// Create model
+			AllDofs.AddStructuralDofs();
+			IStructuralModel model = Example4x4Model.CreateModelHomogeneous();
+			Cluster[] clusters = Example4x4Model.CreateClusters(model);
+			Example4x4Model.OrderDofs(model);
+
+			#region mock these
+			// Dof separation
+			var dofSeparator = new PsmDofSeparator(environment, model, clusters);
+			dofSeparator.SeparateBoundaryInternalDofs();
+			dofSeparator.MapBoundaryDofs();
+
+			var factory = new PsmMatrixManagerDense.Factory();
+			var (matrixManagerBasic, matrixManagerPsm) = factory.CreateMatrixManagers(model, dofSeparator);
+			var elementMatrixProvider = new ElementStructuralStiffnessProvider();
+			foreach (ISubdomain sub in model.Subdomains)
+			{
+				matrixManagerBasic.BuildKff(sub.ID, sub.FreeDofOrdering, sub.Elements, elementMatrixProvider);
+			}
+			#endregion
+
+			// Stiffness distribution
+			var stiffnessDistribution = new HeterogeneousStiffnessDistribution(
+				environment, clusters, dofSeparator, matrixManagerBasic);
+			stiffnessDistribution.CalcSubdomainScaling();
+
+			// Check
+			foreach (ISubdomain sub in model.Subdomains)
+			{
+				Matrix computedLpb = stiffnessDistribution.GetDofMappingBoundaryClusterToSubdomain(sub.ID).CopyToFullMatrix();
+				Matrix expectedLpb = Example4x4ExpectedResults.GetMatrixLpbHeterogeneous(sub.ID);
+				Assert.True(expectedLpb.Equals(computedLpb));
+			}
+		}
+	}
+}
