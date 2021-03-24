@@ -13,7 +13,7 @@ namespace ISAAR.MSolve.Solvers.LinearSystems
     public class SingleSubdomainSystem<TMatrix> : LinearSystemBase<TMatrix, Vector>, ISingleSubdomainLinearSystem
         where TMatrix : class, IMatrix
     {
-        internal SingleSubdomainSystem(ISubdomain subdomain) : base(subdomain) { }
+        public SingleSubdomainSystem(ISubdomain subdomain) : base(subdomain) { }
 
         public override IVector CreateZeroVector() => CreateZeroVectorConcrete();
 

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.LinearAlgebra.Iterative.GeneralizedMinimalResidual;
 using ISAAR.MSolve.LinearAlgebra.Iterative;
 using ISAAR.MSolve.LinearAlgebra.Iterative.PreconditionedConjugateGradient;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Preconditioning;
@@ -65,7 +66,7 @@ namespace ISAAR.MSolve.Solvers.Iterative
 
             // Iterative algorithm
             watch.Start();
-            IterativeStatistics stats = gmresAlgorithm.Solve(linearSystem.Matrix, linearSystem.RhsConcrete,
+            IterativeStatistics stats = gmresAlgorithm.Solve(linearSystem.Matrix, preconditioner, linearSystem.RhsConcrete,
                 linearSystem.SolutionConcrete, true, () => linearSystem.CreateZeroVector()); //TODO: This way, we don't know that x0=0, which will result in an extra b-A*0
             if (!stats.HasConverged)
             {
@@ -112,7 +113,7 @@ namespace ISAAR.MSolve.Solvers.Iterative
                 //      in CG will be slow.
                 Vector rhsVector = otherMatrix.GetColumn(j);
 
-                IterativeStatistics stats = gmresAlgorithm.Solve(linearSystem.Matrix, rhsVector,
+                IterativeStatistics stats = gmresAlgorithm.Solve(linearSystem.Matrix, preconditioner, rhsVector,
                     solutionVector, true, () => linearSystem.CreateZeroVector());
 
                 solutionVectors.SetSubcolumn(j, solutionVector);

@@ -63,7 +63,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
         /// The internal array that stores the entries of the upper triangle (packed storage format) in column major layout. 
         /// It should only be used for passing the raw array to linear algebra libraries.
         /// </summary>
-        internal double[] RawData => data;
+        public double[] RawData => data;
 
         /// <summary>
         /// The entry with row index = i and column index = j. Setting an entry A[i, j] = value, will also set A[j, i] = value. Therefore the matrix will stay symmetric 

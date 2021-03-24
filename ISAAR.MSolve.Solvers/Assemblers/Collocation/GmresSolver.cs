@@ -5,6 +5,8 @@ using System.Net.Http.Headers;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Iterative;
+using ISAAR.MSolve.LinearAlgebra.Iterative.GeneralizedMinimalResidual;
+using ISAAR.MSolve.LinearAlgebra.Iterative.Preconditioning;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Solvers.Commons;
 using ISAAR.MSolve.Solvers.Ordering;
@@ -39,7 +41,8 @@ namespace ISAAR.MSolve.Solvers.Assemblers.Collocation
             else linearSystem.SolutionConcrete.Clear();
 
             watch.Start();
-            IterativeStatistics stats = gmresAlgorithm.Solve(linearSystem.Matrix, linearSystem.RhsConcrete,
+            var preconditioner = new IdentityPreconditioner();
+            IterativeStatistics stats = gmresAlgorithm.Solve(linearSystem.Matrix, preconditioner, linearSystem.RhsConcrete,
                 linearSystem.SolutionConcrete, true, () => linearSystem.CreateZeroVector());
             if (!stats.HasConverged)
                 throw new IterativeSolverNotConvergedException("Gmres did not converge");

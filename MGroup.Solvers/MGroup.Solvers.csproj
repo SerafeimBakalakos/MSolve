@@ -9,4 +9,10 @@
     <ProjectReference Include="..\ISAAR.MSolve.Solvers\ISAAR.MSolve.Solvers.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DDM\" />
+    <Folder Include="Assemblers\" />
+    <Folder Include="DofOrdering\" />
+  </ItemGroup>
+
 </Project>
