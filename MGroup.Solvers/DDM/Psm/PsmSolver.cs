@@ -163,17 +163,17 @@ namespace MGroup.Solvers.DDM.Psm
 
 		public virtual void Initialize()
 		{
-			dofSeparatorPsm.SeparateBoundaryInternalDofs();
+			dofSeparatorPsm.SeparateSubdomainDofsIntoBoundaryInternal();
 			Action<ISubdomain> reorderInternalDofs = sub =>
 			{
 				matrixManagerPsm.ReorderInternalDofs(sub.ID);
 			};
 			environment.ExecuteSubdomainAction(model.Subdomains, reorderInternalDofs);
 
-			dofSeparatorPsm.MapBoundaryDofs();
+			dofSeparatorPsm.MapBoundaryDofsBetweenClusterSubdomains();
 			stiffnessDistribution.CalcSubdomainScaling();
 
-			Logger.LogNumDofs("Global boundary dofs", dofSeparatorPsm.GetClusterNumBoundaryDofs(clusterID));
+			Logger.LogNumDofs("Global boundary dofs", dofSeparatorPsm.GetNumBoundaryDofsCluster(clusterID));
 		}
 
 		public virtual Dictionary<int, Matrix> InverseSystemMatrixTimesOtherMatrix(Dictionary<int, IMatrixView> otherMatrix)

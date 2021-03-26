@@ -60,8 +60,8 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			#region mock these
 			// Separate dofs and calculate the boolean matrices
 			var dofSeparator = new PsmDofSeparator(environment, model, clusters);
-			dofSeparator.SeparateBoundaryInternalDofs();
-			dofSeparator.MapBoundaryDofs();
+			dofSeparator.SeparateSubdomainDofsIntoBoundaryInternal();
+			dofSeparator.MapBoundaryDofsBetweenClusterSubdomains();
 
 			// Stiffness matrices
 			var elementMatrixProvider = new ElementStructuralStiffnessProvider();

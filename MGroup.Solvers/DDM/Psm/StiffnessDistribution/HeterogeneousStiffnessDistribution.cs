@@ -49,7 +49,7 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessDistribution
 				Action<ISubdomain> calcDb = sub =>
 				{
 					int s = sub.ID;
-					int[] boundaryDofs = dofSeparator.GetDofsBoundaryToFree(s);
+					int[] boundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(s);
 					IMatrixView Kff = matrixManagerBasic.GetLinearSystem(s).Matrix;
 					var Db = new double[boundaryDofs.Length];
 					for (int boundaryDofIdx = 0; boundaryDofIdx < boundaryDofs.Length; boundaryDofIdx++)
@@ -62,7 +62,7 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessDistribution
 				environment.ExecuteSubdomainAction(cluster.Subdomains, calcDb);
 
 				// Assemble subdomain Db^s matrices into cluster's (Lb^e)^T * Db^e * Lb^e)
-				var clusterDb = new double[dofSeparator.GetClusterNumBoundaryDofs(c)];
+				var clusterDb = new double[dofSeparator.GetNumBoundaryDofsCluster(c)];
 				foreach (ISubdomain subdomain in cluster.Subdomains)
 				{
 					int s = subdomain.ID;
@@ -120,7 +120,7 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessDistribution
 						int s = idSubdomain.Key;
 						ISubdomain subdomain = idSubdomain.Value;
 						int freeDofIdx = subdomain.FreeDofOrdering.FreeDofs[node, dofType];
-						int boundaryDofIdx = dofSeparator.GetDofOrderingBoundary(s)[node, dofType];
+						int boundaryDofIdx = dofSeparator.GetSubdomainDofOrderingBoundary(s)[node, dofType];
 						subdomainLoads[s][freeDofIdx] = loadAmount * relativeStiffnesses[s][boundaryDofIdx];
 					}
 				}
@@ -140,7 +140,7 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessDistribution
 
 		public void ScaleForceVector(int subdomainID, Vector subdomainForces)
 		{
-			int[] boundaryDofs = dofSeparator.GetDofsBoundaryToFree(subdomainID);
+			int[] boundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID);
 			double[] relativeStiffnessOfSubdomain = relativeStiffnesses[subdomainID];
 			for (int i = 0; i < boundaryDofs.Length; i++)
 			{

@@ -28,9 +28,9 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			foreach (ISubdomain sub in model.Subdomains)
 			{
 				int[] boundaryDofsExpected = Example4x4QuadsHomogeneous.GetDofsBoundary(sub.ID);
-				int[] boundaryDofsComputed = dofSeparator.GetDofsBoundaryToFree(sub.ID);
+				int[] boundaryDofsComputed = dofSeparator.GetSubdomainDofsBoundaryToFree(sub.ID);
 				int[] internalDofsExpected = Example4x4QuadsHomogeneous.GetDofsInternal(sub.ID);
-				int[] internalDofsComputed = dofSeparator.GetDofsInternalToFree(sub.ID);
+				int[] internalDofsComputed = dofSeparator.GetSubdomainDofsInternalToFree(sub.ID);
 				CheckEqual(boundaryDofsExpected, boundaryDofsComputed);
 				CheckEqual(internalDofsExpected, internalDofsComputed);
 			}
@@ -76,8 +76,8 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			// Separate dofs and calculate the boolean matrices
 			IProcessingEnvironment environment = EnvironmentChoice.ManagedSeqSubSingleClus.Create();
 			var dofSeparator = new PsmDofSeparator(environment, model, clusters);
-			dofSeparator.SeparateBoundaryInternalDofs();
-			dofSeparator.MapBoundaryDofs();
+			dofSeparator.SeparateSubdomainDofsIntoBoundaryInternal();
+			dofSeparator.MapBoundaryDofsBetweenClusterSubdomains();
 			return (model, dofSeparator);
 		}
 

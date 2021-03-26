@@ -29,15 +29,15 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			// Separate dofs
 			IProcessingEnvironment environment = env.Create();
 			var dofSeparator = new PsmDofSeparator(environment, model, clusters);
-			dofSeparator.SeparateBoundaryInternalDofs();
+			dofSeparator.SeparateSubdomainDofsIntoBoundaryInternal();
 
 			// Check
 			foreach (ISubdomain sub in model.Subdomains)
 			{
 				(int[] boundaryDofsExpected, int[] internalDofsExpected) = 
 					Example4x4ExpectedResults.GetDofsBoundaryInternalToFree(sub.ID);
-				int[] boundaryDofsComputed = dofSeparator.GetDofsBoundaryToFree(sub.ID);
-				int[] internalDofsComputed = dofSeparator.GetDofsInternalToFree(sub.ID);
+				int[] boundaryDofsComputed = dofSeparator.GetSubdomainDofsBoundaryToFree(sub.ID);
+				int[] internalDofsComputed = dofSeparator.GetSubdomainDofsInternalToFree(sub.ID);
 				Utilities.AssertEqual(boundaryDofsExpected, boundaryDofsComputed);
 				Utilities.AssertEqual(internalDofsExpected, internalDofsComputed);
 			}
@@ -57,8 +57,8 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			// Separate dofs and calculate the boolean matrices
 			IProcessingEnvironment environment = env.Create();
 			var dofSeparator = new PsmDofSeparator(environment, model, clusters);
-			dofSeparator.SeparateBoundaryInternalDofs();
-			dofSeparator.MapBoundaryDofs();
+			dofSeparator.SeparateSubdomainDofsIntoBoundaryInternal();
+			dofSeparator.MapBoundaryDofsBetweenClusterSubdomains();
 
 			// Check
 			foreach (ISubdomain sub in model.Subdomains)

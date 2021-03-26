@@ -50,8 +50,8 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			// Check
 			foreach (ISubdomain sub in model.Subdomains)
 			{
-				int numBoundaryDofs = dofSeparator.GetDofsBoundaryToFree(sub.ID).Length;
-				int numInternalDofs = dofSeparator.GetDofsInternalToFree(sub.ID).Length;
+				int numBoundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(sub.ID).Length;
+				int numInternalDofs = dofSeparator.GetSubdomainDofsInternalToFree(sub.ID).Length;
 
 				Matrix computedKbb = Utilities.CreateExplicitMatrix(numBoundaryDofs, numBoundaryDofs,
 					x => matrixManagerPsm.MultiplyKbb(sub.ID, x));
@@ -103,7 +103,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			// Check
 			foreach (ISubdomain sub in model.Subdomains)
 			{
-				int numInternalDofs = dofSeparator.GetDofsInternalToFree(sub.ID).Length;
+				int numInternalDofs = dofSeparator.GetSubdomainDofsInternalToFree(sub.ID).Length;
 				Matrix computedKiiInverse = Utilities.CreateExplicitMatrix(numInternalDofs, numInternalDofs,
 					x => matrixManagerPsm.MultiplyInverseKii(sub.ID, x));
 				Matrix expectedKiiInverse = Example4x4ExpectedResults.GetMatrixKiiInverse(sub.ID);
@@ -147,8 +147,8 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			#region mock these
 			// Separate dofs and calculate the boolean matrices
 			var dofSeparator = new PsmDofSeparator(environment, model, clusters);
-			dofSeparator.SeparateBoundaryInternalDofs();
-			dofSeparator.MapBoundaryDofs();
+			dofSeparator.SeparateSubdomainDofsIntoBoundaryInternal();
+			dofSeparator.MapBoundaryDofsBetweenClusterSubdomains();
 
 			var elementMatrixProvider = new ElementStructuralStiffnessProvider();
 			#endregion

@@ -56,7 +56,7 @@ namespace MGroup.Solvers.DDM.PFetiDP.Dofs
 				var matrices = new IMappingMatrix[2];
 
 				// rNb mapping
-				matrices[0] = MapBoundaryToRemainder(psmDofs.GetDofsBoundaryToFree(s), fetiDPDofs.GetDofsRemainderToFree(s));
+				matrices[0] = MapBoundaryToRemainder(psmDofs.GetSubdomainDofsBoundaryToFree(s), fetiDPDofs.GetDofsRemainderToFree(s));
 
 				matrices[1] = Lpb;
 				var Lpr = new ProductMappingMatrix(matrices);
@@ -83,7 +83,7 @@ namespace MGroup.Solvers.DDM.PFetiDP.Dofs
 				cornerToBoundary[cornerIdx] = boundaryIdx;
 			}
 
-			int numRows = psmDofs.GetClusterNumBoundaryDofs(cluster.ID);
+			int numRows = psmDofs.GetNumBoundaryDofsCluster(cluster.ID);
 			int numColumns = fetiDPDofs.NumGlobalCornerDofs;
 			matricesbNc[cluster.ID] =
 				new BooleanMatrixColumnsToRows(numRows, numColumns, cornerToBoundary);

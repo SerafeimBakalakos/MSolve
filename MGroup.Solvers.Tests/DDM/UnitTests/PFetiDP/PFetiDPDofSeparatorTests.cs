@@ -38,8 +38,8 @@ namespace MGroup.Tests.DDM.UnitTests.PFetiDP
 			#region mock these
 			// Separate dofs and calculate the boolean matrices
 			var dofSeparatorPsm = new PsmDofSeparator(environment, model, clusters);
-			dofSeparatorPsm.SeparateBoundaryInternalDofs();
-			dofSeparatorPsm.MapBoundaryDofs();
+			dofSeparatorPsm.SeparateSubdomainDofsIntoBoundaryInternal();
+			dofSeparatorPsm.MapBoundaryDofsBetweenClusterSubdomains();
 
 			var dofSeparatorFetiDP = new FetiDPDofSeparator(environment, model, clusters);
 			dofSeparatorFetiDP.SeparateCornerRemainderDofs(cornerDofs);
@@ -102,8 +102,8 @@ namespace MGroup.Tests.DDM.UnitTests.PFetiDP
 			var dofSeparatorPsm = new PsmDofSeparator(environment, model, clusters);
 			var dofSeparatorFetiDP = new FetiDPDofSeparator(environment, model, clusters);
 
-			dofSeparatorPsm.SeparateBoundaryInternalDofs();
-			dofSeparatorPsm.MapBoundaryDofs();
+			dofSeparatorPsm.SeparateSubdomainDofsIntoBoundaryInternal();
+			dofSeparatorPsm.MapBoundaryDofsBetweenClusterSubdomains();
 
 			dofSeparatorFetiDP.SeparateCornerRemainderDofs(cornerDofs);
 			dofSeparatorFetiDP.OrderGlobalCornerDofs();

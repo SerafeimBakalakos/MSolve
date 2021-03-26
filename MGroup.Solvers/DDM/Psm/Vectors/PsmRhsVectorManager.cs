@@ -53,7 +53,7 @@ namespace MGroup.Solvers.DDM.Psm.Vectors
 			};
 			environment.ExecuteSubdomainAction(model.Subdomains, calcSubdomainRhs);
 
-			int numGlobalBoundaryDofs = dofSeparator.GetClusterNumBoundaryDofs(clusterID);
+			int numGlobalBoundaryDofs = dofSeparator.GetNumBoundaryDofsCluster(clusterID);
 			var globalBoundaryRhs = Vector.CreateZero(numGlobalBoundaryDofs);
 			environment.ReduceAddVectors(partialRhsVectors, globalBoundaryRhs);
 			InterfaceProblemRhs = globalBoundaryRhs;
@@ -73,8 +73,8 @@ namespace MGroup.Solvers.DDM.Psm.Vectors
 		private void CalcSubdomainRhs(int subdomainID)
 		{
 			// Extract internal and boundary parts of rhs vector 
-			int[] boundaryDofs = dofSeparator.GetDofsBoundaryToFree(subdomainID);
-			int[] internalDofs = dofSeparator.GetDofsInternalToFree(subdomainID);
+			int[] boundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID);
+			int[] internalDofs = dofSeparator.GetSubdomainDofsInternalToFree(subdomainID);
 			Vector ff = (Vector)linearSystems[subdomainID].RhsVector;
 			Vector fb = ff.GetSubvector(boundaryDofs);
 			Vector fi = ff.GetSubvector(internalDofs);

@@ -51,8 +51,8 @@ namespace MGroup.Tests.DDM.UnitTests.PFetiDP
 			IFetiDPCoarseProblem coarseProblem = new FetiDPCoarseProblemDense.Factory().Create(environment, model);
 
 			// Separate dofs and calculate mapping matrices
-			dofSeparatorPsm.SeparateBoundaryInternalDofs();
-			dofSeparatorPsm.MapBoundaryDofs();
+			dofSeparatorPsm.SeparateSubdomainDofsIntoBoundaryInternal();
+			dofSeparatorPsm.MapBoundaryDofsBetweenClusterSubdomains();
 
 			dofSeparatorFetiDP.SeparateCornerRemainderDofs(cornerDofs);
 			dofSeparatorFetiDP.OrderGlobalCornerDofs();

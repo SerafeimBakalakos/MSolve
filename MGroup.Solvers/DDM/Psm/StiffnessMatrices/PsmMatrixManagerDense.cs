@@ -44,8 +44,8 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessMatrices
 		public void ExtractKiiKbbKib(int subdomainID)
 		{
 			Matrix Kff = managerBasic.GetMatrixKff(subdomainID);
-			int[] boundaryDofs = dofSeparator.GetDofsBoundaryToFree(subdomainID);
-			int[] internalDofs = dofSeparator.GetDofsInternalToFree(subdomainID);
+			int[] boundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID);
+			int[] internalDofs = dofSeparator.GetSubdomainDofsInternalToFree(subdomainID);
 			lock (Kbb) Kbb[subdomainID] = Kff.GetSubmatrix(boundaryDofs, boundaryDofs);
 			lock (Kbi) Kbi[subdomainID] = Kff.GetSubmatrix(boundaryDofs, internalDofs);
 			lock (Kib) Kib[subdomainID] = Kff.GetSubmatrix(internalDofs, boundaryDofs);
@@ -69,7 +69,7 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessMatrices
 
 		public void ReorderInternalDofs(int subdomainID)
 		{
-			dofSeparator.ReorderInternalDofs(subdomainID, DofPermutation.CreateNoPermutation());
+			dofSeparator.ReorderSubdomainInternalDofs(subdomainID, DofPermutation.CreateNoPermutation());
 		}
 
 		public class Factory : IPsmMatrixManagerFactory

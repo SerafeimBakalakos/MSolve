@@ -52,8 +52,8 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessMatrices
 		//TODO: Optimize this method. It is too slow.
 		public void ExtractKiiKbbKib(int subdomainID)
 		{
-			int[] boundaryDofs = dofSeparator.GetDofsBoundaryToFree(subdomainID);
-			int[] internalDofs = dofSeparator.GetDofsInternalToFree(subdomainID);
+			int[] boundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID);
+			int[] internalDofs = dofSeparator.GetSubdomainDofsInternalToFree(subdomainID);
 
 			SymmetricCscMatrix Kff = managerBasic.GetMatrixKff(subdomainID);
 			extractors[subdomainID].ExtractSubmatrices(Kff, boundaryDofs, internalDofs);
@@ -83,14 +83,14 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessMatrices
 
 		public void ReorderInternalDofs(int subdomainID)
 		{
-			int[] internalDofs = dofSeparator.GetDofsInternalToFree(subdomainID);
+			int[] internalDofs = dofSeparator.GetSubdomainDofsInternalToFree(subdomainID);
 			SymmetricCscMatrix Kff = managerBasic.GetMatrixKff(subdomainID);
 			(int[] rowIndicesKii, int[] colOffsetsKii) = extractors[subdomainID].ExtractSparsityPattern(Kff, internalDofs);
 			bool oldToNew = false; //TODO: This should be provided by the reordering algorithm
 			(int[] permutation, ReorderingStatistics stats) = reordering.FindPermutation(
 				internalDofs.Length, rowIndicesKii.Length, rowIndicesKii, colOffsetsKii);
 
-			dofSeparator.ReorderInternalDofs(subdomainID, DofPermutation.Create(permutation, oldToNew));
+			dofSeparator.ReorderSubdomainInternalDofs(subdomainID, DofPermutation.Create(permutation, oldToNew));
 		}
 
 		public class Factory : IPsmMatrixManagerFactory

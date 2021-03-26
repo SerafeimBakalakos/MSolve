@@ -34,15 +34,15 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 
 		public DofTable GetClusterDofOrderingBoundary(int clusterID) => clusterDofOrderingsBoundary[clusterID];
 
-		public int GetClusterNumBoundaryDofs(int clusterID) => clusterNumBoundaryDofs[clusterID];
+		public int GetNumBoundaryDofsCluster(int clusterID) => clusterNumBoundaryDofs[clusterID];
 
-		public DofTable GetDofOrderingBoundary(int subdomainID) => subdomainDofOrderingsBoundary[subdomainID];
+		public DofTable GetSubdomainDofOrderingBoundary(int subdomainID) => subdomainDofOrderingsBoundary[subdomainID];
 
-		public int[] GetDofsBoundaryToFree(int subdomainID) => subdomainDofsBoundaryToFree[subdomainID];
+		public int[] GetSubdomainDofsBoundaryToFree(int subdomainID) => subdomainDofsBoundaryToFree[subdomainID];
 
-		public int[] GetDofsInternalToFree(int subdomainID) => subdomainDofsInternalToFree[subdomainID];
+		public int[] GetSubdomainDofsInternalToFree(int subdomainID) => subdomainDofsInternalToFree[subdomainID];
 
-		public int GetNumFreeDofs(int subdomainID) => subdomainNumFreeDofs[subdomainID];
+		public int GetNumFreeDofsSubdomain(int subdomainID) => subdomainNumFreeDofs[subdomainID];
 
 		public BooleanMatrixRowsToColumns GetDofMappingBoundaryClusterToSubdomain(int subdomainID) 
 			=> subdomainToClusterBoundaryMappings[subdomainID];
@@ -50,7 +50,7 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 		/// <summary>
 		/// Lb mappings: subdomain to/from cluster
 		/// </summary>
-		public void MapBoundaryDofs()
+		public void MapBoundaryDofsBetweenClusterSubdomains()
 		{
 			Action<Cluster> clusterAction = cluster =>
 			{
@@ -69,7 +69,7 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 			environment.ExecuteClusterAction(clusters, clusterAction);
 		}
 
-		public void ReorderInternalDofs(int subdomainID, DofPermutation permutation)
+		public void ReorderSubdomainInternalDofs(int subdomainID, DofPermutation permutation)
 		{
 			if (permutation.IsBetter)
 			{
@@ -81,7 +81,7 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 		/// <summary>
 		/// Boundary/internal dofs
 		/// </summary>
-		public void SeparateBoundaryInternalDofs()
+		public void SeparateSubdomainDofsIntoBoundaryInternal()
 		{
 			// Boundary - Internal dofs
 			Action<ISubdomain> subdomainAction = subdomain =>

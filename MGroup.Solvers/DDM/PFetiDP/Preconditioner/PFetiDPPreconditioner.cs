@@ -176,7 +176,7 @@ namespace MGroup.Solvers.DDM.PFetiDP.Preconditioner
 			environment.ExecuteSubdomainAction(model.Subdomains, subdomainAction);
 
 			int c = clusters.First().ID;
-			var v6 = Vector.CreateZero(psmDofSeparator.GetClusterNumBoundaryDofs(c));
+			var v6 = Vector.CreateZero(psmDofSeparator.GetNumBoundaryDofsCluster(c));
 			environment.ReduceAddVectors(subdomainVectors, v6);
 
 			v1.Clear();

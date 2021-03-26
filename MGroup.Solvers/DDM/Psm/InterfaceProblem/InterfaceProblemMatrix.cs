@@ -24,7 +24,7 @@ namespace MGroup.Solvers.DDM.Psm.InterfaceProblem
 			this.model = model;
 			this.dofSeparator = dofSeparator;
 			this.matrixManager = matrixManager;
-			NumRows = dofSeparator.GetClusterNumBoundaryDofs(0);
+			NumRows = dofSeparator.GetNumBoundaryDofsCluster(0);
 			NumColumns = NumRows;
 		}
 

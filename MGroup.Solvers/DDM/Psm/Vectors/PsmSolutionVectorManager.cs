@@ -50,15 +50,15 @@ namespace MGroup.Solvers.DDM.Psm.Vectors
 
 		public void Initialize()
 		{
-			GlobalBoundaryDisplacements = Vector.CreateZero(dofSeparator.GetClusterNumBoundaryDofs(clusterID));
+			GlobalBoundaryDisplacements = Vector.CreateZero(dofSeparator.GetNumBoundaryDofsCluster(clusterID));
 		}
 
 		private Vector CalcUf(int subdomainID)
 		{
 			// Extract internal and boundary parts of rhs vector 
-			int numFreeDofs = dofSeparator.GetNumFreeDofs(subdomainID);
-			int[] boundaryDofs = dofSeparator.GetDofsBoundaryToFree(subdomainID);
-			int[] internalDofs = dofSeparator.GetDofsInternalToFree(subdomainID);
+			int numFreeDofs = dofSeparator.GetNumFreeDofsSubdomain(subdomainID);
+			int[] boundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID);
+			int[] internalDofs = dofSeparator.GetSubdomainDofsInternalToFree(subdomainID);
 			IMappingMatrix Lb = dofSeparator.GetDofMappingBoundaryClusterToSubdomain(subdomainID);
 
 			// ub[s] = Lb * ubGlob

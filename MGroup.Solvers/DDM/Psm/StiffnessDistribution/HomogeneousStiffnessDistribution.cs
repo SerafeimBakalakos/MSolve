@@ -35,7 +35,7 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessDistribution
 			Action<Cluster> clusterAction = cluster =>
 			{
 				int c = cluster.ID;
-				var clusterW = new double[dofSeparator.GetClusterNumBoundaryDofs(c)];
+				var clusterW = new double[dofSeparator.GetNumBoundaryDofsCluster(c)];
 				foreach (var (node, dof, idx) in dofSeparator.GetClusterDofOrderingBoundary(c))
 				{
 					clusterW[idx] = 1.0 / node.GetMultiplicity();
@@ -105,7 +105,7 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessDistribution
 
 		public void ScaleForceVector(int subdomainID, Vector subdomainForces)
 		{
-			int[] boundaryDofs = dofSeparator.GetDofsBoundaryToFree(subdomainID);
+			int[] boundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID);
 			double[] relativeStiffnessOfSubdomain = inverseMultiplicities[subdomainID];
 			for (int i = 0; i < boundaryDofs.Length; i++)
 			{

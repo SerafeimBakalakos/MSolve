@@ -61,8 +61,8 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 
 			// Separate dofs and calculate the boolean matrices
 			var dofSeparator = new PsmDofSeparator(environment, model, clusters);
-			dofSeparator.SeparateBoundaryInternalDofs();
-			dofSeparator.MapBoundaryDofs();
+			dofSeparator.SeparateSubdomainDofsIntoBoundaryInternal();
+			dofSeparator.MapBoundaryDofsBetweenClusterSubdomains();
 
 			IPsmMatrixManagerFactory matrixManagerFactory = new PsmMatrixManagerDense.Factory();
 			(IMatrixManager matrixManagerBasic, IPsmMatrixManager matrixManagerPsm)

@@ -9,24 +9,24 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 {
 	public interface IPsmDofSeparator
 	{
-		int GetClusterNumBoundaryDofs(int clusterID);
+		int GetNumBoundaryDofsCluster(int clusterID);
 
 		DofTable GetClusterDofOrderingBoundary(int clusterID);
 
-		DofTable GetDofOrderingBoundary(int subdomainID);
+		DofTable GetSubdomainDofOrderingBoundary(int subdomainID);
 
-		int[] GetDofsBoundaryToFree(int subdomainID);
+		int[] GetSubdomainDofsBoundaryToFree(int subdomainID);
 
-		int[] GetDofsInternalToFree(int subdomainID);
+		int[] GetSubdomainDofsInternalToFree(int subdomainID);
 
-		int GetNumFreeDofs(int subdomainID);
+		int GetNumFreeDofsSubdomain(int subdomainID);
 
 		BooleanMatrixRowsToColumns GetDofMappingBoundaryClusterToSubdomain(int subdomainID);
 
-		void MapBoundaryDofs();
+		void MapBoundaryDofsBetweenClusterSubdomains();
 
-		void ReorderInternalDofs(int subdomainID, DofPermutation dofPermutation);
+		void ReorderSubdomainInternalDofs(int subdomainID, DofPermutation dofPermutation);
 
-		void SeparateBoundaryInternalDofs();
+		void SeparateSubdomainDofsIntoBoundaryInternal();
 	}
 }
