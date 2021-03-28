@@ -65,14 +65,34 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         {
         }
 
-        public void ApplyBoundaryConditions()
+        public void ApplyBoundaryConditionsLinear(double[] macroscopicTemperatureGradient)
         {
-            foreach (var node in minXnodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
-            foreach (var node in minZnodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
-            foreach (var node in minYnodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
-            foreach (var node in maxXnodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
-            foreach (var node in maxZnodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
-            foreach (var node in maxYnodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
+            var q = Vector.CreateFromArray(macroscopicTemperatureGradient);
+            IEnumerable<INode> boundaryNodes =
+                minXnodes.Concat(minZnodes).Concat(minYnodes).Concat(maxXnodes).Concat(maxZnodes).Concat(maxYnodes);
+            foreach (var node in boundaryNodes)
+            {
+                // Kinematic relations submatrix for linear displacements
+                var transposeD = Vector.CreateFromArray(new double[]
+                {
+                    node.X, node.Y, node.Y
+                });
+
+                // Prescribed temperature at boundary node
+                double Tb = transposeD * q;
+
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = Tb });
+            }
+        }
+
+        public void ApplyBoundaryConditionsZero()
+        {
+            IEnumerable<INode> boundaryNodes =
+                minXnodes.Concat(minZnodes).Concat(minYnodes).Concat(maxXnodes).Concat(maxZnodes).Concat(maxYnodes);
+            foreach (var node in boundaryNodes)
+            {
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
+            }
         }
 
         public double CalculateRveVolume() => (xMax - xMin) * (yMax - yMin) * (zMax - zMin);

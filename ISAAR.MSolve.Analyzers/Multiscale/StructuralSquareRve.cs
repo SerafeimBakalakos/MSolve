@@ -27,18 +27,18 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         /// <summary>
         /// </summary>
         /// <param name="model"></param>
-        /// <param name="bottomLeftCoords"></param>
-        /// <param name="topRightCoords"></param>
+        /// <param name="minCoords"></param>
+        /// <param name="maxCoords"></param>
         /// <param name="thickness"></param>
         /// <param name="meshTolerance">The default is 1E-10 * min(|xMax-xMin|, |yMax-yMin|)</param>
-        public StructuralSquareRve(IStructuralModel model, Vector2 bottomLeftCoords, Vector2 topRightCoords, double thickness, 
+        public StructuralSquareRve(IStructuralModel model, double[] minCoords, double[] maxCoords, double thickness, 
             double meshTolerance)
         {
             this.model = model;
-            this.xMin = bottomLeftCoords[0];
-            this.yMin = bottomLeftCoords[1];
-            this.xMax = topRightCoords[0];
-            this.yMax = topRightCoords[1];
+            this.xMin = minCoords[0];
+            this.yMin = minCoords[1];
+            this.xMax = maxCoords[0];
+            this.yMax = maxCoords[1];
             this.thickness = thickness;
 
             // Find the nodes of each edge
@@ -56,16 +56,37 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
             }
         }
 
-        public StructuralSquareRve(IStructuralModel model, Vector2 bottomLeftCoords, Vector2 topRightCoords, double thickness) : 
-            this(model, bottomLeftCoords, topRightCoords, thickness, 
-                1E-10 * topRightCoords.Subtract(bottomLeftCoords).MinAbsolute())
+        public StructuralSquareRve(IStructuralModel model, double[] minCoords, double[] maxCoords, double thickness) 
+            : this(model, minCoords, maxCoords, thickness, 
+                1E-10 * Vector.CreateFromArray(maxCoords).Subtract(Vector.CreateFromArray(minCoords)).MinAbsolute())
         {
         }
 
-        public void ApplyBoundaryConditions()
+        public void ApplyBoundaryConditionsLinear(double[] macroscopicStrains)
+        {
+            var e = Vector.CreateFromArray(macroscopicStrains);
+            foreach (var node in leftNodes.Concat(bottomNodes).Concat(rightNodes).Concat(topNodes))
+            {
+                // Kinematic relations submatrix for linear displacements
+                var transposeD = Matrix.CreateFromArray(new double[,]
+                {
+                    { node.X, 0, 0.5 * node.Y },
+                    { 0, node.Y, 0.5 * node.X },
+                });
+
+                // Prescribed displacements at boundary node
+                Vector ub = transposeD * e;
+
+                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = ub[0] });
+                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = ub[1] });
+            }
+        }
+
+        public void ApplyBoundaryConditionsZero()
         {
             foreach (var node in leftNodes.Concat(bottomNodes).Concat(rightNodes).Concat(topNodes))
             {
+
                 node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = 0.0 });
                 node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = 0.0 });
             }

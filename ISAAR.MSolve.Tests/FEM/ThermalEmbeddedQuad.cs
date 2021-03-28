@@ -24,7 +24,7 @@ namespace ISAAR.MSolve.Tests.FEM
         private const double minX = -0.5, minY = -0.5, maxX = 0.5, maxY = 0.5;
         private const double thickness = 1.0;
         private const int numElementsX = 10, numElementsY = 10;
-        private static readonly Vector2 temperatureGradient = Vector2.Create(100.0, 0);
+        private static readonly double[] temperatureGradient = { 100.0, 0 };
         private const double conductivityMatrix = 1.0, conductivityFiber = 1000.0;
 
         [Fact]
@@ -38,14 +38,14 @@ namespace ISAAR.MSolve.Tests.FEM
 
             SkylineSolver solver = (new SkylineSolver.Builder()).BuildSolver(model);
             var provider = new ProblemThermalSteadyState(model, solver);
-            var rve = new ThermalSquareRve(model, Vector2.Create(minX, minY), Vector2.Create(maxX, maxY), thickness, 
-                temperatureGradient);
+            var rve = new ThermalSquareRve(model, new double[] { minX, minY }, new double[] { maxX, maxY }, thickness);
             var homogenization = new HomogenizationAnalyzer(model, solver, provider, rve);
+            homogenization.MacroscopicStrains = temperatureGradient;
 
             homogenization.Initialize();
             homogenization.Solve();
 
-            IMatrix conductivity = homogenization.EffectiveConstitutiveTensors[subdomainID];
+            IMatrix conductivity = homogenization.MacroscopicModulus;
             Debug.WriteLine($"C = [ {conductivity[0, 0]} {conductivity[0, 1]}; {conductivity[1, 0]} {conductivity[1, 1]}");
         }
 

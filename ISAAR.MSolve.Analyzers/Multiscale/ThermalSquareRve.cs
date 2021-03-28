@@ -11,6 +11,8 @@ using ISAAR.MSolve.LinearAlgebra.Reduction;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 //TODO: How can we ensure that the model has the correct shape and discretization?
+//TODO: the 2nd constructor is confusing. Use an default meshTolerance=-1 in the 1st constructor and do the tolerance computation 
+//      there. Repeat in other RVE classes.
 namespace ISAAR.MSolve.Analyzers.Multiscale
 {
     /// <summary>
@@ -20,7 +22,6 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
     {
         private const int numDimensions = 2;
 
-        private readonly Vector2 macroscopicTemperatureGradient; //TODO: This does not affect the results
         private readonly IStructuralModel model;
         private readonly double xMin, yMin, xMax, yMax;
         private readonly double thickness;
@@ -29,21 +30,19 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         /// <summary>
         /// </summary>
         /// <param name="model"></param>
-        /// <param name="bottomLeftCoords"></param>
-        /// <param name="topRightCoords"></param>
+        /// <param name="minCoords"></param>
+        /// <param name="maxCoords"></param>
         /// <param name="thickness"></param>
-        /// <param name="macroscopicTemperatureGradient"></param>
         /// <param name="meshTolerance">The default is 1E-10 * min(|xMax-xMin|, |yMax-yMin|)</param>
-        public ThermalSquareRve(IStructuralModel model, Vector2 bottomLeftCoords, Vector2 topRightCoords, double thickness,
-            Vector2 macroscopicTemperatureGradient, double meshTolerance)
+        public ThermalSquareRve(IStructuralModel model, double[] minCoords, double[] maxCoords, double thickness,
+            double meshTolerance)
         {
             this.model = model;
-            this.xMin = bottomLeftCoords[0];
-            this.yMin = bottomLeftCoords[1];
-            this.xMax = topRightCoords[0];
-            this.yMax = topRightCoords[1];
+            this.xMin = minCoords[0];
+            this.yMin = minCoords[1];
+            this.xMax = maxCoords[0];
+            this.yMax = maxCoords[1];
             this.thickness = thickness;
-            this.macroscopicTemperatureGradient = macroscopicTemperatureGradient;
 
             // Find the nodes of each edge
             leftNodes = new HashSet<INode>();
@@ -60,21 +59,36 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
             }
         }
 
-        public ThermalSquareRve(IStructuralModel model, Vector2 bottomLeftCoords, Vector2 topRightCoords, double thickness,
-            Vector2 macroscopicTemperatureGradient) : 
-            this(model, bottomLeftCoords, topRightCoords, thickness, macroscopicTemperatureGradient, 
-                1E-10 * topRightCoords.Subtract(bottomLeftCoords).MinAbsolute())
+        public ThermalSquareRve(IStructuralModel model, double[] minCoords, double[] maxCoords, double thickness) 
+            : this(model, minCoords, maxCoords, thickness, 
+                1E-10 * Vector.CreateFromArray(maxCoords).Subtract(Vector.CreateFromArray(minCoords)).MinAbsolute())
         {
         }
 
-        public void ApplyBoundaryConditions()
+        public void ApplyBoundaryConditionsLinear(double[] macroscopicTemperatureGradient)
         {
-            double dTdx = macroscopicTemperatureGradient[0];
-            double dTdy = macroscopicTemperatureGradient[1];
-            foreach (var node in leftNodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
-            foreach (var node in bottomNodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
-            foreach (var node in rightNodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = dTdx });
-            foreach (var node in topNodes) node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = dTdy });
+            var q = Vector.CreateFromArray(macroscopicTemperatureGradient);
+            foreach (var node in leftNodes.Concat(bottomNodes).Concat(rightNodes).Concat(topNodes))
+            {
+                // Kinematic relations submatrix for linear displacements
+                var transposeD = Vector.CreateFromArray(new double[] 
+                {
+                    node.X, node.Y
+                });
+
+                // Prescribed temperature at boundary node
+                double Tb = transposeD * q;
+
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = Tb });
+            }
+        }
+
+        public void ApplyBoundaryConditionsZero()
+        {
+            foreach (var node in leftNodes.Concat(bottomNodes).Concat(rightNodes).Concat(topNodes))
+            {
+                node.Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0.0 });
+            }
         }
 
         public double CalculateRveVolume() => (xMax - xMin) * (yMax - yMin) * thickness;

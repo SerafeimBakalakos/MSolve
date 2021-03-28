@@ -64,7 +64,39 @@ namespace ISAAR.MSolve.Analyzers.Multiscale
         {
         }
 
-        public void ApplyBoundaryConditions()
+        public void ApplyBoundaryConditionsLinear(double[] macroscopicStrains)
+        {
+            var e = Vector.CreateFromArray(macroscopicStrains);
+            IEnumerable<INode> boundaryNodes =
+                minXnodes.Concat(minZnodes).Concat(minYnodes).Concat(maxXnodes).Concat(maxZnodes).Concat(maxYnodes);
+            foreach (var node in boundaryNodes)
+            {
+                // Kinematic relations submatrix for linear displacements
+                var transposeD = Matrix.CreateZero(3, 6);
+                transposeD[0, 0] = node.X;
+                transposeD[1, 1] = node.Y;
+                transposeD[2, 2] = node.Z;
+
+                transposeD[0, 3] = 0.5 * node.Y;
+                transposeD[1, 3] = 0.5 * node.X;
+
+                transposeD[1, 4] = 0.5 * node.Z;
+                transposeD[2, 4] = 0.5 * node.Y;
+
+                transposeD[2, 5] = 0.5 * node.X;
+                transposeD[0, 5] = 0.5 * node.Z;
+
+                // Prescribed displacements at boundary node
+                Vector ub = transposeD * e;
+
+                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationX, Amount = ub[0] });
+                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationY, Amount = ub[1] });
+                node.Constraints.Add(new Constraint() { DOF = StructuralDof.TranslationZ, Amount = ub[2] });
+            }
+
+        }
+
+        public void ApplyBoundaryConditionsZero()
         {
             IEnumerable<INode> boundaryNodes =
                 minXnodes.Concat(minZnodes).Concat(minYnodes).Concat(maxXnodes).Concat(maxZnodes).Concat(maxYnodes);

@@ -44,17 +44,17 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Homogenization
             PrepareForAnalysis(physicalModel, geometricModel);
 
             // Analysis
-            Vector2 temperatureGradient = Vector2.Create(200, 0);
+            double[] temperatureGradient = { 200, 0 };
             var solver = (new SkylineSolver.Builder()).BuildSolver(physicalModel);
             var provider = new ProblemThermalSteadyState(physicalModel, solver);
-            var rve = new ThermalSquareRve(physicalModel, Vector2.Create(minX, minY), Vector2.Create(maxX, maxY), thickness,
-                temperatureGradient);
+            var rve = new ThermalSquareRve(physicalModel, new double[] { minX, minY }, new double[] { maxX, maxY }, thickness);
             var homogenization = new HomogenizationAnalyzer(physicalModel, solver, provider, rve);
+            //homogenization.MacroscopicStrains = temperatureGradient; // No need to calculate macroscopic flux
 
             homogenization.Initialize();
             homogenization.Solve();
 
-            IMatrix conductivity = homogenization.EffectiveConstitutiveTensors[subdomainID];
+            IMatrix conductivity = homogenization.MacroscopicModulus;
             Console.WriteLine($"C = [ {conductivity[0, 0]} {conductivity[0, 1]}; {conductivity[1, 0]} {conductivity[1, 1]} ]");
         }
 

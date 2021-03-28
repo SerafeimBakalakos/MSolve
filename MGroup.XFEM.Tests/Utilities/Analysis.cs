@@ -20,13 +20,12 @@ namespace MGroup.XFEM.Tests.Utilities
 
             var solver = (new SuiteSparseSolver.Builder()).BuildSolver(model);
             var provider = new ProblemStructural(model, solver);
-            var rve = new StructuralSquareRve(model, Vector2.Create(minCoords[0], minCoords[1]),
-                Vector2.Create(maxCoords[0], maxCoords[1]), thickness);
+            var rve = new StructuralSquareRve(model, minCoords, maxCoords, thickness);
             var homogenization = new HomogenizationAnalyzer(model, solver, provider, rve);
 
             homogenization.Initialize();
             homogenization.Solve();
-            IMatrix conductivity = homogenization.EffectiveConstitutiveTensors[model.Subdomains[0].ID];
+            IMatrix conductivity = homogenization.MacroscopicModulus;
 
             Console.WriteLine("Analysis finished");
             return conductivity;
@@ -42,27 +41,30 @@ namespace MGroup.XFEM.Tests.Utilities
 
             homogenization.Initialize();
             homogenization.Solve();
-            IMatrix conductivity = homogenization.EffectiveConstitutiveTensors[model.Subdomains[0].ID];
+            IMatrix conductivity = homogenization.MacroscopicModulus;
 
             Console.WriteLine("Analysis finished");
             return conductivity;
         }
 
         public static IMatrix RunHomogenizationAnalysisThermal2D(IXModel model, 
-            double[] minCoords, double[] maxCoords, double thickness)
+            double[] minCoords, double[] maxCoords, double thickness, bool calcMacroscopicFlux = false)
         {
             Console.WriteLine("Starting homogenization analysis");
 
-            Vector2 temperatureGradient = Vector2.Create(200, 0);
             var solver = (new SuiteSparseSolver.Builder()).BuildSolver(model);
             var provider = new ProblemThermalSteadyState(model, solver);
-            var rve = new ThermalSquareRve(model, Vector2.Create(minCoords[0], minCoords[1]),
-                Vector2.Create(maxCoords[0], maxCoords[1]), thickness, temperatureGradient);
+            var rve = new ThermalSquareRve(model, minCoords, maxCoords, thickness);
             var homogenization = new HomogenizationAnalyzer(model, solver, provider, rve);
+            if (calcMacroscopicFlux)
+            {
+                double[] temperatureGradient = { 200, 0 };
+                homogenization.MacroscopicStrains = temperatureGradient;
+            }
 
             homogenization.Initialize();
             homogenization.Solve();
-            IMatrix conductivity = homogenization.EffectiveConstitutiveTensors[model.Subdomains[0].ID];
+            IMatrix conductivity = homogenization.MacroscopicModulus;
 
             Console.WriteLine("Analysis finished");
             return conductivity;
@@ -78,7 +80,7 @@ namespace MGroup.XFEM.Tests.Utilities
 
             homogenization.Initialize();
             homogenization.Solve();
-            IMatrix conductivity = homogenization.EffectiveConstitutiveTensors[model.Subdomains[0].ID];
+            IMatrix conductivity = homogenization.MacroscopicModulus;
 
             Console.WriteLine("Analysis finished");
             return conductivity;

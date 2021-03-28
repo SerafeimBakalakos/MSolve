@@ -246,20 +246,20 @@ namespace ISAAR.MSolve.XFEM_OLD.Tests.Multiphase.Paper1
             PrepareForAnalysis(physicalModel, geometricModel);
 
             // Analysis
-            //Vector2 temperatureGradient = Vector2.Create(200, 0);
-            Vector2 temperatureGradient = Vector2.Create(0, 0);
+            //double[] temperatureGradient = { 200, 0 };
+            double[] temperatureGradient = { 0, 0 };
             //var solver = (new SkylineSolver.Builder()).BuildSolver(physicalModel);
             SuiteSparseSolver solver = new SuiteSparseSolver.Builder().BuildSolver(physicalModel);
             var provider = new ProblemThermalSteadyState(physicalModel, solver);
-            var rve = new ThermalSquareRve(physicalModel, Vector2.Create(minX, minY), Vector2.Create(maxX, maxY), thickness,
-                temperatureGradient);
+            var rve = new ThermalSquareRve(physicalModel, new double[] { minX, minY }, new double[] { maxX, maxY }, thickness);
             var homogenization = new HomogenizationAnalyzer(physicalModel, solver, provider, rve);
+            //homogenization.MacroscopicStrains = temperatureGradient; // No need to calculate macroscopic flux
 
             homogenization.Initialize();
             homogenization.Solve();
 
             solver.Dispose();
-            return homogenization.EffectiveConstitutiveTensors[subdomainID];
+            return homogenization.MacroscopicModulus;
         }
 
         private static void PlotPhasesInteractions(Func<GeometricModel> genPhases, OutputPaths paths)
