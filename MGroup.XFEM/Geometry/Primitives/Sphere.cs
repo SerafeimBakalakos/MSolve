@@ -22,5 +22,9 @@ namespace MGroup.XFEM.Geometry.Primitives
         public double Radius { get; }
 
         public double SignedDistanceOf(double[] point) => Utilities.Distance3D(Center, point) - Radius;
+
+        public double Volume() => 4.0 * Math.PI * Radius * Radius * Radius / 3.0;
+
+        public static double CalcRadiusFromVolume(double volume) => Math.Pow(3.0 / 4.0 * volume / Math.PI, 1.0 / 3.0);
     }
 }
