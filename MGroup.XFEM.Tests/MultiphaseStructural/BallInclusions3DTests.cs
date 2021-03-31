@@ -143,9 +143,9 @@ namespace MGroup.XFEM.Tests.MultiphaseStructural
             Assert.True(elasticityExpected.Equals(elasticity, tol));
 
             // Print results
-            //string pathResults = outputDirectory + "\\equivalent_elasticity.txt";
-            //Plotting.PrintElasticityTensor(pathResults, elasticity);
-            //Plotting.PrintElasticityTensor(pathResults, matrixE, v, 3);
+            string pathResults = outputDirectory + "\\equivalent_elasticity.txt";
+            Plotting.PrintElasticityTensor(pathResults, elasticity);
+            Plotting.PrintElasticityTensor(pathResults, matrixE, v, 3);
         }
 
         private static XModel<IXMultiphaseElement> CreateModel(double inclusionE, bool cohesiveInterfaces, double cohesiveness)

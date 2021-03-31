@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using MGroup.XFEM.Geometry.Primitives;
@@ -63,21 +64,22 @@ namespace MGroup.XFEM.Multiscale
             double volumeFraction = 0.0;
             double cutoffVolumeFraction = (1.0 - TargetVolumeFractionToleranceRatio) * TargetVolumeFraction;
             double maxVolumeFraction = (1.0 + TargetVolumeFractionToleranceRatio) * TargetVolumeFraction;
+            double totalVolume = (CoordsMax[0] - CoordsMin[0]) * (CoordsMax[1] - CoordsMin[1]) * (CoordsMax[2] - CoordsMin[2]);
 
             while (volumeFraction < cutoffVolumeFraction)
             {
                 // Find radius, so that the new inclusion fits without exceeding the target volume fraction
-                double remainingVolume = maxVolumeFraction - volumeFraction;
+                double remainingVolume = (maxVolumeFraction - volumeFraction) * totalVolume;
                 double upperLimit = Sphere.CalcRadiusFromVolume(remainingVolume);
                 if (upperLimit <= RadiusMin)
                 {
-                    // Stop even though the min target vf has not been reached, because no more inclusions can be added
+                    // Stop even though the min target v.f. has not been reached, because no more inclusions can be added
                     break; 
                 }
                 else
                 {
-                    // Adjust the max allowable radius, so that the max target vf is not exceeded. 
-                    // This will only happen for the last inclusions.
+                    // Adjust the max allowable radius, so that the max target v.f. is not exceeded. 
+                    // This will probably only happen for the last inclusions.
                     upperLimit = Math.Min(upperLimit, RadiusMax);
                 }
                 double radius = RadiusMin + rng.NextDouble() * (upperLimit - RadiusMin);
@@ -85,8 +87,13 @@ namespace MGroup.XFEM.Multiscale
                 // Find the position of this inclusion, so that it does not collide with other inclusions or the domain boundary
                 var center = new double[3];
                 var inclusion = new Sphere(center, radius);
+                Debug.Write("Trying to fit a new sphere. Attempts: ");
+                int numAttempts = 0;
                 while (true) //TODO: infinite loops: add a timer/counter and when an upper limit is exceeded, decrease the radius and retry
                 {
+                    ++numAttempts;
+                    if (numAttempts % 10 == 0) Debug.Write($"{numAttempts} ");
+                    //Debug.Write(".");
                     for (int d = 0; d < 3; ++d)
                     {
                         //TODO: Should I let it create a random number and then clamp it between min and max, if necessary?
@@ -96,8 +103,14 @@ namespace MGroup.XFEM.Multiscale
                     }
 
                     bool collision = CollidesWithOtherInclusions(inclusion, allInclusions, inclusionsMinDistance);
-                    if (!collision) break;
+                    if (!collision)
+                    {
+                        Debug.WriteLine($"Success at attempt {numAttempts}");
+                        break;
+                    }
                 }
+
+                volumeFraction += inclusion.Volume() / totalVolume;
                 allInclusions.Add(inclusion);
             }
             return allInclusions.ToList<ISurface3D>();
