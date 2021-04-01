@@ -14,7 +14,7 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 	{
 		private readonly IProcessingEnvironment environment;
 		private readonly IStructuralModel model;
-		private readonly IList<Cluster> clusters;
+		private readonly IList<Cluster> clusters; //TODOMPI: Should this be a list? Each process has only 1 cluster. The only usecase is if we use >1 clusters in serial code for easier debuging.
 
 		private readonly Dictionary<int, DofTable> clusterDofOrderingsBoundary = new Dictionary<int, DofTable>();
 		private readonly Dictionary<int, int> clusterNumBoundaryDofs = new Dictionary<int, int>();
@@ -83,17 +83,21 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 		/// </summary>
 		public void SeparateSubdomainDofsIntoBoundaryInternal()
 		{
-			// Boundary - Internal dofs
-			Action<ISubdomain> subdomainAction = subdomain =>
+			Action<Cluster> clusterAction = cluster =>
 			{
-				int s = subdomain.ID;
-				(DofTable boundaryDofOrdering, int[] boundaryToFree, int[] internalToFree) = SeparateSubdomainDofs(subdomain);
-				lock (subdomainNumFreeDofs) subdomainNumFreeDofs[s] = subdomain.FreeDofOrdering.NumFreeDofs;
-				lock (subdomainDofOrderingsBoundary) subdomainDofOrderingsBoundary[s] = boundaryDofOrdering;
-				lock (subdomainDofsBoundaryToFree) subdomainDofsBoundaryToFree[s] = boundaryToFree;
-				lock (subdomainDofsInternalToFree) subdomainDofsInternalToFree[s] = internalToFree;
+				// Boundary - Internal dofs
+				Action<ISubdomain> subdomainAction = subdomain =>
+				{
+					int s = subdomain.ID;
+					(DofTable boundaryDofOrdering, int[] boundaryToFree, int[] internalToFree) = SeparateSubdomainDofs(subdomain);
+					lock (subdomainNumFreeDofs) subdomainNumFreeDofs[s] = subdomain.FreeDofOrdering.NumFreeDofs;
+					lock (subdomainDofOrderingsBoundary) subdomainDofOrderingsBoundary[s] = boundaryDofOrdering;
+					lock (subdomainDofsBoundaryToFree) subdomainDofsBoundaryToFree[s] = boundaryToFree;
+					lock (subdomainDofsInternalToFree) subdomainDofsInternalToFree[s] = internalToFree;
+				};
+				environment.ExecuteSubdomainAction(cluster.Subdomains, subdomainAction);
 			};
-			environment.ExecuteSubdomainAction(model.Subdomains, subdomainAction);
+			environment.ExecuteClusterAction(clusters, clusterAction);
 		}
 
 		private static BooleanMatrixRowsToColumns MapDofsClusterToSubdomain(

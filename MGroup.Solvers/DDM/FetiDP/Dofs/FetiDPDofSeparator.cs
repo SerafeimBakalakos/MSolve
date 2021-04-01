@@ -31,10 +31,12 @@ namespace MGroup.Solvers.DDM.FetiDP.Dofs
 			this.model = model;
 			this.clusters = clusters;
 
-			foreach (ISubdomain subdomain in model.Subdomains)
+			foreach (Cluster cluster in clusters)
 			{
-				int s = subdomain.ID;
-				subdomainDofOrderingsCorner[s] = null;
+				foreach (ISubdomain subdomain in cluster.Subdomains)
+				{
+					subdomainDofOrderingsCorner[subdomain.ID] = null;
+				}
 			}
 		}
 
@@ -64,29 +66,40 @@ namespace MGroup.Solvers.DDM.FetiDP.Dofs
 		public void MapCornerDofs()
 		{
 			subdomainToGlobalCornerMappings = new Dictionary<int, BooleanMatrixRowsToColumns>();
-			Action<ISubdomain> subdomanAction = subdomain =>
+			//TODOMPI: not sure about this design (subdomainAction in a clusterAction). It works for subdomain-cluster operations
+			//		but here we have subdomain-global operations.
+			Action<Cluster> clusterAction = cluster => 
 			{
-				int s = subdomain.ID;
-				int numSubdomainCornerDofs = subdomainDofsCornerToFree[s].Length;
-				var Lc = new int[numSubdomainCornerDofs];
-				foreach ((INode node, IDofType dof, int subdomainIdx) in subdomainDofOrderingsCorner[s])
+				Action<ISubdomain> subdomanAction = subdomain =>
 				{
-					int globalIdx = GlobalCornerDofOrdering[node, dof];
-					Lc[subdomainIdx] = globalIdx;
-				}
-				var matrixLc = new BooleanMatrixRowsToColumns(numSubdomainCornerDofs, NumGlobalCornerDofs, Lc);
-				lock (subdomainToGlobalCornerMappings) subdomainToGlobalCornerMappings[s] = matrixLc;
+					int s = subdomain.ID;
+					int numSubdomainCornerDofs = subdomainDofsCornerToFree[s].Length;
+					var Lc = new int[numSubdomainCornerDofs];
+					foreach ((INode node, IDofType dof, int subdomainIdx) in subdomainDofOrderingsCorner[s])
+					{
+						int globalIdx = GlobalCornerDofOrdering[node, dof];
+						Lc[subdomainIdx] = globalIdx;
+					}
+					var matrixLc = new BooleanMatrixRowsToColumns(numSubdomainCornerDofs, NumGlobalCornerDofs, Lc);
+					lock (subdomainToGlobalCornerMappings) subdomainToGlobalCornerMappings[s] = matrixLc;
+				};
+				environment.ExecuteSubdomainAction(cluster.Subdomains, subdomanAction);
 			};
-			environment.ExecuteSubdomainAction(model.Subdomains, subdomanAction);
+			environment.ExecuteClusterAction(clusters, clusterAction);
 		}
 
-		public void OrderGlobalCornerDofs()
+		//TODOMPI: This method should be called in a process that has all subdomains. This is restrictive, since it enforces the
+		//		centralized design for FETI-DP coarse problem. Same for the method that maps subdomain-global corner dofs 
+		//		(MapCornerDofs()). Find a way around this. Also investigate if coarse problem dofs
+		//		should be handled by a different component. Perhaps the whole design of components that handle subdomain, cluster
+		//		and global operations for the same intention (e.g. 1 component for dofs, 1 for matrices, etc) is problematic.
+		public void OrderGlobalCornerDofs() 
 		{
 			GlobalCornerDofOrdering = new DofTable();
 			NumGlobalCornerDofs = 0;
 			foreach (ISubdomain subdomain in model.Subdomains)
 			{
-				DofTable cornerDofs = subdomainDofOrderingsCorner[subdomain.ID];
+				DofTable cornerDofs = subdomainDofOrderingsCorner[subdomain.ID]; //TODO: This should be a method of DofTable itself.
 				foreach ((INode node, IDofType dof, int subdomainIdx) in cornerDofs)
 				{
 					bool didNotExist = GlobalCornerDofOrdering.TryAdd(node, dof, NumGlobalCornerDofs);
@@ -126,17 +139,21 @@ namespace MGroup.Solvers.DDM.FetiDP.Dofs
 		/// <param name="cornerDofSelection"></param>
 		public void SeparateCornerRemainderDofs(ICornerDofSelection cornerDofSelection)
 		{
-			Action<ISubdomain> subdomainAction = subdomain =>
+			Action<Cluster> clusterAction = cluster =>
 			{
-				int s = subdomain.ID;
-				(DofTable cornerDofOrdering, int[] cornerToFree, int[] remainderToFree) =
-					SeparateSubdomainDofs(subdomain, cornerDofSelection);
-				lock (subdomainNumFreeDofs) subdomainNumFreeDofs[s] = subdomain.FreeDofOrdering.NumFreeDofs;
-				lock (subdomainDofOrderingsCorner) subdomainDofOrderingsCorner[s] = cornerDofOrdering;
-				lock (subdomainDofsCornerToFree) subdomainDofsCornerToFree[s] = cornerToFree;
-				lock (subdomainDofsRemainderToFree) subdomainDofsRemainderToFree[s] = remainderToFree;
+				Action<ISubdomain> subdomainAction = subdomain =>
+				{
+					int s = subdomain.ID;
+					(DofTable cornerDofOrdering, int[] cornerToFree, int[] remainderToFree) =
+						SeparateSubdomainDofs(subdomain, cornerDofSelection);
+					lock (subdomainNumFreeDofs) subdomainNumFreeDofs[s] = subdomain.FreeDofOrdering.NumFreeDofs;
+					lock (subdomainDofOrderingsCorner) subdomainDofOrderingsCorner[s] = cornerDofOrdering;
+					lock (subdomainDofsCornerToFree) subdomainDofsCornerToFree[s] = cornerToFree;
+					lock (subdomainDofsRemainderToFree) subdomainDofsRemainderToFree[s] = remainderToFree;
+				};
+				environment.ExecuteSubdomainAction(cluster.Subdomains, subdomainAction);
 			};
-			environment.ExecuteSubdomainAction(model.Subdomains, subdomainAction);
+			environment.ExecuteClusterAction(clusters, clusterAction);
 		}
 
 		private static (DofTable cornerDofOrdering, int[] cornerToFree, int[] remainderToFree) SeparateSubdomainDofs(
