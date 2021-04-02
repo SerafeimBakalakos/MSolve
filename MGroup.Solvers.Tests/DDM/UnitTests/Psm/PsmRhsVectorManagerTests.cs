@@ -25,7 +25,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 		[InlineData(EnvironmentChoice.ManagedParSubSingleClus)]
 		public static void TestSubdomainRhsVectors(EnvironmentChoice env)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 			(IStructuralModel model, IPsmDofSeparator dofSeparator, IPsmMatrixManager matrixManager, 
 				Dictionary<int, ILinearSystem> linearSystems) = PrepareTest(environment);
 			var rhsManager = new PsmRhsVectorManager(environment, model, linearSystems, dofSeparator, matrixManager);
@@ -52,7 +52,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 		[InlineData(EnvironmentChoice.ManagedParSubSingleClus)]
 		public static void TestInterfaceProblemRhsVector(EnvironmentChoice env)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 			(IStructuralModel model, IPsmDofSeparator dofSeparator, IPsmMatrixManager matrixManager,
 				Dictionary<int, ILinearSystem> linearSystems) = PrepareTest(environment);
 			var rhsManager = new PsmRhsVectorManager(environment, model, linearSystems, dofSeparator, matrixManager);
@@ -67,7 +67,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 		}
 
 		private static (IStructuralModel, IPsmDofSeparator, IPsmMatrixManager, Dictionary<int, ILinearSystem>) PrepareTest(
-			IProcessingEnvironment environment)
+			IDdmEnvironment environment)
 		{
 			// Create model
 			AllDofs.AddStructuralDofs();

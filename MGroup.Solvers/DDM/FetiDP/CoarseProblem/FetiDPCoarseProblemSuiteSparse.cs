@@ -19,12 +19,12 @@ namespace MGroup.Solvers.DDM.FetiDP.CoarseProblem
 {
 	public class FetiDPCoarseProblemSuiteSparse : IFetiDPCoarseProblem
 	{
-		private readonly IProcessingEnvironment environment;
+		private readonly IDdmEnvironment environment;
 		private readonly IStructuralModel model;
 		private CholeskySuiteSparse inverseGlobalKccStar;
 		private readonly OrderingAmdSuiteSparse reordering = new OrderingAmdSuiteSparse();
 
-		public FetiDPCoarseProblemSuiteSparse(IProcessingEnvironment environment, IStructuralModel model)
+		public FetiDPCoarseProblemSuiteSparse(IDdmEnvironment environment, IStructuralModel model)
 		{
 			this.environment = environment;
 			this.model = model;
@@ -87,7 +87,7 @@ namespace MGroup.Solvers.DDM.FetiDP.CoarseProblem
 
 		public class Factory : IFetiDPCoarseProblemFactory
 		{
-			public IFetiDPCoarseProblem Create(IProcessingEnvironment environment, IStructuralModel model)
+			public IFetiDPCoarseProblem Create(IDdmEnvironment environment, IStructuralModel model)
 				=> new FetiDPCoarseProblemSuiteSparse(environment, model);
 		}
 	}

@@ -12,7 +12,7 @@ namespace MGroup.Solvers.DDM.FetiDP.Dofs
 {
 	public class FetiDPDofSeparator : IFetiDPDofSeparator
 	{
-		private readonly IProcessingEnvironment environment;
+		private readonly IDdmEnvironment environment;
 		private readonly IStructuralModel model;
 		private readonly IList<Cluster> clusters;
 
@@ -25,7 +25,7 @@ namespace MGroup.Solvers.DDM.FetiDP.Dofs
 			new Dictionary<int, BooleanMatrixRowsToColumns>();
 		private readonly Dictionary<int, int> subdomainNumFreeDofs = new Dictionary<int, int>();
 
-		public FetiDPDofSeparator(IProcessingEnvironment environment, IStructuralModel model, IList<Cluster> clusters)
+		public FetiDPDofSeparator(IDdmEnvironment environment, IStructuralModel model, IList<Cluster> clusters)
 		{
 			this.environment = environment;
 			this.model = model;

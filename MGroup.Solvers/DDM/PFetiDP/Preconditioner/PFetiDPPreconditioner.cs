@@ -35,7 +35,7 @@ namespace MGroup.Solvers.DDM.PFetiDP.Preconditioner
 	/// </summary>
 	public class PFetiDPPreconditioner : IPsmPreconditioner
 	{
-		private readonly IProcessingEnvironment environment;
+		private readonly IDdmEnvironment environment;
 		private readonly IStructuralModel model;
 		private readonly IList<Cluster> clusters;
 		private readonly IPsmDofSeparator psmDofSeparator;
@@ -44,7 +44,7 @@ namespace MGroup.Solvers.DDM.PFetiDP.Preconditioner
 		private readonly IFetiDPMatrixManager fetiDPMatrixManager;
 		private readonly IFetiDPCoarseProblem fetiDPCoarseProblem;
 
-		public PFetiDPPreconditioner(IProcessingEnvironment environment, IStructuralModel model, IList<Cluster> clusters,
+		public PFetiDPPreconditioner(IDdmEnvironment environment, IStructuralModel model, IList<Cluster> clusters,
 			IPsmDofSeparator psmDofSeparator, IFetiDPDofSeparator fetiDPDofSeparator, IPFetiDPDofSeparator pFetiDPDofSeparator,
 			IFetiDPMatrixManager fetiDPMatrixManager, IFetiDPCoarseProblem fetiDPCoarseProblem)
 		{

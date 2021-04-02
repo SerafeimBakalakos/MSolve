@@ -16,14 +16,14 @@ namespace MGroup.Solvers.DDM.Psm.Vectors
 	{
 		private const int clusterID = 0;
 		private readonly Dictionary<int, ILinearSystem> linearSystems;
-		private readonly IProcessingEnvironment environment;
+		private readonly IDdmEnvironment environment;
 		private readonly IStructuralModel model;
 		private readonly IPsmDofSeparator dofSeparator;
 		private readonly IMatrixManager matrixManagerBasic;
 		private readonly IPsmMatrixManager matrixManagerPsm;
 		private readonly IPsmRhsVectorManager rhsManager;
 
-		public PsmSolutionVectorManager(IProcessingEnvironment environment, IStructuralModel model, 
+		public PsmSolutionVectorManager(IDdmEnvironment environment, IStructuralModel model, 
 			Dictionary<int, ILinearSystem> linearSystems, IPsmDofSeparator dofSeparator,
 			IMatrixManager matrixManagerBasic, IPsmMatrixManager matrixManagerPsm, IPsmRhsVectorManager rhsManager)
 		{

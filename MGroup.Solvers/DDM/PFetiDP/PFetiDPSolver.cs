@@ -34,7 +34,7 @@ namespace MGroup.Solvers.DDM.PFetiDP
 		private readonly IPFetiDPDofSeparator dofSeparatorPFetiDP;
 		private readonly IFetiDPMatrixManager matrixManagerFetiDP;
 
-		private PFetiDPSolver(IProcessingEnvironment environment, IStructuralModel model, IList<Cluster> clusters, 
+		private PFetiDPSolver(IDdmEnvironment environment, IStructuralModel model, IList<Cluster> clusters, 
 			ICornerDofSelection cornerDofSelection, IDofOrderer dofOrderer, IPsmDofSeparator dofSeparatorPsm, 
 			IFetiDPDofSeparator dofSeparatorFetiDP, IPFetiDPDofSeparator dofSeparatorPFetiDP,
 			IMatrixManager matrixManagerBasic, IPsmMatrixManager matrixManagerPsm, IFetiDPMatrixManager matrixManagerFetiDP,
@@ -115,7 +115,7 @@ namespace MGroup.Solvers.DDM.PFetiDP
 
 			public IFetiDPCoarseProblemFactory CoarseProblemFactory { get; set; }
 
-			public IProcessingEnvironment ComputingEnvironment { get; set; } = new ProcessingEnvironment(
+			public IDdmEnvironment ComputingEnvironment { get; set; } = new ProcessingEnvironment(
 				new SubdomainEnvironmentManagedSequential(), new ClusterEnvironmentManagedSequential());
 
 			public IDofOrderer DofOrderer { get; set; }

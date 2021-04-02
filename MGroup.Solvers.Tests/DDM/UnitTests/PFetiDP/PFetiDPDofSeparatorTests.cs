@@ -26,7 +26,7 @@ namespace MGroup.Tests.DDM.UnitTests.PFetiDP
 		[InlineData(EnvironmentChoice.ManagedParSubSingleClus)]
 		public static void TestCornerMappingMatricesHomogeneous(EnvironmentChoice env)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 
 			// Create model
 			AllDofs.AddStructuralDofs();
@@ -88,7 +88,7 @@ namespace MGroup.Tests.DDM.UnitTests.PFetiDP
 		[InlineData(EnvironmentChoice.ManagedParSubSingleClus)]
 		public static void TestCornerMappingMatricesHeterogeneous(EnvironmentChoice env)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 
 			// Create model
 			AllDofs.AddStructuralDofs();

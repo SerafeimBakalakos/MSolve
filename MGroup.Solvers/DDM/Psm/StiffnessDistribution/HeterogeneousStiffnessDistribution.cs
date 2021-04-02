@@ -17,7 +17,7 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessDistribution
 {
 	public class HeterogeneousStiffnessDistribution : IStiffnessDistribution
 	{
-		private readonly IProcessingEnvironment environment;
+		private readonly IDdmEnvironment environment;
 		private readonly IList<Cluster> clusters;
 		private readonly IPsmDofSeparator dofSeparator;
 		private readonly IMatrixManager matrixManagerBasic;
@@ -25,7 +25,7 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessDistribution
 			new Dictionary<int, ScalingMatrixRowMajor>();
 		private readonly Dictionary<int, double[]> relativeStiffnesses = new Dictionary<int, double[]>();
 
-		public HeterogeneousStiffnessDistribution(IProcessingEnvironment environment, IList<Cluster> clusters, 
+		public HeterogeneousStiffnessDistribution(IDdmEnvironment environment, IList<Cluster> clusters, 
 			IPsmDofSeparator dofSeparator, IMatrixManager matrixManagerBasic)
 		{
 			this.environment = environment;

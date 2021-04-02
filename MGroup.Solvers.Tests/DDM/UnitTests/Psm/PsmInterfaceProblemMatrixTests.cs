@@ -26,7 +26,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 		[InlineData(EnvironmentChoice.ManagedParSubSingleClus)]
 		public static void TestInterfaceProblemMatrix(EnvironmentChoice env)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 			(IStructuralModel model, IPsmDofSeparator dofSeparator, IPsmMatrixManager matrixManager) = PrepareTest(environment);
 
 			// Initialize interface problem matrix
@@ -48,7 +48,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 		}
 
 		private static (IStructuralModel model, IPsmDofSeparator dofSeparator, IPsmMatrixManager matrixManager) PrepareTest(
-			IProcessingEnvironment environment)
+			IDdmEnvironment environment)
 		{
 			// Create model
 			AllDofs.AddStructuralDofs();

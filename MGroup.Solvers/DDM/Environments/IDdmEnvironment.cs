@@ -19,7 +19,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 //environment.ExecuteClusterAction(clusters, clusterAction);
 namespace MGroup.Solvers.DDM.Environments
 {
-	public interface IProcessingEnvironment
+	public interface IDdmEnvironment
 	{
 		void ExecuteClusterAction(IEnumerable<Cluster> clusters, Action<Cluster> action);
 

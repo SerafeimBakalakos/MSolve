@@ -13,12 +13,12 @@ namespace MGroup.Solvers.DDM.Psm.InterfaceProblem
 	public class InterfaceProblemMatrix : IInterfaceProblemMatrix
 	{
 		private readonly IPsmDofSeparator dofSeparator;
-		private readonly IProcessingEnvironment environment;
+		private readonly IDdmEnvironment environment;
 		private readonly IPsmMatrixManager matrixManager;
 		private readonly IStructuralModel model;
 
 		public InterfaceProblemMatrix(
-			IProcessingEnvironment environment, IStructuralModel model, IPsmDofSeparator dofSeparator, IPsmMatrixManager matrixManager)
+			IDdmEnvironment environment, IStructuralModel model, IPsmDofSeparator dofSeparator, IPsmMatrixManager matrixManager)
 		{
 			this.environment = environment;
 			this.model = model;

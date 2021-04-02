@@ -8,6 +8,6 @@ namespace MGroup.Solvers.DDM.FetiDP.CoarseProblem
 {
 	public interface IFetiDPCoarseProblemFactory
 	{
-		IFetiDPCoarseProblem Create(IProcessingEnvironment environment, IStructuralModel model);
+		IFetiDPCoarseProblem Create(IDdmEnvironment environment, IStructuralModel model);
 	}
 }

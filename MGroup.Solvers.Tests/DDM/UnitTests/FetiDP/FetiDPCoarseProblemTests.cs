@@ -26,7 +26,7 @@ namespace MGroup.Tests.DDM.UnitTests.FetiDP
 		[InlineData(EnvironmentChoice.ManagedSeqSubSingleClus, MatrixFormat.SuiteSparseSymmetric)]
 		public static void TestGloballKccStarInverse(EnvironmentChoice env, MatrixFormat matrixFormat)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 
 			(IStructuralModel model, IFetiDPDofSeparator dofSeparator, IElementMatrixProvider elementMatrixProvider) = 
 				FetiDPMatrixManagerTests.PrepareTest(environment);

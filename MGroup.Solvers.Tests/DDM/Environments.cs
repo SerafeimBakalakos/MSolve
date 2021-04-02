@@ -12,7 +12,7 @@ namespace MGroup.Tests.DDM
 
 	public static class Environments
 	{
-		public static IProcessingEnvironment Create(this EnvironmentChoice choice)
+		public static IDdmEnvironment Create(this EnvironmentChoice choice)
 		{
 			if (choice == EnvironmentChoice.ManagedSeqSubSingleClus)
 			{

@@ -107,7 +107,7 @@ namespace MGroup.Tests.DDM.PFetiDP
 		public static void Run(double stiffnessRatio, EnvironmentChoice env, MatrixFormat matrixFormat,
 			IterativeSolver iterativeSolver, int iterExpected)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 
 			double iterativeSolverTolerance = 1E-6;
 			IVectorView directDisplacements = SolveModelWithoutSubdomains(stiffnessRatio);
@@ -170,7 +170,7 @@ namespace MGroup.Tests.DDM.PFetiDP
 		}
 
 		private static (IVectorView globalDisplacements, SolverLogger logger) SolveModelWithSubdomains(double stiffnessRatio,
-			IProcessingEnvironment environment, MatrixFormat matrixFormat, IterativeSolver iterativeSolver, 
+			IDdmEnvironment environment, MatrixFormat matrixFormat, IterativeSolver iterativeSolver, 
 			double iterativeSolverTolerance)
 		{
 			// Model

@@ -12,7 +12,7 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 {
 	public class PsmDofSeparator : IPsmDofSeparator
 	{
-		private readonly IProcessingEnvironment environment;
+		private readonly IDdmEnvironment environment;
 		private readonly IStructuralModel model;
 		private readonly IList<Cluster> clusters; //TODOMPI: Should this be a list? Each process has only 1 cluster. The only usecase is if we use >1 clusters in serial code for easier debuging.
 
@@ -25,7 +25,7 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 			new Dictionary<int, BooleanMatrixRowsToColumns>();
 		private readonly Dictionary<int, int> subdomainNumFreeDofs = new Dictionary<int, int>();
 
-		public PsmDofSeparator(IProcessingEnvironment environment, IStructuralModel model, IList<Cluster> clusters)
+		public PsmDofSeparator(IDdmEnvironment environment, IStructuralModel model, IList<Cluster> clusters)
 		{
 			this.environment = environment;
 			this.model = model;

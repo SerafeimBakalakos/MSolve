@@ -20,7 +20,7 @@ namespace MGroup.Tests.DDM.UnitTests.FetiDP
 		[InlineData(EnvironmentChoice.ManagedParSubSingleClus)]
 		public static void TestDofSeparation(EnvironmentChoice env)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 
 			// Create model
 			AllDofs.AddStructuralDofs();
@@ -50,7 +50,7 @@ namespace MGroup.Tests.DDM.UnitTests.FetiDP
 		[InlineData(EnvironmentChoice.ManagedParSubSingleClus)]
 		public static void TestCornerMappingMatrices(EnvironmentChoice env)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 
 			// Create model
 			AllDofs.AddStructuralDofs();

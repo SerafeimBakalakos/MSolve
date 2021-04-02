@@ -17,11 +17,11 @@ namespace MGroup.Solvers.DDM.FetiDP.CoarseProblem
 {
 	public class FetiDPCoarseProblemCSparseNonSymmetric : IFetiDPCoarseProblem
 	{
-		private readonly IProcessingEnvironment environment;
+		private readonly IDdmEnvironment environment;
 		private readonly IStructuralModel model;
 		private LUCSparseNet inverseGlobalKccStar;
 
-		public FetiDPCoarseProblemCSparseNonSymmetric(IProcessingEnvironment environment, IStructuralModel model)
+		public FetiDPCoarseProblemCSparseNonSymmetric(IDdmEnvironment environment, IStructuralModel model)
 		{
 			this.environment = environment;
 			this.model = model;
@@ -60,7 +60,7 @@ namespace MGroup.Solvers.DDM.FetiDP.CoarseProblem
 
 		public class Factory : IFetiDPCoarseProblemFactory
 		{
-			public IFetiDPCoarseProblem Create(IProcessingEnvironment environment, IStructuralModel model)
+			public IFetiDPCoarseProblem Create(IDdmEnvironment environment, IStructuralModel model)
 				=> new FetiDPCoarseProblemCSparseNonSymmetric(environment, model);
 		}
 	}

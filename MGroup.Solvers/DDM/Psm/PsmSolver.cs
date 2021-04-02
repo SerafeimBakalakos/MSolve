@@ -32,7 +32,7 @@ namespace MGroup.Solvers.DDM.Psm
 
 		protected readonly IDofOrderer dofOrderer;
 		protected readonly IPsmDofSeparator dofSeparatorPsm;
-		protected readonly IProcessingEnvironment environment;
+		protected readonly IDdmEnvironment environment;
 		protected readonly IInterfaceProblemSolver interfaceProblemSolver;
 		protected readonly IMatrixManager matrixManagerBasic;
 		protected readonly IPsmMatrixManager matrixManagerPsm;
@@ -43,7 +43,7 @@ namespace MGroup.Solvers.DDM.Psm
 		protected readonly IPsmSolutionVectorManager solutionVectorManager;
 		protected readonly IStiffnessDistribution stiffnessDistribution;
 
-		protected PsmSolver(IProcessingEnvironment environment, IStructuralModel model, IList<Cluster> clusters, IDofOrderer dofOrderer, 
+		protected PsmSolver(IDdmEnvironment environment, IStructuralModel model, IList<Cluster> clusters, IDofOrderer dofOrderer, 
 			IPsmDofSeparator dofSeparator, IMatrixManager matrixManagerBasic, IPsmMatrixManager matrixManagerPsm, 
 			IPsmPreconditioner preconditioner, IInterfaceProblemSolver interfaceProblemSolver, bool isHomogeneous, 
 			string name = "PSM Solver")
@@ -249,7 +249,7 @@ namespace MGroup.Solvers.DDM.Psm
 
 			public IDofOrderer DofOrderer { get; set; }
 
-			public IProcessingEnvironment ComputingEnvironment { get; set; } = new ProcessingEnvironment(
+			public IDdmEnvironment ComputingEnvironment { get; set; } = new ProcessingEnvironment(
 				new SubdomainEnvironmentManagedSequential(), new ClusterEnvironmentManagedSequential());
 
 			public IInterfaceProblemSolver InterfaceProblemSolver { get; set; }

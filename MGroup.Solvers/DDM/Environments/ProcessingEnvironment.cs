@@ -7,7 +7,7 @@ using ISAAR.MSolve.Discretization.Interfaces;
 
 namespace MGroup.Solvers.DDM.Environments
 {
-	public class ProcessingEnvironment : IProcessingEnvironment
+	public class ProcessingEnvironment : IDdmEnvironment
 	{
 		private readonly ISubdomainProcessingEnvironment subdomainProcessingEnvironment;
 		private readonly IClusterProcessingEnvironment clusterProcessingEnvironment;

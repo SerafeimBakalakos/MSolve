@@ -74,7 +74,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			}
 
 			// Separate dofs and calculate the boolean matrices
-			IProcessingEnvironment environment = EnvironmentChoice.ManagedSeqSubSingleClus.Create();
+			IDdmEnvironment environment = EnvironmentChoice.ManagedSeqSubSingleClus.Create();
 			var dofSeparator = new PsmDofSeparator(environment, model, clusters);
 			dofSeparator.SeparateSubdomainDofsIntoBoundaryInternal();
 			dofSeparator.MapBoundaryDofsBetweenClusterSubdomains();

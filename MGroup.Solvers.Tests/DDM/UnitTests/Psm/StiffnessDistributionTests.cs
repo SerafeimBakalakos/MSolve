@@ -22,7 +22,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 		[InlineData(EnvironmentChoice.ManagedParSubSingleClus)]
 		public static void TestMappingMatricesHomogeneous(EnvironmentChoice env)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 
 			// Create model
 			AllDofs.AddStructuralDofs();
@@ -55,7 +55,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 		[InlineData(EnvironmentChoice.ManagedParSubSingleClus)]
 		public static void TestMappingMatricesHeterogeneous(EnvironmentChoice env)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 
 			// Create model
 			AllDofs.AddStructuralDofs();

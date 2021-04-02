@@ -29,7 +29,7 @@ namespace MGroup.Tests.DDM.UnitTests.PFetiDP
 		[InlineData(EnvironmentChoice.ManagedParSubSingleClus)]
 		public static void TestPFetiDPPreconditioner(EnvironmentChoice env)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 
 			// Create model
 			AllDofs.AddStructuralDofs();

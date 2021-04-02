@@ -28,7 +28,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 		[InlineData(EnvironmentChoice.ManagedSeqSubSingleClus, MatrixFormat.SuiteSparseSymmetric)]
 		public static void TestMatricesKbbKbiKib(EnvironmentChoice env, MatrixFormat matrixFormat)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 			(IStructuralModel model, IPsmDofSeparator dofSeparator, IElementMatrixProvider elementMatrixProvider) = 
 				PrepareTest(environment);
 			IPsmMatrixManagerFactory matrixManagerFactory = CreateMatrixManagerFactory(matrixFormat);
@@ -80,7 +80,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 		[InlineData(EnvironmentChoice.ManagedSeqSubSingleClus, MatrixFormat.SuiteSparseSymmetric)]
 		public static void TestMatricesKiiInverse(EnvironmentChoice env, MatrixFormat matrixFormat)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 			(IStructuralModel model, IPsmDofSeparator dofSeparator, IElementMatrixProvider elementMatrixProvider) = 
 				PrepareTest(environment);
 			IPsmMatrixManagerFactory matrixManagerFactory = CreateMatrixManagerFactory(matrixFormat);
@@ -136,7 +136,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 		}
 
 		private static (IStructuralModel model, IPsmDofSeparator dofSeparator, IElementMatrixProvider elementMatrixProvider) PrepareTest(
-			IProcessingEnvironment environment)
+			IDdmEnvironment environment)
 		{
 			// Create model
 			AllDofs.AddStructuralDofs();

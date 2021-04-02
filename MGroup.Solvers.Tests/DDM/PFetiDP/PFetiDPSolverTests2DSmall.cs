@@ -38,7 +38,7 @@ namespace MGroup.Tests.DDM.PFetiDP
 		[InlineData(1.0, EnvironmentChoice.ManagedSeqSubSingleClus, MatrixFormat.SuiteSparseSymmetric)]
 		public static void Run(double stiffnessRatio, EnvironmentChoice env, MatrixFormat matrixFormat)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 			double pcgConvergenceTol = 1E-5;
 			IVectorView directDisplacements = SolveModelWithoutSubdomains(stiffnessRatio);
 			(IVectorView ddDisplacements, SolverLogger logger) = 
@@ -80,7 +80,7 @@ namespace MGroup.Tests.DDM.PFetiDP
 		}
 
 		private static (IVectorView globalDisplacements, SolverLogger logger) SolveModelWithSubdomains(double stiffnessRatio,
-			IProcessingEnvironment environment, MatrixFormat matrixFormat)
+			IDdmEnvironment environment, MatrixFormat matrixFormat)
 		{
 			// Model
 			Model model = CreateModel(stiffnessRatio);

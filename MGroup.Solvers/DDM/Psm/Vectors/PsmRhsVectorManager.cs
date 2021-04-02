@@ -14,7 +14,7 @@ namespace MGroup.Solvers.DDM.Psm.Vectors
 	public class PsmRhsVectorManager : IPsmRhsVectorManager
 	{
 		private const int clusterID = 0;
-		private readonly IProcessingEnvironment environment;
+		private readonly IDdmEnvironment environment;
 		private readonly IStructuralModel model;
 		private readonly Dictionary<int, ILinearSystem> linearSystems;
 		private readonly IPsmDofSeparator dofSeparator;
@@ -23,7 +23,7 @@ namespace MGroup.Solvers.DDM.Psm.Vectors
 		private readonly Dictionary<int, Vector> vectorsFbCondensed;
 		private readonly Dictionary<int, Vector> vectorsFi;
 
-		public PsmRhsVectorManager(IProcessingEnvironment environment, IStructuralModel model, Dictionary<int, ILinearSystem> linearSystems, 
+		public PsmRhsVectorManager(IDdmEnvironment environment, IStructuralModel model, Dictionary<int, ILinearSystem> linearSystems, 
 			IPsmDofSeparator dofSeparator, IPsmMatrixManager matrixManager)
 		{
 			this.environment = environment;

@@ -15,7 +15,7 @@ namespace MGroup.Solvers.DDM.PFetiDP.Dofs
 {
 	public class PFetiDPDofSeparator : IPFetiDPDofSeparator
 	{
-		private readonly IProcessingEnvironment environment;
+		private readonly IDdmEnvironment environment;
 		private readonly IStructuralModel model;
 		private readonly IList<Cluster> clusters;
 		private readonly IPsmDofSeparator psmDofs;
@@ -25,7 +25,7 @@ namespace MGroup.Solvers.DDM.PFetiDP.Dofs
 		private Dictionary<int, IMappingMatrix> matricesLpr =
 			new Dictionary<int, IMappingMatrix>();
 
-		public PFetiDPDofSeparator(IProcessingEnvironment environment, IStructuralModel model, IList<Cluster> clusters, 
+		public PFetiDPDofSeparator(IDdmEnvironment environment, IStructuralModel model, IList<Cluster> clusters, 
 			IPsmDofSeparator psmDofs, IFetiDPDofSeparator fetiDPDofs)
 		{
 			this.environment = environment;

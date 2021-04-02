@@ -25,7 +25,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 		[InlineData(EnvironmentChoice.ManagedParSubSingleClus)]
 		public static void TestSubdomainUfVectors(EnvironmentChoice env)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 			(IStructuralModel model, IPsmDofSeparator dofSeparator, IMatrixManager matrixManagerBasic, IPsmMatrixManager matrixManagerPsm,
 				Dictionary<int, ILinearSystem> linearSystems, IPsmRhsVectorManager rhsManager) = PrepareTest(environment);
 			var solutionVectorManager = new PsmSolutionVectorManager(environment, model, linearSystems, dofSeparator,
@@ -49,7 +49,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 		}
 
 		private static (IStructuralModel, IPsmDofSeparator, IMatrixManager, IPsmMatrixManager, Dictionary<int, ILinearSystem>,
-			IPsmRhsVectorManager) PrepareTest(IProcessingEnvironment environment)
+			IPsmRhsVectorManager) PrepareTest(IDdmEnvironment environment)
 		{
 			// Create model
 			AllDofs.AddStructuralDofs();

@@ -28,7 +28,7 @@ namespace MGroup.Tests.DDM.UnitTests.FetiDP
 		[InlineData(EnvironmentChoice.ManagedSeqSubSingleClus, MatrixFormat.SuiteSparseSymmetric)]
 		public static void TestMatricesKccKcrKrc(EnvironmentChoice env, MatrixFormat matrixFormat)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 			(IStructuralModel model, IFetiDPDofSeparator dofSeparator, IElementMatrixProvider elementMatrixProvider) 
 				= PrepareTest(environment);
 			IFetiDPMatrixManagerFactory matrixManagerFactory = CreateMatrixManagerFactory(matrixFormat);
@@ -80,7 +80,7 @@ namespace MGroup.Tests.DDM.UnitTests.FetiDP
 		[InlineData(EnvironmentChoice.ManagedSeqSubSingleClus, MatrixFormat.SuiteSparseSymmetric)]
 		public static void TestMatricesKrrInverse(EnvironmentChoice env, MatrixFormat matrixFormat)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 			(IStructuralModel model, IFetiDPDofSeparator dofSeparator, IElementMatrixProvider elementMatrixProvider) 
 				= PrepareTest(environment);
 			IFetiDPMatrixManagerFactory matrixManagerFactory = CreateMatrixManagerFactory(matrixFormat);
@@ -121,7 +121,7 @@ namespace MGroup.Tests.DDM.UnitTests.FetiDP
 		[InlineData(EnvironmentChoice.ManagedSeqSubSingleClus, MatrixFormat.SuiteSparseSymmetric)]
 		public static void TestMatricesKccStar(EnvironmentChoice env, MatrixFormat matrixFormat)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 			(IStructuralModel model, IFetiDPDofSeparator dofSeparator, IElementMatrixProvider elementMatrixProvider) 
 				= PrepareTest(environment);
 			IFetiDPMatrixManagerFactory matrixManagerFactory = CreateMatrixManagerFactory(matrixFormat);
@@ -176,7 +176,7 @@ namespace MGroup.Tests.DDM.UnitTests.FetiDP
 		}
 
 		internal static (IStructuralModel model, IFetiDPDofSeparator dofSeparator, IElementMatrixProvider elementMatrixProvider) 
-			PrepareTest(IProcessingEnvironment environment)
+			PrepareTest(IDdmEnvironment environment)
 		{
 			// Create model
 			AllDofs.AddStructuralDofs();

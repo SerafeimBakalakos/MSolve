@@ -27,7 +27,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			Example4x4Model.OrderDofs(model);
 
 			// Separate dofs
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 			var dofSeparator = new PsmDofSeparator(environment, model, clusters);
 			dofSeparator.SeparateSubdomainDofsIntoBoundaryInternal();
 
@@ -55,7 +55,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			Example4x4Model.OrderDofs(model);
 
 			// Separate dofs and calculate the boolean matrices
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 			var dofSeparator = new PsmDofSeparator(environment, model, clusters);
 			dofSeparator.SeparateSubdomainDofsIntoBoundaryInternal();
 			dofSeparator.MapBoundaryDofsBetweenClusterSubdomains();

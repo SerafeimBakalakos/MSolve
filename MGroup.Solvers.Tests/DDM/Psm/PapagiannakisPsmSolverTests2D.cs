@@ -96,7 +96,7 @@ namespace MGroup.Tests.DDM.Psm
 		public static void Run(double stiffnessRatio, EnvironmentChoice env, MatrixFormat matrixFormat, Preconditioner precond, 
 			IterativeSolver iterativeSolver, int iterExpected)
 		{
-			IProcessingEnvironment environment = env.Create();
+			IDdmEnvironment environment = env.Create();
 
 			double iterativeSolverTolerance = 1E-5;
 			IVectorView directDisplacements = SolveModelWithoutSubdomains(stiffnessRatio);
@@ -158,7 +158,7 @@ namespace MGroup.Tests.DDM.Psm
 		}
 
 		private static (IVectorView globalDisplacements, SolverLogger logger) SolveModelWithSubdomains(double stiffnessRatio,
-			IProcessingEnvironment environment, MatrixFormat matrixFormat, Preconditioner precond, 
+			IDdmEnvironment environment, MatrixFormat matrixFormat, Preconditioner precond, 
 			IterativeSolver iterativeSolver, double iterativeSolverTolerance)
 		{
 			// Model

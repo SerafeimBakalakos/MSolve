@@ -15,14 +15,14 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessDistribution
 {
 	public class HomogeneousStiffnessDistribution : IStiffnessDistribution
 	{
-		private readonly IProcessingEnvironment environment;
+		private readonly IDdmEnvironment environment;
 		private readonly IList<Cluster> clusters;
 		private readonly IPsmDofSeparator dofSeparator;
 		private readonly Dictionary<int, IMappingMatrix> dofMappingBoundaryClusterToSubdomain = 
 			new Dictionary<int, IMappingMatrix>();
 		private readonly Dictionary<int, double[]> inverseMultiplicities = new Dictionary<int, double[]>();
 
-		public HomogeneousStiffnessDistribution(IProcessingEnvironment environment, IList<Cluster> clusters, 
+		public HomogeneousStiffnessDistribution(IDdmEnvironment environment, IList<Cluster> clusters, 
 			IPsmDofSeparator dofSeparator)
 		{
 			this.environment = environment;

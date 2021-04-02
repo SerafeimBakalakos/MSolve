@@ -13,11 +13,11 @@ namespace MGroup.Solvers.DDM.FetiDP.CoarseProblem
 {
 	public class FetiDPCoarseProblemDense : IFetiDPCoarseProblem
 	{
-		private readonly IProcessingEnvironment environment;
+		private readonly IDdmEnvironment environment;
 		private readonly IStructuralModel model;
 		private Matrix inverseGlobalKccStar;
 
-		public FetiDPCoarseProblemDense(IProcessingEnvironment environment, IStructuralModel model)
+		public FetiDPCoarseProblemDense(IDdmEnvironment environment, IStructuralModel model)
 		{
 			this.environment = environment;
 			this.model = model;
@@ -62,7 +62,7 @@ namespace MGroup.Solvers.DDM.FetiDP.CoarseProblem
 
 		public class Factory : IFetiDPCoarseProblemFactory
 		{
-			public IFetiDPCoarseProblem Create(IProcessingEnvironment environment, IStructuralModel model)
+			public IFetiDPCoarseProblem Create(IDdmEnvironment environment, IStructuralModel model)
 				=> new FetiDPCoarseProblemDense(environment, model);
 		}
 	}
