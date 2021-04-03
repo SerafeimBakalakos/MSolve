@@ -14,11 +14,13 @@ namespace MGroup.Solvers.DDM
 			this.ID = id;
 		}
 
-		public int ID { get; set; }
+		public int ID { get; }
 
 		public List<ISubdomain> Subdomains { get; } = new List<ISubdomain>();
 
 		public Dictionary<INode, HashSet<Cluster>> InterClusterNodes { get; }
+
+		public List<ClusterBoundary> ClusterBoundaries { get; } = new List<ClusterBoundary>();
 
 	}
 }

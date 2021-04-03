@@ -10,9 +10,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DDM\" />
     <Folder Include="Assemblers\" />
     <Folder Include="DofOrdering\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MPI.NET" Version="1.4.0" />
   </ItemGroup>
 
 </Project>
