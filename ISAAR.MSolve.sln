@@ -71,7 +71,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MGroup.XFEM", "MGroup.XFEM\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MGroup.XFEM.Tests", "MGroup.XFEM.Tests\MGroup.XFEM.Tests.csproj", "{1DAB74D7-DF55-45C4-ADF2-0850A8C47856}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MGroup.XFEM.Multiscale", "MGroup.XFEM.Multiscale\MGroup.XFEM.Multiscale.csproj", "{4EC8BDE3-23B1-4978-B097-A669E8584514}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MGroup.XFEM.Multiscale", "MGroup.XFEM.Multiscale\MGroup.XFEM.Multiscale.csproj", "{4EC8BDE3-23B1-4978-B097-A669E8584514}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
