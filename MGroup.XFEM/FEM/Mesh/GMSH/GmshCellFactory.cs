@@ -6,7 +6,7 @@ using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 //TODO: Fill in connectivity mappings for wedges and pyramids. The documentation for gmsh 3.0 has nice figures.
-namespace MGroup.XFEM.Mesh.GMSH
+namespace MGroup.XFEM.FEM.Mesh.GMSH
 {
     /// <summary>
     /// Converts cell types and the order of their vertices from GMSH to MSolve. WARNING: These cell codes are for files 

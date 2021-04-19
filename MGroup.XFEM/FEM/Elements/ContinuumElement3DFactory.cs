@@ -6,7 +6,7 @@ using ISAAR.MSolve.FEM.Interpolation;
 using ISAAR.MSolve.FEM.Interpolation.GaussPointExtrapolation;
 using ISAAR.MSolve.Materials;
 
-namespace MGroup.XFEM.Elements
+namespace MGroup.XFEM.FEM.Elements
 {
     /// <summary>
     /// Creates isoparametric continuum 3D elements. Abstracts the interpolations, integrations,

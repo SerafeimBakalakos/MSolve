@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MGroup.XFEM.Mesh
+namespace MGroup.XFEM.FEM.Mesh
 {
     public class Vertex
     {

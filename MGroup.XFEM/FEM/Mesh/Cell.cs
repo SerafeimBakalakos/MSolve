@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 
-namespace MGroup.XFEM.Mesh
+namespace MGroup.XFEM.FEM.Mesh
 {
     public class Cell
     {

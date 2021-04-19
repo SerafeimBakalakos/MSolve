@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 
 //TODO: Enforce contiguous vertex ids
-namespace MGroup.XFEM.Mesh.GMSH
+namespace MGroup.XFEM.FEM.Mesh.GMSH
 {
     /// <summary>
     /// Creates meshes by reading GMSH output files (.msh). Unrecognized GMSH cell types will be ignored when parsing the 

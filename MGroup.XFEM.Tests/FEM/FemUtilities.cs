@@ -12,9 +12,9 @@ using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.Direct;
-using MGroup.XFEM.Elements;
-using MGroup.XFEM.Mesh;
-using MGroup.XFEM.Mesh.GMSH;
+using MGroup.XFEM.FEM.Elements;
+using MGroup.XFEM.FEM.Mesh;
+using MGroup.XFEM.FEM.Mesh.GMSH;
 
 namespace MGroup.XFEM.Tests.FEM
 {

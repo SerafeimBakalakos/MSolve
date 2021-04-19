@@ -15,7 +15,7 @@ using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Materials;
 
-namespace MGroup.XFEM.Elements
+namespace MGroup.XFEM.FEM.Elements
 {
     /// <summary>
     /// Represents a continuum finite element for 3D problems. Specific elements (e.g. Hexa8, Hexa20, ...) can be created using
