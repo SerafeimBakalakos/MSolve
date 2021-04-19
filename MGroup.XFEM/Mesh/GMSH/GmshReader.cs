@@ -29,7 +29,7 @@ namespace MGroup.XFEM.Mesh.GMSH
         {
             reader = new StreamReader(mshFilePath);
 
-            if ((minDimensionOfCells != 1) && (minDimensionOfCells != 1) && (minDimensionOfCells != 1))
+            if ((minDimensionOfCells != 1) && (minDimensionOfCells != 2) && (minDimensionOfCells != 3))
             {
                 throw new ArgumentException(
                     "The min dimension of cells that will be kept must be 1, 2 or 3, but was " + minDimensionOfCells);
