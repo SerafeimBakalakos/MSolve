@@ -81,26 +81,26 @@ namespace MGroup.XFEM.Output.Vtk
             writer.WriteLine();
         }
 
-        public void WriteTensor2DField(string fieldName, IOutputMesh mesh, Func<VtkPoint, double[]> getTensorValue)
+        public void WriteTensor2DField(string fieldName, IReadOnlyList<double[]> tensorsAtVertices)
         {
-            WriteFieldsHeader(mesh.NumOutVertices);
+            WriteFieldsHeader(tensorsAtVertices.Count);
 
             // Component 11
             writer.WriteLine($"SCALARS {fieldName}_11 double 1");
             writer.WriteLine("LOOKUP_TABLE default");
-            foreach (VtkPoint vertex in mesh.OutVertices) writer.WriteLine(getTensorValue(vertex)[0]);
+            foreach (double[] tensor in tensorsAtVertices) writer.WriteLine(tensor[0]);
             writer.WriteLine();
 
             // Component 22
             writer.WriteLine($"SCALARS {fieldName}_22 double 1");
             writer.WriteLine("LOOKUP_TABLE default");
-            foreach (VtkPoint vertex in mesh.OutVertices) writer.WriteLine(getTensorValue(vertex)[1]);
+            foreach (double[] tensor in tensorsAtVertices) writer.WriteLine(tensor[1]);
             writer.WriteLine();
 
             // Component 12
             writer.WriteLine($"SCALARS {fieldName}_12 double 1");
             writer.WriteLine("LOOKUP_TABLE default");
-            foreach (VtkPoint vertex in mesh.OutVertices) writer.WriteLine(getTensorValue(vertex)[2]);
+            foreach (double[] tensor in tensorsAtVertices) writer.WriteLine(tensor[2]);
             writer.WriteLine();
         }
 
@@ -127,6 +127,47 @@ namespace MGroup.XFEM.Output.Vtk
             writer.WriteLine();
         }
 
+        public void WriteTensor3DField(string fieldName, IReadOnlyList<double[]> tensorsAtVertices)
+        {
+            WriteFieldsHeader(tensorsAtVertices.Count);
+
+            // Component 11
+            writer.WriteLine($"SCALARS {fieldName}_11 double 1");
+            writer.WriteLine("LOOKUP_TABLE default");
+            foreach (double[] tensor in tensorsAtVertices) writer.WriteLine(tensor[0]);
+            writer.WriteLine();
+
+            // Component 22
+            writer.WriteLine($"SCALARS {fieldName}_22 double 1");
+            writer.WriteLine("LOOKUP_TABLE default");
+            foreach (double[] tensor in tensorsAtVertices) writer.WriteLine(tensor[1]);
+            writer.WriteLine();
+
+            // Component 33
+            writer.WriteLine($"SCALARS {fieldName}_33 double 1");
+            writer.WriteLine("LOOKUP_TABLE default");
+            foreach (double[] tensor in tensorsAtVertices) writer.WriteLine(tensor[2]);
+            writer.WriteLine();
+
+            // Component 12
+            writer.WriteLine($"SCALARS {fieldName}_12 double 1");
+            writer.WriteLine("LOOKUP_TABLE default");
+            foreach (double[] tensor in tensorsAtVertices) writer.WriteLine(tensor[3]);
+            writer.WriteLine();
+
+            // Component 23
+            writer.WriteLine($"SCALARS {fieldName}_23 double 1");
+            writer.WriteLine("LOOKUP_TABLE default");
+            foreach (double[] tensor in tensorsAtVertices) writer.WriteLine(tensor[3]);
+            writer.WriteLine();
+
+            // Component 13
+            writer.WriteLine($"SCALARS {fieldName}_13 double 1");
+            writer.WriteLine("LOOKUP_TABLE default");
+            foreach (double[] tensor in tensorsAtVertices) writer.WriteLine(tensor[5]);
+            writer.WriteLine();
+        }
+
         public void WriteVector2DField(string fieldName, IOutputMesh mesh, IEnumerable<double[]> vectorsAtVertices)
         {
             WriteFieldsHeader(mesh.NumOutVertices);
@@ -143,6 +184,28 @@ namespace MGroup.XFEM.Output.Vtk
             {
                 double[] vector = getVectorValue(vertex);
                 writer.WriteLine($"{vector[0]} {vector[1]} 0.0");
+            }
+            writer.WriteLine();
+        }
+
+        public void WriteVector2DField(string fieldName, IReadOnlyList<double[]> vectorsAtVertices)
+        {
+            WriteFieldsHeader(vectorsAtVertices.Count);
+            writer.WriteLine($"VECTORS {fieldName} double");
+            for (int i = 0; i < vectorsAtVertices.Count; ++i)
+            {
+                writer.WriteLine($"{vectorsAtVertices[i][0]} {vectorsAtVertices[i][1]} 0.0");
+            }
+            writer.WriteLine();
+        }
+
+        public void WriteVector3DField(string fieldName, IReadOnlyList<double[]> vectorsAtVertices)
+        {
+            WriteFieldsHeader(vectorsAtVertices.Count);
+            writer.WriteLine($"VECTORS {fieldName} double");
+            for (int i = 0; i < vectorsAtVertices.Count; ++i)
+            {
+                writer.WriteLine($"{vectorsAtVertices[i][0]} {vectorsAtVertices[i][1]} {vectorsAtVertices[i][2]}");
             }
             writer.WriteLine();
         }

@@ -37,7 +37,7 @@ namespace MGroup.XFEM.Interpolation.GaussPointExtrapolation
         public IQuadrature Quadrature { get; }
 
         /// <summary>
-        /// See <see cref="IGaussPointExtrapolation2D.ExtrapolateScalarFromGaussPoints(IReadOnlyList{double}, double[])"/>.
+        /// See <see cref="IGaussPointExtrapolation.ExtrapolateScalarFromGaussPoints(IReadOnlyList{double}, double[])"/>.
         /// </summary>
         public double ExtrapolateScalarFromGaussPoints(IReadOnlyList<double> scalarsAtGaussPoints, double[] naturalPoint)
         {
@@ -51,7 +51,7 @@ namespace MGroup.XFEM.Interpolation.GaussPointExtrapolation
         }
 
         /// <summary>
-        /// See <see cref="IGaussPointExtrapolation2D.ExtrapolateScalarFromGaussPointsToNodes(
+        /// See <see cref="IGaussPointExtrapolation.ExtrapolateScalarFromGaussPointsToNodes(
         /// IReadOnlyList{double}, IIsoparametricInterpolation)"/>
         /// </summary>
         public IReadOnlyList<double> ExtrapolateScalarFromGaussPointsToNodes(IReadOnlyList<double> scalarsAtGaussPoints, 
@@ -74,7 +74,7 @@ namespace MGroup.XFEM.Interpolation.GaussPointExtrapolation
         }
 
         /// <summary>
-        /// See <see cref="IGaussPointExtrapolation2D.ExtrapolateTensorFromGaussPoints(IReadOnlyList{double[]}, double[])"/>.
+        /// See <see cref="IGaussPointExtrapolation.ExtrapolateTensorFromGaussPoints(IReadOnlyList{double[]}, double[])"/>.
         /// </summary>
         public double[] ExtrapolateTensorFromGaussPoints(IReadOnlyList<double[]> tensorsAtGaussPoints, double[] naturalPoint)
         {
@@ -90,7 +90,7 @@ namespace MGroup.XFEM.Interpolation.GaussPointExtrapolation
         }
 
         /// <summary>
-        /// See <see cref="IGaussPointExtrapolation2D.ExtrapolateTensorFromGaussPoints(IReadOnlyList{Tensor2D}, double[])"/>.
+        /// See <see cref="IGaussPointExtrapolation.ExtrapolateTensorFromGaussPoints(IReadOnlyList{Tensor2D}, double[])"/>.
         /// </summary>
         public Tensor2D ExtrapolateTensorFromGaussPoints(IReadOnlyList<Tensor2D> tensorsAtGaussPoints, double[] naturalPoint)
         {
@@ -106,7 +106,7 @@ namespace MGroup.XFEM.Interpolation.GaussPointExtrapolation
         }
 
         /// <summary>
-        /// See <see cref="IGaussPointExtrapolation2D.ExtrapolateTensorFromGaussPointsToNodes(
+        /// See <see cref="IGaussPointExtrapolation.ExtrapolateTensorFromGaussPointsToNodes(
         /// IReadOnlyList{double[]}, IIsoparametricInterpolation)"/>
         /// </summary>
         public IReadOnlyList<double[]> ExtrapolateTensorFromGaussPointsToNodes(IReadOnlyList<double[]> tensorsAtGaussPoints, 
@@ -131,7 +131,7 @@ namespace MGroup.XFEM.Interpolation.GaussPointExtrapolation
         }
 
         /// <summary>
-        /// See <see cref="IGaussPointExtrapolation2D.ExtrapolateTensorFromGaussPointsToNodes(
+        /// See <see cref="IGaussPointExtrapolation.ExtrapolateTensorFromGaussPointsToNodes(
         /// IReadOnlyList{Tensor2D}, IIsoparametricInterpolation)"/>
         /// </summary>
         public IReadOnlyList<Tensor2D> ExtrapolateTensorFromGaussPointsToNodes(IReadOnlyList<Tensor2D> tensorsAtGaussPoints,
@@ -156,7 +156,7 @@ namespace MGroup.XFEM.Interpolation.GaussPointExtrapolation
         }
 
         /// <summary>
-        /// See <see cref="IGaussPointExtrapolation2D.ExtrapolateVectorFromGaussPoints(IReadOnlyList{double[]}, double[])"/>.
+        /// See <see cref="IGaussPointExtrapolation.ExtrapolateVectorFromGaussPoints(IReadOnlyList{double[]}, double[])"/>.
         /// </summary>
         public double[] ExtrapolateVectorFromGaussPoints(IReadOnlyList<double[]> vectorsAtGaussPoints, double[] naturalPoint)
         {
@@ -171,7 +171,7 @@ namespace MGroup.XFEM.Interpolation.GaussPointExtrapolation
         }
 
         /// <summary>
-        /// See <see cref="IGaussPointExtrapolation2D.ExtrapolateVectorFromGaussPointsToNodes(
+        /// See <see cref="IGaussPointExtrapolation.ExtrapolateVectorFromGaussPointsToNodes(
         /// IReadOnlyList{double[]}, IIsoparametricInterpolation)"/>
         /// </summary>
         public IReadOnlyList<double[]> ExtrapolateVectorFromGaussPointsToNodes(IReadOnlyList<double[]> vectorsAtGaussPoints, 

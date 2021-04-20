@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.FEM.Interfaces;
-using ISAAR.MSolve.FEM.Interpolation;
-using ISAAR.MSolve.FEM.Interpolation.GaussPointExtrapolation;
-using ISAAR.MSolve.FEM.Interpolation.Jacobians;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
+using MGroup.XFEM.Integration.Quadratures;
+using MGroup.XFEM.Interpolation;
+using MGroup.XFEM.Interpolation.GaussPointExtrapolation;
+using MGroup.XFEM.Interpolation.Jacobians;
 
 namespace MGroup.XFEM.FEM.Elements
 {
@@ -31,12 +32,12 @@ namespace MGroup.XFEM.FEM.Elements
 
         private readonly IDofType[][] dofTypes;
         private DynamicMaterial dynamicProperties;
-        private readonly IReadOnlyList<ElasticMaterial3D> materialsAtGaussPoints;
+        private readonly IReadOnlyList<IContinuumMaterial> materialsAtGaussPoints;
 
-        public ContinuumElement3D(IReadOnlyList<Node> nodes, IIsoparametricInterpolation3D interpolation,
-            IQuadrature3D quadratureForStiffness, IQuadrature3D quadratureForMass,
-            IGaussPointExtrapolation3D gaussPointExtrapolation,
-            IReadOnlyList<ElasticMaterial3D> materialsAtGaussPoints, DynamicMaterial dynamicProperties)
+        public ContinuumElement3D(IReadOnlyList<Node> nodes, IIsoparametricInterpolation interpolation,
+            IQuadrature quadratureForStiffness, IQuadrature quadratureForMass,
+            IGaussPointExtrapolation gaussPointExtrapolation,
+            IReadOnlyList<IContinuumMaterial> materialsAtGaussPoints, DynamicMaterial dynamicProperties)
         {
             this.dynamicProperties = dynamicProperties;
             this.materialsAtGaussPoints = materialsAtGaussPoints;
@@ -59,13 +60,13 @@ namespace MGroup.XFEM.FEM.Elements
         public CellType CellType => Interpolation.CellType;
         public IElementDofEnumerator DofEnumerator { get; set; } = new GenericDofEnumerator();
         public ElementDimensions ElementDimensions => ElementDimensions.ThreeD;
-        public IGaussPointExtrapolation3D GaussPointExtrapolation { get; }
+        public IGaussPointExtrapolation GaussPointExtrapolation { get; }
         public IReadOnlyList<IReadOnlyList<IDofType>> GetElementDofTypes(IElement element) => dofTypes;
 
         public int ID => throw new NotImplementedException(
             "Element type codes should be in a settings class. Even then it's a bad design choice");
 
-        public IIsoparametricInterpolation3D Interpolation { get; }
+        public IIsoparametricInterpolation Interpolation { get; }
 
         public bool MaterialModified
         {
@@ -80,8 +81,8 @@ namespace MGroup.XFEM.FEM.Elements
         }
 
         public IReadOnlyList<Node> Nodes { get; }
-        public IQuadrature3D QuadratureForConsistentMass { get; }
-        public IQuadrature3D QuadratureForStiffness { get; }
+        public IQuadrature QuadratureForConsistentMass { get; }
+        public IQuadrature QuadratureForStiffness { get; }
 
         public Matrix BuildConsistentMassMatrix()
         {
@@ -96,7 +97,7 @@ namespace MGroup.XFEM.FEM.Elements
             {
                 Matrix shapeFunctionMatrix = BuildShapeFunctionMatrix(shapeFunctions[gp]);
                 Matrix partial = shapeFunctionMatrix.MultiplyRight(shapeFunctionMatrix, true, false);
-                var jacobian = new IsoparametricJacobian3D(Nodes, shapeGradientsNatural[gp]);
+                var jacobian = new IsoparametricJacobian(3, Nodes, shapeGradientsNatural[gp]);
                 double dA = jacobian.DirectDeterminant * QuadratureForConsistentMass.IntegrationPoints[gp].Weight;
                 mass.AxpyIntoThis(partial,dA);
             }
@@ -114,7 +115,7 @@ namespace MGroup.XFEM.FEM.Elements
             double area = 0;
             for (int gp = 0; gp < QuadratureForConsistentMass.IntegrationPoints.Count; ++gp)
             {
-                var jacobian = new IsoparametricJacobian3D(Nodes, shapeGradientsNatural[gp]);
+                var jacobian = new IsoparametricJacobian(3, Nodes, shapeGradientsNatural[gp]);
                 area += jacobian.DirectDeterminant * QuadratureForConsistentMass.IntegrationPoints[gp].Weight;
             }
 
@@ -134,7 +135,7 @@ namespace MGroup.XFEM.FEM.Elements
             for (int gp = 0; gp < QuadratureForStiffness.IntegrationPoints.Count; ++gp)
             {
                 IMatrixView constitutive = materialsAtGaussPoints[gp].ConstitutiveMatrix;
-                var jacobian = new IsoparametricJacobian3D(Nodes, shapeGradientsNatural[gp]);
+                var jacobian = new IsoparametricJacobian(3, Nodes, shapeGradientsNatural[gp]);
                 Matrix shapeGradientsCartesian =
                     jacobian.TransformNaturalDerivativesToCartesian(shapeGradientsNatural[gp]);
                 Matrix deformation = BuildDeformationMatrix(shapeGradientsCartesian);
@@ -197,7 +198,7 @@ namespace MGroup.XFEM.FEM.Elements
                 Interpolation.EvaluateNaturalGradientsAtGaussPoints(QuadratureForStiffness);
             for (int gp = 0; gp < QuadratureForStiffness.IntegrationPoints.Count; ++gp)
             {
-                var jacobian = new IsoparametricJacobian3D(Nodes, shapeGradientsNatural[gp]);
+                var jacobian = new IsoparametricJacobian(3, Nodes, shapeGradientsNatural[gp]);
                 volume += jacobian.DirectDeterminant * QuadratureForStiffness.IntegrationPoints[gp].Weight; //TODO: this is used by all methods that integrate. I should cache it.
             }
             return volume;
@@ -221,13 +222,6 @@ namespace MGroup.XFEM.FEM.Elements
             return damping;
         }
 
-        /// <summary>
-        /// Calculates the coordinates of the centroid of this element.
-        /// </summary>
-        public CartesianPoint FindCentroid()
-            => Interpolation.TransformNaturalToCartesian(Nodes, new NaturalPoint(0.0, 0.0, 0.0));
-
-
         public IMatrix MassMatrix(IElement element)
         {
             return BuildLumpedMassMatrix();
@@ -246,7 +240,7 @@ namespace MGroup.XFEM.FEM.Elements
         public IMatrix StiffnessMatrix(IElement element) => DofEnumerator.GetTransformedMatrix(BuildStiffnessMatrix());
 
         public (IReadOnlyList<double[]> strains, IReadOnlyList<double[]> stresses) 
-            UpdateStrainStressesAtGaussPoints(double[] localDisplacements)
+            UpdateStrainsStressesAtGaussPoints(double[] localDisplacements)
         {
             int numberOfGPs = QuadratureForStiffness.IntegrationPoints.Count;
             var strains = new double[numberOfGPs][];
@@ -257,7 +251,7 @@ namespace MGroup.XFEM.FEM.Elements
             for (int gp = 0; gp < numberOfGPs; gp++)
             {
                 IMatrixView constitutive = materialsAtGaussPoints[gp].ConstitutiveMatrix;
-                var jacobian = new IsoparametricJacobian3D(Nodes, shapeGradientsNatural[gp]);
+                var jacobian = new IsoparametricJacobian(3, Nodes, shapeGradientsNatural[gp]);
                 Matrix shapeGrandientsCartesian =
                     jacobian.TransformNaturalDerivativesToCartesian(shapeGradientsNatural[gp]);
                 Matrix deformation = BuildDeformationMatrix(shapeGrandientsCartesian);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+//TODO: Modify the connectivy of Tri3, Tri6 and Tet4 so that the origin of the local system is indexed 0.
 namespace ISAAR.MSolve.Discretization.Mesh
 {
     /// <summary>
@@ -21,19 +22,19 @@ namespace ISAAR.MSolve.Discretization.Mesh
 
         //      y
         //     /
-        //    2
+        //    1
         //   /  \
         //  /    \                           
-        // 0 ---  1 --x                           
+        // 2 ---  0 --x                           
         Tri3,
 
         //       y
         //      /
-        //     2
+        //     1
         //    /  \
-        //   5    4
+        //   4    3
         //  /       \                            
-        // 0 -- 3 -- 1 --x                                                 
+        // 2 -- 5 -- 0 --x                                                 
         Tri6,
 
         //      y

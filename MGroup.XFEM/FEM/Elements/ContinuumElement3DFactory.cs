@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
-using ISAAR.MSolve.Discretization.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.FEM.Entities;
-using ISAAR.MSolve.FEM.Interpolation;
-using ISAAR.MSolve.FEM.Interpolation.GaussPointExtrapolation;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
+using MGroup.XFEM.Integration.Quadratures;
+using MGroup.XFEM.Interpolation;
+using MGroup.XFEM.Interpolation.GaussPointExtrapolation;
 
 namespace MGroup.XFEM.FEM.Elements
 {
@@ -16,24 +17,24 @@ namespace MGroup.XFEM.FEM.Elements
     /// </summary>
     public class ContinuumElement3DFactory
     {
-        private static readonly IReadOnlyDictionary<CellType, IGaussPointExtrapolation3D> extrapolations;
-        private static readonly IReadOnlyDictionary<CellType, IQuadrature3D> integrationsForStiffness;
-        private static readonly IReadOnlyDictionary<CellType, IQuadrature3D> integrationsForMass;
-        private static readonly IReadOnlyDictionary<CellType, IIsoparametricInterpolation3D> interpolations;
+        private static readonly IReadOnlyDictionary<CellType, IGaussPointExtrapolation> extrapolations;
+        private static readonly IReadOnlyDictionary<CellType, IQuadrature> integrationsForStiffness;
+        private static readonly IReadOnlyDictionary<CellType, IQuadrature> integrationsForMass;
+        private static readonly IReadOnlyDictionary<CellType, IIsoparametricInterpolation> interpolations;
 
         static ContinuumElement3DFactory()
         {
-            var interpolations=new Dictionary<CellType,IIsoparametricInterpolation3D>();
-            var integrationsForStiffness = new Dictionary<CellType, IQuadrature3D>();
-            var integrationsForMass= new Dictionary<CellType,IQuadrature3D>();
-            var extrapolations = new Dictionary<CellType, IGaussPointExtrapolation3D>();
+            var interpolations=new Dictionary<CellType,IIsoparametricInterpolation>();
+            var integrationsForStiffness = new Dictionary<CellType, IQuadrature>();
+            var integrationsForMass= new Dictionary<CellType,IQuadrature>();
+            var extrapolations = new Dictionary<CellType, IGaussPointExtrapolation>();
 
             // Tet4
             // TODO: implementations for Tet4
             interpolations.Add(CellType.Tet4, InterpolationTet4.UniqueInstance);
             integrationsForStiffness.Add(CellType.Tet4, TetrahedronQuadrature.Order1Point1);
             integrationsForMass.Add(CellType.Tet4, TetrahedronQuadrature.Order2Points4);
-            extrapolations.Add(CellType.Tet4, null);
+            extrapolations.Add(CellType.Tet4, ExtrapolationGaussTetrahedral1Point.UniqueInstance);
 
             // Tet10
             // TODO: implementations for Tet10
@@ -115,16 +116,19 @@ namespace MGroup.XFEM.FEM.Elements
         }
 
         public ContinuumElement3D CreateElement(CellType cellType, IReadOnlyList<Node> nodes,
-            ElasticMaterial3D materialAtGaussPoints, DynamicMaterial dynamicProperties)
+            IContinuumMaterial materialAtGaussPoints, DynamicMaterial dynamicProperties)
         {
             int numGPs = integrationsForStiffness[cellType].IntegrationPoints.Count;
-            var materialsAtGaussPoints = new ElasticMaterial3D[numGPs];
-            for (int gp = 0; gp < numGPs; ++gp) materialsAtGaussPoints[gp] = materialAtGaussPoints.Clone();
+            var materialsAtGaussPoints = new IContinuumMaterial[numGPs];
+            for (int gp = 0; gp < numGPs; ++gp)
+            {
+                materialsAtGaussPoints[gp] = (IContinuumMaterial)(materialAtGaussPoints.Clone());
+            }
             return CreateElement(cellType, nodes, materialsAtGaussPoints, dynamicProperties);
         }
 
         public ContinuumElement3D CreateElement(CellType cellType, IReadOnlyList<Node> nodes,
-            IReadOnlyList<ElasticMaterial3D> materialsAtGaussPoints, DynamicMaterial dynamicProperties)
+            IReadOnlyList<IContinuumMaterial> materialsAtGaussPoints, DynamicMaterial dynamicProperties)
         {
             //TODO: check if nodes - interpolation and Gauss points - materials match
 #if DEBUG

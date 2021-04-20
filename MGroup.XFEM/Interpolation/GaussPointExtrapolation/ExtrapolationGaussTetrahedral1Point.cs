@@ -8,24 +8,24 @@ using MGroup.XFEM.Integration.Quadratures;
 namespace MGroup.XFEM.Interpolation.GaussPointExtrapolation
 {
     /// Calculates extrapolations of scalar, vector and tensor fields from the integration points of symmetric Gauss quadrature
-    /// for triangles with 1 Gauss point. This can be done at any point, but utility methods for directly outputting the 
+    /// for tetrahedra with 1 Gauss point. This can be done at any point, but utility methods for directly outputting the 
     /// extrapolated fields at the nodes of finite elements are also provided. Note that since there is only 1 Gauss point,
     /// the scalar, vector and tensor fields are constant at all points and equal to their values at the Gauss point.
     /// Implements Singleton pattern.
     /// </summary>
-    public class ExtrapolationGaussTriangular1Point : IGaussPointExtrapolation
+    public class ExtrapolationGaussTetrahedral1Point : IGaussPointExtrapolation
     {
-        private static readonly ExtrapolationGaussTriangular1Point uniqueInstance = new ExtrapolationGaussTriangular1Point();
+        private static readonly ExtrapolationGaussTetrahedral1Point uniqueInstance = new ExtrapolationGaussTetrahedral1Point();
 
         /// <summary>
         /// See <see cref="IGaussPointExtrapolation2D.Quadrature"/>
         /// </summary>
-        public IQuadrature Quadrature { get { return TriangleQuadratureSymmetricGaussian.Order1Point1; } }
+        public IQuadrature Quadrature { get { return TetrahedronQuadrature.Order1Point1; } }
 
         /// <summary>
-        /// Get the unique <see cref="ExtrapolationGaussTriangular1Point"/> object for the whole program. Thread safe.
+        /// Get the unique <see cref="ExtrapolationGaussTetrahedral1Point"/> object for the whole program. Thread safe.
         /// </summary>
-        public static ExtrapolationGaussTriangular1Point UniqueInstance { get { return uniqueInstance; } }
+        public static ExtrapolationGaussTetrahedral1Point UniqueInstance { get { return uniqueInstance; } }
 
         /// <summary>
         /// See <see cref="IGaussPointExtrapolation.ExtrapolateScalarFromGaussPoints(IReadOnlyList{double}, double[])"/>.
@@ -55,7 +55,7 @@ namespace MGroup.XFEM.Interpolation.GaussPointExtrapolation
         /// See <see cref="IGaussPointExtrapolation.ExtrapolateTensorFromGaussPoints(IReadOnlyList{Tensor2D}, double[])"/>.
         /// </summary>
         public Tensor2D ExtrapolateTensorFromGaussPoints(IReadOnlyList<Tensor2D> tensorsAtGaussPoints, double[] naturalPoint)
-            => tensorsAtGaussPoints[0];
+            => throw new NotSupportedException("Tensor classes must be work for 2D and 3D");
 
         /// <summary>
         /// See <see cref="IGaussPointExtrapolation.ExtrapolateTensorFromGaussPointsToNodes(
@@ -71,15 +71,11 @@ namespace MGroup.XFEM.Interpolation.GaussPointExtrapolation
 
         /// <summary>
         /// See <see cref="IGaussPointExtrapolation.ExtrapolateTensorFromGaussPointsToNodes(
-        /// IReadOnlyList{Tensor2D}, IIsoparametricInterpolation)"/>
+        /// IReadOnlyList{Tensor3D}, IIsoparametricInterpolation)"/>
         /// </summary>
         public IReadOnlyList<Tensor2D> ExtrapolateTensorFromGaussPointsToNodes(IReadOnlyList<Tensor2D> tensorsAtGaussPoints, 
             IIsoparametricInterpolation interpolation)
-        {
-            var nodalTensors = new Tensor2D[interpolation.NumFunctions];
-            for (int i = 0; i < nodalTensors.Length; ++i) nodalTensors[i] = tensorsAtGaussPoints[0];
-            return nodalTensors;
-        }
+            => throw new NotSupportedException("Tensor classes must be work for 2D and 3D");
 
         /// <summary>
         /// See <see cref="IGaussPointExtrapolation.ExtrapolateVectorFromGaussPoints(IReadOnlyList{double[]}, double[])"/>.

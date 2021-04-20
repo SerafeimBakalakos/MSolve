@@ -9,6 +9,7 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Logging.Interfaces;
 using ISAAR.MSolve.Materials;
+using ISAAR.MSolve.Materials.Interfaces;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.Direct;
@@ -44,7 +45,8 @@ namespace MGroup.XFEM.Tests.FEM
             }
         }
 
-        public static Model Create3DModelFromGmsh(string gmshMeshFile)
+        public static Model Create3DModelFromGmsh(string gmshMeshFile, 
+            Dictionary<int, IContinuumMaterial> materialsOfPhysicalGroups)
         {
             var gmshReader = new GmshReader(gmshMeshFile, 3);
             PreprocessingMesh mesh = gmshReader.CreateMesh();
@@ -58,12 +60,12 @@ namespace MGroup.XFEM.Tests.FEM
                 model.NodesDictionary[vertex.ID] = new Node(vertex.ID, vertex.Coords[0], vertex.Coords[1], vertex.Coords[2]);
             }
 
-            var material = new ElasticMaterial3D() { YoungModulus = 2.1E7, PoissonRatio = 0.3 };
             var dynamicProperties = new DynamicMaterial(1, 1, 1);
             var elementFactory = new ContinuumElement3DFactory();
             foreach (Cell cell in mesh.Cells)
             {
                 Node[] nodes = cell.VertexIDs.Select(v => model.NodesDictionary[v]).ToArray();
+                IContinuumMaterial material = materialsOfPhysicalGroups[cell.PhysicalGroup];
                 ContinuumElement3D elementType = elementFactory.CreateElement(cell.CellType, nodes, material, dynamicProperties);
                 var elementWrapper = new Element() { ID = cell.ID, ElementType = elementType };
                 elementWrapper.AddNodes(nodes);

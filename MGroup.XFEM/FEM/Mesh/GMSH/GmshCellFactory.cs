@@ -50,14 +50,14 @@ namespace MGroup.XFEM.FEM.Mesh.GMSH
 
             var connectivity = new Dictionary<CellType, int[]>();
             connectivity[CellType.Line] = new int[] { 0, 1 };
-            connectivity[CellType.Tri3] = new int[] { 0, 1, 2 };
+            connectivity[CellType.Tri3] = new int[] { 2, 0, 1 };
             connectivity[CellType.Quad4] = new int[] { 0, 1, 2, 3 };
             connectivity[CellType.Tet4] = new int[] { 0, 1, 2, 3 };
             connectivity[CellType.Hexa8] = new int[] { 0, 1, 2, 3, 4, 5, 6, 7 };
             connectivity[CellType.Wedge6] = null;
             connectivity[CellType.Pyra5] = null;
             connectivity[CellType.Line3] = new int[] { 0, 1, 2 };
-            connectivity[CellType.Tri6] = new int[] { 0, 1, 2, 3, 4, 5 };
+            connectivity[CellType.Tri6] = new int[] { 2, 0, 1, 5, 3, 4 };
             connectivity[CellType.Quad9] = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
             connectivity[CellType.Tet10] = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
             connectivity[CellType.Hexa27] = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 };
