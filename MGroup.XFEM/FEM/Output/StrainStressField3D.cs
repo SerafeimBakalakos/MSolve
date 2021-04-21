@@ -52,7 +52,7 @@ namespace MGroup.XFEM.FEM.Output
 
                     // Calculate strains, stresses at Gauss points and extrapolate to nodes
                     (IReadOnlyList<double[]> strainsAtGPs, IReadOnlyList<double[]> stressesAtGPs) = 
-                        elementType.UpdateStrainsStressesAtGaussPoints(localDisplacements);
+                        elementType.CalcStrainsStressesAtGaussPoints(localDisplacements);
                     IReadOnlyList<double[]> strainsAtNodes = elementType.GaussPointExtrapolation.
                         ExtrapolateTensorFromGaussPointsToNodes(strainsAtGPs, elementType.Interpolation);
                     IReadOnlyList<double[]> stressesAtNodes = elementType.GaussPointExtrapolation.
