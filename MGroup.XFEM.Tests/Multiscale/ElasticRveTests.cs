@@ -14,6 +14,7 @@ using ISAAR.MSolve.Solvers.Direct;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Multiscale;
+using MGroup.XFEM.Multiscale.RveBuilders;
 using MGroup.XFEM.Output.Writers;
 using MGroup.XFEM.Phases;
 using MGroup.XFEM.Tests.Utilities;
@@ -119,7 +120,7 @@ namespace MGroup.XFEM.Tests.Multiscale
                 textWriter.WriteLine();
 
                 textWriter.WriteLine("Elasticity tensor: ");
-                IMatrix C = rveGenerator.ElasticityTensors[r];
+                IMatrixView C = rveGenerator.ConstitutiveMatrices[r];
                 for (int i = 0; i < C.NumRows; ++i)
                 {
                     for (int j = 0; j < C.NumColumns; ++j)

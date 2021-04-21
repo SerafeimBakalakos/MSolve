@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Multiscale
+namespace MGroup.XFEM.Multiscale.RveBuilders
 {
     /// <summary>
     /// Generates spherical inclusions in a 3D box domain. Inclusions will not intersect the domain boundary and will not 

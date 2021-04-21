@@ -22,7 +22,7 @@ namespace MGroup.XFEM.Tests.FEM
         private const double matrixE = 1E0, inclusionE = 1E3;
 
         [Fact]
-        public static void Run()
+        public static void RunLinearAnalysis()
         {
             var materialsOfPhysicalGroups = new Dictionary<int, IContinuumMaterial>();
             materialsOfPhysicalGroups[1] = new ElasticMaterial3D() { YoungModulus = matrixE, PoissonRatio = 0.3 };
@@ -41,6 +41,20 @@ namespace MGroup.XFEM.Tests.FEM
             FemUtilities.RunStaticLinearAnalysis(model, logFactory: logs);
         }
 
+        [Fact]
+        public static void RunMultiscaleAnalysis()
+        {
+            var mesoscale = new XFEM.Multiscale.RveBuilders.GmshFemMultiphaseMesoscale();
+            mesoscale.CoordsMin = new double[] { -1, -1, -1 };
+            mesoscale.CoordsMax = new double[] { +1, +1, +1 };
+            mesoscale.GmshMeshFilePath = meshFile;
+            mesoscale.MatrixMaterial = new ElasticMaterial3D() { YoungModulus = matrixE, PoissonRatio = 0.3 };
+            mesoscale.InclusionMaterial = new ElasticMaterial3D() { YoungModulus = inclusionE, PoissonRatio = 0.3 };
+            mesoscale.TotalStrain = new double[] { 0.04, 0.02, 0.02, 0.04, 0.02, 0.02 };
+            mesoscale.NumLoadingIncrements = 10;
+
+            mesoscale.RunAnalysis();
+        }
 
     }
 }

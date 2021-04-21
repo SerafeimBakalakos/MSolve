@@ -14,6 +14,7 @@ using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.Direct;
 using MGroup.XFEM.FEM.Elements;
+using MGroup.XFEM.FEM.Input;
 using MGroup.XFEM.FEM.Mesh;
 using MGroup.XFEM.FEM.Mesh.GMSH;
 
@@ -50,30 +51,8 @@ namespace MGroup.XFEM.Tests.FEM
         {
             var gmshReader = new GmshReader(gmshMeshFile, 3);
             PreprocessingMesh mesh = gmshReader.CreateMesh();
-
-            var model = new Model();
-            int subdomainID = 0;
-            model.SubdomainsDictionary[subdomainID] = new Subdomain(subdomainID);
-
-            foreach (Vertex vertex in mesh.Vertices)
-            {
-                model.NodesDictionary[vertex.ID] = new Node(vertex.ID, vertex.Coords[0], vertex.Coords[1], vertex.Coords[2]);
-            }
-
-            var dynamicProperties = new DynamicMaterial(1, 1, 1);
-            var elementFactory = new ContinuumElement3DFactory();
-            foreach (Cell cell in mesh.Cells)
-            {
-                Node[] nodes = cell.VertexIDs.Select(v => model.NodesDictionary[v]).ToArray();
-                IContinuumMaterial material = materialsOfPhysicalGroups[cell.PhysicalGroup];
-                ContinuumElement3D elementType = elementFactory.CreateElement(cell.CellType, nodes, material, dynamicProperties);
-                var elementWrapper = new Element() { ID = cell.ID, ElementType = elementType };
-                elementWrapper.AddNodes(nodes);
-                model.ElementsDictionary.Add(elementWrapper.ID, elementWrapper);
-                model.SubdomainsDictionary[subdomainID].Elements.Add(elementWrapper);
-            }
-
-            return model;
+            var modelCreator = new ModelCreator();
+            return modelCreator.CreateModel3D(mesh, materialsOfPhysicalGroups);
         }
 
         public static IVectorView RunStaticLinearAnalysis(Model model, ILogFactory logFactory = null, 

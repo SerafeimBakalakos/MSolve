@@ -23,7 +23,7 @@ using MGroup.XFEM.Materials;
 using MGroup.XFEM.Phases;
 
 //TODO: Should initialization results be cached?
-namespace MGroup.XFEM.Multiscale
+namespace MGroup.XFEM.Multiscale.RveBuilders
 {
     public class RveRandomSphereInclusions : IMesoscale
     {
@@ -32,19 +32,23 @@ namespace MGroup.XFEM.Multiscale
 
         public int Seed { get; set; }
 
-        public double[] MinStrains { get; set; }
-
-        public double[] MaxStrains { get; set; }
-
         public double VolumeFraction { get; set; }
 
         public IContinuumMaterial MatrixMaterial { get; set; }
 
-        public ElasticMaterial3D InclusionMaterial { get; set; }
+        public IContinuumMaterial InclusionMaterial { get; set; }
 
         public ISolverBuilder SolverBuilder { get; set; } = new SuiteSparseSolver.Builder();
 
         public int LsmMeshRefinementLevel { get; set; } = 5;
+
+        public double[] MinStrains { get; set; }
+
+        public double[] MaxStrains { get; set; }
+
+        public double[] TotalStrain { get; set; }
+
+        public int NumLoadingIncrements { get; set; } = 10;
         #endregion
 
         #region output
@@ -52,44 +56,45 @@ namespace MGroup.XFEM.Multiscale
 
         public IList<double[]> Stresses { get; set; }
 
-        public IList<IMatrix> ElasticityTensors { get; set; }
+        public IList<IMatrixView> ConstitutiveMatrices { get; set; }
         #endregion
 
         public void RunAnalysis()
         {
-            XModel<IXMultiphaseElement> model = CreateModelPhysical();
-            PhaseGeometryModel geometryModel = CreatePhases(model);
+            throw new NotImplementedException();
+            //XModel<IXMultiphaseElement> model = CreateModelPhysical();
+            //PhaseGeometryModel geometryModel = CreatePhases(model);
 
-            // Run analysis
-            model.Initialize();
-            Debug.WriteLine("Starting homogenization analysis");
-            var solver = (new SuiteSparseSolver.Builder()).BuildSolver(model);
-            var provider = new ProblemStructural(model, solver);
-            var rve = new StructuralCubicRve(model, minCoords, maxCoords);
-            var homogenization = new HomogenizationAnalyzer(model, solver, provider, rve);
+            //// Run analysis
+            //model.Initialize();
+            //Debug.WriteLine("Starting homogenization analysis");
+            //var solver = (new SuiteSparseSolver.Builder()).BuildSolver(model);
+            //var provider = new ProblemStructural(model, solver);
+            //var rve = new StructuralCubicRve(model, minCoords, maxCoords);
+            //var homogenization = new HomogenizationAnalyzer(model, solver, provider, rve);
 
-            homogenization.Initialize();
-            homogenization.Solve();
-            Debug.WriteLine("Analysis finished");
+            //homogenization.Initialize();
+            //homogenization.Solve();
+            //Debug.WriteLine("Analysis finished");
 
-            Strains = new List<double[]>();
-            Stresses = new List<double[]>();
-            ElasticityTensors = new List<IMatrix>();
-            var rng = new Random(Seed);
-            for (int r = 0; r < NumRealizations; ++r)
-            {
-                var strains = new double[6];
-                for (int i = 0; i < strains.Length; ++i)
-                {
-                    strains[i] = MinStrains[i] + rng.NextDouble() * (MaxStrains[i] - MinStrains[i]);
-                }
+            //Strains = new List<double[]>();
+            //Stresses = new List<double[]>();
+            //ElasticityTensors = new List<IMatrix>();
+            //var rng = new Random(Seed);
+            //for (int r = 0; r < NumRealizations; ++r)
+            //{
+            //    var strains = new double[6];
+            //    for (int i = 0; i < strains.Length; ++i)
+            //    {
+            //        strains[i] = MinStrains[i] + rng.NextDouble() * (MaxStrains[i] - MinStrains[i]);
+            //    }
 
-                double[] stresses = homogenization.MacroscopicModulus.Multiply(strains);
+            //    double[] stresses = homogenization.MacroscopicModulus.Multiply(strains);
 
-                Strains.Add(strains);
-                Stresses.Add(stresses);
-                ElasticityTensors.Add(homogenization.MacroscopicModulus);
-            }
+            //    Strains.Add(strains);
+            //    Stresses.Add(stresses);
+            //    ElasticityTensors.Add(homogenization.MacroscopicModulus);
+            //}
         }
 
         private const int dimension = 3;

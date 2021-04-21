@@ -6,20 +6,24 @@ using ISAAR.MSolve.Materials;
 using ISAAR.MSolve.Materials.Interfaces;
 using ISAAR.MSolve.Solvers;
 
-namespace MGroup.XFEM.Multiscale
+namespace MGroup.XFEM.Multiscale.RveBuilders
 {
     public interface IMesoscale
     {
         #region input 
-        int Seed { get; set; }
+        //int Seed { get; set; }
 
-        double VolumeFraction { get; set; }
+        //double VolumeFraction { get; set; }
 
         IContinuumMaterial MatrixMaterial { get; set; }
 
-        ElasticMaterial3D InclusionMaterial { get; set; }
+        IContinuumMaterial InclusionMaterial { get; set; }
 
         ISolverBuilder SolverBuilder { get; set; }
+
+        double[] TotalStrain { get; set; }
+
+        int NumLoadingIncrements { get; set; }
         #endregion
 
         #region output
@@ -27,7 +31,7 @@ namespace MGroup.XFEM.Multiscale
 
         IList<double[]> Stresses { get; set; }
 
-        IList<IMatrix> ElasticityTensors { get; set; }
+        IList<IMatrixView> ConstitutiveMatrices { get; set; }
         #endregion
 
         void RunAnalysis();
