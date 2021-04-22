@@ -7,11 +7,31 @@ namespace MGroup.Solvers.MPI.Environment
 {
     public class DistributedLocalEnvironment : IComputeEnvironment
     {
-        public DistributedLocalEnvironment()
+        private readonly bool duplicateCommonData;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="duplicateCommonData">
+        /// If true, then data that are identical across multiple nodes will be copied and each node will have a different 
+        /// instance. If false, then the instance of common data will be shared across all nodes. E.g. when broadcasting data.
+        /// </param>
+        public DistributedLocalEnvironment(bool duplicateCommonData = true)
         {
+            this.duplicateCommonData = duplicateCommonData;
         }
 
         public List<ComputeNode> ComputeNodes { get; } = new List<ComputeNode>();
+
+        public bool AllReduceAnd(Dictionary<ComputeNode, bool> valuePerNode)
+        {
+            bool result = true;
+            foreach (ComputeNode node in ComputeNodes)
+            {
+                result &= valuePerNode[node];
+            }
+            return result;
+        }
 
         public double AllReduceSum(Dictionary<ComputeNode, double> valuePerNode)
         {

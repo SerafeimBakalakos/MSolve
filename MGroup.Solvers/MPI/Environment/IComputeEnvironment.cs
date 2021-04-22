@@ -17,6 +17,8 @@ namespace MGroup.Solvers.MPI.Environment
     {
         List<ComputeNode> ComputeNodes { get; }
 
+        bool AllReduceAnd(Dictionary<ComputeNode, bool> valuePerNode);
+
         double AllReduceSum(Dictionary<ComputeNode, double> valuePerNode);
 
         /// <summary>
@@ -24,7 +26,7 @@ namespace MGroup.Solvers.MPI.Environment
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="createPerNode"></param>
-        Dictionary<ComputeNode, T> CreateDictionary<T>(Func<ComputeNode, T> createDataPerNode); //TODOMPI: perhaps I should use Dictionaries for all methods to collect data from each compute node.
+        Dictionary<ComputeNode, T> CreateDictionary<T>(Func<ComputeNode, T> createDataPerNode);
 
         void DoPerNode(Action<ComputeNode> actionPerNode);
 

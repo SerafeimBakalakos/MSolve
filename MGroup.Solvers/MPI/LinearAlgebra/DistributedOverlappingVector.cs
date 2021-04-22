@@ -21,11 +21,11 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
     public class DistributedOverlappingVector
     {
         private readonly IComputeEnvironment environment;
-        private readonly Dictionary<ComputeNode, Indexer> indexers; //TODOMPI: a global Indexer object that stores data for each node
+        private readonly Dictionary<ComputeNode, DistributedIndexer> indexers; //TODOMPI: a global Indexer object that stores data for each node
         private readonly Dictionary<ComputeNode, Vector> localVectors;
 
-        private DistributedOverlappingVector(IComputeEnvironment environment, Dictionary<ComputeNode, Indexer> indexers, 
-            Dictionary<ComputeNode, Vector> localVectors)
+        private DistributedOverlappingVector(IComputeEnvironment environment, 
+            Dictionary<ComputeNode, DistributedIndexer> indexers, Dictionary<ComputeNode, Vector> localVectors)
         {
             this.environment = environment;
             this.indexers = indexers;
@@ -33,13 +33,13 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
         }
 
         public static DistributedOverlappingVector CreateLhsVector(IComputeEnvironment environment,
-            Dictionary<ComputeNode, Indexer> indexers, Dictionary<ComputeNode, Vector> localVectors)
+            Dictionary<ComputeNode, DistributedIndexer> indexers, Dictionary<ComputeNode, Vector> localVectors)
         {
             return new DistributedOverlappingVector(environment, indexers, localVectors);
         }
 
         public static DistributedOverlappingVector CreateRhsVector(IComputeEnvironment environment,
-            Dictionary<ComputeNode, Indexer> indexers, Dictionary<ComputeNode, Vector> localVectors)
+            Dictionary<ComputeNode, DistributedIndexer> indexers, Dictionary<ComputeNode, Vector> localVectors)
         {
             var vector = new DistributedOverlappingVector(environment, indexers, localVectors);
             vector.ConvertRhsToLhsVector();
@@ -75,11 +75,20 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
             throw new NotImplementedException();
         }
 
+        public bool Equals(DistributedOverlappingVector other, double tolerance = 1E-7)
+        {
+            if ((this.environment != other.environment) || (this.indexers != other.indexers)) return false;
+
+            Dictionary<ComputeNode, bool> flags = environment.CreateDictionary(
+                node => this.localVectors[node].Equals(other.localVectors[node], tolerance));
+            return environment.AllReduceAnd(flags);
+        }
+
         public double DotProduct(DistributedOverlappingVector otherVector)
         {
             Func<ComputeNode, double> calcLocalDot = node =>
             {
-                Indexer indexer = this.indexers[node];
+                DistributedIndexer indexer = this.indexers[node];
                 Vector thisLocalVector = this.localVectors[node];
                 Vector otherLocalVector = otherVector.localVectors[node];
 
@@ -93,7 +102,7 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
                 // Finds the dot product for entries of each boundary and divide it with the boundary's multiplicity
                 for (int b = 0; b < indexer.BoundaryEntries.Count; ++b)
                 {
-                    int multiplicity = indexer.Node.Boundaries[b].Multiplicity;
+                    int multiplicity = indexer.ComputeNode.Boundaries[b].Multiplicity;
                     int[] boundaryEntries = indexer.BoundaryEntries[b];
                     double dotBoundary = 0.0;
                     foreach (int i in boundaryEntries)
@@ -134,7 +143,7 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
             Func<ComputeNode, (double[] inValues, int[] counts, double[] outValues)> prepareLocalData = node =>
             {
                 Vector localVector = localVectors[node];
-                Indexer indexer = indexers[node];
+                DistributedIndexer indexer = indexers[node];
                 int numNeighbors = node.Neighbors.Count;
 
                 // Find the common entries (to send) of this node with each of its neighbors, store them contiguously in an 
@@ -160,14 +169,14 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
             };
             var dataPerNode = environment.CreateDictionary(prepareLocalData);
 
-            // Perform AllToAll to exchange the commonda boundary entries of each node with its neighbors.
+            // Perform AllToAll to exchange the common boundary entries of each node with its neighbors.
             environment.NeighborhoodAllToAll(dataPerNode);
 
             // Add the common entries of neighbors back to the original local vector.
             Action<ComputeNode> sumLocalSubvectors = node =>
             {
                 Vector localVector = localVectors[node];
-                Indexer indexer = indexers[node];
+                DistributedIndexer indexer = indexers[node];
                 int numNeighbors = node.Neighbors.Count;
                 (_, _, double[] recvValues) = dataPerNode[node];
 
@@ -177,32 +186,11 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
                     int[] commonEntries = indexer.NeighborCommonEntries[i];
                     for (int j = 0; j < commonEntries.Length; ++j)
                     {
-                        localVector[commonEntries[j]] += recvValues[recvValuesIdx];
+                        localVector[commonEntries[j]] += recvValues[recvValuesIdx++];
                     }
                 }
             };
-        }
-
-        //TODOMPI: the counts array for AllToAll can be cached by the indexer. Also a mapping array can be cached as well to 
-        //      simplify the nested for loops required to copy from localVector to sendValues and from recvValues to localVector. 
-        public class Indexer
-        {
-            //TODOMPI: It would be easier if this could be inferred from NeighborCommonEntries
-            public List<int[]> BoundaryEntries { get; set; }
-
-            public int[] InternalEntries { get; set; }
-
-            public ComputeNode Node { get; set; }
-
-            public List<int[]> NeighborCommonEntries { get; set; }
-
-            //TODO: cache a buffer for sending and a buffer for receiving inside Indexer (lazily or not) and just return them.
-            public double[] CreateBufferForAllToAllWithNeighbors()
-            {
-                int totalLength = 0;
-                foreach (int[] entries in NeighborCommonEntries) totalLength += entries.Length;
-                return new double[totalLength];
-            }
+            environment.DoPerNode(sumLocalSubvectors);
         }
     }
 }

@@ -8,6 +8,6 @@ namespace MGroup.Solvers.MPI.Environment
     {
         public int Multiplicity => Nodes.Count;
 
-        public List<ComputeNode> Nodes { get; }
+        public List<ComputeNode> Nodes { get; } = new List<ComputeNode>();
     }
 }

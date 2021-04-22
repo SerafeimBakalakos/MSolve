@@ -26,6 +26,12 @@ namespace MGroup.Solvers.MPI.Environment
 
         public GraphCommunicator neighborComm { get; set; }
 
+        public bool AllReduceAnd(Dictionary<ComputeNode, bool> valuePerNode)
+        {
+            bool localValue = valuePerNode[ComputeNodes[0]];
+            return worldComm.Allreduce(localValue, Operation<bool>.LogicalAnd);
+        }
+
         public double AllReduceSum(Dictionary<ComputeNode, double> valuePerNode)
         {
             double localValue = valuePerNode[ComputeNodes[0]];
