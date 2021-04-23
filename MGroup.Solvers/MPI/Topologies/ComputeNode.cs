@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MGroup.Solvers.MPI.Environment
+namespace MGroup.Solvers.MPI.Topologies
 {
     public class ComputeNode
     {
@@ -16,6 +16,11 @@ namespace MGroup.Solvers.MPI.Environment
         public int ID { get; }
 
         public List<ComputeNode> Neighbors { get; } = new List<ComputeNode>();
+
+        public override bool Equals(object obj)
+        {
+            return (obj is ComputeNode node) && (ID == node.ID);
+        }
 
         /// <summary>
         /// If <paramref name="other"/> is not a neighbor of this instance, then returns -1. Else returns the index of 
@@ -31,5 +36,7 @@ namespace MGroup.Solvers.MPI.Environment
             }
             return -1;
         }
+
+        public override int GetHashCode() => ID.GetHashCode();
     }
 }

@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using MGroup.Solvers.MPI.Topologies;
 
-namespace MGroup.Solvers.MPI.Environment
+namespace MGroup.Solvers.MPI.Environments
 {
     public class DistributedLocalEnvironment : IComputeEnvironment
     {
@@ -21,12 +22,12 @@ namespace MGroup.Solvers.MPI.Environment
             this.duplicateCommonData = duplicateCommonData;
         }
 
-        public List<ComputeNode> ComputeNodes { get; } = new List<ComputeNode>();
+        public ComputeNodeTopology NodeTopology { get; set; }
 
         public bool AllReduceAnd(Dictionary<ComputeNode, bool> valuePerNode)
         {
             bool result = true;
-            foreach (ComputeNode node in ComputeNodes)
+            foreach (ComputeNode node in NodeTopology.Nodes.Values)
             {
                 result &= valuePerNode[node];
             }
@@ -36,7 +37,7 @@ namespace MGroup.Solvers.MPI.Environment
         public double AllReduceSum(Dictionary<ComputeNode, double> valuePerNode)
         {
             double sum = 0.0;
-            foreach (ComputeNode node in ComputeNodes)
+            foreach (ComputeNode node in NodeTopology.Nodes.Values)
             {
                 sum += valuePerNode[node];
             }
@@ -46,7 +47,7 @@ namespace MGroup.Solvers.MPI.Environment
         public Dictionary<ComputeNode, T> CreateDictionary<T>(Func<ComputeNode, T> createDataPerNode)
         {
             var result = new Dictionary<ComputeNode, T>();
-            foreach (ComputeNode node in ComputeNodes)
+            foreach (ComputeNode node in NodeTopology.Nodes.Values)
             {
                 result[node] = createDataPerNode(node);
             }
@@ -55,7 +56,7 @@ namespace MGroup.Solvers.MPI.Environment
 
         public void DoPerNode(Action<ComputeNode> action)
         {
-            foreach (ComputeNode node in ComputeNodes)
+            foreach (ComputeNode node in NodeTopology.Nodes.Values)
             {
                 action(node);
             }
@@ -64,7 +65,7 @@ namespace MGroup.Solvers.MPI.Environment
         public void NeighborhoodAllToAll(
             Dictionary<ComputeNode, (double[] inValues, int[] counts, double[] outValues)> dataPerNode)
         {
-            foreach (ComputeNode thisNode in ComputeNodes)
+            foreach (ComputeNode thisNode in NodeTopology.Nodes.Values)
             {
                 (double[] thisInValues, int[] thisCounts, double[] thisOutValues) = dataPerNode[thisNode];
 

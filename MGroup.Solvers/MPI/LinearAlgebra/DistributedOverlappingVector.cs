@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using MGroup.Solvers.DDM;
-using MGroup.Solvers.MPI.Environment;
+using MGroup.Solvers.MPI.Environments;
+using MGroup.Solvers.MPI.Topologies;
 
-//TODOMPI: have an indexer object that determines overlaps and perhaps whether it is a lhs or rhs vector (although we would want
-//      to use the same indexer for all vectors and matrices of the same distributed linear system. Use the indexer to check if 
-//      linear algebra operations are done between vertices & matrices of the same indexer. Could the linear system be this 
-//      indexer?
 //TODOMPI: perhaps I should have the vector rearranged so that entries belonging to the same boundary are consecutive. 
 //      This is definitely faster for linear algebra operations between distributed vectors, but perhaps not between 
 //      subdomain-cluster operations. Although the mapping matrices for subdomain-cluster operations could be rearranged as well!
 //      Also for consecutive subvectors, I can employ BLAS, instead of writing linear algebra operations by hand.
-//TODOMPI: this class will be mainly used for iterative methods. Taking that into account, make optimization. E.g. work arrays
+//TODOMPI: this class will be mainly used for iterative methods. Taking that into account, make optimizations. E.g. work arrays
 //      used as buffers for MPI communication can be reused across vectors, instead of each vector allocating/freeing identical 
 //      buffers. Such functionality can be included in the indexer, which is shared across vectors/matrices.
 namespace MGroup.Solvers.MPI.LinearAlgebra
@@ -48,6 +45,7 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
 
         public void AxpyIntoThis(DistributedOverlappingVector otherVector, double otherCoefficient)
         {
+            Debug.Assert((this.environment == otherVector.environment) && (this.indexers == otherVector.indexers));
             environment.DoPerNode(
                 node => this.localVectors[node].AxpyIntoThis(otherVector.localVectors[node], otherCoefficient)
             );
@@ -86,6 +84,7 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
 
         public double DotProduct(DistributedOverlappingVector otherVector)
         {
+            Debug.Assert((this.environment == otherVector.environment) && (this.indexers == otherVector.indexers));
             Func<ComputeNode, double> calcLocalDot = node =>
             {
                 DistributedIndexer indexer = this.indexers[node];
@@ -100,10 +99,10 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
                 }
 
                 // Finds the dot product for entries of each boundary and divide it with the boundary's multiplicity
-                for (int b = 0; b < indexer.BoundaryEntries.Count; ++b)
+                foreach (ComputeNodeBoundary boundary in node.Boundaries)
                 {
-                    int multiplicity = indexer.ComputeNode.Boundaries[b].Multiplicity;
-                    int[] boundaryEntries = indexer.BoundaryEntries[b];
+                    int multiplicity = boundary.Multiplicity;
+                    int[] boundaryEntries = indexer.GetEntriesOfBoundary(boundary);
                     double dotBoundary = 0.0;
                     foreach (int i in boundaryEntries)
                     {
@@ -122,6 +121,7 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
         public void LinearCombinationIntoThis(
             double thisCoefficient, DistributedOverlappingVector otherVector, double otherCoefficient)
         {
+            Debug.Assert((this.environment == otherVector.environment) && (this.indexers == otherVector.indexers));
             environment.DoPerNode(
                 node => this.localVectors[node].LinearCombinationIntoThis(
                     thisCoefficient, otherVector.localVectors[node], otherCoefficient)
@@ -144,17 +144,17 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
             {
                 Vector localVector = localVectors[node];
                 DistributedIndexer indexer = indexers[node];
-                int numNeighbors = node.Neighbors.Count;
 
                 // Find the common entries (to send) of this node with each of its neighbors, store them contiguously in an 
                 // array and store their counts in another array.
-                int[] counts = new int[numNeighbors];
+                int[] counts = new int[node.Neighbors.Count];
                 double[] sendValues = indexer.CreateBufferForAllToAllWithNeighbors();
                 int sendValuesIdx = 0;
-                for (int i = 0; i < numNeighbors; ++i)
+                int countsIdx = 0;
+                foreach (ComputeNode neighbor in node.Neighbors) // Neighbors of a node must be always accessed in this order
                 {
-                    int[] commonEntries = indexer.NeighborCommonEntries[i];
-                    counts[i] = commonEntries.Length;
+                    int[] commonEntries = indexer.GetCommonEntriesWithNeighbor(neighbor);
+                    counts[countsIdx++] = commonEntries.Length;
                     for (int j = 0; j < commonEntries.Length; ++j)
                     {
                         sendValues[sendValuesIdx++] = localVector[commonEntries[j]];
@@ -177,13 +177,12 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
             {
                 Vector localVector = localVectors[node];
                 DistributedIndexer indexer = indexers[node];
-                int numNeighbors = node.Neighbors.Count;
                 (_, _, double[] recvValues) = dataPerNode[node];
 
                 int recvValuesIdx = 0;
-                for (int i = 0; i < numNeighbors; ++i)
+                foreach (ComputeNode neighbor in node.Neighbors) // Neighbors of a node must be always accessed in this order
                 {
-                    int[] commonEntries = indexer.NeighborCommonEntries[i];
+                    int[] commonEntries = indexer.GetCommonEntriesWithNeighbor(neighbor);
                     for (int j = 0; j < commonEntries.Length; ++j)
                     {
                         localVector[commonEntries[j]] += recvValues[recvValuesIdx++];

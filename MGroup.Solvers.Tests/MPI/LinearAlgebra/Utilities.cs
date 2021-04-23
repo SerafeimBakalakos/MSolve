@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using MGroup.Solvers.MPI.Environment;
+using MGroup.Solvers.MPI.Environments;
 using MGroup.Solvers.MPI.LinearAlgebra;
+using MGroup.Solvers.MPI.Topologies;
 
 namespace MGroup.Solvers.Tests.MPI.LinearAlgebra
 {

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using MGroup.Solvers.MPI.Environment;
+using MGroup.Solvers.MPI.Environments;
 using MGroup.Solvers.MPI.LinearAlgebra;
+using MGroup.Solvers.MPI.Topologies;
 using Xunit;
 
 namespace MGroup.Solvers.Tests.MPI.LinearAlgebra
@@ -14,8 +15,10 @@ namespace MGroup.Solvers.Tests.MPI.LinearAlgebra
         [Fact]
         public static void TestAxpy()
         {
-            DistributedLocalEnvironment environment = CreateEnvironment();
-            Dictionary<ComputeNode, DistributedIndexer> indexers = CreateIndexers(environment);
+            ComputeNodeTopology topology = CreateNodeTopology();
+            var environment = new DistributedLocalEnvironment();
+            environment.NodeTopology = topology;
+            Dictionary<ComputeNode, DistributedIndexer> indexers = CreateIndexers(topology);
             var localToGlobalMaps = CreateLocalToGlobalMaps(environment);
 
             double[] globalX = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
@@ -40,8 +43,10 @@ namespace MGroup.Solvers.Tests.MPI.LinearAlgebra
         [Fact]
         public static void TestDotProduct()
         {
-            DistributedLocalEnvironment environment = CreateEnvironment();
-            Dictionary<ComputeNode, DistributedIndexer> indexers = CreateIndexers(environment);
+            ComputeNodeTopology topology = CreateNodeTopology();
+            var environment = new DistributedLocalEnvironment();
+            environment.NodeTopology = topology;
+            Dictionary<ComputeNode, DistributedIndexer> indexers = CreateIndexers(topology);
             var localToGlobalMaps = CreateLocalToGlobalMaps(environment);
 
             double[] globalX = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
@@ -62,14 +67,16 @@ namespace MGroup.Solvers.Tests.MPI.LinearAlgebra
         [Fact]
         public static void TestEquals()
         {
-            DistributedLocalEnvironment environment = CreateEnvironment();
-            Dictionary<ComputeNode, DistributedIndexer> indexers = CreateIndexers(environment);
+            ComputeNodeTopology topology = CreateNodeTopology();
+            var environment = new DistributedLocalEnvironment();
+            environment.NodeTopology = topology;
+            Dictionary<ComputeNode, DistributedIndexer> indexers = CreateIndexers(topology);
             var localToGlobalMaps = CreateLocalToGlobalMaps(environment);
 
             var localVectors1 = new Dictionary<ComputeNode, Vector>();
-            localVectors1[environment.ComputeNodes[0]] = Vector.CreateFromArray(new double[] { 0.0, 1.0, 2.0 });
-            localVectors1[environment.ComputeNodes[1]] = Vector.CreateFromArray(new double[] { 2.0, 3.0, 4.0 });
-            localVectors1[environment.ComputeNodes[2]] = Vector.CreateFromArray(new double[] { 4.0, 5.0, 0.0 });
+            localVectors1[environment.NodeTopology.Nodes[0]] = Vector.CreateFromArray(new double[] { 0.0, 1.0, 2.0 });
+            localVectors1[environment.NodeTopology.Nodes[1]] = Vector.CreateFromArray(new double[] { 2.0, 3.0, 4.0 });
+            localVectors1[environment.NodeTopology.Nodes[2]] = Vector.CreateFromArray(new double[] { 4.0, 5.0, 0.0 });
             var distributedVector1 = DistributedOverlappingVector.CreateLhsVector(environment, indexers, localVectors1);
 
             double[] globalVector = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
@@ -83,8 +90,10 @@ namespace MGroup.Solvers.Tests.MPI.LinearAlgebra
         [Fact]
         public static void TestLinearCombination()
         {
-            DistributedLocalEnvironment environment = CreateEnvironment();
-            Dictionary<ComputeNode, DistributedIndexer> indexers = CreateIndexers(environment);
+            ComputeNodeTopology topology = CreateNodeTopology();
+            var environment = new DistributedLocalEnvironment();
+            environment.NodeTopology = topology;
+            Dictionary<ComputeNode, DistributedIndexer> indexers = CreateIndexers(topology);
             var localToGlobalMaps = CreateLocalToGlobalMaps(environment);
 
             double[] globalX = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
@@ -109,8 +118,10 @@ namespace MGroup.Solvers.Tests.MPI.LinearAlgebra
         [Fact]
         public static void TestRhsVectorConvertion()
         {
-            DistributedLocalEnvironment environment = CreateEnvironment();
-            Dictionary<ComputeNode, DistributedIndexer> indexers = CreateIndexers(environment);
+            ComputeNodeTopology topology = CreateNodeTopology();
+            var environment = new DistributedLocalEnvironment();
+            environment.NodeTopology = topology;
+            Dictionary<ComputeNode, DistributedIndexer> indexers = CreateIndexers(topology);
             var localToGlobalMaps = CreateLocalToGlobalMaps(environment);
 
             double[] globalExpected = { 28.0, 11.0, 25.0, 14.0, 31.0, 17.0 };
@@ -118,9 +129,9 @@ namespace MGroup.Solvers.Tests.MPI.LinearAlgebra
             var distributedExpected = DistributedOverlappingVector.CreateLhsVector(environment, indexers, localExpected);
 
             var localRhs = new Dictionary<ComputeNode, Vector>();
-            localRhs[environment.ComputeNodes[0]] = Vector.CreateFromArray(new double[] { 10.0, 11.0, 12.0 });
-            localRhs[environment.ComputeNodes[1]] = Vector.CreateFromArray(new double[] { 13.0, 14.0, 15.0 });
-            localRhs[environment.ComputeNodes[2]] = Vector.CreateFromArray(new double[] { 16.0, 17.0, 18.0 });
+            localRhs[environment.NodeTopology.Nodes[0]] = Vector.CreateFromArray(new double[] { 10.0, 11.0, 12.0 });
+            localRhs[environment.NodeTopology.Nodes[1]] = Vector.CreateFromArray(new double[] { 13.0, 14.0, 15.0 });
+            localRhs[environment.NodeTopology.Nodes[2]] = Vector.CreateFromArray(new double[] { 16.0, 17.0, 18.0 });
             var distributedComputed = DistributedOverlappingVector.CreateRhsVector(environment, indexers, localRhs);
 
             double tol = 1E-13;
@@ -130,8 +141,10 @@ namespace MGroup.Solvers.Tests.MPI.LinearAlgebra
         [Fact]
         public static void TestScale()
         {
-            DistributedLocalEnvironment environment = CreateEnvironment();
-            Dictionary<ComputeNode, DistributedIndexer> indexers = CreateIndexers(environment);
+            ComputeNodeTopology topology = CreateNodeTopology();
+            var environment = new DistributedLocalEnvironment();
+            environment.NodeTopology = topology;
+            Dictionary<ComputeNode, DistributedIndexer> indexers = CreateIndexers(topology);
             var localToGlobalMaps = CreateLocalToGlobalMaps(environment);
 
             double[] globalX = { 10.0, 11.0, 12.0, 13.0, 14.0, 15.0 };
@@ -149,90 +162,48 @@ namespace MGroup.Solvers.Tests.MPI.LinearAlgebra
             Assert.True(distributedZExpected.Equals(distributedZ, tol));
         }
 
-        private static DistributedLocalEnvironment CreateEnvironment()
+        private static ComputeNodeTopology CreateNodeTopology()
         {
-            //TODOMPI: automate this process as much as possible (e.g. just specify neighbors)
-
-            // Environment
-            var environment = new DistributedLocalEnvironment();
-
             // Compute nodes
-            environment.ComputeNodes.Add(new ComputeNode(0));
-            environment.ComputeNodes.Add(new ComputeNode(1));
-            environment.ComputeNodes.Add(new ComputeNode(2));
+            var topology = new ComputeNodeTopology();
+            topology.Nodes[0] = new ComputeNode(0);
+            topology.Nodes[1] = new ComputeNode(1);
+            topology.Nodes[2] = new ComputeNode(2);
+            topology.Boundaries[0] = new ComputeNodeBoundary(0, new ComputeNode[] { topology.Nodes[2], topology.Nodes[0] });
+            topology.Boundaries[1] = new ComputeNodeBoundary(1, new ComputeNode[] { topology.Nodes[0], topology.Nodes[1] });
+            topology.Boundaries[2] = new ComputeNodeBoundary(2, new ComputeNode[] { topology.Nodes[1], topology.Nodes[2] });
+            topology.ConnectData();
 
-            // Compute node neighbors
-            environment.ComputeNodes[0].Neighbors.Add(environment.ComputeNodes[2]);
-            environment.ComputeNodes[0].Neighbors.Add(environment.ComputeNodes[1]);
-
-            environment.ComputeNodes[1].Neighbors.Add(environment.ComputeNodes[0]);
-            environment.ComputeNodes[1].Neighbors.Add(environment.ComputeNodes[2]);
-
-            environment.ComputeNodes[2].Neighbors.Add(environment.ComputeNodes[1]);
-            environment.ComputeNodes[2].Neighbors.Add(environment.ComputeNodes[0]);
-
-            // Boundaries between compute nodes.
-            var boundary0 = new ComputeNodeBoundary();
-            boundary0.Nodes.Add(environment.ComputeNodes[2]);
-            boundary0.Nodes.Add(environment.ComputeNodes[0]);
-
-            var boundary1 = new ComputeNodeBoundary();
-            boundary1.Nodes.Add(environment.ComputeNodes[0]);
-            boundary1.Nodes.Add(environment.ComputeNodes[1]);
-
-            var boundary2 = new ComputeNodeBoundary();
-            boundary2.Nodes.Add(environment.ComputeNodes[1]);
-            boundary2.Nodes.Add(environment.ComputeNodes[2]);
-
-            // Inform each compute node about its boundaries.
-            environment.ComputeNodes[0].Boundaries.Add(boundary0);
-            environment.ComputeNodes[0].Boundaries.Add(boundary1);
-
-            environment.ComputeNodes[1].Boundaries.Add(boundary1);
-            environment.ComputeNodes[1].Boundaries.Add(boundary2);
-
-            environment.ComputeNodes[2].Boundaries.Add(boundary2);
-            environment.ComputeNodes[2].Boundaries.Add(boundary0);
-
-            return environment;
+            return topology;
         }
 
-        private static Dictionary<ComputeNode, DistributedIndexer> CreateIndexers(DistributedLocalEnvironment environment)
+        private static Dictionary<ComputeNode, DistributedIndexer> CreateIndexers(ComputeNodeTopology topology)
         {
             var indexers = new Dictionary<ComputeNode, DistributedIndexer>();
 
             var indexer0 = new DistributedIndexer();
-            indexer0.ComputeNode = environment.ComputeNodes[0];
-            indexer0.InternalEntries = new int[] { 1 };
-            indexer0.BoundaryEntries = new List<int[]>();
-            indexer0.BoundaryEntries.Add(new int[] { 0 });
-            indexer0.BoundaryEntries.Add(new int[] { 2 });
-            indexer0.NeighborCommonEntries = new List<int[]>();
-            indexer0.NeighborCommonEntries.Add(new int[] { 0 });
-            indexer0.NeighborCommonEntries.Add(new int[] { 2 });
-            indexers[indexer0.ComputeNode] = indexer0;
+            indexer0.Node = topology.Nodes[0];
+            var boundaryEntries0 = new Dictionary<ComputeNodeBoundary, int[]>();
+            boundaryEntries0[topology.Boundaries[0]] = new int[] { 0 };
+            boundaryEntries0[topology.Boundaries[1]] = new int[] { 2 };
+            indexer0.Initialize(3, boundaryEntries0);
+            indexers[indexer0.Node] = indexer0;
 
             var indexer1 = new DistributedIndexer();
-            indexer1.ComputeNode = environment.ComputeNodes[1];
-            indexer1.InternalEntries = new int[] { 1 };
-            indexer1.BoundaryEntries = new List<int[]>();
-            indexer1.BoundaryEntries.Add(new int[] { 0 });
-            indexer1.BoundaryEntries.Add(new int[] { 2 });
-            indexer1.NeighborCommonEntries = new List<int[]>();
-            indexer1.NeighborCommonEntries.Add(new int[] { 0 });
-            indexer1.NeighborCommonEntries.Add(new int[] { 2 });
-            indexers[indexer1.ComputeNode] = indexer1;
+            indexer1.Node = topology.Nodes[1];
+            var boundaryEntries1 = new Dictionary<ComputeNodeBoundary, int[]>();
+            boundaryEntries1[topology.Boundaries[1]] = new int[] { 0 };
+            boundaryEntries1[topology.Boundaries[2]] = new int[] { 2 };
+            indexer1.Initialize(3, boundaryEntries1);
+            indexers[indexer1.Node] = indexer1;
 
             var indexer2 = new DistributedIndexer();
-            indexer2.ComputeNode = environment.ComputeNodes[2];
-            indexer2.InternalEntries = new int[] { 1 };
-            indexer2.BoundaryEntries = new List<int[]>();
-            indexer2.BoundaryEntries.Add(new int[] { 0 });
-            indexer2.BoundaryEntries.Add(new int[] { 2 });
-            indexer2.NeighborCommonEntries = new List<int[]>();
-            indexer2.NeighborCommonEntries.Add(new int[] { 0 });
-            indexer2.NeighborCommonEntries.Add(new int[] { 2 });
-            indexers[indexer2.ComputeNode] = indexer2;
+            indexer2.Node = topology.Nodes[2];
+            var boundaryEntries2 = new Dictionary<ComputeNodeBoundary, int[]>();
+            boundaryEntries2[topology.Boundaries[2]] = new int[] { 0 };
+            boundaryEntries2[topology.Boundaries[0]] = new int[] { 2 };
+            indexer2.Initialize(3, boundaryEntries2);
+            indexers[indexer2.Node] = indexer2;
 
             return indexers;
         }
@@ -240,9 +211,9 @@ namespace MGroup.Solvers.Tests.MPI.LinearAlgebra
         private static Dictionary<ComputeNode, int[]> CreateLocalToGlobalMaps(DistributedLocalEnvironment environment)
         {
             var localToGlobalMaps = new Dictionary<ComputeNode, int[]>();
-            localToGlobalMaps[environment.ComputeNodes[0]] = new int[] { 0, 1, 2 };
-            localToGlobalMaps[environment.ComputeNodes[1]] = new int[] { 2, 3, 4 };
-            localToGlobalMaps[environment.ComputeNodes[2]] = new int[] { 4, 5, 0 };
+            localToGlobalMaps[environment.NodeTopology.Nodes[0]] = new int[] { 0, 1, 2 };
+            localToGlobalMaps[environment.NodeTopology.Nodes[1]] = new int[] { 2, 3, 4 };
+            localToGlobalMaps[environment.NodeTopology.Nodes[2]] = new int[] { 4, 5, 0 };
             return localToGlobalMaps;
         }
     }
