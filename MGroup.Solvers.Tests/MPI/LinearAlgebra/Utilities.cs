@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.Solvers.MPI.Environments;
 using MGroup.Solvers.MPI.LinearAlgebra;
@@ -22,6 +23,27 @@ namespace MGroup.Solvers.Tests.MPI.LinearAlgebra
                 localVectors[node] = localVector;
             }
             return localVectors;
+        }
+
+        public static Dictionary<ComputeNode, Matrix> GlobalToLocalMatrices(double[,] globalMatrix,
+            Dictionary<ComputeNode, int[]> localToGlobalMaps)
+        {
+            var localMatrices = new Dictionary<ComputeNode, Matrix>();
+            foreach (ComputeNode node in localToGlobalMaps.Keys)
+            {
+                int[] map = localToGlobalMaps[node];
+                int n = map.Length;
+                var localMatrix = Matrix.CreateZero(n, n);
+                for (int i = 0; i < n; ++i)
+                {
+                    for (int j = 0; j < n; ++j)
+                    {
+                        localMatrix[i, j] = globalMatrix[map[i], map[j]];
+                    }
+                }
+                localMatrices[node] = localMatrix;
+            }
+            return localMatrices;
         }
     }
 }

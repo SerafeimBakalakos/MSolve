@@ -14,14 +14,22 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
 
         private Dictionary<ComputeNodeBoundary, int[]> boundaryEntries;
 
+        public DistributedIndexer(ComputeNode node)
+        {
+            this.Node = node;
+        }
+
         public int[] InternalEntries { get; private set; }
 
-        public ComputeNode Node { get; set; }
+        public ComputeNode Node { get; }
+
+        public int NumTotalEntries { get; private set; }
 
         public void Initialize(int numTotalEntries, Dictionary<ComputeNodeBoundary, int[]> boundaryEntries)
         {
+            this.NumTotalEntries = numTotalEntries;
             this.boundaryEntries = new Dictionary<ComputeNodeBoundary, int[]>(boundaryEntries); //TODO: Perhaps perform deep copy
-            FindInternalEntries(numTotalEntries);
+            FindInternalEntries();
             FindCommonEntriesWithNeighbors();
         }
 
@@ -41,7 +49,7 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
 
         public int[] GetEntriesOfBoundary(ComputeNodeBoundary boundary) => boundaryEntries[boundary];
 
-        private void FindInternalEntries(int numTotalEntries)
+        private void FindInternalEntries()
         {
             var allBoundaryEntries = new HashSet<int>();
             foreach (ComputeNodeBoundary boundary in Node.Boundaries)
@@ -49,9 +57,9 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
                 allBoundaryEntries.UnionWith(boundaryEntries[boundary]);
             }
 
-            InternalEntries = new int[numTotalEntries - allBoundaryEntries.Count];
+            InternalEntries = new int[NumTotalEntries - allBoundaryEntries.Count];
             int idx = 0;
-            foreach (int entry in Enumerable.Range(0, numTotalEntries))
+            foreach (int entry in Enumerable.Range(0, NumTotalEntries))
             {
                 if (!allBoundaryEntries.Contains(entry))
                 {
