@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Iterative;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.Solvers.MPI.Environments;
@@ -14,10 +15,10 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
     {
         private readonly IComputeEnvironment environment;
         private readonly Dictionary<ComputeNode, DistributedIndexer> indexers;         
-        private readonly Dictionary<ComputeNode, Matrix> localMatrices;
+        private readonly Dictionary<ComputeNode, ILinearTransformation> localMatrices;
 
         public DistributedOverlappingMatrix(IComputeEnvironment environment,
-            Dictionary<ComputeNode, DistributedIndexer> indexers, Dictionary<ComputeNode, Matrix> localMatrices)
+            Dictionary<ComputeNode, DistributedIndexer> indexers, Dictionary<ComputeNode, ILinearTransformation> localMatrices)
         {
             this.environment = environment;
             this.indexers = indexers;
@@ -29,10 +30,10 @@ namespace MGroup.Solvers.MPI.LinearAlgebra
             //TODOMPI: check that environment and indexers are the same between A,x and A,y
             Action<ComputeNode> multiplyLocal = node =>
             {
-                Matrix localA = localMatrices[node];
+                ILinearTransformation localA = localMatrices[node];
                 Vector localX = x.LocalVectors[node];
                 Vector localY = y.LocalVectors[node];
-                localA.MultiplyIntoResult(localX, localY);
+                localA.Multiply(localX, localY);
             };
             environment.DoPerNode(multiplyLocal);
 
