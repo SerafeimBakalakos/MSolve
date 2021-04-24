@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MGroup.Solvers.MPI.Topologies;
+using MGroup.Solvers.Distributed.Topologies;
 
 //TODOMPI: consider renaming IProcessEnvironment to IThreadEnvironment or something similar. Also the comments. Actually these
 //      local units of execution are neither processes (OS & MPI construct) nor threads (C#, CPU construct). 
 //      I need a different name: e.g. ComputeNode, Cluster, etc.
-namespace MGroup.Solvers.MPI.Environments
+namespace MGroup.Solvers.Distributed.Environments
 {
     /// <summary>
     /// Manages a collection of compute nodes (e.g. MPI processes, C# threads, etc). Each compute node has its own distributed 

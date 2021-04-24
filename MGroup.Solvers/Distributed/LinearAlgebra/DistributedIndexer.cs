@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MGroup.Solvers.MPI.Topologies;
+using MGroup.Solvers.Distributed.Topologies;
 
-namespace MGroup.Solvers.MPI.LinearAlgebra
+namespace MGroup.Solvers.Distributed.LinearAlgebra
 {
     //TODOMPI: the counts array for AllToAll can be cached by the indexer. Also a mapping array can be cached as well to 
     //      simplify the nested for loops required to copy from localVector to sendValues and from recvValues to localVector. 

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using MGroup.Solvers.MPI.Environments;
-using MGroup.Solvers.MPI.LinearAlgebra;
-using MGroup.Solvers.MPI.Topologies;
+using MGroup.Solvers.Distributed.Environments;
+using MGroup.Solvers.Distributed.LinearAlgebra;
+using MGroup.Solvers.Distributed.Topologies;
 
 //          x 8                   x 8                     x 8      
 //        /   \                 /                           \      
@@ -21,7 +21,7 @@ using MGroup.Solvers.MPI.Topologies;
 //                                       cluster0
 // 1 dof per node
 
-namespace MGroup.Solvers.Tests.MPI.LinearAlgebra
+namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
 {
     public class Hexagon1DTopology
     {

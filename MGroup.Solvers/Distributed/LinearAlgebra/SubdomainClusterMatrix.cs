@@ -6,7 +6,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 //TODOMPI: Parallelization of operations per subdomain
-namespace MGroup.Solvers.MPI.LinearAlgebra
+namespace MGroup.Solvers.Distributed.LinearAlgebra
 {
     public class SubdomainClusterMatrix : ILinearTransformation
     {

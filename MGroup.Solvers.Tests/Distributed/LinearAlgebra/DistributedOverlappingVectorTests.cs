@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using MGroup.Solvers.MPI.Environments;
-using MGroup.Solvers.MPI.LinearAlgebra;
-using MGroup.Solvers.MPI.Topologies;
+using MGroup.Solvers.Distributed.Environments;
+using MGroup.Solvers.Distributed.LinearAlgebra;
+using MGroup.Solvers.Distributed.Topologies;
 using Xunit;
 
-namespace MGroup.Solvers.Tests.MPI.LinearAlgebra
+namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
 {
     public static class DistributedOverlappingVectorTests
     {

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using MGroup.Solvers.MPI.Topologies;
+using MGroup.Solvers.Distributed.Topologies;
 
-namespace MGroup.Solvers.MPI.Environments
+namespace MGroup.Solvers.Distributed.Environments
 {
     public class DistributedLocalEnvironment : IComputeEnvironment
     {

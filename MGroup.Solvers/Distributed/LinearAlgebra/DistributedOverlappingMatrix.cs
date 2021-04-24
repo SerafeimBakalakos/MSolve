@@ -5,11 +5,11 @@ using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Iterative;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using MGroup.Solvers.MPI.Environments;
-using MGroup.Solvers.MPI.Topologies;
+using MGroup.Solvers.Distributed.Environments;
+using MGroup.Solvers.Distributed.Topologies;
 
 //TODOMPI: Do I need a similar class for preconsitioners? Do preconditioners output rhs vectors as well?
-namespace MGroup.Solvers.MPI.LinearAlgebra
+namespace MGroup.Solvers.Distributed.LinearAlgebra
 {
     public class DistributedOverlappingMatrix
     {

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using MGroup.Solvers.MPI.Environments;
-using MGroup.Solvers.MPI.Topologies;
+using MGroup.Solvers.Distributed.Environments;
+using MGroup.Solvers.Distributed.Topologies;
 
 //TODOMPI: perhaps I should have the vector rearranged so that entries belonging to the same boundary are consecutive. 
 //      This is definitely faster for linear algebra operations between distributed vectors, but perhaps not between 
@@ -13,7 +13,7 @@ using MGroup.Solvers.MPI.Topologies;
 //TODOMPI: this class will be mainly used for iterative methods. Taking that into account, make optimizations. E.g. work arrays
 //      used as buffers for MPI communication can be reused across vectors, instead of each vector allocating/freeing identical 
 //      buffers. Such functionality can be included in the indexer, which is shared across vectors/matrices.
-namespace MGroup.Solvers.MPI.LinearAlgebra
+namespace MGroup.Solvers.Distributed.LinearAlgebra
 {
     public class DistributedOverlappingVector
     {

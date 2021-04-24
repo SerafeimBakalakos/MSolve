@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using MGroup.Solvers.MPI.Exceptions;
-using MGroup.Solvers.MPI.Topologies;
+using MGroup.Solvers.Distributed.Exceptions;
+using MGroup.Solvers.Distributed.Topologies;
 using MPI;
 
 //TODOMPI: Dispose everything from MPI.NET and make this disposable too.
-namespace MGroup.Solvers.MPI.Environments
+namespace MGroup.Solvers.Distributed.Environments
 {
     /// <summary>
     /// There is only one compute node per process. There may be many processes per machine, but there is no way for them to

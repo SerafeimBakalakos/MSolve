@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MGroup.Solvers.MPI.Topologies
+namespace MGroup.Solvers.Distributed.Topologies
 {
     public class ComputeNode
     {
