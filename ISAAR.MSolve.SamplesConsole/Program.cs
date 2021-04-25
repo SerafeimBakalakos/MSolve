@@ -19,6 +19,7 @@ namespace ISAAR.MSolve.SamplesConsole
 
         static void Main(string[] args)
         {
+            Console.WriteLine("Hello world!");
             //SolveBuildingInNoSoilSmall();
             //TrussExample.Run();
             //FEM.Cantilever2D.Run();

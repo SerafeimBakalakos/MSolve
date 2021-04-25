@@ -11,6 +11,13 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
 {
     public static class Utilities
     {
+        public static void FilterDictionary<T>(Dictionary<ComputeNode, T> data, ComputeNode keep)
+        {
+            T val = data[keep];
+            data.Clear();
+            data[keep] = val;
+        }
+
         public static Dictionary<ComputeNode, Vector> GlobalToLocalVectors(double[] globalVector, 
             Dictionary<ComputeNode, int[]> localToGlobalMaps)
         {

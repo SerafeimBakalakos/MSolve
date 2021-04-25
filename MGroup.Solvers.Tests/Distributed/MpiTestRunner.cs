@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MGroup.Solvers.Tests.Distributed.LinearAlgebra;
 using MPI;
 
 namespace MGroup.Solvers.Tests.Distributed
@@ -9,13 +10,19 @@ namespace MGroup.Solvers.Tests.Distributed
     {
         public static void Run(string[] args)
         {
-            using (new MPI.Environment(ref args))
-            {
-                Intracommunicator comm = Communicator.world;
-                string header = $"Process {comm.Rank}: ";
+            //DistributedOverlappingVectorTestsMpi.TestAxpy();
+            //DistributedOverlappingVectorTestsMpi.TestDotProduct();
+            //DistributedOverlappingVectorTestsMpi.TestEquals();
+            DistributedOverlappingVectorTestsMpi.TestRhsVectorConvertion();
 
-                Console.WriteLine($"Process {comm.Rank}/{comm.Size - 1}: Hello world!");
-            }
+            //using (new MPI.Environment(ref args))
+            //{
+            //    MpiUtilities.AssistDebuggerAttachment();
+
+            //    Intracommunicator comm = Communicator.world;
+            //    string header = $"Process {comm.Rank}: ";
+            //    Console.WriteLine($"Process {comm.Rank}/{comm.Size - 1}: Hello world!");
+            //}
         }
     }
 }

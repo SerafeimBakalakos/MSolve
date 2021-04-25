@@ -119,6 +119,8 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
             Assert.True(distributedZExpected.Equals(distributedZ, tol));
         }
 
+
+
         [Fact]
         public static void TestRhsVectorConvertion()
         {
@@ -168,5 +170,7 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
             double tol = 1E-13;
             Assert.True(distributedZExpected.Equals(distributedZ, tol));
         }
+
+        
     }
 }

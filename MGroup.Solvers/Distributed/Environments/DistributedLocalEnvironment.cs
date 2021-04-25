@@ -90,6 +90,11 @@ namespace MGroup.Solvers.Distributed.Environments
             }
         }
 
+        //public void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
         private static int FindOffset(ComputeNode thisNode, int[] entryCountPerNeighborOfThis, ComputeNode otherNode)
         {
             int offset = 0;
