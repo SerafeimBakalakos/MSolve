@@ -11,11 +11,16 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
 {
     public static class Utilities
     {
-        public static void FilterDictionary<T>(Dictionary<ComputeNode, T> data, ComputeNode keep)
+        //TODOMPI: Perhaps this should be an instance method of IComputeEnvironment, so that it can be used in model creation.
+        //          Also it may be preferable to perform this in the constructor of DistributedVector, etc.
+        public static void FilterNodeData<T>(IComputeEnvironment environment, Dictionary<ComputeNode, T> data)
         {
-            T val = data[keep];
-            data.Clear();
-            data[keep] = val;
+            if (environment is MpiEnvironment mpiEnvironment)
+            {
+                T val = data[mpiEnvironment.LocalNode];
+                data.Clear();
+                data[mpiEnvironment.LocalNode] = val;
+            }
         }
 
         public static Dictionary<ComputeNode, Vector> GlobalToLocalVectors(double[] globalVector, 

@@ -3,7 +3,7 @@
     "MGroup.Solvers.Tests": {
       "commandName": "Executable",
       "executablePath": "C:\\Program Files\\Microsoft HPC Pack 2008 R2\\Bin\\mpiexec.exe",
-      "commandLineArgs": "-n 3 $(TargetDir)$(TargetName).exe"
+      "commandLineArgs": "-n 4 $(TargetDir)$(TargetName).exe"
     }
   }
 }

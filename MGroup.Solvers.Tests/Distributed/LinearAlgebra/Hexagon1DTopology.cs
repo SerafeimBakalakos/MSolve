@@ -40,7 +40,8 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
             return topology;
         }
 
-        public Dictionary<ComputeNode, DistributedIndexer> CreateIndexers(ComputeNodeTopology topology)
+        public Dictionary<ComputeNode, DistributedIndexer> CreateIndexers(IComputeEnvironment environment,
+            ComputeNodeTopology topology)
         {
             var indexers = new Dictionary<ComputeNode, DistributedIndexer>();
 
@@ -65,15 +66,19 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
             indexer2.Initialize(3, boundaryEntries2);
             indexers[indexer2.Node] = indexer2;
 
+            Utilities.FilterNodeData(environment, indexers);
             return indexers;
         }
 
-        public Dictionary<ComputeNode, int[]> CreateLocalToGlobalMaps(ComputeNodeTopology topology)
+        public Dictionary<ComputeNode, int[]> CreateLocalToGlobalMaps(IComputeEnvironment environment, 
+            ComputeNodeTopology topology)
         {
             var localToGlobalMaps = new Dictionary<ComputeNode, int[]>();
             localToGlobalMaps[topology.Nodes[0]] = new int[] { 0, 1, 2 };
             localToGlobalMaps[topology.Nodes[1]] = new int[] { 2, 3, 4 };
             localToGlobalMaps[topology.Nodes[2]] = new int[] { 4, 5, 0 };
+
+            Utilities.FilterNodeData(environment, localToGlobalMaps);
             return localToGlobalMaps;
         }
     }

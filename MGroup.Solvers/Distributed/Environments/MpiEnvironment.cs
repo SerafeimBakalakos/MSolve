@@ -7,9 +7,11 @@ using MGroup.Solvers.Distributed.Exceptions;
 using MGroup.Solvers.Distributed.Topologies;
 using MPI;
 
-//TODOMPI: Dedicated unit tests for each method of the environment classes. MPI totorials and code reference may contain examples:
+//TODOMPI: Dedicated unit tests for each method of the environment classes. MPI tutorials and code reference may contain examples:
 //      E.g.: https://www.rookiehpc.com/mpi/docs/mpi_alltoallv.php, 
 //      http://www.math-cs.gordon.edu/courses/cps343/presentations/MPI_Collective.pdf
+//TODOMPI: Map processes to actual hardware nodes in an efficient manner. Then the whole program (linear algebra, DDM, 
+//      model creation) must depend on this mapping.
 namespace MGroup.Solvers.Distributed.Environments
 {
     /// <summary>
@@ -27,7 +29,7 @@ namespace MGroup.Solvers.Distributed.Environments
         private readonly MPI.Environment mpiEnvironment;
         private readonly Intracommunicator commWorld;
         private GraphCommunicator commNeighborhood; //TODOMPI: this must be injected properly
-        private ComputeNode node;
+        private ComputeNode localNode;
         private ComputeNodeTopology nodeTopology;
 
         public MpiEnvironment(int numProcesses)
@@ -54,6 +56,8 @@ namespace MGroup.Solvers.Distributed.Environments
             Dispose(false);
         }
 
+        public ComputeNode LocalNode => localNode;
+
         /// <summary>
         /// The full topology of compute nodes, not only the one that corresponds to this process. 
         /// The node that corresponds to this process will be the one with <see cref="ComputeNode.ID"/> equal to the process
@@ -74,7 +78,7 @@ namespace MGroup.Solvers.Distributed.Environments
                 }
 
                 nodeTopology = value;
-                node = nodeTopology.Nodes[commWorld.Rank]; // Keep only 1 node for this process.
+                localNode = nodeTopology.Nodes[commWorld.Rank]; // Keep only 1 node for this process.
 
                 // Initialize the MPI graph communicator. The edges between processes are the same as the 
                 // connectivity of compute nodes.
@@ -93,24 +97,22 @@ namespace MGroup.Solvers.Distributed.Environments
             } 
         }
 
-        public ComputeNode SingleNode => node; //TODOMPI: Perhaps a List<ComputeNode> ActiveNodes in IComputeEnvironment 
-
         public bool AllReduceAnd(Dictionary<ComputeNode, bool> valuePerNode)
         {
-            bool localValue = valuePerNode[node];
+            bool localValue = valuePerNode[localNode];
             return commWorld.Allreduce(localValue, Operation<bool>.LogicalAnd);
         }
 
         public double AllReduceSum(Dictionary<ComputeNode, double> valuePerNode)
         {
-            double localValue = valuePerNode[node];
+            double localValue = valuePerNode[localNode];
             return commWorld.Allreduce(localValue, Operation<double>.Add);
         }
 
         public Dictionary<ComputeNode, T> CreateDictionary<T>(Func<ComputeNode, T> createDataPerNode)
         {
             var result = new Dictionary<ComputeNode, T>();
-            result[node] = createDataPerNode(node);
+            result[localNode] = createDataPerNode(localNode);
             return result;
         }
 
@@ -122,13 +124,13 @@ namespace MGroup.Solvers.Distributed.Environments
 
         public void DoPerNode(Action<ComputeNode> actionPerNode)
         {
-            actionPerNode(node);
+            actionPerNode(localNode);
         }
 
         public void NeighborhoodAllToAll(
             Dictionary<ComputeNode, (double[] inValues, int[] counts, double[] outValues)> dataPerNode)
         {
-            (double[] inValues, int[] counts, double[] outValues) = dataPerNode[node];
+            (double[] inValues, int[] counts, double[] outValues) = dataPerNode[localNode];
             double[] outValuesTemp = outValues;
             commNeighborhood.AlltoallFlattened(inValues, counts, counts, ref outValuesTemp);
 

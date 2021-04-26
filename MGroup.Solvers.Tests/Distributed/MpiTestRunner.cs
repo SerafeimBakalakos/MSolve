@@ -1,28 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MGroup.Solvers.Distributed.Environments;
 using MGroup.Solvers.Tests.Distributed.LinearAlgebra;
 using MPI;
 
+//TODOMPI: Perhaps the XUnit.Assert() methods in the actual tests are not the best way for MPI. In this case polymorphism should 
+//      be used for asserting and reporting the result.
 namespace MGroup.Solvers.Tests.Distributed
 {
     public static class MpiTestRunner
     {
+        private static void AttachBareBonesDebugger()
+        {
+            var args = Array.Empty<String>();
+            using (new MPI.Environment(ref args))
+            {
+                MpiUtilities.AssistDebuggerAttachment();
+
+                Intracommunicator comm = Communicator.world;
+                string header = $"Process {comm.Rank}: ";
+                Console.WriteLine($"Process {comm.Rank}/{comm.Size - 1}: Hello world!");
+            }
+        }
+
         public static void Run(string[] args)
         {
-            //DistributedOverlappingVectorTestsMpi.TestAxpy();
-            //DistributedOverlappingVectorTestsMpi.TestDotProduct();
-            //DistributedOverlappingVectorTestsMpi.TestEquals();
-            DistributedOverlappingVectorTestsMpi.TestRhsVectorConvertion();
-
-            //using (new MPI.Environment(ref args))
-            //{
-            //    MpiUtilities.AssistDebuggerAttachment();
-
-            //    Intracommunicator comm = Communicator.world;
-            //    string header = $"Process {comm.Rank}: ";
-            //    Console.WriteLine($"Process {comm.Rank}/{comm.Size - 1}: Hello world!");
-            //}
+            //AttachBareBonesDebugger();
+            //Hexagon1DTopologyTests.RunMpiTests();
+            Line1DTopologyTests.RunMpiTests();
         }
+
+        
     }
 }
