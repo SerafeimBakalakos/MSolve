@@ -127,28 +127,26 @@ namespace MGroup.Solvers.Distributed.Environments
             actionPerNode(localNode);
         }
 
-        public void NeighborhoodAllToAll(
-            Dictionary<ComputeNode, (double[] inValues, int[] counts, double[] outValues)> dataPerNode)
+        public void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode)
         {
-            (double[] inValues, int[] counts, double[] outValues) = dataPerNode[localNode];
-            double[] outValuesTemp = outValues;
-            commNeighborhood.AlltoallFlattened(inValues, counts, counts, ref outValuesTemp);
+            throw new NotImplementedException();
+            AllToAllNodeData data = dataPerNode[localNode];
+            double[] sendValues = data.sendValues;
+            int[] counts = data.sendRecvCounts;
+            double[] recvValues = data.recvValues;
+            double[] recvValuesTemp = recvValues;
+            commNeighborhood.AlltoallFlattened(sendValues, counts, counts, ref recvValuesTemp);
 
             //TODOMPI: Perhaps I could replace the previous array inside the dictionary, but that would change the semantics.
             //      E.g. if a class retains the buffer for receiving values, that class must update the buffer instance.
             //      Even worse, this behavior is only present for MpiEnvironment, although I could implement it in other 
             //      environments as well.
-            if (outValuesTemp != outValues)
+            if (recvValuesTemp != recvValues)
             {
                 throw new MpiException("The original buffer supplied for writing the received values was not sufficient. "
                     + "Please supply a buffer with length >= the sum of entries in recvCounts");
             }
         }
-
-        //public void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode)
-        //{
-            
-        //}
 
         private void Dispose(bool disposing)
         {

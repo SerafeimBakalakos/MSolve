@@ -64,7 +64,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
         public void ConvertRhsToLhsVector()
         {
             // Prepare the boundary entries of each node before communicating them to its neighbors.
-            Func<ComputeNode, (double[] inValues, int[] counts, double[] outValues)> prepareLocalData = node =>
+            Func<ComputeNode, AllToAllNodeData> prepareLocalData = node =>
             {
                 Vector localVector = LocalVectors[node];
                 DistributedIndexer indexer = indexers[node];
@@ -89,7 +89,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
                 // Their counts are the same as the common entries that will be sent.
                 double[] recvValues = indexer.CreateBufferForAllToAllWithNeighbors();
 
-                return (sendValues, counts, recvValues);
+                return new AllToAllNodeData() { sendValues = sendValues, sendRecvCounts = counts, recvValues = recvValues };
             };
             var dataPerNode = environment.CreateDictionary(prepareLocalData);
 
@@ -101,7 +101,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
             {
                 Vector localVector = LocalVectors[node];
                 DistributedIndexer indexer = indexers[node];
-                (_, _, double[] recvValues) = dataPerNode[node];
+                double[] recvValues = dataPerNode[node].recvValues;
 
                 int recvValuesIdx = 0;
                 foreach (ComputeNode neighbor in node.Neighbors) // Neighbors of a node must be always accessed in this order

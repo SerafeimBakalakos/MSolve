@@ -62,38 +62,32 @@ namespace MGroup.Solvers.Distributed.Environments
             }
         }
 
-        public void NeighborhoodAllToAll(
-            Dictionary<ComputeNode, (double[] inValues, int[] counts, double[] outValues)> dataPerNode)
+        public void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode)
         {
             foreach (ComputeNode thisNode in NodeTopology.Nodes.Values)
             {
-                (double[] thisInValues, int[] thisCounts, double[] thisOutValues) = dataPerNode[thisNode];
+                AllToAllNodeData thisData = dataPerNode[thisNode];
 
                 for (int i = 0; i < thisNode.Neighbors.Count; ++i)
                 {
                     // Receive data from each other node, by just copying the corresponding array segments.
                     ComputeNode otherNode = thisNode.Neighbors[i];
-                    (double[] otherInValues, int[] otherCounts, double[] otherOutValues) = dataPerNode[otherNode];
+                    AllToAllNodeData otherData = dataPerNode[otherNode];
 
                     // Find the start of the segment in the array of this node and the neighbor
-                    int thisStart = FindOffset(thisNode, thisCounts, otherNode);
-                    int otherStart = FindOffset(otherNode, otherCounts, thisNode);
+                    int thisStart = FindOffset(thisNode, thisData.sendRecvCounts, otherNode);
+                    int otherStart = FindOffset(otherNode, otherData.sendRecvCounts, thisNode);
 
                     // Find the number of entries both node will transfer and assert that they match
-                    int thisCount = thisCounts[thisNode.FindNeighborIndex(otherNode)];
-                    Debug.Assert(thisCount == otherCounts[otherNode.FindNeighborIndex(thisNode)]);
+                    int thisCount = thisData.sendRecvCounts[thisNode.FindNeighborIndex(otherNode)];
+                    Debug.Assert(thisCount == otherData.sendRecvCounts[otherNode.FindNeighborIndex(thisNode)]);
 
                     // Copy data from other to this node. 
                     // Copying from this to other node will be done in another iteration of the outer loop.
-                    Array.Copy(otherInValues, otherStart, thisOutValues, thisStart, thisCount);
+                    Array.Copy(otherData.sendValues, otherStart, thisData.recvValues, thisStart, thisCount);
                 }
             }
         }
-
-        //public void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode)
-        //{
-        //    throw new NotImplementedException();
-        //}
 
         private static int FindOffset(ComputeNode thisNode, int[] entryCountPerNeighborOfThis, ComputeNode otherNode)
         {
