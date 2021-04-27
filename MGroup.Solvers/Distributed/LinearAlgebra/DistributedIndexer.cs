@@ -37,13 +37,28 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
         //      Also provide an option to request newly initialized buffers. It may be better to have dedicated Buffer classes to
         //      handle all that logic (e.g. keeping allocated buffers in a LinkedList, giving them out & locking them, 
         //      freeing them in clients, etc.
-        public double[] CreateBufferForAllToAllWithNeighbors()
+        public double[][] CreateBuffersForAllToAllWithNeighbors()
+        {
+            int numNeighbors = Node.Neighbors.Count;
+            var buffers = new double[numNeighbors][];
+            for (int n = 0; n < numNeighbors; ++n)
+            {
+                ComputeNode neighbor = Node.Neighbors[n];
+                buffers[n] = new double[commonEntriesWithNeighbors[neighbor].Length];
+            }
+            return buffers;
+        }
+
+        //TODO: cache a buffer for sending and a buffer for receiving inside Indexer (lazily or not) and just return them. 
+        //      Also provide an option to request newly initialized buffers. It may be better to have dedicated Buffer classes to
+        //      handle all that logic (e.g. keeping allocated buffers in a LinkedList, giving them out & locking them, 
+        //      freeing them in clients, etc.
+        public double[] CreateEntireBufferForAllToAllWithNeighbors()
         {
             int totalLength = 0;
             foreach (int[] entries in commonEntriesWithNeighbors.Values) totalLength += entries.Length;
             return new double[totalLength];
         }
-        
 
         public int[] GetCommonEntriesWithNeighbor(ComputeNode neighbor) => commonEntriesWithNeighbors[neighbor];
 

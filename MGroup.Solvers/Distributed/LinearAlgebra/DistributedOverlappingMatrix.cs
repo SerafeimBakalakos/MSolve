@@ -37,8 +37,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
             };
             environment.DoPerNode(multiplyLocal);
 
-            // Sum the values of corresponding boundary entries across local vectors. 
-            y.ConvertRhsToLhsVector(); 
+            y.SumOverlappingEntries(); 
         }
     }
 }

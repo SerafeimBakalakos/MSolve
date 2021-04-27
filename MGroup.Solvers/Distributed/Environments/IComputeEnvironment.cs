@@ -35,6 +35,10 @@ namespace MGroup.Solvers.Distributed.Environments
         //TODOMPI: the order of entries in values and counts arrays must match the order of neighbors. This should be enforced
         //      by the IComputeEnvironment implementation and communicated to the client.
         //TODO: Extend it for nonsymmetric transfers: sendCounts != recvCounts
+        //TODOMPI: Overload that uses delegates for assembling the send data and processing the receive data per neighbor of 
+        //      each compute node. For better pipelining. Alternatively expose non-blocking send and receive operations, 
+        //      to clients so that they can do them themselves. These may actualy help to avoid unnecessary buffers in 
+        //      communications between local nodes.
         /// <summary>
         /// Each <see cref="ComputeNode"/> sends and receives data to/from <see cref="ComputeNode"/>s in its neighborhood. 
         /// </summary>
@@ -42,9 +46,39 @@ namespace MGroup.Solvers.Distributed.Environments
         /// See <see cref="AllToAllNodeData"/> for a description of the data that will be transfered.
         /// </param>
         void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode);
+
+        
+        /// <summary>
+        /// Similar to <see cref="NeighborhoodAllToAll(Dictionary{ComputeNode, AllToAllNodeData})"/>, but depends on neighborhood
+        /// collectives. Unfortunately, neighborhood collectives are not supported by MPI.NET yet. Therefore, this method
+        /// is less efficient than <see cref="NeighborhoodAllToAll(Dictionary{ComputeNode, AllToAllNodeData})"/> and working
+        /// with its arguments is more complicated.
+        /// </summary>
+        /// <param name="dataPerNode"></param>
+        void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeDataEntire> dataPerNode);
+
+
     }
 
     public struct AllToAllNodeData
+    {
+        /// <summary>
+        /// Buffer of values that will be received by a <see cref="ComputeNode"/> i by each of its neighboring 
+        /// <see cref="ComputeNode"/>s. Foreach j in <see cref="ComputeNode.Neighbors"/> of i, the values transfered from j to i 
+        /// will be stored in <see cref="recvValues"/>[j]. Warning: <see cref="sendValues"/>[j] of node i and 
+        /// <see cref="recvValues"/>[i] of node i, must have the same <see cref="Array.Length"/>.
+        /// </summary>
+        public double[][] recvValues;
+
+        /// Buffer of values that will be sent from a <see cref="ComputeNode"/> i to each of its neighboring 
+        /// <see cref="ComputeNode"/>s. Foreach j in <see cref="ComputeNode.Neighbors"/> of i, the values transfered from i to j 
+        /// will be stored in <see cref="sendValues"/>[j]. Warning: <see cref="sendValues"/>[j] of node i and 
+        /// <see cref="recvValues"/>[i] of node i, must have the same <see cref="Array.Length"/>.
+        /// </summary>
+        public double[][] sendValues;
+    }
+
+    public struct AllToAllNodeDataEntire
     {
         /// <summary>
         /// Buffer of values that will be received by a <see cref="ComputeNode"/> i by the other <see cref="ComputeNode"/>s j in 
@@ -74,5 +108,4 @@ namespace MGroup.Solvers.Distributed.Environments
         /// </summary>
         public int[] sendRecvCounts;
     }
-
 }

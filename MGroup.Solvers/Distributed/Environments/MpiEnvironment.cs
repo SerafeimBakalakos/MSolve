@@ -25,12 +25,15 @@ namespace MGroup.Solvers.Distributed.Environments
     /// </remarks>
     public sealed class MpiEnvironment : IComputeEnvironment, IDisposable
     {
+        private static readonly int allToAllTag = IntGuids.GetNewNonNegativeGuid()/*Guid.NewGuid().GetHashCode()*/;
+
         private bool disposed = false;
         private readonly MPI.Environment mpiEnvironment;
         private readonly Intracommunicator commWorld;
         private GraphCommunicator commNeighborhood; //TODOMPI: this must be injected properly
         private ComputeNode localNode;
         private ComputeNodeTopology nodeTopology;
+
 
         public MpiEnvironment(int numProcesses)
         {
@@ -129,22 +132,72 @@ namespace MGroup.Solvers.Distributed.Environments
 
         public void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode)
         {
-            throw new NotImplementedException();
             AllToAllNodeData data = dataPerNode[localNode];
-            double[] sendValues = data.sendValues;
-            int[] counts = data.sendRecvCounts;
-            double[] recvValues = data.recvValues;
-            double[] recvValuesTemp = recvValues;
-            commNeighborhood.AlltoallFlattened(sendValues, counts, counts, ref recvValuesTemp);
+            int numNeighbors = localNode.Neighbors.Count;
 
-            //TODOMPI: Perhaps I could replace the previous array inside the dictionary, but that would change the semantics.
-            //      E.g. if a class retains the buffer for receiving values, that class must update the buffer instance.
-            //      Even worse, this behavior is only present for MpiEnvironment, although I could implement it in other 
-            //      environments as well.
-            if (recvValuesTemp != recvValues)
+            // Communication via non-blocking send/receive operations
+            var recvRequests = new RequestList(); //TODOMPI: Use my own RequestList implementation for more efficient WaitAll() and pipeline opportunities
+            for (int n = 0; n < numNeighbors; ++n)
             {
-                throw new MpiException("The original buffer supplied for writing the received values was not sufficient. "
-                    + "Please supply a buffer with length >= the sum of entries in recvCounts");
+                ReceiveRequest req = commWorld.ImmediateReceive(localNode.Neighbors[n].ID, allToAllTag, data.recvValues[n]);
+                recvRequests.Add(req);
+            }
+
+            var sendRequests = new RequestList(); //TODOMPI: Can't I avoid waiting for send requests? 
+            for (int n = 0; n < numNeighbors; ++n)
+            {
+                Request req = commWorld.ImmediateSend(data.sendValues[n], localNode.Neighbors[n].ID, allToAllTag);
+                sendRequests.Add(req);
+            }
+
+            // Wait for requests to end 
+            recvRequests.WaitAll();
+            sendRequests.WaitAll();
+        }
+
+        public void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeDataEntire> dataPerNode)
+        {
+            AllToAllNodeDataEntire data = dataPerNode[localNode];
+
+            // 1D buffers to jagged arrays 
+            int numNeighbors = localNode.Neighbors.Count;
+            double[][] sendValues = new double[numNeighbors][];
+            double[][] recvValues = new double[numNeighbors][];
+            int[] counts = data.sendRecvCounts;
+            int offset = 0;
+            for (int n = 0; n < numNeighbors; ++n)
+            {
+                sendValues[n] = new double[counts[n]];
+                Array.Copy(data.sendValues, offset, sendValues[n], 0, counts[n]);
+                recvValues[n] = new double[counts[n]];
+                offset += counts[n];
+            }
+
+            // Communication via non-blocking send/receive operations
+            var recvRequests = new RequestList(); //TODOMPI: Use my own RequestList implementation for more efficient WaitAll() and pipeline opportunities
+            for (int n = 0; n < numNeighbors; ++n)
+            {
+                ReceiveRequest req = commWorld.ImmediateReceive(localNode.Neighbors[n].ID, allToAllTag, recvValues[n]);
+                recvRequests.Add(req);
+            }
+
+            var sendRequests = new RequestList(); //TODOMPI: Can't I avoid waiting for send requests?
+            for (int n = 0; n < numNeighbors; ++n)
+            {
+                Request req = commWorld.ImmediateSend(sendValues[n], localNode.Neighbors[n].ID, allToAllTag);
+                sendRequests.Add(req); 
+            }
+
+            // Wait for requests to end 
+            recvRequests.WaitAll();
+            sendRequests.WaitAll();
+
+            // Jagged arrays to 1D buffers
+            offset = 0;
+            for (int n = 0; n < numNeighbors; ++n)
+            {
+                Array.Copy(recvValues[n], 0, data.recvValues, offset, counts[n]);
+                offset += counts[n];
             }
         }
 

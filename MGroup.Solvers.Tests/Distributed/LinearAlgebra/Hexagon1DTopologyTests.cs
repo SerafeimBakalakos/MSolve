@@ -256,7 +256,7 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
             localRhs[environment.NodeTopology.Nodes[2]] = Vector.CreateFromArray(new double[] { 16.0, 17.0, 18.0 });
             Utilities.FilterNodeData(environment, localRhs);
             var distributedComputed = new DistributedOverlappingVector(environment, indexers, localRhs);
-            distributedComputed.ConvertRhsToLhsVector();
+            distributedComputed.SumOverlappingEntries();
 
             double tol = 1E-13;
             Assert.True(distributedExpected.Equals(distributedComputed, tol));
@@ -299,12 +299,9 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
                 TestDotProduct(mpiEnvironment);
                 TestEqualVectors(mpiEnvironment);
                 TestLinearCombinationVectors(mpiEnvironment);
-
-                //TODOMPI: fix this.There is no NeighborAlltoAll in MPI.NET
-                //TestMatrixVectorMultiplication(mpiEnvironment);
-                //TestMatrixVectorMultiplicationWithSubdomains(mpiEnvironment);
-                //TestRhsVectorConvertion(mpiEnvironment); 
-
+                TestMatrixVectorMultiplication(mpiEnvironment);
+                TestMatrixVectorMultiplicationWithSubdomains(mpiEnvironment);
+                TestRhsVectorConvertion(mpiEnvironment);
                 TestScaleVector(mpiEnvironment);
 
                 MpiUtilities.DoSerially(MPI.Communicator.world,

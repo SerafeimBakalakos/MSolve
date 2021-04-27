@@ -73,6 +73,35 @@ namespace MGroup.Solvers.Distributed.Environments
                     // Receive data from each other node, by just copying the corresponding array segments.
                     ComputeNode otherNode = thisNode.Neighbors[i];
                     AllToAllNodeData otherData = dataPerNode[otherNode];
+                    double[] otherSendValues = otherData.sendValues[otherNode.FindNeighborIndex(thisNode)];
+                    double[] thisRecvValues = thisData.recvValues[thisNode.FindNeighborIndex(otherNode)];
+
+#if DEBUG
+                    if (otherSendValues.Length != thisRecvValues.Length)
+                    {
+                        throw new ArgumentException($"Node {otherNode.ID} tries to send {otherSendValues.Length} entries" +
+                            $" but node {thisNode.ID} tries to receive {thisRecvValues.Length} entries. They must match.");
+                    }
+#endif
+
+                    // Copy data from other to this node. 
+                    // Copying from this to other node will be done in another iteration of the outer loop.
+                    Array.Copy(otherSendValues, thisRecvValues, thisRecvValues.Length);
+                }
+            }
+        }
+
+        public void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeDataEntire> dataPerNode)
+        {
+            foreach (ComputeNode thisNode in NodeTopology.Nodes.Values)
+            {
+                AllToAllNodeDataEntire thisData = dataPerNode[thisNode];
+
+                for (int i = 0; i < thisNode.Neighbors.Count; ++i)
+                {
+                    // Receive data from each other node, by just copying the corresponding array segments.
+                    ComputeNode otherNode = thisNode.Neighbors[i];
+                    AllToAllNodeDataEntire otherData = dataPerNode[otherNode];
 
                     // Find the start of the segment in the array of this node and the neighbor
                     int thisStart = FindOffset(thisNode, thisData.sendRecvCounts, otherNode);
