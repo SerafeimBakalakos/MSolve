@@ -19,15 +19,15 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.PCG
         protected readonly double residualTolerance;
         protected readonly IPcgResidualUpdater residualUpdater;
 
-        protected DistributedOverlappingVector direction;
+        protected IIterativeMethodVector direction;
         protected int iteration;
-        protected DistributedOverlappingVector matrixTimesDirection;
+        protected IIterativeMethodVector matrixTimesDirection;
         protected double paramBeta;
-        protected DistributedOverlappingVector precondResidual;
+        protected IIterativeMethodVector precondResidual;
         protected double resDotPrecondRes;
         protected double resDotPrecondResOld;
-        protected DistributedOverlappingVector residual;
-        protected DistributedOverlappingVector solution;
+        protected IIterativeMethodVector residual;
+        protected IIterativeMethodVector solution;
         protected double stepSize;
 
         protected PcgAlgorithmBase(double residualTolerance, IMaxIterationsProvider maxIterationsProvider,
@@ -42,7 +42,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.PCG
         /// <summary>
         /// The direction vector d, used to update the solution vector: x = x + α * d
         /// </summary>
-        public DistributedOverlappingVector Direction => direction;
+        public IIterativeMethodVector Direction => direction;
 
         /// <summary>
         /// The current iteration of the algorithm. It belongs to the interval [0, maxIterations).
@@ -52,12 +52,12 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.PCG
         /// <summary>
         /// The matrix A of the linear system or another object that implements matrix-vector multiplications.
         /// </summary>
-        public DistributedOverlappingMatrix Matrix { get; private set; }
+        public IIterativeMethodMatrix Matrix { get; private set; }
 
         /// <summary>
         /// The vector that results from <see cref="Matrix"/> * <see cref="Direction"/>.
         /// </summary>
-        public DistributedOverlappingVector MatrixTimesDirection => matrixTimesDirection;
+        public IIterativeMethodVector MatrixTimesDirection => matrixTimesDirection;
 
         /// <summary>
         /// The β parameter of Conjugate Gradient that ensures conjugacy between the direction vectors.
@@ -72,7 +72,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.PCG
         /// <summary>
         /// The vector s = inv(M) * r
         /// </summary>
-        public DistributedOverlappingVector PrecondResidual => precondResidual;
+        public IIterativeMethodVector PrecondResidual => precondResidual;
 
         /// <summary>
         /// The dot product r(t) * (inv(M) * r(t)) of the current iteration t.
@@ -87,17 +87,17 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.PCG
         /// <summary>
         /// The residual vector r = b - A * x.
         /// </summary>
-        public DistributedOverlappingVector Residual => residual;
+        public IIterativeMethodVector Residual => residual;
 
         /// <summary>
         /// The right hand side of the linear system b = A * x.
         /// </summary>
-        public DistributedOverlappingVector Rhs { get; private set; }
+        public IIterativeMethodVector Rhs { get; private set; }
 
         /// <summary>
         /// The current approximation to the solution of the linear system A * x = b
         /// </summary>
-        public DistributedOverlappingVector Solution => solution;
+        public IIterativeMethodVector Solution => solution;
 
         /// <summary>
         /// The step α taken along <see cref="Direction"/> to update the solution vector: x = x + α * d
@@ -151,8 +151,8 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.PCG
         /// <exception cref="NonMatchingDimensionsException">
         /// Thrown if <paramref name="rhs"/> or <paramref name="solution"/> violate the described constraints.
         /// </exception>
-        public IterativeStatistics Solve(DistributedOverlappingMatrix matrix, IPreconditioner preconditioner, 
-            DistributedOverlappingVector rhs, DistributedOverlappingVector solution,
+        public IterativeStatistics Solve(IIterativeMethodMatrix matrix, IPreconditioner preconditioner,
+            IIterativeMethodVector rhs, IIterativeMethodVector solution,
             bool initialGuessIsZero) //TODO: find a better way to handle the case x0=0
         {
             this.Matrix = matrix;
@@ -176,6 +176,6 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.PCG
         }
 
         protected abstract IterativeStatistics SolveInternal(int maxIterations, 
-            Func<DistributedOverlappingVector> initializeZeroVector);
+            Func<IIterativeMethodVector> initializeZeroVector);
     }
 }

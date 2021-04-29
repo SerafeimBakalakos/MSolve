@@ -19,7 +19,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.PCG
         /// <summary>
         /// See <see cref="IPcgResidualUpdater.UpdateResidual(PcgAlgorithmBase, IVector)"/>
         /// </summary>
-        public void UpdateResidual(PcgAlgorithmBase pcg, DistributedOverlappingVector residual)
+        public void UpdateResidual(PcgAlgorithmBase pcg, IIterativeMethodVector residual)
         {
             //TODO: perhaps this should be done in an Initialize() method
             if (numIterationsBeforeCorrection == int.MinValue)

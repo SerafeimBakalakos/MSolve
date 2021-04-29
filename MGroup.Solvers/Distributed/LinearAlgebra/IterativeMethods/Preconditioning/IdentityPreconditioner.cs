@@ -27,7 +27,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.Precondition
         /// doesn't have to define the dimensions of the linear system, which is useful when testing or benchmarking, at the 
         /// expense of little extra safety.
         /// </remarks>
-        public void SolveLinearSystem(DistributedOverlappingVector rhsVector, DistributedOverlappingVector lhsVector) 
+        public void SolveLinearSystem(IIterativeMethodVector rhsVector, IIterativeMethodVector lhsVector) 
             => lhsVector.CopyFrom(rhsVector);
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.Precondition
             /// <summary>
             /// See <see cref="IPreconditionerFactory.CreatePreconditionerFor(IMatrixView)"/>.
             /// </summary>
-            public IPreconditioner CreatePreconditionerFor(DistributedOverlappingMatrix matrix) 
+            public IPreconditioner CreatePreconditionerFor(IIterativeMethodMatrix matrix) 
                 => new IdentityPreconditioner();
         }
     }

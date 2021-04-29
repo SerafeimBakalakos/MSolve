@@ -12,7 +12,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.PCG
     /// </summary>
     public class PolakRibiereBeta : IPcgBetaParameterCalculation
     {
-        private DistributedOverlappingVector residualOld;
+        private IIterativeMethodVector residualOld;
 
         /// <summary>
         /// See <see cref="IPcgBetaParameterCalculation.Initialize(IVectorView)"/>.

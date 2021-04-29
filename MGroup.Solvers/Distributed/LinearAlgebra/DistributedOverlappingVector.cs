@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Exceptions;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.Solvers.Distributed.Environments;
 using MGroup.Solvers.Distributed.Topologies;
@@ -27,7 +28,7 @@ using MGroup.Solvers.Distributed.Topologies;
 //      round it to the nearest integer (and pray the precision errors are negligible).
 namespace MGroup.Solvers.Distributed.LinearAlgebra
 {
-    public class DistributedOverlappingVector
+    public class DistributedOverlappingVector : IIterativeMethodVector
     {
         private readonly IComputeEnvironment environment;
         private readonly Dictionary<ComputeNode, DistributedIndexer> indexers; //TODOMPI: a global Indexer object that stores data for each node
@@ -50,6 +51,16 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
 
         public Dictionary<ComputeNode, Vector> LocalVectors { get; }
 
+        public void AxpyIntoThis(IIterativeMethodVector otherVector, double otherCoefficient)
+        {
+            if (otherVector is DistributedOverlappingVector casted) AxpyIntoThis(casted, otherCoefficient);
+            else
+            {
+                throw new SparsityPatternModifiedException(
+                    "This operation is legal only if the 2 vectors have the same type and indexers.");
+            }
+        }
+
         public void AxpyIntoThis(DistributedOverlappingVector otherVector, double otherCoefficient)
         {
             Debug.Assert((this.environment == otherVector.environment) && (this.indexers == otherVector.indexers));
@@ -63,11 +74,23 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
             environment.DoPerNode(node => LocalVectors[node].Clear());
         }
 
+        IIterativeMethodVector IIterativeMethodVector.Copy() => Copy();
+
         public DistributedOverlappingVector Copy()
         {
             Dictionary<ComputeNode, Vector> localVectorsCloned = 
                 environment.CreateDictionary(node => LocalVectors[node].Copy());
             return new DistributedOverlappingVector(environment, indexers, localVectorsCloned);
+        }
+
+        public void CopyFrom(IIterativeMethodVector otherVector)
+        {
+            if (otherVector is DistributedOverlappingVector casted) CopyFrom(casted);
+            else
+            {
+                throw new SparsityPatternModifiedException(
+                    "This operation is legal only if the 2 vectors have the same type and indexers.");
+            }
         }
 
         public void CopyFrom(DistributedOverlappingVector other)
@@ -85,6 +108,8 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
             throw new NotImplementedException();
         }
 
+        IIterativeMethodVector IIterativeMethodVector.CreateZeroVectorWithSameFormat() => CreateZeroVectorWithSameFormat();
+
         public DistributedOverlappingVector CreateZeroVectorWithSameFormat()
         {
             Dictionary<ComputeNode, Vector> zeroLocalVectors = environment.CreateDictionary(
@@ -92,13 +117,14 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
             return new DistributedOverlappingVector(environment, indexers, zeroLocalVectors);
         }
 
-        public bool Equals(DistributedOverlappingVector other, double tolerance = 1E-7)
+        public double DotProduct(IIterativeMethodVector otherVector)
         {
-            if ((this.environment != other.environment) || (this.indexers != other.indexers)) return false;
-
-            Dictionary<ComputeNode, bool> flags = environment.CreateDictionary(
-                node => this.LocalVectors[node].Equals(other.LocalVectors[node], tolerance));
-            return environment.AllReduceAnd(flags);
+            if (otherVector is DistributedOverlappingVector casted) return DotProduct(casted);
+            else
+            {
+                throw new SparsityPatternModifiedException(
+                    "This operation is legal only if the 2 vectors have the same type and indexers.");
+            }
         }
 
         public double DotProduct(DistributedOverlappingVector otherVector)
@@ -135,6 +161,29 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
 
             Dictionary<ComputeNode, double> dotPerNode = environment.CreateDictionary(calcLocalDot);
             return environment.AllReduceSum(dotPerNode);
+        }
+
+        public bool Equals(DistributedOverlappingVector other, double tolerance = 1E-7)
+        {
+            if ((this.environment != other.environment) || (this.indexers != other.indexers)) return false;
+
+            Dictionary<ComputeNode, bool> flags = environment.CreateDictionary(
+                node => this.LocalVectors[node].Equals(other.LocalVectors[node], tolerance));
+            return environment.AllReduceAnd(flags);
+        }
+
+        public void LinearCombinationIntoThis(
+            double thisCoefficient, IIterativeMethodVector otherVector, double otherCoefficient)
+        {
+            if (otherVector is DistributedOverlappingVector casted)
+            {
+                LinearCombinationIntoThis(thisCoefficient, casted, otherCoefficient);
+            }
+            else
+            {
+                throw new SparsityPatternModifiedException(
+                    "This operation is legal only if the 2 vectors have the same type and indexers.");
+            }
         }
 
         public void LinearCombinationIntoThis(

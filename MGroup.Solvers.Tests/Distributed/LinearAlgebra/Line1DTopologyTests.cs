@@ -201,7 +201,7 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
             var distributedYExpected = new DistributedOverlappingVector(environment, indexers, localYExpected);
 
             var distributedY = new DistributedOverlappingVector(environment, indexers);
-            distributedA.Multiply(distributedX, distributedY);
+            distributedA.MultiplyIntoResult(distributedX, distributedY);
 
             double tol = 1E-13;
             Assert.True(distributedYExpected.Equals(distributedY, tol));
@@ -242,7 +242,7 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
             var distributedYExpected = new DistributedOverlappingVector(environment, indexers, localYExpected);
 
             var distributedY = new DistributedOverlappingVector(environment, indexers);
-            distributedA.Multiply(distributedX, distributedY);
+            distributedA.MultiplyIntoResult(distributedX, distributedY);
 
             double tol = 1E-13;
             Assert.True(distributedYExpected.Equals(distributedY, tol));

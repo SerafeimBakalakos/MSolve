@@ -29,7 +29,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods
         }
 
         protected override IterativeStatistics SolveInternal(int maxIterations, 
-            Func<DistributedOverlappingVector> initializeZeroVector)
+            Func<IIterativeMethodVector> initializeZeroVector)
         {
             // In contrast to the source algorithm, we initialize s here. At each iteration it will be overwritten, 
             // thus avoiding allocating & deallocating a new vector.
@@ -55,7 +55,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods
             for (iteration = 0; iteration < maxIterations; ++iteration)
             {
                 // q = A * d
-                Matrix.Multiply(direction, matrixTimesDirection);
+                Matrix.MultiplyIntoResult(direction, matrixTimesDirection);
 
                 // α = δnew / (d * q)
                 stepSize = resDotPrecondRes / direction.DotProduct(matrixTimesDirection);

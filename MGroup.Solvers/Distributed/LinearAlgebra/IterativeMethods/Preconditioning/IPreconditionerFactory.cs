@@ -17,6 +17,6 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.Precondition
         /// Initializes and returns an <see cref="IPreconditioner"/> for the provided <paramref name="matrix"/>.
         /// </summary>
         /// <param name="matrix">The original matrix, whose preconditioner will be created.</param>
-        IPreconditioner CreatePreconditionerFor(DistributedOverlappingMatrix matrix);
+        IPreconditioner CreatePreconditionerFor(IIterativeMethodMatrix matrix);
     }
 }

@@ -17,6 +17,6 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.PCG
         /// </summary>
         ///<param name="pcg">The Preconditioned Conjugate Gradient algorithm that uses this object.</param>
         /// <param name="residual">The current residual vector r to modify.</param>
-        void UpdateResidual(PcgAlgorithmBase pcg, DistributedOverlappingVector residual);
+        void UpdateResidual(PcgAlgorithmBase pcg, IIterativeMethodVector residual);
     }
 }

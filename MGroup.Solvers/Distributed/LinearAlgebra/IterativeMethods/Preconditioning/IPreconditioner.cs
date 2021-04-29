@@ -22,6 +22,6 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.Precondition
         /// Thrown if the <see cref="IIndexable1D.Length"/> of <paramref name="rhsVector"/> or <paramref name="lhsVector"/> 
         /// is different than the number of rows of this <see cref="IPreconditioner"/>.
         /// </exception>
-        void SolveLinearSystem(DistributedOverlappingVector rhsVector, DistributedOverlappingVector lhsVector);
+        void SolveLinearSystem(IIterativeMethodVector rhsVector, IIterativeMethodVector lhsVector);
     }
 }
