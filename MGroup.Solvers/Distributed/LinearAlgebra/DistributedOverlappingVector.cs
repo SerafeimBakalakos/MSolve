@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.Solvers.Distributed.Environments;
@@ -13,6 +14,17 @@ using MGroup.Solvers.Distributed.Topologies;
 //TODOMPI: this class will be mainly used for iterative methods. Taking that into account, make optimizations. E.g. work arrays
 //      used as buffers for MPI communication can be reused across vectors, instead of each vector allocating/freeing identical 
 //      buffers. Such functionality can be included in the indexer, which is shared across vectors/matrices.
+//TODOMPI: should this class have a Length property? It seems important for many linear algebra dimension matching checks, but 
+//      it will probably require significant communication. Furthermore, these checks can probably depend on polymorphic methods
+//      exposed by the vectors & matrix classes, which will check matching dimensions between matrix-vector or vector-vector.
+//      E.g. Adding 2 vectors requires that they have the same length. Vector will check exactly that, and possibly expose a 
+//      PatternMatchesForLinearCombo(other) method. DistributedVector however will check that they have the same indexers, 
+//      without any need to communicate, only to find the total length. If I do provide such a property, it should be accessed 
+//      from the indexer (which must be 1 object for all compute nodes). The indexer should lazily calculate it, store it
+//      internally and update it whenever the connectivity changes. Or just prohibit changing the connectivity. Calculating it
+//      will be similar to the dot product: sum the number of internal and boundary entries in each local node (divide the 
+//      boundary entries over the multiplicities resulting in fractional number), reduce the double result from node and finally
+//      round it to the nearest integer (and pray the precision errors are negligible).
 namespace MGroup.Solvers.Distributed.LinearAlgebra
 {
     public class DistributedOverlappingVector
@@ -58,6 +70,11 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
             return new DistributedOverlappingVector(environment, indexers, localVectorsCloned);
         }
 
+        public void CopyFrom(DistributedOverlappingVector other)
+        {
+            environment.DoPerNode(node => this.LocalVectors[node].CopyFrom(other.LocalVectors[node]));
+        }
+
         /// <summary>
         /// Creates the global array representation from any subvectors employed internally. Mainly for testing purposes. 
         /// </summary>
@@ -66,6 +83,13 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
         {
             //TODOMPI: Use AllGatherV and then remove duplicate entries or copy to a single array.
             throw new NotImplementedException();
+        }
+
+        public DistributedOverlappingVector CreateZeroVectorWithSameFormat()
+        {
+            Dictionary<ComputeNode, Vector> zeroLocalVectors = environment.CreateDictionary(
+                node => Vector.CreateZero(LocalVectors[node].Length));
+            return new DistributedOverlappingVector(environment, indexers, zeroLocalVectors);
         }
 
         public bool Equals(DistributedOverlappingVector other, double tolerance = 1E-7)

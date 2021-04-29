@@ -25,7 +25,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
             this.localMatrices = localMatrices;
         }
 
-        public void MultiplyVector(DistributedOverlappingVector x, DistributedOverlappingVector y)
+        public void Multiply(DistributedOverlappingVector x, DistributedOverlappingVector y)
         {
             //TODOMPI: check that environment and indexers are the same between A,x and A,y
             Action<ComputeNode> multiplyLocal = node =>
