@@ -32,10 +32,14 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
             topology.Nodes[0] = new ComputeNode(0);
             topology.Nodes[1] = new ComputeNode(1);
             topology.Nodes[2] = new ComputeNode(2);
-            topology.Boundaries[0] = new ComputeNodeBoundary(0, new ComputeNode[] { topology.Nodes[2], topology.Nodes[0] });
-            topology.Boundaries[1] = new ComputeNodeBoundary(1, new ComputeNode[] { topology.Nodes[0], topology.Nodes[1] });
-            topology.Boundaries[2] = new ComputeNodeBoundary(2, new ComputeNode[] { topology.Nodes[1], topology.Nodes[2] });
-            topology.ConnectData();
+
+            // Neighborhoods
+            topology.Nodes[0].Neighbors.Add(topology.Nodes[1]);
+            topology.Nodes[0].Neighbors.Add(topology.Nodes[2]);
+            topology.Nodes[1].Neighbors.Add(topology.Nodes[0]);
+            topology.Nodes[1].Neighbors.Add(topology.Nodes[2]);
+            topology.Nodes[2].Neighbors.Add(topology.Nodes[0]);
+            topology.Nodes[2].Neighbors.Add(topology.Nodes[1]);
 
             return topology;
         }
@@ -46,24 +50,24 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
             var indexers = new Dictionary<ComputeNode, DistributedIndexer>();
 
             var indexer0 = new DistributedIndexer(topology.Nodes[0]);
-            var boundaryEntries0 = new Dictionary<ComputeNodeBoundary, int[]>();
-            boundaryEntries0[topology.Boundaries[0]] = new int[] { 0 };
-            boundaryEntries0[topology.Boundaries[1]] = new int[] { 2 };
-            indexer0.Initialize(3, boundaryEntries0);
+            var commonEntries0 = new Dictionary<ComputeNode, int[]>();
+            commonEntries0[topology.Nodes[2]] = new int[] { 0 };
+            commonEntries0[topology.Nodes[1]] = new int[] { 2 };
+            indexer0.Initialize(3, commonEntries0);
             indexers[indexer0.Node] = indexer0;
 
             var indexer1 = new DistributedIndexer(topology.Nodes[1]);
-            var boundaryEntries1 = new Dictionary<ComputeNodeBoundary, int[]>();
-            boundaryEntries1[topology.Boundaries[1]] = new int[] { 0 };
-            boundaryEntries1[topology.Boundaries[2]] = new int[] { 2 };
-            indexer1.Initialize(3, boundaryEntries1);
+            var commonEntries1 = new Dictionary<ComputeNode, int[]>();
+            commonEntries1[topology.Nodes[0]] = new int[] { 0 };
+            commonEntries1[topology.Nodes[2]] = new int[] { 2 };
+            indexer1.Initialize(3, commonEntries1);
             indexers[indexer1.Node] = indexer1;
 
             var indexer2 = new DistributedIndexer(topology.Nodes[2]);
-            var boundaryEntries2 = new Dictionary<ComputeNodeBoundary, int[]>();
-            boundaryEntries2[topology.Boundaries[2]] = new int[] { 0 };
-            boundaryEntries2[topology.Boundaries[0]] = new int[] { 2 };
-            indexer2.Initialize(3, boundaryEntries2);
+            var commonEntries2 = new Dictionary<ComputeNode, int[]>();
+            commonEntries2[topology.Nodes[1]] = new int[] { 0 };
+            commonEntries2[topology.Nodes[0]] = new int[] { 2 };
+            indexer2.Initialize(3, commonEntries2);
             indexers[indexer2.Node] = indexer2;
 
             Utilities.FilterNodeData(environment, indexers);

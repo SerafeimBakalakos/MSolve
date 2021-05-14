@@ -38,35 +38,6 @@ namespace MGroup.Solvers.DDM
             environment.ComputeEnvironment.DoPerNode(associateClustersToSubdomains);
         }
 
-        public void FindClusterBoundaries() //TODOMPI: remove this and the method it uses
-        {
-            if (environment.ComputeEnvironment.NumComputeNodes == 1) return;
-
-            Action<ComputeNode> findBoundaries = computeNode =>
-            {
-                Cluster cluster = Clusters[computeNode.ID];
-                foreach (ISubdomain subdomain in cluster.Subdomains) //TODOMPI: Parallelize this (will need locking)
-                {
-                    foreach (INode node in subdomain.Nodes)
-                    {
-                        if (node.GetMultiplicity() == 1) continue; // internal node
-
-                        HashSet<int> clustersOfNode = FindClustersOfNode(node);
-                        if (clustersOfNode.Count == 1) // Boundary node between subdomains of this cluster
-                        {
-                            Debug.Assert(clustersOfNode.Contains(cluster.ID));
-                            continue;
-                        }
-
-                        // Boundary node between subdomains of different clusters. Find them.
-                        ClusterBoundary clusterBoundaryOfNode = FindOrCreateClusterBoundary(cluster, clustersOfNode);
-                        clusterBoundaryOfNode.Nodes.Add(node.ID);
-                    }
-                }
-            };
-            environment.ComputeEnvironment.DoPerNode(findBoundaries);
-        }
-
         public void FindNeighboringClusters()
         {
             if (environment.ComputeEnvironment.NumComputeNodes == 1) return;
@@ -103,20 +74,6 @@ namespace MGroup.Solvers.DDM
             environment.ComputeEnvironment.DoPerNode(findNeighbors);
         }
         
-        private static ClusterBoundary FindOrCreateClusterBoundary(Cluster cluster, HashSet<int> clusters)
-        {
-            // If it already exists, find and return it
-            foreach (ClusterBoundary boundary in cluster.ClusterBoundaries)
-            {
-                if (boundary.Clusters.SetEquals(clusters)) return boundary;
-            }
-
-            // Else create a new cluster boundary and then return it
-            var newBoundary = new ClusterBoundary(clusters);
-            cluster.ClusterBoundaries.Add(newBoundary);
-            return newBoundary;
-        }
-
         private HashSet<int> FindClustersOfNode(INode node)
         {
             var clustersOfNode = new HashSet<int>();

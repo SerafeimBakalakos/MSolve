@@ -291,7 +291,7 @@ namespace MGroup.Solvers.DDM.Psm
 				}
 
 				var indexer = new DistributedIndexer(computeNode);
-				indexer.Initialize_NEW(numBoundaryDofsOfCluster, interClusterDofs);
+				indexer.Initialize(numBoundaryDofsOfCluster, interClusterDofs);
 				indexers[computeNode] = indexer;
 			}
 		}

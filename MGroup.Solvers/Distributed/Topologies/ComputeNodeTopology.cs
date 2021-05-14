@@ -13,45 +13,6 @@ namespace MGroup.Solvers.Distributed.Topologies
         { 
         }
 
-        //TODOMPI: Global ids of boundaries are problematic. Each process may find its own neighbors and boundaries. However
-        //      numbering all boundaries requires all to all communications. Therefore the client must provide this information
-        //      which is a very restrictive design. Perhaps boundaries should be removed altogether.
-        public Dictionary<int, ComputeNodeBoundary> Boundaries { get; } = new Dictionary<int, ComputeNodeBoundary>();
-
         public Dictionary<int, ComputeNode> Nodes { get; } = new Dictionary<int, ComputeNode>();
-
-
-        public void ConnectData() //TODOMPI: remove this.
-        {
-            foreach (ComputeNode node in Nodes.Values)
-            {
-                node.Neighbors.Clear();
-                node.Boundaries.Clear();
-            }
-
-            // Inform nodes about their boundaries
-            foreach (ComputeNodeBoundary boundary in Boundaries.Values)
-            {
-                foreach (ComputeNode node in boundary.Nodes)
-                {
-                    node.Boundaries.Add(boundary);
-                }
-            }
-
-            // Inform nodes about their neighbors
-            foreach (ComputeNode node in Nodes.Values)
-            {
-                var neighbors = new SortedDictionary<int, ComputeNode>();
-                foreach (ComputeNodeBoundary boundary in node.Boundaries)
-                {
-                    foreach (ComputeNode otherNode in boundary.Nodes)
-                    {
-                        if (otherNode != node) neighbors[otherNode.ID] = otherNode;
-                    }
-                }
-                node.Neighbors.AddRange(neighbors.Values);
-            }
-
-        }
     }
 }

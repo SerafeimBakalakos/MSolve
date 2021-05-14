@@ -136,24 +136,10 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
                 Vector thisLocalVector = this.LocalVectors[node];
                 Vector otherLocalVector = otherVector.LocalVectors[node];
 
-                // Find dot product for internal entries
                 double dotLocal = 0.0;
-                foreach (int i in indexer.InternalEntries)
+                for (int i = 0; i < indexer.NumTotalEntries; ++i)
                 {
-                    dotLocal += thisLocalVector[i] * otherLocalVector[i];
-                }
-
-                // Finds the dot product for entries of each boundary and divide it with the boundary's multiplicity
-                foreach (ComputeNodeBoundary boundary in node.Boundaries)
-                {
-                    int multiplicity = boundary.Multiplicity;
-                    int[] boundaryEntries = indexer.GetEntriesOfBoundary(boundary);
-                    double dotBoundary = 0.0;
-                    foreach (int i in boundaryEntries)
-                    {
-                        dotBoundary += thisLocalVector[i] * otherLocalVector[i];
-                    }
-                    dotLocal += dotBoundary / multiplicity;
+                    dotLocal += thisLocalVector[i] * otherLocalVector[i] / indexer.Multiplicities[i];
                 }
 
                 return dotLocal;

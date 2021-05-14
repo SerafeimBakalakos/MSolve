@@ -11,8 +11,6 @@ namespace MGroup.Solvers.Distributed.Topologies
             ID = id;
         }
 
-        public List<ComputeNodeBoundary> Boundaries { get; } = new List<ComputeNodeBoundary>();
-
         public int ID { get; }
 
         public List<ComputeNode> Neighbors { get; } = new List<ComputeNode>();
