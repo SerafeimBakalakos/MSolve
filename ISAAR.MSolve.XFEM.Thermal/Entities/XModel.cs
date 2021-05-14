@@ -62,6 +62,9 @@ namespace ISAAR.MSolve.XFEM_OLD.Thermal.Entities
             RemoveInactiveNodalLoads();
         }
 
+        public INode GetNode(int nodeID) => throw new NotImplementedException();
+
+
         private void AssignConstraints()
         {
             foreach (XNode node in Nodes)

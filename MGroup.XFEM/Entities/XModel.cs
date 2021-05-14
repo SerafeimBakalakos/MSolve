@@ -254,5 +254,10 @@ namespace MGroup.XFEM.Entities
             foreach (IModelObserver observer in ModelObservers) observer.Update();
             foreach (IEnrichmentObserver observer in enrichmentObservers) observer.Update(Enrichments.Values);
         }
+
+        public INode GetNode(int nodeID)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

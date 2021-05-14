@@ -21,17 +21,11 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
 
         public int[] InternalEntries { get; private set; }
 
+        public int[] Multiplicities { get; private set; }
+
         public ComputeNode Node { get; }
 
         public int NumTotalEntries { get; private set; }
-
-        public void Initialize(int numTotalEntries, Dictionary<ComputeNodeBoundary, int[]> boundaryEntries)
-        {
-            this.NumTotalEntries = numTotalEntries;
-            this.boundaryEntries = new Dictionary<ComputeNodeBoundary, int[]>(boundaryEntries); //TODO: Perhaps perform deep copy
-            FindInternalEntries();
-            FindCommonEntriesWithNeighbors();
-        }
 
         //TODO: cache a buffer for sending and a buffer for receiving inside Indexer (lazily or not) and just return them. 
         //      Also provide an option to request newly initialized buffers. It may be better to have dedicated Buffer classes to
@@ -58,6 +52,22 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
             int totalLength = 0;
             foreach (int[] entries in commonEntriesWithNeighbors.Values) totalLength += entries.Length;
             return new double[totalLength];
+        }
+
+        //TODOMPI: Replace this with Initialize_NEW();
+        public void Initialize(int numTotalEntries, Dictionary<ComputeNodeBoundary, int[]> boundaryEntries)
+        {
+            this.NumTotalEntries = numTotalEntries;
+            this.boundaryEntries = new Dictionary<ComputeNodeBoundary, int[]>(boundaryEntries); //TODO: Perhaps perform deep copy
+            FindInternalEntries();
+            FindCommonEntriesWithNeighbors();
+        }
+
+        public void Initialize_NEW(int numTotalEntries, Dictionary<ComputeNode, int[]> commonEntriesWithNeighbors)
+        {
+            this.NumTotalEntries = numTotalEntries;
+            this.commonEntriesWithNeighbors = commonEntriesWithNeighbors;
+            FindMultiplicities();
         }
 
         public int[] GetCommonEntriesWithNeighbor(ComputeNode neighbor) => commonEntriesWithNeighbors[neighbor];
@@ -108,6 +118,16 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
             foreach (ComputeNode neighbor in Node.Neighbors)
             {
                 commonEntriesWithNeighbors[neighbor] = commonEntriesSets[neighbor].ToArray();
+            }
+        }
+
+        private void FindMultiplicities()
+        {
+            Multiplicities = new int[NumTotalEntries];
+            for (int i = 0; i < NumTotalEntries; ++i) Multiplicities[i] = 1;
+            foreach (int[] commonEntries in commonEntriesWithNeighbors.Values)
+            {
+                foreach (int i in commonEntries) Multiplicities[i] += 1;
             }
         }
     }

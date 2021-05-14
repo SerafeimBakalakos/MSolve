@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 
-//TODO: DofTypes should be enums. XFEM should find a different way for its enriched dofs. Another approach is for IDofType to 
-//		have an ID property
+//TODO: IDofType should provide an ID like INode. Otherwise I should use enums for dof types and XFEM should find a different way
+//		for its enriched dofs.
 namespace MGroup.Solvers.DDM.Dofs
 {
 	public static class AllDofs
 	{
-		private static readonly Dictionary<int, IDofType> codesToDofs = new Dictionary<int, IDofType>();
-		private static readonly Dictionary<IDofType, int> dofsToCodes = new Dictionary<IDofType, int>();
+		private static readonly Dictionary<int, IDofType> idsToDofs = new Dictionary<int, IDofType>();
+		private static readonly Dictionary<IDofType, int> dofsToIds = new Dictionary<IDofType, int>();
 		private static readonly object insertionLock = new object();
 		private static int nextCode = 0;
 
@@ -18,11 +18,11 @@ namespace MGroup.Solvers.DDM.Dofs
 		{
 			lock (insertionLock)
 			{
-				bool exists = dofsToCodes.ContainsKey(dof);
+				bool exists = dofsToIds.ContainsKey(dof);
 				if (!exists)
 				{
-					dofsToCodes[dof] = nextCode;
-					codesToDofs[nextCode] = dof;
+					dofsToIds[dof] = nextCode;
+					idsToDofs[nextCode] = dof;
 					++nextCode;
 				}
 			}
@@ -38,8 +38,8 @@ namespace MGroup.Solvers.DDM.Dofs
 			AddDof(StructuralDof.RotationZ);
 		}
 
-		public static int GetCodeOfDof(IDofType dof) => dofsToCodes[dof];
+		public static int GetIdOfDof(IDofType dof) => dofsToIds[dof];
 
-		public static IDofType GetDofOfCode(int code) => codesToDofs[code];
+		public static IDofType GetDofWithId(int id) => idsToDofs[id];
 	}
 }

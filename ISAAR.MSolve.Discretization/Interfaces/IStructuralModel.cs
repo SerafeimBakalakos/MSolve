@@ -21,5 +21,7 @@ namespace ISAAR.MSolve.Discretization.Interfaces
         void AssignLoads(NodalLoadsToSubdomainsDistributor distributeNodalLoads); //TODOMaria: Here is where the element loads are assembled
         void AssignMassAccelerationHistoryLoads(int timeStep);
         void ConnectDataStructures();
+
+        INode GetNode(int nodeID);
     }
 }

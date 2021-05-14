@@ -26,6 +26,7 @@ namespace MGroup.Solvers.Distributed.Environments
     public sealed class MpiEnvironment : IComputeEnvironment, IDisposable
     {
         private static readonly int allToAllTag = IntGuids.GetNewNonNegativeGuid()/*Guid.NewGuid().GetHashCode()*/;
+        private static readonly int allToAllBufferLengthsTag = IntGuids.GetNewNonNegativeGuid()/*Guid.NewGuid().GetHashCode()*/;
 
         private bool disposed = false;
         private readonly MPI.Environment mpiEnvironment;
@@ -52,6 +53,7 @@ namespace MGroup.Solvers.Distributed.Environments
 
             this.mpiEnvironment = mpiEnvironment;
             this.commWorld = Communicator.world;
+            this.NumComputeNodes = numProcesses;
         }
 
         ~MpiEnvironment()
@@ -100,6 +102,8 @@ namespace MGroup.Solvers.Distributed.Environments
             } 
         }
 
+        public int NumComputeNodes { get; }
+
         public bool AllReduceAnd(Dictionary<ComputeNode, bool> valuePerNode)
         {
             bool localValue = valuePerNode[localNode];
@@ -128,6 +132,57 @@ namespace MGroup.Solvers.Distributed.Environments
         public void DoPerNode(Action<ComputeNode> actionPerNode)
         {
             actionPerNode(localNode);
+        }
+
+        public void NeighborhoodAllToAll<T>(Dictionary<ComputeNode, AllToAllNodeData<T>> dataPerNode, bool areRecvBuffersKnown)
+        {
+            AllToAllNodeData<T> data = dataPerNode[localNode];
+            int numNeighbors = localNode.Neighbors.Count;
+
+            //TODO: This can be improved greatly. As soon as a process receives the length of its recv buffer, the actual data 
+            //      can be transfered between these 2 processes. There is no need to wait for the other p2p length communications
+            if (!areRecvBuffersKnown) 
+            {
+                // Transfer the lengths of receive buffers via non-blocking send/receive operations
+                var recvLengthRequests = new RequestList(); //TODOMPI: Use my own RequestList implementation for more efficient WaitAll() and pipeline opportunities
+                for (int n = 0; n < numNeighbors; ++n)
+                {
+                    ReceiveRequest req = commWorld.ImmediateReceive<int>(
+                        localNode.Neighbors[n].ID, allToAllBufferLengthsTag, length => data.recvValues[n] = new T[length]);
+                    recvLengthRequests.Add(req);
+                }
+
+                var sendLengthRequests = new RequestList(); //TODOMPI: Can't I avoid waiting for send requests? Especially for the lengths
+                for (int n = 0; n < numNeighbors; ++n)
+                {
+                    Request req = commWorld.ImmediateSend(
+                        data.sendValues[n].Length, localNode.Neighbors[n].ID, allToAllBufferLengthsTag);
+                    sendLengthRequests.Add(req);
+                }
+
+                // Wait for requests to end 
+                recvLengthRequests.WaitAll();
+                sendLengthRequests.WaitAll();
+            }
+
+            // Transfer data via non-blocking send/receive operations
+            var recvRequests = new RequestList(); //TODOMPI: Use my own RequestList implementation for more efficient WaitAll() and pipeline opportunities
+            for (int n = 0; n < numNeighbors; ++n)
+            {
+                ReceiveRequest req = commWorld.ImmediateReceive(localNode.Neighbors[n].ID, allToAllTag, data.recvValues[n]);
+                recvRequests.Add(req);
+            }
+
+            var sendRequests = new RequestList(); //TODOMPI: Can't I avoid waiting for send requests? 
+            for (int n = 0; n < numNeighbors; ++n)
+            {
+                Request req = commWorld.ImmediateSend(data.sendValues[n], localNode.Neighbors[n].ID, allToAllTag);
+                sendRequests.Add(req);
+            }
+
+            // Wait for requests to end 
+            recvRequests.WaitAll();
+            sendRequests.WaitAll();
         }
 
         public void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode)

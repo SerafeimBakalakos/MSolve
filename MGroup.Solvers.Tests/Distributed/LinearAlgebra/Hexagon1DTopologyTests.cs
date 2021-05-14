@@ -19,7 +19,7 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
     {
         public static IEnumerable<object[]> GetEnvironments()
         {
-            yield return new object[] { new DistributedLocalEnvironment(true) };
+            yield return new object[] { new DistributedLocalEnvironment(3, true) };
         }
 
         [Theory]

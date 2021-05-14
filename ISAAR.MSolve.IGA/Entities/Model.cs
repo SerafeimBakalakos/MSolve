@@ -220,6 +220,9 @@ namespace ISAAR.MSolve.IGA.Entities
             RemoveInactiveNodalLoads();
         }
 
+		public INode GetNode(int nodeID) => ControlPointsDictionary[nodeID];
+
+
 		//TODO: constraints should not be saved inside the nodes. As it is right now (22/11/2018) the same constraint 
 		//      is saved in the node, the model constraints table and the subdomain constraints table. Furthermore,
 		//      displacement control analyzer updates the subdomain constraints table only (another bad design decision).  

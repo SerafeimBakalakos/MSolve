@@ -64,6 +64,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Entities
             RemoveInactiveNodalLoads();
         }
 
+        public INode GetNode(int nodeID) => throw new Exception();
+
         private void AssignConstraints()
         {
             foreach (XNode node in Nodes)

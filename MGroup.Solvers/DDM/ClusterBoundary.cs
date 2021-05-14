@@ -2,11 +2,21 @@
 using System.Collections.Generic;
 using System.Text;
 
-//TODO: Should I have a unique ID for each cluster boundary
 namespace MGroup.Solvers.DDM
 {
+    /// <summary>
+    /// Represents the common boundary nodes between two or more clusters. These entities do not have IDs, since those would
+    /// require global communication to number uniquely.
+    /// </summary>
     public class ClusterBoundary
     {
-        public List<Cluster> Clusters { get; } = new List<Cluster>();
+        public ClusterBoundary(IEnumerable<int> clusters)
+        {
+            this.Clusters = new HashSet<int>(clusters);
+        }
+
+        public HashSet<int> Clusters { get; }
+
+        public SortedSet<int> Nodes { get; } = new SortedSet<int>();
     }
 }

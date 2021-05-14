@@ -73,6 +73,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
             }
         }
 
+        public INode GetNode(int nodeID) => throw new Exception();
+
         public void UpdateDofs()
         {
             foreach (IXFiniteElement element in Elements) element.IdentifyDofs();
