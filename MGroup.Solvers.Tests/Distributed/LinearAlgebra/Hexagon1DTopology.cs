@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using MGroup.Solvers.Distributed.Environments;
 using MGroup.Solvers.Distributed.LinearAlgebra;
@@ -44,34 +45,34 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
             return topology;
         }
 
-        public Dictionary<ComputeNode, DistributedIndexer> CreateIndexers(IComputeEnvironment environment,
-            ComputeNodeTopology topology)
+        public DistributedIndexer CreateIndexer(IComputeEnvironment environment, ComputeNodeTopology topology)
         {
-            var indexers = new Dictionary<ComputeNode, DistributedIndexer>();
+            var indexer = new DistributedIndexer(topology.Nodes.Values);
 
-            var indexer0 = new DistributedIndexer(topology.Nodes[0]);
-            var commonEntries0 = new Dictionary<ComputeNode, int[]>();
-            commonEntries0[topology.Nodes[2]] = new int[] { 0 };
-            commonEntries0[topology.Nodes[1]] = new int[] { 2 };
-            indexer0.Initialize(3, commonEntries0);
-            indexers[indexer0.Node] = indexer0;
-
-            var indexer1 = new DistributedIndexer(topology.Nodes[1]);
-            var commonEntries1 = new Dictionary<ComputeNode, int[]>();
-            commonEntries1[topology.Nodes[0]] = new int[] { 0 };
-            commonEntries1[topology.Nodes[2]] = new int[] { 2 };
-            indexer1.Initialize(3, commonEntries1);
-            indexers[indexer1.Node] = indexer1;
-
-            var indexer2 = new DistributedIndexer(topology.Nodes[2]);
-            var commonEntries2 = new Dictionary<ComputeNode, int[]>();
-            commonEntries2[topology.Nodes[1]] = new int[] { 0 };
-            commonEntries2[topology.Nodes[0]] = new int[] { 2 };
-            indexer2.Initialize(3, commonEntries2);
-            indexers[indexer2.Node] = indexer2;
-
-            Utilities.FilterNodeData(environment, indexers);
-            return indexers;
+            Action<ComputeNode> configIndexer = node =>
+            {
+                var commonEntries = new Dictionary<ComputeNode, int[]>();
+                if (node.ID == 0)
+                {
+                    commonEntries[topology.Nodes[2]] = new int[] { 0 };
+                    commonEntries[topology.Nodes[1]] = new int[] { 2 };
+                }
+                else if (node.ID == 1)
+                {
+                    commonEntries[topology.Nodes[0]] = new int[] { 0 };
+                    commonEntries[topology.Nodes[2]] = new int[] { 2 };
+                }
+                else
+                {
+                    Debug.Assert(node.ID == 2);
+                    commonEntries[topology.Nodes[1]] = new int[] { 0 };
+                    commonEntries[topology.Nodes[0]] = new int[] { 2 };
+                }
+                indexer.ConfigureForNode(node, 3, commonEntries);
+            };
+            environment.DoPerNode(configIndexer);
+            
+            return indexer;
         }
 
         public Dictionary<ComputeNode, int[]> CreateLocalToGlobalMaps(IComputeEnvironment environment, 

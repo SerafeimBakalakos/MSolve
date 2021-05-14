@@ -15,14 +15,15 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
     public class DistributedOverlappingMatrix : IIterativeMethodMatrix
     {
         private readonly IComputeEnvironment environment;
-        private readonly Dictionary<ComputeNode, DistributedIndexer> indexers;         
+        private readonly DistributedIndexer indexer;
+        //private readonly Dictionary<ComputeNode, DistributedIndexer> indexers;         
         private readonly Dictionary<ComputeNode, ILinearTransformation> localMatrices;
 
-        public DistributedOverlappingMatrix(IComputeEnvironment environment,
-            Dictionary<ComputeNode, DistributedIndexer> indexers, Dictionary<ComputeNode, ILinearTransformation> localMatrices)
+        public DistributedOverlappingMatrix(IComputeEnvironment environment, DistributedIndexer indexer, 
+            Dictionary<ComputeNode, ILinearTransformation> localMatrices)
         {
             this.environment = environment;
-            this.indexers = indexers;
+            this.indexer = indexer;
             this.localMatrices = localMatrices;
         }
 
@@ -43,6 +44,9 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
         public void MultiplyIntoResult(DistributedOverlappingVector lhsVector, DistributedOverlappingVector rhsVector)
         {
             //TODOMPI: check that environment and indexers are the same between A,x and A,y
+            //Debug.Assert((this.environment == lhsVector.environment) && (this.indexer == lhsVector.indexer));
+            //Debug.Assert((this.environment == rhsVector.environment) && (this.indexer == rhsVector.indexer));
+
             Action<ComputeNode> multiplyLocal = node =>
             {
                 ILinearTransformation localA = localMatrices[node];

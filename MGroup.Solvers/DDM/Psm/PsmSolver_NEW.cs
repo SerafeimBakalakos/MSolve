@@ -48,7 +48,7 @@ namespace MGroup.Solvers.DDM.Psm
 		protected readonly IPsmSolutionVectorManager solutionVectorManager;
 		protected readonly IStiffnessDistribution stiffnessDistribution;
 
-		private Dictionary<ComputeNode, DistributedIndexer> indexers; //TODOMPI: make this private and a single objects, instead of a Dictionary.
+		private DistributedIndexer indexer; //TODOMPI: make this private and a single objects, instead of a Dictionary.
 
 		protected PsmSolver_NEW(IDdmEnvironment environment, IStructuralModel model, ClusterTopology clusterTopology,
 			IDofOrderer dofOrderer, IPsmDofSeparator_NEW dofSeparator, IMatrixManager matrixManagerBasic,
@@ -261,7 +261,7 @@ namespace MGroup.Solvers.DDM.Psm
 
 		private void CreateDistributedIndexer()
 		{
-			indexers = new Dictionary<ComputeNode, DistributedIndexer>();
+			indexer = new DistributedIndexer(environment.ComputeEnvironment.NodeTopology.Nodes.Values);
 			foreach (ComputeNode computeNode in environment.ComputeEnvironment.NodeTopology.Nodes.Values) //TODOMPI: parallelize this
 			{
 				Cluster cluster = environment.GetClusterOfComputeNode(computeNode);
@@ -290,9 +290,7 @@ namespace MGroup.Solvers.DDM.Psm
 					interClusterDofs[neighbor] = commonDofs.ToArray();
 				}
 
-				var indexer = new DistributedIndexer(computeNode);
-				indexer.Initialize(numBoundaryDofsOfCluster, interClusterDofs);
-				indexers[computeNode] = indexer;
+				indexer.ConfigureForNode(computeNode, numBoundaryDofsOfCluster, interClusterDofs);
 			}
 		}
 

@@ -46,18 +46,16 @@ namespace MGroup.Solvers.Tests.DDM.Psm
             solver.Initialize();
 
             // Check
-            var indexers = (Dictionary<ComputeNode, DistributedIndexer>)(
-                typeof(PsmSolver_NEW).GetField("indexers", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(solver));
-            CheckIndexer(environment, indexers);
+            var indexer = (DistributedIndexer)(
+                typeof(PsmSolver_NEW).GetField("indexer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(solver));
+            CheckIndexer(environment, indexer);
         }
 
         //TODOMPI: It would be better if I could have a mock indexer object which knows how to compare itself with the actual one.
-        private static void CheckIndexer(IComputeEnvironment environment, Dictionary<ComputeNode, DistributedIndexer> indexers)
+        private static void CheckIndexer(IComputeEnvironment environment, DistributedIndexer indexer)
         {
-            foreach (ComputeNode node in indexers.Keys)
+            Action<ComputeNode> checkIndexer = node =>
             {
-                DistributedIndexer indexer = indexers[node];
-
                 int[] multiplicitiesExpected;
                 var commonEntriesExpected = new Dictionary<ComputeNode, int[]>();
                 if (node.ID == 0)
@@ -84,14 +82,15 @@ namespace MGroup.Solvers.Tests.DDM.Psm
                     commonEntriesExpected[environment.NodeTopology.Nodes[2]] = new int[] { 0 };
                 }
 
-                Utilities.AssertEqual(multiplicitiesExpected, indexer.Multiplicities);
+                Utilities.AssertEqual(multiplicitiesExpected, indexer.GetEntryMultiplicities(node));
                 foreach (ComputeNode neighbor in commonEntriesExpected.Keys)
                 {
                     int[] expected = commonEntriesExpected[neighbor];
-                    int[] computed = indexer.GetCommonEntriesWithNeighbor(neighbor);
+                    int[] computed = indexer.GetCommonEntriesOfNodeWithNeighbor(node, neighbor);
                     Utilities.AssertEqual(expected, computed);
                 }
-            }
+            };
+            environment.DoPerNode(checkIndexer);
         }
 
         //TODOMPI: This initial setup, must be done at the beginning of the program, once and not change. Perhaps in the constructor of the environment

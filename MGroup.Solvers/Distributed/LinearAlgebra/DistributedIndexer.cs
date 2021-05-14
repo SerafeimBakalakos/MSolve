@@ -4,69 +4,40 @@ using System.Linq;
 using System.Text;
 using MGroup.Solvers.Distributed.Topologies;
 
+//TODOMPI: the counts array for AllToAll can be cached by the indexer. Also a mapping array can be cached as well to 
+//      simplify the nested for loops required to copy from localVector to sendValues and from recvValues to localVector. 
 namespace MGroup.Solvers.Distributed.LinearAlgebra
 {
-    //TODOMPI: the counts array for AllToAll can be cached by the indexer. Also a mapping array can be cached as well to 
-    //      simplify the nested for loops required to copy from localVector to sendValues and from recvValues to localVector. 
     public class DistributedIndexer
     {
-        private Dictionary<ComputeNode, int[]> commonEntriesWithNeighbors;
+        private readonly Dictionary<ComputeNode, DistributedIndexerNodeLevel> localIndexers;
 
-        public DistributedIndexer(ComputeNode node)
+        public DistributedIndexer(IEnumerable<ComputeNode> computeNodes)
         {
-            this.Node = node;
+            localIndexers = new Dictionary<ComputeNode, DistributedIndexerNodeLevel>();
+            foreach (ComputeNode node in computeNodes) localIndexers[node] = new DistributedIndexerNodeLevel(node);
         }
 
-        public int[] Multiplicities { get; private set; }
+        public int[] GetEntryMultiplicities(ComputeNode node) => localIndexers[node].Multiplicities;
 
-        public ComputeNode Node { get; }
+        public int GetNumTotalEntries(ComputeNode node) => localIndexers[node].NumTotalEntries;
 
-        public int NumTotalEntries { get; private set; }
 
         //TODO: cache a buffer for sending and a buffer for receiving inside Indexer (lazily or not) and just return them. 
         //      Also provide an option to request newly initialized buffers. It may be better to have dedicated Buffer classes to
         //      handle all that logic (e.g. keeping allocated buffers in a LinkedList, giving them out & locking them, 
         //      freeing them in clients, etc.
-        public double[][] CreateBuffersForAllToAllWithNeighbors()
-        {
-            int numNeighbors = Node.Neighbors.Count;
-            var buffers = new double[numNeighbors][];
-            for (int n = 0; n < numNeighbors; ++n)
-            {
-                ComputeNode neighbor = Node.Neighbors[n];
-                buffers[n] = new double[commonEntriesWithNeighbors[neighbor].Length];
-            }
-            return buffers;
-        }
+        public double[][] CreateBuffersForAllToAllWithNeighbors(ComputeNode node) 
+            => localIndexers[node].CreateBuffersForAllToAllWithNeighbors();
 
-        //TODO: cache a buffer for sending and a buffer for receiving inside Indexer (lazily or not) and just return them. 
-        //      Also provide an option to request newly initialized buffers. It may be better to have dedicated Buffer classes to
-        //      handle all that logic (e.g. keeping allocated buffers in a LinkedList, giving them out & locking them, 
-        //      freeing them in clients, etc.
-        public double[] CreateEntireBufferForAllToAllWithNeighbors()
-        {
-            int totalLength = 0;
-            foreach (int[] entries in commonEntriesWithNeighbors.Values) totalLength += entries.Length;
-            return new double[totalLength];
-        }
+        public double[] CreateEntireBufferForAllToAllWithNeighbors(ComputeNode node)
+            => localIndexers[node].CreateEntireBufferForAllToAllWithNeighbors();
 
-        public void Initialize(int numTotalEntries, Dictionary<ComputeNode, int[]> commonEntriesWithNeighbors)
-        {
-            this.NumTotalEntries = numTotalEntries;
-            this.commonEntriesWithNeighbors = commonEntriesWithNeighbors;
-            FindMultiplicities();
-        }
+        public void ConfigureForNode(ComputeNode node, int numTotalEntries,  
+            Dictionary<ComputeNode, int[]> commonEntriesWithNeighbors)
+            => localIndexers[node].Initialize(numTotalEntries, commonEntriesWithNeighbors);
 
-        public int[] GetCommonEntriesWithNeighbor(ComputeNode neighbor) => commonEntriesWithNeighbors[neighbor];
-
-        private void FindMultiplicities()
-        {
-            Multiplicities = new int[NumTotalEntries];
-            for (int i = 0; i < NumTotalEntries; ++i) Multiplicities[i] = 1;
-            foreach (int[] commonEntries in commonEntriesWithNeighbors.Values)
-            {
-                foreach (int i in commonEntries) Multiplicities[i] += 1;
-            }
-        }
+        public int[] GetCommonEntriesOfNodeWithNeighbor(ComputeNode node, ComputeNode neighbor) 
+            => localIndexers[node].GetCommonEntriesWithNeighbor(neighbor);
     }
 }
