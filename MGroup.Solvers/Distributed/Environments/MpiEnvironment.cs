@@ -31,7 +31,12 @@ namespace MGroup.Solvers.Distributed.Environments
         private bool disposed = false;
         private readonly MPI.Environment mpiEnvironment;
         private readonly Intracommunicator commWorld;
-        private GraphCommunicator commNeighborhood; //TODOMPI: this must be injected properly
+
+        /// <summary>
+        /// In MPI 2.0 this is very limited thus I implemented its functionality myself and don't need it
+        /// </summary>
+        private GraphCommunicator commNeighborhood; 
+
         private ComputeNode localNode;
         private ComputeNodeTopology nodeTopology;
 
@@ -73,10 +78,7 @@ namespace MGroup.Solvers.Distributed.Environments
             get => nodeTopology;
             set 
             {
-                //TODO: use the distributed MPI graphs, which are more scalable since they do not need to specify the full graph
-                //TODO: allow MPI to reorder ranks
-
-                if (value.Nodes.Count != commWorld.Size)
+                if (value.Nodes.Count != commWorld.Size) //
                 {
                     throw new ArgumentException(
                         $"There must be as many compute nodes as there are MPI processes ({commWorld.Size})");
@@ -84,23 +86,11 @@ namespace MGroup.Solvers.Distributed.Environments
 
                 nodeTopology = value;
                 localNode = nodeTopology.Nodes[commWorld.Rank]; // Keep only 1 node for this process.
-
-                // Initialize the MPI graph communicator. The edges between processes are the same as the 
-                // connectivity of compute nodes.
-                var edges = new int[commWorld.Size][];
-                bool reorderRanks = false;
-                for (int p = 0; p < commWorld.Size; ++p)
-                {
-                    ComputeNode node = nodeTopology.Nodes[p];
-                    edges[p] = new int[node.Neighbors.Count];
-                    for (int n = 0; n < node.Neighbors.Count; ++n)
-                    {
-                        edges[p][n] = node.Neighbors[n].ID;
-                    }
-                }
-                commNeighborhood = new GraphCommunicator(commWorld, edges, reorderRanks);
+                //commNeighborhood = CreateGraphCommunicator(nodeTopology); // Not needed yet
             } 
         }
+
+        
 
         public int NumComputeNodes { get; }
 
@@ -209,75 +199,34 @@ namespace MGroup.Solvers.Distributed.Environments
             sendRequests.WaitAll();
         }
 
-        public void NeighborhoodAllToAllForNodes(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode)
+        /// <summary>
+        /// Initialize the MPI graph communicator. The edges between processes are the same as the 
+        /// connectivity of compute nodes. 
+        /// </summary>
+        /// <param name="nodeTopology"></param>
+        private GraphCommunicator CreateGraphCommunicator(ComputeNodeTopology nodeTopology)
         {
-            AllToAllNodeData data = dataPerNode[localNode];
-            int numNeighbors = localNode.Neighbors.Count;
+            //TODO: use the distributed MPI graphs, which are more scalable since they do not need to specify the full graph
+            //TODO: allow MPI to reorder ranks
 
-            // Communication via non-blocking send/receive operations
-            var recvRequests = new RequestList(); //TODOMPI: Use my own RequestList implementation for more efficient WaitAll() and pipeline opportunities
-            for (int n = 0; n < numNeighbors; ++n)
+            if (nodeTopology.Nodes.Count != commWorld.Size)
             {
-                ReceiveRequest req = commWorld.ImmediateReceive(localNode.Neighbors[n].ID, allToAllTag, data.recvValues[n]);
-                recvRequests.Add(req);
+                throw new ArgumentException(
+                    $"There must be as many compute nodes as there are MPI processes ({commWorld.Size})");
             }
 
-            var sendRequests = new RequestList(); //TODOMPI: Can't I avoid waiting for send requests? 
-            for (int n = 0; n < numNeighbors; ++n)
+            var edges = new int[commWorld.Size][];
+            bool reorderRanks = false;
+            for (int p = 0; p < commWorld.Size; ++p)
             {
-                Request req = commWorld.ImmediateSend(data.sendValues[n], localNode.Neighbors[n].ID, allToAllTag);
-                sendRequests.Add(req);
+                ComputeNode node = nodeTopology.Nodes[p];
+                edges[p] = new int[node.Neighbors.Count];
+                for (int n = 0; n < node.Neighbors.Count; ++n)
+                {
+                    edges[p][n] = node.Neighbors[n].ID;
+                }
             }
-
-            // Wait for requests to end 
-            recvRequests.WaitAll();
-            sendRequests.WaitAll();
-        }
-
-        public void NeighborhoodAllToAllForNodes(Dictionary<ComputeNode, AllToAllNodeDataEntire> dataPerNode)
-        {
-            AllToAllNodeDataEntire data = dataPerNode[localNode];
-
-            // 1D buffers to jagged arrays 
-            int numNeighbors = localNode.Neighbors.Count;
-            double[][] sendValues = new double[numNeighbors][];
-            double[][] recvValues = new double[numNeighbors][];
-            int[] counts = data.sendRecvCounts;
-            int offset = 0;
-            for (int n = 0; n < numNeighbors; ++n)
-            {
-                sendValues[n] = new double[counts[n]];
-                Array.Copy(data.sendValues, offset, sendValues[n], 0, counts[n]);
-                recvValues[n] = new double[counts[n]];
-                offset += counts[n];
-            }
-
-            // Communication via non-blocking send/receive operations
-            var recvRequests = new RequestList(); //TODOMPI: Use my own RequestList implementation for more efficient WaitAll() and pipeline opportunities
-            for (int n = 0; n < numNeighbors; ++n)
-            {
-                ReceiveRequest req = commWorld.ImmediateReceive(localNode.Neighbors[n].ID, allToAllTag, recvValues[n]);
-                recvRequests.Add(req);
-            }
-
-            var sendRequests = new RequestList(); //TODOMPI: Can't I avoid waiting for send requests?
-            for (int n = 0; n < numNeighbors; ++n)
-            {
-                Request req = commWorld.ImmediateSend(sendValues[n], localNode.Neighbors[n].ID, allToAllTag);
-                sendRequests.Add(req); 
-            }
-
-            // Wait for requests to end 
-            recvRequests.WaitAll();
-            sendRequests.WaitAll();
-
-            // Jagged arrays to 1D buffers
-            offset = 0;
-            for (int n = 0; n < numNeighbors; ++n)
-            {
-                Array.Copy(recvValues[n], 0, data.recvValues, offset, counts[n]);
-                offset += counts[n];
-            }
+            return new GraphCommunicator(commWorld, edges, reorderRanks);
         }
 
         private void Dispose(bool disposing)

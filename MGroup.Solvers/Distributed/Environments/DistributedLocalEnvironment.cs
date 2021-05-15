@@ -112,7 +112,7 @@ namespace MGroup.Solvers.Distributed.Environments
 
                     if (!areRecvBuffersKnown)
                     {
-                        Debug.Assert(thisData.recvValues == null, "This buffer must not exist previously.");
+                        Debug.Assert(thisData.recvValues[thisNeighborIdx] == null, "This buffer must not exist previously.");
                         thisData.recvValues[thisNeighborIdx] = new T[bufferLength];
                     }
                     else
@@ -127,79 +127,6 @@ namespace MGroup.Solvers.Distributed.Environments
                     Array.Copy(otherData.sendValues[otherNeighborIdx], thisData.recvValues[thisNeighborIdx], bufferLength);
                 }
             }
-        }
-
-        public void NeighborhoodAllToAllForNodes(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode)
-        {
-            foreach (ComputeNode thisNode in NodeTopology.Nodes.Values)
-            {
-                AllToAllNodeData thisData = dataPerNode[thisNode];
-
-                for (int i = 0; i < thisNode.Neighbors.Count; ++i)
-                {
-                    // Receive data from each other node, by just copying the corresponding array segments.
-                    ComputeNode otherNode = thisNode.Neighbors[i];
-                    AllToAllNodeData otherData = dataPerNode[otherNode];
-                    double[] otherSendValues = otherData.sendValues[otherNode.FindNeighborIndex(thisNode)];
-                    double[] thisRecvValues = thisData.recvValues[thisNode.FindNeighborIndex(otherNode)];
-
-#if DEBUG
-                    if (otherSendValues.Length != thisRecvValues.Length)
-                    {
-                        throw new ArgumentException($"Node {otherNode.ID} tries to send {otherSendValues.Length} entries" +
-                            $" but node {thisNode.ID} tries to receive {thisRecvValues.Length} entries. They must match.");
-                    }
-#endif
-
-                    // Copy data from other to this node. 
-                    // Copying from this to other node will be done in another iteration of the outer loop.
-                    Array.Copy(otherSendValues, thisRecvValues, thisRecvValues.Length);
-                }
-            }
-        }
-
-        public void NeighborhoodAllToAllForNodes(Dictionary<ComputeNode, AllToAllNodeDataEntire> dataPerNode)
-        {
-            foreach (ComputeNode thisNode in NodeTopology.Nodes.Values)
-            {
-                AllToAllNodeDataEntire thisData = dataPerNode[thisNode];
-
-                for (int i = 0; i < thisNode.Neighbors.Count; ++i)
-                {
-                    // Receive data from each other node, by just copying the corresponding array segments.
-                    ComputeNode otherNode = thisNode.Neighbors[i];
-                    AllToAllNodeDataEntire otherData = dataPerNode[otherNode];
-
-                    // Find the start of the segment in the array of this node and the neighbor
-                    int thisStart = FindOffset(thisNode, thisData.sendRecvCounts, otherNode);
-                    int otherStart = FindOffset(otherNode, otherData.sendRecvCounts, thisNode);
-
-                    // Find the number of entries both node will transfer and assert that they match
-                    int thisCount = thisData.sendRecvCounts[thisNode.FindNeighborIndex(otherNode)];
-                    Debug.Assert(thisCount == otherData.sendRecvCounts[otherNode.FindNeighborIndex(thisNode)]);
-
-                    // Copy data from other to this node. 
-                    // Copying from this to other node will be done in another iteration of the outer loop.
-                    Array.Copy(otherData.sendValues, otherStart, thisData.recvValues, thisStart, thisCount);
-                }
-            }
-        }
-
-        private static int FindOffset(ComputeNode thisNode, int[] entryCountPerNeighborOfThis, ComputeNode otherNode)
-        {
-            int offset = 0;
-            for (int i = 0; i < thisNode.Neighbors.Count; ++i)
-            {
-                if (otherNode == thisNode.Neighbors[i])
-                {
-                    return offset;
-                }
-                else
-                {
-                    offset += entryCountPerNeighborOfThis[i];
-                }
-            }
-            throw new ArgumentException("The provided compute nodes are not neighbors");
         }
     }
 }

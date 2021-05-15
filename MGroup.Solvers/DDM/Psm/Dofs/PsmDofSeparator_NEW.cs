@@ -123,7 +123,7 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 
 		private void ExchangeInterClusterDofsWithNeighbors(Dictionary<ComputeNode, DofSet> boundaryDofsPerCluster)
 		{
-			if (environment.NumComputeNodes > 1) return;
+			if (environment.NumComputeNodes == 1) return;
 
 			// Each cluster collects the dofs it will send to each of its neighbors
 			Func<ComputeNode, AllToAllNodeData<int>> prepareTransferData = computeNode =>
@@ -131,7 +131,8 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 				Cluster cluster = clusterTopology.Clusters[computeNode.ID];
 				int numNeighbors = computeNode.Neighbors.Count;
 
-				var transferData = new AllToAllNodeData<int>(numNeighbors);
+				var transferData = new AllToAllNodeData<int>();
+				transferData.sendValues = new int[numNeighbors][];
 				for (int n = 0; n < numNeighbors; ++n)
 				{
 					int neighborID = computeNode.Neighbors[n].ID;
@@ -141,6 +142,7 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 
 				// No buffers for receive values yet, since their lengths are unknown. 
 				// Let the environment create them by extra communication.
+				transferData.recvValues = new int[numNeighbors][];
 				return transferData;
 			};
 			Dictionary<ComputeNode, AllToAllNodeData<int>> transferDataPerCluster = 

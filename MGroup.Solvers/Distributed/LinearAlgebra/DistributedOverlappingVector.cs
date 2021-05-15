@@ -197,27 +197,28 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
         public void SumOverlappingEntries()
         {
             // Prepare the boundary entries of each node before communicating them to its neighbors.
-            Func<ComputeNode, AllToAllNodeData> prepareLocalData = node =>
+            Func<ComputeNode, AllToAllNodeData<double>> prepareLocalData = node =>
             {
                 Vector localVector = LocalVectors[node];
 
                 // Find the common entries (to send) of this node with each of its neighbors
-                double[][] sendValues = indexer.CreateBuffersForAllToAllWithNeighbors(node);
+                var transferData = new AllToAllNodeData<double>();
+                transferData.sendValues = indexer.CreateBuffersForAllToAllWithNeighbors(node);
                 for (int n = 0; n < node.Neighbors.Count; ++n) // Neighbors of a node must be always accessed in this order
                 {
                     int[] commonEntries = indexer.GetCommonEntriesOfNodeWithNeighbor(node, node.Neighbors[n]);
-                    var sv = Vector.CreateFromArray(sendValues[n]);
+                    var sv = Vector.CreateFromArray(transferData.sendValues[n]);
                     sv.CopyNonContiguouslyFrom(localVector, commonEntries);
                 }
 
                 // Get a buffer for the common entries (to receive) of this node with each of its neighbors. 
-                double[][] recvValues = indexer.CreateBuffersForAllToAllWithNeighbors(node);
-                return new AllToAllNodeData() { sendValues = sendValues, recvValues = recvValues };
+                transferData.recvValues = indexer.CreateBuffersForAllToAllWithNeighbors(node);
+                return transferData;
             };
             var dataPerNode = environment.CreateDictionaryPerNode(prepareLocalData);
 
             // Perform AllToAll to exchange the common boundary entries of each node with its neighbors.
-            environment.NeighborhoodAllToAllForNodes(dataPerNode);
+            environment.NeighborhoodAllToAllForNodes(dataPerNode, true);
 
             // Add the common entries of neighbors back to the original local vector.
             Action<ComputeNode> sumLocalSubvectors = node =>
@@ -230,63 +231,6 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
                     int[] commonEntries = indexer.GetCommonEntriesOfNodeWithNeighbor(node, node.Neighbors[n]);
                     var rv = Vector.CreateFromArray(recvValues[n]);
                     localVector.AddIntoThisNonContiguouslyFrom(commonEntries, rv);
-                }
-            };
-            environment.DoPerNode(sumLocalSubvectors);
-        }
-
-        /// <summary>
-        /// Identical to <see cref="SumOverlappingEntries"/>, but uses neighborhood collectives. Unfortunately these are not
-        /// fully implemented yet.
-        /// </summary>
-        private void SumOverlappingEntriesFuture()
-        {
-            // Prepare the boundary entries of each node before communicating them to its neighbors.
-            Func<ComputeNode, AllToAllNodeDataEntire> prepareLocalData = node =>
-            {
-                Vector localVector = LocalVectors[node];
-
-                // Find the common entries (to send) of this node with each of its neighbors, store them contiguously in an 
-                // array and store their counts in another array.
-                int[] counts = new int[node.Neighbors.Count];
-                double[] sendValues = indexer.CreateEntireBufferForAllToAllWithNeighbors(node);
-                int sendValuesIdx = 0;
-                int countsIdx = 0;
-                foreach (ComputeNode neighbor in node.Neighbors) // Neighbors of a node must be always accessed in this order
-                {
-                    int[] commonEntries = indexer.GetCommonEntriesOfNodeWithNeighbor(node, neighbor);
-                    counts[countsIdx++] = commonEntries.Length;
-                    for (int j = 0; j < commonEntries.Length; ++j)
-                    {
-                        sendValues[sendValuesIdx++] = localVector[commonEntries[j]];
-                    }
-                }
-
-                // Get a buffer for the common entries (to receive) of this node with each of its neighbors. 
-                // Their counts are the same as the common entries that will be sent.
-                double[] recvValues = indexer.CreateEntireBufferForAllToAllWithNeighbors(node);
-
-                return new AllToAllNodeDataEntire() { sendValues = sendValues, sendRecvCounts = counts, recvValues = recvValues };
-            };
-            var dataPerNode = environment.CreateDictionaryPerNode(prepareLocalData);
-
-            // Perform AllToAll to exchange the common boundary entries of each node with its neighbors.
-            environment.NeighborhoodAllToAllForNodes(dataPerNode);
-
-            // Add the common entries of neighbors back to the original local vector.
-            Action<ComputeNode> sumLocalSubvectors = node =>
-            {
-                Vector localVector = LocalVectors[node];
-                double[] recvValues = dataPerNode[node].recvValues;
-
-                int recvValuesIdx = 0;
-                foreach (ComputeNode neighbor in node.Neighbors) // Neighbors of a node must be always accessed in this order
-                {
-                    int[] commonEntries = indexer.GetCommonEntriesOfNodeWithNeighbor(node, neighbor);
-                    for (int j = 0; j < commonEntries.Length; ++j)
-                    {
-                        localVector[commonEntries[j]] += recvValues[recvValuesIdx++];
-                    }
                 }
             };
             environment.DoPerNode(sumLocalSubvectors);
