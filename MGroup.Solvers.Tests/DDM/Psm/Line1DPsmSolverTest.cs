@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
 using ISAAR.MSolve.FEM.Entities;
 using MGroup.Solvers.DDM;
@@ -26,14 +27,13 @@ namespace MGroup.Solvers.Tests.DDM.Psm
             IComputeEnvironment environment = new DistributedLocalEnvironment(4);
             var ddmEnvironment = new ProcessingEnvironment(
                 new SubdomainEnvironmentManagedSequential(), new ClusterEnvironmentManagedSequential());
-            ddmEnvironment.ComputeEnvironment = environment;
-            (Model model, ClusterTopology clusterTopology) = Line1DExample.CreateMultiSubdomainModel(ddmEnvironment);
+            (Model model, ClusterTopology clusterTopology) = Line1DExample.CreateMultiSubdomainModel(environment);
 
-            var solverBuilder = new PsmSolver_NEW.Builder();
-            solverBuilder.ComputingEnvironment = ddmEnvironment;
+            var solverBuilder = new PsmSolver_NEW.Builder(environment);
+            solverBuilder.DdmEnvironment = ddmEnvironment;
             PsmSolver_NEW solver = solverBuilder.BuildSolver(model, clusterTopology);
 
-            InitializeEnvironment(ddmEnvironment, clusterTopology);
+            InitializeEnvironment(environment, clusterTopology);
             model.ConnectDataStructures();
             solver.InitializeClusterTopology();
             solver.OrderDofs(false);
@@ -94,18 +94,25 @@ namespace MGroup.Solvers.Tests.DDM.Psm
         }
 
         //TODOMPI: This initial setup, must be done at the beginning of the program, once and not change. Perhaps in the constructor of the environment
-        private static void InitializeEnvironment(IDdmEnvironment environment, ClusterTopology clusterTopology)
+        private static void InitializeEnvironment(IComputeEnvironment environment, ClusterTopology clusterTopology)
         {
             var computeNodeTopology = new ComputeNodeTopology();
             foreach (Solvers.DDM.Cluster cluster in clusterTopology.Clusters.Values)
             {
-                computeNodeTopology.Nodes[cluster.ID] = new ComputeNode(cluster.ID);
+                var computeNode = new ComputeNode(cluster.ID); ;
+                computeNodeTopology.Nodes[cluster.ID] = computeNode;
+
+                foreach (ISubdomain subdomain in cluster.Subdomains)
+                {
+                    computeNode.Subnodes[subdomain.ID] = new ComputeSubnode(subdomain.ID) { ParentNode = computeNode };
+                }
+
                 //TODOMPI: ComputeNode.Neighbors should be a list containing the IDs of neighboring ComputeNodes, not the actual objects.
                 //	Then I can finish setting the neighbors in this loop. Actually no: neighbors cannot be determined before 
                 //  initialization of the environment completes. Also neighbors depend on Model data, while this method should be 
                 //  as barebones and independent as possible
             }
-            environment.ComputeEnvironment.NodeTopology = computeNodeTopology;
+            environment.NodeTopology = computeNodeTopology;
         }
     }
 }

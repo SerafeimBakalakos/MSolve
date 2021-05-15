@@ -104,22 +104,38 @@ namespace MGroup.Solvers.Distributed.Environments
 
         public int NumComputeNodes { get; }
 
-        public bool AllReduceAnd(Dictionary<ComputeNode, bool> valuePerNode)
+        public T AccessNodeDataFromSubnode<T>(ComputeSubnode subnode, Func<ComputeNode, T> getNodeData)
+            => getNodeData(subnode.ParentNode);
+
+        public T AccessSubnodeDataFromNode<T>(ComputeSubnode subnode, Func<ComputeSubnode, T> getSubnodeData)
+            => getSubnodeData(subnode);
+
+        public bool AllReduceAndForNodes(Dictionary<ComputeNode, bool> valuePerNode)
         {
             bool localValue = valuePerNode[localNode];
             return commWorld.Allreduce(localValue, Operation<bool>.LogicalAnd);
         }
 
-        public double AllReduceSum(Dictionary<ComputeNode, double> valuePerNode)
+        public double AllReduceSumForNodes(Dictionary<ComputeNode, double> valuePerNode)
         {
             double localValue = valuePerNode[localNode];
             return commWorld.Allreduce(localValue, Operation<double>.Add);
         }
 
-        public Dictionary<ComputeNode, T> CreateDictionary<T>(Func<ComputeNode, T> createDataPerNode)
+        public Dictionary<ComputeNode, T> CreateDictionaryPerNode<T>(Func<ComputeNode, T> createDataPerNode)
         {
             var result = new Dictionary<ComputeNode, T>();
             result[localNode] = createDataPerNode(localNode);
+            return result;
+        }
+
+        public Dictionary<int, T> CreateDictionaryPerSubnode<T>(Func<ComputeSubnode, T> createDataPerSubnode)
+        {
+            var result = new Dictionary<int, T>();
+            foreach (ComputeSubnode subnode in localNode.Subnodes.Values) //TODOMPI: Parallelize this preferably with strategy method
+            {
+                result[subnode.ID] = createDataPerSubnode(subnode);
+            }
             return result;
         }
 
@@ -134,7 +150,15 @@ namespace MGroup.Solvers.Distributed.Environments
             actionPerNode(localNode);
         }
 
-        public void NeighborhoodAllToAll<T>(Dictionary<ComputeNode, AllToAllNodeData<T>> dataPerNode, bool areRecvBuffersKnown)
+        public void DoPerSubnode(Action<ComputeSubnode> action)
+        {
+            foreach (ComputeSubnode subnode in localNode.Subnodes.Values) //TODOMPI: Parallelize this preferably with strategy method
+            {
+                action(subnode);
+            }
+        }
+
+        public void NeighborhoodAllToAllForNodes<T>(Dictionary<ComputeNode, AllToAllNodeData<T>> dataPerNode, bool areRecvBuffersKnown)
         {
             AllToAllNodeData<T> data = dataPerNode[localNode];
             int numNeighbors = localNode.Neighbors.Count;
@@ -185,7 +209,7 @@ namespace MGroup.Solvers.Distributed.Environments
             sendRequests.WaitAll();
         }
 
-        public void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode)
+        public void NeighborhoodAllToAllForNodes(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode)
         {
             AllToAllNodeData data = dataPerNode[localNode];
             int numNeighbors = localNode.Neighbors.Count;
@@ -210,7 +234,7 @@ namespace MGroup.Solvers.Distributed.Environments
             sendRequests.WaitAll();
         }
 
-        public void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeDataEntire> dataPerNode)
+        public void NeighborhoodAllToAllForNodes(Dictionary<ComputeNode, AllToAllNodeDataEntire> dataPerNode)
         {
             AllToAllNodeDataEntire data = dataPerNode[localNode];
 

@@ -27,6 +27,7 @@ using System.Linq;
 using MGroup.Solvers.Distributed.Topologies;
 using MGroup.Solvers.Distributed.LinearAlgebra;
 using MGroup.Solvers.DDM.Dofs;
+using MGroup.Solvers.Distributed.Environments;
 
 namespace MGroup.Solvers.DDM.Psm
 {
@@ -36,7 +37,8 @@ namespace MGroup.Solvers.DDM.Psm
 
 		protected readonly IDofOrderer dofOrderer;
 		protected readonly IPsmDofSeparator_NEW dofSeparatorPsm;
-		protected readonly IDdmEnvironment environment;
+		protected readonly IComputeEnvironment environment;
+		protected readonly IDdmEnvironment ddmEnvironment; //TODOMPI: delete this
 		protected readonly IInterfaceProblemSolver interfaceProblemSolver;
 		protected readonly IMatrixManager matrixManagerBasic;
 		protected readonly IPsmMatrixManager matrixManagerPsm;
@@ -50,13 +52,14 @@ namespace MGroup.Solvers.DDM.Psm
 
 		private DistributedIndexer indexer; //TODOMPI: make this private and a single objects, instead of a Dictionary.
 
-		protected PsmSolver_NEW(IDdmEnvironment environment, IStructuralModel model, ClusterTopology clusterTopology,
+		protected PsmSolver_NEW(IComputeEnvironment environment, IDdmEnvironment ddmEnvironment, IStructuralModel model, ClusterTopology clusterTopology,
 			IDofOrderer dofOrderer, IPsmDofSeparator_NEW dofSeparator, IMatrixManager matrixManagerBasic,
 			IPsmMatrixManager matrixManagerPsm, IPsmPreconditioner preconditioner, IInterfaceProblemSolver interfaceProblemSolver,
 			bool isHomogeneous, string name = "PSM Solver")
 		{
 			this.name = name;
 			this.environment = environment;
+			this.ddmEnvironment = ddmEnvironment;
 
 			this.model = model;
 			this.clusterTopology = clusterTopology;
@@ -70,12 +73,12 @@ namespace MGroup.Solvers.DDM.Psm
 			Cluster[] clusters = clusterTopology.Clusters.Values.ToArray();
 			if (isHomogeneous)
 			{
-				this.stiffnessDistribution = new HomogeneousStiffnessDistribution(environment, clusters, dofSeparator);
+				this.stiffnessDistribution = new HomogeneousStiffnessDistribution(ddmEnvironment, clusters, dofSeparator);
 			}
 			else
 			{
 				this.stiffnessDistribution = new HeterogeneousStiffnessDistribution(
-					environment, clusters, dofSeparator, matrixManagerBasic);
+					ddmEnvironment, clusters, dofSeparator, matrixManagerBasic);
 			}
 
 			var linearSystems = new Dictionary<int, ILinearSystem>();
@@ -85,8 +88,8 @@ namespace MGroup.Solvers.DDM.Psm
 			}
 			LinearSystems = linearSystems;
 
-			this.rhsVectorManager = new PsmRhsVectorManager(environment, model, linearSystems, dofSeparator, matrixManagerPsm);
-			this.solutionVectorManager = new PsmSolutionVectorManager(environment, model,
+			this.rhsVectorManager = new PsmRhsVectorManager(ddmEnvironment, model, linearSystems, dofSeparator, matrixManagerPsm);
+			this.solutionVectorManager = new PsmSolutionVectorManager(ddmEnvironment, model,
 				linearSystems, dofSeparator, matrixManagerBasic, matrixManagerPsm, rhsVectorManager);
 
 			Logger = new SolverLogger(name);
@@ -102,16 +105,15 @@ namespace MGroup.Solvers.DDM.Psm
 
 		public virtual Dictionary<int, IMatrix> BuildGlobalMatrices(IElementMatrixProvider elementMatrixProvider)
 		{
-			var matricesKff = new Dictionary<int, IMatrix>();
-			Action<ISubdomain> subdomainAction = sub =>
+			Func<ComputeSubnode, IMatrix> buildKff = computeSubnode =>
 			{
-				IMatrix Kff = matrixManagerBasic.BuildKff(sub.ID, sub.FreeDofOrdering, sub.Elements, elementMatrixProvider);
-				lock (matricesKff) matricesKff[sub.ID] = Kff;
+				ISubdomain subdomain = model.GetSubdomain(computeSubnode.ID);
+				return matrixManagerBasic.BuildKff(
+					subdomain.ID, subdomain.FreeDofOrdering, subdomain.Elements, elementMatrixProvider);
 			};
-			environment.ExecuteSubdomainAction(model.Subdomains, subdomainAction);
+			Dictionary<int, IMatrix> matricesKff = environment.CreateDictionaryPerSubnode(buildKff);
 
 			// Initialize(); //TODOMPI: This used to run here, but now the order of operations must be revised.
-
 			return matricesKff;
 		}
 
@@ -126,6 +128,7 @@ namespace MGroup.Solvers.DDM.Psm
 
 		public virtual Dictionary<int, Vector> DistributeGlobalForces(Vector globalForces)
 		{
+			throw new NotImplementedException(); //TODOMPI: I should probably purge all global level operations and data structures.
 			var subdomainForces = new Dictionary<int, Vector>();
 			Action<ISubdomain> subdomainAction = sub =>
 			{
@@ -139,7 +142,7 @@ namespace MGroup.Solvers.DDM.Psm
 				stiffnessDistribution.ScaleForceVector(s, forces);
 				lock (subdomainForces) subdomainForces[s] = forces;
 			};
-			environment.ExecuteSubdomainAction(model.Subdomains, subdomainAction);
+			ddmEnvironment.ExecuteSubdomainAction(model.Subdomains, subdomainAction);
 			return subdomainForces;
 		}
 
@@ -150,6 +153,7 @@ namespace MGroup.Solvers.DDM.Psm
 		/// </summary>
 		public virtual Vector GatherGlobalDisplacements(IStructuralModel model) //TODOMPI: global-level vectors must be avoided. Perhaps in extension methods.
 		{
+			throw new NotImplementedException(); //TODOMPI: I should probably purge all global level operations and data structures.
 			var globalDisplacements = Vector.CreateZero(model.GlobalDofOrdering.NumGlobalFreeDofs);
 			foreach (ISubdomain subdomain in model.Subdomains)
 			{
@@ -174,14 +178,13 @@ namespace MGroup.Solvers.DDM.Psm
 			//		Only the neighborhoods can be done later.
 			clusterTopology.FindClustersOfSubdomains();
 			clusterTopology.FindNeighboringClusters();
-			environment.ClusterTopology = clusterTopology;
 
 			foreach (Cluster cluster in clusterTopology.Clusters.Values)
 			{
-				ComputeNode thisNode = environment.ComputeEnvironment.NodeTopology.Nodes[cluster.ID];
+				ComputeNode thisNode = environment.NodeTopology.Nodes[cluster.ID];
 				foreach (int neighbor in cluster.InterClusterNodes.Keys)
 				{
-					ComputeNode otherNode = environment.ComputeEnvironment.NodeTopology.Nodes[neighbor];
+					ComputeNode otherNode = environment.NodeTopology.Nodes[neighbor];
 					thisNode.Neighbors.Add(otherNode);
 				}
 			}
@@ -190,12 +193,7 @@ namespace MGroup.Solvers.DDM.Psm
 		public virtual void Initialize()
 		{
 			dofSeparatorPsm.SeparateSubdomainDofsIntoBoundaryInternal();
-			Action<ISubdomain> reorderInternalDofs = sub =>
-			{
-				matrixManagerPsm.ReorderInternalDofs(sub.ID);
-			};
-			environment.ExecuteSubdomainAction(model.Subdomains, reorderInternalDofs);
-
+			environment.DoPerSubnode(subnode => matrixManagerPsm.ReorderInternalDofs(subnode.ID));
 			dofSeparatorPsm.OrderBoundaryDofsOfClusters();
 			dofSeparatorPsm.MapBoundaryDofsBetweenClusterSubdomains();
 			stiffnessDistribution.CalcSubdomainScaling();
@@ -259,12 +257,12 @@ namespace MGroup.Solvers.DDM.Psm
 			//Logger.IncrementAnalysisStep();
 		}
 
-		private void CreateDistributedIndexer()
+		private void CreateDistributedIndexer() //TODOMPI: Decide in which component this will be done
 		{
-			indexer = new DistributedIndexer(environment.ComputeEnvironment.NodeTopology.Nodes.Values);
-			foreach (ComputeNode computeNode in environment.ComputeEnvironment.NodeTopology.Nodes.Values) //TODOMPI: parallelize this
+			indexer = new DistributedIndexer(environment.NodeTopology.Nodes.Values);
+			Action<ComputeNode> initializeIndexer = computeNode =>
 			{
-				Cluster cluster = environment.GetClusterOfComputeNode(computeNode);
+				Cluster cluster = clusterTopology.Clusters[computeNode.ID];
 				int numBoundaryDofsOfCluster = dofSeparatorPsm.GetNumBoundaryDofsCluster(cluster.ID);
 				DofTable boundaryDofsOfCluster = dofSeparatorPsm.GetClusterDofOrderingBoundary(cluster.ID);
 
@@ -291,12 +289,15 @@ namespace MGroup.Solvers.DDM.Psm
 				}
 
 				indexer.ConfigureForNode(computeNode, numBoundaryDofsOfCluster, interClusterDofs);
-			}
+			};
+			environment.DoPerNode(initializeIndexer);
 		}
 
 		public class Builder
 		{
-			public Builder() 
+			private readonly IComputeEnvironment environment;
+
+			public Builder(IComputeEnvironment environment) 
 			{ 
 				DofOrderer = new ReusingDofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
 
@@ -309,11 +310,12 @@ namespace MGroup.Solvers.DDM.Psm
 
 				MatrixManagerFactory = new PsmMatrixManagerCSparse.Factory();
 				Preconditioner = new PsmPreconditionerIdentity();
+				this.environment = environment;
 			}
 
 			public IDofOrderer DofOrderer { get; set; }
 
-			public IDdmEnvironment ComputingEnvironment { get; set; } = new ProcessingEnvironment(
+			public IDdmEnvironment DdmEnvironment { get; set; } = new ProcessingEnvironment(
 				new SubdomainEnvironmentManagedSequential(), new ClusterEnvironmentManagedSequential());
 
 			public IInterfaceProblemSolver InterfaceProblemSolver { get; set; }
@@ -326,9 +328,9 @@ namespace MGroup.Solvers.DDM.Psm
 
 			public PsmSolver_NEW BuildSolver(IStructuralModel model, ClusterTopology clusterTopology)
 			{
-				var dofSeparator = new PsmDofSeparator_NEW(ComputingEnvironment, model, clusterTopology);
+				var dofSeparator = new PsmDofSeparator_NEW(environment, model, clusterTopology);
 				var (matrixManagerBasic, matrixManagerPsm) = MatrixManagerFactory.CreateMatrixManagers(model, dofSeparator);
-				return new PsmSolver_NEW(ComputingEnvironment, model, clusterTopology, DofOrderer, dofSeparator, 
+				return new PsmSolver_NEW(environment, DdmEnvironment, model, clusterTopology, DofOrderer, dofSeparator, 
 					matrixManagerBasic, matrixManagerPsm, Preconditioner, InterfaceProblemSolver, IsHomogeneousProblem);
 			}
 		}

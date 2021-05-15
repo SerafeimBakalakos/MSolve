@@ -27,7 +27,13 @@ namespace MGroup.Solvers.Distributed.Environments
 
         public int NumComputeNodes { get; }
 
-        public bool AllReduceAnd(Dictionary<ComputeNode, bool> valuePerNode)
+        public T AccessNodeDataFromSubnode<T>(ComputeSubnode subnode, Func<ComputeNode, T> getNodeData)
+            => getNodeData(subnode.ParentNode);
+
+        public T AccessSubnodeDataFromNode<T>(ComputeSubnode subnode, Func<ComputeSubnode, T> getSubnodeData)
+            => getSubnodeData(subnode);
+
+        public bool AllReduceAndForNodes(Dictionary<ComputeNode, bool> valuePerNode)
         {
             bool result = true;
             foreach (ComputeNode node in NodeTopology.Nodes.Values)
@@ -37,7 +43,7 @@ namespace MGroup.Solvers.Distributed.Environments
             return result;
         }
 
-        public double AllReduceSum(Dictionary<ComputeNode, double> valuePerNode)
+        public double AllReduceSumForNodes(Dictionary<ComputeNode, double> valuePerNode)
         {
             double sum = 0.0;
             foreach (ComputeNode node in NodeTopology.Nodes.Values)
@@ -47,12 +53,25 @@ namespace MGroup.Solvers.Distributed.Environments
             return sum;
         }
 
-        public Dictionary<ComputeNode, T> CreateDictionary<T>(Func<ComputeNode, T> createDataPerNode)
+        public Dictionary<ComputeNode, T> CreateDictionaryPerNode<T>(Func<ComputeNode, T> createDataPerNode)
         {
             var result = new Dictionary<ComputeNode, T>();
             foreach (ComputeNode node in NodeTopology.Nodes.Values)
             {
                 result[node] = createDataPerNode(node);
+            }
+            return result;
+        }
+
+        public Dictionary<int, T> CreateDictionaryPerSubnode<T>(Func<ComputeSubnode, T> createDataPerSubnode)
+        {
+            var result = new Dictionary<int, T>();
+            foreach (ComputeNode node in NodeTopology.Nodes.Values)
+            {
+                foreach (ComputeSubnode subnode in node.Subnodes.Values)
+                {
+                    result[subnode.ID] = createDataPerSubnode(subnode);
+                }
             }
             return result;
         }
@@ -65,7 +84,18 @@ namespace MGroup.Solvers.Distributed.Environments
             }
         }
 
-        public void NeighborhoodAllToAll<T>(Dictionary<ComputeNode, AllToAllNodeData<T>> dataPerNode, bool areRecvBuffersKnown)
+        public void DoPerSubnode(Action<ComputeSubnode> action)
+        {
+            foreach (ComputeNode node in NodeTopology.Nodes.Values)
+            {
+                foreach (ComputeSubnode subnode in node.Subnodes.Values)
+                {
+                    action(subnode);
+                }
+            }
+        }
+
+        public void NeighborhoodAllToAllForNodes<T>(Dictionary<ComputeNode, AllToAllNodeData<T>> dataPerNode, bool areRecvBuffersKnown)
         {
             foreach (ComputeNode thisNode in NodeTopology.Nodes.Values)
             {
@@ -99,7 +129,7 @@ namespace MGroup.Solvers.Distributed.Environments
             }
         }
 
-        public void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode)
+        public void NeighborhoodAllToAllForNodes(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode)
         {
             foreach (ComputeNode thisNode in NodeTopology.Nodes.Values)
             {
@@ -128,7 +158,7 @@ namespace MGroup.Solvers.Distributed.Environments
             }
         }
 
-        public void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeDataEntire> dataPerNode)
+        public void NeighborhoodAllToAllForNodes(Dictionary<ComputeNode, AllToAllNodeDataEntire> dataPerNode)
         {
             foreach (ComputeNode thisNode in NodeTopology.Nodes.Values)
             {

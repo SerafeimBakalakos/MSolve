@@ -13,7 +13,10 @@ namespace MGroup.Solvers.Distributed.Topologies
 
         public int ID { get; }
 
+        //TODOMPI: these should probably be the ids only, to avoid depending on data that are unavailable in this memory address space.
         public List<ComputeNode> Neighbors { get; } = new List<ComputeNode>();
+
+        public Dictionary<int, ComputeSubnode> Subnodes { get; } = new Dictionary<int, ComputeSubnode>();
 
         public override bool Equals(object obj)
         {

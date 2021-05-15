@@ -16,23 +16,43 @@ namespace MGroup.Solvers.Distributed.Environments
     /// </summary>
     public interface IComputeEnvironment
     {
+        //TODO: For now all implemented environments use the same memory address space for nodes and subnodes, thus these Acecss
+        //      methods are implemented by simply returning the correct reference. However in more complicated environments
+        //      (e.g. ComputeNode being the CPU of a machine in an MPI network, and ComputeSubnodes being accelerators managed by
+        //      that CPU) these methods will be necessary
+        //TODO: In the aforementioned complex environments, it may also be worthwhile caching the transfered data 
+        //      (it may be dangerous though, if these are updated).
+        T AccessNodeDataFromSubnode<T>(ComputeSubnode subnode, Func<ComputeNode, T> getNodeData);
+
+        T AccessSubnodeDataFromNode<T>(ComputeSubnode subnode, Func<ComputeSubnode, T> getSubnodeData);
+
         //TODOMPI: Perhaps this should be injected into the constructors, instead of the setter.
         ComputeNodeTopology NodeTopology { get; set; }
 
         int NumComputeNodes { get; }
 
-        bool AllReduceAnd(Dictionary<ComputeNode, bool> valuePerNode);
+        bool AllReduceAndForNodes(Dictionary<ComputeNode, bool> valuePerNode);
 
-        double AllReduceSum(Dictionary<ComputeNode, double> valuePerNode);
+        double AllReduceSumForNodes(Dictionary<ComputeNode, double> valuePerNode);
 
         /// <summary>
-        /// Keys are the compute nodes managed by this environment.
+        /// Keys are the <see cref="ComputeNode"/> objects managed by this environment.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="createPerNode"></param>
-        Dictionary<ComputeNode, T> CreateDictionary<T>(Func<ComputeNode, T> createDataPerNode);
+        Dictionary<ComputeNode, T> CreateDictionaryPerNode<T>(Func<ComputeNode, T> createDataPerNode);
+
+        /// <summary>
+        /// Keys are the ids of the <see cref="ComputeSubnode"/> objects (<see cref="ComputeSubnode.ID"/>) managed by this 
+        /// environment.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="createPerNode"></param>
+        Dictionary<int, T> CreateDictionaryPerSubnode<T>(Func<ComputeSubnode, T> createDataPerSubnode);
 
         void DoPerNode(Action<ComputeNode> actionPerNode);
+
+        void DoPerSubnode(Action<ComputeSubnode> actionPerSubnode);
 
         /// <summary>
         /// Each <see cref="ComputeNode"/> sends and receives data to/from <see cref="ComputeNode"/>s in its neighborhood.
@@ -50,7 +70,7 @@ namespace MGroup.Solvers.Distributed.Environments
         /// unnecessary communication. All callers of this method must provide the same value, so this fact must be known 
         /// a priori.
         /// </param>
-        void NeighborhoodAllToAll<T>(Dictionary<ComputeNode, AllToAllNodeData<T>> dataPerNode, bool areRecvBuffersKnown);
+        void NeighborhoodAllToAllForNodes<T>(Dictionary<ComputeNode, AllToAllNodeData<T>> dataPerNode, bool areRecvBuffersKnown);
 
         //TODOMPI: the order of entries in values and counts arrays must match the order of neighbors. This should be enforced
         //      by the IComputeEnvironment implementation and communicated to the client.
@@ -65,19 +85,17 @@ namespace MGroup.Solvers.Distributed.Environments
         /// <param name="dataPerNode">
         /// See <see cref="AllToAllNodeData"/> for a description of the data that will be transfered.
         /// </param>
-        void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode); //TODOMPI: replace this with the generic version
+        void NeighborhoodAllToAllForNodes(Dictionary<ComputeNode, AllToAllNodeData> dataPerNode); //TODOMPI: replace this with the generic version
 
         
         /// <summary>
-        /// Similar to <see cref="NeighborhoodAllToAll(Dictionary{ComputeNode, AllToAllNodeData})"/>, but depends on neighborhood
+        /// Similar to <see cref="NeighborhoodAllToAllForNodes(Dictionary{ComputeNode, AllToAllNodeData})"/>, but depends on neighborhood
         /// collectives. Unfortunately, neighborhood collectives are not supported by MPI.NET yet. Therefore, this method
-        /// is less efficient than <see cref="NeighborhoodAllToAll(Dictionary{ComputeNode, AllToAllNodeData})"/> and working
+        /// is less efficient than <see cref="NeighborhoodAllToAllForNodes(Dictionary{ComputeNode, AllToAllNodeData})"/> and working
         /// with its arguments is more complicated.
         /// </summary>
         /// <param name="dataPerNode"></param>
-        void NeighborhoodAllToAll(Dictionary<ComputeNode, AllToAllNodeDataEntire> dataPerNode);
-
-
+        void NeighborhoodAllToAllForNodes(Dictionary<ComputeNode, AllToAllNodeDataEntire> dataPerNode);
     }
 
     public class AllToAllNodeData<T>

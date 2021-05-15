@@ -259,5 +259,8 @@ namespace MGroup.XFEM.Entities
         {
             throw new NotImplementedException();
         }
+
+        public ISubdomain GetSubdomain(int subdomainID) => throw new NotImplementedException();
+
     }
 }

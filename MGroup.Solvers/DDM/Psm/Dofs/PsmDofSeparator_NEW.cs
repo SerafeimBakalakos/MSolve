@@ -23,7 +23,7 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 {
 	public class PsmDofSeparator_NEW : IPsmDofSeparator_NEW
 	{
-		private readonly IDdmEnvironment environment;
+		private readonly IComputeEnvironment environment;
 		private readonly IStructuralModel model;
 		private readonly ClusterTopology clusterTopology;
 
@@ -36,7 +36,7 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 			new Dictionary<int, BooleanMatrixRowsToColumns>();
 		private readonly Dictionary<int, int> subdomainNumFreeDofs = new Dictionary<int, int>();
 
-		public PsmDofSeparator_NEW(IDdmEnvironment environment, IStructuralModel model, ClusterTopology clusterTopology)
+		public PsmDofSeparator_NEW(IComputeEnvironment environment, IStructuralModel model, ClusterTopology clusterTopology)
 		{
 			this.environment = environment;
 			this.model = model;
@@ -63,22 +63,18 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 		/// </summary>
 		public void MapBoundaryDofsBetweenClusterSubdomains()
 		{
-			Action<ComputeNode> clusterAction = node =>
+			Action<ComputeSubnode> subdomainAction = computeSubnode =>
 			{
-				Cluster cluster = environment.GetClusterOfComputeNode(node);
+				ISubdomain subdomain = model.GetSubdomain(computeSubnode.ID);
 
-				Action<ISubdomain> subdomainAction = subdomain =>
-				{
-					DofTable boundaryDofOrderingOfCluster = environment.BroadcastClusterDataToSubdomains(subdomain,
-						c => clusterDofOrderingsBoundary[c.ID]);
+				DofTable boundaryDofOrderingOfCluster = environment.AccessNodeDataFromSubnode(computeSubnode,
+					computeNode => clusterDofOrderingsBoundary[computeNode.ID]);
 
-					BooleanMatrixRowsToColumns Lb =
-						MapDofsClusterToSubdomain(boundaryDofOrderingOfCluster, subdomainDofOrderingsBoundary[subdomain.ID]);
-					lock (subdomainToClusterBoundaryMappings) subdomainToClusterBoundaryMappings[subdomain.ID] = Lb;
-				};
-				environment.ExecuteSubdomainAction(cluster.Subdomains, subdomainAction);
+				BooleanMatrixRowsToColumns Lb =
+					MapDofsClusterToSubdomain(boundaryDofOrderingOfCluster, subdomainDofOrderingsBoundary[subdomain.ID]);
+				lock (subdomainToClusterBoundaryMappings) subdomainToClusterBoundaryMappings[subdomain.ID] = Lb;
 			};
-			environment.ComputeEnvironment.DoPerNode(clusterAction);
+			environment.DoPerSubnode(subdomainAction);
 		}
 
 		public void OrderBoundaryDofsOfClusters() //TODO: Replace comments with more descriptive method names.
@@ -109,32 +105,25 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 		/// </summary>
 		public void SeparateSubdomainDofsIntoBoundaryInternal()
 		{
-			Action<ComputeNode> clusterAction = node =>
+			Action<ComputeSubnode> subdomainAction = computeSubnode =>
 			{
-				Cluster cluster = environment.GetClusterOfComputeNode(node);
+				ISubdomain subdomain = model.GetSubdomain(computeSubnode.ID);
+				int s = subdomain.ID;
+				(DofTable boundaryDofOrdering, int[] boundaryToFree, int[] internalToFree) = SeparateSubdomainDofs(subdomain);
 
-				// Boundary - Internal dofs
-				Action<ISubdomain> subdomainAction = subdomain =>
-				{
-					int s = subdomain.ID;
-					(DofTable boundaryDofOrdering, int[] boundaryToFree, int[] internalToFree) = SeparateSubdomainDofs(subdomain);
-
-					//TODO: Perhaps I should have one lock for all of these. There is marginal gain if any by all these locks.
-					//		On the other hand this would be safer, if I modified these dictionaries elsewhere, which I do not. 
-					lock (subdomainNumFreeDofs) subdomainNumFreeDofs[s] = subdomain.FreeDofOrdering.NumFreeDofs;
-					lock (subdomainDofOrderingsBoundary) subdomainDofOrderingsBoundary[s] = boundaryDofOrdering;
-					lock (subdomainDofsBoundaryToFree) subdomainDofsBoundaryToFree[s] = boundaryToFree;
-					lock (subdomainDofsInternalToFree) subdomainDofsInternalToFree[s] = internalToFree;
-				};
-				environment.ExecuteSubdomainAction(cluster.Subdomains, subdomainAction);
+				//TODO: Perhaps I should have one lock for all of these. There is marginal gain if any by all these locks.
+				//		On the other hand this would be safer, if I modified these dictionaries elsewhere, which I do not. 
+				lock (subdomainNumFreeDofs) subdomainNumFreeDofs[s] = subdomain.FreeDofOrdering.NumFreeDofs;
+				lock (subdomainDofOrderingsBoundary) subdomainDofOrderingsBoundary[s] = boundaryDofOrdering;
+				lock (subdomainDofsBoundaryToFree) subdomainDofsBoundaryToFree[s] = boundaryToFree;
+				lock (subdomainDofsInternalToFree) subdomainDofsInternalToFree[s] = internalToFree;
 			};
-			// environment.ExecuteClusterAction(clusters, clusterAction); //TODOMPI: delete this
-			environment.ComputeEnvironment.DoPerNode(clusterAction);
+			environment.DoPerSubnode(subdomainAction);
 		}
 
 		private void ExchangeInterClusterDofsWithNeighbors(Dictionary<ComputeNode, DofSet> boundaryDofsPerCluster)
 		{
-			if (environment.ComputeEnvironment.NumComputeNodes > 1) return;
+			if (environment.NumComputeNodes > 1) return;
 
 			// Each cluster collects the dofs it will send to each of its neighbors
 			Func<ComputeNode, AllToAllNodeData<int>> prepareTransferData = computeNode =>
@@ -155,10 +144,10 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 				return transferData;
 			};
 			Dictionary<ComputeNode, AllToAllNodeData<int>> transferDataPerCluster = 
-				environment.ComputeEnvironment.CreateDictionary(prepareTransferData);
+				environment.CreateDictionaryPerNode(prepareTransferData);
 
 			// Perform the communications
-			environment.ComputeEnvironment.NeighborhoodAllToAll(transferDataPerCluster, false);
+			environment.NeighborhoodAllToAllForNodes(transferDataPerCluster, false);
 
 			// Each cluster integrates the dofs it received with its own ones
 			Action<ComputeNode> processReceivedDofs = computeNode =>
@@ -173,7 +162,7 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 					boundaryDofsPerCluster[computeNode].UnpackDofsAndUnion(receivedDofs);
 				}
 			};
-			environment.ComputeEnvironment.DoPerNode(processReceivedDofs);
+			environment.DoPerNode(processReceivedDofs);
 		}
 
 
@@ -183,33 +172,34 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 		{
 			Func<ComputeNode, DofSet> findBoundaryDofsPerCluster = computeNode =>
 			{
-				Cluster cluster = environment.GetClusterOfComputeNode(computeNode); //TODOMPI: access cluster from the ClusterTopology reference
+				Cluster cluster = clusterTopology.Clusters[computeNode.ID];
 				var dofsOfBoundaryNodes = new DofSet();
-
-				//TODOMPI: Alternatively, I can just take all nodes of the cluster and see if they are boundary. However, how would I
-				//		find their dofs? Do I need a DofTable for free dofs of each cluster? So far only boundary dofs of a cluster 
-				//		are put in a cluster-level vector.
-				Dictionary<ISubdomain, DofTable> subdomainFreeDofs =
-					environment.GatherSubdomainDataToCluster(cluster, s => s.FreeDofOrdering.FreeDofs);
-
+				
 				//TODOMPI: Should this be parallelized? It is similar to assembling a cluster-level vector from subdomain-level 
 				//		subvectors. I do not think the effort is worth it. Nevertheless, this code assumes a sequential order of 
 				//		operations. Shouldn't the environment decide the order, even if that means havinf a method, 
 				//		DoSequentially(Action), or even better AssembleClusterDataStructureFromSubdomains(...)?
-				foreach (ISubdomain subdomain in cluster.Subdomains)
+				foreach (ComputeSubnode computeSubnode in computeNode.Subnodes.Values)
 				{
+					ISubdomain subdomain = model.GetSubdomain(computeSubnode.ID);
+
+					//TODOMPI: Alternatively, I can just take all nodes of the cluster and see if they are boundary. However, how would I
+					//		find their dofs? Do I need a DofTable for free dofs of each cluster? So far only boundary dofs of a cluster 
+					//		are put in a cluster-level vector.
+					DofTable subdomainFreeDofs = environment.AccessSubnodeDataFromNode(computeSubnode,
+						subnode => model.GetSubdomain(subnode.ID).FreeDofOrdering.FreeDofs);
+
 					//TODOMPI: Perhaps I should only iterate over boundary dofs of each subdomain. Less entries to go through, 
 					//		with added benefits if communication is needed
-					DofTable subdomainDofs = subdomainFreeDofs[subdomain];
-					foreach (INode node in subdomain.Nodes) 
+					foreach (INode node in subdomain.Nodes)
 					{
 						if (node.GetMultiplicity() == 1) continue; // internal node
-						dofsOfBoundaryNodes.AddDofs(node, subdomainDofs.GetColumnsOfRow(node));
+						dofsOfBoundaryNodes.AddDofs(node, subdomainFreeDofs.GetColumnsOfRow(node));
 					}
 				}
 				return dofsOfBoundaryNodes;
 			};
-			return environment.ComputeEnvironment.CreateDictionary(findBoundaryDofsPerCluster);
+			return environment.CreateDictionaryPerNode(findBoundaryDofsPerCluster);
 		}
 
 		private static BooleanMatrixRowsToColumns MapDofsClusterToSubdomain(
@@ -231,7 +221,7 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 			Action<ComputeNode> orderBoundaryDofsPerCluster = computeNode =>
 			{
 				// Order all boundary dofs for this cluster
-				Cluster cluster = environment.GetClusterOfComputeNode(computeNode);
+				Cluster cluster = clusterTopology.Clusters[computeNode.ID];
 				DofSet dofsOfBoundaryNodes = boundaryDofsPerCluster[computeNode];
 				(int numBoundaryDofs, DofTable boundaryDofOrdering) = dofsOfBoundaryNodes.OrderDofs(n => model.GetNode(n));
 
@@ -240,7 +230,7 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 				lock (clusterNumBoundaryDofs) clusterNumBoundaryDofs[cluster.ID] = numBoundaryDofs;
 
 			};
-			environment.ComputeEnvironment.DoPerNode(orderBoundaryDofsPerCluster);
+			environment.DoPerNode(orderBoundaryDofsPerCluster);
 		}
 
 		private static (DofTable boundaryDofOrdering, int[] boundaryToFree, int[] internalToFree) SeparateSubdomainDofs(

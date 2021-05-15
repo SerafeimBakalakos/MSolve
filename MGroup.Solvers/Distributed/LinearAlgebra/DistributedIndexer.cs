@@ -15,7 +15,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
         public DistributedIndexer(IEnumerable<ComputeNode> computeNodes)
         {
             localIndexers = new Dictionary<ComputeNode, DistributedIndexerNodeLevel>();
-            foreach (ComputeNode node in computeNodes) localIndexers[node] = new DistributedIndexerNodeLevel(node);
+            foreach (ComputeNode node in computeNodes) localIndexers[node] = new DistributedIndexerNodeLevel(node); //TODOMPI: ensure that only local nodes are processed.
         }
 
         public int[] GetEntryMultiplicities(ComputeNode node) => localIndexers[node].Multiplicities;

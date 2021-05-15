@@ -25,17 +25,6 @@ namespace MGroup.Solvers.DDM.Environments
 {
 	public interface IDdmEnvironment
 	{
-		//TODOMPI: remove these. The mapping ComputeNodes <-> Clusters must be done based on the id or by Cluster inderiting from ComputeNode
-		ClusterTopology ClusterTopology { get; set; } 
-		Cluster GetClusterOfComputeNode(ComputeNode node); //TODOMPI: It will be hard to enforce the use of this all around. Also in many cases, I want the id of the cluster only, because it is not local.
-
-
-		IComputeEnvironment ComputeEnvironment { get; }
-
-		T BroadcastClusterDataToSubdomains<T>(ISubdomain subdomain, Func<Cluster, T> getCusterData);
-
-		Dictionary<ISubdomain, T> GatherSubdomainDataToCluster<T>(Cluster cluster, Func<ISubdomain, T> getSubdomainData);
-
 		void ExecuteClusterAction(IEnumerable<Cluster> clusters, Action<Cluster> action);
 
 		void ExecuteSubdomainAction(IEnumerable<ISubdomain> subdomains, Action<ISubdomain> action);

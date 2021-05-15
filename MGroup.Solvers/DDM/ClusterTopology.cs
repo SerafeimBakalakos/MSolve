@@ -4,19 +4,16 @@ using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using MGroup.Solvers.DDM.Environments;
+using MGroup.Solvers.Distributed.Environments;
 using MGroup.Solvers.Distributed.Topologies;
 
 namespace MGroup.Solvers.DDM
 {
     public class ClusterTopology
     {
-        private readonly IDdmEnvironment environment;
+        private readonly IComputeEnvironment environment;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="environment"></param>
-        public ClusterTopology(IDdmEnvironment environment)
+        public ClusterTopology(IComputeEnvironment environment)
         {
             this.environment = environment;
         }
@@ -25,7 +22,9 @@ namespace MGroup.Solvers.DDM
 
         public Dictionary<ISubdomain, Cluster> ClustersOfSubdomains { get; } = new Dictionary<ISubdomain, Cluster>();
 
-        public void FindClustersOfSubdomains()
+        //TODDOMPI: ComputeSubnode is informed about its parent ComputeNode at creation. It would be better to be consistent and 
+        //  I prefer that approach.
+        public void FindClustersOfSubdomains() 
         {
             Action<ComputeNode> associateClustersToSubdomains = computeNode =>
             {
@@ -35,12 +34,13 @@ namespace MGroup.Solvers.DDM
                     ClustersOfSubdomains.Add(subdomain, cluster); // No overlapping allowed
                 }
             };
-            environment.ComputeEnvironment.DoPerNode(associateClustersToSubdomains);
+            environment.DoPerNode(associateClustersToSubdomains);
         }
 
         public void FindNeighboringClusters()
         {
-            if (environment.ComputeEnvironment.NumComputeNodes == 1) return;
+            //TODOMPI: The semantics of this are ambiguous. Does it mean 1 cluster for the whole model or 1 cluster in this memory space?
+            if (environment.NumComputeNodes == 1) return; 
 
             Action<ComputeNode> findNeighbors = computeNode =>
             {
@@ -71,7 +71,7 @@ namespace MGroup.Solvers.DDM
                     }
                 }
             };
-            environment.ComputeEnvironment.DoPerNode(findNeighbors);
+            environment.DoPerNode(findNeighbors);
         }
         
         private HashSet<int> FindClustersOfNode(INode node)

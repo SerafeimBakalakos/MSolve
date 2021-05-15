@@ -64,7 +64,9 @@ namespace ISAAR.MSolve.XFEM_OLD.Entities
             RemoveInactiveNodalLoads();
         }
 
-        public INode GetNode(int nodeID) => throw new Exception();
+        public INode GetNode(int nodeID) => throw new NotImplementedException();
+
+        public ISubdomain GetSubdomain(int subdomainID) => throw new NotImplementedException();
 
         private void AssignConstraints()
         {

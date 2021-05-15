@@ -8,7 +8,7 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.Materials;
 using MGroup.Solvers.DDM;
 using MGroup.Solvers.DDM.Dofs;
-using MGroup.Solvers.DDM.Environments;
+using MGroup.Solvers.Distributed.Environments;
 
 // Global:
 // 0--1--2--3--4--5--6--7--8--[9] -> 9 is constrained
@@ -69,7 +69,7 @@ namespace MGroup.Solvers.Tests.DDM.ExampleModels
             return model;
         }
 
-        public static (Model model, ClusterTopology clusterTopology) CreateMultiSubdomainModel(IDdmEnvironment environment)
+        public static (Model model, ClusterTopology clusterTopology) CreateMultiSubdomainModel(IComputeEnvironment environment)
         {
             // Partition
             Model model = CreateSingleSubdomainModel();

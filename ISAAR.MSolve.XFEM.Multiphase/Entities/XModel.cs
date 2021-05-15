@@ -73,7 +73,9 @@ namespace ISAAR.MSolve.XFEM_OLD.Multiphase.Entities
             }
         }
 
-        public INode GetNode(int nodeID) => throw new Exception();
+        public INode GetNode(int nodeID) => throw new NotImplementedException();
+
+        public ISubdomain GetSubdomain(int subdomainID) => throw new NotImplementedException();
 
         public void UpdateDofs()
         {

@@ -34,7 +34,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
         {
             this.environment = environment;
             this.indexer = indexer;
-            this.LocalVectors = environment.CreateDictionary(node => Vector.CreateZero(indexer.GetNumTotalEntries(node)));
+            this.LocalVectors = environment.CreateDictionaryPerNode(node => Vector.CreateZero(indexer.GetNumTotalEntries(node)));
         }
 
         public DistributedOverlappingVector(IComputeEnvironment environment, DistributedIndexer indexer,
@@ -75,7 +75,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
         public DistributedOverlappingVector Copy()
         {
             Dictionary<ComputeNode, Vector> localVectorsCloned = 
-                environment.CreateDictionary(node => LocalVectors[node].Copy());
+                environment.CreateDictionaryPerNode(node => LocalVectors[node].Copy());
             return new DistributedOverlappingVector(environment, indexer, localVectorsCloned);
         }
 
@@ -109,7 +109,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
 
         public DistributedOverlappingVector CreateZeroVectorWithSameFormat()
         {
-            Dictionary<ComputeNode, Vector> zeroLocalVectors = environment.CreateDictionary(
+            Dictionary<ComputeNode, Vector> zeroLocalVectors = environment.CreateDictionaryPerNode(
                 node => Vector.CreateZero(LocalVectors[node].Length));
             return new DistributedOverlappingVector(environment, indexer, zeroLocalVectors);
         }
@@ -142,17 +142,17 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
                 return dotLocal;
             };
 
-            Dictionary<ComputeNode, double> dotPerNode = environment.CreateDictionary(calcLocalDot);
-            return environment.AllReduceSum(dotPerNode);
+            Dictionary<ComputeNode, double> dotPerNode = environment.CreateDictionaryPerNode(calcLocalDot);
+            return environment.AllReduceSumForNodes(dotPerNode);
         }
 
         public bool Equals(DistributedOverlappingVector other, double tolerance = 1E-7)
         {
             if ((this.environment != other.environment) || (this.indexer != other.indexer)) return false;
 
-            Dictionary<ComputeNode, bool> flags = environment.CreateDictionary(
+            Dictionary<ComputeNode, bool> flags = environment.CreateDictionaryPerNode(
                 node => this.LocalVectors[node].Equals(other.LocalVectors[node], tolerance));
-            return environment.AllReduceAnd(flags);
+            return environment.AllReduceAndForNodes(flags);
         }
 
         public void LinearCombinationIntoThis(
@@ -214,10 +214,10 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
                 double[][] recvValues = indexer.CreateBuffersForAllToAllWithNeighbors(node);
                 return new AllToAllNodeData() { sendValues = sendValues, recvValues = recvValues };
             };
-            var dataPerNode = environment.CreateDictionary(prepareLocalData);
+            var dataPerNode = environment.CreateDictionaryPerNode(prepareLocalData);
 
             // Perform AllToAll to exchange the common boundary entries of each node with its neighbors.
-            environment.NeighborhoodAllToAll(dataPerNode);
+            environment.NeighborhoodAllToAllForNodes(dataPerNode);
 
             // Add the common entries of neighbors back to the original local vector.
             Action<ComputeNode> sumLocalSubvectors = node =>
@@ -268,10 +268,10 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
 
                 return new AllToAllNodeDataEntire() { sendValues = sendValues, sendRecvCounts = counts, recvValues = recvValues };
             };
-            var dataPerNode = environment.CreateDictionary(prepareLocalData);
+            var dataPerNode = environment.CreateDictionaryPerNode(prepareLocalData);
 
             // Perform AllToAll to exchange the common boundary entries of each node with its neighbors.
-            environment.NeighborhoodAllToAll(dataPerNode);
+            environment.NeighborhoodAllToAllForNodes(dataPerNode);
 
             // Add the common entries of neighbors back to the original local vector.
             Action<ComputeNode> sumLocalSubvectors = node =>

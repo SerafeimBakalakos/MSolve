@@ -64,6 +64,8 @@ namespace ISAAR.MSolve.XFEM_OLD.Thermal.Entities
 
         public INode GetNode(int nodeID) => throw new NotImplementedException();
 
+        public ISubdomain GetSubdomain(int subdomainID) => throw new NotImplementedException();
+
 
         private void AssignConstraints()
         {

@@ -23,5 +23,7 @@ namespace ISAAR.MSolve.Discretization.Interfaces
         void ConnectDataStructures();
 
         INode GetNode(int nodeID);
+
+        ISubdomain GetSubdomain(int subdomainID);
     }
 }
