@@ -11,23 +11,23 @@ using MGroup.Solvers.DDM.Dofs;
 using MGroup.Solvers.Distributed.Environments;
 
 // Global:
-// 0--1--2--3--4--5--6--7--8--[9] -> 9 is constrained
+// 0--1--2--3--4--5--6--7--8--9--10--11--12--13--14--15--[16] -> 16 is constrained, 0 is loaded
 //
 // Clusters:
-// 0--1--2  c0
-//       2--3--4  c1
-//             4--5--6  c2
-//                   6--7--8--[9]  c3
+// 0--1--2--3--4  c0
+//             4--5--6--7--8  c1
+//                         8--9--10--11--12  c2
+//                                       12--13--14--15--[16]  c3
 //
 // Subdomains:
-// 0--1  s0
-//    1--2  s1
-//       2--3  s2
-//          3--4  s3
-//             4--5  s4
-//                5--6  s5
-//                   6--7  s6
-//                      7--8--[9]  s7
+// 0--1--2  s0
+//       2--3--4  s1
+//             4--5--6  s2
+//                   6--7--8  s3
+//                         8--9--10  s4
+//                               10--11--12  s5
+//                                       12--13--14  s6
+//                                               14--15--[16]  s7
 //
 namespace MGroup.Solvers.Tests.DDM.ExampleModels
 {
@@ -43,7 +43,7 @@ namespace MGroup.Solvers.Tests.DDM.ExampleModels
             model.SubdomainsDictionary[0] = new Subdomain(0);
 
             // Nodes
-            for (int n = 0; n < 10; ++n)
+            for (int n = 0; n <= 16; ++n)
             {
                 model.NodesDictionary[n] = new Node(n, n * length, 0.0, 0.0);
             }
@@ -52,7 +52,7 @@ namespace MGroup.Solvers.Tests.DDM.ExampleModels
             var material = new ThermalMaterial(density, specialHeat, conductivity);
 
             // Elements
-            for (int e = 0; e < 9; ++e)
+            for (int e = 0; e < 16; ++e)
             {
                 Node[] nodes = { model.Nodes[e], model.Nodes[e + 1] };
                 var elementType = new ThermalRod(nodes, sectionArea, material);
@@ -63,7 +63,7 @@ namespace MGroup.Solvers.Tests.DDM.ExampleModels
             }
 
             // Boundary conditions
-            model.NodesDictionary[9].Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0 });
+            model.NodesDictionary[16].Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0 });
             model.Loads.Add(new Load() { Node = model.NodesDictionary[0], DOF = ThermalDof.Temperature, Amount = 1 });
 
             return model;
@@ -75,14 +75,21 @@ namespace MGroup.Solvers.Tests.DDM.ExampleModels
             Model model = CreateSingleSubdomainModel();
             var elementsToSubdomains = new Dictionary<int, int>();
             elementsToSubdomains[0] = 0;
-            elementsToSubdomains[1] = 1;
-            elementsToSubdomains[2] = 2;
-            elementsToSubdomains[3] = 3;
-            elementsToSubdomains[4] = 4;
-            elementsToSubdomains[5] = 5;
-            elementsToSubdomains[6] = 6;
-            elementsToSubdomains[7] = 7;
-            elementsToSubdomains[8] = 7;
+            elementsToSubdomains[1] = 0;
+            elementsToSubdomains[2] = 1;
+            elementsToSubdomains[3] = 1;
+            elementsToSubdomains[4] = 2;
+            elementsToSubdomains[5] = 2;
+            elementsToSubdomains[6] = 3;
+            elementsToSubdomains[7] = 3;
+            elementsToSubdomains[8] = 4;
+            elementsToSubdomains[9] = 4;
+            elementsToSubdomains[10] = 5;
+            elementsToSubdomains[11] = 5;
+            elementsToSubdomains[12] = 6;
+            elementsToSubdomains[13] = 6;
+            elementsToSubdomains[14] = 7;
+            elementsToSubdomains[15] = 7;
             ModelUtilities.Decompose(model, 8, e => elementsToSubdomains[e]);
 
             // Clusters

@@ -224,12 +224,12 @@ namespace MGroup.Solvers.DDM.Psm
 
 		public virtual void Solve()
 		{
-			//Action<ISubdomain> calcSubdomainMatrices = sub =>
-			//{
-			//	matrixManagerPsm.ExtractKiiKbbKib(sub.ID);
-			//	matrixManagerPsm.InvertKii(sub.ID);
-			//};
-			//environment.ExecuteSubdomainAction(model.Subdomains, calcSubdomainMatrices);
+			Action<ComputeSubnode> calcSubdomainMatrices = computeSubnode =>
+			{
+				matrixManagerPsm.ExtractKiiKbbKib(computeSubnode.ID);
+				matrixManagerPsm.InvertKii(computeSubnode.ID);
+			};
+			environment.DoPerSubnode(calcSubdomainMatrices);
 
 			//IInterfaceProblemMatrix interfaceProblemMatrix = 
 			//	new InterfaceProblemMatrix(environment, model, dofSeparatorPsm, matrixManagerPsm);

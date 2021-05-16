@@ -22,7 +22,7 @@ namespace MGroup.Solvers.Tests.DDM.Psm
     public static class Line1DPsmSolverTest
     {
         [Fact]
-        public static void Run()
+        public static void TestDofSeparator()
         {
             IComputeEnvironment environment = new SequentialSharedEnvironment(4);
             var ddmEnvironment = new ProcessingEnvironment(
@@ -49,6 +49,32 @@ namespace MGroup.Solvers.Tests.DDM.Psm
             var indexer = (DistributedIndexer)(
                 typeof(PsmSolver_NEW).GetField("indexer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(solver));
             CheckIndexer(environment, indexer);
+        }
+
+        [Fact]
+        public static void TestSolver()
+        {
+            IComputeEnvironment environment = new SequentialSharedEnvironment(4);
+            var ddmEnvironment = new ProcessingEnvironment(
+                new SubdomainEnvironmentManagedSequential(), new ClusterEnvironmentManagedSequential());
+            (Model model, ClusterTopology clusterTopology) = Line1DExample.CreateMultiSubdomainModel(environment);
+
+            var solverBuilder = new PsmSolver_NEW.Builder(environment);
+            solverBuilder.DdmEnvironment = ddmEnvironment;
+            PsmSolver_NEW solver = solverBuilder.BuildSolver(model, clusterTopology);
+
+            InitializeEnvironment(environment, clusterTopology);
+            model.ConnectDataStructures();
+            solver.InitializeClusterTopology();
+            solver.OrderDofs(false);
+
+            //TODOMPI: In order to number dofs, the Kff of each submatrix must be created, so that Kii can be extracted and 
+            // internal dofs can be reordered. I do not like this design after all. It would be better to reorder the internal 
+            // dofs at a later stage, when stiffness matrices are created.
+            solver.BuildGlobalMatrices(new ElementStructuralStiffnessProvider());
+
+            solver.Initialize();
+            solver.Solve();
         }
 
         //TODOMPI: It would be better if I could have a mock indexer object which knows how to compare itself with the actual one.
