@@ -98,15 +98,15 @@ namespace MGroup.Tests.DDM.Psm
 			}
 			else if (matrixFormat == MatrixFormat.CSparse)
 			{
-				solverBuilder.MatrixManagerFactory = new PsmMatrixManagerCSparseNonSymmetric.Factory();
+				solverBuilder.MatrixManagerFactory = new PsmMatrixManagerCSparse.Factory();
 			}
 			else if (matrixFormat == MatrixFormat.CSparseSymmetric)
 			{
-				solverBuilder.MatrixManagerFactory = new PsmMatrixManagerCSparse.Factory();
+				solverBuilder.MatrixManagerFactory = new PsmMatrixManagerSymmetricCSparse.Factory();
 			}
 			else if (matrixFormat == MatrixFormat.SuiteSparseSymmetric)
 			{
-				solverBuilder.MatrixManagerFactory = new PsmMatrixManagerSuiteSparse.Factory();
+				solverBuilder.MatrixManagerFactory = new PsmMatrixManagerSymmetricSuiteSparse.Factory();
 			}
 			else
 			{

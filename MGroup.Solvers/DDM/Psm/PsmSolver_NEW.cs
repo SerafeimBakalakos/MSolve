@@ -308,7 +308,7 @@ namespace MGroup.Solvers.DDM.Psm
 				InterfaceProblemSolver = new InterfaceProblemSolverPcg(pcgBuilder.Build());
 				IsHomogeneousProblem = true;
 
-				MatrixManagerFactory = new PsmMatrixManagerCSparse.Factory();
+				MatrixManagerFactory = new PsmMatrixManagerSymmetricCSparse.Factory();
 				Preconditioner = new PsmPreconditionerIdentity();
 				this.environment = environment;
 			}

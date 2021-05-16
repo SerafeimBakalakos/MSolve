@@ -119,15 +119,15 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			}
 			else if (matrixFormat == MatrixFormat.CSparse)
 			{
-				return new PsmMatrixManagerCSparseNonSymmetric.Factory();
+				return new PsmMatrixManagerCSparse.Factory();
 			}
 			else if (matrixFormat == MatrixFormat.CSparseSymmetric)
 			{
-				return new PsmMatrixManagerCSparse.Factory();
+				return new PsmMatrixManagerSymmetricCSparse.Factory();
 			}
 			else if (matrixFormat == MatrixFormat.SuiteSparseSymmetric)
 			{
-				return new PsmMatrixManagerSuiteSparse.Factory();
+				return new PsmMatrixManagerSymmetricSuiteSparse.Factory();
 			}
 			else
 			{

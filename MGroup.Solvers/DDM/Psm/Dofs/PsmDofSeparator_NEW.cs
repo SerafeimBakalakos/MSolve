@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,12 +14,6 @@ using MGroup.Solvers.Distributed.Topologies;
 using MGroup.Solvers.DofOrdering.Reordering;
 
 //TODOMPI: Replace DofTable with an equivalent class that uses integers. Also allow clients to choose sorted versions
-//TODOMPI: Remove all locking mechanics from DDM classes. These should be employed by whatever environments need them. Instead
-//		the environments should expose methods such as CreateNodeDictionary<ComputeNode, T>(), 
-//		CreateSubNodeDictionary<ComputeSubNode, T>() to accumulate data by initializing dictionaries or similar ones to 
-//		accumulate data by populating existing dictionaries. Also it is very important to be able to populate multiple 
-//		dictionaries in the same call, for example: 
-//		Dictionary<int, Matrix> Kbb, Dictionary<int, CsrMatrix> Kbi, Dictionary<int, SuiteSparseCholeskyFactorization> invKii
 namespace MGroup.Solvers.DDM.Psm.Dofs
 {
 	public class PsmDofSeparator_NEW : IPsmDofSeparator_NEW
@@ -27,14 +22,16 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 		private readonly IStructuralModel model;
 		private readonly ClusterTopology clusterTopology;
 
-		private readonly Dictionary<int, DofTable> clusterDofOrderingsBoundary = new Dictionary<int, DofTable>();
-		private readonly Dictionary<int, int> clusterNumBoundaryDofs = new Dictionary<int, int>();
-		private readonly Dictionary<int, DofTable> subdomainDofOrderingsBoundary = new Dictionary<int, DofTable>();
-		private readonly Dictionary<int, int[]> subdomainDofsBoundaryToFree = new Dictionary<int, int[]>();
-		private readonly Dictionary<int, int[]> subdomainDofsInternalToFree = new Dictionary<int, int[]>();
-		private readonly Dictionary<int, BooleanMatrixRowsToColumns> subdomainToClusterBoundaryMappings = 
-			new Dictionary<int, BooleanMatrixRowsToColumns>();
-		private readonly Dictionary<int, int> subdomainNumFreeDofs = new Dictionary<int, int>();
+		private readonly ConcurrentDictionary<int, DofTable> clusterDofOrderingsBoundary = 
+			new ConcurrentDictionary<int, DofTable>();
+		private readonly ConcurrentDictionary<int, int> clusterNumBoundaryDofs = new ConcurrentDictionary<int, int>();
+		private readonly ConcurrentDictionary<int, DofTable> subdomainDofOrderingsBoundary = 
+			new ConcurrentDictionary<int, DofTable>();
+		private readonly ConcurrentDictionary<int, int[]> subdomainDofsBoundaryToFree = new ConcurrentDictionary<int, int[]>();
+		private readonly ConcurrentDictionary<int, int[]> subdomainDofsInternalToFree = new ConcurrentDictionary<int, int[]>();
+		private readonly ConcurrentDictionary<int, BooleanMatrixRowsToColumns> subdomainToClusterBoundaryMappings = 
+			new ConcurrentDictionary<int, BooleanMatrixRowsToColumns>();
+		private readonly ConcurrentDictionary<int, int> subdomainNumFreeDofs = new ConcurrentDictionary<int, int>();
 
 		public PsmDofSeparator_NEW(IComputeEnvironment environment, IStructuralModel model, ClusterTopology clusterTopology)
 		{
@@ -72,7 +69,7 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 
 				BooleanMatrixRowsToColumns Lb =
 					MapDofsClusterToSubdomain(boundaryDofOrderingOfCluster, subdomainDofOrderingsBoundary[subdomain.ID]);
-				lock (subdomainToClusterBoundaryMappings) subdomainToClusterBoundaryMappings[subdomain.ID] = Lb;
+				subdomainToClusterBoundaryMappings[subdomain.ID] = Lb;
 			};
 			environment.DoPerSubnode(subdomainAction);
 		}
@@ -93,8 +90,6 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 		{
 			if (permutation.IsBetter)
 			{
-				// This code may run concurrently by multiple threads. There is no need for a lock, since the Dictionary is not 
-				// changed, only the values of existing keys may be updated.
 				int[] internalDofs = permutation.ReorderKeysOfDofIndicesMap(subdomainDofsInternalToFree[subdomainID]);
 				subdomainDofsInternalToFree[subdomainID] = internalDofs; 
 			}
@@ -111,12 +106,10 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 				int s = subdomain.ID;
 				(DofTable boundaryDofOrdering, int[] boundaryToFree, int[] internalToFree) = SeparateSubdomainDofs(subdomain);
 
-				//TODO: Perhaps I should have one lock for all of these. There is marginal gain if any by all these locks.
-				//		On the other hand this would be safer, if I modified these dictionaries elsewhere, which I do not. 
-				lock (subdomainNumFreeDofs) subdomainNumFreeDofs[s] = subdomain.FreeDofOrdering.NumFreeDofs;
-				lock (subdomainDofOrderingsBoundary) subdomainDofOrderingsBoundary[s] = boundaryDofOrdering;
-				lock (subdomainDofsBoundaryToFree) subdomainDofsBoundaryToFree[s] = boundaryToFree;
-				lock (subdomainDofsInternalToFree) subdomainDofsInternalToFree[s] = internalToFree;
+				subdomainNumFreeDofs[s] = subdomain.FreeDofOrdering.NumFreeDofs;
+				subdomainDofOrderingsBoundary[s] = boundaryDofOrdering;
+				subdomainDofsBoundaryToFree[s] = boundaryToFree;
+				subdomainDofsInternalToFree[s] = internalToFree;
 			};
 			environment.DoPerSubnode(subdomainAction);
 		}
@@ -228,8 +221,8 @@ namespace MGroup.Solvers.DDM.Psm.Dofs
 				(int numBoundaryDofs, DofTable boundaryDofOrdering) = dofsOfBoundaryNodes.OrderDofs(n => model.GetNode(n));
 
 				// Store them
-				lock (clusterDofOrderingsBoundary) clusterDofOrderingsBoundary[cluster.ID] = boundaryDofOrdering;
-				lock (clusterNumBoundaryDofs) clusterNumBoundaryDofs[cluster.ID] = numBoundaryDofs;
+				clusterDofOrderingsBoundary[cluster.ID] = boundaryDofOrdering;
+				clusterNumBoundaryDofs[cluster.ID] = numBoundaryDofs;
 
 			};
 			environment.DoPerNode(orderBoundaryDofsPerCluster);

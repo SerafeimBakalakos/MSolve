@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
+using ISAAR.MSolve.LinearAlgebra.Reordering;
 using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Discretization.Interfaces;
@@ -14,26 +16,25 @@ using System.Collections.Concurrent;
 
 namespace MGroup.Solvers.DDM.Psm.StiffnessMatrices
 {
-	public class PsmMatrixManagerCSparse : IPsmMatrixManager
+	public class PsmMatrixManagerSymmetricSuiteSparse : IPsmMatrixManager
 	{
 		private readonly IPsmDofSeparator dofSeparator;
-		private readonly MatrixManagerCsr managerBasic;
+		private readonly MatrixManagerCscSymmetric managerBasic;
+		private readonly OrderingAmdSuiteSparse reordering = new OrderingAmdSuiteSparse();
 
-		private readonly Dictionary<int, SubmatrixExtractorCsrCsc> extractors = new Dictionary<int, SubmatrixExtractorCsrCsc>();
+		private readonly Dictionary<int, SubmatrixExtractorCsrCscSym> extractors = new Dictionary<int, SubmatrixExtractorCsrCscSym>();
 		private ConcurrentDictionary<int, CsrMatrix> Kbb = new ConcurrentDictionary<int, CsrMatrix>();
 		private ConcurrentDictionary<int, CsrMatrix> Kbi = new ConcurrentDictionary<int, CsrMatrix>();
-		private ConcurrentDictionary<int, CsrMatrix> Kib = new ConcurrentDictionary<int, CsrMatrix>();
-		private ConcurrentDictionary<int, CscMatrix> Kii = new ConcurrentDictionary<int, CscMatrix>();
-		private ConcurrentDictionary<int, LUCSparseNet> invKii = new ConcurrentDictionary<int, LUCSparseNet>();
+		private ConcurrentDictionary<int, SymmetricCscMatrix> Kii = new ConcurrentDictionary<int, SymmetricCscMatrix>();
+		private ConcurrentDictionary<int, CholeskySuiteSparse> invKii = new ConcurrentDictionary<int, CholeskySuiteSparse>();
 
-		public PsmMatrixManagerCSparse(IStructuralModel model, IPsmDofSeparator dofSeparator,
-			MatrixManagerCsr managerBasic)
+		public PsmMatrixManagerSymmetricSuiteSparse(IStructuralModel model, IPsmDofSeparator dofSeparator, MatrixManagerCscSymmetric managerBasic)
 		{
 			this.dofSeparator = dofSeparator;
 			this.managerBasic = managerBasic;
 			foreach (ISubdomain subdomain in model.Subdomains)
 			{
-				extractors[subdomain.ID] = new SubmatrixExtractorCsrCsc();
+				extractors[subdomain.ID] = new SubmatrixExtractorCsrCscSym();
 			}
 		}
 
@@ -41,8 +42,11 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessMatrices
 		{
 			Kbb[subdomainID] = null;
 			Kbi[subdomainID] = null;
-			Kib[subdomainID] = null;
 			Kii[subdomainID] = null;
+			if (invKii.ContainsKey(subdomainID))
+			{
+				invKii[subdomainID].Dispose();
+			}
 			invKii[subdomainID] = null;
 		}
 
@@ -52,17 +56,20 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessMatrices
 			int[] boundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID);
 			int[] internalDofs = dofSeparator.GetSubdomainDofsInternalToFree(subdomainID);
 
-			CsrMatrix Kff = managerBasic.GetMatrixKff(subdomainID);
+			SymmetricCscMatrix Kff = managerBasic.GetMatrixKff(subdomainID);
 			extractors[subdomainID].ExtractSubmatrices(Kff, boundaryDofs, internalDofs);
 			Kbb[subdomainID] = extractors[subdomainID].Submatrix00;
 			Kbi[subdomainID] = extractors[subdomainID].Submatrix01;
-			Kib[subdomainID] = extractors[subdomainID].Submatrix10;
 			Kii[subdomainID] = extractors[subdomainID].Submatrix11;
 		}
 
 		public void InvertKii(int subdomainID)
 		{
-			var factorization = LUCSparseNet.Factorize(Kii[subdomainID]);
+			if (invKii.ContainsKey(subdomainID))
+			{
+				invKii[subdomainID].Dispose();
+			}
+			var factorization = CholeskySuiteSparse.Factorize(Kii[subdomainID], true);
 			invKii[subdomainID] = factorization;
 			Kii[subdomainID] = null; // This memory is not overwritten, but it is not needed anymore either.
 		}
@@ -73,19 +80,26 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessMatrices
 
 		public Vector MultiplyKbi(int subdomainID, Vector vector) => Kbi[subdomainID].Multiply(vector, false);
 
-		public Vector MultiplyKib(int subdomainID, Vector vector) => Kib[subdomainID].Multiply(vector, false);
+		public Vector MultiplyKib(int subdomainID, Vector vector) => Kbi[subdomainID].Multiply(vector, true);
 
 		public void ReorderInternalDofs(int subdomainID)
 		{
-			dofSeparator.ReorderSubdomainInternalDofs(subdomainID, DofPermutation.CreateNoPermutation());
+			int[] internalDofs = dofSeparator.GetSubdomainDofsInternalToFree(subdomainID);
+			SymmetricCscMatrix Kff = managerBasic.GetMatrixKff(subdomainID);
+			(int[] rowIndicesKii, int[] colOffsetsKii) = extractors[subdomainID].ExtractSparsityPattern(Kff, internalDofs);
+			bool oldToNew = false; //TODO: This should be provided by the reordering algorithm
+			(int[] permutation, ReorderingStatistics stats) = reordering.FindPermutation(
+				internalDofs.Length, rowIndicesKii.Length, rowIndicesKii, colOffsetsKii);
+
+			dofSeparator.ReorderSubdomainInternalDofs(subdomainID, DofPermutation.Create(permutation, oldToNew));
 		}
 
 		public class Factory : IPsmMatrixManagerFactory
 		{
 			public (IMatrixManager, IPsmMatrixManager) CreateMatrixManagers(IStructuralModel model, IPsmDofSeparator dofSeparator)
 			{
-				var basicMatrixManager = new MatrixManagerCsr(model);
-				var psmMatrixManager = new PsmMatrixManagerCSparse(model, dofSeparator, basicMatrixManager);
+				var basicMatrixManager = new MatrixManagerCscSymmetric(model);
+				var psmMatrixManager = new PsmMatrixManagerSymmetricSuiteSparse(model, dofSeparator, basicMatrixManager);
 				return (basicMatrixManager, psmMatrixManager);
 			}
 		}

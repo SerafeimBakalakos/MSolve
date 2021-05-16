@@ -12,6 +12,7 @@ using MGroup.Solvers.DDM.Psm.Dofs;
 using MGroup.Solvers.DDM.StiffnessMatrices;
 using MGroup.Solvers.DofOrdering.Reordering;
 using MGroup.Solvers.LinearSystems;
+using System.Collections.Concurrent;
 
 namespace MGroup.Solvers.DDM.Psm.StiffnessMatrices
 {
@@ -20,11 +21,11 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessMatrices
 		private readonly IPsmDofSeparator dofSeparator;
 		private readonly MatrixManagerDense managerBasic;
 
-		private Dictionary<int, Matrix> Kbb = new Dictionary<int, Matrix>();
-		private Dictionary<int, Matrix> Kib = new Dictionary<int, Matrix>();
-		private Dictionary<int, Matrix> Kbi = new Dictionary<int, Matrix>();
-		private Dictionary<int, Matrix> Kii = new Dictionary<int, Matrix>();
-		private Dictionary<int, Matrix> invKii = new Dictionary<int, Matrix>();
+		private ConcurrentDictionary<int, Matrix> Kbb = new ConcurrentDictionary<int, Matrix>();
+		private ConcurrentDictionary<int, Matrix> Kbi = new ConcurrentDictionary<int, Matrix>();
+		private ConcurrentDictionary<int, Matrix> Kib = new ConcurrentDictionary<int, Matrix>();
+		private ConcurrentDictionary<int, Matrix> Kii = new ConcurrentDictionary<int, Matrix>();
+		private ConcurrentDictionary<int, Matrix> invKii = new ConcurrentDictionary<int, Matrix>();
 
 		public PsmMatrixManagerDense(IPsmDofSeparator dofSeparator, MatrixManagerDense managerBasic)
 		{
@@ -34,11 +35,11 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessMatrices
 
 		public void ClearSubMatrices(int subdomainID)
 		{
-			lock (Kbb) Kbb[subdomainID] = null;
-			lock (Kbi) Kbi[subdomainID] = null;
-			lock (Kib) Kib[subdomainID] = null;
-			lock (Kii) Kii[subdomainID] = null;
-			lock (invKii) invKii[subdomainID] = null;
+			Kbb[subdomainID] = null;
+			Kbi[subdomainID] = null;
+			Kib[subdomainID] = null;
+			Kii[subdomainID] = null;
+			invKii[subdomainID] = null;
 		}
 
 		public void ExtractKiiKbbKib(int subdomainID)
@@ -46,17 +47,17 @@ namespace MGroup.Solvers.DDM.Psm.StiffnessMatrices
 			Matrix Kff = managerBasic.GetMatrixKff(subdomainID);
 			int[] boundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID);
 			int[] internalDofs = dofSeparator.GetSubdomainDofsInternalToFree(subdomainID);
-			lock (Kbb) Kbb[subdomainID] = Kff.GetSubmatrix(boundaryDofs, boundaryDofs);
-			lock (Kbi) Kbi[subdomainID] = Kff.GetSubmatrix(boundaryDofs, internalDofs);
-			lock (Kib) Kib[subdomainID] = Kff.GetSubmatrix(internalDofs, boundaryDofs);
-			lock (Kii) Kii[subdomainID] = Kff.GetSubmatrix(internalDofs, internalDofs);
+			Kbb[subdomainID] = Kff.GetSubmatrix(boundaryDofs, boundaryDofs);
+			Kbi[subdomainID] = Kff.GetSubmatrix(boundaryDofs, internalDofs);
+			Kib[subdomainID] = Kff.GetSubmatrix(internalDofs, boundaryDofs);
+			Kii[subdomainID] = Kff.GetSubmatrix(internalDofs, internalDofs);
 		}
 
 		public void InvertKii(int subdomainID)
 		{
 			Matrix inverse = Kii[subdomainID].Invert();
-			lock (invKii) invKii[subdomainID] = inverse;
-			lock (Kii) Kii[subdomainID] = null;
+			invKii[subdomainID] = inverse;
+			Kii[subdomainID] = null;
 		}
 
 		public Vector MultiplyInverseKii(int subdomainID, Vector vector) => invKii[subdomainID] * vector;

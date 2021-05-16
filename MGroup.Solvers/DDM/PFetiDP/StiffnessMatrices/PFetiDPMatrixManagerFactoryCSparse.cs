@@ -16,7 +16,7 @@ namespace MGroup.Solvers.DDM.PFetiDP.StiffnessMatrices
 			IStructuralModel model, IPsmDofSeparator dofSeparatorPsm, IFetiDPDofSeparator dofSeparatorFetiDP)
 		{
 			var basicMatrixManager = new MatrixManagerCscSymmetric(model);
-			var psmMatrixManager = new PsmMatrixManagerCSparse(model, dofSeparatorPsm, basicMatrixManager);
+			var psmMatrixManager = new PsmMatrixManagerSymmetricCSparse(model, dofSeparatorPsm, basicMatrixManager);
 			var fetiDPMatrixManager = new FetiDPMatrixManagerCSparse(model, dofSeparatorFetiDP, basicMatrixManager);
 			return (basicMatrixManager, psmMatrixManager, fetiDPMatrixManager);
 		}
