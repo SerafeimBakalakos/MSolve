@@ -6,7 +6,12 @@ using MGroup.Solvers.Distributed.Topologies;
 
 namespace MGroup.Solvers.Distributed.Environments
 {
-    public class DistributedLocalEnvironment : IComputeEnvironment
+    /// <summary>
+    /// Operations per each <see cref="ComputeNode"/> and its <see cref="ComputeSubnode"/>s are run sequentially.
+    /// The data for all <see cref="ComputeNode"/>s and their <see cref="ComputeSubnode"/>s are assumed to exist in the same 
+    /// shared memory address space.
+    /// </summary>
+    public class SequentialSharedEnvironment : IComputeEnvironment
     {
         private readonly bool duplicateCommonData;
 
@@ -17,7 +22,7 @@ namespace MGroup.Solvers.Distributed.Environments
         /// If true, then data that are identical across multiple nodes will be copied and each node will have a different 
         /// instance. If false, then the instance of common data will be shared across all nodes. E.g. when broadcasting data.
         /// </param>
-        public DistributedLocalEnvironment(int numComputeNodes, bool duplicateCommonData = true)
+        public SequentialSharedEnvironment(int numComputeNodes, bool duplicateCommonData = true)
         {
             this.NumComputeNodes = numComputeNodes;
             this.duplicateCommonData = duplicateCommonData;
@@ -76,21 +81,21 @@ namespace MGroup.Solvers.Distributed.Environments
             return result;
         }
 
-        public void DoPerNode(Action<ComputeNode> action)
+        public void DoPerNode(Action<ComputeNode> actionPerNode)
         {
             foreach (ComputeNode node in NodeTopology.Nodes.Values)
             {
-                action(node);
+                actionPerNode(node);
             }
         }
 
-        public void DoPerSubnode(Action<ComputeSubnode> action)
+        public void DoPerSubnode(Action<ComputeSubnode> actionPerSubnode)
         {
             foreach (ComputeNode node in NodeTopology.Nodes.Values)
             {
                 foreach (ComputeSubnode subnode in node.Subnodes.Values)
                 {
-                    action(subnode);
+                    actionPerSubnode(subnode);
                 }
             }
         }

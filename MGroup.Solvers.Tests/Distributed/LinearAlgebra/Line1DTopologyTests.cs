@@ -19,7 +19,7 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
     {
         public static IEnumerable<object[]> GetEnvironments()
         {
-            yield return new object[] { new DistributedLocalEnvironment(4, true) };
+            yield return new object[] { new SequentialSharedEnvironment(4, true) };
         }
 
         [Theory]
@@ -378,22 +378,36 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
 
         internal static void RunMpiTests()
         {
+            //TODOMPI: the environment injected into MpiEnvironment's ctor will not be used, since it will be immediately set. 
+            //      On the other hand in normal execution, there is no need to change the environment.
+            //      Therefore I should probably remove the setter and replace it with a utility method that uses reflection.
+            //      This could all be avoided if MPI.NET did not use static Dispose().
             int numProcesses = 4;
-            using (var mpiEnvironment = new MpiEnvironment(numProcesses))
+            using (var mpiEnvironment = new MpiEnvironment(numProcesses, new SequentialSubnodeEnvironment()))
             {
                 MpiUtilities.AssistDebuggerAttachment();
-                TestAxpyVectors(mpiEnvironment);
-                TestDotProduct(mpiEnvironment);
-                TestEqualVectors(mpiEnvironment);
-                TestLinearCombinationVectors(mpiEnvironment);
-                TestMatrixVectorMultiplication(mpiEnvironment);
-                TestMatrixVectorMultiplicationWithSubdomains(mpiEnvironment);
-                TestPcg(mpiEnvironment);
-                TestScaleVector(mpiEnvironment);
-                TestSumOverlappingEntries(mpiEnvironment);
 
-                MpiUtilities.DoSerially(MPI.Communicator.world,
-                    () => Console.WriteLine($"Process {MPI.Communicator.world.Rank}: All tests passed"));
+                ISubnodeEnvironment[] subenvironments = { new SequentialSubnodeEnvironment(), new ParallelSubnodeEnvironment() };
+                foreach (ISubnodeEnvironment subenvironment in subenvironments)
+                {
+                    mpiEnvironment.SubnodeEnvironment = subenvironment;
+                    MpiUtilities.DoSerially(MPI.Communicator.world,
+                        () => Console.WriteLine($"Process {MPI.Communicator.world.Rank}: Will run tests for environment =" +
+                            $" {subenvironment.GetType().FullName}"));
+
+                    TestAxpyVectors(mpiEnvironment);
+                    TestDotProduct(mpiEnvironment);
+                    TestEqualVectors(mpiEnvironment);
+                    TestLinearCombinationVectors(mpiEnvironment);
+                    TestMatrixVectorMultiplication(mpiEnvironment);
+                    TestMatrixVectorMultiplicationWithSubdomains(mpiEnvironment);
+                    TestPcg(mpiEnvironment);
+                    TestScaleVector(mpiEnvironment);
+                    TestSumOverlappingEntries(mpiEnvironment);
+
+                    MpiUtilities.DoSerially(MPI.Communicator.world,
+                        () => Console.WriteLine($"Process {MPI.Communicator.world.Rank}: All tests passed"));
+                }
             }
         }
     }

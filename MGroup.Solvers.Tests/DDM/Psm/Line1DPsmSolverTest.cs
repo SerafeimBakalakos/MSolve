@@ -24,7 +24,7 @@ namespace MGroup.Solvers.Tests.DDM.Psm
         [Fact]
         public static void Run()
         {
-            IComputeEnvironment environment = new DistributedLocalEnvironment(4);
+            IComputeEnvironment environment = new SequentialSharedEnvironment(4);
             var ddmEnvironment = new ProcessingEnvironment(
                 new SubdomainEnvironmentManagedSequential(), new ClusterEnvironmentManagedSequential());
             (Model model, ClusterTopology clusterTopology) = Line1DExample.CreateMultiSubdomainModel(environment);

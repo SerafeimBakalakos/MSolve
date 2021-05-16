@@ -19,7 +19,7 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
     {
         public static IEnumerable<object[]> GetEnvironments()
         {
-            yield return new object[] { new DistributedLocalEnvironment(3, true) };
+            yield return new object[] { new SequentialSharedEnvironment(3, true) };
         }
 
         [Theory]
@@ -360,21 +360,31 @@ namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
         internal static void RunMpiTests()
         {
             int numProcesses = 3;
-            using (var mpiEnvironment = new MpiEnvironment(numProcesses))
+            using (var mpiEnvironment = new MpiEnvironment(numProcesses, new SequentialSubnodeEnvironment()))
             {
                 MpiUtilities.AssistDebuggerAttachment();
-                TestAxpyVectors(mpiEnvironment);
-                TestDotProduct(mpiEnvironment);
-                TestEqualVectors(mpiEnvironment);
-                TestLinearCombinationVectors(mpiEnvironment);
-                TestMatrixVectorMultiplication(mpiEnvironment);
-                TestMatrixVectorMultiplicationWithSubdomains(mpiEnvironment);
-                TestPcg(mpiEnvironment);
-                TestScaleVector(mpiEnvironment);
-                TestSumOverlappingEntries(mpiEnvironment);
 
-                MpiUtilities.DoSerially(MPI.Communicator.world,
-                    () => Console.WriteLine($"Process {MPI.Communicator.world.Rank}: All tests passed"));
+                ISubnodeEnvironment[] subenvironments = { new SequentialSubnodeEnvironment(), new ParallelSubnodeEnvironment() };
+                foreach (ISubnodeEnvironment subenvironment in subenvironments)
+                {
+                    mpiEnvironment.SubnodeEnvironment = subenvironment;
+                    MpiUtilities.DoSerially(MPI.Communicator.world,
+                        () => Console.WriteLine($"Process {MPI.Communicator.world.Rank}: Will run tests for environment =" +
+                            $" {subenvironment.GetType().FullName}"));
+
+                    TestAxpyVectors(mpiEnvironment);
+                    TestDotProduct(mpiEnvironment);
+                    TestEqualVectors(mpiEnvironment);
+                    TestLinearCombinationVectors(mpiEnvironment);
+                    TestMatrixVectorMultiplication(mpiEnvironment);
+                    TestMatrixVectorMultiplicationWithSubdomains(mpiEnvironment);
+                    TestPcg(mpiEnvironment);
+                    TestScaleVector(mpiEnvironment);
+                    TestSumOverlappingEntries(mpiEnvironment);
+
+                    MpiUtilities.DoSerially(MPI.Communicator.world,
+                        () => Console.WriteLine($"Process {MPI.Communicator.world.Rank}: All tests passed"));
+                }
             }
         }
     }

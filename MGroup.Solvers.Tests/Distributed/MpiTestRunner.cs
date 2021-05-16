@@ -27,8 +27,8 @@ namespace MGroup.Solvers.Tests.Distributed
         public static void Run(string[] args)
         {
             //AttachBareBonesDebugger();
-            //Hexagon1DTopologyTests.RunMpiTests();
-            Line1DTopologyTests.RunMpiTests();
+            Hexagon1DTopologyTests.RunMpiTests();
+            //Line1DTopologyTests.RunMpiTests();
         }
 
         

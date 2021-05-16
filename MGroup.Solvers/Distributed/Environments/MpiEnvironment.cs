@@ -15,9 +15,12 @@ using MPI;
 namespace MGroup.Solvers.Distributed.Environments
 {
     /// <summary>
-    /// There is only one compute node per process. There may be many processes per machine, but there is no way for them to
-    /// communicate other than through the MPI library. Aside from sharing hardware resources, the processes and compute nodes
-    /// are in essence run on different machines.
+    /// There is only one <see cref="ComputeNode"/> per MPI process. There may be many processes per machine, but each has its 
+    /// own memory address space and they can communicate only through the MPI library. Aside from sharing hardware resources, 
+    /// the processes and <see cref="ComputeNode"/>s are in essence run on different machines. 
+    /// The data for a given <see cref="ComputeNode"/> and its <see cref="ComputeSubnode"/>s are assumed to exist in the same 
+    /// shared memory address space. The execution of operations per <see cref="ComputeSubnode"/> of the local 
+    /// <see cref="ComputeNode"/> depends on the <see cref="ISubnodeEnvironment"/> used.
     /// </summary>
     /// <remarks>
     /// Implements the Dispose pattern: 
@@ -25,26 +28,33 @@ namespace MGroup.Solvers.Distributed.Environments
     /// </remarks>
     public sealed class MpiEnvironment : IComputeEnvironment, IDisposable
     {
-        private static readonly int allToAllTag = IntGuids.GetNewNonNegativeGuid()/*Guid.NewGuid().GetHashCode()*/;
-        private static readonly int allToAllBufferLengthsTag = IntGuids.GetNewNonNegativeGuid()/*Guid.NewGuid().GetHashCode()*/;
+        private static readonly int allToAllTag = IntGuids.GetNewNonNegativeGuid();
+        private static readonly int allToAllBufferLengthsTag = IntGuids.GetNewNonNegativeGuid();
 
-        private bool disposed = false;
-        private readonly MPI.Environment mpiEnvironment;
         private readonly Intracommunicator commWorld;
+        private readonly MPI.Environment mpiEnvironment;
 
         /// <summary>
         /// In MPI 2.0 this is very limited thus I implemented its functionality myself and don't need it
         /// </summary>
         private GraphCommunicator commNeighborhood; 
 
+        private bool disposed = false;
         private ComputeNode localNode;
         private ComputeNodeTopology nodeTopology;
+        private ISubnodeEnvironment subnodeEnvironment;
 
-
-        public MpiEnvironment(int numProcesses)
+        public MpiEnvironment(int numProcesses, ISubnodeEnvironment subnodeEnvironment)
         {
+            if (!subnodeEnvironment.IsMemoryAddressSpaceShared)
+            {
+                throw new ArgumentException("For subnodes only environments with shared memory address space can be used.");
+            }
+            this.subnodeEnvironment = subnodeEnvironment;
+
+            //TODOMPI: See Threading param. In multithreaded programs, I must specify that to MPI.NET.
             string[] args = Array.Empty<string>();
-            var mpiEnvironment = new MPI.Environment(ref args);
+            var mpiEnvironment = new MPI.Environment(ref args); 
 
             // Check if the number of processes launched is correct
             if (numProcesses != Communicator.world.Size)
@@ -86,13 +96,26 @@ namespace MGroup.Solvers.Distributed.Environments
 
                 nodeTopology = value;
                 localNode = nodeTopology.Nodes[commWorld.Rank]; // Keep only 1 node for this process.
+                subnodeEnvironment.Subnodes = localNode.Subnodes.Values;
                 //commNeighborhood = CreateGraphCommunicator(nodeTopology); // Not needed yet
             } 
         }
 
-        
-
         public int NumComputeNodes { get; }
+
+        public ISubnodeEnvironment SubnodeEnvironment
+        {
+            get => subnodeEnvironment;
+            set
+            {
+                //TODOMPI: Also check that the mode of MPI.NET environment (Threading param) does not change
+                if (!subnodeEnvironment.IsMemoryAddressSpaceShared)
+                {
+                    throw new ArgumentException("For subnodes only environments with shared memory address space can be used.");
+                }
+                this.subnodeEnvironment = value;
+            }
+        }
 
         public T AccessNodeDataFromSubnode<T>(ComputeSubnode subnode, Func<ComputeNode, T> getNodeData)
             => getNodeData(subnode.ParentNode);
@@ -120,14 +143,7 @@ namespace MGroup.Solvers.Distributed.Environments
         }
 
         public Dictionary<int, T> CreateDictionaryPerSubnode<T>(Func<ComputeSubnode, T> createDataPerSubnode)
-        {
-            var result = new Dictionary<int, T>();
-            foreach (ComputeSubnode subnode in localNode.Subnodes.Values) //TODOMPI: Parallelize this preferably with strategy method
-            {
-                result[subnode.ID] = createDataPerSubnode(subnode);
-            }
-            return result;
-        }
+            => subnodeEnvironment.CreateDictionaryPerSubnode(createDataPerSubnode);
 
         public void Dispose()
         {
@@ -140,11 +156,11 @@ namespace MGroup.Solvers.Distributed.Environments
             actionPerNode(localNode);
         }
 
-        public void DoPerSubnode(Action<ComputeSubnode> action)
+        public void DoPerSubnode(Action<ComputeSubnode> actionPerSubnode)
         {
             foreach (ComputeSubnode subnode in localNode.Subnodes.Values) //TODOMPI: Parallelize this preferably with strategy method
             {
-                action(subnode);
+                actionPerSubnode(subnode);
             }
         }
 
