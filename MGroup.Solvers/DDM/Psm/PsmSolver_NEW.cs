@@ -48,7 +48,7 @@ namespace MGroup.Solvers.DDM.Psm
 		protected readonly IPsmPreconditioner preconditioner;
 		protected readonly IPsmRhsVectorManager rhsVectorManager;
 		protected readonly IPsmSolutionVectorManager solutionVectorManager;
-		protected readonly IStiffnessDistribution stiffnessDistribution;
+		protected readonly IStiffnessDistribution_NEW stiffnessDistribution;
 
 		private DistributedIndexer indexer; //TODOMPI: make this private and a single objects, instead of a Dictionary.
 
@@ -70,15 +70,15 @@ namespace MGroup.Solvers.DDM.Psm
 			this.preconditioner = preconditioner;
 			this.interfaceProblemSolver = interfaceProblemSolver;
 
-			Cluster[] clusters = clusterTopology.Clusters.Values.ToArray();
 			if (isHomogeneous)
 			{
-				this.stiffnessDistribution = new HomogeneousStiffnessDistribution(ddmEnvironment, clusters, dofSeparator);
+				this.stiffnessDistribution = new HomogeneousStiffnessDistribution_NEW(
+					environment, model, clusterTopology, dofSeparator);
 			}
 			else
 			{
-				this.stiffnessDistribution = new HeterogeneousStiffnessDistribution(
-					ddmEnvironment, clusters, dofSeparator, matrixManagerBasic);
+				this.stiffnessDistribution = new HeterogeneousStiffnessDistribution_NEW(
+					environment, model, clusterTopology, dofSeparator, matrixManagerBasic);
 			}
 
 			var linearSystems = new Dictionary<int, ILinearSystem>();
@@ -123,8 +123,8 @@ namespace MGroup.Solvers.DDM.Psm
 			throw new NotImplementedException();
 		}
 
-		public virtual Dictionary<int, SparseVector> DistributeNodalLoads(Table<INode, IDofType, double> globalNodalLoads)
-			=> stiffnessDistribution.DistributeNodalLoads(globalNodalLoads, model.Subdomains);
+		public virtual Dictionary<int, SparseVector> DistributeNodalLoads(Table<INode, IDofType, double> nodalLoads)
+			=> stiffnessDistribution.DistributeNodalLoads(nodalLoads);
 
 		public virtual Dictionary<int, Vector> DistributeGlobalForces(Vector globalForces)
 		{

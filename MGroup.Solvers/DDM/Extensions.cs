@@ -10,10 +10,7 @@ namespace MGroup.Solvers.DDM
 {
 	public static class Extensions
 	{
-		public static int GetMultiplicity(this INode node)
-		{
-			return node.SubdomainsDictionary.Count;
-		}
+		public static int GetMultiplicity(this INode node) => node.SubdomainsDictionary.Count;
 
 		/// <summary>
 		/// WARNING: Only takes into account dof multiplicity for now.
