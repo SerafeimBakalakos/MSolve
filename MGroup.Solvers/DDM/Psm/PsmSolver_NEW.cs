@@ -33,8 +33,6 @@ namespace MGroup.Solvers.DDM.Psm
 {
 	public class PsmSolver_NEW : ISolver
 	{
-		protected const int clusterID = 0;
-
 		protected readonly IDofOrderer dofOrderer;
 		protected readonly IPsmDofSeparator_NEW dofSeparatorPsm;
 		protected readonly IComputeEnvironment environment;
@@ -200,7 +198,8 @@ namespace MGroup.Solvers.DDM.Psm
 
 			CreateDistributedIndexer();
 
-			Logger.LogNumDofs("Global boundary dofs", dofSeparatorPsm.GetNumBoundaryDofsCluster(clusterID));
+			//TODO: What should I log here?
+			//Logger.LogNumDofs("Global boundary dofs", dofSeparatorPsm.GetNumBoundaryDofsCluster(clusterID));
 		}
 
 		public virtual Dictionary<int, Matrix> InverseSystemMatrixTimesOtherMatrix(Dictionary<int, IMatrixView> otherMatrix)
