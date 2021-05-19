@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using Xunit;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using MGroup.Solvers.DDM;
-using MGroup.Solvers.DDM.Dofs;
+using MGroup.Solvers_OLD.DDM;
+using MGroup.Solvers_OLD;
 using MGroup.Tests.DDM.UnitTests.Models;
-using MGroup.Solvers.DDM.StiffnessMatrices;
+using MGroup.Solvers_OLD.DDM.StiffnessMatrices;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
 

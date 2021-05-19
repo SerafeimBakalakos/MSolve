@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MGroup.Solvers.Tests
+namespace MGroup.Solvers_OLD.Tests
 {
     public class Program
     {

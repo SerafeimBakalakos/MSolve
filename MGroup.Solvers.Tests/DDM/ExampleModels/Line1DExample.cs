@@ -6,9 +6,9 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.FEM.Elements;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.Materials;
-using MGroup.Solvers.DDM;
-using MGroup.Solvers.DDM.Dofs;
-using MGroup.Solvers.Distributed.Environments;
+using MGroup.Solvers_OLD.DDM;
+using MGroup.Solvers_OLD.DistributedTry1.DDM;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.Environments;
 
 // Global:
 // 0--1--2--3--4--5--6--7--8--9--10--11--12--13--14--15--[16] -> 16 is constrained, 0 is loaded
@@ -29,7 +29,7 @@ using MGroup.Solvers.Distributed.Environments;
 //                                       12--13--14  s6
 //                                               14--15--[16]  s7
 //
-namespace MGroup.Solvers.Tests.DDM.ExampleModels
+namespace MGroup.Solvers_OLD.Tests.DDM.ExampleModels
 {
     public class Line1DExample //TODOMPI: Merge this with Line1DTopology
     {
@@ -94,16 +94,16 @@ namespace MGroup.Solvers.Tests.DDM.ExampleModels
 
             // Clusters
             var clusterTopology = new ClusterTopology(environment);
-            clusterTopology.Clusters[0] = new Solvers.DDM.Cluster(0);
+            clusterTopology.Clusters[0] = new Solvers_OLD.DDM.Cluster(0);
             clusterTopology.Clusters[0].Subdomains.Add(model.SubdomainsDictionary[0]); 
             clusterTopology.Clusters[0].Subdomains.Add(model.SubdomainsDictionary[1]);
-            clusterTopology.Clusters[1] = new Solvers.DDM.Cluster(1);
+            clusterTopology.Clusters[1] = new Solvers_OLD.DDM.Cluster(1);
             clusterTopology.Clusters[1].Subdomains.Add(model.SubdomainsDictionary[2]);
             clusterTopology.Clusters[1].Subdomains.Add(model.SubdomainsDictionary[3]);
-            clusterTopology.Clusters[2] = new Solvers.DDM.Cluster(2);
+            clusterTopology.Clusters[2] = new Solvers_OLD.DDM.Cluster(2);
             clusterTopology.Clusters[2].Subdomains.Add(model.SubdomainsDictionary[4]);
             clusterTopology.Clusters[2].Subdomains.Add(model.SubdomainsDictionary[5]);
-            clusterTopology.Clusters[3] = new Solvers.DDM.Cluster(3);
+            clusterTopology.Clusters[3] = new Solvers_OLD.DDM.Cluster(3);
             clusterTopology.Clusters[3].Subdomains.Add(model.SubdomainsDictionary[6]);
             clusterTopology.Clusters[3].Subdomains.Add(model.SubdomainsDictionary[7]);
 

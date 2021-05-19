@@ -4,7 +4,7 @@
 //      assemble the values part of the global matrix more efficiently than the general purpose DOK. The general purpose DOK 
 //      should only be used to assemble the first global matrix and whenever the dof ordering changes. Now it is used everytime 
 //      and the indexing arrays are discarded.
-namespace MGroup.Solvers.Assemblers
+namespace MGroup.Solvers_OLD.Assemblers
 {
 	using System.Collections.Generic;
 	using System.Diagnostics;
@@ -14,7 +14,7 @@ namespace MGroup.Solvers.Assemblers
 	using ISAAR.MSolve.Discretization.Interfaces;
 	using ISAAR.MSolve.Discretization.FreedomDegrees;
 	using ISAAR.MSolve.Solvers.Assemblers;
-	using MGroup.Solvers.Commons;
+	using MGroup.Solvers_OLD.Commons;
 
 	public class DokRowMajorAssembler
 	{

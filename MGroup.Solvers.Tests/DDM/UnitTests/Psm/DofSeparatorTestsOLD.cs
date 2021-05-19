@@ -7,12 +7,12 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
-using MGroup.Solvers.DDM.Dofs;
-using MGroup.Solvers.DDM.Environments;
-using MGroup.Solvers.DDM.Mappings;
-using MGroup.Solvers.DDM.Psm.Dofs;
-using MGroup.Solvers.DofOrdering;
-using MGroup.Solvers.DofOrdering.Reordering;
+using MGroup.Solvers_OLD;
+using MGroup.Solvers_OLD.DDM.Environments;
+using MGroup.Solvers_OLD.DDM.Mappings;
+using MGroup.Solvers_OLD.DDM.Psm.Dofs;
+using MGroup.Solvers_OLD.DofOrdering;
+using MGroup.Solvers_OLD.DofOrdering.Reordering;
 using Xunit;
 
 namespace MGroup.Tests.DDM.UnitTests.Psm
@@ -57,8 +57,8 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			Model model = Example4x4QuadsHomogeneous.CreateModel();
 			model.ConnectDataStructures();
 
-			var clusters = new Solvers.DDM.Cluster[1];
-			clusters[0] = new Solvers.DDM.Cluster(0);
+			var clusters = new Solvers_OLD.DDM.Cluster[1];
+			clusters[0] = new Solvers_OLD.DDM.Cluster(0);
 			foreach (ISubdomain subdomain in model.Subdomains)
 			{
 				clusters[0].Subdomains.Add(subdomain);

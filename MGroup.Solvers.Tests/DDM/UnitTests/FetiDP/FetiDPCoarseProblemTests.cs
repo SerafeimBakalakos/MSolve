@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using MGroup.Solvers.DDM.StiffnessMatrices;
-using MGroup.Solvers.DDM.FetiDP.StiffnessMatrices;
-using MGroup.Solvers.DDM.FetiDP.Dofs;
+using MGroup.Solvers_OLD.DDM.StiffnessMatrices;
+using MGroup.Solvers_OLD.DDM.FetiDP.StiffnessMatrices;
+using MGroup.Solvers_OLD.DDM.FetiDP.Dofs;
 using Xunit;
-using MGroup.Solvers.DDM.FetiDP.CoarseProblem;
-using MGroup.Solvers.DDM.Mappings;
-using MGroup.Solvers.DDM.Environments;
+using MGroup.Solvers_OLD.DDM.FetiDP.CoarseProblem;
+using MGroup.Solvers_OLD.DDM.Mappings;
+using MGroup.Solvers_OLD.DDM.Environments;
 using ISAAR.MSolve.Discretization.Interfaces;
-using MGroup.Solvers.Tests;
+using MGroup.Solvers_OLD.Tests;
 
 namespace MGroup.Tests.DDM.UnitTests.FetiDP
 {

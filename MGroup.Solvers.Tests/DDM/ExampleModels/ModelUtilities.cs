@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.FEM.Entities;
 
-namespace MGroup.Solvers.Tests.DDM.ExampleModels
+namespace MGroup.Solvers_OLD.Tests.DDM.ExampleModels
 {
     public static class ModelUtilities
     {

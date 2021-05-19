@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using MGroup.Solvers.Distributed.Environments;
-using MGroup.Solvers.Distributed.LinearAlgebra;
-using MGroup.Solvers.Distributed.Topologies;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.Environments;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.LinearAlgebra;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.Topologies;
 
 //          x 8                   x 8                     x 8      
 //        /   \                 /                           \      
@@ -22,7 +22,7 @@ using MGroup.Solvers.Distributed.Topologies;
 //                                       cluster0
 // 1 dof per node
 
-namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
+namespace MGroup.Solvers_OLD.Tests.DistributedTry1.Distributed.LinearAlgebra
 {
     public class Hexagon1DTopology
     {

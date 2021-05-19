@@ -5,7 +5,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Triangulation;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
-namespace MGroup.Solvers.LinearAlgebraExtensions
+namespace MGroup.Solvers_OLD.LinearAlgebraExtensions
 {
 	public static class SchurComplementPckCsrCscSym
 	{

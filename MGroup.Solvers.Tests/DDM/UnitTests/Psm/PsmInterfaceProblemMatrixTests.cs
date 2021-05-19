@@ -4,18 +4,18 @@ using System.Text;
 
 using Xunit;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using MGroup.Solvers.DDM;
-using MGroup.Solvers.DDM.Dofs;
-using MGroup.Solvers.DDM.Psm.Dofs;
+using MGroup.Solvers_OLD.DDM;
+using MGroup.Solvers_OLD;
+using MGroup.Solvers_OLD.DDM.Psm.Dofs;
 using MGroup.Tests.DDM.UnitTests.Models;
-using MGroup.Solvers.DDM.Psm.StiffnessMatrices;
-using MGroup.Solvers.DDM.StiffnessMatrices;
-using MGroup.Solvers.DDM.Psm.InterfaceProblem;
+using MGroup.Solvers_OLD.DDM.Psm.StiffnessMatrices;
+using MGroup.Solvers_OLD.DDM.StiffnessMatrices;
+using MGroup.Solvers_OLD.DDM.Psm.InterfaceProblem;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using MGroup.Solvers.DDM.Environments;
+using MGroup.Solvers_OLD.DDM.Environments;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
-using MGroup.Solvers.Tests;
+using MGroup.Solvers_OLD.Tests;
 
 namespace MGroup.Tests.DDM.UnitTests.Psm
 {

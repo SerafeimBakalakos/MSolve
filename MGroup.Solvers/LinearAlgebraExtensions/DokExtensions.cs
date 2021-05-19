@@ -4,7 +4,7 @@ using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
 
-namespace MGroup.Solvers.LinearAlgebraExtensions
+namespace MGroup.Solvers_OLD.LinearAlgebraExtensions
 {
 	public static class DokExtensions
 	{

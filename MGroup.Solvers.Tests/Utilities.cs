@@ -1,4 +1,4 @@
-namespace MGroup.Solvers.Tests
+namespace MGroup.Solvers_OLD.Tests
 {
 	using System;
 	using ISAAR.MSolve.LinearAlgebra.Matrices;

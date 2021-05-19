@@ -4,12 +4,12 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using MGroup.Solvers.DDM;
-using MGroup.Solvers.DDM.Dofs;
-using MGroup.Solvers.DDM.Environments;
-using MGroup.Solvers.DDM.Psm.Dofs;
-using MGroup.Solvers.DDM.Psm.StiffnessDistribution;
-using MGroup.Solvers.DDM.Psm.StiffnessMatrices;
+using MGroup.Solvers_OLD;
+using MGroup.Solvers_OLD.DDM;
+using MGroup.Solvers_OLD.DDM.Environments;
+using MGroup.Solvers_OLD.DDM.Psm.Dofs;
+using MGroup.Solvers_OLD.DDM.Psm.StiffnessDistribution;
+using MGroup.Solvers_OLD.DDM.Psm.StiffnessMatrices;
 using MGroup.Tests.DDM.UnitTests.Models;
 using Xunit;
 

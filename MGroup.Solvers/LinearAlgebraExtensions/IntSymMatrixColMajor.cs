@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace MGroup.Solvers.LinearAlgebraExtensions
+namespace MGroup.Solvers_OLD.LinearAlgebraExtensions
 {
 	public class IntSymMatrixColMajor
 	{

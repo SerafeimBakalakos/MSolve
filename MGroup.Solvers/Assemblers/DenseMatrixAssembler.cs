@@ -1,4 +1,4 @@
-namespace MGroup.Solvers.Assemblers
+namespace MGroup.Solvers_OLD.Assemblers
 {
 	using System.Collections.Generic;
 	using System.Diagnostics;

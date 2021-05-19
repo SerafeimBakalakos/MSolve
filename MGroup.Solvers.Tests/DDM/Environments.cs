@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using MGroup.Solvers.DDM.Environments;
+using MGroup.Solvers_OLD.DDM.Environments;
 
 namespace MGroup.Tests.DDM
 {

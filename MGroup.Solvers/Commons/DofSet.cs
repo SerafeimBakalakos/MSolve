@@ -5,9 +5,8 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
-using MGroup.Solvers.DDM.Dofs;
 
-namespace MGroup.Solvers.Commons
+namespace MGroup.Solvers_OLD.Commons
 {
     public class DofSet
     {

@@ -6,7 +6,7 @@
 //      for all assemblers, not only skyline.
 //TODO: checking whether the indexer is null is not enough. The assembler should rebuild the indexer whenever the dof ordering
 //      changes.
-namespace MGroup.Solvers.Assemblers
+namespace MGroup.Solvers_OLD.Assemblers
 {
 	using System;
 	using System.Collections.Generic;

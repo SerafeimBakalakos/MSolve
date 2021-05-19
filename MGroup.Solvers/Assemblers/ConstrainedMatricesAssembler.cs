@@ -1,6 +1,6 @@
 //TODO: Reuse indexers. In that case they DOKs should probably be handled by the parent assembler. Therefore there is no reason
 //      for this class.
-namespace MGroup.Solvers.Assemblers
+namespace MGroup.Solvers_OLD.Assemblers
 {
 	using ISAAR.MSolve.LinearAlgebra.Matrices;
 	using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;

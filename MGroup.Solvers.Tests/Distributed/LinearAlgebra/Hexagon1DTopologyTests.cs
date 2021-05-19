@@ -6,14 +6,15 @@ using ISAAR.MSolve.LinearAlgebra.Iterative;
 using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using MGroup.Solvers.Distributed.Environments;
-using MGroup.Solvers.Distributed.LinearAlgebra;
-using MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods;
-using MGroup.Solvers.Distributed.LinearAlgebra.IterativeMethods.Preconditioning;
-using MGroup.Solvers.Distributed.Topologies;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.Environments;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.LinearAlgebra;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.LinearAlgebra.IterativeMethods;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.LinearAlgebra.IterativeMethods.Preconditioning;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.Topologies;
+using MGroup.Solvers_OLD.Tests.Distributed;
 using Xunit;
 
-namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
+namespace MGroup.Solvers_OLD.Tests.DistributedTry1.Distributed.LinearAlgebra
 {
     public static class Hexagon1DTopologyTests
     {

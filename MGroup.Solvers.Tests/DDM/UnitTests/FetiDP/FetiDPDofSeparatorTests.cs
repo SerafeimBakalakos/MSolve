@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
-using MGroup.Solvers.DDM;
-using MGroup.Solvers.DDM.Dofs;
-using MGroup.Solvers.DDM.Environments;
-using MGroup.Solvers.DDM.FetiDP.Dofs;
-using MGroup.Solvers.Tests;
+using MGroup.Solvers_OLD;
+using MGroup.Solvers_OLD.DDM;
+using MGroup.Solvers_OLD.DDM.Environments;
+using MGroup.Solvers_OLD.DDM.FetiDP.Dofs;
+using MGroup.Solvers_OLD.Tests;
 using MGroup.Tests.DDM.UnitTests.Models;
 using Xunit;
 

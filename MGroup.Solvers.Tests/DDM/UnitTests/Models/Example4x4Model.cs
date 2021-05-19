@@ -5,10 +5,10 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
-using MGroup.Solvers.DDM;
-using MGroup.Solvers.DDM.FetiDP.Dofs;
-using MGroup.Solvers.DofOrdering;
-using MGroup.Solvers.DofOrdering.Reordering;
+using MGroup.Solvers_OLD.DDM;
+using MGroup.Solvers_OLD.DDM.FetiDP.Dofs;
+using MGroup.Solvers_OLD.DofOrdering;
+using MGroup.Solvers_OLD.DofOrdering.Reordering;
 
 namespace MGroup.Tests.DDM.UnitTests.Models
 {
@@ -72,8 +72,8 @@ namespace MGroup.Tests.DDM.UnitTests.Models
 
 		public static Cluster[] CreateClusters(IStructuralModel model)
 		{
-			var clusters = new Solvers.DDM.Cluster[1];
-			clusters[0] = new Solvers.DDM.Cluster(0);
+			var clusters = new Solvers_OLD.DDM.Cluster[1];
+			clusters[0] = new Solvers_OLD.DDM.Cluster(0);
 			foreach (ISubdomain subdomain in model.Subdomains)
 			{
 				clusters[0].Subdomains.Add(subdomain);

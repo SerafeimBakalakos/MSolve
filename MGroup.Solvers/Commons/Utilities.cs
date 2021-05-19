@@ -1,4 +1,4 @@
-namespace MGroup.Solvers.Commons
+namespace MGroup.Solvers_OLD.Commons
 {
 	internal static class Utilities
 	{

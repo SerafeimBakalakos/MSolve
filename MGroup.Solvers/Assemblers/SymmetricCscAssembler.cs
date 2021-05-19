@@ -5,7 +5,7 @@
 //      should only be used to assemble the first global matrix and whenever the dof ordering changes. Now it is used everytime 
 //      and the indexing arrays are discarded.
 //TODO: I could also cache the symbolic factorization of SuiteSparse and reuse it. That would really speed up things.
-namespace MGroup.Solvers.Assemblers
+namespace MGroup.Solvers_OLD.Assemblers
 {
 	using System.Collections.Generic;
 	using System.Diagnostics;
@@ -15,7 +15,7 @@ namespace MGroup.Solvers.Assemblers
 	using ISAAR.MSolve.Discretization.Interfaces;
 	using ISAAR.MSolve.Discretization.FreedomDegrees;
 	using ISAAR.MSolve.Solvers.Assemblers;
-	using MGroup.Solvers.Commons;
+	using MGroup.Solvers_OLD.Commons;
 
 	/// <summary>
 	/// Builds the global matrix of the linear system that will be solved. This matrix is in symmetric CSC format, namely only 

@@ -7,17 +7,16 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
 using ISAAR.MSolve.FEM.Entities;
-using MGroup.Solvers.DDM;
-using MGroup.Solvers.DDM.Environments;
-using MGroup.Solvers.DDM.Psm;
-using MGroup.Solvers.DDM.Psm.Dofs;
-using MGroup.Solvers.Distributed.Environments;
-using MGroup.Solvers.Distributed.LinearAlgebra;
-using MGroup.Solvers.Distributed.Topologies;
-using MGroup.Solvers.Tests.DDM.ExampleModels;
+using MGroup.Solvers_OLD.DDM.Environments;
+using MGroup.Solvers_OLD.DistributedTry1.DDM;
+using MGroup.Solvers_OLD.DistributedTry1.DDM.Psm;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.Environments;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.LinearAlgebra;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.Topologies;
+using MGroup.Solvers_OLD.Tests.DDM.ExampleModels;
 using Xunit;
 
-namespace MGroup.Solvers.Tests.DDM.Psm
+namespace MGroup.Solvers_OLD.Tests.DDM.Psm
 {
     public static class Line1DPsmSolverTest
     {
@@ -123,7 +122,7 @@ namespace MGroup.Solvers.Tests.DDM.Psm
         private static void InitializeEnvironment(IComputeEnvironment environment, ClusterTopology clusterTopology)
         {
             var computeNodeTopology = new ComputeNodeTopology();
-            foreach (Solvers.DDM.Cluster cluster in clusterTopology.Clusters.Values)
+            foreach (Solvers_OLD.DDM.Cluster cluster in clusterTopology.Clusters.Values)
             {
                 var computeNode = new ComputeNode(cluster.ID); ;
                 computeNodeTopology.Nodes[cluster.ID] = computeNode;

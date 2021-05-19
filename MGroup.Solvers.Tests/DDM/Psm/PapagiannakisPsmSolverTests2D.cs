@@ -12,11 +12,11 @@ namespace MGroup.Tests.DDM.Psm
     using ISAAR.MSolve.Problems;
     using ISAAR.MSolve.Solvers;
     using ISAAR.MSolve.Solvers.Direct;
-    using MGroup.Solvers.DDM.Environments;
-	using MGroup.Solvers.DDM.Psm;
-	using MGroup.Solvers.DDM.Psm.InterfaceProblem;
-	using MGroup.Solvers.DDM.Psm.Preconditioner;
-	using MGroup.Solvers.DDM.Psm.StiffnessMatrices;
+    using MGroup.Solvers_OLD.DDM.Environments;
+	using MGroup.Solvers_OLD.DDM.Psm;
+	using MGroup.Solvers_OLD.DDM.Psm.InterfaceProblem;
+	using MGroup.Solvers_OLD.DDM.Psm.Preconditioner;
+	using MGroup.Solvers_OLD.DDM.Psm.StiffnessMatrices;
 	using Xunit;
 
 	/// <summary>
@@ -163,8 +163,8 @@ namespace MGroup.Tests.DDM.Psm
 		{
 			// Model
 			Model multiSubdomainModel = CreateModel(stiffnessRatio);
-			var clusters = new MGroup.Solvers.DDM.Cluster[1];
-			clusters[0] = new MGroup.Solvers.DDM.Cluster(0);
+			var clusters = new MGroup.Solvers_OLD.DDM.Cluster[1];
+			clusters[0] = new MGroup.Solvers_OLD.DDM.Cluster(0);
 			foreach (ISubdomain subdomain in multiSubdomainModel.Subdomains)
 			{
 				clusters[0].Subdomains.Add(subdomain);

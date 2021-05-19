@@ -6,7 +6,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
 using ISAAR.MSolve.LinearAlgebra.Reduction;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
-namespace MGroup.Solvers.LinearSystems
+namespace MGroup.Solvers_OLD.LinearSystems
 {
 	public class DokMatrixAdapter<TMatrix> : IMatrix where TMatrix : IIndexable2D
 	{

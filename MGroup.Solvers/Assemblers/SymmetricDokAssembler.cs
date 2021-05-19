@@ -6,7 +6,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 
-namespace MGroup.Solvers.Assemblers
+namespace MGroup.Solvers_OLD.Assemblers
 {
 	/// <summary>
 	/// Builds the global matrix of the linear system that will be solved. This matrix is in symmetric DOK format, namely only 

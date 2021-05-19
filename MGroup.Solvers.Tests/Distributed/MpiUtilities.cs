@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Text;
 using MPI;
 
-namespace MGroup.Solvers.Tests.Distributed
+namespace MGroup.Solvers_OLD.Tests.Distributed
 {
     public static class MpiUtilities
     {

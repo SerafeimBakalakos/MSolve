@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using MGroup.Solvers.DDM;
-using MGroup.Solvers.DDM.Dofs;
-using MGroup.Solvers.DDM.Environments;
-using MGroup.Solvers.DDM.FetiDP.CoarseProblem;
-using MGroup.Solvers.DDM.FetiDP.Dofs;
-using MGroup.Solvers.DDM.Mappings;
-using MGroup.Solvers.DDM.PFetiDP.Dofs;
-using MGroup.Solvers.DDM.PFetiDP.Preconditioner;
-using MGroup.Solvers.DDM.PFetiDP.StiffnessMatrices;
-using MGroup.Solvers.DDM.Psm.Dofs;
-using MGroup.Solvers.DDM.Psm.StiffnessDistribution;
+using MGroup.Solvers_OLD.DDM;
+using MGroup.Solvers_OLD;
+using MGroup.Solvers_OLD.DDM.Environments;
+using MGroup.Solvers_OLD.DDM.FetiDP.CoarseProblem;
+using MGroup.Solvers_OLD.DDM.FetiDP.Dofs;
+using MGroup.Solvers_OLD.DDM.Mappings;
+using MGroup.Solvers_OLD.DDM.PFetiDP.Dofs;
+using MGroup.Solvers_OLD.DDM.PFetiDP.Preconditioner;
+using MGroup.Solvers_OLD.DDM.PFetiDP.StiffnessMatrices;
+using MGroup.Solvers_OLD.DDM.Psm.Dofs;
+using MGroup.Solvers_OLD.DDM.Psm.StiffnessDistribution;
 using MGroup.Tests.DDM.UnitTests.Models;
 using Xunit;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
-using MGroup.Solvers.Tests;
+using MGroup.Solvers_OLD.Tests;
 
 namespace MGroup.Tests.DDM.UnitTests.PFetiDP
 {

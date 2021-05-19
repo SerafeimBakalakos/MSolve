@@ -7,7 +7,7 @@ using CSparse.Double;
 using CSparse.Ordering;
 using ISAAR.MSolve.LinearAlgebra.Reordering;
 
-namespace MGroup.Solvers.LinearAlgebraExtensions
+namespace MGroup.Solvers_OLD.LinearAlgebraExtensions
 {
 	public static class ReorderingExtensions
 	{

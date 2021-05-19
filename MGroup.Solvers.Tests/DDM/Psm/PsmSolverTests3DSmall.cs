@@ -3,10 +3,10 @@ namespace MGroup.Tests.DDM.Psm
 	using System;
 	using System.Collections.Generic;
 	using ISAAR.MSolve.LinearAlgebra.Vectors;
-	using MGroup.Solvers.DDM.Psm;
-	using MGroup.Solvers.DDM.Psm.StiffnessMatrices;
+	using MGroup.Solvers_OLD.DDM.Psm;
+	using MGroup.Solvers_OLD.DDM.Psm.StiffnessMatrices;
 	using Xunit;
-	using MGroup.Solvers.DDM.Environments;
+	using MGroup.Solvers_OLD.DDM.Environments;
     using ISAAR.MSolve.Solvers;
     using ISAAR.MSolve.FEM.Entities;
     using ISAAR.MSolve.Discretization.FreedomDegrees;
@@ -89,8 +89,8 @@ namespace MGroup.Tests.DDM.Psm
 			Model model = CreateModel(stiffnessRatio);
 			model.ConnectDataStructures();
 
-			var clusters = new MGroup.Solvers.DDM.Cluster[1];
-			clusters[0] = new MGroup.Solvers.DDM.Cluster(0);
+			var clusters = new MGroup.Solvers_OLD.DDM.Cluster[1];
+			clusters[0] = new MGroup.Solvers_OLD.DDM.Cluster(0);
 			foreach (ISubdomain subdomain in model.Subdomains)
 			{
 				clusters[0].Subdomains.Add(subdomain);

@@ -4,7 +4,7 @@
 //      assemble the values part of the global matrix more efficiently than the general purpose DOK. The general purpose DOK 
 //      should only be used to assemble the first global matrix and whenever the dof ordering changes. Now it is used everytime 
 //      and the indexing arrays are discarded.
-namespace MGroup.Solvers.Assemblers
+namespace MGroup.Solvers_OLD.Assemblers
 {
 	using System.Collections.Generic;
 	using System.Diagnostics;
@@ -13,7 +13,7 @@ namespace MGroup.Solvers.Assemblers
     using ISAAR.MSolve.LinearAlgebra.Matrices;
 	using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
     using ISAAR.MSolve.Solvers.Assemblers.Collocation;
-    using MGroup.Solvers.Commons;
+    using MGroup.Solvers_OLD.Commons;
 
 	/// <summary>
 	/// Builds the global matrix of the linear system that will be solved. This matrix is square and stored in CSR format, but

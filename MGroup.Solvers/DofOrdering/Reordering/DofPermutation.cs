@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MGroup.Solvers.DofOrdering.Reordering
+namespace MGroup.Solvers_OLD.DofOrdering.Reordering
 {
 	public class DofPermutation
 	{

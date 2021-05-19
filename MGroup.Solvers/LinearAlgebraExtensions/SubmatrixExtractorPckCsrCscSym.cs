@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 
-namespace MGroup.Solvers.LinearAlgebraExtensions
+namespace MGroup.Solvers_OLD.LinearAlgebraExtensions
 {
 	public class SubmatrixExtractorPckCsrCscSym : SubmatrixExtractorCscSymBase
 	{

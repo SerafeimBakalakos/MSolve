@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Logging.DomainDecomposition;
 //using ISAAR.MTwin.Postprocessing.Paraview;
-using MGroup.Solvers.DDM.FetiDP.Dofs;
+using MGroup.Solvers_OLD.DDM.FetiDP.Dofs;
 
 namespace MGroup.Tests.DDM
 {

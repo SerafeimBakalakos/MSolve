@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using MGroup.Solvers.Distributed.Environments;
-using MGroup.Solvers.Distributed.LinearAlgebra;
-using MGroup.Solvers.Distributed.Topologies;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.Environments;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.LinearAlgebra;
+using MGroup.Solvers_OLD.DistributedTry1.Distributed.Topologies;
 
-namespace MGroup.Solvers.Tests.Distributed.LinearAlgebra
+namespace MGroup.Solvers_OLD.Tests.DistributedTry1.Distributed.LinearAlgebra
 {
     public static class Utilities
     {

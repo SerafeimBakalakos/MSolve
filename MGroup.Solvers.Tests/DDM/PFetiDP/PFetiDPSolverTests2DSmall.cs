@@ -9,12 +9,13 @@ namespace MGroup.Tests.DDM.PFetiDP
     using ISAAR.MSolve.Problems;
     using ISAAR.MSolve.Solvers;
     using ISAAR.MSolve.Solvers.Direct;
-    using MGroup.Solvers.DDM;
-	using MGroup.Solvers.DDM.Environments;
-	using MGroup.Solvers.DDM.FetiDP.CoarseProblem;
-	using MGroup.Solvers.DDM.FetiDP.Dofs;
-	using MGroup.Solvers.DDM.PFetiDP;
-	using MGroup.Solvers.DDM.PFetiDP.StiffnessMatrices;
+    using MGroup.Solvers_OLD;
+    using MGroup.Solvers_OLD.DDM;
+	using MGroup.Solvers_OLD.DDM.Environments;
+	using MGroup.Solvers_OLD.DDM.FetiDP.CoarseProblem;
+	using MGroup.Solvers_OLD.DDM.FetiDP.Dofs;
+	using MGroup.Solvers_OLD.DDM.PFetiDP;
+	using MGroup.Solvers_OLD.DDM.PFetiDP.StiffnessMatrices;
 	using Xunit;
 
 	/// <summary>
@@ -86,8 +87,8 @@ namespace MGroup.Tests.DDM.PFetiDP
 			Model model = CreateModel(stiffnessRatio);
 			model.ConnectDataStructures();
 
-			var clusters = new MGroup.Solvers.DDM.Cluster[1];
-			clusters[0] = new MGroup.Solvers.DDM.Cluster(0);
+			var clusters = new MGroup.Solvers_OLD.DDM.Cluster[1];
+			clusters[0] = new MGroup.Solvers_OLD.DDM.Cluster(0);
 			foreach (ISubdomain subdomain in model.Subdomains)
 			{
 				clusters[0].Subdomains.Add(subdomain);
