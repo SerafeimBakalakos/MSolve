@@ -14,14 +14,14 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
 
         public DistributedIndexer(IEnumerable<ComputeNode> computeNodes)
         {
+            //TODOMPI: Use environment to create this Dictionary, which will also ensure that only local nodes are processed.
             localIndexers = new Dictionary<ComputeNode, DistributedIndexerNodeLevel>();
-            foreach (ComputeNode node in computeNodes) localIndexers[node] = new DistributedIndexerNodeLevel(node); //TODOMPI: ensure that only local nodes are processed.
+            foreach (ComputeNode node in computeNodes) localIndexers[node] = new DistributedIndexerNodeLevel(node); 
         }
 
-        public int[] GetEntryMultiplicities(ComputeNode node) => localIndexers[node].Multiplicities;
-
-        public int GetNumTotalEntries(ComputeNode node) => localIndexers[node].NumTotalEntries;
-
+        public void ConfigureForNode(ComputeNode node, int numTotalEntries,
+            Dictionary<ComputeNode, int[]> commonEntriesWithNeighbors)
+            => localIndexers[node].Initialize(numTotalEntries, commonEntriesWithNeighbors);
 
         //TODO: cache a buffer for sending and a buffer for receiving inside Indexer (lazily or not) and just return them. 
         //      Also provide an option to request newly initialized buffers. It may be better to have dedicated Buffer classes to
@@ -30,14 +30,11 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
         public double[][] CreateBuffersForAllToAllWithNeighbors(ComputeNode node) 
             => localIndexers[node].CreateBuffersForAllToAllWithNeighbors();
 
-        public double[] CreateEntireBufferForAllToAllWithNeighbors(ComputeNode node)
-            => localIndexers[node].CreateEntireBufferForAllToAllWithNeighbors();
-
-        public void ConfigureForNode(ComputeNode node, int numTotalEntries,  
-            Dictionary<ComputeNode, int[]> commonEntriesWithNeighbors)
-            => localIndexers[node].Initialize(numTotalEntries, commonEntriesWithNeighbors);
-
         public int[] GetCommonEntriesOfNodeWithNeighbor(ComputeNode node, ComputeNode neighbor) 
             => localIndexers[node].GetCommonEntriesWithNeighbor(neighbor);
+
+        public int[] GetEntryMultiplicities(ComputeNode node) => localIndexers[node].Multiplicities;
+
+        public int GetNumEntries(ComputeNode node) => localIndexers[node].NumEntries;
     }
 }

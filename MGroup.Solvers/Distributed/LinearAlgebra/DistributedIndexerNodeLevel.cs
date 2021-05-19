@@ -21,7 +21,7 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
 
         internal ComputeNode Node { get; }
 
-        internal int NumTotalEntries { get; private set; }
+        internal int NumEntries { get; private set; }
 
         //TODO: cache a buffer for sending and a buffer for receiving inside Indexer (lazily or not) and just return them. 
         //      Also provide an option to request newly initialized buffers. It may be better to have dedicated Buffer classes to
@@ -39,20 +39,9 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
             return buffers;
         }
 
-        //TODO: cache a buffer for sending and a buffer for receiving inside Indexer (lazily or not) and just return them. 
-        //      Also provide an option to request newly initialized buffers. It may be better to have dedicated Buffer classes to
-        //      handle all that logic (e.g. keeping allocated buffers in a LinkedList, giving them out & locking them, 
-        //      freeing them in clients, etc.
-        internal double[] CreateEntireBufferForAllToAllWithNeighbors()
-        {
-            int totalLength = 0;
-            foreach (int[] entries in commonEntriesWithNeighbors.Values) totalLength += entries.Length;
-            return new double[totalLength];
-        }
-
         internal void Initialize(int numTotalEntries, Dictionary<ComputeNode, int[]> commonEntriesWithNeighbors)
         {
-            this.NumTotalEntries = numTotalEntries;
+            this.NumEntries = numTotalEntries;
             this.commonEntriesWithNeighbors = commonEntriesWithNeighbors;
             FindMultiplicities();
         }
@@ -61,8 +50,8 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
 
         private void FindMultiplicities()
         {
-            Multiplicities = new int[NumTotalEntries];
-            for (int i = 0; i < NumTotalEntries; ++i) Multiplicities[i] = 1;
+            Multiplicities = new int[NumEntries];
+            for (int i = 0; i < NumEntries; ++i) Multiplicities[i] = 1;
             foreach (int[] commonEntries in commonEntriesWithNeighbors.Values)
             {
                 foreach (int i in commonEntries) Multiplicities[i] += 1;

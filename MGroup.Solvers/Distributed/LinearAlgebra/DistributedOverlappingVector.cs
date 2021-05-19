@@ -27,14 +27,13 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
     public class DistributedOverlappingVector : IIterativeMethodVector
     {
         private readonly IComputeEnvironment environment;
-        //private readonly Dictionary<ComputeNode, DistributedIndexer> indexers; //TODOMPI: a global Indexer object that stores data for each node
         private readonly DistributedIndexer indexer;
 
         public DistributedOverlappingVector(IComputeEnvironment environment, DistributedIndexer indexer)
         {
             this.environment = environment;
             this.indexer = indexer;
-            this.LocalVectors = environment.CreateDictionaryPerNode(node => Vector.CreateZero(indexer.GetNumTotalEntries(node)));
+            this.LocalVectors = environment.CreateDictionaryPerNode(node => Vector.CreateZero(indexer.GetNumEntries(node)));
         }
 
         public DistributedOverlappingVector(IComputeEnvironment environment, DistributedIndexer indexer,
@@ -109,9 +108,10 @@ namespace MGroup.Solvers.Distributed.LinearAlgebra
 
         public DistributedOverlappingVector CreateZeroVectorWithSameFormat()
         {
-            Dictionary<ComputeNode, Vector> zeroLocalVectors = environment.CreateDictionaryPerNode(
-                node => Vector.CreateZero(LocalVectors[node].Length));
-            return new DistributedOverlappingVector(environment, indexer, zeroLocalVectors);
+            return new DistributedOverlappingVector(environment, indexer);
+            //Dictionary<ComputeNode, Vector> zeroLocalVectors = environment.CreateDictionaryPerNode(
+            //    node => Vector.CreateZero(LocalVectors[node].Length));
+            //return new DistributedOverlappingVector(environment, indexer, zeroLocalVectors);
         }
 
         public double DotProduct(IIterativeMethodVector otherVector)
