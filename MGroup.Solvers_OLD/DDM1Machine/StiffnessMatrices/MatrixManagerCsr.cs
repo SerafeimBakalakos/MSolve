@@ -12,19 +12,18 @@ using MGroup.Solvers_OLD.LinearSystems;
 
 namespace MGroup.Solvers_OLD.DDM.StiffnessMatrices
 {
-	Error: this will create symmetric CSR matrices, because CsrAssembler assumes that element matrices are symmetric. Thus it cannot work for nonsymmetric problems.
 	public class MatrixManagerCsr : IMatrixManager
 	{
 		private readonly Dictionary<int, CsrAssembler> assemblers = new Dictionary<int, CsrAssembler>();
 		private readonly Dictionary<int, SingleSubdomainSystem<CsrMatrix>> linearSystems =
 			new Dictionary<int, SingleSubdomainSystem<CsrMatrix>>();
 
-		public MatrixManagerCsr(IStructuralModel model)
+		public MatrixManagerCsr(IStructuralModel model, bool isSymmetric)
 		{
 			foreach (ISubdomain subdomain in model.Subdomains)
 			{
 				linearSystems[subdomain.ID] = new SingleSubdomainSystem<CsrMatrix>(subdomain);
-				assemblers[subdomain.ID] = new CsrAssembler();
+				assemblers[subdomain.ID] = new CsrAssembler(isSymmetric);
 			}
 		}
 

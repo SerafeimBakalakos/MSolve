@@ -84,7 +84,7 @@ namespace MGroup.Solvers_OLD.DDM.Psm.StiffnessMatrices
 		{
 			public (IMatrixManager, IPsmMatrixManager) CreateMatrixManagers(IStructuralModel model, IPsmDofSeparator dofSeparator)
 			{
-				var basicMatrixManager = new MatrixManagerCsr(model);
+				var basicMatrixManager = new MatrixManagerCsr(model, false);
 				var psmMatrixManager = new PsmMatrixManagerCSparse(model, dofSeparator, basicMatrixManager);
 				return (basicMatrixManager, psmMatrixManager);
 			}

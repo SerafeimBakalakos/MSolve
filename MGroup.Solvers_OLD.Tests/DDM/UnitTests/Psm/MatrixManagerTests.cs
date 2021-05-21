@@ -48,7 +48,7 @@ namespace MGroup.Tests.DDM.UnitTests.Psm
 			}
 			else if (matrixFormat == MatrixFormat.CSparse)
 			{
-				return new MatrixManagerCsr(model);
+				return new MatrixManagerCsr(model, false);
 			}
 			else if (matrixFormat == MatrixFormat.CSparseSymmetric)
 			{

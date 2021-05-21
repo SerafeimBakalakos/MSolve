@@ -94,7 +94,7 @@ namespace MGroup.Solvers_OLD.DDM.FetiDP.StiffnessMatrices
 		{
 			public (IMatrixManager, IFetiDPMatrixManager) CreateMatrixManagers(IStructuralModel model, IFetiDPDofSeparator dofSeparator)
 			{
-				var basicMatrixManager = new MatrixManagerCsr(model);
+				var basicMatrixManager = new MatrixManagerCsr(model, false);
 				var fetiDPMatrixManager = new FetiDPMatrixManagerCSparseNonSymmetric(model, dofSeparator, basicMatrixManager);
 				return (basicMatrixManager, fetiDPMatrixManager);
 			}

@@ -38,10 +38,10 @@ namespace MGroup.Solvers_OLD.Assemblers
 		/// Sorting the columns of each row in the CSR storage format may increase performance of the matrix vector 
 		/// multiplications. It is recommended to set it to true, especially for iterative linear system solvers.
 		/// </param>
-		public CsrAssembler(bool sortColsOfEachRow = true, bool isSymmetric = true)
+		public CsrAssembler(bool isSymmetric, bool sortColsOfEachRow = true)
 		{
-			this.sortColsOfEachRow = sortColsOfEachRow;
 			this.isSymmetric = isSymmetric;
+			this.sortColsOfEachRow = sortColsOfEachRow;
 		}
 
 		public CsrMatrix BuildGlobalMatrix(ISubdomainFreeDofOrdering dofOrdering, IEnumerable<IElement> elements,
