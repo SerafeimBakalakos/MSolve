@@ -26,7 +26,10 @@ namespace MGroup.LinearAlgebra.Distributed.Overlapping
                 this.Node = node;
             }
 
-            public int[] Multiplicities { get; private set; }
+            //TODO: Micro optimization: calc and store the inverse multiplicities since multiplication is faster than divison.
+            //      Also in some DDM components I explicitly work with inverse multiplicities, thus this would save memory, 
+            //      computation time and avoid repetitions.
+            public int[] Multiplicities { get; private set; } 
 
             public ComputeNode Node { get; }
 
@@ -36,14 +39,13 @@ namespace MGroup.LinearAlgebra.Distributed.Overlapping
             //      Also provide an option to request newly initialized buffers. It may be better to have dedicated Buffer classes to
             //      handle all that logic (e.g. keeping allocated buffers in a LinkedList, giving them out & locking them, 
             //      freeing them in clients, etc.
-            public double[][] CreateBuffersForAllToAllWithNeighbors()
+            public Dictionary<int, double[]> CreateBuffersForAllToAllWithNeighbors()
             {
                 int numNeighbors = Node.Neighbors.Count;
-                var buffers = new double[numNeighbors][];
-                for (int n = 0; n < numNeighbors; ++n)
+                var buffers = new Dictionary<int, double[]>(numNeighbors);
+                foreach (int neighborID in Node.Neighbors)
                 {
-                    int neighbor = Node.Neighbors[n];
-                    buffers[n] = new double[commonEntriesWithNeighbors[neighbor].Length];
+                    buffers[neighborID] = new double[commonEntriesWithNeighbors[neighborID].Length];
                 }
                 return buffers;
             }

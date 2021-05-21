@@ -199,10 +199,10 @@ namespace MGroup.LinearAlgebra.Distributed.Overlapping
                 // Find the common entries (to send) of this node with each of its neighbors
                 var transferData = new AllToAllNodeData<double>();
                 transferData.sendValues = localIndexer.CreateBuffersForAllToAllWithNeighbors();
-                for (int n = 0; n < node.Neighbors.Count; ++n) // Neighbors of a node must be always accessed in this order
+                foreach (int neighborID in node.Neighbors) 
                 {
-                    int[] commonEntries = localIndexer.GetCommonEntriesWithNeighbor(node.Neighbors[n]);
-                    var sv = Vector.CreateFromArray(transferData.sendValues[n]);
+                    int[] commonEntries = localIndexer.GetCommonEntriesWithNeighbor(neighborID);
+                    var sv = Vector.CreateFromArray(transferData.sendValues[neighborID]);
                     sv.CopyNonContiguouslyFrom(localVector, commonEntries);
                 }
 
@@ -221,12 +221,12 @@ namespace MGroup.LinearAlgebra.Distributed.Overlapping
                 ComputeNode node = environment.GetComputeNode(nodeID);
                 Vector localVector = LocalVectors[nodeID];
                 DistributedOverlappingIndexer.Local localIndexer = indexer.GetLocalComponent(nodeID);
-                
-                double[][] recvValues = dataPerNode[nodeID].recvValues;
-                for (int n = 0; n < node.Neighbors.Count; ++n) // Neighbors of a node must be always accessed in this order
+
+                Dictionary<int, double[]> recvValues = dataPerNode[nodeID].recvValues;
+                foreach (int neighborID in node.Neighbors) 
                 {
-                    int[] commonEntries = localIndexer.GetCommonEntriesWithNeighbor(node.Neighbors[n]);
-                    var rv = Vector.CreateFromArray(recvValues[n]);
+                    int[] commonEntries = localIndexer.GetCommonEntriesWithNeighbor(neighborID);
+                    var rv = Vector.CreateFromArray(recvValues[neighborID]);
                     localVector.AddIntoThisNonContiguouslyFrom(commonEntries, rv);
                 }
             };

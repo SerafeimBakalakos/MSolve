@@ -16,6 +16,11 @@ namespace MGroup.Environments
     /// </summary>
     public interface IComputeEnvironment
     {
+        /// <summary>
+        /// The total number of <see cref="ComputeNode"/> managed by this environment across all hardware resources.
+        /// </summary>
+        int NumTotalComputeNodes { get; }
+
         bool AllReduceAnd(Dictionary<int, bool> valuePerNode);
 
         double AllReduceSum(Dictionary<int, double> valuePerNode);
@@ -34,11 +39,9 @@ namespace MGroup.Environments
         //      the same id that the environment provided, e.g. to inspect the neighboring ComputeNode ids.
         ComputeNode GetComputeNode(int nodeID);
 
-        //TODOMPI: the order of entries in values and counts arrays must match the order of neighbors. This should be enforced
-        //      by the IComputeEnvironment implementation and communicated to the client.
         //TODOMPI: Overload that uses delegates for assembling the send data and processing the receive data per neighbor of 
         //      each compute node. This will result in better pipelining, which I think will greatly improve performance and 
-        //      essentially hide the communication cost, considering what the clients do. 
+        //      essentially hide the communication cost, considering that clients generally do a lot of computations. 
         //TODOMPI: Alternatively expose non-blocking send and receive operations, to clients so that
         //      they can do them themselves. These may actualy help to avoid unnecessary buffers in communications between
         //      local nodes, for even greater benefit. However it forces clients to mess with async code.
@@ -48,7 +51,6 @@ namespace MGroup.Environments
         void NeighborhoodAllToAll<T>(Dictionary<int, AllToAllNodeData<T>> dataPerNode, bool areRecvBuffersKnown);
     }
 
-    //TODOMPI: Use Dictionaries<int, T[]> with ComputeNode.ID as keys, instead of T[][].
     public class AllToAllNodeData<T>
     {
         /// <summary>
@@ -56,12 +58,12 @@ namespace MGroup.Environments
         /// <see cref="ComputeNode"/>s. Foreach j in <see cref="ComputeNode.Neighbors"/> of i, the values transfered from j to i 
         /// will be stored in <see cref="recvValues"/>[j].
         /// </summary>
-        public T[][] recvValues;
+        public Dictionary<int, T[]> recvValues;
 
         /// Buffer of values that will be sent from a <see cref="ComputeNode"/> i to each of its neighboring 
         /// <see cref="ComputeNode"/>s. Foreach j in <see cref="ComputeNode.Neighbors"/> of i, the values transfered from i to j 
         /// will be stored in <see cref="sendValues"/>[j]. 
         /// </summary>
-        public T[][] sendValues;
+        public Dictionary<int, T[]> sendValues;
     }
 }

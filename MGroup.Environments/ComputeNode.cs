@@ -13,6 +13,6 @@ namespace MGroup.Environments
 
         public int ID { get; }
 
-        public List<int> Neighbors { get; } = new List<int>();
+        public SortedSet<int> Neighbors { get; } = new SortedSet<int>();
     }
 }
