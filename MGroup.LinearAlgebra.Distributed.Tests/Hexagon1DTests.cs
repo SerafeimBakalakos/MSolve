@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.Environments;
 using MGroup.LinearAlgebra.Distributed.Overlapping;
@@ -121,6 +122,29 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
 
         [Theory]
         [MemberData(nameof(GetEnvironments))]
+        public static void TestMatrixVectorMultiplication(IComputeEnvironment environment)
+        {
+            environment.Initialize(CreateNodeTopology());
+            DistributedOverlappingIndexer indexer = CreateIndexer(environment);
+
+            var distributedA = new DistributedOverlappingMatrix(environment, indexer, 
+                (n, x, y) => GetMatrixA(n).MultiplyIntoResult(x, y));
+
+            Dictionary<int, Vector> localX = environment.CreateDictionaryPerNode(n => GetX(n));
+            var distributedX = new DistributedOverlappingVector(environment, indexer, localX);
+
+            Dictionary<int, Vector> localAxExpected = environment.CreateDictionaryPerNode(n => GetAx(n));
+            var distributedAxExpected = new DistributedOverlappingVector(environment, indexer, localAxExpected);
+
+            var distributedAx = new DistributedOverlappingVector(environment, indexer);
+            distributedA.Multiply(distributedX, distributedAx);
+
+            double tol = 1E-13;
+            Assert.True(distributedAxExpected.Equals(distributedAx, tol));
+        }
+
+        [Theory]
+        [MemberData(nameof(GetEnvironments))]
         public static void TestScaleVector(IComputeEnvironment environment)
         {
             environment.Initialize(CreateNodeTopology());
@@ -199,29 +223,96 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
             return nodes;
         }
 
-        private static Vector GetWBeforeSumOverlapping(int nodeID)
+        private static Vector GetAx(int nodeID)
         {
-            var w = Vector.CreateZero(3);
-            for (int i = 0; i < w.Length; ++i)
+            double[] Ax;
+            if (nodeID == 0)
             {
-                w[i] = 3 * nodeID + i;
+                Ax = new double[] { 331, 107, 459 };
             }
-            return w;
+            else if (nodeID == 1)
+            {
+                Ax = new double[] { 459, 356, 1009 };
+            }
+            else if (nodeID == 2)
+            {
+                Ax = new double[] { 1009, 657, 1663 };
+            }
+            else if (nodeID == 3)
+            {
+                Ax = new double[] { 1663, 1010, 2421 };
+            }
+            else if (nodeID == 4)
+            {
+                Ax = new double[] { 2421, 1415, 2959 };
+            }
+            else
+            {
+                Debug.Assert(nodeID == 5);
+                Ax = new double[] { 2959, 1536, 331 };
+            }
+            return Vector.CreateFromArray(Ax);
         }
 
-        private static Vector GetWAfterSumOverlapping(int nodeID)
+        private static Matrix GetMatrixA(int nodeID)
         {
-            int previous = nodeID - 1 >= 0 ? nodeID - 1 : numNodes - 1;
-            int next = (nodeID + 1) % numNodes;
-            
-            Vector w = GetWBeforeSumOverlapping(nodeID);
-            Vector wPrevious = GetWBeforeSumOverlapping(previous);
-            Vector wNext = GetWBeforeSumOverlapping(next);
-
-            w[0] += wPrevious[2];
-            w[2] += wNext[0];
-
-            return w;
+            double[,] A;
+            if (nodeID == 0)
+            {
+                A = new double[,]
+                {
+                    { 100, 1, 2 },
+                    { 1, 101, 3 },
+                    { 2, 3, 102 }
+                };
+            }
+            else if (nodeID == 1)
+            {
+                A = new double[,]
+                {
+                    { 103, 6, 7 },
+                    { 6, 104, 8 },
+                    { 7, 8, 105 }
+                };
+            }
+            else if (nodeID == 2)
+            {
+                A = new double[,]
+                {
+                    { 106, 11, 12 },
+                    { 11, 107, 13 },
+                    { 12, 13, 108 }
+                };
+            }
+            else if (nodeID == 3)
+            {
+                A = new double[,]
+                {
+                    { 109, 16, 17 },
+                    { 16, 110, 18 },
+                    { 17, 18, 111 }
+                };
+            }
+            else if (nodeID == 4)
+            {
+                A = new double[,]
+                {
+                    { 112, 21, 22 },
+                    { 21, 113, 23 },
+                    { 22, 23, 114 }
+                };
+            }
+            else
+            {
+                Debug.Assert(nodeID == 5);
+                A = new double[,]
+                {
+                    { 115, 26, 15 },
+                    { 26, 116, 16 },
+                    { 15, 16, 105 }
+                };
+            }
+            return Matrix.CreateFromArray(A);
         }
 
         private static Vector GetX(int nodeID)
@@ -246,5 +337,30 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
         }
 
         private static double GetXDotY() => 1166;
+
+        private static Vector GetWBeforeSumOverlapping(int nodeID)
+        {
+            var w = Vector.CreateZero(3);
+            for (int i = 0; i < w.Length; ++i)
+            {
+                w[i] = 3 * nodeID + i;
+            }
+            return w;
+        }
+
+        private static Vector GetWAfterSumOverlapping(int nodeID)
+        {
+            int previous = nodeID - 1 >= 0 ? nodeID - 1 : numNodes - 1;
+            int next = (nodeID + 1) % numNodes;
+
+            Vector w = GetWBeforeSumOverlapping(nodeID);
+            Vector wPrevious = GetWBeforeSumOverlapping(previous);
+            Vector wNext = GetWBeforeSumOverlapping(next);
+
+            w[0] += wPrevious[2];
+            w[2] += wNext[0];
+
+            return w;
+        }
     }
 }
