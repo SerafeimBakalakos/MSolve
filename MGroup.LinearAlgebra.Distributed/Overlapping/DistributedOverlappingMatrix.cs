@@ -59,7 +59,6 @@ namespace MGroup.LinearAlgebra.Distributed.Overlapping
                     "This operation is legal only if the left-hand-side and righ-hand-side vectors are distributed" +
                     " with overlapping entries.");
             }
-            throw new NotImplementedException();
         }
 
         public void Multiply(DistributedOverlappingVector lhs, DistributedOverlappingVector rhs)

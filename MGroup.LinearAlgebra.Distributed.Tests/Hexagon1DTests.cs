@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Iterative;
+using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.Environments;
+using MGroup.LinearAlgebra.Distributed.IterativeMethods;
+using MGroup.LinearAlgebra.Distributed.IterativeMethods.Preconditioning;
 using MGroup.LinearAlgebra.Distributed.Overlapping;
 using Xunit;
 
@@ -141,6 +145,35 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
 
             double tol = 1E-13;
             Assert.True(distributedAxExpected.Equals(distributedAx, tol));
+        }
+
+        [Theory]
+        [MemberData(nameof(GetEnvironments))]
+        public static void TestPcg(IComputeEnvironment environment)
+        {
+            environment.Initialize(CreateNodeTopology());
+            DistributedOverlappingIndexer indexer = CreateIndexer(environment);
+
+            var distributedA = new DistributedOverlappingMatrix(environment, indexer,
+                (n, x, y) => GetMatrixA(n).MultiplyIntoResult(x, y));
+
+            Dictionary<int, Vector> localAx = environment.CreateDictionaryPerNode(n => GetAx(n));
+            var distributedAx = new DistributedOverlappingVector(environment, indexer, localAx);
+
+            Dictionary<int, Vector> localXExpected = environment.CreateDictionaryPerNode(n => GetX(n));
+            var distributedXExpected = new DistributedOverlappingVector(environment, indexer, localXExpected);
+
+            var pcgBuilder = new PcgAlgorithm.Builder();
+            int maxIterations = 12;
+            pcgBuilder.MaxIterationsProvider = new FixedMaxIterationsProvider(maxIterations);
+            pcgBuilder.ResidualTolerance = 1E-10;
+            PcgAlgorithm pcg = pcgBuilder.Build();
+            var distributedX = new DistributedOverlappingVector(environment, indexer);
+            IterativeStatistics stats = pcg.Solve(distributedA, new IdentityPreconditioner(), distributedAx, distributedX, true);
+
+            double tol = 1E-10;
+            Assert.True(stats.HasConverged);
+            Assert.True(distributedXExpected.Equals(distributedX, tol));
         }
 
         [Theory]
