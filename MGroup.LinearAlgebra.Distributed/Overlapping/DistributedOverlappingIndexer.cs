@@ -5,6 +5,18 @@ using MGroup.Environments;
 
 namespace MGroup.LinearAlgebra.Distributed.Overlapping
 {
+    /// <summary>
+    /// Manages the indices for a <see cref="DistributedOverlappingVector"/>, <see cref="DistributedOverlappingVector"/>, etc.
+    /// Supports multiple local vectors, each of which may have none, some or all its entries in common with other local vectors.
+    /// Specifies the relationships between these common entries. When dealing with multiple distributed vectors that have the 
+    /// same indexing pattern, reuse the same instance of <see cref="DistributedOverlappingIndexer"/>.
+    /// </summary>
+    /// <remarks>
+    /// In interface problems of PSM and related DDMs, local vectors have all their entries in common with other local vectors, 
+    /// since only boundary dofs take part in the interface problem. In GSI or a GSI-like treatment of other DDMs' coarse 
+    /// problems, local vectors have some of their entries (boundary dofs) in common with other local vectors, while the rest
+    /// entries (internal dofs) are unique for each local vector. 
+    /// </remarks>
     public class DistributedOverlappingIndexer : IDistributedIndexer
     {
         private readonly Dictionary<int, Local> localIndexers;
@@ -19,6 +31,10 @@ namespace MGroup.LinearAlgebra.Distributed.Overlapping
 
         public bool Matches(IDistributedIndexer other) => this == other;
 
+        /// <summary>
+        /// All indexing data and functionality of <see cref="DistributedOverlappingIndexer"/>, but only for the local vector, 
+        /// matrix, etc. that corresponds to a specific <see cref="ComputeNode"/>.
+        /// </summary>
         public class Local
         {
             private Dictionary<int, int[]> commonEntriesWithNeighbors;

@@ -39,16 +39,16 @@ namespace MGroup.Environments
         //      the same id that the environment provided, e.g. to inspect the neighboring ComputeNode ids.
         ComputeNode GetComputeNode(int nodeID);
 
-        ////TODOMPI: This should probably be done in the ctor. However in the current design the topology is identified by the 
-        ////      classes that are injected with IComputeEnvironment in their ctor. Having this method provides the (unwanted?)
-        ////      benefit of being able to change the topology later. This might come in handy in tests, since disposing the 
-        ////      underlying MPI classes, makes it very difficult if not impossible to reuse them. 
-        ///// <summary>
-        ///// Initializes the environment (e.g. works out communication paths). This must be always called exactly once, and 
-        ///// before any other member.
-        ///// </summary>
+        //TODOMPI: This should probably be done in the ctor. However in the current design the topology is identified by the 
+        //      classes that are injected with IComputeEnvironment in their ctor. Having this method provides the (unwanted?)
+        //      benefit of being able to change the topology later. This might come in handy in tests, since disposing the 
+        //      underlying MPI classes, makes it very difficult if not impossible to reuse them. 
+        /// <summary>
+        /// Initializes the environment (e.g. works out communication paths). This must be always called exactly once, and 
+        /// before any other member.
+        /// </summary>
         ///// <param name=""></param>
-        //void Initialize(NodeTopology ); 
+        void Initialize(Dictionary<int, ComputeNode> nodes); 
 
         //TODOMPI: Overload that uses delegates for assembling the send data and processing the receive data per neighbor of 
         //      each compute node. This will result in better pipelining, which I think will greatly improve performance and 

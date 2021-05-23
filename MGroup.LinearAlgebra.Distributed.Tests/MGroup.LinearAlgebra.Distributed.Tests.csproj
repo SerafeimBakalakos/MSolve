@@ -15,4 +15,9 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MGroup.Environments\MGroup.Environments.csproj" />
+    <ProjectReference Include="..\MGroup.LinearAlgebra.Distributed\MGroup.LinearAlgebra.Distributed.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -118,6 +118,13 @@ namespace MGroup.LinearAlgebra.Distributed.Overlapping
             }
         }
 
+        /// <summary>
+        /// See <see cref="IDistributedVector.DotProduct(IDistributedVector)"/>.
+        /// </summary>
+        /// <remarks>
+        /// Warning: This does not work correctly if 2 local vectors have different values at the same common entry. In such 
+        /// cases make, perhaps <see cref="SumOverlappingEntries"/> may be of use.
+        /// </remarks>
         public double DotProduct(DistributedOverlappingVector otherVector)
         {
             Debug.Assert((this.environment == otherVector.environment) && (this.indexer == otherVector.indexer));

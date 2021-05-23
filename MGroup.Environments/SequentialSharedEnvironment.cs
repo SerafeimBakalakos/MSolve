@@ -70,6 +70,15 @@ namespace MGroup.Environments
 
         public ComputeNode GetComputeNode(int nodeID) => Nodes[nodeID];
 
+        public void Initialize(Dictionary<int, ComputeNode> nodes)
+        {
+            this.Nodes.Clear();
+            foreach (var pair in nodes)
+            {
+                this.Nodes[pair.Key] = pair.Value;
+            }
+        }
+
         public void NeighborhoodAllToAll<T>(Dictionary<int, AllToAllNodeData<T>> dataPerNode, bool areRecvBuffersKnown)
         {
             foreach (int thisNodeID in Nodes.Keys)
