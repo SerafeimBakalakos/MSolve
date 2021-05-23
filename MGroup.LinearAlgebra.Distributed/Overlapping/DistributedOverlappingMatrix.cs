@@ -7,7 +7,7 @@ using ISAAR.MSolve.LinearAlgebra.Exceptions;
 //      DistributedOverlappingVector.
 namespace MGroup.LinearAlgebra.Distributed.Overlapping
 {
-    public class DistributedOverlappingMatrix : IDistrubutedMatrix
+    public class DistributedOverlappingMatrix : IDistributedMatrix
     {
         public void Multiply(IDistributedVector lhs, IDistributedVector rhs)
         {

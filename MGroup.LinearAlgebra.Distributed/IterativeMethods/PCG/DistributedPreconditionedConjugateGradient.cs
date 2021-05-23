@@ -6,5 +6,6 @@ namespace MGroup.LinearAlgebra.Distributed.IterativeMethods.PCG
 {
     public class DistributedPreconditionedConjugateGradient : IDistributedIterativeMethod
     {
+
     }
 }

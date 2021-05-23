@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MGroup.LinearAlgebra.Distributed
 {
-    public interface IDistrubutedMatrix
+    public interface IDistributedMatrix
     {
         void Multiply(IDistributedVector lhs, IDistributedVector rhs);
     }
