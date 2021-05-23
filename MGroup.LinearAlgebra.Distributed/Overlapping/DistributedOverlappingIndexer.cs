@@ -5,7 +5,7 @@ using MGroup.Environments;
 
 namespace MGroup.LinearAlgebra.Distributed.Overlapping
 {
-    public class DistributedOverlappingIndexer
+    public class DistributedOverlappingIndexer : IDistributedIndexer
     {
         private readonly Dictionary<int, Local> localIndexers;
 
@@ -16,6 +16,8 @@ namespace MGroup.LinearAlgebra.Distributed.Overlapping
         }
 
         public DistributedOverlappingIndexer.Local GetLocalComponent(int nodeID) => localIndexers[nodeID];
+
+        public bool Matches(IDistributedIndexer other) => this == other;
 
         public class Local
         {

@@ -6,6 +6,8 @@ namespace MGroup.LinearAlgebra.Distributed
 {
     public interface IDistributedMatrix
     {
+        IDistributedIndexer Indexer { get; }
+
         void Multiply(IDistributedVector lhs, IDistributedVector rhs);
     }
 }

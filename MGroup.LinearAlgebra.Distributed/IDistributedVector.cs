@@ -6,6 +6,8 @@ namespace MGroup.LinearAlgebra.Distributed
 {
     public interface IDistributedVector
     {
+        IDistributedIndexer Indexer { get; }
+
         void AddIntoThis(IDistributedVector otherVector)
             => AxpyIntoThis(otherVector, +1);
 
