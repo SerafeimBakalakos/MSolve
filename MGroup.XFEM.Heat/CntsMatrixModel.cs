@@ -43,15 +43,17 @@ namespace MGroup.XFEM.Heat
 
         public double[] CoordsMax { get; set; }
 
-        public int[] NumElementsCoarse { get; set; } = { 30, 30, 30 };
+        public int[] NumElementsCoarse { get; set; } = { 40, 40, 40 };
 
-        public int[] NumElementsFine { get; set; } = { 30, 30, 30 };
+        public int[] NumElementsFine { get; set; } = { 40, 40, 40 };
 
         public double ConductivityMatrix { get; set; }
 
         public double ConductivityCNT { get; set; }
 
         public double ConductivityInterface { get; set; }
+
+        public ICntGeometryGenerator GeometryGenerator { get; set; }
 
         public void BuildModel()
         {
@@ -180,7 +182,8 @@ namespace MGroup.XFEM.Heat
 
         private PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model, DualMesh3D mesh)
         {
-            IEnumerable<ISurface3D> inclusionGeometries = GenerateInclusionGeometries();
+            //IEnumerable<ISurface3D> inclusionGeometries = GenerateInclusionGeometries();
+            IEnumerable<ISurface3D> inclusionGeometries = GeometryGenerator.GenerateInclusions();
 
             var geometricModel = new PhaseGeometryModel(model);
             geometricModel.Enricher = NodeEnricherMultiphaseNoJunctions.CreateThermalStep(geometricModel);

@@ -7,32 +7,38 @@ namespace MGroup.XFEM.Geometry.Primitives
 {
     public class Cylinder3D : ISurface3D
     {
-        private readonly double[] start;
-        private readonly double[] end;
-        private readonly double radius;
-        private readonly double length;
-        private readonly Vector directionUnit;
-
         public Cylinder3D(double[] start, double[] end, double radius)
         {
-            this.start = start;
-            this.end = end;
-            this.radius = radius;
+            this.Start = start;
+            this.End = end;
+            this.Radius = radius;
 
-            directionUnit = Vector.CreateFromArray(end) - Vector.CreateFromArray(start);
-            length = directionUnit.Norm2();
-            directionUnit.ScaleIntoThis(1.0 / length);
+            DirectionUnit = Vector.CreateFromArray(end) - Vector.CreateFromArray(start);
+            Length = DirectionUnit.Norm2();
+            DirectionUnit.ScaleIntoThis(1.0 / Length);
         }
+
+        public double[] Start { get; }
+
+        public double[] End { get; }
+
+        public double Radius { get; set; }
+        public double Length { get; set; }
+
+        /// <summary>
+        /// Unit vector that points from <see cref="Start"/> to <see cref="End"/>.
+        /// </summary>
+        public Vector DirectionUnit { get; set; }
 
         public double SignedDistanceOf(double[] point)
         {
             // Find the projection P0 of P onto the cylider's axis AB
-            var pA = Vector.CreateFromArray(start);
+            var pA = Vector.CreateFromArray(Start);
             var pP = Vector.CreateFromArray(point);
-            double proj = (pP - pA) * directionUnit;
-            Vector pP0 = pA.Axpy(directionUnit, proj);
+            double proj = (pP - pA) * DirectionUnit;
+            Vector pP0 = pA.Axpy(DirectionUnit, proj);
             double distanceFromAxis = (pP - pP0).Norm2();
-            double distanceFromOutline = distanceFromAxis - radius;
+            double distanceFromOutline = distanceFromAxis - Radius;
 
             // The cylinder is not infinite. Distances from the 2 bases must be taken into account.
             if (proj < 0)
@@ -47,15 +53,15 @@ namespace MGroup.XFEM.Geometry.Primitives
                     return Math.Sqrt(distanceFromOutline * distanceFromOutline + distanceFromBase * distanceFromBase);
                 }
             }
-            else if (proj > length)
+            else if (proj > Length)
             {
                 if (distanceFromOutline < 0)
                 {
-                    return proj - length;
+                    return proj - Length;
                 }
                 else
                 {
-                    double distanceFromBase = proj - length;
+                    double distanceFromBase = proj - Length;
                     return Math.Sqrt(distanceFromOutline * distanceFromOutline + distanceFromBase * distanceFromBase);
                 }
             }
