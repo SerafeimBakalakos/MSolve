@@ -41,6 +41,7 @@ namespace MGroup.LinearAlgebra.Distributed.Overlapping
             this.indexer = indexer;
             this.LocalVectors = localVectors;
         }
+
         public IDistributedIndexer Indexer => indexer;
 
         public Dictionary<int, Vector> LocalVectors { get; }

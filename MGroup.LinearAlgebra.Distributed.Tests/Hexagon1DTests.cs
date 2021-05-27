@@ -7,6 +7,7 @@ using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.Environments;
+using MGroup.Environments.Mpi;
 using MGroup.LinearAlgebra.Distributed.IterativeMethods;
 using MGroup.LinearAlgebra.Distributed.IterativeMethods.Preconditioning;
 using MGroup.LinearAlgebra.Distributed.Overlapping;
@@ -32,19 +33,16 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
     //TODO: Have multiple examples (IExample) that provide input and expected output for the methods that I want to test. Then 
     //      use theory with the examples and environments as params. Optionally the IExample will also provide a mock environment 
     //      different that has hardcoded logic that cannot fail and only works for the given example.
-    public class Hexagon1DTests 
+    public class Hexagon1DTests
     {
         public const int numNodes = 6;
 
-        public static IEnumerable<object[]> GetEnvironments()
-        {
-            yield return new object[] { new SequentialSharedEnvironment(numNodes, true) };
-        }
-
         [Theory]
-        [MemberData(nameof(GetEnvironments))]
-        public static void TestAxpyVectors(IComputeEnvironment environment)
+        [InlineData(EnvironmentChoice.SequentialSharedEnvironment)]
+        [InlineData(EnvironmentChoice.TplSharedEnvironment)]
+        public static void TestAxpyVectors(EnvironmentChoice env)
         {
+            IComputeEnvironment environment = env.CreateEnvironment();
             environment.Initialize(CreateNodeTopology());
             DistributedOverlappingIndexer indexer = CreateIndexer(environment);
 
@@ -65,9 +63,11 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetEnvironments))]
-        public static void TestDotProduct(IComputeEnvironment environment)
+        [InlineData(EnvironmentChoice.SequentialSharedEnvironment)]
+        [InlineData(EnvironmentChoice.TplSharedEnvironment)]
+        public static void TestDotProduct(EnvironmentChoice env)
         {
+            IComputeEnvironment environment = env.CreateEnvironment();
             environment.Initialize(CreateNodeTopology());
             DistributedOverlappingIndexer indexer = CreateIndexer(environment);
 
@@ -85,9 +85,11 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetEnvironments))]
-        public static void TestEqualVectors(IComputeEnvironment environment)
+        [InlineData(EnvironmentChoice.SequentialSharedEnvironment)]
+        [InlineData(EnvironmentChoice.TplSharedEnvironment)]
+        public static void TestEqualVectors(EnvironmentChoice env)
         {
+            IComputeEnvironment environment = env.CreateEnvironment();
             environment.Initialize(CreateNodeTopology());
             DistributedOverlappingIndexer indexer = CreateIndexer(environment);
 
@@ -102,9 +104,11 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetEnvironments))]
-        public static void TestLinearCombinationVectors(IComputeEnvironment environment)
+        [InlineData(EnvironmentChoice.SequentialSharedEnvironment)]
+        [InlineData(EnvironmentChoice.TplSharedEnvironment)]
+        public static void TestLinearCombinationVectors(EnvironmentChoice env)
         {
+            IComputeEnvironment environment = env.CreateEnvironment();
             environment.Initialize(CreateNodeTopology());
             DistributedOverlappingIndexer indexer = CreateIndexer(environment);
 
@@ -125,9 +129,11 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetEnvironments))]
-        public static void TestMatrixVectorMultiplication(IComputeEnvironment environment)
+        [InlineData(EnvironmentChoice.SequentialSharedEnvironment)]
+        [InlineData(EnvironmentChoice.TplSharedEnvironment)]
+        public static void TestMatrixVectorMultiplication(EnvironmentChoice env)
         {
+            IComputeEnvironment environment = env.CreateEnvironment();
             environment.Initialize(CreateNodeTopology());
             DistributedOverlappingIndexer indexer = CreateIndexer(environment);
 
@@ -148,9 +154,11 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetEnvironments))]
-        public static void TestPcg(IComputeEnvironment environment)
+        [InlineData(EnvironmentChoice.SequentialSharedEnvironment)]
+        [InlineData(EnvironmentChoice.TplSharedEnvironment)]
+        public static void TestPcg(EnvironmentChoice env)
         {
+            IComputeEnvironment environment = env.CreateEnvironment();
             environment.Initialize(CreateNodeTopology());
             DistributedOverlappingIndexer indexer = CreateIndexer(environment);
 
@@ -177,9 +185,11 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetEnvironments))]
-        public static void TestScaleVector(IComputeEnvironment environment)
+        [InlineData(EnvironmentChoice.SequentialSharedEnvironment)]
+        [InlineData(EnvironmentChoice.TplSharedEnvironment)]
+        public static void TestScaleVector(EnvironmentChoice env)
         {
+            IComputeEnvironment environment = env.CreateEnvironment();
             environment.Initialize(CreateNodeTopology());
             DistributedOverlappingIndexer indexer = CreateIndexer(environment);
 
@@ -197,9 +207,11 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
         }
 
         [Theory]
-        [MemberData(nameof(GetEnvironments))]
-        public static void TestSumOverlappingEntries(IComputeEnvironment environment)
+        [InlineData(EnvironmentChoice.SequentialSharedEnvironment)]
+        [InlineData(EnvironmentChoice.TplSharedEnvironment)]
+        public static void TestSumOverlappingEntries(EnvironmentChoice env)
         {
+            IComputeEnvironment environment = env.CreateEnvironment();
             environment.Initialize(CreateNodeTopology());
             DistributedOverlappingIndexer indexer = CreateIndexer(environment);
 
@@ -233,27 +245,16 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
             return indexer;
         }
 
-        private static Dictionary<int, ComputeNode> CreateNodeTopology()
+        private static ComputeNodeTopology CreateNodeTopology()
         {
-            // Compute nodes
-            var nodes = new Dictionary<int, ComputeNode>();
-            nodes[0] = new ComputeNode(0);
-            nodes[1] = new ComputeNode(1);
-            nodes[2] = new ComputeNode(2);
-            nodes[3] = new ComputeNode(3);
-            nodes[4] = new ComputeNode(4);
-            nodes[5] = new ComputeNode(5);
-
-            // Neighbors
-            for (int n = 0; n < numNodes; ++n)
-            {
-                int previous = n - 1 >= 0 ? n - 1 : numNodes - 1;
-                int next = (n + 1) % numNodes;
-                nodes[n].Neighbors.Add(previous);
-                nodes[n].Neighbors.Add(next);
-            }
-
-            return nodes;
+            var topology = new ComputeNodeTopology();
+            topology.AddNode(0, new int[] { 5, 1 }, 0);
+            topology.AddNode(1, new int[] { 0, 2 }, 0);
+            topology.AddNode(2, new int[] { 1, 3 }, 1);
+            topology.AddNode(3, new int[] { 2, 4 }, 1);
+            topology.AddNode(4, new int[] { 3, 5 }, 2);
+            topology.AddNode(5, new int[] { 4, 0 }, 2);
+            return topology;
         }
 
         private static Vector GetAx(int nodeID)

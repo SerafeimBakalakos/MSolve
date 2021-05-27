@@ -2,23 +2,27 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace MGroup.Environments
 {
     /// <summary>
-    /// Operations per each <see cref="ComputeNode"/> are run sequentially. The data for all <see cref="ComputeNode"/>s are 
-    /// assumed to exist in the same shared memory address space.
+    /// Operations per each <see cref="ComputeNode"/> are run concurrently, using the Task Parallel Library. 
+    /// The data for all <see cref="ComputeNode"/>s are assumed to exist in the same shared memory address space.
+    /// Clustering of <see cref="ComputeNode"/>s is ignored.
     /// </summary>
-    public class SequentialSharedEnvironment : IComputeEnvironment
+    public class TplSharedEnvironment : IComputeEnvironment
     {
         private ComputeNodeTopology nodeTopology;
 
-        public SequentialSharedEnvironment()
+        public TplSharedEnvironment()
         {
         }
 
         public bool AllReduceAnd(Dictionary<int, bool> valuePerNode)
         {
+            //TODOMPI: Reductions can be done more efficiently by having each thread reduce the values assigned to it. Then either
+            //      reduce serially or with a binary tree (if a lot of threads are available)
             bool result = true;
             foreach (int nodeID in nodeTopology.Nodes.Keys)
             {
@@ -29,6 +33,8 @@ namespace MGroup.Environments
 
         public double AllReduceSum(Dictionary<int, double> valuePerNode)
         {
+            //TODOMPI: Reductions can be done more efficiently by having each thread reduce the values assigned to it. Then either
+            //      reduce serially or with a binary tree (if a lot of threads are available)
             double sum = 0.0;
             foreach (int nodeID in nodeTopology.Nodes.Keys)
             {
@@ -39,20 +45,22 @@ namespace MGroup.Environments
 
         public Dictionary<int, T> CreateDictionaryPerNode<T>(Func<int, T> createDataPerNode)
         {
+            // Add the keys first to avoid race conditions
             var result = new Dictionary<int, T>();
-            foreach (int nodeID in nodeTopology.Nodes.Keys)
+            foreach (int nodeID in nodeTopology.Nodes.Keys) 
             {
-                result[nodeID] = createDataPerNode(nodeID);
+                result[nodeID] = default; 
             }
+
+            // Run the operation per node in parallel and store the individual results.
+            Parallel.ForEach(nodeTopology.Nodes.Keys, nodeID => result[nodeID] = createDataPerNode(nodeID));
+
             return result;
         }
 
         public void DoPerNode(Action<int> actionPerNode)
         {
-            foreach (int nodeID in nodeTopology.Nodes.Keys)
-            {
-                actionPerNode(nodeID);
-            }
+            Parallel.ForEach(nodeTopology.Nodes.Keys, actionPerNode);
         }
 
         public ComputeNode GetComputeNode(int nodeID) => nodeTopology.Nodes[nodeID];
@@ -64,7 +72,7 @@ namespace MGroup.Environments
 
         public void NeighborhoodAllToAll<T>(Dictionary<int, AllToAllNodeData<T>> dataPerNode, bool areRecvBuffersKnown)
         {
-            foreach (int thisNodeID in nodeTopology.Nodes.Keys)
+            Parallel.ForEach(nodeTopology.Nodes.Keys, thisNodeID =>
             {
                 ComputeNode thisNode = nodeTopology.Nodes[thisNodeID];
                 AllToAllNodeData<T> thisData = dataPerNode[thisNodeID];
@@ -92,7 +100,7 @@ namespace MGroup.Environments
                     // Copying from this to other node will be done in another iteration of the outer loop.
                     Array.Copy(otherData.sendValues[thisNodeID], thisData.recvValues[otherNodeID], bufferLength);
                 }
-            }
+            });
         }
     }
 }

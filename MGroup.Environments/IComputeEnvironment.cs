@@ -16,11 +16,6 @@ namespace MGroup.Environments
     /// </summary>
     public interface IComputeEnvironment
     {
-        /// <summary>
-        /// The total number of <see cref="ComputeNode"/> managed by this environment across all hardware resources.
-        /// </summary>
-        int NumTotalComputeNodes { get; }
-
         bool AllReduceAnd(Dictionary<int, bool> valuePerNode);
 
         double AllReduceSum(Dictionary<int, double> valuePerNode);
@@ -47,8 +42,7 @@ namespace MGroup.Environments
         /// Initializes the environment (e.g. works out communication paths). This must be always called exactly once, and 
         /// before any other member.
         /// </summary>
-        ///// <param name=""></param>
-        void Initialize(Dictionary<int, ComputeNode> nodes); 
+        void Initialize(ComputeNodeTopology nodeTopology); 
 
         //TODOMPI: Overload that uses delegates for assembling the send data and processing the receive data per neighbor of 
         //      each compute node. This will result in better pipelining, which I think will greatly improve performance and 

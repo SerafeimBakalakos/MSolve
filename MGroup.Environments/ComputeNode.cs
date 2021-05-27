@@ -11,6 +11,9 @@ namespace MGroup.Environments
             ID = id;
         }
 
+        public ComputeNodeCluster Cluster { get; set; }
+
+
         public int ID { get; }
 
         public SortedSet<int> Neighbors { get; } = new SortedSet<int>();
