@@ -245,13 +245,13 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
             {
                 MpiDebugUtilities.AssistDebuggerAttachment();
 
-                //TestAxpyVectors(mpiEnvironment);
-                //TestDotProduct(mpiEnvironment);
-                //TestEqualVectors(mpiEnvironment);
-                //TestLinearCombinationVectors(mpiEnvironment);
-                //TestMatrixVectorMultiplication(mpiEnvironment);
-                //TestPcg(mpiEnvironment);
-                //TestScaleVector(mpiEnvironment);
+                TestAxpyVectors(mpiEnvironment);
+                TestDotProduct(mpiEnvironment);
+                TestEqualVectors(mpiEnvironment);
+                TestLinearCombinationVectors(mpiEnvironment);
+                TestMatrixVectorMultiplication(mpiEnvironment);
+                TestPcg(mpiEnvironment);
+                TestScaleVector(mpiEnvironment);
                 TestSumOverlappingEntries(mpiEnvironment);
 
                 MpiDebugUtilities.DoSerially(MPI.Communicator.world,
@@ -277,7 +277,7 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
             return indexer;
         }
 
-        private static ComputeNodeTopology CreateNodeTopology()
+        private static ComputeNodeTopology CreateNodeTopology() //TODOMPI: this is also described in Environments.Tests. 
         {
             var topology = new ComputeNodeTopology();
             topology.AddNode(0, new int[] { 5, 1 }, 0);

@@ -15,4 +15,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MGroup.Environments\MGroup.Environments.csproj" />
+  </ItemGroup>
+
 </Project>

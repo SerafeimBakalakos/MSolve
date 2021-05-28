@@ -206,17 +206,16 @@ namespace MGroup.Environments.Mpi
             }
 
             // Transfer buffers between local nodes, while waiting for the posted MPI requests. 
-            foreach (int thisNodeID in nodeTopology.Nodes.Keys)
+            foreach (ComputeNode thisNode in localNodes.Values)
             {
-                ComputeNode thisNode = nodeTopology.Nodes[thisNodeID];
-                AllToAllNodeData<T> thisData = dataPerNode[thisNodeID];
+                AllToAllNodeData<T> thisData = dataPerNode[thisNode.ID];
 
-                foreach (int neighborID in p2pTransfers.GetLocalNeighborsOf(thisNodeID))
+                foreach (int neighborID in p2pTransfers.GetLocalNeighborsOf(thisNode.ID))
                 {
                     // Receive data from each other node, by just copying the corresponding array segments.
                     ComputeNode otherNode = nodeTopology.Nodes[neighborID];
                     AllToAllNodeData<T> otherData = dataPerNode[neighborID];
-                    int bufferLength = otherData.sendValues[thisNodeID].Length;
+                    int bufferLength = otherData.sendValues[thisNode.ID].Length;
 
                     if (!areRecvBuffersKnown)
                     {
@@ -232,7 +231,7 @@ namespace MGroup.Environments.Mpi
 
                     // Copy data from other to this node. 
                     // Copying from this to other node will be done in another iteration of the outer loop.
-                    Array.Copy(otherData.sendValues[thisNodeID], thisData.recvValues[neighborID], bufferLength);
+                    Array.Copy(otherData.sendValues[thisNode.ID], thisData.recvValues[neighborID], bufferLength);
                 }
             }
 
