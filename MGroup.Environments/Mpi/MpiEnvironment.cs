@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using MpiNet = MPI;
 
-//TODOMPI: Parallelize the operations per local nodes.
 //WARNING: MPI.NET (on windows) does not support MPI calls from multiple threads. Therefore exposing send and receive methods
 //        is very risky. Instead when exposing on collective operations, MpiEnvironment can make sure all MPI calls are funneled
 //        through the same thread.
@@ -33,9 +33,6 @@ namespace MGroup.Environments.Mpi
     /// </remarks>
     public sealed class MpiEnvironment : IComputeEnvironment, IDisposable
     {
-        //private static readonly int allToAllTag = MpiTags.GetNewNonNegativeGuid();
-        //private static readonly int allToAllBufferLengthsTag = MpiTags.GetNewNonNegativeGuid();
-
         private readonly MpiNet.Intracommunicator commWorld;
         private readonly MpiNet.Environment mpiEnvironment;
 
@@ -48,11 +45,7 @@ namespace MGroup.Environments.Mpi
         {
             //TODOMPI: See Threading param. In multithreaded programs, I must specify that to MPI.NET.
             string[] args = Array.Empty<string>();
-            var mpiEnvironment = new MpiNet.Environment(ref args);
-
-
-
-            this.mpiEnvironment = mpiEnvironment;
+            this.mpiEnvironment = new MpiNet.Environment(ref args);
             this.commWorld = MpiNet.Communicator.world;
         }
 
@@ -73,8 +66,9 @@ namespace MGroup.Environments.Mpi
 
         public double AllReduceSum(Dictionary<int, double> valuePerNode)
         {
+            //TODOMPI: reductions for local nodes can be done more efficiently. See TplSharedEnvironment
             double localValue = 0.0;
-            foreach (int nodeID in localNodes.Keys)
+            foreach (int nodeID in localNodes.Keys) 
             {
                 localValue += valuePerNode[nodeID];
             }
@@ -83,11 +77,16 @@ namespace MGroup.Environments.Mpi
 
         public Dictionary<int, T> CreateDictionaryPerNode<T>(Func<int, T> createDataPerNode)
         {
+            // Add the keys first to avoid race conditions
             var result = new Dictionary<int, T>();
             foreach (int nodeID in localNodes.Keys)
             {
-                result[nodeID] = createDataPerNode(nodeID);
+                result[nodeID] = default;
             }
+
+            // Run the operation per local node in parallel and store the individual results.
+            Parallel.ForEach(localNodes.Keys, nodeID => result[nodeID] = createDataPerNode(nodeID));
+
             return result;
         }
 
@@ -99,10 +98,7 @@ namespace MGroup.Environments.Mpi
 
         public void DoPerNode(Action<int> actionPerNode)
         {
-            foreach (int nodeID in localNodes.Keys)
-            {
-                actionPerNode(nodeID);
-            }
+            Parallel.ForEach(localNodes.Keys, actionPerNode);
         }
 
         //TODOMPI: Catch KeyNotFoundException and throw a custom RemoteProcessDataAccessException (or something similar). 
@@ -148,12 +144,12 @@ namespace MGroup.Environments.Mpi
 
         public void NeighborhoodAllToAll<T>(Dictionary<int, AllToAllNodeData<T>> dataPerNode, bool areRecvBuffersKnown)
         {
-            // Post the asynchronous send/receives for remote transfers, then perform local copies while waiting.
-
             //TODOMPI: This can be improved greatly. As soon as a process receives the length of its recv buffer, the actual data 
             //      can be transfered between these 2 processes. There is no need to wait for the other p2p length communications.
 
-            // Transfer buffer lengths to/from remote nodes, via non-blocking send/receive operations
+            // Transfer buffer lengths to/from remote nodes, via non-blocking send/receive operations.
+            // MPI.NET does not support posting MPI requests from multiple threads at once. 
+            // However all these requests are non-blocking, thus posting them serially is efficient.
             if (!areRecvBuffersKnown)
             {
                 var recvLengthRequests = new MpiNet.RequestList(); //TODOMPI: Use my own RequestList implementation for more efficient WaitAll() and pipeline opportunities
@@ -184,7 +180,9 @@ namespace MGroup.Environments.Mpi
                 sendLengthRequests.WaitAll();
             }
 
-            // Transfer buffers to/from remote nodes, via non-blocking send/receive operations
+            // Transfer buffers to/from remote nodes, via non-blocking send/receive operations.
+            // MPI.NET does not support posting MPI requests from multiple threads at once. 
+            // However all these requests are non-blocking, thus posting them serially is efficient.
             var recvRequests = new MpiNet.RequestList(); //TODOMPI: Use my own RequestList implementation for more efficient WaitAll() and pipeline opportunities
             var sendRequests = new MpiNet.RequestList(); //TODOMPI: Can't I avoid waiting for send requests? 
             foreach (ComputeNode node in localNodes.Values)
@@ -205,17 +203,17 @@ namespace MGroup.Environments.Mpi
                 }
             }
 
-            // Transfer buffers between local nodes, while waiting for the posted MPI requests. 
-            foreach (ComputeNode thisNode in localNodes.Values)
+            // Transfer buffers between local nodes, while waiting for the posted MPI requests.
+            Action<int> transferLocalBuffers = thisNodeID =>
             {
-                AllToAllNodeData<T> thisData = dataPerNode[thisNode.ID];
+                AllToAllNodeData<T> thisData = dataPerNode[thisNodeID];
 
-                foreach (int neighborID in p2pTransfers.GetLocalNeighborsOf(thisNode.ID))
+                foreach (int neighborID in p2pTransfers.GetLocalNeighborsOf(thisNodeID))
                 {
                     // Receive data from each other node, by just copying the corresponding array segments.
                     ComputeNode otherNode = nodeTopology.Nodes[neighborID];
                     AllToAllNodeData<T> otherData = dataPerNode[neighborID];
-                    int bufferLength = otherData.sendValues[thisNode.ID].Length;
+                    int bufferLength = otherData.sendValues[thisNodeID].Length;
 
                     if (!areRecvBuffersKnown)
                     {
@@ -225,15 +223,16 @@ namespace MGroup.Environments.Mpi
                     else
                     {
                         Debug.Assert(thisData.recvValues[neighborID].Length == bufferLength,
-                            $"Node {otherNode.ID} tries to send {bufferLength} entries but node {thisNode.ID} tries to" +
+                            $"Node {otherNode.ID} tries to send {bufferLength} entries but node {thisNodeID} tries to" +
                                 $" receive {thisData.recvValues[neighborID].Length} entries. They must match.");
                     }
 
                     // Copy data from other to this node. 
                     // Copying from this to other node will be done in another iteration of the outer loop.
-                    Array.Copy(otherData.sendValues[thisNode.ID], thisData.recvValues[neighborID], bufferLength);
+                    Array.Copy(otherData.sendValues[thisNodeID], thisData.recvValues[neighborID], bufferLength);
                 }
-            }
+            };
+            Parallel.ForEach(localNodes.Keys, transferLocalBuffers);
 
             // Wait for MPI requests to end 
             recvRequests.WaitAll();
