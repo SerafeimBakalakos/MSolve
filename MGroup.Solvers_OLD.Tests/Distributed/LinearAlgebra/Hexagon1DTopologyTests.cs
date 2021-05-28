@@ -374,14 +374,14 @@ namespace MGroup.Solvers_OLD.Tests.DistributedTry1.Distributed.LinearAlgebra
                             $" {subenvironment.GetType().FullName}"));
 
                     TestAxpyVectors(mpiEnvironment);
-                    TestDotProduct(mpiEnvironment);
-                    TestEqualVectors(mpiEnvironment);
-                    TestLinearCombinationVectors(mpiEnvironment);
-                    TestMatrixVectorMultiplication(mpiEnvironment);
-                    TestMatrixVectorMultiplicationWithSubdomains(mpiEnvironment);
-                    TestPcg(mpiEnvironment);
-                    TestScaleVector(mpiEnvironment);
-                    TestSumOverlappingEntries(mpiEnvironment);
+                    //TestDotProduct(mpiEnvironment);
+                    //TestEqualVectors(mpiEnvironment);
+                    //TestLinearCombinationVectors(mpiEnvironment);
+                    //TestMatrixVectorMultiplication(mpiEnvironment);
+                    //TestMatrixVectorMultiplicationWithSubdomains(mpiEnvironment);
+                    //TestPcg(mpiEnvironment);
+                    //TestScaleVector(mpiEnvironment);
+                    //TestSumOverlappingEntries(mpiEnvironment);
 
                     MpiUtilities.DoSerially(MPI.Communicator.world,
                         () => Console.WriteLine($"Process {MPI.Communicator.world.Rank}: All tests passed"));

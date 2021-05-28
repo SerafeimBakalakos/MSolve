@@ -6,7 +6,7 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Hexagon1DTests.RunMpiTests();
         }
     }
 }

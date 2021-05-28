@@ -33,6 +33,7 @@ namespace MGroup.Environments
                 cluster = new ComputeNodeCluster(clusterIDOfNode);
                 Clusters[clusterIDOfNode] = cluster;
             }
+            cluster.Nodes[nodeID] = node;
             node.Cluster = cluster;
         }
     }

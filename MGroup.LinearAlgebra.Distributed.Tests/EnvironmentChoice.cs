@@ -6,6 +6,6 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
 {
     public enum EnvironmentChoice
     {
-        SequentialSharedEnvironment, TplSharedEnvironment/*, MklEnvironment*/
+        SequentialSharedEnvironment, TplSharedEnvironment, MklEnvironment
     }
 }
