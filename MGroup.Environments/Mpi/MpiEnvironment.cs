@@ -217,7 +217,7 @@ namespace MGroup.Environments.Mpi
 
                     if (!areRecvBuffersKnown)
                     {
-                        Debug.Assert(thisData.recvValues[neighborID] == null, "This buffer must not exist previously.");
+                        Debug.Assert(!thisData.recvValues.ContainsKey(neighborID), "This buffer must not exist previously.");
                         thisData.recvValues[neighborID] = new T[bufferLength];
                     }
                     else

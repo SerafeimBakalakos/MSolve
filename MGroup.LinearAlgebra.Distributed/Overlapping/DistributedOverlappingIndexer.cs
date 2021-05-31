@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using MGroup.Environments;
@@ -57,10 +58,11 @@ namespace MGroup.LinearAlgebra.Distributed.Overlapping
             //      Also provide an option to request newly initialized buffers. It may be better to have dedicated Buffer classes to
             //      handle all that logic (e.g. keeping allocated buffers in a LinkedList, giving them out & locking them, 
             //      freeing them in clients, etc.
-            public Dictionary<int, double[]> CreateBuffersForAllToAllWithNeighbors()
+            public ConcurrentDictionary<int, double[]> CreateBuffersForAllToAllWithNeighbors()
             {
-                int numNeighbors = Node.Neighbors.Count;
-                var buffers = new Dictionary<int, double[]>(numNeighbors);
+                //TODOMPI: dictionaries that contain per node values should be requested from the environment, which knows their
+                //      type (Dictionary/ConcurrentDictionary), capacity and concurrency level.
+                var buffers = new ConcurrentDictionary<int, double[]>(); 
                 foreach (int neighborID in Node.Neighbors)
                 {
                     buffers[neighborID] = new double[commonEntriesWithNeighbors[neighborID].Length];

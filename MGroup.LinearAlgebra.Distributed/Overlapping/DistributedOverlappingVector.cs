@@ -231,7 +231,7 @@ namespace MGroup.LinearAlgebra.Distributed.Overlapping
                 Vector localVector = LocalVectors[nodeID];
                 DistributedOverlappingIndexer.Local localIndexer = indexer.GetLocalComponent(nodeID);
 
-                Dictionary<int, double[]> recvValues = dataPerNode[nodeID].recvValues;
+                IDictionary<int, double[]> recvValues = dataPerNode[nodeID].recvValues;
                 foreach (int neighborID in node.Neighbors) 
                 {
                     int[] commonEntries = localIndexer.GetCommonEntriesWithNeighbor(neighborID);

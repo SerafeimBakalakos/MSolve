@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 
@@ -56,19 +57,21 @@ namespace MGroup.Environments
         void NeighborhoodAllToAll<T>(Dictionary<int, AllToAllNodeData<T>> dataPerNode, bool areRecvBuffersKnown);
     }
 
+    //TODOMPI: Clients are forced to initialize sendValues and recvValues right now, which means client code is coupled with 
+    //      knowledge that these dictionaries will be used concurrently.
     public class AllToAllNodeData<T>
     {
         /// <summary>
         /// Buffer of values that will be received by a <see cref="ComputeNode"/> i by each of its neighboring 
         /// <see cref="ComputeNode"/>s. Foreach j in <see cref="ComputeNode.Neighbors"/> of i, the values transfered from j to i 
-        /// will be stored in <see cref="recvValues"/>[j].
+        /// will be stored in <see cref="recvValues"/>[j]. If the buffer lengths are not known, then 
         /// </summary>
-        public Dictionary<int, T[]> recvValues;
+        public ConcurrentDictionary<int, T[]> recvValues;
 
         /// Buffer of values that will be sent from a <see cref="ComputeNode"/> i to each of its neighboring 
         /// <see cref="ComputeNode"/>s. Foreach j in <see cref="ComputeNode.Neighbors"/> of i, the values transfered from i to j 
         /// will be stored in <see cref="sendValues"/>[j]. 
         /// </summary>
-        public Dictionary<int, T[]> sendValues;
+        public ConcurrentDictionary<int, T[]> sendValues;
     }
 }

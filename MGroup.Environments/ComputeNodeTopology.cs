@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+//TODOMPI: Perhaps this should be exposed for IComputeEnvironment
 namespace MGroup.Environments
 {
     /// <summary>

@@ -78,7 +78,7 @@ namespace MGroup.Environments
 
                     if (!areRecvBuffersKnown)
                     {
-                        Debug.Assert(thisData.recvValues[otherNodeID] == null, "This buffer must not exist previously.");
+                        Debug.Assert(!thisData.recvValues.ContainsKey(otherNodeID), "This buffer must not exist previously.");
                         thisData.recvValues[otherNodeID] = new T[bufferLength];
                     }
                     else
