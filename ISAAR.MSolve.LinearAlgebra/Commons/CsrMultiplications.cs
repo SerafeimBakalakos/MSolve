@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
@@ -16,6 +17,37 @@ namespace ISAAR.MSolve.LinearAlgebra.Commons
     /// </summary>
     internal static class CsrMultiplications
     {
+        internal static void CscSymmTimesVector(int numCscCols, double[] cscValues, int[] cscColOffsets, int[] cscRowIndices,
+            IVectorView lhs, double[] rhs)
+        {
+            // Lower triangle only: yL = L * x = vector where each entry is the dot product of a row of L (= column of U) with x
+            for (int j = 0; j < numCscCols; ++j) //TODO: do this in the same loop as the upper triangle
+            {
+                double dot = 0.0;
+                int colStart = cscColOffsets[j]; //inclusive
+                int colEnd = cscColOffsets[j + 1]; //exclusive
+                for (int k = colStart; k < colEnd; ++k) dot += cscValues[k] * lhs[cscRowIndices[k]];
+                rhs[j] += dot;
+            }
+
+            // Upper triangle only: yU = U * x = linear combination of columns of U = with the entries of x as coefficients
+            // However diagonal entries were already multiplied previously. Avoid them now. Assume that cscRowIndices is sorted
+            // in increasing order per column.
+            for (int j = 0; j < numCscCols; ++j)
+            {
+                double scalar = lhs[j];
+                int colStart = cscColOffsets[j]; //inclusive
+                int nextColStart = cscColOffsets[j + 1]; 
+                int colEndWithoutDiagonal = nextColStart - 1; //exclusive
+                Debug.Assert(cscRowIndices[colEndWithoutDiagonal] == j,
+                    "This method only works if the row indices of the same column are in increasing order.");
+                for (int k = colStart; k < colEndWithoutDiagonal; ++k)
+                {
+                    rhs[cscRowIndices[k]] += scalar * cscValues[k];
+                }
+            }
+        }
+
         internal static void CsrTimesMatrix(int numCsrRows, double[] csrValues, int[] csrRowOffsets, int[] csrColIndices,
             IMatrixView other, Matrix result)
         {

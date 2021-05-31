@@ -159,7 +159,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
                 Blas.Daxpy(values.Length, otherCoefficient, otherCSC.values, 0, 1, resultValues, 0, 1);
 
                 // Do not copy the index arrays, since they are already spread around. TODO: is this a good idea?
-                return new SymmetricCscMatrix(NumRows, NumColumns, resultValues, this.rowIndices, this.colOffsets);
+                return new SymmetricCscMatrix(NumRows, NumNonZerosUpper, resultValues, this.rowIndices, this.colOffsets);
             }
             else return DoEntrywise(otherMatrix, (thisEntry, otherEntry) => thisEntry + otherCoefficient * otherEntry);
         }
@@ -371,7 +371,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
                 }
 
                 // Do not copy the index arrays, since they are already spread around. TODO: is this a good idea?
-                return new SymmetricCscMatrix(NumRows, NumColumns, resultValues, this.rowIndices, this.colOffsets);
+                return new SymmetricCscMatrix(NumRows, NumNonZerosUpper, resultValues, this.rowIndices, this.colOffsets);
             }
             else return DoEntrywise(otherMatrix, 
                 (thisEntry, otherEntry) => thisCoefficient * thisEntry + otherCoefficient * otherEntry);
@@ -406,13 +406,45 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
         /// See <see cref="IMatrixView.Multiply(IVectorView, bool)"/>.
         /// </summary>
         public IVector Multiply(IVectorView vector, bool transposeThis = false)
-            => DenseStrategies.Multiply(this, vector, transposeThis);
+        {
+            if (transposeThis)
+            {
+                return DenseStrategies.Multiply(this, vector, true);
+            }
+            else
+            {
+                var result = new double[NumRows];
+                Preconditions.CheckMultiplicationDimensions(NumColumns, vector.Length);
+                CsrMultiplications.CscSymmTimesVector(NumColumns, values, colOffsets, rowIndices, vector, result);
+                return Vector.CreateFromArray(result, false);
+            }
+        }
+
 
         /// <summary>
         /// See <see cref="IMatrixView.MultiplyIntoResult(IVectorView, IVector, bool)"/>.
         /// </summary>
         public void MultiplyIntoResult(IVectorView lhsVector, IVector rhsVector, bool transposeThis)
-            => DenseStrategies.MultiplyIntoResult(this, lhsVector, rhsVector, transposeThis);
+        {
+            if (transposeThis)
+            {
+                DenseStrategies.MultiplyIntoResult(this, lhsVector, rhsVector, transposeThis);
+            }
+            else
+            {
+                if (rhsVector is Vector denseVector)
+                {
+                    double[] result = denseVector.RawData;
+                    Preconditions.CheckMultiplicationDimensions(NumColumns, rhsVector.Length);
+                    CsrMultiplications.CscSymmTimesVector(NumColumns, values, colOffsets, rowIndices, lhsVector, result);
+                }
+                else
+                {
+                    DenseStrategies.MultiplyIntoResult(this, lhsVector, rhsVector, transposeThis);
+                }
+            }
+            
+        }
 
         /// <summary>
         /// Matrix-vector multiplication, with the vector on the right: matrix * vector or transpose(matrix) * vector.
@@ -422,7 +454,19 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
         ///     more than one multiplications, setting this flag to true is usually preferable to creating the transpose.</param>
         /// <returns></returns>
         public Vector MultiplyRight(Vector vector, bool transposeThis = false)
-            => DenseStrategies.Multiply(this, vector, transposeThis);
+        {
+            if (transposeThis)
+            {
+                return DenseStrategies.Multiply(this, vector, true);
+            }
+            else
+            {
+                var result = new double[NumRows];
+                Preconditions.CheckMultiplicationDimensions(NumColumns, vector.Length);
+                CsrMultiplications.CscSymmTimesVector(NumColumns, values, colOffsets, rowIndices, vector, result);
+                return Vector.CreateFromArray(result, false);
+            }
+        }
 
         /// <summary>
         /// See <see cref="IReducible.Reduce(double, ProcessEntry, ProcessZeros, Reduction.Finalize)"/>.
@@ -462,6 +506,7 @@ namespace ISAAR.MSolve.LinearAlgebra.Matrices
         {
             // Only apply the operation on non zero entries
             var resultValues = new double[values.Length];
+            Array.Copy(this.values, resultValues, values.Length);
             Blas.Dscal(NumNonZerosUpper, scalar, resultValues, 0, 1);
 
             //TODO: Perhaps I should also copy the indexers
