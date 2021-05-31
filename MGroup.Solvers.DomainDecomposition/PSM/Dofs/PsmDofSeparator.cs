@@ -71,11 +71,12 @@ namespace MGroup.Solvers.DomainDecomposition.Psm.Dofs
 		public void FindCommonDofsBetweenSubdomains()
 		{
 			// Find all dofs of each subdomain at the common nodes.
-			Action<int> subdomainAction = subdomainID =>
+			Action<int> findLocalDofsAtCommonNodes = subdomainID =>
 			{
 				Dictionary<int, DofSet> commonDofs = FindSubdomainDofsAtCommonNodes(subdomainID);
 				commonDofsBetweenSubdomains[subdomainID] = commonDofs;
 			};
+			environment.DoPerNode(findLocalDofsAtCommonNodes);
 
 			// Send these dofs to the corresponding neighbors and receive theirs.
 			Func<int, AllToAllNodeData<int>> prepareDofsToSend = subdomainID =>

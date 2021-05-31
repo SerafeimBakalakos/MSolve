@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <StartupObject>MGroup.Solvers.Distributed.Tests.Program</StartupObject>
+    <StartupObject>MGroup.Solvers.DomainDecomposition.Tests.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
