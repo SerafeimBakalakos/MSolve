@@ -71,23 +71,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MGroup.XFEM", "MGroup.XFEM\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MGroup.XFEM.Tests", "MGroup.XFEM.Tests\MGroup.XFEM.Tests.csproj", "{1DAB74D7-DF55-45C4-ADF2-0850A8C47856}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MGroup.Environments", "MGroup.Environments\MGroup.Environments.csproj", "{D64DD090-9858-4DB0-BD63-4748121958EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MGroup.Environments", "MGroup.Environments\MGroup.Environments.csproj", "{D64DD090-9858-4DB0-BD63-4748121958EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MGroup.Solvers.Distributed", "MGroup.Solvers.Distributed\MGroup.Solvers.Distributed.csproj", "{9184CE90-F6FE-471B-AAC9-8D00B22E8E52}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MGroup.LinearAlgebra.Distributed", "MGroup.LinearAlgebra.Distributed\MGroup.LinearAlgebra.Distributed.csproj", "{989F6CF3-4ABD-4ED8-9240-153D2AEC6DE2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MGroup.LinearAlgebra.Distributed", "MGroup.LinearAlgebra.Distributed\MGroup.LinearAlgebra.Distributed.csproj", "{989F6CF3-4ABD-4ED8-9240-153D2AEC6DE2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MGroup.Solvers_OLD", "MGroup.Solvers_OLD\MGroup.Solvers_OLD.csproj", "{A7211218-2649-492A-8F0B-9E8F6D3510EA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MGroup.Solvers_OLD.Tests", "MGroup.Solvers_OLD.Tests\MGroup.Solvers_OLD.Tests.csproj", "{A0C440AE-7C34-4BE2-91F5-5FA2D1F87796}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MGroup.Solvers", "MGroup.Solvers\MGroup.Solvers.csproj", "{D2F726A5-DEE8-443E-B07E-20AB32701262}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MGroup.Solvers", "MGroup.Solvers\MGroup.Solvers.csproj", "{D2F726A5-DEE8-443E-B07E-20AB32701262}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MGroup.Environments.Tests", "MGroup.Environments.Tests\MGroup.Environments.Tests.csproj", "{9ACA54DA-3686-44CA-83C0-26573086315B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MGroup.Environments.Tests", "MGroup.Environments.Tests\MGroup.Environments.Tests.csproj", "{9ACA54DA-3686-44CA-83C0-26573086315B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MGroup.LinearAlgebra.Distributed.Tests", "MGroup.LinearAlgebra.Distributed.Tests\MGroup.LinearAlgebra.Distributed.Tests.csproj", "{D076D488-D859-471C-B28F-FFA22F352B89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MGroup.LinearAlgebra.Distributed.Tests", "MGroup.LinearAlgebra.Distributed.Tests\MGroup.LinearAlgebra.Distributed.Tests.csproj", "{D076D488-D859-471C-B28F-FFA22F352B89}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MGroup.Solvers.Distributed.Tests", "MGroup.Solvers.Distributed.Tests\MGroup.Solvers.Distributed.Tests.csproj", "{1F76E5F6-810E-40AB-B9A2-ECDC7ABCB7C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MGroup.Solvers.DomainDecomposition", "MGroup.Solvers.DomainDecomposition\MGroup.Solvers.DomainDecomposition.csproj", "{7DD15A5F-7E4A-45B8-A4A7-F8D4506F3F01}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MGroup.Solvers.DomainDecomposition.Tests", "MGroup.Solvers.DomainDecomposition.Tests\MGroup.Solvers.DomainDecomposition.Tests.csproj", "{D83A7514-F387-48B1-814A-1ADD495E8109}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -471,18 +471,6 @@ Global
 		{D64DD090-9858-4DB0-BD63-4748121958EB}.Release|x64.Build.0 = Release|Any CPU
 		{D64DD090-9858-4DB0-BD63-4748121958EB}.Release|x86.ActiveCfg = Release|Any CPU
 		{D64DD090-9858-4DB0-BD63-4748121958EB}.Release|x86.Build.0 = Release|Any CPU
-		{9184CE90-F6FE-471B-AAC9-8D00B22E8E52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9184CE90-F6FE-471B-AAC9-8D00B22E8E52}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9184CE90-F6FE-471B-AAC9-8D00B22E8E52}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{9184CE90-F6FE-471B-AAC9-8D00B22E8E52}.Debug|x64.Build.0 = Debug|Any CPU
-		{9184CE90-F6FE-471B-AAC9-8D00B22E8E52}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{9184CE90-F6FE-471B-AAC9-8D00B22E8E52}.Debug|x86.Build.0 = Debug|Any CPU
-		{9184CE90-F6FE-471B-AAC9-8D00B22E8E52}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9184CE90-F6FE-471B-AAC9-8D00B22E8E52}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9184CE90-F6FE-471B-AAC9-8D00B22E8E52}.Release|x64.ActiveCfg = Release|Any CPU
-		{9184CE90-F6FE-471B-AAC9-8D00B22E8E52}.Release|x64.Build.0 = Release|Any CPU
-		{9184CE90-F6FE-471B-AAC9-8D00B22E8E52}.Release|x86.ActiveCfg = Release|Any CPU
-		{9184CE90-F6FE-471B-AAC9-8D00B22E8E52}.Release|x86.Build.0 = Release|Any CPU
 		{989F6CF3-4ABD-4ED8-9240-153D2AEC6DE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{989F6CF3-4ABD-4ED8-9240-153D2AEC6DE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{989F6CF3-4ABD-4ED8-9240-153D2AEC6DE2}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -555,18 +543,30 @@ Global
 		{D076D488-D859-471C-B28F-FFA22F352B89}.Release|x64.Build.0 = Release|Any CPU
 		{D076D488-D859-471C-B28F-FFA22F352B89}.Release|x86.ActiveCfg = Release|Any CPU
 		{D076D488-D859-471C-B28F-FFA22F352B89}.Release|x86.Build.0 = Release|Any CPU
-		{1F76E5F6-810E-40AB-B9A2-ECDC7ABCB7C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F76E5F6-810E-40AB-B9A2-ECDC7ABCB7C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1F76E5F6-810E-40AB-B9A2-ECDC7ABCB7C9}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{1F76E5F6-810E-40AB-B9A2-ECDC7ABCB7C9}.Debug|x64.Build.0 = Debug|Any CPU
-		{1F76E5F6-810E-40AB-B9A2-ECDC7ABCB7C9}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{1F76E5F6-810E-40AB-B9A2-ECDC7ABCB7C9}.Debug|x86.Build.0 = Debug|Any CPU
-		{1F76E5F6-810E-40AB-B9A2-ECDC7ABCB7C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1F76E5F6-810E-40AB-B9A2-ECDC7ABCB7C9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1F76E5F6-810E-40AB-B9A2-ECDC7ABCB7C9}.Release|x64.ActiveCfg = Release|Any CPU
-		{1F76E5F6-810E-40AB-B9A2-ECDC7ABCB7C9}.Release|x64.Build.0 = Release|Any CPU
-		{1F76E5F6-810E-40AB-B9A2-ECDC7ABCB7C9}.Release|x86.ActiveCfg = Release|Any CPU
-		{1F76E5F6-810E-40AB-B9A2-ECDC7ABCB7C9}.Release|x86.Build.0 = Release|Any CPU
+		{7DD15A5F-7E4A-45B8-A4A7-F8D4506F3F01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DD15A5F-7E4A-45B8-A4A7-F8D4506F3F01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DD15A5F-7E4A-45B8-A4A7-F8D4506F3F01}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7DD15A5F-7E4A-45B8-A4A7-F8D4506F3F01}.Debug|x64.Build.0 = Debug|Any CPU
+		{7DD15A5F-7E4A-45B8-A4A7-F8D4506F3F01}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7DD15A5F-7E4A-45B8-A4A7-F8D4506F3F01}.Debug|x86.Build.0 = Debug|Any CPU
+		{7DD15A5F-7E4A-45B8-A4A7-F8D4506F3F01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DD15A5F-7E4A-45B8-A4A7-F8D4506F3F01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7DD15A5F-7E4A-45B8-A4A7-F8D4506F3F01}.Release|x64.ActiveCfg = Release|Any CPU
+		{7DD15A5F-7E4A-45B8-A4A7-F8D4506F3F01}.Release|x64.Build.0 = Release|Any CPU
+		{7DD15A5F-7E4A-45B8-A4A7-F8D4506F3F01}.Release|x86.ActiveCfg = Release|Any CPU
+		{7DD15A5F-7E4A-45B8-A4A7-F8D4506F3F01}.Release|x86.Build.0 = Release|Any CPU
+		{D83A7514-F387-48B1-814A-1ADD495E8109}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D83A7514-F387-48B1-814A-1ADD495E8109}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D83A7514-F387-48B1-814A-1ADD495E8109}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D83A7514-F387-48B1-814A-1ADD495E8109}.Debug|x64.Build.0 = Debug|Any CPU
+		{D83A7514-F387-48B1-814A-1ADD495E8109}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D83A7514-F387-48B1-814A-1ADD495E8109}.Debug|x86.Build.0 = Debug|Any CPU
+		{D83A7514-F387-48B1-814A-1ADD495E8109}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D83A7514-F387-48B1-814A-1ADD495E8109}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D83A7514-F387-48B1-814A-1ADD495E8109}.Release|x64.ActiveCfg = Release|Any CPU
+		{D83A7514-F387-48B1-814A-1ADD495E8109}.Release|x64.Build.0 = Release|Any CPU
+		{D83A7514-F387-48B1-814A-1ADD495E8109}.Release|x86.ActiveCfg = Release|Any CPU
+		{D83A7514-F387-48B1-814A-1ADD495E8109}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
