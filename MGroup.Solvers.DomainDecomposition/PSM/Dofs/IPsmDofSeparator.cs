@@ -15,7 +15,7 @@ using MGroup.Solvers.DomainDecomposition.Mappings;
 //		and any synchronization (e.g. locks in IDofSeparator classes). This should probably be done for each component 
 //		(e.g. IDofSeparator, IMatrixManager, etc.). However if I can find common code (boilerplate), I could probably avoid some 
 //		duplication. 
-namespace MGroup.Solvers.DomainDecomposition.Psm.Dofs
+namespace MGroup.Solvers.DomainDecomposition.PSM.Dofs
 {
 	public interface IPsmDofSeparator
 	{

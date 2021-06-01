@@ -11,7 +11,7 @@ using ISAAR.MSolve.Solvers.Ordering;
 using ISAAR.MSolve.Solvers.Ordering.Reordering;
 using MGroup.Environments;
 using MGroup.LinearAlgebra.Distributed.Overlapping;
-using MGroup.Solvers.DomainDecomposition.Psm.Dofs;
+using MGroup.Solvers.DomainDecomposition.PSM.Dofs;
 using MGroup.Solvers.DomainDecomposition.Tests.ExampleModels;
 using Xunit;
 

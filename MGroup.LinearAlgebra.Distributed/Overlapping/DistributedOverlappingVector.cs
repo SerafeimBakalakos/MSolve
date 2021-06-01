@@ -186,12 +186,53 @@ namespace MGroup.LinearAlgebra.Distributed.Overlapping
             environment.DoPerNode(node => LocalVectors[node].ScaleIntoThis(scalar));
         }
 
+        //TODOMPI: A ReduceOverlappingEntries(IReduction), which would cover sum and regularization would be more useful. 
+        //      However the implementation should not be slower than the current SumOverlappingEntries(), since that is a very
+        //      important operation.
+        //TODOMPI: Test this
+        /// <summary>
+        /// Gathers the entries of remote vectors that correspond to the boundary entries of the local vectors and regularizes 
+        /// them, meaning each of these entries is divided via the sum of corresponding entries over all local vectors. 
+        /// Therefore, the resulting local vectors will not have the same values at their corresponding overlapping entries.
+        /// </summary>
+        /// <remarks>
+        /// Requires communication between compute nodes:
+        /// Each compute node sends its boundary entries to the neighbors that are assiciated with these entries. 
+        /// Each neighbor receives only the entries it has in common.
+        /// </remarks>
+        public void RegularizeOverlappingEntries()
+        {
+            // Sum the values of overlapping entries in a different vector.
+            DistributedOverlappingVector reducedVector = Copy();
+            reducedVector.SumOverlappingEntries();
+
+            // Divide the values of overlapping entries via their sums.
+            Action<int> regularizeLocalVectors = nodeID =>
+            {
+                ComputeNode node = environment.GetComputeNode(nodeID);
+                DistributedOverlappingIndexer.Local localIndexer = indexer.GetLocalComponent(nodeID);
+                Vector orginalLocalVector = this.LocalVectors[nodeID];
+                Vector reducedLocalVector = reducedVector.LocalVectors[nodeID];
+
+                for (int i = 0; i < localIndexer.NumEntries; ++i)
+                {
+                    //TODO: This assumes that all entries with multiplicity > 1 are overlapping and must be regularized. 
+                    //      Is that always a correct assumption?
+                    if (localIndexer.Multiplicities[i] > 1)
+                    {
+                        orginalLocalVector[i] /= reducedLocalVector[i];
+                    }
+                }
+            };
+            environment.DoPerNode(regularizeLocalVectors);
+        }
+
         /// <summary>
         /// Gathers the entries of remote vectors that correspond to the boundary entries of the local vectors and sums them.
-        /// As a result, the boundary entries of each local vector will have the same total values. These values are the same
+        /// As a result, the overlapping entries of each local vector will have the same values. These values are the same
         /// as the ones we would have if a global vector was created by assembling the local vectors.
         /// </summary>
-        /// /// <remarks>
+        /// <remarks>
         /// Requires communication between compute nodes:
         /// Each compute node sends its boundary entries to the neighbors that are assiciated with these entries. 
         /// Each neighbor receives only the entries it has in common.

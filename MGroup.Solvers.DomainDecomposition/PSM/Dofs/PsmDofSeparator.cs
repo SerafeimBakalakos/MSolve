@@ -12,7 +12,7 @@ using MGroup.Solvers.DomainDecomposition.Commons;
 
 //TODOMPI: Replace DofTable with an equivalent class that uses integers. Also allow clients to choose sorted versions
 //TODOMPI: Instead of going to asking ComputeNode for its neighbors, ISubdomain should contain this info. 
-namespace MGroup.Solvers.DomainDecomposition.Psm.Dofs
+namespace MGroup.Solvers.DomainDecomposition.PSM.Dofs
 {
 	public class PsmDofSeparator : IPsmDofSeparator
 	{
