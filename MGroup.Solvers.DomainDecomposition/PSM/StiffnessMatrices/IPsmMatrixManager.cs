@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.Solvers.DomainDecomposition.StiffnessMatrices;
 
@@ -8,6 +9,8 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessMatrices
 {
 	public interface IPsmMatrixManager
 	{
+		IMatrixView CalcSchurComplement(int subdomainID);
+
 		void ClearSubMatrices(int subdomainID);
 
 		void ExtractKiiKbbKib(int subdomainID);

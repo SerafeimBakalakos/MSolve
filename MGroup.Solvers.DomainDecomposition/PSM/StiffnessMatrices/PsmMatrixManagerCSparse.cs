@@ -34,6 +34,13 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessMatrices
 			}
 		}
 
+		public IMatrixView CalcSchurComplement(int subdomainID)
+		{
+			//TODO: Implement a ScurComplement class where A11 is in CSR format
+			Matrix kbb = Kbb[subdomainID].CopyToFullMatrix();
+			return SchurComplementFullCsrCsc.CalcSchurComplement(kbb, Kbi[subdomainID], Kib[subdomainID], invKii[subdomainID]);
+		}
+
 		public void ClearSubMatrices(int subdomainID)
 		{
 			Kbb[subdomainID] = null;

@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.SchurComplements;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.Solvers.DomainDecomposition.Commons;
 using MGroup.Solvers.DomainDecomposition.PSM.Dofs;
@@ -24,6 +25,9 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessMatrices
 			this.dofSeparator = dofSeparator;
 			this.managerBasic = managerBasic;
 		}
+
+		public IMatrixView CalcSchurComplement(int subdomainID)
+			=> Kbb[subdomainID] - Kbi[subdomainID] * (invKii[subdomainID] * Kib[subdomainID]);
 
 		public void ClearSubMatrices(int subdomainID)
 		{
