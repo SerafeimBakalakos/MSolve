@@ -3,7 +3,6 @@ using System.Diagnostics;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.Solvers.Assemblers;
 
 namespace MGroup.Solvers.Assemblers
 {

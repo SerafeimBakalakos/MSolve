@@ -5,7 +5,6 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Matrices.Builders;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
-using ISAAR.MSolve.Solvers.Assemblers;
 
 //TODO: Instead of storing the raw CSC arrays, use a reusable DOK or SymmCscIndexer class. That class should provide methods to 
 //      assemble the values part of the global matrix more efficiently than the general purpose DOK. The general purpose DOK 

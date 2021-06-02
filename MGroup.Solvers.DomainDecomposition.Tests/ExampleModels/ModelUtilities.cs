@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM.Entities;
-using ISAAR.MSolve.Solvers.Ordering;
-using ISAAR.MSolve.Solvers.Ordering.Reordering;
+using MGroup.Solvers.Ordering;
+using MGroup.Solvers.Ordering.Reordering;
 
 namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
 {
@@ -30,11 +30,9 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
         public static void OrderDofs(IStructuralModel model)
         {
             var dofOrderer = new DofOrderer(new NodeMajorDofOrderingStrategy(), new NullReordering());
-            var globalDofs = dofOrderer.OrderFreeDofs(model);
-            model.GlobalDofOrdering = globalDofs;
             foreach (ISubdomain subdomain in model.Subdomains)
             {
-                subdomain.FreeDofOrdering = globalDofs.SubdomainDofOrderings[subdomain];
+                subdomain.FreeDofOrdering = dofOrderer.OrderFreeDofs(subdomain);
             }
         }
     }

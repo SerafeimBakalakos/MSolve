@@ -7,8 +7,6 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Providers;
 using ISAAR.MSolve.FEM.Entities;
-using ISAAR.MSolve.Solvers.Ordering;
-using ISAAR.MSolve.Solvers.Ordering.Reordering;
 using MGroup.Environments;
 using MGroup.LinearAlgebra.Distributed.Overlapping;
 using MGroup.Solvers.DomainDecomposition.PSM.Dofs;
@@ -28,7 +26,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.PSM
 
             Model model = Line1DExample.CreateMultiSubdomainModel();
             model.ConnectDataStructures();
-            var subdomainTopology = new SubdomainTopology(environment, nodeTopology, model);
+            var subdomainTopology = new SubdomainTopology(environment, model);
             ModelUtilities.OrderDofs(model);
 
             var dofSeparator = new PsmDofSeparator(environment, model, subdomainTopology);
