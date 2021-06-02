@@ -19,11 +19,14 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.InterfaceProblem
 	public class PsmInterfaceProblemMatrixImplicit : IPsmInterfaceProblemMatrix
 	{
 		private readonly IComputeEnvironment environment;
+		private readonly IPsmDofSeparator dofSeparator;
 		private readonly IPsmMatrixManager matrixManager;
 
-		public PsmInterfaceProblemMatrixImplicit(IComputeEnvironment environment, IPsmMatrixManager matrixManager)
+		public PsmInterfaceProblemMatrixImplicit(IComputeEnvironment environment, IPsmDofSeparator dofSeparator, 
+			IPsmMatrixManager matrixManager)
 		{
 			this.environment = environment;
+			this.dofSeparator = dofSeparator;
 			this.matrixManager = matrixManager;
 		}
 
@@ -32,6 +35,38 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.InterfaceProblem
 		public void Calculate(DistributedOverlappingIndexer indexer)
 		{
 			Matrix = new DistributedOverlappingMatrix(environment, indexer, MultiplySubdomainSchurComplement);
+		}
+
+		//TODO: this looks like it belongs to LinearAlgebra. Perhaps in an implicit matrix class.
+		//TODO: There should be a way to learn the number of boundary dofs from Kbb, without depending on DofSeparator
+		//TODO: This is very inefficient. Forming Sbb explicitly should be faster, especially since it is done by the 
+		//		MatrixManager classes, which have access to the concrete type of the submatrices. And then matrix vector 
+		//		multiplications during PCG will be much faster. Perhaps Sbb * vector should be delegated to MatrixManager, which
+		//		will do it implicitly, unless CalcSchurComplement was called.
+		public double[] ExtractDiagonal(int subdomainID) 
+		{
+			// Multiply with the columns of identity matrix and keep the corresponding entries.
+			int numBoundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID).Length; 
+			var lhs = Vector.CreateZero(numBoundaryDofs);
+			var rhs = Vector.CreateZero(numBoundaryDofs);
+			var diagonal = new double[numBoundaryDofs];
+			for (int j = 0; j < numBoundaryDofs; ++j)
+			{
+				// Lhs vector is a column of the identity matrix
+				if (j > 0)
+				{
+					lhs.Clear();
+				}
+				lhs[j] = 1.0;
+
+				// Multiply Sbb * lh
+				MultiplySubdomainSchurComplement(subdomainID, lhs, rhs);
+
+				// Keep the entry that corresponds to the diagonal.
+				diagonal[j] = rhs[j];
+			}
+
+			return diagonal;
 		}
 
 		/// <summary>

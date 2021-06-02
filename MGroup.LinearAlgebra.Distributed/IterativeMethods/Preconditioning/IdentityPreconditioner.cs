@@ -13,7 +13,7 @@ namespace MGroup.LinearAlgebra.Distributed.IterativeMethods.Preconditioning
     public class IdentityPreconditioner: IPreconditioner
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="IdentityPreconditioner"/> with the provided settings.
+        /// Initializes a new instance of <see cref="IdentityPreconditioner"/>.
         /// </summary>
         public IdentityPreconditioner()
         {

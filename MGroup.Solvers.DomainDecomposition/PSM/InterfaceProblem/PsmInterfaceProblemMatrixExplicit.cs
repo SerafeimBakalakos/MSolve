@@ -36,7 +36,7 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.InterfaceProblem
 			schurComplementsPerSubdomain.Clear();
 			Action<int> calcSchurComplement = subdomainID =>
 			{
-				var Sbb = matrixManager.CalcSchurComplement(subdomainID);
+				IMatrixView Sbb = matrixManager.CalcSchurComplement(subdomainID);
 				schurComplementsPerSubdomain[subdomainID] = Sbb;
 			};
 			environment.DoPerNode(calcSchurComplement);
@@ -44,8 +44,14 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.InterfaceProblem
 			Matrix = new DistributedOverlappingMatrix(environment, indexer, MultiplySubdomainSchurComplement);
 		}
 
+		public double[] ExtractDiagonal(int subdomainID)
+		{
+			IMatrixView Sbb = schurComplementsPerSubdomain[subdomainID];
+			return Sbb.GetDiagonalAsArray(); //TODO: this should be a polymorphic method, the extension can be too slow
+		}
+
 		/// <summary>
-		/// S[s] * x = (Kbb[s] - Kbi[s] * inv(Kii[s]) * Kib[s]) * x
+		/// Sbb[s] * x = (Kbb[s] - Kbi[s] * inv(Kii[s]) * Kib[s]) * x
 		/// </summary>
 		/// <param name="subdomainID">The ID of a subdomain</param>
 		/// <param name="input">The displacements that correspond to boundary dofs of this subdomain.</param>

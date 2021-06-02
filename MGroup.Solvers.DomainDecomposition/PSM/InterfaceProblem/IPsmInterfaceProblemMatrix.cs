@@ -11,5 +11,7 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.InterfaceProblem
 		DistributedOverlappingMatrix Matrix { get; }
 
 		void Calculate(DistributedOverlappingIndexer indexer);
+
+		double[] ExtractDiagonal(int subdomainID);
 	}
 }
