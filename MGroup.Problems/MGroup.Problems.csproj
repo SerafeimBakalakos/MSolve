@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ISAAR.MSolve.LinearAlgebra\ISAAR.MSolve.LinearAlgebra.csproj" />
+    <ProjectReference Include="..\MGroup.Analyzers\MGroup.Analyzers.csproj" />
+    <ProjectReference Include="..\MGroup.Environments\MGroup.Environments.csproj" />
+    <ProjectReference Include="..\MGroup.Solvers\MGroup.Solvers.csproj" />
+  </ItemGroup>
+
+</Project>
