@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.Solvers.LinearSystems;
+using MGroup.Solvers.LinearSystems;
 using MGroup.Environments;
 using MGroup.LinearAlgebra.Distributed.Overlapping;
 using MGroup.Solvers.DomainDecomposition.PSM.Dofs;
