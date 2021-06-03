@@ -23,13 +23,12 @@ namespace MGroup.Solvers.DomainDecomposition.StiffnessMatrices
 			}
 		}
 
-		public IMatrix BuildKff(int subdomainID, ISubdomainFreeDofOrdering dofOrdering, IEnumerable<IElement> elements,
+		public void BuildKff(int subdomainID, ISubdomainFreeDofOrdering dofOrdering, IEnumerable<IElement> elements,
 			IElementMatrixProvider matrixProvider)
 		{
 			var linearSystem = linearSystems[subdomainID];
 			linearSystem.Matrix = assemblers[subdomainID].BuildGlobalMatrix(
 				dofOrdering, linearSystem.Subdomain.Elements, matrixProvider);
-			return linearSystem.Matrix;
 		}
 
 		public ILinearSystem GetLinearSystem(int subdomainID) => linearSystems[subdomainID];

@@ -5,6 +5,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Discretization.Commons;
 using MGroup.Solvers.LinearSystems;
+using System;
 
 //TODO: perhaps the solver should expose the assembler, instead of wrapping it. The assembler's interface would have to be 
 //      simplified a bit though. That would violate LoD, but so does MSolve in general.
@@ -32,12 +33,17 @@ namespace MGroup.Solvers
 
         /// <summary>
         /// Assembles the matrix that corresponds to the free freedom degrees of each whole subdomain from the matrices of its 
-        /// elements.
+        /// elements. Only subdomains that pass <paramref name="mustUpdateSubdomain"/> will have their matrices updated. For the 
+        /// rest, the matrix of the previous analysis step will be returned.
         /// </summary>
         /// <param name="elementMatrixProvider">
         /// Determines the matrix calculated for each element (e.g. stiffness, mass, etc.)
         /// </param>
-        Dictionary<int, IMatrix> BuildGlobalMatrices(IElementMatrixProvider elementMatrixProvider);
+        /// <param name="mustUpdateSubdomain">
+        /// Predicate that instructes the solver, whether to update the matrix of the subdomain with the corresponding id or not.
+        /// </param>
+        Dictionary<int, IMatrix> BuildGlobalMatrices(IElementMatrixProvider elementMatrixProvider, 
+            Func<int, bool> mustUpdateSubdomain);
 
         /// <summary>
         /// Assembles the matrices that correspond to the free and constrained freedom degrees of each whole subdomain 

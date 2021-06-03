@@ -9,7 +9,7 @@ namespace MGroup.Solvers.DomainDecomposition.StiffnessMatrices
 {
 	public interface IMatrixManager
 	{
-		IMatrix BuildKff(int subdomainID, ISubdomainFreeDofOrdering dofOrdering, IEnumerable<IElement> elements,
+		void BuildKff(int subdomainID, ISubdomainFreeDofOrdering dofOrdering, IEnumerable<IElement> elements,
 			IElementMatrixProvider matrixProvider);
 
 		ILinearSystem GetLinearSystem(int subdomainID);

@@ -98,14 +98,19 @@ namespace MGroup.Solvers.DomainDecomposition.Psm
 
 		public bool StartIterativeSolverFromPreviousSolution { get; set; } = false;
 
-		public virtual Dictionary<int, IMatrix> BuildGlobalMatrices(IElementMatrixProvider elementMatrixProvider)
+		public virtual Dictionary<int, IMatrix> BuildGlobalMatrices(IElementMatrixProvider elementMatrixProvider, 
+			Func<int, bool> mustUpdateSubdomain)
 		{
 			//TODOMPI: This must be called after ISolver.Initialize()
 			Func<int, IMatrix> buildKff = subdomainID =>
 			{
-				ISubdomain subdomain = model.GetSubdomain(subdomainID);
-				return matrixManagerBasic.BuildKff(
-					subdomain.ID, subdomain.FreeDofOrdering, subdomain.Elements, elementMatrixProvider);
+				if (mustUpdateSubdomain(subdomainID))
+				{
+					ISubdomain subdomain = model.GetSubdomain(subdomainID);
+					matrixManagerBasic.BuildKff(
+						subdomainID, subdomain.FreeDofOrdering, subdomain.Elements, elementMatrixProvider);
+				}
+				return (IMatrix)LinearSystems[subdomainID].Matrix;
 			};
 			Dictionary<int, IMatrix> matricesKff = environment.CreateDictionaryPerNode(buildKff);
 			stiffnessDistribution.CalcSubdomainScaling(indexer);
