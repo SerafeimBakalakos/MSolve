@@ -13,18 +13,14 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.Preconditioning
 {
     public class PsmPreconditionerJacobi : IPsmPreconditioner
     {
-        private readonly IComputeEnvironment environment;
-        private readonly IPsmInterfaceProblemMatrix interfaceProblemMatrix;
-
-        public PsmPreconditionerJacobi(IComputeEnvironment environment, IPsmInterfaceProblemMatrix interfaceProblemMatrix)
+        public PsmPreconditionerJacobi()
         {
-            this.environment = environment;
-            this.interfaceProblemMatrix = interfaceProblemMatrix;
         }
 
         public IPreconditioner Preconditioner { get; private set; }
 
-        public void Calculate(DistributedOverlappingIndexer indexer)
+        public void Calculate(IComputeEnvironment environment, DistributedOverlappingIndexer indexer,
+            IPsmInterfaceProblemMatrix interfaceProblemMatrix)
         {
             Func<int, Vector> extractDiagonal = subdomainID 
                 => Vector.CreateFromArray(interfaceProblemMatrix.ExtractDiagonal(subdomainID));

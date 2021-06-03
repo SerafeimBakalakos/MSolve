@@ -20,7 +20,7 @@ namespace MGroup.Solvers.DomainDecomposition
         /// </summary>
         private readonly Dictionary<int, Dictionary<int, SortedSet<int>>> commonNodesWithNeighborsPerSubdomain;
 
-        public SubdomainTopology(IComputeEnvironment environment, ComputeNodeTopology topology, IStructuralModel model)
+        public SubdomainTopology(IComputeEnvironment environment, IStructuralModel model)
         {
             Func<int, SortedSet<int>> findSubdomainNeighbors = subdomainID =>
             {
