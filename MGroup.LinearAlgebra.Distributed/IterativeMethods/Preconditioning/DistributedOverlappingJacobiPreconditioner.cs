@@ -6,6 +6,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.Environments;
 using MGroup.LinearAlgebra.Distributed.Overlapping;
 
+//TODOMPI: Needs testing
 namespace MGroup.LinearAlgebra.Distributed.IterativeMethods.Preconditioning
 {
     public class DistributedOverlappingJacobiPreconditioner : IPreconditioner

@@ -12,7 +12,7 @@ using MGroup.LinearAlgebra.Distributed.IterativeMethods.Preconditioning;
 //TODOMPI: make it generic on the type of vector, which will be bounded by IVector or the dedicated interface (see previous TODO)
 namespace MGroup.LinearAlgebra.Distributed.IterativeMethods.PCG
 {
-    public abstract class PcgAlgorithmBase
+    public abstract class PcgAlgorithmBase : IDistributedIterativeMethod
     {
         protected readonly IPcgResidualConvergence convergence;
         protected readonly IMaxIterationsProvider maxIterationsProvider;
@@ -152,8 +152,7 @@ namespace MGroup.LinearAlgebra.Distributed.IterativeMethods.PCG
         /// Thrown if <paramref name="rhs"/> or <paramref name="solution"/> violate the described constraints.
         /// </exception>
         public IterativeStatistics Solve(IDistributedMatrix matrix, IPreconditioner preconditioner,
-            IDistributedVector rhs, IDistributedVector solution,
-            bool initialGuessIsZero) //TODO: find a better way to handle the case x0=0
+            IDistributedVector rhs, IDistributedVector solution, bool initialGuessIsZero) //TODO: find a better way to handle the case x0=0
         {
             this.Matrix = matrix;
             this.Preconditioner = preconditioner;
