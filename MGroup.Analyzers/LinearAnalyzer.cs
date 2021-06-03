@@ -41,7 +41,6 @@ namespace MGroup.Analyzers
         public void Initialize(bool isFirstAnalysis)
         {
             InitializeLogs();
-            //solver.Initialize(); //TODO: Using this needs refactoring
         }
 
         public void Solve()
