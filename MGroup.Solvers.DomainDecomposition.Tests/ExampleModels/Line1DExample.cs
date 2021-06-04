@@ -8,6 +8,7 @@ using ISAAR.MSolve.FEM.Elements;
 using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.Materials;
 using MGroup.Environments;
+using MGroup.FEM.Entities;
 using MGroup.Solvers;
 
 // Global:
@@ -53,7 +54,41 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
             return nodeTopology;
         }
 
-        public static Model CreateSingleSubdomainModel()
+        public static DistributedModel CreateSingleSubdomainModel(IComputeEnvironment environment)
+        {
+            AllDofs.AddDof(ThermalDof.Temperature);
+            var model = new DistributedModel(environment);
+            model.SubdomainsDictionary[0] = new Subdomain(0);
+
+            // Nodes
+            for (int n = 0; n <= 16; ++n)
+            {
+                model.NodesDictionary[n] = new Node(n, n * length, 0.0, 0.0);
+            }
+
+            // Materials
+            var material = new ThermalMaterial(density, specialHeat, conductivity);
+
+            // Elements
+            for (int e = 0; e < 16; ++e)
+            {
+                Node[] nodes = { model.Nodes[e], model.Nodes[e + 1] };
+                var elementType = new ThermalRod(nodes, sectionArea, material);
+                var element = new Element() { ID = e, ElementType = elementType };
+                foreach (var node in nodes) element.AddNode(node);
+                model.ElementsDictionary[element.ID] = element;
+                model.SubdomainsDictionary[0].Elements.Add(element);
+            }
+
+            // Boundary conditions
+            model.NodesDictionary[16].Constraints.Add(new Constraint() { DOF = ThermalDof.Temperature, Amount = 0 });
+            model.Loads.Add(new Load() { Node = model.NodesDictionary[0], DOF = ThermalDof.Temperature, Amount = 1 });
+
+            return model;
+        }
+
+        //TODOMPI: Remove this
+        public static Model CreateSingleSubdomainModel_OLD()
         {
             AllDofs.AddDof(ThermalDof.Temperature);
             var model = new Model();
@@ -86,10 +121,10 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
             return model;
         }
 
-        public static Model CreateMultiSubdomainModel()
+        public static IStructuralModel CreateMultiSubdomainModel(IComputeEnvironment environment)
         {
             // Partition
-            Model model = CreateSingleSubdomainModel();
+            DistributedModel model = CreateSingleSubdomainModel(environment);
             var elementsToSubdomains = new Dictionary<int, int>();
             elementsToSubdomains[0] = 0;
             elementsToSubdomains[1] = 0;

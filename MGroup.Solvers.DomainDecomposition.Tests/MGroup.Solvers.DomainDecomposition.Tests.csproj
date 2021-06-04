@@ -21,6 +21,7 @@
     <ProjectReference Include="..\ISAAR.MSolve.FEM\ISAAR.MSolve.FEM.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.Problems\ISAAR.MSolve.Problems.csproj" />
     <ProjectReference Include="..\MGroup.Environments\MGroup.Environments.csproj" />
+    <ProjectReference Include="..\MGroup.FEM\MGroup.FEM.csproj" />
     <ProjectReference Include="..\MGroup.LinearAlgebra.Distributed\MGroup.LinearAlgebra.Distributed.csproj" />
     <ProjectReference Include="..\MGroup.Problems\MGroup.Problems.csproj" />
     <ProjectReference Include="..\MGroup.Solvers.DomainDecomposition\MGroup.Solvers.DomainDecomposition.csproj" />

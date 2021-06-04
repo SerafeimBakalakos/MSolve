@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM.Entities;
 using MGroup.Environments;
 using MGroup.Environments.Mpi;
@@ -39,7 +40,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.PSM
             ComputeNodeTopology nodeTopology = Line1DExample.CreateNodeTopology(environment);
             environment.Initialize(nodeTopology);
 
-            Model model = Line1DExample.CreateMultiSubdomainModel();
+            IStructuralModel model = Line1DExample.CreateMultiSubdomainModel(environment);
             model.ConnectDataStructures();
             var subdomainTopology = new SubdomainTopology(environment, model);
             ModelUtilities.OrderDofs(model);

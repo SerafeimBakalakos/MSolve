@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM.Entities;
+using MGroup.FEM.Entities;
 using MGroup.Solvers.Ordering;
 using MGroup.Solvers.Ordering.Reordering;
 
@@ -10,7 +11,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
 {
     public static class ModelUtilities
     {
-        public static void Decompose(Model model, int numSubdomains, Func<int, int> elementToSubdomain)
+        public static void Decompose(DistributedModel model, int numSubdomains, Func<int, int> elementToSubdomain)
         {
             model.SubdomainsDictionary.Clear();
             foreach (Node node in model.NodesDictionary.Values) node.SubdomainsDictionary.Clear();

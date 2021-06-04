@@ -50,7 +50,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.PSM
             environment.Initialize(nodeTopology);
 
             // Model
-            Model model = Line1DExample.CreateMultiSubdomainModel();
+            IStructuralModel model = Line1DExample.CreateMultiSubdomainModel(environment);
             model.ConnectDataStructures(); //TODOMPI: this is also done in the analyzer
             var subdomainTopology = new SubdomainTopology(environment, model);
 
