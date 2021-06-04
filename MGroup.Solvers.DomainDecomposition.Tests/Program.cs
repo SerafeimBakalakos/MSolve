@@ -1,4 +1,5 @@
 ﻿using System;
+using MGroup.Solvers.DomainDecomposition.Tests.PSM;
 
 namespace MGroup.Solvers.DomainDecomposition.Tests
 {
@@ -6,7 +7,8 @@ namespace MGroup.Solvers.DomainDecomposition.Tests
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            //PsmDofSeparatorTests.RunMpiTests();
+            Line1DPsmSolverTest.RunMpiTests();
         }
     }
 }

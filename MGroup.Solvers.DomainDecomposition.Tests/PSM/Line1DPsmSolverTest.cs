@@ -4,11 +4,17 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using ISAAR.MSolve.Discretization.Commons;
+using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
-using ISAAR.MSolve.Discretization.Providers;
 using ISAAR.MSolve.FEM.Entities;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
+using MGroup.Analyzers;
 using MGroup.Environments;
+using MGroup.Environments.Mpi;
 using MGroup.LinearAlgebra.Distributed.Overlapping;
+using MGroup.Problems;
+using MGroup.Solvers.DomainDecomposition.Psm;
 using MGroup.Solvers.DomainDecomposition.PSM.Dofs;
 using MGroup.Solvers.DomainDecomposition.Tests.ExampleModels;
 using Xunit;
@@ -17,119 +23,95 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.PSM
 {
     public static class Line1DPsmSolverTest
     {
-        [Fact]
-        public static void TestDofSeparator()
+        public static void RunMpiTests()
         {
-            IComputeEnvironment environment = new SequentialSharedEnvironment();
+            // Launch 4 processes
+            using (var mpiEnvironment = new MpiEnvironment())
+            {
+                MpiDebugUtilities.AssistDebuggerAttachment();
+
+                TestSolver(mpiEnvironment);
+
+                MpiDebugUtilities.DoSerially(MPI.Communicator.world,
+                    () => Console.WriteLine($"Process {MPI.Communicator.world.Rank}: All tests passed"));
+            }
+        }
+
+        [Theory]
+        [InlineData(EnvironmentChoice.SequentialSharedEnvironment)]
+        [InlineData(EnvironmentChoice.TplSharedEnvironment)]
+        public static void TestSolverManaged(EnvironmentChoice environmentChoice)
+            => TestSolver(Utilities.CreateEnvironment(environmentChoice));
+
+        internal static void TestSolver(IComputeEnvironment environment)
+        {
+            // Environment
             ComputeNodeTopology nodeTopology = Line1DExample.CreateNodeTopology(environment);
             environment.Initialize(nodeTopology);
 
+            // Model
             Model model = Line1DExample.CreateMultiSubdomainModel();
-            model.ConnectDataStructures();
+            model.ConnectDataStructures(); //TODOMPI: this is also done in the analyzer
             var subdomainTopology = new SubdomainTopology(environment, model);
-            ModelUtilities.OrderDofs(model);
 
-            var dofSeparator = new PsmDofSeparator(environment, model, subdomainTopology);
-            dofSeparator.SeparateSubdomainDofsIntoBoundaryInternal();
-            dofSeparator.FindCommonDofsBetweenSubdomains();
-            DistributedOverlappingIndexer indexer = dofSeparator.CreateDistributedVectorIndexer();
+            // Solver
+            var solverBuilder = new PsmSolver.Builder(environment);
+            PsmSolver solver = solverBuilder.BuildSolver(model, subdomainTopology);
 
-            // Check
-            CheckIndexer(environment, nodeTopology, indexer);
-        }
+            // Linear static analysis
+            var problem = new ProblemThermalSteadyState(environment, model, solver);
+            var childAnalyzer = new LinearAnalyzer(environment, model, solver, problem);
+            var parentAnalyzer = new StaticAnalyzer(environment, model, solver, problem, childAnalyzer);
 
-        //[Fact]
-        public static void TestSolver()
-        {
-            //IComputeEnvironment environment = new SequentialSharedEnvironment(4);
-            //var ddmEnvironment = new ProcessingEnvironment(
-            //    new SubdomainEnvironmentManagedSequential(), new ClusterEnvironmentManagedSequential());
-            //(Model model, ClusterTopology clusterTopology) = Line1DExample.CreateMultiSubdomainModel(environment);
+            // Run the analysis
+            parentAnalyzer.Initialize();
+            parentAnalyzer.Solve();
 
-            //var solverBuilder = new PsmSolver.Builder(environment);
-            //solverBuilder.DdmEnvironment = ddmEnvironment;
-            //PsmSolver solver = solverBuilder.BuildSolver(model, clusterTopology);
-
-            //InitializeEnvironment(environment, clusterTopology);
-            //model.ConnectDataStructures();
-            //solver.InitializeClusterTopology();
-            //solver.OrderDofs(false);
-
-            ////TODOMPI: In order to number dofs, the Kff of each submatrix must be created, so that Kii can be extracted and 
-            //// internal dofs can be reordered. I do not like this design after all. It would be better to reorder the internal 
-            //// dofs at a later stage, when stiffness matrices are created.
-            //solver.BuildGlobalMatrices(new ElementStructuralStiffnessProvider());
-
-            //solver.Initialize();
-            //solver.Solve();
-        }
-
-        //TODOMPI: It would be better if I could have a mock indexer object which knows how to compare itself with the actual one.
-        private static void CheckIndexer(IComputeEnvironment environment, ComputeNodeTopology nodeTopology,
-            DistributedOverlappingIndexer indexer)
-        {
-            Action<int> checkIndexer = nodeID =>
+            // Check results
+            Table<int, int, double> expectedResults = GetExpectedValues();
+            double tolerance = 1E-7;
+            environment.DoPerNode(subdomainID =>
             {
-                int[] multiplicitiesExpected; // Remember that only boundary dofs go into the distributed vectors 
-                var commonEntriesExpected = new Dictionary<int, int[]>();
-                if (nodeID == 0)
-                {
-                    multiplicitiesExpected = new int[] { 2 };
-                    commonEntriesExpected[1] = new int[] { 0 };
-                }
-                else if (nodeID == 1)
-                {
-                    multiplicitiesExpected = new int[] { 2, 2 };
-                    commonEntriesExpected[0] = new int[] { 0 };
-                    commonEntriesExpected[2] = new int[] { 1 };
-                }
-                else if (nodeID == 2)
-                {
-                    multiplicitiesExpected = new int[] { 2, 2 };
-                    commonEntriesExpected[1] = new int[] { 0 };
-                    commonEntriesExpected[3] = new int[] { 1 };
-                }
-                else if (nodeID == 3)
-                {
-                    multiplicitiesExpected = new int[] { 2, 2 };
-                    commonEntriesExpected[2] = new int[] { 0 };
-                    commonEntriesExpected[4] = new int[] { 1 };
-                }
-                else if (nodeID == 4)
-                {
-                    multiplicitiesExpected = new int[] { 2, 2 };
-                    commonEntriesExpected[3] = new int[] { 0 };
-                    commonEntriesExpected[5] = new int[] { 1 };
-                }
-                else if (nodeID == 5)
-                {
-                    multiplicitiesExpected = new int[] { 2, 2 };
-                    commonEntriesExpected[4] = new int[] { 0 };
-                    commonEntriesExpected[6] = new int[] { 1 };
-                }
-                else if (nodeID == 6)
-                {
-                    multiplicitiesExpected = new int[] { 2, 2 };
-                    commonEntriesExpected[5] = new int[] { 0 };
-                    commonEntriesExpected[7] = new int[] { 1 };
-                }
-                else
-                {
-                    Debug.Assert(nodeID == 7);
-                    multiplicitiesExpected = new int[] { 2 };
-                    commonEntriesExpected[6] = new int[] { 0 };
-                }
-
-                int[] multiplicitiesComputed = indexer.GetLocalComponent(nodeID).Multiplicities;
-                Assert.True(Utilities.AreEqual(multiplicitiesExpected, multiplicitiesComputed));
-                foreach (int neighborID in commonEntriesExpected.Keys)
-                {
-                    int[] expected = commonEntriesExpected[neighborID];
-                    int[] computed = indexer.GetLocalComponent(nodeID).GetCommonEntriesWithNeighbor(neighborID);
-                    Assert.True(Utilities.AreEqual(expected, computed));
-                }
-            };
-            environment.DoPerNode(checkIndexer);
+                ISubdomain subdomain = model.GetSubdomain(subdomainID);
+                Table<int, int, double> computedResults = 
+                    Utilities.FindNodalFieldValues(subdomain, solver.LinearSystems[subdomainID].Solution);
+                Utilities.AssertEqual(expectedResults, computedResults, tolerance);
+            });
         }
+
+        private static Table<int, int, double> GetExpectedValues()
+        {
+            //var model = Line1DExample.CreateSingleSubdomainModel();
+            //var solver = new ISAAR.MSolve.Solvers.Direct.SkylineSolver.Builder().BuildSolver(model);
+            //var problem = new ISAAR.MSolve.Problems.ProblemThermalSteadyState(model, solver);
+            //var childAnalyzer = new ISAAR.MSolve.Analyzers.LinearAnalyzer(model, solver, problem);
+            //var parentAnalyzer = new ISAAR.MSolve.Analyzers.StaticAnalyzer(model, solver, problem, childAnalyzer);
+            //parentAnalyzer.Initialize();
+            //parentAnalyzer.Solve();
+            //Table<int, int, double> result =
+            //    Utilities.FindNodalFieldValues(model.Subdomains.First(), solver.LinearSystems.First().Value.Solution);
+
+            var result = new Table<int, int, double>();
+            result[0, 0] = 32;
+            result[1, 0] = 30;
+            result[2, 0] = 28;
+            result[3, 0] = 26;
+            result[4, 0] = 24;
+            result[5, 0] = 22;
+            result[6, 0] = 20;
+            result[7, 0] = 18;
+            result[8, 0] = 16;
+            result[9, 0] = 14;
+            result[10, 0] = 12;
+            result[11, 0] = 10;
+            result[12, 0] = 8;
+            result[13, 0] = 6;
+            result[14, 0] = 4;
+            result[15, 0] = 2;
+            result[16, 0] = 0;
+
+            return result;
+        }
+
     }
 }

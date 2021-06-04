@@ -104,6 +104,7 @@ namespace MGroup.Solvers.DomainDecomposition.Psm
 			//TODOMPI: This must be called after ISolver.Initialize()
 			Func<int, IMatrix> buildKff = subdomainID =>
 			{
+				Debug.WriteLine($"Subdomain {subdomainID} will try to build Kff");
 				if (mustUpdateSubdomain(subdomainID))
 				{
 					ISubdomain subdomain = model.GetSubdomain(subdomainID);
@@ -133,8 +134,8 @@ namespace MGroup.Solvers.DomainDecomposition.Psm
 
 		public virtual void Initialize()
 		{
-			dofSeparatorPsm.SeparateSubdomainDofsIntoBoundaryInternal();
-			environment.DoPerNode(subdomainID => matrixManagerPsm.ReorderInternalDofs(subdomainID));
+			// Reordering the internal dofs is not done here, since subdomain Kff must be built first. 
+			dofSeparatorPsm.SeparateSubdomainDofsIntoBoundaryInternal(); 
 			dofSeparatorPsm.FindCommonDofsBetweenSubdomains();
 			this.indexer = dofSeparatorPsm.CreateDistributedVectorIndexer();
 
@@ -149,10 +150,11 @@ namespace MGroup.Solvers.DomainDecomposition.Psm
 
 		public virtual void OrderDofs(bool alsoOrderConstrainedDofs)
 		{
-			foreach (ISubdomain subdomain in model.Subdomains)
+			environment.DoPerNode(subdomainID =>
 			{
+				ISubdomain subdomain = model.GetSubdomain(subdomainID);
 				subdomain.FreeDofOrdering = dofOrderer.OrderFreeDofs(subdomain);
-			}
+			});
 		}
 
 		public virtual void PreventFromOverwrittingSystemMatrices()
@@ -163,6 +165,10 @@ namespace MGroup.Solvers.DomainDecomposition.Psm
 		{
 			Action<int> calcSubdomainMatrices = subdomainID =>
 			{
+				//TODO: This should only happen if the connectivity of the subdomain changes. 
+				environment.DoPerNode(subdomainID => matrixManagerPsm.ReorderInternalDofs(subdomainID));
+
+				//TODO: These should happen if the connectivity or stiffness of the subdomain changes
 				matrixManagerPsm.ExtractKiiKbbKib(subdomainID);
 				matrixManagerPsm.InvertKii(subdomainID);
 			};

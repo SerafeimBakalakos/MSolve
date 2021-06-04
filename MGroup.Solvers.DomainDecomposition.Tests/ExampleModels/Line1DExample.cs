@@ -36,6 +36,8 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
         private const double length = 2.0, sectionArea = 1.0;
         private const double conductivity = 1.0, specialHeat = 1.0, density = 1.0;
 
+        public const int NumSubdomains = 8;
+
         public static ComputeNodeTopology CreateNodeTopology(IComputeEnvironment environment)
         {
             var nodeTopology = new ComputeNodeTopology();

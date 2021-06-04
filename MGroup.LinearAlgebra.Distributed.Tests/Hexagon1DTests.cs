@@ -240,7 +240,7 @@ namespace MGroup.LinearAlgebra.Distributed.Tests
 
         public static void RunMpiTests()
         {
-            int numProcesses = 3;
+            // Launch 3 processes
             using (var mpiEnvironment = new MpiEnvironment())
             {
                 MpiDebugUtilities.AssistDebuggerAttachment();

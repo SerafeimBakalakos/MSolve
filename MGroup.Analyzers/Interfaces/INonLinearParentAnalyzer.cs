@@ -1,5 +1,5 @@
 ﻿using ISAAR.MSolve.LinearAlgebra.Vectors;
-using ISAAR.MSolve.Solvers.LinearSystems;
+using MGroup.Solvers.LinearSystems;
 
 namespace MGroup.Analyzers.Interfaces
 {

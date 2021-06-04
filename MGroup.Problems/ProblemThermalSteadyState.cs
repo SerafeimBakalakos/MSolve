@@ -49,18 +49,7 @@ namespace MGroup.Problems
         private void BuildConductivityFreeFree() 
             => conductivityFreeFree = solver.BuildGlobalMatrices(conductivityProvider, subdomainID => true);
 
-        private void BuildConductivitySubmatrices()
-        {
-            Dictionary<int, (IMatrix Cff, IMatrixView Cfc, IMatrixView Ccf, IMatrixView Ccc)> matrices =
-                solver.BuildGlobalSubmatrices(conductivityProvider);
-
-            conductivityFreeFree = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Cff);
-            conductivityFreeConstr = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Cfc);
-            conductivityConstrFree = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Ccf);
-            conductivityConstrConstr = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Ccc);
-        }
-
-        private void RebuildConductivityFreeFree()
+       private void RebuildConductivityFreeFree()
         {
             conductivityFreeFree = solver.BuildGlobalMatrices(conductivityProvider,
                     subdomainID => model.GetSubdomain(subdomainID).StiffnessModified);
@@ -101,24 +90,21 @@ namespace MGroup.Problems
         #endregion 
 
         #region IStaticProvider Members
-
-        public IMatrixView CalculateMatrix(ISubdomain subdomain)
+        public void BuildMatrices()
         {
             if (conductivityFreeFree == null) BuildConductivityFreeFree();
-            return conductivityFreeFree[subdomain.ID];
+            environment.DoPerNode(s => linearSystems[s].Matrix = conductivityFreeFree[s]);
         }
 
-        public (IMatrixView matrixFreeFree, IMatrixView matrixFreeConstr, IMatrixView matrixConstrFree,
-            IMatrixView matrixConstrConstr) CalculateSubMatrices(ISubdomain subdomain)
+        public void BuildFreeConstrainedSubMatrices()
         {
-            int id = subdomain.ID;
-            if ((conductivityFreeFree == null) || (conductivityFreeConstr == null) 
-                || (conductivityConstrFree == null) || (conductivityConstrConstr == null))
-            {
-                BuildConductivitySubmatrices();
-            }
-            return (conductivityFreeFree[id], conductivityFreeConstr[id], 
-                conductivityConstrFree[id], conductivityConstrConstr[id]);
+            Dictionary<int, (IMatrix Cff, IMatrixView Cfc, IMatrixView Ccf, IMatrixView Ccc)> matrices =
+                solver.BuildGlobalSubmatrices(conductivityProvider);
+
+            conductivityFreeFree = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Cff);
+            conductivityFreeConstr = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Cfc);
+            conductivityConstrFree = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Ccf);
+            conductivityConstrConstr = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Ccc);
         }
         #endregion
 

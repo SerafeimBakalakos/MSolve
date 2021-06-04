@@ -16,8 +16,9 @@ namespace MGroup.Analyzers.Interfaces
     {
         //TODO: This should not exist at all. The provider should return the 0th order (stiffness), 1st order (damping) and 2nd
         //      order matrices (or some matrix representations that can be combined between them and multiplied with vectors).
+        //TODOMPI: The provider should perform this operation for all subdomains at once, which will allow the solver to parallelize this.
         IMatrixView LinearCombinationOfMatricesIntoStiffness(ImplicitIntegrationCoefficients coefficients, 
-            ISubdomain subdomain);
+            ISubdomain subdomain); 
 
         //TODO: Way too generic name. Probably needs refactoring as well.
         void ProcessRhs(ImplicitIntegrationCoefficients coefficients, ISubdomain subdomain, IVector rhs);

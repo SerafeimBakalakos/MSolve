@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Logging.Interfaces;
-using ISAAR.MSolve.Solvers;
-using ISAAR.MSolve.Solvers.LinearSystems;
 using MGroup.Analyzers.Interfaces;
 using MGroup.Environments;
+using MGroup.Solvers;
+using MGroup.Solvers.LinearSystems;
 
 namespace MGroup.Analyzers
 {
@@ -27,7 +27,6 @@ namespace MGroup.Analyzers
             this.solver = solver;
             this.provider = provider;
 
-            if (ChildAnalyzer == null) throw new InvalidOperationException("Static analyzer must contain an embedded analyzer.");
             this.ChildAnalyzer = childAnalyzer;
             this.ChildAnalyzer.ParentAnalyzer = this;
         }
@@ -36,12 +35,7 @@ namespace MGroup.Analyzers
 
         public void BuildMatrices()
         {
-            Action<int> buildSubdomainMatrix = subdomainID =>
-            {
-                ILinearSystem linearSystem = linearSystems[subdomainID];
-                linearSystem.Matrix = provider.CalculateMatrix(linearSystem.Subdomain);
-            };
-            environment.DoPerNode(buildSubdomainMatrix);
+            provider.BuildMatrices();
         }
 
         public IVector GetOtherRhsComponents(ILinearSystem linearSystem, IVector currentSolution)
@@ -56,7 +50,7 @@ namespace MGroup.Analyzers
             if (isFirstAnalysis)
             {
                 // The order in which the next initializations happen is very important.
-                model.ConnectDataStructures();
+                //model.ConnectDataStructures(); //TODOMPI: This is done by the client, because it is necessary for the partition.
                 solver.OrderDofs(false);
                 solver.Initialize();
             }

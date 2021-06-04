@@ -26,8 +26,8 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.Dofs
 		private readonly ConcurrentDictionary<int, int> subdomainNumFreeDofs = new ConcurrentDictionary<int, int>();
 
 		//// First key: current subdomain. Second key: neighbor subdomain. Value: dofs at common nodes between these 2 subdomains
-		private readonly Dictionary<int, Dictionary<int, DofSet>> commonDofsBetweenSubdomains
-			= new Dictionary<int, Dictionary<int, DofSet>>();
+		private readonly ConcurrentDictionary<int, Dictionary<int, DofSet>> commonDofsBetweenSubdomains
+			= new ConcurrentDictionary<int, Dictionary<int, DofSet>>();
 
 		public PsmDofSeparator(IComputeEnvironment environment, IStructuralModel model, SubdomainTopology subdomainTopology)
 		{

@@ -83,17 +83,6 @@ namespace MGroup.Problems
         private void BuildStiffnessFreeFree() 
             => stiffnessFreeFree = solver.BuildGlobalMatrices(stiffnessProvider, subdomainID => true);
 
-        private void BuildStiffnessSubmatrices()
-        {
-            Dictionary<int, (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc)> matrices =
-                solver.BuildGlobalSubmatrices(stiffnessProvider);
-
-            stiffnessFreeFree = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Kff);
-            stiffnessFreeConstr = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Kfc);
-            stiffnessConstrFree = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Kcf);
-            stiffnessConstrConstr = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Kcc);
-        }
-
         private void RebuildBuildStiffnessFreeFree()
         {
             stiffnessFreeFree = solver.BuildGlobalMatrices(stiffnessProvider,
@@ -253,25 +242,22 @@ namespace MGroup.Problems
 
         #region IStaticProvider Members
 
-        public IMatrixView CalculateMatrix(ISubdomain subdomain)
+        public void BuildMatrices()
         {
             if (stiffnessFreeFree == null) BuildStiffnessFreeFree();
-            return stiffnessFreeFree[subdomain.ID];
+            environment.DoPerNode(s => linearSystems[s].Matrix = stiffnessFreeFree[s]);
         }
 
-
-        public (IMatrixView matrixFreeFree, IMatrixView matrixFreeConstr, IMatrixView matrixConstrFree, 
-            IMatrixView matrixConstrConstr) CalculateSubMatrices(ISubdomain subdomain)
+        public void BuildFreeConstrainedSubMatrices()
         {
-            int id = subdomain.ID;
-            if ((stiffnessFreeFree == null) || (stiffnessFreeConstr == null) 
-                || (stiffnessConstrFree == null) || (stiffnessConstrConstr == null))
-            {
-                BuildStiffnessSubmatrices();
-            }
-            return (stiffnessFreeFree[id], stiffnessFreeConstr[id], stiffnessConstrFree[id], stiffnessConstrConstr[id]);
-        }
+            Dictionary<int, (IMatrix Kff, IMatrixView Kfc, IMatrixView Kcf, IMatrixView Kcc)> matrices =
+                solver.BuildGlobalSubmatrices(stiffnessProvider);
 
+            stiffnessFreeFree = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Kff);
+            stiffnessFreeConstr = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Kfc);
+            stiffnessConstrFree = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Kcf);
+            stiffnessConstrConstr = environment.CreateDictionaryPerNode(subdomainID => matrices[subdomainID].Kcc);
+        }
         #endregion
 
         #region INonLinearProvider Members

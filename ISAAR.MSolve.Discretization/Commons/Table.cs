@@ -158,12 +158,13 @@ namespace ISAAR.MSolve.Discretization.Commons
             StringBuilder builder = new StringBuilder();
             foreach (var wholeRow in this)
             {
+                builder.Append("[");
                 builder.Append(wholeRow.Item1);
                 builder.Append(" , ");
                 builder.Append(wholeRow.Item2);
                 builder.Append(" , ");
                 builder.Append(wholeRow.Item3);
-                builder.Append('\n');
+                builder.Append("]\n");
             }
             return builder.ToString();
         }
