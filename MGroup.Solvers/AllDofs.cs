@@ -16,7 +16,7 @@ namespace MGroup.Solvers
 
 		public static void AddDof(IDofType dof)
 		{
-			lock (insertionLock)
+            lock (insertionLock)
 			{
 				bool exists = dofsToIds.ContainsKey(dof);
 				if (!exists)

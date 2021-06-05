@@ -22,18 +22,23 @@ namespace MGroup.Solvers.DomainDecomposition.Tests
 
                 MpiDebugUtilities.DoSerially(MPI.Communicator.world,
                     () => Console.WriteLine(
-                        $"Process {MPI.Communicator.world.Rank}: Now running DofSeparatorTests.TestInLine1DExample"));
-                PsmDofSeparatorTests.TestInLine1DExample(mpiEnvironment);
+                        $"Process {MPI.Communicator.world.Rank}: Now running DofSeparatorTests.TestForLine1DInternal"));
+                PsmDofSeparatorTests.TestForLine1DInternal(mpiEnvironment);
 
                 MpiDebugUtilities.DoSerially(MPI.Communicator.world,
                     () => Console.WriteLine(
-                        $"Process {MPI.Communicator.world.Rank}: Now running DofSeparatorTests.TestInPlane2DExample"));
-                PsmDofSeparatorTests.TestInPlane2DExample(mpiEnvironment);
+                        $"Process {MPI.Communicator.world.Rank}: Now running DofSeparatorTests.TestForPlane2DInternal"));
+                PsmDofSeparatorTests.TestForPlane2DInternal(mpiEnvironment);
 
                 MpiDebugUtilities.DoSerially(MPI.Communicator.world,
                     () => Console.WriteLine(
-                        $"Process {MPI.Communicator.world.Rank}: Now running PsmSolverTests.TestInLine1DExample"));
-                PsmSolverTests.TestInLine1DExample(mpiEnvironment);
+                        $"Process {MPI.Communicator.world.Rank}: Now running PsmSolverTests.TestForLine1DInternal"));
+                PsmSolverTests.TestForLine1DInternal(mpiEnvironment);
+
+                MpiDebugUtilities.DoSerially(MPI.Communicator.world,
+                    () => Console.WriteLine(
+                        $"Process {MPI.Communicator.world.Rank}: Now running PsmSolverTests.TestForPlane2DInternal"));
+                PsmSolverTests.TestForPlane2DInternal(mpiEnvironment);
 
                 MpiDebugUtilities.DoSerially(MPI.Communicator.world,
                     () => Console.WriteLine($"Process {MPI.Communicator.world.Rank}: All tests passed"));

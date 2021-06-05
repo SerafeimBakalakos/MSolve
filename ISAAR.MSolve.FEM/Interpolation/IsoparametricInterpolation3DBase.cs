@@ -7,6 +7,7 @@ using ISAAR.MSolve.FEM.Interpolation.Jacobians;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using System.Collections.Concurrent;
 
 namespace ISAAR.MSolve.FEM.Interpolation
 {
@@ -16,15 +17,15 @@ namespace ISAAR.MSolve.FEM.Interpolation
     /// </summary>
     public abstract class IsoparametricInterpolation3DBase : IIsoparametricInterpolation3D
     {
-        private readonly Dictionary<IQuadrature3D, IReadOnlyList<double[]>> cachedFunctionsAtGPs;
-        private readonly Dictionary<IQuadrature3D, IReadOnlyList<Matrix>> cachedNaturalGradientsAtGPs;
+        private readonly ConcurrentDictionary<IQuadrature3D, IReadOnlyList<double[]>> cachedFunctionsAtGPs;
+        private readonly ConcurrentDictionary<IQuadrature3D, IReadOnlyList<Matrix>> cachedNaturalGradientsAtGPs;
 
         public IsoparametricInterpolation3DBase(CellType cellType, int numFunctions)
         {
             this.CellType = cellType;
             this.NumFunctions = numFunctions;
-            this.cachedFunctionsAtGPs = new Dictionary<IQuadrature3D, IReadOnlyList<double[]>>();
-            this.cachedNaturalGradientsAtGPs = new Dictionary<IQuadrature3D, IReadOnlyList<Matrix>>();
+            this.cachedFunctionsAtGPs = new ConcurrentDictionary<IQuadrature3D, IReadOnlyList<double[]>>();
+            this.cachedNaturalGradientsAtGPs = new ConcurrentDictionary<IQuadrature3D, IReadOnlyList<Matrix>>();
         }
 
         /// <summary>
@@ -104,7 +105,7 @@ namespace ISAAR.MSolve.FEM.Interpolation
                     GaussPoint gaussPoint = quadrature.IntegrationPoints[gp];
                     shapeFunctionsAtGPsArray[gp] = EvaluateAt(gaussPoint.Xi, gaussPoint.Eta, gaussPoint.Zeta);
                 }
-                cachedFunctionsAtGPs.Add(quadrature, shapeFunctionsAtGPsArray);
+                cachedFunctionsAtGPs[quadrature] = shapeFunctionsAtGPsArray;
                 return shapeFunctionsAtGPsArray;
             }
         }
@@ -133,7 +134,7 @@ namespace ISAAR.MSolve.FEM.Interpolation
                     GaussPoint gaussPoint = quadrature.IntegrationPoints[gp];
                     naturalGradientsAtGPsArray[gp] = EvaluateGradientsAt(gaussPoint.Xi, gaussPoint.Eta, gaussPoint.Zeta);
                 }
-                cachedNaturalGradientsAtGPs.Add(quadrature, naturalGradientsAtGPsArray);
+                cachedNaturalGradientsAtGPs[quadrature] = naturalGradientsAtGPsArray;
                 return naturalGradientsAtGPsArray;
             }
         }

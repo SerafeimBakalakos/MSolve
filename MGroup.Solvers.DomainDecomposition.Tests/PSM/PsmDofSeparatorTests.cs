@@ -18,10 +18,10 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.PSM
         [Theory]
         [InlineData(EnvironmentChoice.SequentialSharedEnvironment)]
         [InlineData(EnvironmentChoice.TplSharedEnvironment)]
-        public static void TestInLine1DExampleManaged(EnvironmentChoice environmentChoice) 
-            => TestInLine1DExample(Utilities.CreateEnvironment(environmentChoice));
+        public static void TestForLine1D(EnvironmentChoice environmentChoice) 
+            => TestForLine1DInternal(Utilities.CreateEnvironment(environmentChoice));
 
-        internal static void TestInLine1DExample(IComputeEnvironment environment)
+        internal static void TestForLine1DInternal(IComputeEnvironment environment)
         {
             ComputeNodeTopology nodeTopology = Line1DExample.CreateNodeTopology(environment);
             environment.Initialize(nodeTopology);
@@ -43,10 +43,10 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.PSM
         [Theory]
         [InlineData(EnvironmentChoice.SequentialSharedEnvironment)]
         [InlineData(EnvironmentChoice.TplSharedEnvironment)]
-        public static void TestInPlane2DExampleManaged(EnvironmentChoice environmentChoice)
-            => TestInPlane2DExample(Utilities.CreateEnvironment(environmentChoice));
+        public static void TestForPlane2D(EnvironmentChoice environmentChoice)
+            => TestForPlane2DInternal(Utilities.CreateEnvironment(environmentChoice));
 
-        internal static void TestInPlane2DExample(IComputeEnvironment environment)
+        internal static void TestForPlane2DInternal(IComputeEnvironment environment)
         {
             ComputeNodeTopology nodeTopology = Plane2DExample.CreateNodeTopology(environment);
             environment.Initialize(nodeTopology);
