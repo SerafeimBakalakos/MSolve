@@ -235,7 +235,7 @@ namespace MGroup.Solvers.DomainDecomposition.Psm
 
 			public PsmSolver BuildSolver(IStructuralModel model, SubdomainTopology subdomainTopology)
 			{
-				var dofSeparator = new PsmDofSeparator(environment, model, subdomainTopology);
+				var dofSeparator = new PsmDofSeparator(environment, model, subdomainTopology, false);
 				var (matrixManagerBasic, matrixManagerPsm) = MatrixManagerFactory.CreateMatrixManagers(model, dofSeparator);
 				return new PsmSolver(environment, model, subdomainTopology, DofOrderer, dofSeparator,
 					matrixManagerBasic, matrixManagerPsm, ExplicitSubdomainMatrices, Preconditioner, InterfaceProblemSolver, 

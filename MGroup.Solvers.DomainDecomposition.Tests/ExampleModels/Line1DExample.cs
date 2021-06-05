@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.Discretization;
+using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.FEM.Elements;
@@ -9,7 +11,9 @@ using ISAAR.MSolve.FEM.Entities;
 using ISAAR.MSolve.Materials;
 using MGroup.Environments;
 using MGroup.FEM.Entities;
+using MGroup.LinearAlgebra.Distributed.Overlapping;
 using MGroup.Solvers;
+using Xunit;
 
 // Global:
 // 0--1--2--3--4--5--6--7--8--9--10--11--12--13--14--15--[16] -> 16 is constrained, 0 is loaded
@@ -38,6 +42,74 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
         private const double conductivity = 1.0, specialHeat = 1.0, density = 1.0;
 
         public const int NumSubdomains = 8;
+
+        //TODOMPI: It would be better if I could have a mock indexer object which knows how to compare itself with the actual one.
+        public static void CheckDistributedIndexer(IComputeEnvironment environment, ComputeNodeTopology nodeTopology,
+            DistributedOverlappingIndexer indexer)
+        {
+            Action<int> checkIndexer = subdomainID =>
+            {
+                int[] multiplicitiesExpected; // Remember that only boundary dofs go into the distributed vectors 
+                var commonEntriesExpected = new Dictionary<int, int[]>();
+                if (subdomainID == 0)
+                {
+                    multiplicitiesExpected = new int[] { 2 };
+                    commonEntriesExpected[1] = new int[] { 0 };
+                }
+                else if (subdomainID == 1)
+                {
+                    multiplicitiesExpected = new int[] { 2, 2 };
+                    commonEntriesExpected[0] = new int[] { 0 };
+                    commonEntriesExpected[2] = new int[] { 1 };
+                }
+                else if (subdomainID == 2)
+                {
+                    multiplicitiesExpected = new int[] { 2, 2 };
+                    commonEntriesExpected[1] = new int[] { 0 };
+                    commonEntriesExpected[3] = new int[] { 1 };
+                }
+                else if (subdomainID == 3)
+                {
+                    multiplicitiesExpected = new int[] { 2, 2 };
+                    commonEntriesExpected[2] = new int[] { 0 };
+                    commonEntriesExpected[4] = new int[] { 1 };
+                }
+                else if (subdomainID == 4)
+                {
+                    multiplicitiesExpected = new int[] { 2, 2 };
+                    commonEntriesExpected[3] = new int[] { 0 };
+                    commonEntriesExpected[5] = new int[] { 1 };
+                }
+                else if (subdomainID == 5)
+                {
+                    multiplicitiesExpected = new int[] { 2, 2 };
+                    commonEntriesExpected[4] = new int[] { 0 };
+                    commonEntriesExpected[6] = new int[] { 1 };
+                }
+                else if (subdomainID == 6)
+                {
+                    multiplicitiesExpected = new int[] { 2, 2 };
+                    commonEntriesExpected[5] = new int[] { 0 };
+                    commonEntriesExpected[7] = new int[] { 1 };
+                }
+                else
+                {
+                    Debug.Assert(subdomainID == 7);
+                    multiplicitiesExpected = new int[] { 2 };
+                    commonEntriesExpected[6] = new int[] { 0 };
+                }
+
+                int[] multiplicitiesComputed = indexer.GetLocalComponent(subdomainID).Multiplicities;
+                Assert.True(Utilities.AreEqual(multiplicitiesExpected, multiplicitiesComputed));
+                foreach (int neighborID in commonEntriesExpected.Keys)
+                {
+                    int[] expected = commonEntriesExpected[neighborID];
+                    int[] computed = indexer.GetLocalComponent(subdomainID).GetCommonEntriesWithNeighbor(neighborID);
+                    Assert.True(Utilities.AreEqual(expected, computed));
+                }
+            };
+            environment.DoPerNode(checkIndexer);
+        }
 
         public static ComputeNodeTopology CreateNodeTopology(IComputeEnvironment environment)
         {
@@ -145,6 +217,40 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
             ModelUtilities.Decompose(model, 8, e => elementsToSubdomains[e]);
 
             return model;
+        }
+
+        public static Table<int, int, double> GetExpectedNodalValues()
+        {
+            //var model = Line1DExample.CreateSingleSubdomainModel();
+            //var solver = new ISAAR.MSolve.Solvers.Direct.SkylineSolver.Builder().BuildSolver(model);
+            //var problem = new ISAAR.MSolve.Problems.ProblemThermalSteadyState(model, solver);
+            //var childAnalyzer = new ISAAR.MSolve.Analyzers.LinearAnalyzer(model, solver, problem);
+            //var parentAnalyzer = new ISAAR.MSolve.Analyzers.StaticAnalyzer(model, solver, problem, childAnalyzer);
+            //parentAnalyzer.Initialize();
+            //parentAnalyzer.Solve();
+            //Table<int, int, double> result =
+            //    Utilities.FindNodalFieldValues(model.Subdomains.First(), solver.LinearSystems.First().Value.Solution);
+
+            var result = new Table<int, int, double>();
+            result[0, 0] = 32;
+            result[1, 0] = 30;
+            result[2, 0] = 28;
+            result[3, 0] = 26;
+            result[4, 0] = 24;
+            result[5, 0] = 22;
+            result[6, 0] = 20;
+            result[7, 0] = 18;
+            result[8, 0] = 16;
+            result[9, 0] = 14;
+            result[10, 0] = 12;
+            result[11, 0] = 10;
+            result[12, 0] = 8;
+            result[13, 0] = 6;
+            result[14, 0] = 4;
+            result[15, 0] = 2;
+            result[16, 0] = 0;
+
+            return result;
         }
     }
 }

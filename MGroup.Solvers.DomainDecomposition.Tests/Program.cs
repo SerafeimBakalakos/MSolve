@@ -7,8 +7,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests
     {
         static void Main(string[] args)
         {
-            //PsmDofSeparatorTests.RunMpiTests();
-            Line1DPsmSolverTest.RunMpiTests();
+            MpiTestSuite.RunTestsWith4Processes();
         }
     }
 }
