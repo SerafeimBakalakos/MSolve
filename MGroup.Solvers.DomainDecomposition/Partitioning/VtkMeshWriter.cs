@@ -43,8 +43,9 @@ namespace MGroup.Solvers.DomainDecomposition.Partitioning
             // Cell connectivity
             int cellDataCount = mesh.NumElementsTotal * (1 + mesh.NumNodesPerElement);
             writer.WriteLine($"CELLS {mesh.NumElementsTotal} {cellDataCount}");
-            foreach ((int elementID, int[] nodeIDs) in mesh.EnumerateElements())
+            for (int e = 0; e < mesh.NumElementsTotal; ++e)
             {
+                int[] nodeIDs = mesh.GetElementConnectivity(e);
                 writer.Write(nodeIDs.Length);
                 foreach (int nodeID in nodeIDs)
                 {

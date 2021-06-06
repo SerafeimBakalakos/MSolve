@@ -26,8 +26,15 @@ namespace MGroup.Solvers.DomainDecomposition.Partitioning
 
         int NumNodesTotal { get; }
 
-        IEnumerable<(int nodeID, double[] coordinates)> EnumerateNodes();
+        /// <summary>
+        /// Enumerates the global IDs and coordinates of the nodes. The nodes are returned in increasing order of their id.
+        /// </summary>
+        IEnumerable<(int nodeID, double[] coordinates)> EnumerateNodes(); //TODOMesh: When testing this, assert they are in ascending order.
 
+        /// <summary>
+        /// For each element returns its global ID and the global IDs of its nodes. The elements are returned in increasing order
+        /// of their id.
+        /// </summary>
         IEnumerable<(int elementID, int[] nodeIDs)> EnumerateElements();
 
         int GetNodeID(int[] nodeIdx);
