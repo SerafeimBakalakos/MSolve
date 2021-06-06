@@ -12,6 +12,7 @@ using MGroup.Analyzers;
 using MGroup.Environments;
 using MGroup.LinearAlgebra.Distributed.IterativeMethods;
 using MGroup.Problems;
+using MGroup.Solvers.DomainDecomposition.Partitioning;
 using MGroup.Solvers.DomainDecomposition.Psm;
 using MGroup.Solvers.DomainDecomposition.PSM.Dofs;
 using MGroup.Solvers.DomainDecomposition.Tests.ExampleModels;
@@ -21,6 +22,28 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.PSM
 {
     public static class PsmSolverTests
     {
+        #region debug
+        [Fact]
+        public static void PlotMesh()
+        {
+            var writer = new VtkMeshWriter();
+
+            string path2D = @"C:\Users\Serafeim\Desktop\PFETIDP\meshes\mesh2D.vtk";
+            double[] minCoords2D = { 0, 0 };
+            double[] maxCoords2D = { 12, 12 };
+            int[] numElements2D = { 3, 4 };
+            var mesh2D = new Partitioning.UniformMesh2D(minCoords2D, maxCoords2D, numElements2D);
+            writer.WriteMesh2D(path2D, mesh2D);
+
+            string path3D = @"C:\Users\Serafeim\Desktop\PFETIDP\meshes\mesh3D.vtk";
+            double[] minCoords3D = { 0, 0, 0 };
+            double[] maxCoords3D = { 60, 60, 60 };
+            int[] numElements3D = { 2, 3, 4 };
+            var mesh3D = new Partitioning.UniformMesh3D(minCoords3D, maxCoords3D, numElements3D);
+            writer.WriteMesh3D(path3D, mesh3D);
+        }
+        #endregion
+
         [Theory]
         [InlineData(EnvironmentChoice.SequentialSharedEnvironment)]
         [InlineData(EnvironmentChoice.TplSharedEnvironment)]

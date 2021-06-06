@@ -19,6 +19,7 @@ using ISAAR.MSolve.Materials;
 using MGroup.Environments;
 using MGroup.FEM.Entities;
 using MGroup.LinearAlgebra.Distributed.Overlapping;
+using MGroup.Solvers.DomainDecomposition.Partitioning;
 using Xunit;
 
 // Global
@@ -340,15 +341,12 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
             var model = new DistributedModel(environment);
             model.SubdomainsDictionary[0] = new Subdomain(0);
 
-            var meshGenerator = new UniformMeshGenerator2D<Node>(minCoords[0], minCoords[1], maxCoords[0], maxCoords[1], 
-                numElements[0], numElements[1]);
-            (IReadOnlyList<Node> vertices, IReadOnlyList<CellConnectivity<Node>> cells) =
-                meshGenerator.CreateMesh((id, x, y, z) => new Node(id: id, x: x, y: y, z: z));
+            var mesh = new UniformMesh2D(minCoords, maxCoords, numElements);
 
             // Nodes
-            foreach (Node node in vertices)
+            foreach ((int id, double[] coords) in mesh.EnumerateNodes())
             {
-                model.NodesDictionary[node.ID] = node;
+                model.NodesDictionary[id] = new Node(id, coords[0], coords[1]);
             }
 
             // Materials
@@ -357,11 +355,11 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
 
             // Elements
             var elemFactory = new ContinuumElement2DFactory(thickness, material, dynamicProperties);
-            for (int e = 0; e < cells.Count; ++e)
+            foreach ((int elementID, int[] nodeIDs) in mesh.EnumerateElements())
             {
-                IReadOnlyList<Node> nodes = cells[e].Vertices;
-                var elementType = elemFactory.CreateElement(cells[e].CellType, nodes);
-                var element = new Element() { ID = e, ElementType = elementType };
+                Node[] nodes = nodeIDs.Select(n => model.NodesDictionary[n]).ToArray();
+                var elementType = elemFactory.CreateElement(mesh.CellType, nodes);
+                var element = new Element() { ID = elementID, ElementType = elementType };
                 foreach (var node in nodes) element.AddNode(node);
                 model.ElementsDictionary[element.ID] = element;
                 model.SubdomainsDictionary[0].Elements.Add(element);
