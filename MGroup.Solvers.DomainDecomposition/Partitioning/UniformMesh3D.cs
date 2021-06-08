@@ -9,14 +9,18 @@ namespace MGroup.Solvers.DomainDecomposition.Partitioning
     public class UniformMesh3D : IStructuredMesh
     {
         private const int dim = 3;
+        private const int numNodesPerElement = 8;
+
         private readonly int axisMajor;
         private readonly int axisMedium;
         private readonly int axisMinor;
         private readonly double[] dx;
         private readonly int[][] elementNodeIdxOffsets;
+        private readonly int firstNodeID;
+        private readonly int firstElementID;
 
         private UniformMesh3D(double[] minCoordinates, double[] maxCoordinates, int[] numElements, 
-            int axisMajor, int axisMedium, int axisMinor)
+            int axisMajor, int axisMedium, int axisMinor, int[] elementNodeOrderPermutation, int firstNodeID, int firstElementID)
         {
             this.MinCoordinates = minCoordinates;
             this.MaxCoordinates = MaxCoordinates;
@@ -40,17 +44,25 @@ namespace MGroup.Solvers.DomainDecomposition.Partitioning
             this.axisMajor = axisMajor;
             this.axisMedium = axisMedium;
             this.axisMinor = axisMinor;
+            this.firstNodeID = firstNodeID;
+            this.firstElementID = firstElementID;
 
-            // Default order for Hexa8
-            elementNodeIdxOffsets = new int[8][];
-            elementNodeIdxOffsets[0] = new int[] { 0, 0, 0 };
-            elementNodeIdxOffsets[1] = new int[] { 1, 0, 0 };
-            elementNodeIdxOffsets[2] = new int[] { 1, 1, 0 };
-            elementNodeIdxOffsets[3] = new int[] { 0, 1, 0 };
-            elementNodeIdxOffsets[4] = new int[] { 0, 0, 1 };
-            elementNodeIdxOffsets[5] = new int[] { 1, 0, 1 };
-            elementNodeIdxOffsets[6] = new int[] { 1, 1, 1 };
-            elementNodeIdxOffsets[7] = new int[] { 0, 1, 1 };
+            // Hexa8 node order
+            var elementNodeIdxOffsetsDefault = new int[8][];
+            elementNodeIdxOffsetsDefault[0] = new int[] { 0, 0, 0 };
+            elementNodeIdxOffsetsDefault[1] = new int[] { 1, 0, 0 };
+            elementNodeIdxOffsetsDefault[2] = new int[] { 1, 1, 0 };
+            elementNodeIdxOffsetsDefault[3] = new int[] { 0, 1, 0 };
+            elementNodeIdxOffsetsDefault[4] = new int[] { 0, 0, 1 };
+            elementNodeIdxOffsetsDefault[5] = new int[] { 1, 0, 1 };
+            elementNodeIdxOffsetsDefault[6] = new int[] { 1, 1, 1 };
+            elementNodeIdxOffsetsDefault[7] = new int[] { 0, 1, 1 };
+
+            this.elementNodeIdxOffsets = new int[numNodesPerElement][];
+            for (int n = 0; n < numNodesPerElement; ++n)
+            {
+                this.elementNodeIdxOffsets[elementNodeOrderPermutation[n]] = elementNodeIdxOffsetsDefault[n];
+            }
         }
 
         public CellType CellType => CellType.Hexa8;
@@ -65,57 +77,9 @@ namespace MGroup.Solvers.DomainDecomposition.Partitioning
 
         public int[] NumNodes { get; }
 
-        public int NumNodesPerElement => 8;
+        public int NumNodesPerElement => numNodesPerElement;
 
         public int NumNodesTotal { get; }
-
-        /// <summary>
-        /// Creates a new uniform mesh. The nodes will be ordered such that they are contiguous in the dimension with mininum 
-        /// number of nodes and have maximum id difference in the dimension with maximum number of nodes.
-        /// </summary>
-        /// <param name="minCoordinates"></param>
-        /// <param name="maxCoordinates"></param>
-        /// <param name="numElements">Array with 2 entries, each of which must be &gt; 1.</param>
-        public static UniformMesh3D Create(double[] minCoordinates, double[] maxCoordinates, int[] numElements)
-        {
-            // Sort axes based on their number of elements
-            var entries = new List<(int count, int axis)>();
-            entries.Add((numElements[0], 0));
-            entries.Add((numElements[1], 1));
-            entries.Add((numElements[2], 2));
-            int[] sortedAxes = SortAxes(entries);
-
-            int axisMajor = sortedAxes[0];
-            int axisMedium = sortedAxes[1]; 
-            int axisMinor = sortedAxes[2];
-
-            CheckAxes(axisMajor, axisMedium, axisMinor);
-            return new UniformMesh3D(minCoordinates, maxCoordinates, numElements, axisMajor, axisMedium, axisMinor);
-        }
-
-        /// <summary>
-        /// Creates a new uniform mesh. The nodes will be ordered such that they are contiguous along dimension 
-        /// <paramref name="majorAxis"/>, while they will have the maximum id difference along dimension 
-        /// <paramref name="minorAxis"/>.
-        /// </summary>
-        /// <param name="minCoordinates"></param>
-        /// <param name="maxCoordinates"></param>
-        /// <param name="numElements"></param>
-        /// <param name="majorAxis">Must be 0, 1 or 2 for contiguous nodes along x, y or z respectively.</param>
-        /// <param name="majorAxis">Must be 0, 1 or 2 for maximum node id difference nodes along x, y or z respectively.</param>
-        public static UniformMesh3D Create(double[] minCoordinates, double[] maxCoordinates, int[] numElements, 
-            int majorAxis, int minorAxis)
-        {
-            int mediumAxis;
-            if ((majorAxis == 0) && (minorAxis == 1)) mediumAxis = 2;
-            else if ((majorAxis == 0) && (minorAxis == 2)) mediumAxis = 1;
-            else if ((majorAxis == 1) && (minorAxis == 0)) mediumAxis = 2;
-            else if ((majorAxis == 1) && (minorAxis == 2)) mediumAxis = 0;
-            else if ((majorAxis == 2) && (minorAxis == 0)) mediumAxis = 1;
-            else if ((majorAxis == 2) && (minorAxis == 1)) mediumAxis = 0;
-            else throw new ArgumentException("Major and minors axes must be 0, 1 or 2 and different from each other");
-            return new UniformMesh3D(minCoordinates, maxCoordinates, numElements, majorAxis, mediumAxis, minorAxis);
-        }
 
         public IEnumerable<(int nodeID, double[] coordinates)> EnumerateNodes()
         {
@@ -158,17 +122,18 @@ namespace MGroup.Solvers.DomainDecomposition.Partitioning
         public int GetNodeID(int[] nodeIdx)
         {
             // E.g. x-major, y-medium, z-minor: id = iX + iY * numNodesX + iZ * NumNodesX * NumNodesY
-            return nodeIdx[axisMajor] + nodeIdx[axisMedium] * NumNodes[axisMajor] 
+            return firstNodeID + nodeIdx[axisMajor] + nodeIdx[axisMedium] * NumNodes[axisMajor] 
                 + nodeIdx[axisMinor] * NumNodes[axisMajor] * NumNodes[axisMedium];
         }
 
         public int[] GetNodeIdx(int nodeID)
         {
+            int id = nodeID - firstNodeID;
             int numNodesPlane = NumNodes[axisMajor] * NumNodes[axisMedium];
-            int mod = nodeID % numNodesPlane;
+            int mod = id % numNodesPlane;
 
             var idx = new int[dim];
-            idx[axisMinor] = nodeID / numNodesPlane;
+            idx[axisMinor] = id / numNodesPlane;
             idx[axisMedium] = mod / NumNodes[axisMajor];
             idx[axisMajor] = mod % NumNodes[axisMajor];
 
@@ -188,17 +153,18 @@ namespace MGroup.Solvers.DomainDecomposition.Partitioning
         public int GetElementID(int[] elementIdx)
         {
             // E.g. x-major, y-medium, z-minor: id = iX + iY * NumElementsX + iZ * NumElementsX * NumElementsY
-            return elementIdx[axisMajor] + elementIdx[axisMedium] * NumElements[axisMajor]
+            return firstElementID + elementIdx[axisMajor] + elementIdx[axisMedium] * NumElements[axisMajor]
                 + elementIdx[axisMinor] * NumElements[axisMajor] * NumElements[axisMedium];
         }
 
         public int[] GetElementIdx(int elementID)
         {
+            int id = elementID - firstElementID;
             int numElementsPlane = NumElements[axisMajor] * NumElements[axisMedium];
-            int mod = elementID % numElementsPlane;
+            int mod = id % numElementsPlane;
 
             var idx = new int[dim];
-            idx[axisMinor] = elementID / numElementsPlane;
+            idx[axisMinor] = id / numElementsPlane;
             idx[axisMedium] = mod / NumElements[axisMajor];
             idx[axisMajor] = mod % NumElements[axisMajor];
 
@@ -221,68 +187,266 @@ namespace MGroup.Solvers.DomainDecomposition.Partitioning
             return nodeIDs;
         }
 
-        [Conditional("DEBUG")]
-        private static void CheckAxes(int axisMajor, int axisMedium, int axisMinor)
+        public class Builder
         {
-            if ((axisMajor != 0) && (axisMajor != 1) && (axisMajor != 2 ))
+            private readonly double[] coordsMin;
+            private readonly double[] coordsMax;
+            private readonly int[] numElements;
+            private int axisMajorChoice;
+            private int axisMinorChoice;
+            private int[] elementNodeOrderPermutation;
+            private int firstElementID;
+            private int firstNodeID;
+            private bool isAxisMajorMinorDefault;
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="minCoordinates"></param>
+            /// <param name="maxCoordinates"></param>
+            /// <param name="numElements">Array with 3 positive integers.</param>
+            public Builder(double[] minCoordinates, double[] maxCoordinates, int[] numElements)
             {
-                throw new ArgumentException("Major axis must be 0, 1 or 2");
-            }
-            if ((axisMedium != 0) && (axisMedium != 1) && (axisMedium != 2))
-            {
-                throw new ArgumentException("Medium axis must be 0, 1 or 2");
-            }
-            if ((axisMinor != 0) && (axisMinor != 1) && (axisMinor != 2))
-            {
-                throw new ArgumentException("Major axis must be 0, 1 or 2");
+                this.coordsMin = minCoordinates.Copy();
+                this.coordsMax = maxCoordinates.Copy();
+                this.numElements = numElements.Copy();
+
+                // Defaults
+                isAxisMajorMinorDefault = true;
+                axisMajorChoice = int.MinValue;
+                axisMinorChoice = int.MinValue;
+                elementNodeOrderPermutation = new int[] { 0, 1, 2, 3, 4, 5, 6, 7 };
+                firstNodeID = 0;
+                firstElementID = 0;
             }
 
-            if ((axisMajor == axisMedium) || (axisMajor == axisMinor))
+            public UniformMesh3D BuildMesh()
             {
-                throw new ArgumentException("Major axis must be unique");
-            }
-            if ((axisMedium == axisMajor) || (axisMedium == axisMinor))
-            {
-                throw new ArgumentException("Medium axis must be unique");
-            }
-            if ((axisMinor == axisMajor) || (axisMinor == axisMedium))
-            {
-                throw new ArgumentException("Minor axis must be unique");
-            }
-        }
+                Validate();
+                (int majorAxis, int mediumAxis, int minorAxis) = ChooseAxes();
+                ValidateAxes(majorAxis, mediumAxis, minorAxis);
 
-        private static int[] SortAxes(List<(int count, int axis)> entries)
-        {
-            Debug.Assert(entries.Count == 3);
-            var sortedAxes = new int[3];
-            int idx = 0;
-            while (idx < 3)
-            {
-                int min = int.MaxValue;
-                int axisOfMin = -1;
+                return new UniformMesh3D(coordsMin.Copy(), coordsMax.Copy(), numElements.Copy(),
+                    majorAxis, mediumAxis, minorAxis, elementNodeOrderPermutation.Copy(), firstNodeID, firstElementID);
+            }
 
-                foreach ((int count, int axis) in entries)
+            /// <summary>
+            /// Applies Bathe's order of nodes in each Hexa8 element of the mesh:
+            /// node0 = (+1, +1, +1), node1 = (-1, +1, +1), node2 = (-1, -1, +1), node3 = (+1, -1, +1), 
+            /// node4 = (+1, +1, -1), node5 = (-1, +1, -1), node6 = (-1, -1, -1), node7 = (+1, -1, -1) 
+            /// where the +-1 coordinates correspond to the local coordinate system of the element.
+            /// </summary>
+            /// <returns>This object for chaining.</returns>
+            public Builder SetElementNodeOrderBathe()
+            {
+                this.elementNodeOrderPermutation = new int[] { 6, 7, 4, 5, 2, 3, 0, 1 };
+                return this;
+            }
+
+            /// <summary>
+            /// Reapplies the default order of nodes in each Hexa8 element of the mesh:
+            /// node0 = (-1, -1, -1), node1 = (+1, -1, -1), node2 = (+1, +1, -1), node3 = (-1, +1, -1), 
+            /// node4 = (-1, -1, +1), node5 = (+1, -1, +1), node6 = (+1, +1, +1), node7 = (-1, +1, +1)
+            /// where the +-1 coordinates correspond to the local coordinate system of the element.
+            /// </summary>
+            /// <returns>This object for chaining.</returns>
+            public Builder SetElementNodeOrderDefault()
+            {
+                this.elementNodeOrderPermutation = new int[] { 0, 1, 2, 3, 4, 5, 6, 7 };
+                return this;
+            }
+
+            /// <summary>
+            /// Configures the order of nodes in each Quad4 element of the mesh. By default this order is: 
+            /// node0 = (-1, -1, -1), node1 = (+1, -1, -1), node2 = (+1, +1, -1), node3 = (-1, +1, -1), 
+            /// node4 = (-1, -1, +1), node5 = (+1, -1, +1), node6 = (+1, +1, +1), node7 = (-1, +1, +1)
+            /// where the +-1 coordinates correspond to the  local coordinate system of the element. 
+            /// To change this order, <paramref name="permutation"/> must be a permutation array such that: 
+            /// finalOrder[<paramref name="permutation"/>[i]] = defaultOrder[i], i = 0,1,...3 .
+            /// </summary>
+            /// <param name="permutation">
+            /// The permutation of element nodes: finalOrder[<paramref name="permutation"/>[i]] = defaultOrder[i], i = 0,1,...3.
+            /// </param>
+            /// <returns>This object for chaining.</returns>
+            public Builder SetElementNodeOrderPermutation(int[] permutation)
+            {
+                this.elementNodeOrderPermutation = permutation;
+                return this;
+            }
+
+            public Builder SetFirstElementID(int elementID)
+            {
+                this.firstElementID = elementID;
+                return this;
+            }
+
+            public Builder SetFirstNodeID(int nodeID)
+            {
+                this.firstNodeID = nodeID;
+                return this;
+            }
+
+            /// <summary>
+            /// The node ids will be ordered such that they are contiguous along dimension <paramref name="majorAxis"/>, while they  
+            /// will have the maximum id difference along dimension <paramref name="minorAxis"/>. 
+            /// Calling this method overrides the default node order: nodes are contiguous in the dimension with mininum
+            /// number of nodes and have the maximum id difference in the dimension with the maximum number of nodes.
+            /// </summary>
+            /// <param name="majorAxis">
+            /// The axis along which node ids will be contiguous. 0 for x, 1 for y or 2 for z. 
+            /// Must be different from <paramref name="minorAxis"/>.
+            /// </param>
+            /// <param name="minorAxis">
+            /// The axis along which node ids will have the maximum distance (compared to other axes). 
+            /// 0 for x, 1 for y or 2 for z. Must be different from <paramref name="majorAxis"/>.
+            /// </param>
+            /// <returns>This object for chaining.</returns>
+            public Builder SetMajorMinorAxis(int majorAxis, int minorAxis)
+            {
+                this.isAxisMajorMinorDefault = false;
+                this.axisMajorChoice = majorAxis;
+                this.axisMinorChoice = minorAxis;
+                return this;
+            }
+
+            /// <summary>
+            /// Reapplies the default order of node ids: nodes are contiguous in the dimension with mininum number of nodes
+            /// and have the maximum id difference in the dimension with the maximum number of nodes.
+            /// </summary>
+            /// <returns>This object for chaining.</returns>
+            public Builder SetMajorMinorAxisDefault()
+            {
+                this.isAxisMajorMinorDefault = true;
+                this.axisMajorChoice = int.MinValue;
+                this.axisMinorChoice = int.MinValue;
+                return this;
+            }
+
+            private (int majorAxis, int mediumAxis, int minorAxis) ChooseAxes()
+            {
+                int majorAxis, mediumAxis, minorAxis;
+                if (isAxisMajorMinorDefault)
                 {
-                    if (count < min)
+                    // Decide based on the number of nodes/elements per axis 
+                    // Sort axes based on their number of elements
+                    var entries = new List<(int count, int axis)>();
+                    entries.Add((numElements[0], 0));
+                    entries.Add((numElements[1], 1));
+                    entries.Add((numElements[2], 2));
+                    int[] sortedAxes = SortAxes(entries);
+
+                    majorAxis = sortedAxes[0];
+                    mediumAxis = sortedAxes[1];
+                    minorAxis = sortedAxes[2];
+                }
+                else
+                {
+                    // Respect client decision
+                    majorAxis = axisMajorChoice; 
+                    minorAxis = axisMinorChoice;
+                    if ((majorAxis == 0) && (minorAxis == 1)) mediumAxis = 2;
+                    else if ((majorAxis == 0) && (minorAxis == 2)) mediumAxis = 1;
+                    else if ((majorAxis == 1) && (minorAxis == 0)) mediumAxis = 2;
+                    else if ((majorAxis == 1) && (minorAxis == 2)) mediumAxis = 0;
+                    else if ((majorAxis == 2) && (minorAxis == 0)) mediumAxis = 1;
+                    else if ((majorAxis == 2) && (minorAxis == 1)) mediumAxis = 0;
+                    else throw new ArgumentException("Major and minors axes must be 0, 1 or 2 and different from each other");
+                }
+                return (majorAxis, mediumAxis, minorAxis);
+            }
+
+            private static int[] SortAxes(List<(int count, int axis)> entries)
+            {
+                Debug.Assert(entries.Count == 3);
+                var sortedAxes = new int[3];
+                int idx = 0;
+                while (idx < 3)
+                {
+                    int min = int.MaxValue;
+                    int axisOfMin = -1;
+
+                    foreach ((int count, int axis) in entries)
                     {
-                        min = count;
-                        axisOfMin = axis;
-                    }
-                    else if (count == min) // prefer axis x over y, z and axis y over z
-                    {
-                        if (axis < axisOfMin)
+                        if (count < min)
                         {
                             min = count;
                             axisOfMin = axis;
                         }
+                        else if (count == min) // prefer axis x over y, z and axis y over z
+                        {
+                            if (axis < axisOfMin)
+                            {
+                                min = count;
+                                axisOfMin = axis;
+                            }
+                        }
+                    }
+
+                    sortedAxes[idx++] = axisOfMin;
+                    bool removedEntry = entries.Remove((min, axisOfMin));
+                    Debug.Assert(removedEntry);
+                }
+                return sortedAxes;
+            }
+
+            //TODO: This must be called lazily but only once when building several products with the same builder without
+            //      mutating the builder.
+            private void Validate()
+            {
+                // Coordinates
+                if (coordsMin.Length != dim) throw new ArgumentException($"Length of min coordinates must be {dim}.");
+                if (coordsMax.Length != dim) throw new ArgumentException($"Length of max coordinates must be {dim}.");
+                for (int d = 0; d < dim; ++d)
+                {
+                    if (coordsMin[d] >= coordsMax[d])
+                    {
+                        throw new ArgumentException(
+                            $"Along axis {d}, min coordinates must be strictly less than max coordinates.");
                     }
                 }
 
-                sortedAxes[idx++] = axisOfMin;
-                bool removedEntry = entries.Remove((min, axisOfMin));
-                Debug.Assert(removedEntry);
+                // Elements per axis
+                if (numElements.Length != dim) throw new ArgumentException($"Length of number of elements must be {dim}.");
+                for (int d = 0; d < dim; ++d)
+                {
+                    if (numElements[d] < 1)
+                    {
+                        throw new ArgumentException($"Along axis {d}, there must be at least 1 element.");
+                    }
+                }
+
+
+                // Node order
+                if (elementNodeOrderPermutation.Length != numNodesPerElement)
+                {
+                    throw new ArgumentException("The provided permutation array for the order of nodes in each element" +
+                        $" must have {numNodesPerElement} entries");
+                }
+                if (!Utilities.AreContiguousUniqueIndices(elementNodeOrderPermutation))
+                {
+                    throw new ArgumentException("Invalid permutation array for the order of nodes in each element." +
+                        $" The entries must be unique and belong to [0, {numNodesPerElement})");
+                }
+
+                // Major, medium, minor axes will be checked in a different method
+                // First node & element IDs: no illegal values yet.
             }
-            return sortedAxes;
+
+            private static void ValidateAxes(int majorAxis, int mediumAxis, int minorAxis)
+            {
+                bool isCorrect = false;
+                isCorrect |= (majorAxis == 0) && (minorAxis == 1) && (mediumAxis == 2);
+                isCorrect |= (majorAxis == 0) && (minorAxis == 2) && (mediumAxis == 1);
+                isCorrect |= (majorAxis == 1) && (minorAxis == 0) && (mediumAxis == 2);
+                isCorrect |= (majorAxis == 1) && (minorAxis == 2) && (mediumAxis == 0);
+                isCorrect |= (majorAxis == 2) && (minorAxis == 0) && (mediumAxis == 1);
+                isCorrect |= (majorAxis == 2) && (minorAxis == 1) && (mediumAxis == 0);
+
+                if (!isCorrect)
+                {
+                    throw new ArgumentException("Major and minors axes must be 0, 1 or 2 and different from each other");
+                }
+            }
         }
     }
 }

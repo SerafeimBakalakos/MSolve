@@ -18,8 +18,8 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.Mesh
             double[] minCoords = { 0, 0, 0 };
             double[] maxCoords = { 60, 60, 60 };
             int[] numElements = { 2, 3, 4 };
-            //var mesh = UniformMesh3D.Create(minCoords, maxCoords, numElements, 2, 0);
-            var mesh = UniformMesh3D.Create(minCoords, maxCoords, numElements);
+            //var mesh = new UniformMesh3D.Builder(minCoords, maxCoords, numElements).SetMajorMinorAxis(2, 0).BuildMesh();
+            var mesh = new UniformMesh3D.Builder(minCoords, maxCoords, numElements).BuildMesh();
             writer.WriteMesh3D(path, mesh);
 
             int[] nodeIDs = mesh.EnumerateNodes().Select(pair => pair.nodeID).ToArray();

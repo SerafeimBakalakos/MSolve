@@ -9,7 +9,6 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.Mesh
 {
     public static class UniformMesh2DTests
     {
-        //HERE move these to a dedicated MeshTests class. Then allow user to permute nodes in Quad4, Hexa8 with defaults
         [Fact]
         public static void PlotMesh()
         {
@@ -19,8 +18,8 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.Mesh
             double[] minCoords = { 0, 0 };
             double[] maxCoords = { 12, 12 };
             int[] numElements = { 3, 4 };
-            var mesh = UniformMesh2D.Create(minCoords, maxCoords, numElements, 1);
-            //var mesh = UniformMesh2D.Create(minCoords, maxCoords, numElements);
+            var mesh = new UniformMesh2D.Builder(minCoords, maxCoords, numElements).SetMajorAxis(1).BuildMesh();
+            //var mesh = new UniformMesh2D.Builder(minCoords, maxCoords, numElements).BuildMesh();
             writer.WriteMesh2D(path, mesh);
 
 

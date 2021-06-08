@@ -341,7 +341,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
             var model = new DistributedModel(environment);
             model.SubdomainsDictionary[0] = new Subdomain(0);
 
-            var mesh = UniformMesh2D.Create(minCoords, maxCoords, numElements, 0);
+            var mesh = new UniformMesh2D.Builder(minCoords, maxCoords, numElements).SetMajorAxis(0).BuildMesh();
 
             // Nodes
             foreach ((int id, double[] coords) in mesh.EnumerateNodes())
