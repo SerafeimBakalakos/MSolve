@@ -35,7 +35,6 @@ namespace MGroup.Solvers.DomainDecomposition.Tests
                         $"Process {MPI.Communicator.world.Rank}: Now running PsmSolverTests.TestForLine1DInternal"));
                 PsmSolverTests.TestForLine1DInternal(mpiEnvironment);
 
-                //HERE: Η μαλακια σκαει αν τρεξω ολα τα tests μαζι.Μονο του ειναι οκ
                 MpiDebugUtilities.DoSerially(MPI.Communicator.world,
                     () => Console.WriteLine(
                         $"Process {MPI.Communicator.world.Rank}: Now running PsmSolverTests.TestForPlane2DInternal"));

@@ -128,6 +128,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
 
         public static DistributedModel CreateSingleSubdomainModel(IComputeEnvironment environment)
         {
+            AllDofs.Clear();
             AllDofs.AddDof(ThermalDof.Temperature);
             var model = new DistributedModel(environment);
             model.SubdomainsDictionary[0] = new Subdomain(0);
@@ -162,6 +163,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
         //TODOMPI: Remove this
         public static Model CreateSingleSubdomainModel_OLD()
         {
+            AllDofs.Clear();
             AllDofs.AddDof(ThermalDof.Temperature);
             var model = new Model();
             model.SubdomainsDictionary[0] = new Subdomain(0);

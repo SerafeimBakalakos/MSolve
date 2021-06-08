@@ -38,6 +38,16 @@ namespace MGroup.Solvers
 			AddDof(StructuralDof.RotationZ);
 		}
 
+		public static void Clear()
+		{
+			lock (insertionLock)
+			{
+				idsToDofs.Clear();
+				dofsToIds.Clear();
+				nextCode = 0;
+			}
+		}
+
 		public static int GetIdOfDof(IDofType dof) => dofsToIds[dof];
 
 		public static IDofType GetDofWithId(int id) => idsToDofs[id];
