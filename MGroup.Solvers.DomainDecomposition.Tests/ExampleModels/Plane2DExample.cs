@@ -19,6 +19,7 @@ using ISAAR.MSolve.Materials;
 using MGroup.Environments;
 using MGroup.FEM.Entities;
 using MGroup.LinearAlgebra.Distributed.Overlapping;
+using MGroup.Solvers.DomainDecomposition.Mesh;
 using MGroup.Solvers.DomainDecomposition.Partitioning;
 using Xunit;
 
@@ -422,40 +423,36 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
 
         public static IStructuralModel CreateMultiSubdomainModel(IComputeEnvironment environment)
         {
-            // Partition
             DistributedModel model = CreateSingleSubdomainModel(environment);
-            var elementsToSubdomains = new Dictionary<int, int>();
-            for (int j = 0; j < numElements[1]; ++j)
-            {
-                for (int i = 0; i < numElements[0]; ++i)
-                {
-                    int I = i / 2;
-                    int J = j / 2;
-                    int elementID = i + j * numElements[0];
-                    int subdomainID = I + J * numSubdomains[0];
-                    elementsToSubdomains[elementID] = subdomainID;
-                }
-            }
 
-            ModelUtilities.Decompose(model, numSubdomains[0] * numSubdomains[1], e => elementsToSubdomains[e]);
+            // Partition
+            var mesh = new UniformMesh2D.Builder(minCoords, maxCoords, numElements).SetMajorAxis(0).BuildMesh();
+            var partitioner = new UniformMeshPartitioner2D(mesh, numSubdomains, numClusters);
+            partitioner.Partition(model);
+            model.DecomposeIntoSubdomains(partitioner.NumSubdomainsTotal, partitioner.GetSubdomainOfElement);
+
+            #region hardcoded may be usedful to test partitioner
+            //var elementsToSubdomains = new Dictionary<int, int>();
+            //for (int j = 0; j < numElements[1]; ++j)
+            //{
+            //    for (int i = 0; i < numElements[0]; ++i)
+            //    {
+            //        int I = i / 2;
+            //        int J = j / 2;
+            //        int elementID = i + j * numElements[0];
+            //        int subdomainID = I + J * numSubdomains[0];
+            //        elementsToSubdomains[elementID] = subdomainID;
+            //    }
+            //}
+            //model.DecomposeIntoSubdomains(numSubdomains[0] * numSubdomains[1], elementsToSubdomains);
+            #endregion
+
+
             return model;
         }
 
         public static Table<int, int, double> GetExpectedNodalValues()
         {
-            //var model = CreateSingleSubdomainModel_OLD();
-            //var solver = new ISAAR.MSolve.Solvers.Direct.SkylineSolver.Builder().BuildSolver(model);
-            //var problem = new ISAAR.MSolve.Problems.ProblemThermalSteadyState(model, solver);
-            //var childAnalyzer = new ISAAR.MSolve.Analyzers.LinearAnalyzer(model, solver, problem);
-            //var parentAnalyzer = new ISAAR.MSolve.Analyzers.StaticAnalyzer(model, solver, problem, childAnalyzer);
-            //parentAnalyzer.Initialize();
-            //parentAnalyzer.Solve();
-            //Table<int, int, double> result =
-            //    Utilities.FindNodalFieldValues(model.Subdomains.First(), solver.LinearSystems.First().Value.Solution);
-
-            //using var writer = new StreamWriter(@"C:\Users\Serafeim\Desktop\PFETIDP\solution2D.txt");
-            //writer.WriteLine(result);
-
             var result = new Table<int, int, double>();
             result[0, 0] = 0;
             result[0, 1] = 0;

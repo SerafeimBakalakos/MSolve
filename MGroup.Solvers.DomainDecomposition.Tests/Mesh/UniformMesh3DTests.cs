@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
-using MGroup.Solvers.DomainDecomposition.Partitioning;
+using MGroup.Solvers.DomainDecomposition.Mesh;
+using MGroup.Solvers.DomainDecomposition.Output;
 using Xunit;
 
 namespace MGroup.Solvers.DomainDecomposition.Tests.Mesh

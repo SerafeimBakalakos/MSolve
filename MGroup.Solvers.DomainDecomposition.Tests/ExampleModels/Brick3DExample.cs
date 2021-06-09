@@ -159,7 +159,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
                 }
             }
 
-            ModelUtilities.Decompose(model, numSubdomains[0] * numSubdomains[1], e => elementsToSubdomains[e]);
+            model.DecomposeIntoSubdomains(numSubdomains[0] * numSubdomains[1] * numSubdomains[2], e => elementsToSubdomains[e]);
             return model;
         }
     }

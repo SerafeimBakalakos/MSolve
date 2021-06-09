@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 
-namespace MGroup.Solvers.DomainDecomposition.Partitioning
+namespace MGroup.Solvers.DomainDecomposition.Mesh
 {
     public class UniformMesh3D : IStructuredMesh
     {

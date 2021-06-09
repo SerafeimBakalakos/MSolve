@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using MGroup.Solvers.DomainDecomposition.Mesh;
 
-namespace MGroup.Solvers.DomainDecomposition.Partitioning
+namespace MGroup.Solvers.DomainDecomposition.Output
 {
     public class VtkMeshWriter
     {

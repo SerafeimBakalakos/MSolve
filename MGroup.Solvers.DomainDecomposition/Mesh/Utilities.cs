@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MGroup.Solvers.DomainDecomposition.Partitioning
+namespace MGroup.Solvers.DomainDecomposition.Mesh
 {
     public static class Utilities
     {

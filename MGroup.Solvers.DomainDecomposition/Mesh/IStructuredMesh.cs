@@ -6,7 +6,7 @@ using ISAAR.MSolve.Discretization.Mesh;
 //TODO: Add non uniform rectilinear meshes, curvilinear (uniform or not) meshes, meshes with triangles/tetrahedra instead of 
 //      quads/hexahedra, meshes with 2nd order and serendipity elements. See this for ideas: 
 //      https://axom.readthedocs.io/en/develop/axom/mint/docs/sphinx/sections/mesh_types.html#particlemesh
-namespace MGroup.Solvers.DomainDecomposition.Partitioning
+namespace MGroup.Solvers.DomainDecomposition.Mesh
 {
     public interface IStructuredMesh
     {

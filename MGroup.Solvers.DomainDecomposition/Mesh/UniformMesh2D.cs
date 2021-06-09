@@ -5,7 +5,7 @@ using ISAAR.MSolve.Discretization.Mesh;
 
 //TODOMesh: test with nonsymmetric numElements and various major, minor axes. Visualize to make sure that they are correct, 
 //      write to file, use that to write tests. Repeat for 3D.
-namespace MGroup.Solvers.DomainDecomposition.Partitioning
+namespace MGroup.Solvers.DomainDecomposition.Mesh
 {
     public class UniformMesh2D : IStructuredMesh
     {

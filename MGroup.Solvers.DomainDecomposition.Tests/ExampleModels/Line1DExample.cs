@@ -216,7 +216,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
             elementsToSubdomains[13] = 6;
             elementsToSubdomains[14] = 7;
             elementsToSubdomains[15] = 7;
-            ModelUtilities.Decompose(model, 8, e => elementsToSubdomains[e]);
+            model.DecomposeIntoSubdomains(8, e => elementsToSubdomains[e]);
 
             return model;
         }

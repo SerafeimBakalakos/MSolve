@@ -163,6 +163,25 @@ namespace MGroup.FEM.Entities
 
         public ISubdomain GetSubdomain(int subdomainID) => SubdomainsDictionary[subdomainID];
 
+        public void DecomposeIntoSubdomains(int numSubdomains, Func<int, int> getSubdomainOfElement)
+        {
+            SubdomainsDictionary.Clear();
+            foreach (Node node in NodesDictionary.Values) node.SubdomainsDictionary.Clear();
+            foreach (Element element in ElementsDictionary.Values) element.Subdomain = null;
+
+            for (int s = 0; s < numSubdomains; ++s)
+            {
+                SubdomainsDictionary[s] = new Subdomain(s);
+            }
+            foreach (Element element in ElementsDictionary.Values)
+            {
+                Subdomain subdomain = SubdomainsDictionary[getSubdomainOfElement(element.ID)];
+                subdomain.Elements.Add(element);
+            }
+
+            ConnectDataStructures();
+        }
+
         //TODO: constraints should not be saved inside the nodes. As it is right now (22/11/2018) the same constraint 
         //      is saved in the node, the model constraints table and the subdomain constraints table. Furthermore,
         //      displacement control analyzer updates the subdomain constraints table only (another bad design decision).  
