@@ -25,7 +25,7 @@ namespace MGroup.Solvers.DomainDecomposition.Partitioning
             this.mesh = mesh;
             this.numSubdomains = numSubdomains;
             this.numClusters = numClusters;
-            this.NumSubdomainsTotal = numSubdomains[0] * numSubdomains[1] * numSubdomains[3];
+            this.NumSubdomainsTotal = numSubdomains[0] * numSubdomains[1] * numSubdomains[2];
 
             for (int d = 0; d < dim; ++d)
             {
@@ -100,9 +100,9 @@ namespace MGroup.Solvers.DomainDecomposition.Partitioning
                         var neighborIndices = new List<int[]>();
                         for (int k = -1; k <= +1; ++k)
                         {
-                            for (int j = -1; j < +1; ++j)
+                            for (int j = -1; j <= +1; ++j)
                             {
-                                for (int i = -1; i < +1; ++i)
+                                for (int i = -1; i <= +1; ++i)
                                 {
                                     if ((i == 0) && (j == 0) && (k == 0))
                                     {

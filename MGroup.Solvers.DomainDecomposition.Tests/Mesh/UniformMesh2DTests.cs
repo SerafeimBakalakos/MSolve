@@ -6,6 +6,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 using MGroup.Solvers.DomainDecomposition.Mesh;
 using MGroup.Solvers.DomainDecomposition.Output;
+using MGroup.Solvers.DomainDecomposition.Output.VTK;
 using Xunit;
 
 namespace MGroup.Solvers.DomainDecomposition.Tests.Mesh
@@ -23,7 +24,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.Mesh
             int[] numElements = { 3, 4 };
             var mesh = new UniformMesh2D.Builder(minCoords, maxCoords, numElements).SetMajorAxis(1).BuildMesh();
             //var mesh = new UniformMesh2D.Builder(minCoords, maxCoords, numElements).BuildMesh();
-            writer.WriteMesh2D(path, mesh);
+            writer.WriteMesh(path, mesh, 2);
         }
 
         [Fact]

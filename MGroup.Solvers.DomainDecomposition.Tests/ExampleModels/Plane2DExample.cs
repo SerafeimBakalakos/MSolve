@@ -101,11 +101,16 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
     {
         private const double E = 1.0, v = 0.3, thickness = 1.0;
         private const double load = 100;
-        private static readonly double[] minCoords = { 0, 0 };
-        private static readonly double[] maxCoords = { 8, 8 };
-        private static readonly int[] numElements = { 8, 8 };
-        private static readonly int[] numSubdomains = { 4, 4 };
-        private static readonly int[] numClusters = { 2, 2 };
+
+        public static double[] MinCoords => new double[] { 0, 0 };
+
+        public static double[] MaxCoords => new double[] { 8, 8 };
+
+        public static int[] NumElements => new int[] { 8, 8 };
+
+        public static int[] NumSubdomains => new int[] { 4, 4 };
+
+        public static int[] NumClusters => new int[] { 2, 2 };
 
         public static void CheckDistributedIndexer(IComputeEnvironment environment, ComputeNodeTopology nodeTopology,
             DistributedOverlappingIndexer indexer)
@@ -311,31 +316,19 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
 #pragma warning restore IDE0055
         }
 
-        public static ComputeNodeTopology CreateNodeTopology(IComputeEnvironment environment)
+        public static ComputeNodeTopology CreateNodeTopology()
         {
             var nodeTopology = new ComputeNodeTopology();
-
-            nodeTopology.AddNode(0, new int[] { 1, 4, 5 }, 0);
-            nodeTopology.AddNode(1, new int[] { 0, 2, 4, 5, 6 }, 0);
-            nodeTopology.AddNode(2, new int[] { 1, 3, 5, 6, 7 }, 1);
-            nodeTopology.AddNode(3, new int[] { 2, 6, 7 }, 1);
-            nodeTopology.AddNode(4, new int[] { 0, 1, 5, 8, 9 }, 0);
-            nodeTopology.AddNode(5, new int[] { 0, 1, 2, 4, 6, 8, 9, 10 }, 0);
-            nodeTopology.AddNode(6, new int[] { 1, 2, 3, 5, 7, 9, 10, 11 }, 1);
-            nodeTopology.AddNode(7, new int[] { 2, 3, 6, 10, 11 }, 1);
-            nodeTopology.AddNode(8, new int[] { 4, 5, 9, 12, 13 }, 2);
-            nodeTopology.AddNode(9, new int[] { 4, 5, 6, 8, 10, 12, 13, 14 }, 2);
-            nodeTopology.AddNode(10, new int[] { 5, 6, 7, 9, 11, 13, 14, 15 }, 3);
-            nodeTopology.AddNode(11, new int[] { 6, 7, 10, 14, 15 }, 3);
-            nodeTopology.AddNode(12, new int[] { 8, 9, 13 }, 2);
-            nodeTopology.AddNode(13, new int[] { 8, 9, 10, 12, 14 }, 2);
-            nodeTopology.AddNode(14, new int[] { 9, 10, 11, 13, 15 }, 3);
-            nodeTopology.AddNode(15, new int[] { 10, 11, 14 }, 3);
-
+            Dictionary<int, int> clustersOfSubdomains = Plane2DExample.GetSubdomainClusters();
+            Dictionary<int, int[]> neighborsOfSubdomains = Plane2DExample.GetSubdomainNeighbors();
+            for (int s = 0; s < NumSubdomains[0] * NumSubdomains[1]; ++s)
+            {
+                nodeTopology.AddNode(s, neighborsOfSubdomains[s], clustersOfSubdomains[s]);
+            }
             return nodeTopology;
         }
 
-        public static DistributedModel CreateSingleSubdomainModel(IComputeEnvironment environment)
+        public static DistributedModel CreateSingleSubdomainDistributedModel(IComputeEnvironment environment)
         {
             AllDofs.Clear();
             AllDofs.AddDof(StructuralDof.TranslationX);
@@ -343,7 +336,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
             var model = new DistributedModel(environment);
             model.SubdomainsDictionary[0] = new Subdomain(0);
 
-            var mesh = new UniformMesh2D.Builder(minCoords, maxCoords, numElements).SetMajorAxis(0).BuildMesh();
+            var mesh = new UniformMesh2D.Builder(MinCoords, MaxCoords, NumElements).SetMajorAxis(0).BuildMesh();
 
             // Nodes
             foreach ((int id, double[] coords) in mesh.EnumerateNodes())
@@ -377,7 +370,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
         }
 
         //TODOMPI: Remove this
-        public static Model CreateSingleSubdomainModel_OLD()
+        public static Model CreateSingleSubdomainModel()
         {
             AllDofs.Clear();
             AllDofs.AddDof(StructuralDof.TranslationX);
@@ -385,15 +378,12 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
             var model = new Model();
             model.SubdomainsDictionary[0] = new Subdomain(0);
 
-            var meshGenerator = new UniformMeshGenerator2D<Node>(minCoords[0], minCoords[1], maxCoords[0], maxCoords[1],
-                numElements[0], numElements[1]);
-            (IReadOnlyList<Node> vertices, IReadOnlyList<CellConnectivity<Node>> cells) =
-                meshGenerator.CreateMesh((id, x, y, z) => new Node(id: id, x: x, y: y, z: z));
+            var mesh = new UniformMesh2D.Builder(MinCoords, MaxCoords, NumElements).SetMajorAxis(0).BuildMesh();
 
             // Nodes
-            foreach (Node node in vertices)
+            foreach ((int id, double[] coords) in mesh.EnumerateNodes())
             {
-                model.NodesDictionary[node.ID] = node;
+                model.NodesDictionary[id] = new Node(id, coords[0], coords[1]);
             }
 
             // Materials
@@ -402,11 +392,11 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
 
             // Elements
             var elemFactory = new ContinuumElement2DFactory(thickness, material, dynamicProperties);
-            for (int e = 0; e < cells.Count; ++e)
+            foreach ((int elementID, int[] nodeIDs) in mesh.EnumerateElements())
             {
-                IReadOnlyList<Node> nodes = cells[e].Vertices;
-                var elementType = elemFactory.CreateElement(cells[e].CellType, nodes);
-                var element = new Element() { ID = e, ElementType = elementType };
+                Node[] nodes = nodeIDs.Select(n => model.NodesDictionary[n]).ToArray();
+                var elementType = elemFactory.CreateElement(mesh.CellType, nodes);
+                var element = new Element() { ID = elementID, ElementType = elementType };
                 foreach (var node in nodes) element.AddNode(node);
                 model.ElementsDictionary[element.ID] = element;
                 model.SubdomainsDictionary[0].Elements.Add(element);
@@ -423,37 +413,16 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
 
         public static IStructuralModel CreateMultiSubdomainModel(IComputeEnvironment environment)
         {
-            DistributedModel model = CreateSingleSubdomainModel(environment);
-
-            // Partition
-            var mesh = new UniformMesh2D.Builder(minCoords, maxCoords, numElements).SetMajorAxis(0).BuildMesh();
-            var partitioner = new UniformMeshPartitioner2D(mesh, numSubdomains, numClusters);
-            partitioner.Partition(model);
-            model.DecomposeIntoSubdomains(partitioner.NumSubdomainsTotal, partitioner.GetSubdomainOfElement);
-
-            #region hardcoded may be usedful to test partitioner
-            //var elementsToSubdomains = new Dictionary<int, int>();
-            //for (int j = 0; j < numElements[1]; ++j)
-            //{
-            //    for (int i = 0; i < numElements[0]; ++i)
-            //    {
-            //        int I = i / 2;
-            //        int J = j / 2;
-            //        int elementID = i + j * numElements[0];
-            //        int subdomainID = I + J * numSubdomains[0];
-            //        elementsToSubdomains[elementID] = subdomainID;
-            //    }
-            //}
-            //model.DecomposeIntoSubdomains(numSubdomains[0] * numSubdomains[1], elementsToSubdomains);
-            #endregion
-
-
+            Dictionary<int, int> elementsToSubdomains = GetSubdomainsOfElements();
+            DistributedModel model = CreateSingleSubdomainDistributedModel(environment);
+            model.DecomposeIntoSubdomains(NumSubdomains[0] * NumSubdomains[1], e => elementsToSubdomains[e]);
             return model;
         }
 
         public static Table<int, int, double> GetExpectedNodalValues()
         {
             var result = new Table<int, int, double>();
+            #region long list of solution values per dof
             result[0, 0] = 0;
             result[0, 1] = 0;
             result[1, 0] = 150.1000802198485;
@@ -616,6 +585,128 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
             result[79, 1] = -474.35677904570855;
             result[80, 0] = 1679.120733654807;
             result[80, 1] = -807.8231945819023;
+            #endregion
+
+            return result;
+        }
+
+        public static Dictionary<int, int> GetSubdomainsOfElements()
+        {
+            var elementsToSubdomains = new Dictionary<int, int>();
+            #region long list of element -> subdomain associations
+            elementsToSubdomains[0] = 0;
+            elementsToSubdomains[1] = 0;
+            elementsToSubdomains[2] = 1;
+            elementsToSubdomains[3] = 1;
+            elementsToSubdomains[4] = 2;
+            elementsToSubdomains[5] = 2;
+            elementsToSubdomains[6] = 3;
+            elementsToSubdomains[7] = 3;
+            elementsToSubdomains[8] = 0;
+            elementsToSubdomains[9] = 0;
+            elementsToSubdomains[10] = 1;
+            elementsToSubdomains[11] = 1;
+            elementsToSubdomains[12] = 2;
+            elementsToSubdomains[13] = 2;
+            elementsToSubdomains[14] = 3;
+            elementsToSubdomains[15] = 3;
+            elementsToSubdomains[16] = 4;
+            elementsToSubdomains[17] = 4;
+            elementsToSubdomains[18] = 5;
+            elementsToSubdomains[19] = 5;
+            elementsToSubdomains[20] = 6;
+            elementsToSubdomains[21] = 6;
+            elementsToSubdomains[22] = 7;
+            elementsToSubdomains[23] = 7;
+            elementsToSubdomains[24] = 4;
+            elementsToSubdomains[25] = 4;
+            elementsToSubdomains[26] = 5;
+            elementsToSubdomains[27] = 5;
+            elementsToSubdomains[28] = 6;
+            elementsToSubdomains[29] = 6;
+            elementsToSubdomains[30] = 7;
+            elementsToSubdomains[31] = 7;
+            elementsToSubdomains[32] = 8;
+            elementsToSubdomains[33] = 8;
+            elementsToSubdomains[34] = 9;
+            elementsToSubdomains[35] = 9;
+            elementsToSubdomains[36] = 10;
+            elementsToSubdomains[37] = 10;
+            elementsToSubdomains[38] = 11;
+            elementsToSubdomains[39] = 11;
+            elementsToSubdomains[40] = 8;
+            elementsToSubdomains[41] = 8;
+            elementsToSubdomains[42] = 9;
+            elementsToSubdomains[43] = 9;
+            elementsToSubdomains[44] = 10;
+            elementsToSubdomains[45] = 10;
+            elementsToSubdomains[46] = 11;
+            elementsToSubdomains[47] = 11;
+            elementsToSubdomains[48] = 12;
+            elementsToSubdomains[49] = 12;
+            elementsToSubdomains[50] = 13;
+            elementsToSubdomains[51] = 13;
+            elementsToSubdomains[52] = 14;
+            elementsToSubdomains[53] = 14;
+            elementsToSubdomains[54] = 15;
+            elementsToSubdomains[55] = 15;
+            elementsToSubdomains[56] = 12;
+            elementsToSubdomains[57] = 12;
+            elementsToSubdomains[58] = 13;
+            elementsToSubdomains[59] = 13;
+            elementsToSubdomains[60] = 14;
+            elementsToSubdomains[61] = 14;
+            elementsToSubdomains[62] = 15;
+            elementsToSubdomains[63] = 15;
+            #endregion
+
+            return elementsToSubdomains;
+        }
+
+        public static Dictionary<int, int> GetSubdomainClusters()
+        {
+            var result = new Dictionary<int, int>();
+
+            result[ 0] = 0;
+            result[ 1] = 0;
+            result[ 2] = 1;
+            result[ 3] = 1;
+            result[ 4] = 0;
+            result[ 5] = 0;
+            result[ 6] = 1;
+            result[ 7] = 1;
+            result[ 8] = 2;
+            result[ 9] = 2;
+            result[10] = 3;
+            result[11] = 3;
+            result[12] = 2;
+            result[13] = 2;
+            result[14] = 3;
+            result[15] = 3;
+
+            return result;
+        }
+
+        public static Dictionary<int, int[]> GetSubdomainNeighbors()
+        {
+            var result = new Dictionary<int, int[]>();
+
+            result[ 0] =  new int[] { 1, 4, 5 };
+            result[ 1] =  new int[] { 0, 2, 4, 5, 6 };
+            result[ 2] =  new int[] { 1, 3, 5, 6, 7 };
+            result[ 3] =  new int[] { 2, 6, 7 };
+            result[ 4] =  new int[] { 0, 1, 5, 8, 9 };
+            result[ 5] =  new int[] { 0, 1, 2, 4, 6, 8, 9, 10 };
+            result[ 6] =  new int[] { 1, 2, 3, 5, 7, 9, 10, 11 };
+            result[ 7] =  new int[] { 2, 3, 6, 10, 11 };
+            result[ 8] =  new int[] { 4, 5, 9, 12, 13 };
+            result[ 9] =  new int[] { 4, 5, 6, 8, 10, 12, 13, 14 };
+            result[10] =  new int[] { 5, 6, 7, 9, 11, 13, 14, 15 };
+            result[11] =  new int[] { 6, 7, 10, 14, 15 };
+            result[12] =  new int[] { 8, 9, 13 };
+            result[13] =  new int[] { 8, 9, 10, 12, 14 };
+            result[14] =  new int[] { 9, 10, 11, 13, 15 };
+            result[15] =  new int[] { 10, 11, 14 };
 
             return result;
         }

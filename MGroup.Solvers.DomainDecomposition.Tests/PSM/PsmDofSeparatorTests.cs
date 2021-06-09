@@ -23,7 +23,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.PSM
 
         internal static void TestForLine1DInternal(IComputeEnvironment environment)
         {
-            ComputeNodeTopology nodeTopology = Line1DExample.CreateNodeTopology(environment);
+            ComputeNodeTopology nodeTopology = Line1DExample.CreateNodeTopology();
             environment.Initialize(nodeTopology);
 
             IStructuralModel model = Line1DExample.CreateMultiSubdomainModel(environment);
@@ -48,7 +48,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.PSM
 
         internal static void TestForPlane2DInternal(IComputeEnvironment environment)
         {
-            ComputeNodeTopology nodeTopology = Plane2DExample.CreateNodeTopology(environment);
+            ComputeNodeTopology nodeTopology = Plane2DExample.CreateNodeTopology();
             environment.Initialize(nodeTopology);
 
             IStructuralModel model = Plane2DExample.CreateMultiSubdomainModel(environment);

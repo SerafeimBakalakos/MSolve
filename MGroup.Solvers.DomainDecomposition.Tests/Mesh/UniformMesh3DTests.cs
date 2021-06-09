@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 using MGroup.Solvers.DomainDecomposition.Mesh;
-using MGroup.Solvers.DomainDecomposition.Output;
+using MGroup.Solvers.DomainDecomposition.Output.VTK;
 using Xunit;
 
 namespace MGroup.Solvers.DomainDecomposition.Tests.Mesh
@@ -22,7 +22,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.Mesh
             int[] numElements = { 2, 3, 4 };
             //var mesh = new UniformMesh3D.Builder(minCoords, maxCoords, numElements).SetMajorMinorAxis(2, 0).BuildMesh();
             var mesh = new UniformMesh3D.Builder(minCoords, maxCoords, numElements).BuildMesh();
-            writer.WriteMesh3D(path, mesh);
+            writer.WriteMesh(path, mesh, 3);
         }
 
         [Fact]

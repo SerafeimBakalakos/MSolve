@@ -97,7 +97,7 @@ namespace MGroup.Solvers.DomainDecomposition.Partitioning
                     neighborIndices[2] = new int[] { sI + 1, sJ - 1 };
                     neighborIndices[3] = new int[] { sI - 1, sJ     };
                     neighborIndices[4] = new int[] { sI + 1, sJ     };
-                    neighborIndices[5] = new int[] { sI + 1, sJ + 1 };
+                    neighborIndices[5] = new int[] { sI - 1, sJ + 1 };
                     neighborIndices[6] = new int[] { sI,     sJ + 1 };
                     neighborIndices[7] = new int[] { sI + 1, sJ + 1 };
 

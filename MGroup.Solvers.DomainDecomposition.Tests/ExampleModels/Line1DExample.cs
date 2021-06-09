@@ -111,7 +111,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
             environment.DoPerNode(checkIndexer);
         }
 
-        public static ComputeNodeTopology CreateNodeTopology(IComputeEnvironment environment)
+        public static ComputeNodeTopology CreateNodeTopology()
         {
             var nodeTopology = new ComputeNodeTopology();
             nodeTopology.AddNode(0, new int[] { 1 }, 0);
@@ -126,7 +126,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
             return nodeTopology;
         }
 
-        public static DistributedModel CreateSingleSubdomainModel(IComputeEnvironment environment)
+        public static DistributedModel CreateSingleSubdomainDistributedModel(IComputeEnvironment environment)
         {
             AllDofs.Clear();
             AllDofs.AddDof(ThermalDof.Temperature);
@@ -161,7 +161,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
         }
 
         //TODOMPI: Remove this
-        public static Model CreateSingleSubdomainModel_OLD()
+        public static Model CreateSingleSubdomainModel()
         {
             AllDofs.Clear();
             AllDofs.AddDof(ThermalDof.Temperature);
@@ -198,7 +198,7 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
         public static IStructuralModel CreateMultiSubdomainModel(IComputeEnvironment environment)
         {
             // Partition
-            DistributedModel model = CreateSingleSubdomainModel(environment);
+            DistributedModel model = CreateSingleSubdomainDistributedModel(environment);
             var elementsToSubdomains = new Dictionary<int, int>();
             elementsToSubdomains[0] = 0;
             elementsToSubdomains[1] = 0;
