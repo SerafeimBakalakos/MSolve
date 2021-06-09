@@ -4,7 +4,7 @@ using System.Linq;
 using ISAAR.MSolve.Discretization.Mesh;
 
 //TODOMesh: allow reordering e.g. for Hexa8
-namespace MGroup.Solvers.DomainDecomposition.Output
+namespace MGroup.Solvers.DomainDecomposition.Output.VTK
 {
     public static class VtkCellTypes
     {

@@ -1,31 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using MGroup.Solvers.DomainDecomposition.Mesh;
 
-namespace MGroup.Solvers.DomainDecomposition.Output
+namespace MGroup.Solvers.DomainDecomposition.Output.VTK
 {
     public class VtkMeshWriter
     {
         public const string vtkReaderVersion = "4.1";
 
-        public void WriteMesh2D(string path, IStructuredMesh mesh)
+        public void WriteMesh(string path, IStructuredMesh mesh, int dimension)
         {
             using (var writer = new StreamWriter(path))
             {
                 WriteHeader(writer);
-                WriteVertices2D(writer, mesh);
-                WriteCells(writer, mesh);
-            }
-        }
-
-        public void WriteMesh3D(string path, IStructuredMesh mesh)
-        {
-            using (var writer = new StreamWriter(path))
-            {
-                WriteHeader(writer);
-                WriteVertices3D(writer, mesh);
+                if (dimension == 2)
+                {
+                    WriteVertices2D(writer, mesh);
+                }
+                else
+                {
+                    Debug.Assert(dimension == 3);
+                    WriteVertices3D(writer, mesh);
+                }
                 WriteCells(writer, mesh);
             }
         }
