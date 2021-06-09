@@ -71,6 +71,6 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.Vectors
 			Vector ff = (Vector)linearSystems[subdomainID].RhsVector;
 			Vector fi = ff.GetSubvector(internalDofs);
 			vectorsFi[subdomainID] = fi;
-		}
-	}
+        }
+    }
 }

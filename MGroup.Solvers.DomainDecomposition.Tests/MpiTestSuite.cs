@@ -41,6 +41,11 @@ namespace MGroup.Solvers.DomainDecomposition.Tests
                 PsmSolverTests.TestForPlane2DInternal(mpiEnvironment);
 
                 MpiDebugUtilities.DoSerially(MPI.Communicator.world,
+                    () => Console.WriteLine(
+                        $"Process {MPI.Communicator.world.Rank}: Now running PsmSolverTests.TestForBrick3DInternal"));
+                PsmSolverTests.TestForBrick3DInternal(mpiEnvironment);
+
+                MpiDebugUtilities.DoSerially(MPI.Communicator.world,
                     () => Console.WriteLine($"Process {MPI.Communicator.world.Rank}: All tests passed"));
             }
         }

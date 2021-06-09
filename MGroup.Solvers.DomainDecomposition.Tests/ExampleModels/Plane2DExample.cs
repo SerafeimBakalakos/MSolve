@@ -319,8 +319,8 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.ExampleModels
         public static ComputeNodeTopology CreateNodeTopology()
         {
             var nodeTopology = new ComputeNodeTopology();
-            Dictionary<int, int> clustersOfSubdomains = Plane2DExample.GetSubdomainClusters();
-            Dictionary<int, int[]> neighborsOfSubdomains = Plane2DExample.GetSubdomainNeighbors();
+            Dictionary<int, int> clustersOfSubdomains = GetSubdomainClusters();
+            Dictionary<int, int[]> neighborsOfSubdomains = GetSubdomainNeighbors();
             for (int s = 0; s < NumSubdomains[0] * NumSubdomains[1]; ++s)
             {
                 nodeTopology.AddNode(s, neighborsOfSubdomains[s], clustersOfSubdomains[s]);
