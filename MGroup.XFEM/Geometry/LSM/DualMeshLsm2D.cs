@@ -39,10 +39,8 @@ namespace MGroup.XFEM.Geometry.LSM
         //TODO: How can I check and what to do if the intersection mesh or part of it conforms to the element edges?
         public IElementDiscontinuityInteraction Intersect(IXFiniteElement element)
         {
-            if (IsCoarseElementDisjoint(element))
-            {
-                return new NullElementDiscontinuityInteraction(this.ID, element);
-            }
+            // WARNING: This optimization must be avoided. Coarse elements may be flagged as disjoint incorrectly .
+            //if (IsCoarseElementDisjoint(element)) return new NullElementDiscontinuityInteraction(this.ID, element);
 
             int[] fineElementIDs = dualMesh.MapElementCoarseToFine(element.ID);
             var intersectionsOfElements = new Dictionary<int, List<double[]>>();
@@ -175,7 +173,8 @@ namespace MGroup.XFEM.Geometry.LSM
         }
 
         /// <summary>
-        /// Optimization for most elements.
+        /// Optimization for most elements. Unfortunately it may incorrectly flag an element as disjoint, e.g. if only 1 edge is 
+        /// intersected.
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>

@@ -52,8 +52,8 @@ namespace MGroup.XFEM.Heat
 
             //double theta = Math.PI / 2;
             //double phi = 0;
-            double theta = rng.NextDouble() * Math.PI;
-            double phi = rng.NextDouble() * 2 * Math.PI;
+            double theta = rng.NextDouble() * Math.PI;      // 0 <= theta <= pi 
+            double phi = rng.NextDouble() * 2 * Math.PI;    // 0 <= phi < 2*pi
 
             double[] axisEnd =
             {

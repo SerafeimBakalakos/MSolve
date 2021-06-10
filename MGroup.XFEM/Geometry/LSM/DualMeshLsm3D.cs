@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Commons;
 using MGroup.XFEM.ElementGeometry;
@@ -40,16 +41,15 @@ namespace MGroup.XFEM.Geometry.LSM
         //TODO: How can I check and what to do if the intersection mesh or part of it conforms to the element edges?
         public IElementDiscontinuityInteraction Intersect(IXFiniteElement element)
         {
-            if (IsCoarseElementDisjoint(element))
-            {
-                return new NullElementDiscontinuityInteraction(this.ID, element);
-            }
+            // WARNING: This optimization must be avoided. Coarse elements may be flagged as disjoint incorrectly .
+            //if (IsCoarseElementDisjoint(element)) return new NullElementDiscontinuityInteraction(this.ID, element);
 
             int[] fineElementIDs = dualMesh.MapElementCoarseToFine(element.ID);
             var intersectionsOfElements = new Dictionary<int, IntersectionMesh3D>();
             foreach (int fineElementID in fineElementIDs)
             {
                 int[] fineElementIdx = dualMesh.FineMesh.GetElementIdx(fineElementID);
+                
                 int[] fineElementNodes = dualMesh.FineMesh.GetElementConnectivity(fineElementIdx);
                 RelativePositionCurveElement position = FindRelativePosition(fineElementNodes);
                 if ((position == RelativePositionCurveElement.Disjoint) || (position == RelativePositionCurveElement.Tangent))
@@ -66,6 +66,11 @@ namespace MGroup.XFEM.Geometry.LSM
                     throw new NotImplementedException();
                 }
                 else throw new NotImplementedException();
+            }
+            if (intersectionsOfElements.Count == 0)
+            {
+                //TODO: This needs adjustment to take into account conforming elements
+                return new NullElementDiscontinuityInteraction(this.ID, element);
             }
 
             // Combine the line segments into a mesh
@@ -225,7 +230,8 @@ namespace MGroup.XFEM.Geometry.LSM
         }
 
         /// <summary>
-        /// Optimization for most elements.
+        /// Optimization for most elements. Unfortunately it may incorrectly flag an element as disjoint, e.g. if only 1 face is 
+        /// intersected.
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>

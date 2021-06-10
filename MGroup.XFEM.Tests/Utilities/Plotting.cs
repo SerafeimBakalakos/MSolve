@@ -144,5 +144,28 @@ namespace MGroup.XFEM.Tests.Utilities
             var matrixWriter = new FullMatrixWriter();
             matrixWriter.WriteToFile(material.ConstitutiveMatrix, path, true);
         }
+
+        public static void WriteNodalTemperatures(XModel<IXMultiphaseElement> model, IVectorView solution, string path)
+        {
+            var temperatureField = new TemperatureAtNodesField(model);
+            Dictionary<double[], double> nodalValues = temperatureField.CalcValuesAtVertices(solution);
+            using (var writer = new StreamWriter(path))
+            {
+                foreach (var pair in nodalValues)
+                {
+                    double[] point = pair.Key;
+                    double val = pair.Value;
+                    if (point.Length == 2)
+                    {
+                        writer.WriteLine($"{point[0]} {point[1]} 0.0 {val}");
+                    }
+                    else if (point.Length == 3)
+                    {
+                        writer.WriteLine($"{point[0]} {point[1]} {point[2]} {val}");
+                    }
+                    else throw new NotImplementedException();
+                }
+            }
+        }
     }
 }

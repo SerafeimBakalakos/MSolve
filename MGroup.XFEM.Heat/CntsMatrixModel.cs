@@ -43,7 +43,7 @@ namespace MGroup.XFEM.Heat
 
         public double[] CoordsMax { get; set; }
 
-        public int[] NumElementsCoarse { get; set; } = { 40, 40, 40 };
+        public int[] NumElementsCoarse { get; set; } = { 10, 10, 10 };
 
         public int[] NumElementsFine { get; set; } = { 40, 40, 40 };
 
@@ -182,8 +182,8 @@ namespace MGroup.XFEM.Heat
 
         private PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model, DualMesh3D mesh)
         {
-            //IEnumerable<ISurface3D> inclusionGeometries = GenerateInclusionGeometries();
-            IEnumerable<ISurface3D> inclusionGeometries = GeometryGenerator.GenerateInclusions();
+            IEnumerable<ISurface3D> inclusionGeometries = GenerateInclusionGeometries();
+            //IEnumerable<ISurface3D> inclusionGeometries = GeometryGenerator.GenerateInclusions();
 
             var geometricModel = new PhaseGeometryModel(model);
             geometricModel.Enricher = NodeEnricherMultiphaseNoJunctions.CreateThermalStep(geometricModel);
@@ -196,8 +196,8 @@ namespace MGroup.XFEM.Heat
                 var phase = new LsmPhase(geometricModel.Phases.Count, geometricModel, -1);
                 geometricModel.Phases[phase.ID] = phase;
 
-                var dualMeshLsm = new SimpleLsm3D(phase.ID, model.XNodes, surface);
-                //var dualMeshLsm = new DualMeshLsm3D(phase.ID, mesh, surface);
+                //var dualMeshLsm = new SimpleLsm3D(phase.ID, model.XNodes, surface);
+                var dualMeshLsm = new DualMeshLsm3D(phase.ID, mesh, surface);
                 var boundary = new ClosedPhaseBoundary(phase.ID, dualMeshLsm, defaultPhase, phase);
                 defaultPhase.ExternalBoundaries.Add(boundary);
                 defaultPhase.Neighbors.Add(phase);
@@ -213,9 +213,55 @@ namespace MGroup.XFEM.Heat
         {
             var inclusions = new List<ISurface3D>();
 
-            double length = 1/*0.1 * (CoordsMax[0] - CoordsMin[0])*/;
-            double radius = 0.1/*length * 0.0084*/; 
-            inclusions.Add(new Cylinder3D(new double[] { -0.5 * length, 0, 0 }, new double[] { +0.5 * length, 0, 0 }, radius));
+            #region debug Bug with this config and and 40x40x40 fine mesh
+            //double theta = 0.5 * Math.PI; // 0 <= theta <= pi
+            //double phi = 1.0 / 4.0 * Math.PI; // 0 <= phi < 2*pi
+            //double length = 0.5;
+            //double radius = 0.1; // breaks for 0.09
+            #endregion
+
+            #region debug Bug with this config and and 40x40x40 fine mesh
+            //double theta = 0.5 * Math.PI; // 0 <= theta <= pi
+            //double phi = 1.0 / 2.0 * Math.PI; // 0 <= phi < 2*pi
+            //double length = 0.5;
+            //double radius = 0.1; // breaks for 0.09
+            #endregion
+
+            #region debug Bug with this config and and 40x40x40 fine mesh
+            //double theta = 0.5 * Math.PI; // 0 <= theta <= pi
+            //double phi = 1.0 / 1.0 * Math.PI; // 0 <= phi < 2*pi
+            //double length = 0.5;
+            //double radius = 0.1; // breaks for 0.09
+            #endregion
+
+            #region debug Bug with this config and and 40x40x40 fine mesh
+            //double theta = 1.0 /1.0 * Math.PI; // 0 <= theta <= pi
+            //double phi = 1.0 / 6.0 * Math.PI; // 0 <= phi < 2*pi
+            //double length = 0.5;
+            //double radius = 0.1; // breaks for 0.09
+            #endregion
+
+            double theta = 1.0 / 2.0 * Math.PI; // 0 <= theta <= pi
+            double phi = 1.0 / 6.0 * Math.PI; // 0 <= phi < 2*pi
+
+            double length = 0.5;
+            double radius = 0.1; // breaks for 0.09
+
+            double[] start = 
+            { 
+                -0.5 * length * Math.Cos(phi) * Math.Sin(theta),
+                -0.5 * length * Math.Sin(phi) * Math.Sin(theta),
+                -0.5 * length * Math.Cos(theta)
+            };
+
+            double[] end = 
+            {
+                +0.5 * length * Math.Cos(phi) * Math.Sin(theta),
+                +0.5 * length * Math.Sin(phi) * Math.Sin(theta),
+                +0.5 * length * Math.Cos(theta)
+            };
+
+            inclusions.Add(new Cylinder3D(start, end, radius));
             //inclusions.Add(new Sphere(new double[] { 0, 0, 0 }, length));
 
             return inclusions;

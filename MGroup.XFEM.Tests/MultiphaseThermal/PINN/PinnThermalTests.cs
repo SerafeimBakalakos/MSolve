@@ -16,6 +16,8 @@ using MGroup.XFEM.Output.Writers;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.Solvers;
+using ISAAR.MSolve.Solvers.Direct;
 
 namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
 {
@@ -25,20 +27,20 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
 
         private static readonly double[] minCoords = { 0.0, 0.0, 0.0 };
         private static readonly double[] maxCoords = { 1E0, 1E0, 1E0 }; //μm
-        private static readonly int[] numElements = { 35, 35, 35 };
+        private static readonly int[] numElements = { 50, 50, 50 };
         private const int bulkIntegrationOrder = 2, boundaryIntegrationOrder = 2;
         
-        private const double ballRadius = 5E-2; // μm
-        private static readonly int[] numBalls = { 7, 7, 7 };
+        private const double ballRadius = 0.25; // μm
+        private static readonly int[] numBalls = { 1, 1, 1 };
 
         private const int defaultPhaseID = 0;
 
         private const bool cohesiveInterfaces = true;
-        private const double conductMatrix = 0.25, conductInclusion = 429; //Wμ/K
-        private const double conductBoundaryMatrixInclusion = 1E15, conductBoundaryInclusionInclusion = 0;
+        private const double conductMatrix = 0.1, conductInclusion = 1; //Wμ/K
+        private const double conductBoundaryMatrixInclusion = 1E0, conductBoundaryInclusionInclusion = 0;
         private const double specialHeatCoeff = 1.0;
 
-        //[Fact]
+        [Fact]
         public static void TestModel()
         {
             if (!Directory.Exists(outputDirectory))
@@ -80,7 +82,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
             model.Initialize();
         }
 
-        //[Fact]
+        [Fact]
         public static void TestSolution()
         {
             if (!Directory.Exists(outputDirectory))
@@ -95,7 +97,8 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
 
             // Run analysis
             model.Initialize();
-            IVectorView solution = Analysis.RunThermalStaticAnalysis(model);
+            ISolverBuilder solverBuilder = new SuiteSparseSolver.Builder();
+            IVectorView solution = Analysis.RunThermalStaticAnalysis(model, solverBuilder);
 
             // Plot temperature and heat flux
             var computedFiles = new List<string>();
@@ -105,6 +108,9 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
             computedFiles.Add(Path.Combine(outputDirectory, "heat_flux_gauss_points_t0.vtk"));
             Utilities.Plotting.PlotTemperatureAndHeatFlux(model, solution,
                 computedFiles[0], computedFiles[1], computedFiles[2], computedFiles[3]);
+
+            Utilities.Plotting.WriteNodalTemperatures(
+                model, solution, Path.Combine(outputDirectory, "nodal_temperature.txt"));
         }
 
         //[Fact]
