@@ -21,7 +21,7 @@ namespace MGroup.XFEM.Geometry.LSM
         private readonly double farNodeDistance;
         protected readonly Dictionary<int, double> nodalLevelSets;
 
-        public LocalDualMeshLsm2D(int id, DualMesh2D dualMesh, ICurve2D closedCurve) : base(id, dualMesh, closedCurve)
+        public LocalDualMeshLsm2D(int id, DualMesh2D dualMesh, ICurve2D closedCurve) : base(id, dualMesh)
         {
             // Only keep the level sets of elements that are inside the initial geometry, intersected by it or conforming to it.
             IStructuredMesh fineMesh = dualMesh.FineMesh;
@@ -35,6 +35,12 @@ namespace MGroup.XFEM.Geometry.LSM
                 for (int n = 0; n < nodeIDs.Length; ++n)
                 {
                     int nodeID = nodeIDs[n];
+                    #region debug
+                    if (nodeID == 235)
+                    {
+                        Console.WriteLine();
+                    }
+                    #endregion
                     double[] coords = fineMesh.GetNodeCoordinates(nodeID);
                     levelSets[n] = closedCurve.SignedDistanceOf(coords);
                 }

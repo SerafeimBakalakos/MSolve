@@ -17,7 +17,7 @@ namespace MGroup.XFEM.Geometry.LSM
         private readonly DualMesh2D dualMesh;
         private readonly ValueComparer comparer;
 
-        protected DualMeshLsm2DBase(int id, DualMesh2D dualMesh, ICurve2D closedCurve)
+        protected DualMeshLsm2DBase(int id, DualMesh2D dualMesh)
         {
             this.dualMesh = dualMesh;
             this.ID = id;

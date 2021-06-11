@@ -8,8 +8,7 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Mesh;
 using MGroup.XFEM.Geometry.Primitives;
 
-//TODO: perhaps instead of using a Dictionary<int, double> for the level sets, I could store them based on the node index:
-//      Dictionary<int, Dictionary<int, double>>. The aim is of course faster lookups and faster initialization.
+//TODO: Shouldn't this extend DualMeshLsm2DBase directly and avoid any level set data?
 namespace MGroup.XFEM.Geometry.LSM
 {
     /// <summary>

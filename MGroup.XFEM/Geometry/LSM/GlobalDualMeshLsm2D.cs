@@ -17,7 +17,7 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         private readonly double[] nodalLevelSets;
 
-        public GlobalDualMeshLsm2D(int id, DualMesh2D dualMesh, ICurve2D closedCurve) : base(id, dualMesh, closedCurve)
+        public GlobalDualMeshLsm2D(int id, DualMesh2D dualMesh, ICurve2D closedCurve) : base(id, dualMesh)
         {
             IStructuredMesh fineMesh = dualMesh.FineMesh;
             nodalLevelSets = new double[fineMesh.NumNodesTotal];
