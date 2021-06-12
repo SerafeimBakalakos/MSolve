@@ -34,5 +34,26 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
                 throw new NotImplementedException();
             }
         }
+
+        internal static DualMeshLsm3DBase Create(this DualMeshLsmChoice choice,
+            int id, DualMesh3D dualMesh, ISurface3D closedSurface)
+        {
+            if (choice == DualMeshLsmChoice.Global)
+            {
+                return new GlobalDualMeshLsm3D(id, dualMesh, closedSurface);
+            }
+            else if (choice == DualMeshLsmChoice.Local)
+            {
+                return new LocalDualMeshLsm3D(id, dualMesh, closedSurface);
+            }
+            else if (choice == DualMeshLsmChoice.Fixed)
+            {
+                return new FixedDualMeshLsm3D(id, dualMesh, closedSurface);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }

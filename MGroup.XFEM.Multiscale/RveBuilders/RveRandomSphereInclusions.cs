@@ -174,7 +174,7 @@ namespace MGroup.XFEM.Multiscale.RveBuilders
             for (int p = 0; p < inclusionGeometries.Count; ++p)
             {
                 //var lsm = new SimpleLsm3D(p + 1, model.XNodes, inclusionGeometries[p]);
-                var lsm = new DualMeshLsm3D(p + 1, dualMesh, inclusionGeometries[p]);
+                var lsm = new GlobalDualMeshLsm3D(p + 1, dualMesh, inclusionGeometries[p]);
                 var phase = new LsmPhase(p + 1, geometryModel, -1);
                 geometryModel.Phases[phase.ID] = phase;
 

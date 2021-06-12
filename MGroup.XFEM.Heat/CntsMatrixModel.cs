@@ -197,7 +197,7 @@ namespace MGroup.XFEM.Heat
                 geometricModel.Phases[phase.ID] = phase;
 
                 //var dualMeshLsm = new SimpleLsm3D(phase.ID, model.XNodes, surface);
-                var dualMeshLsm = new DualMeshLsm3D(phase.ID, mesh, surface);
+                var dualMeshLsm = new GlobalDualMeshLsm3D(phase.ID, mesh, surface);
                 var boundary = new ClosedPhaseBoundary(phase.ID, dualMeshLsm, defaultPhase, phase);
                 defaultPhase.ExternalBoundaries.Add(boundary);
                 defaultPhase.Neighbors.Add(phase);

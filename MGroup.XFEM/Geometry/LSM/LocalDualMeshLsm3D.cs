@@ -16,12 +16,12 @@ namespace MGroup.XFEM.Geometry.LSM
     /// Only stores level set data in nodes that are inside the curve or belong to elements that are intersected by it.
     /// Therefore the signed distances of points away from the curve will not be accurate, but will have the correct sign.
     /// </summary>
-    public class LocalDualMeshLsm2D : DualMeshLsm2DBase
+    public class LocalDualMeshLsm3D : DualMeshLsm3DBase
     {
         private readonly double farNodeDistance;
         protected readonly Dictionary<int, double> nodalLevelSets;
 
-        public LocalDualMeshLsm2D(int id, DualMesh2D dualMesh, ICurve2D closedCurve) : base(id, dualMesh)
+        public LocalDualMeshLsm3D(int id, DualMesh3D dualMesh, ISurface3D closedSurface) : base(id, dualMesh)
         {
             // Only keep the level sets of elements that are inside the initial geometry, intersected by it or conforming to it.
             IStructuredMesh fineMesh = dualMesh.FineMesh;
@@ -36,7 +36,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 {
                     int nodeID = nodeIDs[n];
                     double[] coords = fineMesh.GetNodeCoordinates(nodeID);
-                    levelSets[n] = closedCurve.SignedDistanceOf(coords);
+                    levelSets[n] = closedSurface.SignedDistanceOf(coords);
                 }
 
                 // If even one node is inside or on the curve, we need to store the level sets for all nodes of the element
@@ -63,7 +63,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public override void UnionWith(IClosedGeometry otherGeometry)
         {
-            if (otherGeometry is LocalDualMeshLsm2D otherLsm)
+            if (otherGeometry is LocalDualMeshLsm3D otherLsm)
             {
                 foreach (var nodeValuePair in otherLsm.nodalLevelSets)
                 {

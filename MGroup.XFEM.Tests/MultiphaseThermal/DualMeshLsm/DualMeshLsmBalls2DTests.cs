@@ -23,6 +23,7 @@ using MGroup.XFEM.Phases;
 using MGroup.XFEM.Tests.Utilities;
 using Xunit;
 
+//TODO: Add tests for nodal level values. These should be hardcoded and work even if a LSM implementation only stored a subset of nodes.
 namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
 {
     public static class DualMeshLsmBalls2DTests
