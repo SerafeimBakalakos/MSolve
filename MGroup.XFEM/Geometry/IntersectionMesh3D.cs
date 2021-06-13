@@ -7,6 +7,7 @@ using ISAAR.MSolve.LinearAlgebra.Commons;
 using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Exceptions;
 
+//TODO: Specialization that only uses triangles, thus requiring less memory and checks
 namespace MGroup.XFEM.Geometry
 {
     public class IntersectionMesh3D : IIntersectionMesh

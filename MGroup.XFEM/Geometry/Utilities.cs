@@ -58,6 +58,53 @@ namespace MGroup.XFEM.Geometry
             return det / 6.0;
         }
 
+        /// <summary>
+        /// Finds 2 triangles out of 4 points in 3D space. These triangles observe the Delauny property: the minimum angle
+        /// is the maximum possible minimum angle over all other alternative triangulations.
+        /// </summary>
+        /// <param name="points">
+        /// The 4 points in arbitray order, namely they do not form a polygon in the order they are given.
+        /// </param>
+        /// <returns>Two arrays containing the indices into <paramref name="points"/> of the triangle vertices.</returns>
+        public static List<int[]> Delauny4Points3D(List<double[]> points)
+        {
+            // To maximize the minimum angles, the sum of the angles opposite to the common edge must be <= pi. 
+            // In this figure, this property does not hold
+            //            0  
+            //         /     \
+            //      /           \ 
+            //    1 ------------- 3
+            //      \           /
+            //         \     /
+            //            2 
+
+            double p0p1 = Distance3D(points[0], points[1]);
+            double p0p3 = Distance3D(points[0], points[3]);
+            double p2p1 = Distance3D(points[2], points[1]);
+            double p2p3 = Distance3D(points[2], points[3]);
+            double p1p3 = Distance3D(points[1], points[3]);
+
+            // Find the angles of P0, P2 using the cosine law
+            double angle0 = Math.Acos((p1p3 * p1p3 - p0p1 * p0p1 - p0p3 * p0p3) / (2 * p0p1 * p0p3));
+            double angle2 = Math.Acos((p1p3 * p1p3 - p2p1 * p2p1 - p2p3 * p2p3) / (2 * p2p1 * p2p3));
+
+            var triangles = new List<int[]>(2);
+            if (angle0 + angle2 <= Math.PI)
+            {
+                // This is the correct delauny triangulation
+                triangles.Add(new int[] { 0, 1, 3 });
+                triangles.Add(new int[] { 1, 2, 3 });
+            }
+            else
+            {
+                // Flip the common edge: P0P2 instead of P1P3
+                triangles.Add(new int[] { 0, 1, 2 });
+                triangles.Add(new int[] { 0, 2, 3 });
+            }
+
+            return triangles;
+        }
+
         public static double Distance2D(double[] pointA, double[] pointB)
         {
             double dx0 = pointB[0] - pointA[0];
