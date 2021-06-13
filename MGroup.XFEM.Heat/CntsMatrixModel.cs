@@ -30,6 +30,7 @@ namespace MGroup.XFEM.Heat
     public class CntsMatrixModel
     {
         private const int defaultPhaseID = 0;
+        private const int lsmType = 0; // 0 = simple, 1 = dual global, 2 = dual local
         private static readonly string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Phase3\CntsMatrix";
         private readonly int boundaryIntegrationOrder = 2;
 
@@ -43,9 +44,9 @@ namespace MGroup.XFEM.Heat
 
         public double[] CoordsMax { get; set; }
 
-        public int[] NumElementsCoarse { get; set; } = { 10, 10, 10 };
+        public int[] NumElementsCoarse { get; set; } = { 50, 50, 50 };
 
-        public int[] NumElementsFine { get; set; } = { 40, 40, 40 };
+        public int[] NumElementsFine { get; set; } = { 50, 50, 50 };
 
         public double ConductivityMatrix { get; set; }
 
@@ -182,8 +183,8 @@ namespace MGroup.XFEM.Heat
 
         private PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model, DualMesh3D mesh)
         {
-            IEnumerable<ISurface3D> inclusionGeometries = GenerateInclusionGeometries();
-            //IEnumerable<ISurface3D> inclusionGeometries = GeometryGenerator.GenerateInclusions();
+            //IEnumerable<ISurface3D> inclusionGeometries = GenerateInclusionGeometries();
+            IEnumerable<ISurface3D> inclusionGeometries = GeometryGenerator.GenerateInclusions();
 
             var geometricModel = new PhaseGeometryModel(model);
             geometricModel.Enricher = NodeEnricherMultiphaseNoJunctions.CreateThermalStep(geometricModel);
@@ -196,9 +197,12 @@ namespace MGroup.XFEM.Heat
                 var phase = new LsmPhase(geometricModel.Phases.Count, geometricModel, -1);
                 geometricModel.Phases[phase.ID] = phase;
 
-                //var dualMeshLsm = new SimpleLsm3D(phase.ID, model.XNodes, surface);
-                var dualMeshLsm = new GlobalDualMeshLsm3D(phase.ID, mesh, surface);
-                var boundary = new ClosedPhaseBoundary(phase.ID, dualMeshLsm, defaultPhase, phase);
+                IClosedGeometry geometry;
+                if (lsmType == 0) geometry = new SimpleLsm3D(phase.ID, model.XNodes, surface);
+                else if (lsmType == 1) geometry = new GlobalDualMeshLsm3D(phase.ID, mesh, surface);
+                else if (lsmType == 2) geometry = new LocalDualMeshLsm3D(phase.ID, mesh, surface);
+                else throw new NotImplementedException();
+                var boundary = new ClosedPhaseBoundary(phase.ID, geometry, defaultPhase, phase);
                 defaultPhase.ExternalBoundaries.Add(boundary);
                 defaultPhase.Neighbors.Add(phase);
                 phase.ExternalBoundaries.Add(boundary);
