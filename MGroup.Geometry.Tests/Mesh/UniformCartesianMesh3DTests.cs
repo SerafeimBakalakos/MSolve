@@ -9,7 +9,7 @@ using Xunit;
 
 namespace MGroup.Geometry.Tests.Mesh
 {
-    public static class UniformMesh3DTests
+    public static class UniformCartesianMesh3DTests
     {
         //[Fact]
         public static void PlotMesh()
@@ -21,7 +21,7 @@ namespace MGroup.Geometry.Tests.Mesh
             double[] maxCoords = { 60, 60, 60 };
             int[] numElements = { 2, 3, 4 };
             //var mesh = new UniformMesh3D.Builder(minCoords, maxCoords, numElements).SetMajorMinorAxis(2, 0).BuildMesh();
-            var mesh = new UniformMesh3D.Builder(minCoords, maxCoords, numElements).BuildMesh();
+            var mesh = new UniformCartesianMesh3D.Builder(minCoords, maxCoords, numElements).BuildMesh();
             writer.WriteMesh(path, mesh, 3);
         }
 
@@ -29,7 +29,7 @@ namespace MGroup.Geometry.Tests.Mesh
         public static void TestEnumerateElements()
         {
             var mockMesh = new MockMesh2x3x4();
-            var mesh = new UniformMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
+            var mesh = new UniformCartesianMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
                 .BuildMesh();
 
             // Check that nodes are returned in ascending order
@@ -55,7 +55,7 @@ namespace MGroup.Geometry.Tests.Mesh
         public static void TestEnumerateNodes()
         {
             var mockMesh = new MockMesh2x3x4();
-            var mesh = new UniformMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
+            var mesh = new UniformCartesianMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
                 .BuildMesh();
 
             // Check that nodes are returned in ascending order
@@ -81,7 +81,7 @@ namespace MGroup.Geometry.Tests.Mesh
         public static void TestGetNodeID()
         {
             var mockMesh = new MockMesh2x3x4();
-            var mesh = new UniformMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
+            var mesh = new UniformCartesianMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
                 .BuildMesh();
 
             for (int i = 0; i < mesh.NumNodes[0]; ++i)
@@ -103,7 +103,7 @@ namespace MGroup.Geometry.Tests.Mesh
         public static void TestGetNodeIdx()
         {
             var mockMesh = new MockMesh2x3x4();
-            var mesh = new UniformMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
+            var mesh = new UniformCartesianMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
                 .BuildMesh();
 
             for (int id = 0; id < mesh.NumNodes[0] * mesh.NumNodes[1] * mesh.NumNodes[2]; ++id)
@@ -121,7 +121,7 @@ namespace MGroup.Geometry.Tests.Mesh
         public static void TestGetNodeCoordinates()
         {
             var mockMesh = new MockMesh2x3x4();
-            var mesh = new UniformMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
+            var mesh = new UniformCartesianMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
                 .BuildMesh();
 
             for (int i = 0; i < mesh.NumNodes[0]; ++i)
@@ -146,7 +146,7 @@ namespace MGroup.Geometry.Tests.Mesh
         public static void TestGetElementID()
         {
             var mockMesh = new MockMesh2x3x4();
-            var mesh = new UniformMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
+            var mesh = new UniformCartesianMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
                 .BuildMesh();
 
             for (int i = 0; i < mesh.NumElements[0]; ++i)
@@ -168,7 +168,7 @@ namespace MGroup.Geometry.Tests.Mesh
         public static void TestGetElementIdx()
         {
             var mockMesh = new MockMesh2x3x4();
-            var mesh = new UniformMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
+            var mesh = new UniformCartesianMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
                 .BuildMesh();
 
             for (int id = 0; id < mesh.NumElements[0] * mesh.NumElements[1] * mesh.NumElements[2]; ++id)
@@ -186,7 +186,7 @@ namespace MGroup.Geometry.Tests.Mesh
         public static void TestGetElementConductivity()
         {
             var mockMesh = new MockMesh2x3x4();
-            var mesh = new UniformMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
+            var mesh = new UniformCartesianMesh3D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
                 .BuildMesh();
 
             for (int k = 0; k < mesh.NumElements[2]; ++k)
@@ -268,6 +268,8 @@ namespace MGroup.Geometry.Tests.Mesh
 
                 return elementNodes[elementIdx[0], elementIdx[1], elementIdx[2]];
             }
+
+            public int[] GetElementConnectivity(int elementID) => GetElementConnectivity(GetElementIdx(elementID));
 
             public int GetElementID(int[] elementIdx)
             {

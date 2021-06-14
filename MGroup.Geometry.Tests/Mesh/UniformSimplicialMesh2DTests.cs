@@ -10,53 +10,27 @@ using Xunit;
 
 namespace MGroup.Geometry.Tests.Mesh
 {
-    public static class UniformMesh2DTests
+    public static class UniformSimplicialMesh2DTests
     {
-        //[Fact]
+        [Fact]
         public static void PlotMesh()
         {
             var writer = new VtkMeshWriter();
 
-            string path = @"C:\Users\Serafeim\Desktop\PFETIDP\meshes\mesh2D.vtk";
+            string path = @"C:\Users\Serafeim\Desktop\PFETIDP\meshes\triangle_mesh2D.vtk";
             double[] minCoords = { 0, 0 };
             double[] maxCoords = { 12, 12 };
-            int[] numElements = { 3, 4 };
-            var mesh = new UniformMesh2D.Builder(minCoords, maxCoords, numElements).SetMajorAxis(1).BuildMesh();
-            //var mesh = new UniformMesh2D.Builder(minCoords, maxCoords, numElements).BuildMesh();
+            int[] numNodes = { 4, 5 };
+            //var mesh = new UniformSimplicialMesh2D.Builder(minCoords, maxCoords, numNodes).SetMajorAxis(1).BuildMesh();
+            var mesh = new UniformSimplicialMesh2D.Builder(minCoords, maxCoords, numNodes).BuildMesh();
             writer.WriteMesh(path, mesh, 2);
         }
-
-        [Fact]
-        public static void TestEnumerateElements()
-        {
-            var mockMesh = new MockMesh2x3();
-            var mesh = new UniformMesh2D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
-                .BuildMesh();
-
-            // Check that nodes are returned in ascending order
-            int[] elemIDs = mesh.EnumerateElements().Select(pair => pair.elementID).ToArray();
-            Assert.Equal(0, elemIDs[0]);
-            for (int i = 0; i < elemIDs.Length - 1; ++i)
-            {
-                Assert.Equal(elemIDs[i] + 1, elemIDs[i + 1]);
-            }
-
-            // Check each returned element
-            foreach ((int elementID, int[] nodeIDs) in mesh.EnumerateElements())
-            {
-                int[] nodeIDsExpected = mockMesh.GetElementConnectivity(mockMesh.GetElementIdx(elementID));
-                for (int d = 0; d < nodeIDsExpected.Length; ++d)
-                {
-                    Assert.Equal(nodeIDsExpected[d], nodeIDs[d]);
-                }
-            }
-        }
-
+        
         [Fact]
         public static void TestEnumerateNodes()
         {
             var mockMesh = new MockMesh2x3();
-            var mesh = new UniformMesh2D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
+            var mesh = new UniformSimplicialMesh2D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumNodes)
                 .BuildMesh();
 
             // Check that nodes are returned in ascending order
@@ -82,7 +56,7 @@ namespace MGroup.Geometry.Tests.Mesh
         public static void TestGetNodeID()
         {
             var mockMesh = new MockMesh2x3();
-            var mesh = new UniformMesh2D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
+            var mesh = new UniformSimplicialMesh2D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumNodes)
                 .BuildMesh();
 
             for (int i = 0; i < mesh.NumNodes[0]; ++i)
@@ -101,7 +75,7 @@ namespace MGroup.Geometry.Tests.Mesh
         public static void TestGetNodeIdx()
         {
             var mockMesh = new MockMesh2x3();
-            var mesh = new UniformMesh2D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
+            var mesh = new UniformSimplicialMesh2D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumNodes)
                 .BuildMesh();
 
             for (int id = 0; id < mesh.NumNodes[0] * mesh.NumNodes[1]; ++id)
@@ -119,7 +93,7 @@ namespace MGroup.Geometry.Tests.Mesh
         public static void TestGetNodeCoordinates()
         {
             var mockMesh = new MockMesh2x3();
-            var mesh = new UniformMesh2D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
+            var mesh = new UniformSimplicialMesh2D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumNodes)
                 .BuildMesh();
 
             for (int i = 0; i < mesh.NumNodes[0]; ++i)
@@ -137,64 +111,6 @@ namespace MGroup.Geometry.Tests.Mesh
             }
         }
 
-        [Fact]
-        public static void TestGetElementID()
-        {
-            var mockMesh = new MockMesh2x3();
-            var mesh = new UniformMesh2D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
-                .BuildMesh();
-
-            for (int i = 0; i < mesh.NumElements[0]; ++i)
-            {
-                for (int j = 0; j < mesh.NumElements[1]; ++j)
-                {
-                    var idx = new int[] { i, j };
-                    int expected = mockMesh.GetElementID(idx);
-                    int computed = mesh.GetElementID(idx);
-                    Assert.Equal(expected, computed);
-                }
-            }
-        }
-
-        [Fact]
-        public static void TestGetElementIdx()
-        {
-            var mockMesh = new MockMesh2x3();
-            var mesh = new UniformMesh2D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
-                .BuildMesh();
-
-            for (int id = 0; id < mesh.NumElements[0] * mesh.NumElements[1]; ++id)
-            {
-                int[] expected = mockMesh.GetElementIdx(id);
-                int[] computed = mesh.GetElementIdx(id);
-                for (int d = 0; d < 2; ++d)
-                {
-                    Assert.Equal(expected[d], computed[d]);
-                }
-            }
-        }
-
-        [Fact]
-        public static void TestGetElementConductivity()
-        {
-            var mockMesh = new MockMesh2x3();
-            var mesh = new UniformMesh2D.Builder(mockMesh.MinCoordinates, mockMesh.MaxCoordinates, mockMesh.NumElements)
-                .BuildMesh();
-
-            for (int i = 0; i < mesh.NumElements[0]; ++i)
-            {
-                for (int j = 0; j < mesh.NumElements[1]; ++j)
-                {
-                    var idx = new int[] { i, j };
-                    int[] expected = mockMesh.GetElementConnectivity(idx);
-                    int[] computed = mesh.GetElementConnectivity(idx);
-                    for (int d = 0; d < expected.Length; ++d)
-                    {
-                        Assert.Equal(expected[d], computed[d]);
-                    }
-                }
-            }
-        }
 
         private class MockMesh2x3 : IStructuredMesh
         {
@@ -204,7 +120,7 @@ namespace MGroup.Geometry.Tests.Mesh
 
             public double[] MaxCoordinates => new double[] { 2.0, 3.0 };
 
-            public int[] NumElements => new int[] { 2, 3 };
+            //public int[] NumElements => new int[] { 2, 3 };
 
             public int[] NumNodes => new int[] { 3, 4 };
 
@@ -226,39 +142,19 @@ namespace MGroup.Geometry.Tests.Mesh
 
             public int[] GetElementConnectivity(int[] elementIdx)
             {
-                var elementNodes = new int[,][]
-                {
-                    { new int[] { 0, 1, 4, 3 }, new int[] { 3, 4, 7, 6 }, new int[] { 6, 7, 10, 9 } },
-                    { new int[] { 1, 2, 5, 4 }, new int[] { 4, 5, 8, 7 }, new int[] { 7, 8, 11, 10 } }
-                };
-
-                return elementNodes[elementIdx[0], elementIdx[1]];
+                throw new NotImplementedException();
             }
+
+            public int[] GetElementConnectivity(int elementID) => GetElementConnectivity(GetElementIdx(elementID));
 
             public int GetElementID(int[] elementIdx)
             {
-                var elemIDs = new int[,]
-                {
-                    { 0, 2, 4 },
-                    { 1, 3, 5 }
-                };
-
-                return elemIDs[elementIdx[0], elementIdx[1]];
+                throw new NotImplementedException();
             }
 
             public int[] GetElementIdx(int elementID)
             {
-                var elemIndices = new int[,]
-                {
-                    { 0, 0 },
-                    { 1, 0 },
-                    { 0, 1 },
-                    { 1, 1 },
-                    { 0, 2 },
-                    { 1, 2 },
-                };
-
-                return new int[] { elemIndices[elementID, 0], elemIndices[elementID, 1] };
+                throw new NotImplementedException();
             }
 
             public double[] GetNodeCoordinates(int[] nodeIdx)

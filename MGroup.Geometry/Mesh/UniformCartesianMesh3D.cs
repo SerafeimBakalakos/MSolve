@@ -6,7 +6,7 @@ using ISAAR.MSolve.Discretization.Mesh;
 
 namespace MGroup.Geometry.Mesh
 {
-    public class UniformMesh3D : IStructuredMesh
+    public class UniformCartesianMesh3D : ICartesianMesh
     {
         private const int dim = 3;
         private const int numNodesPerElement = 8;
@@ -19,7 +19,7 @@ namespace MGroup.Geometry.Mesh
         private readonly int firstNodeID;
         private readonly int firstElementID;
 
-        private UniformMesh3D(double[] minCoordinates, double[] maxCoordinates, int[] numElements, 
+        private UniformCartesianMesh3D(double[] minCoordinates, double[] maxCoordinates, int[] numElements, 
             int axisMajor, int axisMedium, int axisMinor, int[] elementNodeOrderPermutation, int firstNodeID, int firstElementID)
         {
             this.MinCoordinates = minCoordinates;
@@ -121,6 +121,8 @@ namespace MGroup.Geometry.Mesh
 
         public int GetNodeID(int[] nodeIdx)
         {
+            CheckNodeIdx(nodeIdx);
+
             // E.g. x-major, y-medium, z-minor: id = iX + iY * numNodesX + iZ * NumNodesX * NumNodesY
             return firstNodeID + nodeIdx[axisMajor] + nodeIdx[axisMedium] * NumNodes[axisMajor] 
                 + nodeIdx[axisMinor] * NumNodes[axisMajor] * NumNodes[axisMedium];
@@ -128,6 +130,8 @@ namespace MGroup.Geometry.Mesh
 
         public int[] GetNodeIdx(int nodeID)
         {
+            CheckNodeID(nodeID);
+
             int id = nodeID - firstNodeID;
             int numNodesPlane = NumNodes[axisMajor] * NumNodes[axisMedium];
             int mod = id % numNodesPlane;
@@ -142,6 +146,7 @@ namespace MGroup.Geometry.Mesh
 
         public double[] GetNodeCoordinates(int[] nodeIdx)
         {
+            CheckNodeIdx(nodeIdx);
             var coords = new double[dim];
             for (int d = 0; d < dim; d++)
             {
@@ -152,6 +157,8 @@ namespace MGroup.Geometry.Mesh
 
         public int GetElementID(int[] elementIdx)
         {
+            CheckElementIdx(elementIdx);
+
             // E.g. x-major, y-medium, z-minor: id = iX + iY * NumElementsX + iZ * NumElementsX * NumElementsY
             return firstElementID + elementIdx[axisMajor] + elementIdx[axisMedium] * NumElements[axisMajor]
                 + elementIdx[axisMinor] * NumElements[axisMajor] * NumElements[axisMedium];
@@ -159,6 +166,8 @@ namespace MGroup.Geometry.Mesh
 
         public int[] GetElementIdx(int elementID)
         {
+            CheckElementID(elementID);
+
             int id = elementID - firstElementID;
             int numElementsPlane = NumElements[axisMajor] * NumElements[axisMedium];
             int mod = id % numElementsPlane;
@@ -173,6 +182,8 @@ namespace MGroup.Geometry.Mesh
 
         public int[] GetElementConnectivity(int[] elementIdx)
         {
+            CheckElementIdx(elementIdx);
+
             var nodeIDs = new int[8];
             var nodeIdx = new int[dim]; // Avoid allocating an array per node
             for (int n = 0; n < 8; ++n)
@@ -185,6 +196,60 @@ namespace MGroup.Geometry.Mesh
             }
 
             return nodeIDs;
+        }
+
+        public int[] GetElementConnectivity(int elementID) => GetElementConnectivity(GetElementIdx(elementID));
+
+        [Conditional("DEBUG")]
+        private void CheckElementIdx(int[] elementIdx)
+        {
+            if (elementIdx.Length != dim)
+            {
+                throw new ArgumentException($"Element index must be an array with Length = {dim}");
+            }
+            for (int d = 0; d < dim; ++d)
+            {
+                if ((elementIdx[d] < 0) || (elementIdx[d] >= NumElements[d]))
+                {
+                    throw new ArgumentException($"Element index along dimension {d} must belong in [0, {NumElements[d]})");
+                }
+            }
+        }
+
+        [Conditional("DEBUG")]
+        private void CheckElementID(int elementID)
+        {
+            if ((elementID < firstElementID) || (elementID >= firstElementID + NumElementsTotal))
+            {
+                throw new ArgumentException(
+                    $"Element ID must belong in [{firstElementID}, {firstElementID + NumElementsTotal})");
+            }
+        }
+
+        [Conditional("DEBUG")]
+        private void CheckNodeIdx(int[] nodeIdx)
+        {
+            if (nodeIdx.Length != dim)
+            {
+                throw new ArgumentException($"Node index must be an array with Length = {dim}");
+            }
+            for (int d = 0; d < dim; ++d)
+            {
+                if ((nodeIdx[d] < 0) || (nodeIdx[d] >= NumNodes[d]))
+                {
+                    throw new ArgumentException($"Node index along dimension {d} must belong in [0, {NumNodes[d]})");
+                }
+            }
+        }
+
+        [Conditional("DEBUG")]
+        private void CheckNodeID(int nodeID)
+        {
+            if ((nodeID < firstNodeID) || (nodeID >= firstNodeID + NumNodesTotal))
+            {
+                throw new ArgumentException(
+                    $"Node ID must belong in [{firstNodeID}, {firstNodeID + NumNodesTotal})");
+            }
         }
 
         public class Builder
@@ -220,13 +285,13 @@ namespace MGroup.Geometry.Mesh
                 firstElementID = 0;
             }
 
-            public UniformMesh3D BuildMesh()
+            public UniformCartesianMesh3D BuildMesh()
             {
                 Validate();
                 (int majorAxis, int mediumAxis, int minorAxis) = ChooseAxes();
                 ValidateAxes(majorAxis, mediumAxis, minorAxis);
 
-                return new UniformMesh3D(coordsMin.Copy(), coordsMax.Copy(), numElements.Copy(),
+                return new UniformCartesianMesh3D(coordsMin.Copy(), coordsMax.Copy(), numElements.Copy(),
                     majorAxis, mediumAxis, minorAxis, elementNodeOrderPermutation.Copy(), firstNodeID, firstElementID);
             }
 

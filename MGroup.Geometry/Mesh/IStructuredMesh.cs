@@ -4,7 +4,7 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 
 //TODO: Add non uniform rectilinear meshes, curvilinear (uniform or not) meshes, meshes with triangles/tetrahedra instead of 
-//      quads/hexahedra, meshes with 2nd order and serendipity elements. See this for ideas: 
+//      quads/hexahedra, meshes with 2nd order and serendipity elements. Also rotated and skewed meshes. See this for ideas: 
 //      https://axom.readthedocs.io/en/develop/axom/mint/docs/sphinx/sections/mesh_types.html#particlemesh
 namespace MGroup.Geometry.Mesh
 {
@@ -12,11 +12,9 @@ namespace MGroup.Geometry.Mesh
     {
         CellType CellType { get; }
 
-        double[] MinCoordinates { get; }
+        double[] MinCoordinates { get; } //TODO: These probably apply only to unrotated & unskewed rectilinear meshes 
 
         double[] MaxCoordinates { get; }
-
-        int[] NumElements { get; }
 
         int NumElementsTotal { get; }
 
@@ -29,7 +27,7 @@ namespace MGroup.Geometry.Mesh
         /// <summary>
         /// Enumerates the global IDs and coordinates of the nodes. The nodes are returned in increasing order of their id.
         /// </summary>
-        IEnumerable<(int nodeID, double[] coordinates)> EnumerateNodes(); //TODOMesh: When testing this, assert they are in ascending order.
+        IEnumerable<(int nodeID, double[] coordinates)> EnumerateNodes();
 
         /// <summary>
         /// For each element returns its global ID and the global IDs of its nodes. The elements are returned in increasing order
@@ -45,12 +43,6 @@ namespace MGroup.Geometry.Mesh
 
         double[] GetNodeCoordinates(int nodeID) => GetNodeCoordinates(GetNodeIdx(nodeID));
 
-        int GetElementID(int[] elementIdx);
-
-        int[] GetElementIdx(int elementID);
-
-        int[] GetElementConnectivity(int[] elementIdx);
-
-        int[] GetElementConnectivity(int elementID) => GetElementConnectivity(GetElementIdx(elementID));
+        int[] GetElementConnectivity(int elementID);
     }
 }
