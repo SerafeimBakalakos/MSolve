@@ -19,9 +19,9 @@ namespace MGroup.Geometry.Tests.Mesh
             string path = @"C:\Users\Serafeim\Desktop\PFETIDP\meshes\tetra_mesh3D.vtk";
             double[] minCoords = { 0, 0, 0 };
             double[] maxCoords = { 60, 60, 60 };
-            int[] numNodes = { 2, 2, 2 };
-            //var mesh = new UniformMesh3D.Builder(minCoords, maxCoords, numElements).SetMajorMinorAxis(2, 0).BuildMesh();
-            var mesh = new UniformSimplicialMesh3D.Builder(minCoords, maxCoords, numNodes).BuildMesh();
+            int[] numNodes = { 3, 4, 5 };
+            var mesh = new UniformSimplicialMesh3D.Builder(minCoords, maxCoords, numNodes).SetMajorMinorAxis(2, 0).BuildMesh();
+            //var mesh = new UniformSimplicialMesh3D.Builder(minCoords, maxCoords, numNodes).BuildMesh();
             writer.WriteMesh(path, mesh, 3);
         }
 

@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using MGroup.Geometry.Mesh;
 
+//TODO: Implement coloring based on the element ID. Also allow shuffling the IDs.
 namespace MGroup.Geometry.Output.VTK
 {
     public class VtkMeshWriter
