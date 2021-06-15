@@ -6,6 +6,7 @@ using ISAAR.MSolve.Discretization.Mesh;
 //TODO: Add non uniform rectilinear meshes, curvilinear (uniform or not) meshes, meshes with triangles/tetrahedra instead of 
 //      quads/hexahedra, meshes with 2nd order and serendipity elements. Also rotated and skewed meshes. See this for ideas: 
 //      https://axom.readthedocs.io/en/develop/axom/mint/docs/sphinx/sections/mesh_types.html#particlemesh
+//TODO: Remove duplication between 2D/3D cartesian/simplicial and their builders.
 namespace MGroup.Geometry.Mesh
 {
     public interface IStructuredMesh

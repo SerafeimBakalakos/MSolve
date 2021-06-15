@@ -6,40 +6,53 @@ using ISAAR.MSolve.Discretization.Mesh;
 
 namespace MGroup.Geometry.Mesh
 {
-    public class UniformCartesianMesh3D : ICartesianMesh
+    /// <summary>
+    /// Structured mesh with uniform distances between points on a cartesian grid. The elements are Tet4 (simplices) generated
+    /// by dividing each Hexa8 cell of an equivalent cartesian mesh into 4 subtetrahedra. The element indices are thus int[4], 
+    /// where the first 3 entries are the index of the enclosing Hexa8 of an equivalent cartesian mesh and the third entry is 
+    /// 0, 1, 2 or 3 to denote one of the 4 subtetrahedra of said Hexa8.
+    /// </summary>
+    public class UniformSimplicialMesh3D : IStructuredMesh
     {
         private const int dim = 3;
-        private const int numNodesPerElement = 8;
+        private const int numNodesPerElement = 4;
+        private const int numSimplicesPerCartesianCell = 6;
 
         private readonly int axisMajor;
         private readonly int axisMedium;
         private readonly int axisMinor;
         private readonly double[] dx;
-        private readonly int[][] elementNodeIdxOffsets;
         private readonly int firstNodeID;
         private readonly int firstElementID;
+        private readonly int[] numCartesianCells;
 
-        private UniformCartesianMesh3D(double[] minCoordinates, double[] maxCoordinates, int[] numElements, 
-            int axisMajor, int axisMedium, int axisMinor, int[] elementNodeOrderPermutation, int firstNodeID, int firstElementID)
+        /// <summary>
+        /// Given the index (i,j,k) of the first node of a Hexa with coordinates=(-1,-1,-1), this list contains, for each 
+        /// subtetrahedron of the Hexa8, the index offsets relative to (i,j,k) of the nodes of the subtetrahedron. The offset of 
+        /// node (i,j,k) is (0,0,0), the offset of (i+1, j, k+1) is (1,0,1) and so forth.
+        /// </summary>
+        private readonly List<int[][]> elementNodeIdxOffsets;
+
+        private UniformSimplicialMesh3D(double[] minCoordinates, double[] maxCoordinates, int[] numNodes,
+            int axisMajor, int axisMedium, int axisMinor, int firstNodeID, int firstElementID)
         {
             this.MinCoordinates = minCoordinates;
             this.MaxCoordinates = MaxCoordinates;
-            this.NumElements = numElements;
+            this.NumNodes = numNodes;
+            NumNodesTotal = NumNodes[0] * NumNodes[1] * NumNodes[2];
 
-            NumNodes = new int[dim];
+            this.numCartesianCells = new int[dim];
             for (int d = 0; d < dim; d++)
             {
-                NumNodes[d] = numElements[d] + 1;
+                this.numCartesianCells[d] = numNodes[d] - 1;
             }
+            NumElementsTotal = numSimplicesPerCartesianCell * numCartesianCells[0] * numCartesianCells[1] * numCartesianCells[2];
 
             dx = new double[dim];
             for (int d = 0; d < dim; d++)
             {
-                dx[d] = (maxCoordinates[d] - minCoordinates[d]) / numElements[d];
+                dx[d] = (maxCoordinates[d] - minCoordinates[d]) / numCartesianCells[d];
             }
-
-            NumNodesTotal = NumNodes[0] * NumNodes[1] * NumNodes[2];
-            NumElementsTotal = NumElements[0] * NumElements[1] * NumElements[2];
 
             this.axisMajor = axisMajor;
             this.axisMedium = axisMedium;
@@ -47,31 +60,66 @@ namespace MGroup.Geometry.Mesh
             this.firstNodeID = firstNodeID;
             this.firstElementID = firstElementID;
 
-            // Hexa8 node order
-            var elementNodeIdxOffsetsDefault = new int[8][];
-            elementNodeIdxOffsetsDefault[0] = new int[] { 0, 0, 0 };
-            elementNodeIdxOffsetsDefault[1] = new int[] { 1, 0, 0 };
-            elementNodeIdxOffsetsDefault[2] = new int[] { 1, 1, 0 };
-            elementNodeIdxOffsetsDefault[3] = new int[] { 0, 1, 0 };
-            elementNodeIdxOffsetsDefault[4] = new int[] { 0, 0, 1 };
-            elementNodeIdxOffsetsDefault[5] = new int[] { 1, 0, 1 };
-            elementNodeIdxOffsetsDefault[6] = new int[] { 1, 1, 1 };
-            elementNodeIdxOffsetsDefault[7] = new int[] { 0, 1, 1 };
+            elementNodeIdxOffsets = new List<int[][]>(numSimplicesPerCartesianCell);
 
-            this.elementNodeIdxOffsets = new int[numNodesPerElement][];
-            for (int n = 0; n < numNodesPerElement; ++n)
-            {
-                this.elementNodeIdxOffsets[elementNodeOrderPermutation[n]] = elementNodeIdxOffsetsDefault[n];
-            }
+            #region Tetrahedra of prism through nodes 0,1,2,3,4,5
+            // The offsets of the nodes of the first tetrahedron are
+            var tet0NodeIdxOffsets = new int[numNodesPerElement][];
+            tet0NodeIdxOffsets[0] = new int[] { 0, 0, 0 }; // node 0
+            tet0NodeIdxOffsets[1] = new int[] { 1, 0, 0 }; // node 1
+            tet0NodeIdxOffsets[2] = new int[] { 1, 1, 0 }; // node 2
+            tet0NodeIdxOffsets[3] = new int[] { 0, 0, 1 }; // node 4
+            elementNodeIdxOffsets.Add(tet0NodeIdxOffsets);
+
+            // The offsets of the nodes of the second tetrahedron are
+            var tet1NodeIdxOffsets = new int[numNodesPerElement][];
+            tet1NodeIdxOffsets[0] = new int[] { 0, 0, 0 }; // node 0
+            tet1NodeIdxOffsets[1] = new int[] { 1, 1, 0 }; // node 2
+            tet1NodeIdxOffsets[2] = new int[] { 0, 1, 0 }; // node 3
+            tet1NodeIdxOffsets[3] = new int[] { 0, 0, 1 }; // node 4
+            elementNodeIdxOffsets.Add(tet1NodeIdxOffsets);
+
+            // The offsets of the nodes of the third tetrahedron are
+            var tet2NodeIdxOffsets = new int[numNodesPerElement][];
+            tet2NodeIdxOffsets[0] = new int[] { 1, 0, 0 }; // node 1
+            tet2NodeIdxOffsets[1] = new int[] { 1, 1, 0 }; // node 2
+            tet2NodeIdxOffsets[2] = new int[] { 0, 0, 1 }; // node 4
+            tet2NodeIdxOffsets[3] = new int[] { 1, 0, 1 }; // node 5
+            elementNodeIdxOffsets.Add(tet2NodeIdxOffsets);
+            #endregion
+
+            #region Tetrahedra of prism through nodes 4,5,6,7,2,3
+            // The offsets of the nodes of the fourth tetrahedron are
+            var tet3NodeIdxOffsets = new int[numNodesPerElement][];
+            tet3NodeIdxOffsets[0] = new int[] { 1, 1, 1 }; // node 6
+            tet3NodeIdxOffsets[1] = new int[] { 1, 0, 1 }; // node 5
+            tet3NodeIdxOffsets[2] = new int[] { 0, 0, 1 }; // node 4
+            tet3NodeIdxOffsets[3] = new int[] { 1, 1, 0 }; // node 2
+            elementNodeIdxOffsets.Add(tet3NodeIdxOffsets);
+
+            // The offsets of the nodes of the fifth tetrahedron are
+            var tet4NodeIdxOffsets = new int[numNodesPerElement][];
+            tet4NodeIdxOffsets[0] = new int[] { 1, 1, 1 }; // node 6
+            tet4NodeIdxOffsets[1] = new int[] { 0, 0, 1 }; // node 4
+            tet4NodeIdxOffsets[2] = new int[] { 0, 1, 1 }; // node 7
+            tet4NodeIdxOffsets[3] = new int[] { 1, 1, 0 }; // node 2
+            elementNodeIdxOffsets.Add(tet4NodeIdxOffsets);
+
+            // The offsets of the nodes of the sixth tetrahedron are
+            var tet5NodeIdxOffsets = new int[numNodesPerElement][];
+            tet5NodeIdxOffsets[0] = new int[] { 0, 1, 0 }; // node 3
+            tet5NodeIdxOffsets[1] = new int[] { 0, 0, 1 }; // node 4
+            tet5NodeIdxOffsets[2] = new int[] { 1, 1, 0 }; // node 2
+            tet5NodeIdxOffsets[3] = new int[] { 0, 1, 1 }; // node 7
+            elementNodeIdxOffsets.Add(tet5NodeIdxOffsets);
+            #endregion
         }
 
-        public CellType CellType => CellType.Hexa8;
+        public CellType CellType => CellType.Tet4;
 
         public double[] MinCoordinates { get; }
 
         public double[] MaxCoordinates { get; }
-
-        public int[] NumElements { get; }
 
         public int NumElementsTotal { get; }
 
@@ -102,20 +150,9 @@ namespace MGroup.Geometry.Mesh
 
         public IEnumerable<(int elementID, int[] nodeIDs)> EnumerateElements()
         {
-            for (int k = 0; k < NumElements[axisMinor]; ++k)
+            for (int elementID = firstElementID; elementID < firstElementID + NumElementsTotal; ++elementID)
             {
-                for (int j = 0; j < NumElements[axisMedium]; ++j)
-                {
-                    for (int i = 0; i < NumElements[axisMajor]; ++i)
-                    {
-                        var idx = new int[dim];
-                        idx[axisMinor] = k;
-                        idx[axisMedium] = j;
-                        idx[axisMajor] = i;
-
-                        yield return (GetElementID(idx), GetElementConnectivity(idx));
-                    }
-                }
+                yield return (elementID, GetElementConnectivity(elementID));
             }
         }
 
@@ -124,7 +161,7 @@ namespace MGroup.Geometry.Mesh
             CheckNodeIdx(nodeIdx);
 
             // E.g. x-major, y-medium, z-minor: id = iX + iY * numNodesX + iZ * NumNodesX * NumNodesY
-            return firstNodeID + nodeIdx[axisMajor] + nodeIdx[axisMedium] * NumNodes[axisMajor] 
+            return firstNodeID + nodeIdx[axisMajor] + nodeIdx[axisMedium] * NumNodes[axisMajor]
                 + nodeIdx[axisMinor] * NumNodes[axisMajor] * NumNodes[axisMedium];
         }
 
@@ -158,26 +195,26 @@ namespace MGroup.Geometry.Mesh
         public int GetElementID(int[] elementIdx)
         {
             CheckElementIdx(elementIdx);
-
-            // E.g. x-major, y-medium, z-minor: id = iX + iY * NumElementsX + iZ * NumElementsX * NumElementsY
-            return firstElementID + elementIdx[axisMajor] + elementIdx[axisMedium] * NumElements[axisMajor]
-                + elementIdx[axisMinor] * NumElements[axisMajor] * NumElements[axisMedium];
+            int cartesianCellID = elementIdx[axisMajor] + elementIdx[axisMedium] * numCartesianCells[axisMajor]
+                + elementIdx[axisMinor] * numCartesianCells[axisMajor] * numCartesianCells[axisMedium];
+            return firstElementID + numSimplicesPerCartesianCell * cartesianCellID + elementIdx[dim];
         }
 
         public int[] GetElementIdx(int elementID)
         {
             CheckElementID(elementID);
 
-            int id = elementID - firstElementID;
-            int numElementsPlane = NumElements[axisMajor] * NumElements[axisMedium];
-            int mod = id % numElementsPlane;
+            var elementIdx = new int[dim + 1];
+            elementIdx[dim] = (elementID - firstElementID) % numSimplicesPerCartesianCell;
+            int cartesianCellID = (elementID - firstElementID) / numSimplicesPerCartesianCell;
 
-            var idx = new int[dim];
-            idx[axisMinor] = id / numElementsPlane;
-            idx[axisMedium] = mod / NumElements[axisMajor];
-            idx[axisMajor] = mod % NumElements[axisMajor];
+            int numElementsPlane = numCartesianCells[axisMajor] * numCartesianCells[axisMedium];
+            int mod = cartesianCellID % numElementsPlane;
 
-            return idx;
+            elementIdx[axisMinor] = cartesianCellID / numElementsPlane;
+            elementIdx[axisMedium] = mod / numCartesianCells[axisMajor];
+            elementIdx[axisMajor] = mod % numCartesianCells[axisMajor];
+            return elementIdx;
         }
 
         public int[] GetElementConnectivity(int[] elementIdx)
@@ -188,10 +225,11 @@ namespace MGroup.Geometry.Mesh
             var nodeIdx = new int[dim]; // Avoid allocating an array per node
             for (int n = 0; n < numNodesPerElement; ++n)
             {
-                int[] offset = elementNodeIdxOffsets[n];
-                nodeIdx[0] = elementIdx[0] + offset[0];
-                nodeIdx[1] = elementIdx[1] + offset[1];
-                nodeIdx[2] = elementIdx[2] + offset[2];
+                int[][] offsetsOfTriangleNodes = elementNodeIdxOffsets[elementIdx[dim]];
+                int[] offsetOfNode = offsetsOfTriangleNodes[n];
+                nodeIdx[0] = elementIdx[0] + offsetOfNode[0];
+                nodeIdx[1] = elementIdx[1] + offsetOfNode[1];
+                nodeIdx[2] = elementIdx[2] + offsetOfNode[2];
                 nodeIDs[n] = GetNodeID(nodeIdx);
             }
 
@@ -203,16 +241,20 @@ namespace MGroup.Geometry.Mesh
         [Conditional("DEBUG")]
         private void CheckElementIdx(int[] elementIdx)
         {
-            if (elementIdx.Length != dim)
+            if (elementIdx.Length != dim + 1)
             {
-                throw new ArgumentException($"Element index must be an array with Length = {dim}");
+                throw new ArgumentException($"Element index must be an array with length = {dim + 1}");
             }
             for (int d = 0; d < dim; ++d)
             {
-                if ((elementIdx[d] < 0) || (elementIdx[d] >= NumElements[d]))
+                if ((elementIdx[d] < 0) || (elementIdx[d] >= numCartesianCells[d]))
                 {
-                    throw new ArgumentException($"Element index along dimension {d} must belong in [0, {NumElements[d]})");
+                    throw new ArgumentException($"Element index along dimension {d} must belong in [0, {numCartesianCells[d]})");
                 }
+            }
+            if ((elementIdx[dim] < 0) || (elementIdx[dim] >= numSimplicesPerCartesianCell))
+            {
+                throw new ArgumentException($"Element index entry {dim} must belong in [0, {numSimplicesPerCartesianCell})");
             }
         }
 
@@ -231,7 +273,7 @@ namespace MGroup.Geometry.Mesh
         {
             if (nodeIdx.Length != dim)
             {
-                throw new ArgumentException($"Node index must be an array with Length = {dim}");
+                throw new ArgumentException($"Node index must be an array with length = {dim}");
             }
             for (int d = 0; d < dim; ++d)
             {
@@ -256,10 +298,9 @@ namespace MGroup.Geometry.Mesh
         {
             private readonly double[] coordsMin;
             private readonly double[] coordsMax;
-            private readonly int[] numElements;
+            private readonly int[] numNodes;
             private int axisMajorChoice;
             private int axisMinorChoice;
-            private int[] elementNodeOrderPermutation;
             private int firstElementID;
             private int firstNodeID;
             private bool isAxisMajorMinorDefault;
@@ -269,74 +310,29 @@ namespace MGroup.Geometry.Mesh
             /// </summary>
             /// <param name="minCoordinates"></param>
             /// <param name="maxCoordinates"></param>
-            /// <param name="numElements">Array with 3 positive integers.</param>
-            public Builder(double[] minCoordinates, double[] maxCoordinates, int[] numElements)
+            /// <param name="numNodes">Array with 3 positive integers.</param>
+            public Builder(double[] minCoordinates, double[] maxCoordinates, int[] numNodes)
             {
                 this.coordsMin = minCoordinates.Copy();
                 this.coordsMax = maxCoordinates.Copy();
-                this.numElements = numElements.Copy();
+                this.numNodes = numNodes.Copy();
 
                 // Defaults
                 isAxisMajorMinorDefault = true;
                 axisMajorChoice = int.MinValue;
                 axisMinorChoice = int.MinValue;
-                elementNodeOrderPermutation = new int[] { 0, 1, 2, 3, 4, 5, 6, 7 };
                 firstNodeID = 0;
                 firstElementID = 0;
             }
 
-            public UniformCartesianMesh3D BuildMesh()
+            public UniformSimplicialMesh3D BuildMesh()
             {
                 Validate();
                 (int majorAxis, int mediumAxis, int minorAxis) = ChooseAxes();
                 ValidateAxes(majorAxis, mediumAxis, minorAxis);
 
-                return new UniformCartesianMesh3D(coordsMin.Copy(), coordsMax.Copy(), numElements.Copy(),
-                    majorAxis, mediumAxis, minorAxis, elementNodeOrderPermutation.Copy(), firstNodeID, firstElementID);
-            }
-
-            /// <summary>
-            /// Applies Bathe's order of nodes in each Hexa8 element of the mesh:
-            /// node0 = (+1, +1, +1), node1 = (-1, +1, +1), node2 = (-1, -1, +1), node3 = (+1, -1, +1), 
-            /// node4 = (+1, +1, -1), node5 = (-1, +1, -1), node6 = (-1, -1, -1), node7 = (+1, -1, -1) 
-            /// where the +-1 coordinates correspond to the local coordinate system of the element.
-            /// </summary>
-            /// <returns>This object for chaining.</returns>
-            public Builder SetElementNodeOrderBathe()
-            {
-                this.elementNodeOrderPermutation = new int[] { 6, 7, 4, 5, 2, 3, 0, 1 };
-                return this;
-            }
-
-            /// <summary>
-            /// Reapplies the default order of nodes in each Hexa8 element of the mesh:
-            /// node0 = (-1, -1, -1), node1 = (+1, -1, -1), node2 = (+1, +1, -1), node3 = (-1, +1, -1), 
-            /// node4 = (-1, -1, +1), node5 = (+1, -1, +1), node6 = (+1, +1, +1), node7 = (-1, +1, +1)
-            /// where the +-1 coordinates correspond to the local coordinate system of the element.
-            /// </summary>
-            /// <returns>This object for chaining.</returns>
-            public Builder SetElementNodeOrderDefault()
-            {
-                this.elementNodeOrderPermutation = new int[] { 0, 1, 2, 3, 4, 5, 6, 7 };
-                return this;
-            }
-
-            /// <summary>
-            /// Configures the order of nodes in each Quad4 element of the mesh. By default this order is: 
-            /// node0 = (-1, -1, -1), node1 = (+1, -1, -1), node2 = (+1, +1, -1), node3 = (-1, +1, -1), 
-            /// node4 = (-1, -1, +1), node5 = (+1, -1, +1), node6 = (+1, +1, +1), node7 = (-1, +1, +1)
-            /// where the +-1 coordinates correspond to the  local coordinate system of the element. 
-            /// To change this order, <paramref name="permutation"/> must be a permutation array such that: 
-            /// finalOrder[<paramref name="permutation"/>[i]] = defaultOrder[i], i = 0,1,...3 .
-            /// </summary>
-            /// <param name="permutation">
-            /// The permutation of element nodes: finalOrder[<paramref name="permutation"/>[i]] = defaultOrder[i], i = 0,1,...3.
-            /// </param>
-            /// <returns>This object for chaining.</returns>
-            public Builder SetElementNodeOrderPermutation(int[] permutation)
-            {
-                this.elementNodeOrderPermutation = permutation;
-                return this;
+                return new UniformSimplicialMesh3D(coordsMin.Copy(), coordsMax.Copy(), numNodes.Copy(),
+                    majorAxis, mediumAxis, minorAxis, firstNodeID, firstElementID);
             }
 
             public Builder SetFirstElementID(int elementID)
@@ -395,9 +391,9 @@ namespace MGroup.Geometry.Mesh
                     // Decide based on the number of nodes/elements per axis 
                     // Sort axes based on their number of elements
                     var entries = new List<(int count, int axis)>();
-                    entries.Add((numElements[0], 0));
-                    entries.Add((numElements[1], 1));
-                    entries.Add((numElements[2], 2));
+                    entries.Add((numNodes[0], 0));
+                    entries.Add((numNodes[1], 1));
+                    entries.Add((numNodes[2], 2));
                     int[] sortedAxes = SortAxes(entries);
 
                     majorAxis = sortedAxes[0];
@@ -407,7 +403,7 @@ namespace MGroup.Geometry.Mesh
                 else
                 {
                     // Respect client decision
-                    majorAxis = axisMajorChoice; 
+                    majorAxis = axisMajorChoice;
                     minorAxis = axisMinorChoice;
                     if ((majorAxis == 0) && (minorAxis == 1)) mediumAxis = 2;
                     else if ((majorAxis == 0) && (minorAxis == 2)) mediumAxis = 1;
@@ -471,26 +467,13 @@ namespace MGroup.Geometry.Mesh
                 }
 
                 // Elements per axis
-                if (numElements.Length != dim) throw new ArgumentException($"Length of number of elements must be {dim}.");
+                if (numNodes.Length != dim) throw new ArgumentException($"Length of number of nodes must be {dim}.");
                 for (int d = 0; d < dim; ++d)
                 {
-                    if (numElements[d] < 1)
+                    if (numNodes[d] < 1)
                     {
-                        throw new ArgumentException($"Along axis {d}, there must be at least 1 element.");
+                        throw new ArgumentException($"Along axis {d}, there must be at least 1 node.");
                     }
-                }
-
-
-                // Node order
-                if (elementNodeOrderPermutation.Length != numNodesPerElement)
-                {
-                    throw new ArgumentException("The provided permutation array for the order of nodes in each element" +
-                        $" must have {numNodesPerElement} entries");
-                }
-                if (!Utilities.AreContiguousUniqueIndices(elementNodeOrderPermutation))
-                {
-                    throw new ArgumentException("Invalid permutation array for the order of nodes in each element." +
-                        $" The entries must be unique and belong to [0, {numNodesPerElement})");
                 }
 
                 // Major, medium, minor axes will be checked in a different method

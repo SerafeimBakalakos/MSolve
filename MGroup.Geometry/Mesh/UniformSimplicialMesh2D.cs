@@ -11,7 +11,7 @@ namespace MGroup.Geometry.Mesh
     /// <summary>
     /// Structured mesh with uniform distances between points on a cartesian grid. The elements are Tri3 (simplices) generated
     /// by dividing each Quad4 cell of an equivalent cartesian mesh into 2 subtriangles. The element indices are thus int[3], 
-    /// wherethe first 2 entries are the index of the enclosing Quad4 of an equivalent cartesian mesh and the third entry is 
+    /// where the first 2 entries are the index of the enclosing Quad4 of an equivalent cartesian mesh and the third entry is 
     /// 0 or 1 to denote one of the 2 subtriangles of said Quad4.
     /// </summary>
     public class UniformSimplicialMesh2D : IStructuredMesh
@@ -28,11 +28,11 @@ namespace MGroup.Geometry.Mesh
         private readonly int[] numCartesianCells;
 
         /// <summary>
-        /// Given the index (i,j) of the first (lower left) node of a Quad4, this list contains for each subtriangle of the Quad
-        /// the index offsets relative to (i,j) of the nodes of the subtriangle.
+        /// Given the index (i,j) of the first node of a Quad4 with coordinates=(-1,-1), this list contains, for each subtriangle 
+        /// of the Quad, the index offsets relative to (i,j) of the nodes of the subtriangle. The offset of node (i,j) is (0,0),
+        /// the offset of (i+1, j) is (1,0) and so forth.
         /// </summary>
-        private readonly List<int[][]> triangleNodeIdxOffsets;
-
+        private readonly List<int[][]> elementNodeIdxOffsets;
 
         private UniformSimplicialMesh2D(double[] minCoordinates, double[] maxCoordinates, int[] numNodes, int axisMajor,
             int axisMinor, int firstNodeID, int firstElementID)
@@ -47,7 +47,7 @@ namespace MGroup.Geometry.Mesh
             {
                 this.numCartesianCells[d] = numNodes[d] - 1;
             }
-            NumElementsTotal = 2 * numCartesianCells[0] * numCartesianCells[1];
+            NumElementsTotal = numSimplicesPerCartesianCell * numCartesianCells[0] * numCartesianCells[1];
 
             dx = new double[dim];
             for (int d = 0; d < dim; d++)
@@ -60,20 +60,20 @@ namespace MGroup.Geometry.Mesh
             this.firstNodeID = firstNodeID;
             this.firstElementID = firstElementID;
 
-            // Given the bottom left node of each quad, the offsets of the nodes of the first triangle are
-            triangleNodeIdxOffsets = new List<int[][]>(numSimplicesPerCartesianCell);
+            // The offsets of the nodes of the first triangle are
+            elementNodeIdxOffsets = new List<int[][]>(numSimplicesPerCartesianCell);
             var triangle0NodeIdxOffsets = new int[numNodesPerElement][];
             triangle0NodeIdxOffsets[0] = new int[] { 0, 0 };
             triangle0NodeIdxOffsets[1] = new int[] { 1, 0 };
             triangle0NodeIdxOffsets[2] = new int[] { 0, 1 };
-            triangleNodeIdxOffsets.Add(triangle0NodeIdxOffsets);
+            elementNodeIdxOffsets.Add(triangle0NodeIdxOffsets);
 
             // And the offsets of the nodes of the second triangle are
             var triangle1NodeIdxOffsets = new int[numNodesPerElement][];
             triangle1NodeIdxOffsets[0] = new int[] { 1, 1 };
             triangle1NodeIdxOffsets[1] = new int[] { 0, 1 };
             triangle1NodeIdxOffsets[2] = new int[] { 1, 0 };
-            triangleNodeIdxOffsets.Add(triangle1NodeIdxOffsets);
+            elementNodeIdxOffsets.Add(triangle1NodeIdxOffsets);
         }
 
         public CellType CellType => CellType.Tri3;
@@ -176,7 +176,7 @@ namespace MGroup.Geometry.Mesh
             var nodeIdx = new int[dim]; // Avoid allocating an array per node
             for (int n = 0; n < numNodesPerElement; ++n)
             {
-                int[][] offsetsOfTriangleNodes = triangleNodeIdxOffsets[elementIdx[dim]];
+                int[][] offsetsOfTriangleNodes = elementNodeIdxOffsets[elementIdx[dim]];
                 int[] offsetOfNode = offsetsOfTriangleNodes[n];
                 nodeIdx[0] = elementIdx[0] + offsetOfNode[0];
                 nodeIdx[1] = elementIdx[1] + offsetOfNode[1];
@@ -193,7 +193,7 @@ namespace MGroup.Geometry.Mesh
         {
             if (elementIdx.Length != dim + 1)
             {
-                throw new ArgumentException($"Element index must be an array with Length = {dim + 1}");
+                throw new ArgumentException($"Element index must be an array with length = {dim + 1}");
             }
             for (int d = 0; d < dim; ++d)
             {
@@ -223,7 +223,7 @@ namespace MGroup.Geometry.Mesh
         {
             if (nodeIdx.Length != dim)
             {
-                throw new ArgumentException($"Node index must be an array with Length = {dim}");
+                throw new ArgumentException($"Node index must be an array with length = {dim}");
             }
             for (int d = 0; d < dim; ++d)
             {
@@ -278,14 +278,6 @@ namespace MGroup.Geometry.Mesh
                 return new UniformSimplicialMesh2D(coordsMin.Copy(), coordsMax.Copy(), numNodes.Copy(),
                     majorAxis, minorAxis, firstNodeID, firstElementID);
             }
-
-            /// <summary>
-            /// Applies a clockwise order of nodes in each Quad4 element of the mesh:
-            /// node0 = (-1, +1), node1 = (+1, +1), node2 = (+1, -1), node3 = (-1, -1), 
-            /// where the +-1 coordinates correspond to the local coordinate system of the element.
-            /// </summary>
-            /// <returns>This object for chaining.</returns>
-            
 
             public Builder SetFirstElementID(int elementID)
             {
@@ -364,12 +356,12 @@ namespace MGroup.Geometry.Mesh
                 }
 
                 // Elements per axis
-                if (numNodes.Length != dim) throw new ArgumentException($"Length of number of elements must be {dim}.");
+                if (numNodes.Length != dim) throw new ArgumentException($"Length of number of nodes must be {dim}.");
                 for (int d = 0; d < dim; ++d)
                 {
                     if (numNodes[d] < 1)
                     {
-                        throw new ArgumentException($"Along axis {d}, there must be at least 1 element.");
+                        throw new ArgumentException($"Along axis {d}, there must be at least 1 node.");
                     }
                 }
 

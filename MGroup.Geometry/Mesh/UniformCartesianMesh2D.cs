@@ -94,12 +94,12 @@ namespace MGroup.Geometry.Mesh
 
         public IEnumerable<(int elementID, int[] nodeIDs)> EnumerateElements()
         {
-            for (int k = 0; k < NumElements[axisMinor]; ++k)
+            for (int j = 0; j < NumElements[axisMinor]; ++j)
             {
                 for (int i = 0; i < NumElements[axisMajor]; ++i)
                 {
                     var idx = new int[dim];
-                    idx[axisMinor] = k;
+                    idx[axisMinor] = j;
                     idx[axisMajor] = i;
                     yield return (GetElementID(idx), GetElementConnectivity(idx));
                 }
