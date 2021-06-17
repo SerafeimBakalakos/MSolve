@@ -31,7 +31,6 @@ namespace MGroup.XFEM.Tests.Triangulation
             points.AddRange(intersections[0]);
 
             var triangulator = new MIConvexHullTriangulator3D();
-            triangulator.MinTetrahedronVolume = 1E-5 * volume;
             IList<Tetrahedron3D> tetahedra = triangulator.CreateMesh(points);
 
             //WriteConformingMesh(tetahedra);
@@ -107,7 +106,6 @@ namespace MGroup.XFEM.Tests.Triangulation
             points.AddRange(intersections[1]);
 
             var triangulator = new MIConvexHullTriangulator3D();
-            triangulator.MinTetrahedronVolume = 1E-5 * volume;
             IList<Tetrahedron3D> tetrahedra = triangulator.CreateMesh(points);
 
             //WriteConformingMesh(tetrahedra);
@@ -186,7 +184,6 @@ namespace MGroup.XFEM.Tests.Triangulation
             points.Add(centroid);
 
             var triangulator = new MIConvexHullTriangulator3D();
-            triangulator.MinTetrahedronVolume = 1E-5 * volume;
             IList<Tetrahedron3D> tetrahedra = triangulator.CreateMesh(points);
 
             //WriteConformingMesh(tetrahedra);

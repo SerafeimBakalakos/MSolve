@@ -100,7 +100,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.EpoxyAg
             var silverMaterial = new ThermalMaterial(conductSilver, specialHeatCoeff);
             var materialField = new ThermalBiMaterialField(epoxyMaterial, silverMaterial, conductBoundaryEpoxySilver);
 
-            return (Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
+            return (Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements, true,
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField, true), materialField);
         }
 

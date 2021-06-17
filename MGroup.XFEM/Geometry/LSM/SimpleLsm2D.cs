@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.Discretization.Interfaces;
+using ISAAR.MSolve.Discretization.Mesh;
 using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
@@ -12,13 +15,16 @@ namespace MGroup.XFEM.Geometry.LSM
 {
     public class SimpleLsm2D : IClosedGeometry
     {
-        public SimpleLsm2D(int id, double[] nodalLevelSets)
+        private readonly bool isMeshStructuredSimplicial;
+
+        public SimpleLsm2D(int id, double[] nodalLevelSets, bool isMeshStructuredSimplicial = false)
         {
             this.ID = id;
             this.NodalLevelSets = nodalLevelSets;
+            this.isMeshStructuredSimplicial = isMeshStructuredSimplicial;
         }
 
-        public SimpleLsm2D(int id, IReadOnlyList<XNode> nodes, ICurve2D closedCurve)
+        public SimpleLsm2D(int id, IReadOnlyList<XNode> nodes, ICurve2D closedCurve, bool isMeshStructuredSimplicial = false)
         {
             this.ID = id;
             NodalLevelSets = new double[nodes.Count];
@@ -27,6 +33,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 double[] node = nodes[n].Coordinates;
                 NodalLevelSets[n] = closedCurve.SignedDistanceOf(node);
             }
+            this.isMeshStructuredSimplicial = isMeshStructuredSimplicial;
         }
 
         public int ID { get; }
@@ -36,6 +43,43 @@ namespace MGroup.XFEM.Geometry.LSM
         public IMeshTolerance MeshTolerance { get; set; } = new ArbitrarySideMeshTolerance();
 
         public virtual IElementDiscontinuityInteraction Intersect(IXFiniteElement element)
+        {
+            //TODO: Use strategy pattern for the raw geometric operations.
+            if (isMeshStructuredSimplicial) return IntersectTri3Element(element);
+            else return IntersectGeneralElement(element);
+        }
+
+        public double SignedDistanceOf(XNode node) => NodalLevelSets[node.ID];
+
+        public double SignedDistanceOf(XPoint point)
+        {
+            int[] nodes = point.Element.Nodes.Select(n => n.ID).ToArray();
+            double[] shapeFunctions = point.ShapeFunctions;
+            double result = 0;
+            for (int n = 0; n < nodes.Length; ++n)
+            {
+                result += shapeFunctions[n] * NodalLevelSets[nodes[n]];
+            }
+            return result;
+        }
+
+        public virtual void UnionWith(IClosedGeometry otherGeometry)
+        {
+            if (otherGeometry is SimpleLsm2D otherLsm)
+            {
+                if (this.NodalLevelSets.Length != otherLsm.NodalLevelSets.Length)
+                {
+                    throw new ArgumentException("Incompatible Level Set geometry");
+                }
+                for (int i = 0; i < this.NodalLevelSets.Length; ++i)
+                {
+                    this.NodalLevelSets[i] = Math.Min(this.NodalLevelSets[i], otherLsm.NodalLevelSets[i]);
+                }
+            }
+            else throw new ArgumentException("Incompatible Level Set geometry");
+        }
+
+        private IElementDiscontinuityInteraction IntersectGeneralElement(IXFiniteElement element)
         {
             if (IsElementDisjoint(element)) // Check this first, since it is faster and most elements are in this category 
             {
@@ -89,40 +133,47 @@ namespace MGroup.XFEM.Geometry.LSM
             else if (intersections.Count == 2)
             {
                 double[][] points = intersections.ToArray();
-                return new LsmElementIntersection2D(ID, RelativePositionCurveElement.Intersecting, 
+                return new LsmElementIntersection2D(ID, RelativePositionCurveElement.Intersecting,
                     element, points[0], points[1]);
             }
             else throw new Exception("This should not have happened");
         }
 
-        public double SignedDistanceOf(XNode node) => NodalLevelSets[node.ID];
-
-        public double SignedDistanceOf(XPoint point)
+        private IElementDiscontinuityInteraction IntersectTri3Element(IXFiniteElement element)
         {
-            int[] nodes = point.Element.Nodes.Select(n => n.ID).ToArray();
-            double[] shapeFunctions = point.ShapeFunctions;
-            double result = 0;
-            for (int n = 0; n < nodes.Length; ++n)
-            {
-                result += shapeFunctions[n] * NodalLevelSets[nodes[n]];
-            }
-            return result;
-        }
+            Debug.Assert(element.CellType == CellType.Tri3);
 
-        public virtual void UnionWith(IClosedGeometry otherGeometry)
-        {
-            if (otherGeometry is SimpleLsm2D otherLsm)
+            var nodeCoordinates = new List<double[]>();
+            var nodeLevelSets = new List<double>();
+            for (int n = 0; n < element.Nodes.Count; ++n)
             {
-                if (this.NodalLevelSets.Length != otherLsm.NodalLevelSets.Length)
-                {
-                    throw new ArgumentException("Incompatible Level Set geometry");
-                }
-                for (int i = 0; i < this.NodalLevelSets.Length; ++i)
-                {
-                    this.NodalLevelSets[i] = Math.Min(this.NodalLevelSets[i], otherLsm.NodalLevelSets[i]);
-                }
+                nodeCoordinates.Add(element.Interpolation.NodalNaturalCoordinates[n]);
+                nodeLevelSets.Add(NodalLevelSets[element.Nodes[n].ID]);
             }
-            else throw new ArgumentException("Incompatible Level Set geometry");
+
+            var interactionStrategy = new LsmTri3Interaction();
+            (RelativePositionCurveElement relativePosition, IntersectionMesh2D intersectionMesh)
+                = interactionStrategy.FindIntersection(nodeCoordinates, nodeLevelSets);
+            if (relativePosition == RelativePositionCurveElement.Disjoint)
+            {
+                return new NullElementDiscontinuityInteraction(this.ID, element);
+            }
+            else if (relativePosition == RelativePositionCurveElement.Intersecting)
+            {
+                return new LsmElementIntersection2D(this.ID, relativePosition, element, intersectionMesh);
+            }
+            else if (relativePosition == RelativePositionCurveElement.Conforming)
+            {
+                return new LsmElementIntersection2D(this.ID, relativePosition, element, intersectionMesh);
+            }
+            else if (relativePosition == RelativePositionCurveElement.Tangent)
+            {
+                return new NullElementDiscontinuityInteraction(this.ID, element);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
 
         /// <summary>

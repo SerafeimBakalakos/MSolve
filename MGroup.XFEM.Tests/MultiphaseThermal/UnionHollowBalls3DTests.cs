@@ -129,7 +129,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
             var materialField = new MatrixInclusionsThermalMaterialField(matrixMaterial, inclusionMaterial,
                 conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
 
-            var model = Models.CreateHexa8Model(minCoords, maxCoords, numElements,
+            var model = Models.CreateHexa8Model(minCoords, maxCoords, numElements, true,
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField, true);
             Models.ApplyBCsTemperatureDiffAlongX(model, 100, -100);
             return model;

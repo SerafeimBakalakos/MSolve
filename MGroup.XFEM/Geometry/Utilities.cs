@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Geometry.Coordinates;
@@ -23,6 +24,11 @@ namespace MGroup.XFEM.Geometry
             return 0.5 * Math.Abs(sum);
         }
 
+        /// <summary>
+        /// The resulting volume may be 0 or negative.
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <returns></returns>
         public static double CalcTetrahedronVolume(IList<double[]> vertices)
         {
             double x0 = vertices[0][0];
@@ -42,67 +48,21 @@ namespace MGroup.XFEM.Geometry
             double z3 = vertices[3][2];
 
             var matrix = Matrix.CreateZero(3, 3);
-            matrix[0, 0] = x0 - x3;
-            matrix[1, 0] = y0 - y3;
-            matrix[2, 0] = z0 - z3;
+            matrix[0, 0] = x1 - x0;
+            matrix[1, 0] = y1 - y0;
+            matrix[2, 0] = z1 - z0;
 
-            matrix[0, 1] = x1 - x3;
-            matrix[1, 1] = y1 - y3;
-            matrix[2, 1] = z1 - z3;
+            matrix[0, 1] = x2 - x0;
+            matrix[1, 1] = y2 - y0;
+            matrix[2, 1] = z2 - z0;
 
-            matrix[0, 2] = x2 - x3;
-            matrix[1, 2] = y2 - y3;
-            matrix[2, 2] = z2 - z3;
+            matrix[0, 2] = x3 - x0;
+            matrix[1, 2] = y3 - y0;
+            matrix[2, 2] = z3 - z0;
 
             double det = matrix.CalcDeterminant();
+            //Debug.Assert(det >= 0);
             return det / 6.0;
-        }
-
-        /// <summary>
-        /// Finds 2 triangles out of 4 points in 3D space. These triangles observe the Delauny property: the minimum angle
-        /// is the maximum possible minimum angle over all other alternative triangulations.
-        /// </summary>
-        /// <param name="points">
-        /// The 4 points in arbitray order, namely they do not form a polygon in the order they are given.
-        /// </param>
-        /// <returns>Two arrays containing the indices into <paramref name="points"/> of the triangle vertices.</returns>
-        public static List<int[]> Delauny4Points3D(List<double[]> points)
-        {
-            // To maximize the minimum angles, the sum of the angles opposite to the common edge must be <= pi. 
-            // In this figure, this property does not hold
-            //            0  
-            //         /     \
-            //      /           \ 
-            //    1 ------------- 3
-            //      \           /
-            //         \     /
-            //            2 
-
-            double p0p1 = Distance3D(points[0], points[1]);
-            double p0p3 = Distance3D(points[0], points[3]);
-            double p2p1 = Distance3D(points[2], points[1]);
-            double p2p3 = Distance3D(points[2], points[3]);
-            double p1p3 = Distance3D(points[1], points[3]);
-
-            // Find the angles of P0, P2 using the cosine law
-            double angle0 = Math.Acos((p1p3 * p1p3 - p0p1 * p0p1 - p0p3 * p0p3) / (2 * p0p1 * p0p3));
-            double angle2 = Math.Acos((p1p3 * p1p3 - p2p1 * p2p1 - p2p3 * p2p3) / (2 * p2p1 * p2p3));
-
-            var triangles = new List<int[]>(2);
-            if (angle0 + angle2 <= Math.PI)
-            {
-                // This is the correct delauny triangulation
-                triangles.Add(new int[] { 0, 1, 3 });
-                triangles.Add(new int[] { 1, 2, 3 });
-            }
-            else
-            {
-                // Flip the common edge: P0P2 instead of P1P3
-                triangles.Add(new int[] { 0, 1, 2 });
-                triangles.Add(new int[] { 0, 2, 3 });
-            }
-
-            return triangles;
         }
 
         public static double Distance2D(double[] pointA, double[] pointB)

@@ -14,7 +14,7 @@ using MGroup.XFEM.Interpolation;
 //TODO: LSM/element interactions should probably be stored in a GeometricModel class
 namespace MGroup.XFEM.Elements
 {
-    public interface IXFiniteElement : IElement, IElementType, ICell<XNode>
+    public interface IXFiniteElement : IElement, IElementType
     {
         /// <summary>
         /// Will be null for elements not intersected by any interfaces

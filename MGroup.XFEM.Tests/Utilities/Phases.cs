@@ -100,7 +100,8 @@ namespace MGroup.XFEM.Tests.Utilities
             return surfaces;
         }
 
-        public static PhaseGeometryModel CreateLsmPhases2D(XModel<IXMultiphaseElement> model, List<ICurve2D> inclusionGeometries)
+        public static PhaseGeometryModel CreateLsmPhases2D(XModel<IXMultiphaseElement> model, List<ICurve2D> inclusionGeometries,
+            bool cartesianMesh = true)
         {
             var geometricModel = new PhaseGeometryModel(model);
             model.GeometryModel = geometricModel;
@@ -108,7 +109,7 @@ namespace MGroup.XFEM.Tests.Utilities
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;
             for (int p = 0; p < inclusionGeometries.Count; ++p)
             {
-                var lsm = new SimpleLsm2D(p + 1, model.XNodes, inclusionGeometries[p]);
+                var lsm = new SimpleLsm2D(p + 1, model.XNodes, inclusionGeometries[p], !cartesianMesh);
                 var phase = new LsmPhase(p + 1, geometricModel, -1);
                 geometricModel.Phases[phase.ID] = phase;
 
@@ -123,7 +124,7 @@ namespace MGroup.XFEM.Tests.Utilities
         }
 
         public static PhaseGeometryModel CreateLsmPhases3D(XModel<IXMultiphaseElement> model, 
-            List<ISurface3D> inclusionGeometries)
+            List<ISurface3D> inclusionGeometries, bool cartesianMesh = true)
         {
             var geometricModel = new PhaseGeometryModel(model);
             model.GeometryModel = geometricModel;
@@ -131,7 +132,7 @@ namespace MGroup.XFEM.Tests.Utilities
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;
             for (int p = 0; p < inclusionGeometries.Count; ++p)
             {
-                var lsm = new SimpleLsm3D(p + 1, model.XNodes, inclusionGeometries[p]);
+                var lsm = new SimpleLsm3D(p + 1, model.XNodes, inclusionGeometries[p], !cartesianMesh);
                 var phase = new LsmPhase(p + 1, geometricModel, -1);
                 geometricModel.Phases[phase.ID] = phase;
 

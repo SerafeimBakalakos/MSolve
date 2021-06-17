@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
@@ -8,8 +9,12 @@ namespace MGroup.XFEM.ElementGeometry
 {
     public class ElementTri3Geometry : IElementGeometry
     {
-        public double CalcBulkSizeCartesian(IReadOnlyList<XNode> nodes) 
-            => Utilities.CalcPolygonArea(nodes.Select(n => n.Coordinates).ToArray());
+        public double CalcBulkSizeCartesian(IReadOnlyList<XNode> nodes)
+        {
+            double area = Utilities.CalcPolygonArea(nodes.Select(n => n.Coordinates).ToArray());
+            Debug.Assert(area > 0);
+            return area;
+        }
 
         public double CalcBulkSizeNatural() => 0.5;
 

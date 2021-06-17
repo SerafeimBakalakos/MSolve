@@ -11,7 +11,7 @@ namespace MGroup.XFEM.Geometry.LSM
 {
     public class LsmTri3Interaction
     {
-        public (RelativePositionCurveElement, IntersectionMesh2D intersectionMesh) FindIntersection(
+        public (RelativePositionCurveElement relativePosition, IntersectionMesh2D intersectionMesh) FindIntersection(
             List<double[]> nodeCoords, List<double> nodeLevelSets)
         {
             Debug.Assert(nodeCoords.Count == 3);

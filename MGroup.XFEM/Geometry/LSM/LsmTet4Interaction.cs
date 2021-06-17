@@ -6,6 +6,7 @@ using MGroup.XFEM.Elements;
 using MGroup.XFEM.Integration.Quadratures;
 using ISAAR.MSolve.Discretization.Mesh;
 using System.Diagnostics;
+using MGroup.XFEM.FEM.Mesh;
 
 //TODO: Make sure all triangles have the same orientation. This orientation must be the same with triangles from other elements!
 //      This could be done by pointing always towards a positive node. Also apply this to 2D.
@@ -16,7 +17,7 @@ namespace MGroup.XFEM.Geometry.LSM
 {
     public class LsmTet4Interaction
     {
-        public (RelativePositionCurveElement pos, IntersectionMesh3D intersectionMesh) FindIntersection(
+        public (RelativePositionCurveElement relativePosition, IntersectionMesh3D intersectionMesh) FindIntersection(
             List<double[]> nodeCoords, List<double> nodeLevelSets)
         {
             Debug.Assert(nodeCoords.Count == 4);
@@ -25,25 +26,26 @@ namespace MGroup.XFEM.Geometry.LSM
             int numZeroNodes = 0;
             int numPosNodes = 0;
             int numNegNodes = 0;
-            for (int i = 0; i < 3; ++i)
+            for (int i = 0; i < 4; ++i)
             {
                 if (nodeLevelSets[i] < 0) ++numNegNodes;
                 else if (nodeLevelSets[i] > 0) ++numPosNodes;
                 else ++numZeroNodes;
             }
 
-            var intersectionMesh = new IntersectionMesh3D();
             if (numZeroNodes == 0)
             {
-                if ((numPosNodes == 0) || (numNegNodes == 0)) 
+                if ((numPosNodes == 0) || (numNegNodes == 0))
                 {
                     // Disjoint
+                    var intersectionMesh = new IntersectionMesh3D();
                     return (RelativePositionCurveElement.Disjoint, intersectionMesh);
                 }
                 else if((numPosNodes == 1) || (numNegNodes == 1))
                 {
                     // Intersection. 3 intersection points on edges of the single positive/negative node.
                     // The intersection mesh consists of a single triangle.
+                    var intersectionMesh = new IntersectionMesh3D();
                     List<double[]> intersections = FindEdgeIntersections(nodeCoords, nodeLevelSets);
                     Debug.Assert(intersections.Count == 3);
                     foreach (double[] point in intersections)
@@ -58,22 +60,14 @@ namespace MGroup.XFEM.Geometry.LSM
                     // Intersection. 4 intersection points on edges of the 2 positive nodes that connect them with the 2 
                     // negative nodes. The intersection mesh consists of 2 triangles.
                     Debug.Assert((numPosNodes == 2) && (numNegNodes == 2));
-                    List<double[]> intersections = FindEdgeIntersections(nodeCoords, nodeLevelSets);
-                    Debug.Assert(intersections.Count == 4);
-                    foreach (double[] point in intersections)
-                    {
-                        intersectionMesh.Vertices.Add(point);
-                    }
-
-                    List<int[]> triangles = Utilities.Delauny4Points3D(intersections);
-                    Debug.Assert(triangles.Count == 2);
-                    intersectionMesh.Cells.Add((CellType.Tri3, triangles[0]));
-                    intersectionMesh.Cells.Add((CellType.Tri3, triangles[1]));
+                    IntersectionMesh3D intersectionMesh = Process2Pos2NegCase(nodeCoords, nodeLevelSets);
                     return (RelativePositionCurveElement.Intersecting, intersectionMesh);
+                    
                 }
             }
             else if (numZeroNodes == 1)
             {
+                var intersectionMesh = new IntersectionMesh3D();
                 int nodeZero = nodeLevelSets.FindIndex(phi => phi == 0);
                 intersectionMesh.Vertices.Add(nodeCoords[nodeZero]);
 
@@ -97,6 +91,7 @@ namespace MGroup.XFEM.Geometry.LSM
             }
             else if (numZeroNodes == 2)
             {
+                var intersectionMesh = new IntersectionMesh3D();
                 int nodeZero0 = nodeLevelSets.FindIndex(phi => phi == 0);
                 int nodeZero1 = nodeLevelSets.FindLastIndex(phi => phi == 0);
                 intersectionMesh.Vertices.Add(nodeCoords[nodeZero0]);
@@ -123,6 +118,7 @@ namespace MGroup.XFEM.Geometry.LSM
             else if (numZeroNodes == 3)
             {
                 // Conforming. The intersection mesh consists of the face connecting the 3 zero nodes.
+                var intersectionMesh = new IntersectionMesh3D();
                 for (int i = 0; i < 4; ++i)
                 {
                     if (nodeLevelSets[i] == 0)
@@ -140,13 +136,109 @@ namespace MGroup.XFEM.Geometry.LSM
                 //TODO: The client should decide whether to log this msg or throw an exception
                 Debug.WriteLine(
                     $"Found element that has all its faces conforming to level set surface with ID {int.MinValue}");
+                var intersectionMesh = new IntersectionMesh3D();
                 for (int i = 0; i < 4; ++i)
                 {
                     intersectionMesh.Vertices.Add(nodeCoords[i]);
-                    intersectionMesh.Cells.Add((CellType.Line, new int[] { i, (i + 1) % 3, (i + 2) % 3 }));
+                    intersectionMesh.Cells.Add((CellType.Tri3, new int[] { i, (i + 1) % 3, (i + 2) % 3 }));
                 }
                 return (RelativePositionCurveElement.Conforming, intersectionMesh);
             }
+        }
+
+        private IntersectionMesh3D Process2Pos2NegCase(List<double[]> nodeCoords, List<double> nodeLevelSets)
+        {
+            // Intersection. 4 intersection points on edges of the 2 positive nodes that connect them with the 2 
+            // negative nodes. The intersection mesh consists of 2 triangles.
+
+            var posNodes = new List<int>(2);
+            var negNodes = new List<int>(2);
+            for (int i = 0; i < 4; ++i)
+            {
+                if (nodeLevelSets[i] > 0)
+                {
+                    posNodes.Add(i);
+                }
+                else
+                {
+                    Debug.Assert(nodeLevelSets[i] < 0);
+                    negNodes.Add(i);
+                }
+            }
+            
+            // If P0, P1 are the positive nodes and N0, N1 the negative, then the order of intersection points in order to form
+            // a simple (not self-intersecting) quadrilateral is: P0N0, N0P1, P1N1, N1P0
+            var intersections = new List<double[]>();
+            intersections.Add(Interpolate(
+                nodeLevelSets[negNodes[0]], nodeCoords[negNodes[0]], nodeLevelSets[posNodes[0]], nodeCoords[posNodes[0]]));
+            intersections.Add(Interpolate(
+                nodeLevelSets[negNodes[0]], nodeCoords[negNodes[0]], nodeLevelSets[posNodes[1]], nodeCoords[posNodes[1]]));
+            intersections.Add(Interpolate(
+                nodeLevelSets[negNodes[1]], nodeCoords[negNodes[1]], nodeLevelSets[posNodes[1]], nodeCoords[posNodes[1]]));
+            intersections.Add(Interpolate(
+                nodeLevelSets[negNodes[1]], nodeCoords[negNodes[1]], nodeLevelSets[posNodes[0]], nodeCoords[posNodes[0]]));
+
+            //List<double[]> intersections = FindEdgeIntersections(nodeCoords, nodeLevelSets);
+            //Debug.Assert(intersections.Count == 4);
+            var intersectionMesh = new IntersectionMesh3D();
+            foreach (double[] point in intersections)
+            {
+                intersectionMesh.Vertices.Add(point);
+            }
+
+            List<int[]> triangles = Delauny4Points3D(intersections);
+            Debug.Assert(triangles.Count == 2);
+            intersectionMesh.Cells.Add((CellType.Tri3, triangles[0]));
+            intersectionMesh.Cells.Add((CellType.Tri3, triangles[1]));
+            return intersectionMesh;
+        }
+
+        /// <summary>
+        /// Finds 2 triangles out of 4 coplanar points in 3D space, which must be given in clockwise or counter-clockwise order. 
+        /// These triangles observe the Delauny property: the minimum angle is the maximum possible minimum angle over all other 
+        /// alternative triangulations.
+        /// </summary>
+        /// <param name="points">
+        /// 4 coplanar points that are given in clockwise or counter-clockwise order.
+        /// </param>
+        /// <returns>Two arrays containing the indices into <paramref name="points"/> of the triangle vertices.</returns>
+        private static List<int[]> Delauny4Points3D(List<double[]> points)
+        {
+            // To maximize the minimum angles, the sum of the angles opposite to the common edge must be <= pi. 
+            // In this figure, this property does not hold
+            //            0  
+            //         /     \
+            //      /           \ 
+            //    1 ------------- 3
+            //      \           /
+            //         \     /
+            //            2 
+
+            double p0p1 = Utilities.Distance3D(points[0], points[1]);
+            double p0p3 = Utilities.Distance3D(points[0], points[3]);
+            double p2p1 = Utilities.Distance3D(points[2], points[1]);
+            double p2p3 = Utilities.Distance3D(points[2], points[3]);
+            double p1p3 = Utilities.Distance3D(points[1], points[3]);
+
+            // Find the angles of P0, P2 using the cosine law
+            double angle0 = Math.Acos((p0p1 * p0p1 + p0p3 * p0p3 - p1p3 * p1p3) / (2 * p0p1 * p0p3));
+            double angle2 = Math.Acos((p2p1 * p2p1 + p2p3 * p2p3 - p1p3 * p1p3) / (2 * p2p1 * p2p3));
+
+            var triangles = new List<int[]>(2);
+            if (angle0 + angle2 <= Math.PI)
+            {
+                // This is the correct delauny triangulation
+                triangles.Add(new int[] { 0, 1, 3 });
+                triangles.Add(new int[] { 1, 2, 3 });
+            }
+            else
+            {
+                // Flip the common edge: P0P2 instead of P1P3
+                triangles.Add(new int[] { 0, 1, 2 });
+                triangles.Add(new int[] { 0, 2, 3 });
+            }
+
+            return triangles;
         }
 
         private static List<double[]> FindEdgeIntersections(List<double[]> nodeCoords, List<double> nodalLevelSets)

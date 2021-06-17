@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using ISAAR.MSolve.Geometry.Shapes;
 using MGroup.XFEM.Elements;
@@ -25,9 +26,28 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
         public ElementSubtetrahedron3D[] FindConformingMesh(IXFiniteElement element, 
             IEnumerable<IElementDiscontinuityInteraction> intersections, IMeshTolerance meshTolerance)
         {
+            //TODO: If an element is intersected by 2 surfaces which also intersect each other (inside the element) then this
+            //      implementation is not sufficient to produce a conforming mesh.
+            double pointProximityTolerance = meshTolerance.CalcTolerance(element);
+            SortedSet<double[]> tetraVertices = FindTriangulationVertices(element, intersections, pointProximityTolerance);
+
+            var triangulator = new MIConvexHullTriangulator3D();
+            List<Tetrahedron3D> delaunyTetrahedra = triangulator.CreateMesh(tetraVertices);
+            double minTetrahedronVolume = meshTolerance.CalcTolerance(element) * element.CalcBulkSizeNatural();
+            FilterTetrahedra(delaunyTetrahedra, minTetrahedronVolume);
+            var subtetrahedra = new ElementSubtetrahedron3D[delaunyTetrahedra.Count];
+            for (int t = 0; t < delaunyTetrahedra.Count; ++t)
+            {
+                subtetrahedra[t] = new ElementSubtetrahedron3D(delaunyTetrahedra[t]);
+            }
+            return subtetrahedra;
+        }
+
+        private SortedSet<double[]> FindTriangulationVertices(IXFiniteElement element,
+            IEnumerable<IElementDiscontinuityInteraction> intersections, double pointProximityTolerance)
+        {
             // Store the nodes and all intersection points in a set
-            double tol = meshTolerance.CalcTolerance(element);
-            var comparer = new Point3DComparer(tol);
+            var comparer = new Point3DComparer(pointProximityTolerance);
             var nodes = new SortedSet<double[]>(comparer);
             nodes.UnionWith(element.Interpolation.NodalNaturalCoordinates);
 
@@ -46,7 +66,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
                 int countBeforeInsertion = tetraVertices.Count;
                 tetraVertices.UnionWith(newVertices);
 
-                if (tetraVertices.Count == countBeforeInsertion)
+                if ((element.CellType == CellType.Hexa8) && (tetraVertices.Count == countBeforeInsertion))
                 {
                     // Corner case: the curve intersects the element at 4 opposite nodes. In this case also add their centroid 
                     // to force the Delauny algorithm to conform to the segment.
@@ -73,15 +93,37 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
                 }
             }
 
-            var triangulator = new MIConvexHullTriangulator3D();
-            triangulator.MinTetrahedronVolume = tol * element.CalcBulkSizeNatural();
-            IList<Tetrahedron3D> delaunyTetrahedra = triangulator.CreateMesh(tetraVertices);
-            var subtetrahedra = new ElementSubtetrahedron3D[delaunyTetrahedra.Count];
-            for (int t = 0; t < delaunyTetrahedra.Count; ++t)
+            return tetraVertices;
+        }
+
+        private void FilterTetrahedra(List<Tetrahedron3D> delaunyTetrahedra, double minTetrahedronVolume)
+        {
+            var tetrahedraToRemove = new List<Tetrahedron3D>();
+
+            foreach (Tetrahedron3D tet in delaunyTetrahedra)
             {
-                subtetrahedra[t] = new ElementSubtetrahedron3D(delaunyTetrahedra[t]);
+                //TODO: Perhaps the cutoff criterion should take into account both the volume of the original element and the max volume of the subtets.
+                // Remove very small tetrahedra
+                double volume = tet.CalcVolume();
+                if (minTetrahedronVolume > 0)
+                {
+                    if (Math.Abs(volume) < minTetrahedronVolume)
+                    {
+                        tetrahedraToRemove.Add(tet);
+                        continue;
+                    }
+                }
+
+                // MIConvexHull does not care about its tetrahedra having positive volume, so we need to enforce it.
+                if (volume < 0)
+                {
+                    // Swap the last 2 vertices, so that the volume changes sign.
+                    double[] swap = tet.Vertices[2];
+                    tet.Vertices[2] = tet.Vertices[3];
+                    tet.Vertices[3] = swap;
+                    Debug.Assert(tet.CalcVolume() > 0);
+                }
             }
-            return subtetrahedra;
         }
     }
 }

@@ -152,7 +152,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
             var materialField = new MatrixInclusionsThermalMaterialField(matrixMaterial, inclusionMaterial,
                 conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
 
-            var model = Models.CreateHexa8Model(minCoords, maxCoords, numElements,
+            var model = Models.CreateHexa8Model(minCoords, maxCoords, numElements, true,
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField, cohesiveInterfaces);
             Models.ApplyBCsTemperatureDiffAlongX(model, 0, 1);
             return model;

@@ -9,6 +9,7 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.Direct;
+using MGroup.Geometry.Mesh;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Entities;
@@ -59,7 +60,9 @@ namespace MGroup.XFEM.Heat
         public void BuildModel()
         {
             var dualMesh = new DualMesh3D(CoordsMin, CoordsMax, NumElementsCoarse, NumElementsFine);
-            model = BuildPhysicalModel(dualMesh.CoarseMesh);
+            var mesh = new UniformSimplicialMesh3D.Builder(CoordsMin, CoordsMax,
+                new int[] { NumElementsCoarse[0] + 1, NumElementsCoarse[1] + 1, NumElementsCoarse[2] + 1 }).BuildMesh();
+            model = BuildPhysicalModel(mesh/*dualMesh.CoarseMesh*/);
             PhaseGeometryModel geometryModel = CreatePhases(model, dualMesh);
             model.GeometryModel = geometryModel;
         }
@@ -146,7 +149,7 @@ namespace MGroup.XFEM.Heat
             }
         }
 
-        private XModel<IXMultiphaseElement> BuildPhysicalModel(IStructuredMesh mesh)
+        private XModel<IXMultiphaseElement> BuildPhysicalModel(MGroup.Geometry.Mesh.IStructuredMesh/*IStructuredMesh*/ mesh)
         {
             var model = new XModel<IXMultiphaseElement>(3);
             model.Subdomains[0] = new XSubdomain(0);
@@ -167,12 +170,12 @@ namespace MGroup.XFEM.Heat
             for (int e = 0; e < mesh.NumElementsTotal; ++e)
             {
                 var nodes = new List<XNode>();
-                int[] connectivity = mesh.GetElementConnectivity(mesh.GetElementIdx(e));
+                int[] connectivity = mesh.GetElementConnectivity(e);
                 foreach (int n in connectivity)
                 {
                     nodes.Add(model.XNodes[n]);
                 }
-                XThermalElement3D element = elemFactory.CreateElement(e, ISAAR.MSolve.Discretization.Mesh.CellType.Hexa8, nodes);
+                XThermalElement3D element = elemFactory.CreateElement(e, mesh.CellType, nodes);
                 model.Elements.Add(element);
                 model.Subdomains[0].Elements.Add(element);
             }
@@ -198,7 +201,7 @@ namespace MGroup.XFEM.Heat
                 geometricModel.Phases[phase.ID] = phase;
 
                 IClosedGeometry geometry;
-                if (lsmType == 0) geometry = new SimpleLsm3D(phase.ID, model.XNodes, surface);
+                if (lsmType == 0) geometry = new SimpleLsm3D(phase.ID, model.XNodes, surface, true);
                 else if (lsmType == 1) geometry = new GlobalDualMeshLsm3D(phase.ID, mesh, surface);
                 else if (lsmType == 2) geometry = new LocalDualMeshLsm3D(phase.ID, mesh, surface);
                 else throw new NotImplementedException();

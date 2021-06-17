@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using ISAAR.MSolve.Discretization.Mesh;
+using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Output.Vtk;
 
@@ -11,7 +12,7 @@ namespace MGroup.XFEM.Output.Mesh
         private readonly List<VtkCell> outCells;
         private readonly List<VtkPoint> outVertices;
 
-        public ContinuousOutputMesh(IEnumerable<XNode> originalVertices, IEnumerable<ICell<XNode>> originalCells)
+        public ContinuousOutputMesh(IEnumerable<XNode> originalVertices, IEnumerable<IXFiniteElement> originalCells)
         {
             this.OriginalVertices = originalVertices;
             this.OriginalCells = originalCells;
@@ -27,7 +28,7 @@ namespace MGroup.XFEM.Output.Mesh
             }
 
             this.outCells = new List<VtkCell>();
-            foreach (ICell<XNode> cell in originalCells)
+            foreach (IXFiniteElement cell in originalCells)
             {
                 List<VtkPoint> vertices = cell.Nodes.Select(v => original2OutVertices[v]).ToList();
                 outCells.Add(new VtkCell(cell.CellType, vertices));
@@ -38,7 +39,7 @@ namespace MGroup.XFEM.Output.Mesh
 
         public int NumOutVertices => outVertices.Count;
 
-        public IEnumerable<ICell<XNode>> OriginalCells { get; }
+        public IEnumerable<IXFiniteElement> OriginalCells { get; }
 
         /// <summary>
         /// Same order as the corresponding one in <see cref="OutVertices"/>.

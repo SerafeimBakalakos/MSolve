@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
+using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.Geometry.Coordinates;
 using MGroup.XFEM.ElementGeometry;
@@ -13,19 +14,25 @@ using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Geometry.Tolerances;
 
 //TODO: Remove duplication between this and 2D case.
+//TODO: Paraview produces some very smooth level sets and very robustly. Find out how it does that and reproduce it.
+//      See https://vtk.org/doc/nightly/html/classvtkContourFilter.html.
 namespace MGroup.XFEM.Geometry.LSM
 {
     public class SimpleLsm3D : IClosedGeometry
     {
-        public SimpleLsm3D(int id, double[] nodalLevelSets)
+        private readonly bool isMeshStructuredSimplicial;
+
+        public SimpleLsm3D(int id, double[] nodalLevelSets, bool isMeshStructuredSimplicial = false)
         {
             this.ID = id;
             this.NodalLevelSets = nodalLevelSets;
+            this.isMeshStructuredSimplicial = isMeshStructuredSimplicial;
         }
 
-        public SimpleLsm3D(int id, IReadOnlyList<XNode> nodes, ISurface3D closedSurface)
+        public SimpleLsm3D(int id, IReadOnlyList<XNode> nodes, ISurface3D closedSurface, bool isMeshStructuredSimplicial = false)
         {
             this.ID = id;
+            this.isMeshStructuredSimplicial = isMeshStructuredSimplicial;
             NodalLevelSets = new double[nodes.Count];
             for (int n = 0; n < nodes.Count; ++n)
             {
@@ -42,23 +49,9 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public virtual IElementDiscontinuityInteraction Intersect(IXFiniteElement element)
         {
-            Dictionary<int, double> levelSetSubset = FindLevelSetsOfElementNodes(element, NodalLevelSets);
-            RelativePositionCurveElement position = FindRelativePosition(element, levelSetSubset);
-            if (position == RelativePositionCurveElement.Disjoint)
-            {
-                return new NullElementDiscontinuityInteraction(ID, element);
-            }
-            else if (position == RelativePositionCurveElement.Conforming)
-            {
-                IntersectionMesh3D intersectionMesh = FindInteractionConforming(element);
-                return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Conforming, element, intersectionMesh);
-            }
-            else if (position == RelativePositionCurveElement.Intersecting)
-            {
-                var intersectionMesh = FindInteractionIntersecting(element, levelSetSubset);
-                return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Intersecting, element, intersectionMesh);
-            }
-            else throw new NotImplementedException();
+            //TODO: Use strategy pattern for the raw geometric operations.
+            if (isMeshStructuredSimplicial) return IntersectTet4Element(element);
+            else return IntersectGeneralElement(element);
         }
 
         public double SignedDistanceOf(XNode node) => NodalLevelSets[node.ID];
@@ -214,6 +207,64 @@ namespace MGroup.XFEM.Geometry.LSM
                 return intersection;
             }
             else return null;
+        }
+
+        private IElementDiscontinuityInteraction IntersectGeneralElement(IXFiniteElement element)
+        {
+            Dictionary<int, double> levelSetSubset = FindLevelSetsOfElementNodes(element, NodalLevelSets);
+            RelativePositionCurveElement position = FindRelativePosition(element, levelSetSubset);
+            if (position == RelativePositionCurveElement.Disjoint)
+            {
+                return new NullElementDiscontinuityInteraction(ID, element);
+            }
+            else if (position == RelativePositionCurveElement.Conforming)
+            {
+                IntersectionMesh3D intersectionMesh = FindInteractionConforming(element);
+                return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Conforming, element, intersectionMesh);
+            }
+            else if (position == RelativePositionCurveElement.Intersecting)
+            {
+                var intersectionMesh = FindInteractionIntersecting(element, levelSetSubset);
+                return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Intersecting, element, intersectionMesh);
+            }
+            else throw new NotImplementedException();
+        }
+
+        private IElementDiscontinuityInteraction IntersectTet4Element(IXFiniteElement element)
+        {
+            Debug.Assert(element.CellType == CellType.Tet4);
+
+            var nodeCoordinates = new List<double[]>();
+            var nodeLevelSets = new List<double>();
+            for (int n = 0; n < element.Nodes.Count; ++n)
+            {
+                nodeCoordinates.Add(element.Interpolation.NodalNaturalCoordinates[n]);
+                nodeLevelSets.Add(NodalLevelSets[element.Nodes[n].ID]);
+            }
+
+            var interactionStrategy = new LsmTet4Interaction();
+            (RelativePositionCurveElement relativePosition, IntersectionMesh3D intersectionMesh)
+                = interactionStrategy.FindIntersection(nodeCoordinates, nodeLevelSets);
+            if (relativePosition == RelativePositionCurveElement.Disjoint)
+            {
+                return new NullElementDiscontinuityInteraction(this.ID, element);
+            }
+            else if (relativePosition == RelativePositionCurveElement.Intersecting)
+            {
+                return new LsmElementIntersection3D(this.ID, relativePosition, element, intersectionMesh);
+            }
+            else if (relativePosition == RelativePositionCurveElement.Conforming)
+            {
+                return new LsmElementIntersection3D(this.ID, relativePosition, element, intersectionMesh);
+            }
+            else if (relativePosition == RelativePositionCurveElement.Tangent)
+            {
+                return new NullElementDiscontinuityInteraction(this.ID, element);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

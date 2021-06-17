@@ -19,9 +19,7 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             this.minDistanceTolerance = minDistanceTolerance;
         }
 
-        public double MinTetrahedronVolume { get; set; } = -1;
-
-        public IList<Tetrahedron3D> CreateMesh(IEnumerable<double[]> points)
+        public List<Tetrahedron3D> CreateMesh(IEnumerable<double[]> points)
         {
             // Gather the vertices
             List<double[]> vertices = points.ToList();
@@ -29,10 +27,9 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             // Call 3rd-party mesh generator
             IEnumerable<DefaultTriangulationCell<DefaultVertex>> meshCells = CallMIConvexHullDelauny(vertices);
 
-            // Repackage the triangle cells
+            // Process the tetrahedral cells
             var tetrahedra = new List<Tetrahedron3D>();
             foreach (DefaultTriangulationCell<DefaultVertex> meshCell in meshCells)
-            //for (int t = 0; t < meshCells.Length; ++t)
             {
                 DefaultVertex[] verticesOfTriangle = meshCell.Vertices;
                 Debug.Assert(verticesOfTriangle.Length == 4);
@@ -42,12 +39,6 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
                     tetra.Vertices[v] = verticesOfTriangle[v].Position;
                 }
                 tetrahedra.Add(tetra);
-            }
-
-            // Remove very small triangles
-            if (MinTetrahedronVolume > 0)
-            {
-                tetrahedra.RemoveAll(tet => tet.CalcVolume() < MinTetrahedronVolume);
             }
 
             return tetrahedra;

@@ -39,8 +39,10 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
         private const double conductBoundaryMatrixInclusion = 1E1, conductBoundaryInclusionInclusion = 1E2;
         private const double specialHeatCoeff = 1.0;
 
-        [Fact]
-        public static void TestModel()
+
+        [Theory]
+        [InlineData(true)]
+        public static void TestModel(bool cartesianMesh)
         {
             try
             {
@@ -50,9 +52,9 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
                 }
 
                 // Create model and LSM
-                XModel<IXMultiphaseElement> model = CreateModel();
+                XModel<IXMultiphaseElement> model = CreateModel(cartesianMesh);
                 model.FindConformingSubcells = true;
-                PhaseGeometryModel geometryModel = CreatePhases(model);
+                PhaseGeometryModel geometryModel = CreatePhases(model, cartesianMesh);
 
                 // Plot level sets
                 geometryModel.GeometryObservers.Add(new PhaseLevelSetPlotter(outputDirectory, model, geometryModel));
@@ -134,9 +136,9 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
                 }
 
                 // Create model and LSM
-                XModel<IXMultiphaseElement> model = CreateModel();
+                XModel<IXMultiphaseElement> model = CreateModel(true);
                 model.FindConformingSubcells = true;
-                PhaseGeometryModel geometryModel = CreatePhases(model);
+                PhaseGeometryModel geometryModel = CreatePhases(model, true);
 
                 // Run analysis
                 model.Initialize();
@@ -174,7 +176,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
             }
         }
 
-        private static XModel<IXMultiphaseElement> CreateModel()
+        private static XModel<IXMultiphaseElement> CreateModel(bool cartesianMesh)
         {
             // Materials
             var matrixMaterial = new ThermalMaterial(conductMatrix, specialHeatCoeff);
@@ -182,14 +184,14 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal
             var materialField = new MatrixInclusionsThermalMaterialField(matrixMaterial, inclusionMaterial,
                 conductBoundaryMatrixInclusion, conductBoundaryInclusionInclusion, defaultPhaseID);
 
-            return Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements,
+            return Models.CreateQuad4Model(minCoords, maxCoords, thickness, numElements, cartesianMesh,
                 bulkIntegrationOrder, boundaryIntegrationOrder, materialField, true);
         }
 
-        private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model)
+        private static PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model, bool cartesianMesh)
         {
             List<ICurve2D> balls = Utilities.Phases.CreateBallsStructured2D(minCoords, maxCoords, numBalls, ballRadius, 1.0);
-            PhaseGeometryModel geometryModel = Utilities.Phases.CreateLsmPhases2D(model, balls);
+            PhaseGeometryModel geometryModel = Utilities.Phases.CreateLsmPhases2D(model, balls, cartesianMesh);
             geometryModel.Enricher = NodeEnricherMultiphaseNoJunctions.CreateThermalStep(geometryModel);
             return geometryModel;
         }
