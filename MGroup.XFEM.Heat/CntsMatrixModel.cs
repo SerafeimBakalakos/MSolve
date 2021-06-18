@@ -32,6 +32,7 @@ namespace MGroup.XFEM.Heat
     {
         private const int defaultPhaseID = 0;
         private const int lsmType = 0; // 0 = simple, 1 = dual global, 2 = dual local
+        private const bool cartesianMesh = false;
         private static readonly string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Phase3\CntsMatrix";
         private readonly int boundaryIntegrationOrder = 2;
 
@@ -45,9 +46,9 @@ namespace MGroup.XFEM.Heat
 
         public double[] CoordsMax { get; set; }
 
-        public int[] NumElementsCoarse { get; set; } = { 50, 50, 50 };
+        public int[] NumElementsCoarse { get; set; } = { 60, 60, 60 };
 
-        public int[] NumElementsFine { get; set; } = { 50, 50, 50 };
+        public int[] NumElementsFine { get; set; } = { 60, 60, 60 };
 
         public double ConductivityMatrix { get; set; }
 
@@ -60,8 +61,17 @@ namespace MGroup.XFEM.Heat
         public void BuildModel()
         {
             var dualMesh = new DualMesh3D(CoordsMin, CoordsMax, NumElementsCoarse, NumElementsFine);
-            var mesh = new UniformSimplicialMesh3D.Builder(CoordsMin, CoordsMax,
-                new int[] { NumElementsCoarse[0] + 1, NumElementsCoarse[1] + 1, NumElementsCoarse[2] + 1 }).BuildMesh();
+            MGroup.Geometry.Mesh.IStructuredMesh mesh;
+            if (cartesianMesh)
+            {
+                mesh = new UniformCartesianMesh3D.Builder(CoordsMin, CoordsMax, NumElementsCoarse).BuildMesh();
+            }
+            else
+            {
+                mesh = new UniformSimplicialMesh3D.Builder(CoordsMin, CoordsMax,
+                    new int[] { NumElementsCoarse[0] + 1, NumElementsCoarse[1] + 1, NumElementsCoarse[2] + 1 }).BuildMesh();
+            }
+
             model = BuildPhysicalModel(mesh/*dualMesh.CoarseMesh*/);
             PhaseGeometryModel geometryModel = CreatePhases(model, dualMesh);
             model.GeometryModel = geometryModel;
@@ -201,7 +211,7 @@ namespace MGroup.XFEM.Heat
                 geometricModel.Phases[phase.ID] = phase;
 
                 IClosedGeometry geometry;
-                if (lsmType == 0) geometry = new SimpleLsm3D(phase.ID, model.XNodes, surface, true);
+                if (lsmType == 0) geometry = new SimpleLsm3D(phase.ID, model.XNodes, surface, !cartesianMesh);
                 else if (lsmType == 1) geometry = new GlobalDualMeshLsm3D(phase.ID, mesh, surface);
                 else if (lsmType == 2) geometry = new LocalDualMeshLsm3D(phase.ID, mesh, surface);
                 else throw new NotImplementedException();

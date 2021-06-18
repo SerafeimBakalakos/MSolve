@@ -17,7 +17,12 @@ namespace MGroup.XFEM.Geometry
 
         public int Compare(double[] point0, double[] point1)
         {
-            if (comparer.AreEqual(point0[0], point1[0]) && comparer.AreEqual(point0[1], point1[1]) && comparer.AreEqual(point0[2], point1[2])) return 0;
+            if (comparer.AreEqual(point0[0], point1[0])
+                && comparer.AreEqual(point0[1], point1[1])
+                && comparer.AreEqual(point0[2], point1[2]))
+            {
+                return 0;
+            }
             else if (point0[0] < point1[0]) return -1;
             else if (point0[0] > point1[0]) return +1;
             else

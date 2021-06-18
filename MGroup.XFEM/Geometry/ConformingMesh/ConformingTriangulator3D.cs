@@ -26,10 +26,16 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
         public ElementSubtetrahedron3D[] FindConformingMesh(IXFiniteElement element, 
             IEnumerable<IElementDiscontinuityInteraction> intersections, IMeshTolerance meshTolerance)
         {
+            #region debug
+            if (element.ID == 167877)
+            {
+                Console.WriteLine();
+            }
+            #endregion
             //TODO: If an element is intersected by 2 surfaces which also intersect each other (inside the element) then this
             //      implementation is not sufficient to produce a conforming mesh.
             double pointProximityTolerance = meshTolerance.CalcTolerance(element);
-            SortedSet<double[]> tetraVertices = FindTriangulationVertices(element, intersections, pointProximityTolerance);
+            List<double[]> tetraVertices = FindTriangulationVertices(element, intersections, pointProximityTolerance);
 
             var triangulator = new MIConvexHullTriangulator3D();
             List<Tetrahedron3D> delaunyTetrahedra = triangulator.CreateMesh(tetraVertices);
@@ -43,17 +49,15 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
             return subtetrahedra;
         }
 
-        private SortedSet<double[]> FindTriangulationVertices(IXFiniteElement element,
+        private List<double[]> FindTriangulationVertices(IXFiniteElement element,
             IEnumerable<IElementDiscontinuityInteraction> intersections, double pointProximityTolerance)
         {
-            // Store the nodes and all intersection points in a set
+            // Store the nodes in a list
             var comparer = new Point3DComparer(pointProximityTolerance);
-            var nodes = new SortedSet<double[]>(comparer);
-            nodes.UnionWith(element.Interpolation.NodalNaturalCoordinates);
+            var nodes = new List<double[]>(element.Interpolation.NodalNaturalCoordinates);
 
-            // Store the nodes and all intersection points in a different set
-            var tetraVertices = new SortedSet<double[]>(comparer);
-            tetraVertices.UnionWith(nodes);
+            // Store the nodes and all intersection points in a different list
+            var tetraVertices = new List<double[]>(nodes);
 
             // Add intersection points from each curve-element intersection object.
             foreach (IElementDiscontinuityInteraction intersection in intersections)
@@ -64,32 +68,44 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
 
                 IList<double[]> newVertices = intersection.GetVerticesForTriangulation();
                 int countBeforeInsertion = tetraVertices.Count;
-                tetraVertices.UnionWith(newVertices);
+                Union(tetraVertices, newVertices, comparer);
 
-                if ((element.CellType == CellType.Hexa8) && (tetraVertices.Count == countBeforeInsertion))
+                if (tetraVertices.Count == countBeforeInsertion)
                 {
                     // Corner case: the curve intersects the element at 4 opposite nodes. In this case also add their centroid 
-                    // to force the Delauny algorithm to conform to the segment.
+                    // to force the Delauny algorithm to conform to the segment. Or it intersects the element extremely close to
+                    // a node and MIConvexHull messes up with just the nodes of a Tet4 / Hexa8
                     //TODO: I should use constrained Delauny in all cases and conform to the intersection segment.
-                    bool areNodes = true;
-                    var centroid = new double[3];
-                    foreach (double[] vertex in newVertices)
-                    {
-                        if (!nodes.Contains(vertex)) areNodes = false;
-                        for (int i = 0; i < 3; ++i)
-                        {
-                            centroid[i] += vertex[i];
-                        }
-                    }
-                    for (int i = 0; i < 3; ++i)
-                    {
-                        centroid[i] /= newVertices.Count;
-                    }
 
-                    if (areNodes)
+                    var centroid = new double[3];
+                    foreach (double[] node in tetraVertices)
                     {
-                        tetraVertices.Add(centroid);
+                        for (int d = 0; d < 3; ++d) centroid[d] += node[d];
                     }
+                    for (int d = 0; d < 3; ++d) centroid[d] /= tetraVertices.Count;
+                    tetraVertices.Add(centroid);
+
+                    //TODO: The next causes problems if these intersections are very close to each other. Is all this even necessary? 
+                    //      Can't we just take the centroid of the nodes or even take it directly as { 0, 0, 0 }?
+                    //bool areNodes = true;
+                    //var centroid = new double[3];
+                    //foreach (double[] vertex in newVertices)
+                    //{
+                    //    if (!Contains(nodes, vertex, comparer)) areNodes = false;
+                    //    for (int i = 0; i < 3; ++i)
+                    //    {
+                    //        centroid[i] += vertex[i];
+                    //    }
+                    //}
+                    //for (int i = 0; i < 3; ++i)
+                    //{
+                    //    centroid[i] /= newVertices.Count;
+                    //}
+
+                    //if (areNodes)
+                    //{
+                    //    tetraVertices.Add(centroid);
+                    //}
                 }
             }
 
@@ -122,6 +138,32 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
                     tet.Vertices[2] = tet.Vertices[3];
                     tet.Vertices[3] = swap;
                     Debug.Assert(tet.CalcVolume() > 0);
+                }
+            }
+        }
+
+        private bool Contains(IList<double[]> points, double[] newPoint, Point3DComparer comparer)
+        {
+            //TODO: This should be done by using a SortedSet and the comparer, but for some reason, it does not work correctly (since C#8)
+            foreach (double[] oldPoint in points)
+            {
+                if (comparer.Compare(oldPoint, newPoint) == 0)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void Union(IList<double[]> existingPoints, IList<double[]> newPoints, Point3DComparer comparer)
+        {
+            //TODO: This should be done by using a SortedSet and the comparer, but for some reason, it keeps adding almost duplicate points
+            foreach (double[] newPoint in newPoints)
+            {
+                bool pointExists = Contains(existingPoints, newPoint, comparer);
+                if (!pointExists)
+                {
+                    existingPoints.Add(newPoint);
                 }
             }
         }

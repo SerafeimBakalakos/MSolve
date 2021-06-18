@@ -13,6 +13,9 @@ using MGroup.XFEM.FEM.Mesh;
 //TODO: Make these intersections as smooth as the contours in ParaView
 //TODO: Optimizations are possible, but may mess up readability. E.g. depending on the case, we can target specific edges that 
 //      are intersected, instead of checking all of them
+//TODO: For the common case, where the level set intersects the Tet4 into a triangle, there is the corner case that this triangle 
+//      is extremely close to the node. In that case, it is probably safer to regard this as "Tangent". What happens if only 1 
+//      or only 2 of the triangle vertices coincide with the node? 
 namespace MGroup.XFEM.Geometry.LSM
 {
     public class LsmTet4Interaction
@@ -80,7 +83,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 {
                     // Intersection. A single positive or negative node. 2 intersection points on its edges and the zero node.
                     // The intersection mesh consists of a single triangle.
-                    Debug.Assert(((numPosNodes == 1) && (numPosNodes == 2)) || ((numPosNodes == 2) && (numPosNodes == 1)));
+                    Debug.Assert(((numPosNodes == 1) && (numNegNodes == 2)) || ((numPosNodes == 2) && (numNegNodes == 1)));
                     List<double[]> intersections = FindEdgeIntersections(nodeCoords, nodeLevelSets);
                     Debug.Assert(intersections.Count == 2);
                     intersectionMesh.Vertices.Add(intersections[0]);
