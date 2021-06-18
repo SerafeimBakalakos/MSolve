@@ -20,7 +20,7 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         private readonly List<ICurve2D> closedCurves;
 
-        public FixedDualMeshLsm2D(int id, DualMesh2D dualMesh, ICurve2D closedCurve) : base(id, dualMesh, closedCurve)
+        public FixedDualMeshLsm2D(int id, DualCartesianMesh2D dualMesh, ICurve2D closedCurve) : base(id, dualMesh, closedCurve)
         {
             this.closedCurves = new List<ICurve2D>();
             this.closedCurves.Add(closedCurve);

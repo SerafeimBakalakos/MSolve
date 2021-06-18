@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MGroup.Geometry.Mesh;
 using MGroup.XFEM.Geometry.Mesh;
 using Xunit;
 
@@ -11,13 +12,13 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
         [Fact]
         public static void TestFindFineNodesEdgesOfCoarseElement()
         {
-            (DualMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(3);
+            (DualCartesianMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(3);
 
 
             for (int coarseElem = 0; coarseElem < dualMesh.CoarseMesh.NumElementsTotal; ++coarseElem)
             {
-                DualMesh2D.Submesh submeshExpected = ((MockMesh1To3)mockMesh).FindFineNodesEdgesOfCoarseElement(coarseElem);
-                DualMesh2D.Submesh submeshComputed = dualMesh.FindFineNodesEdgesOfCoarseElement(coarseElem);
+                DualCartesianMesh2D.Submesh submeshExpected = ((MockMesh1To3)mockMesh).FindFineNodesEdgesOfCoarseElement(coarseElem);
+                DualCartesianMesh2D.Submesh submeshComputed = dualMesh.FindFineNodesEdgesOfCoarseElement(coarseElem);
 
                 // Check nodes
                 Assert.Equal(submeshExpected.FineNodeIDs.Count, submeshComputed.FineNodeIDs.Count);
@@ -54,7 +55,7 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
         [InlineData(3)]
         public static void TestMapNodeFineToCoarse(int multiplicity)
         {
-            (DualMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
+            (DualCartesianMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
 
             for (int fineNode = 0; fineNode < dualMesh.FineMesh.NumNodesTotal; ++fineNode)
             {
@@ -69,7 +70,7 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
         [InlineData(3)]
         public static void TestMapNodeCoarseToFine(int multiplicity)
         {
-            (DualMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
+            (DualCartesianMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
 
             for (int coarseNode = 0; coarseNode < dualMesh.CoarseMesh.NumNodesTotal; ++coarseNode)
             {
@@ -84,7 +85,7 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
         [InlineData(3)]
         public static void TestMapElementFineToCoarse(int multiplicity)
         {
-            (DualMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
+            (DualCartesianMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
 
             for (int fineElem = 0; fineElem < dualMesh.FineMesh.NumElementsTotal; ++fineElem)
             {
@@ -99,7 +100,7 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
         [InlineData(3)]
         public static void TestMapElementCoarseToFine(int multiplicity)
         {
-            (DualMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
+            (DualCartesianMesh2D dualMesh, IDualMesh mockMesh) = PrepareMeshes(multiplicity);
 
             for (int coarseElem = 0; coarseElem < dualMesh.CoarseMesh.NumElementsTotal; ++coarseElem)
             {
@@ -113,25 +114,27 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
             }
         }
 
-        private static (DualMesh2D dualMesh, IDualMesh mockMesh) PrepareMeshes(int multiplicity)
+        private static (DualCartesianMesh2D dualMesh, IDualMesh mockMesh) PrepareMeshes(int multiplicity)
         {
             var minCoordinates = new double[] { 0, 0 };
             var maxCoordinates = new double[] { 2, 3 };
             var numElementsCoarse = new int[] { 2, 3 };
 
             IDualMesh mockMesh;
-            DualMesh2D dualMesh;
+            DualCartesianMesh2D dualMesh;
             if (multiplicity == 1)
             {
                 var numElementsFine = new int[] { 2, 3 };
                 mockMesh = new MockMesh1To1();
-                dualMesh = new DualMesh2D(minCoordinates, maxCoordinates, numElementsCoarse, numElementsFine);
+                dualMesh = new DualCartesianMesh2D.Builder(minCoordinates, maxCoordinates, numElementsCoarse, numElementsFine)
+                    .BuildMesh();
             }
             else if (multiplicity == 3)
             {
                 var numElementsFine = new int[] { 6, 9 };
                 mockMesh = new MockMesh1To3();
-                dualMesh = new DualMesh2D(minCoordinates, maxCoordinates, numElementsCoarse, numElementsFine);
+                dualMesh = new DualCartesianMesh2D.Builder(minCoordinates, maxCoordinates, numElementsCoarse, numElementsFine)
+                    .BuildMesh();
             }
             else
             {
@@ -184,7 +187,7 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
                 throw new NotImplementedException();
             }
 
-            public DualMesh2D.Submesh FindFineNodesEdgesOfCoarseElement(int coarseElementID)
+            public DualCartesianMesh2D.Submesh FindFineNodesEdgesOfCoarseElement(int coarseElementID)
             {
                 // Elements to edges
                 var elements = new List<int[]>();
@@ -218,7 +221,7 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
                     edges.Add((7, 14)); edges.Add((8, 15)); edges.Add((9, 16)); edges.Add((10, 17));
                     edges.Add((14, 21)); edges.Add((15, 22)); edges.Add((16, 23)); edges.Add((17, 24));
 
-                    return new DualMesh2D.Submesh(fineNodes, edges, elements);
+                    return new DualCartesianMesh2D.Submesh(fineNodes, edges, elements);
                 }
                 else if (coarseElementID == 1)
                 {
@@ -240,7 +243,7 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
                     edges.Add((10, 17)); edges.Add((11, 18)); edges.Add((12, 19)); edges.Add((13, 20));
                     edges.Add((17, 24)); edges.Add((18, 25)); edges.Add((19, 26)); edges.Add((20, 27));
 
-                    return new DualMesh2D.Submesh(fineNodes, edges, elements);
+                    return new DualCartesianMesh2D.Submesh(fineNodes, edges, elements);
                 }
                 else if (coarseElementID == 2)
                 {
@@ -262,7 +265,7 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
                     edges.Add((28, 35)); edges.Add((29, 36)); edges.Add((30, 37)); edges.Add((31, 38));
                     edges.Add((35, 42)); edges.Add((36, 43)); edges.Add((37, 44)); edges.Add((38, 45));
 
-                    return new DualMesh2D.Submesh(fineNodes, edges, elements);
+                    return new DualCartesianMesh2D.Submesh(fineNodes, edges, elements);
                 }
                 else if (coarseElementID == 3)
                 {
@@ -284,7 +287,7 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
                     edges.Add((31, 38)); edges.Add((32, 39)); edges.Add((33, 40)); edges.Add((34, 41));
                     edges.Add((38, 45)); edges.Add((39, 46)); edges.Add((40, 47)); edges.Add((41, 48));
 
-                    return new DualMesh2D.Submesh(fineNodes, edges, elements);
+                    return new DualCartesianMesh2D.Submesh(fineNodes, edges, elements);
                 }
                 else if (coarseElementID == 4)
                 {
@@ -306,7 +309,7 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
                     edges.Add((49, 56)); edges.Add((50, 57)); edges.Add((51, 58)); edges.Add((52, 59));
                     edges.Add((56, 63)); edges.Add((57, 64)); edges.Add((58, 65)); edges.Add((59, 66));
 
-                    return new DualMesh2D.Submesh(fineNodes, edges, elements);
+                    return new DualCartesianMesh2D.Submesh(fineNodes, edges, elements);
                 }
                 else if (coarseElementID == 5)
                 {
@@ -328,7 +331,7 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
                     edges.Add((52, 59)); edges.Add((53, 60)); edges.Add((54, 61)); edges.Add((55, 62));
                     edges.Add((59, 66)); edges.Add((60, 67)); edges.Add((61, 68)); edges.Add((62, 69));
 
-                    return new DualMesh2D.Submesh(fineNodes, edges, elements);
+                    return new DualCartesianMesh2D.Submesh(fineNodes, edges, elements);
                 }
                 else throw new IndexOutOfRangeException();
             }

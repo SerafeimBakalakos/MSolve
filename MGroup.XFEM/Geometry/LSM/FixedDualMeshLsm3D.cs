@@ -20,7 +20,7 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         private readonly List<ISurface3D> closedSurfaces;
 
-        public FixedDualMeshLsm3D(int id, DualMesh3D dualMesh, ISurface3D closedSurface) : base(id, dualMesh, closedSurface)
+        public FixedDualMeshLsm3D(int id, DualCartesianMesh3D dualMesh, ISurface3D closedSurface) : base(id, dualMesh, closedSurface)
         {
             this.closedSurfaces = new List<ISurface3D>();
             this.closedSurfaces.Add(closedSurface);

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
+using MGroup.Geometry.Mesh;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Enrichment.SingularityResolution;
@@ -52,7 +53,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
                 }
 
                 // Coarse mesh
-                var coarseMesh = new UniformMesh2D(minCoords, maxCoords, numElementsCoarse);
+                var coarseMesh = new UniformCartesianMesh2D.Builder(minCoords, maxCoords, numElementsCoarse).BuildMesh();
                 XModel<IXMultiphaseElement> coarseModel = CreateModel(coarseMesh);
                 var coarseOutputMesh = new ContinuousOutputMesh(coarseModel.XNodes, coarseModel.Elements);
                 var coarseLsm = new SimpleLsm2D(0, coarseModel.XNodes, initialCurve);
@@ -74,7 +75,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
                 }
 
                 // Fine mesh
-                var fineMesh = new UniformMesh2D(minCoords, maxCoords, numElementsFine);
+                var fineMesh = new UniformCartesianMesh2D.Builder(minCoords, maxCoords, numElementsFine).BuildMesh();
                 XModel<IXMultiphaseElement> fineModel = CreateModel(fineMesh);
                 var fineOutputMesh = new ContinuousOutputMesh(fineModel.XNodes, fineModel.Elements);
                 var fineLsm = new SimpleLsm2D(0, fineModel.XNodes, initialCurve);
@@ -136,7 +137,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
                     Directory.CreateDirectory(outputDirectory);
                 }
 
-                var mesh = new DualMesh2D(minCoords, maxCoords, numElementsCoarse, numElementsFine);
+                var mesh = new DualCartesianMesh2D.Builder(minCoords, maxCoords, numElementsCoarse, numElementsFine).BuildMesh();
                 XModel<IXMultiphaseElement> coarseModel = CreateModel(mesh.CoarseMesh);
                 var dualMeshLsm = lsmChoice.Create(0, mesh, initialCurve);
 
@@ -200,7 +201,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
                 }
 
                 // Create model and LSM
-                var mesh = new DualMesh2D(minCoords, maxCoords, numElementsCoarse, numElementsFine);
+                var mesh = new DualCartesianMesh2D.Builder(minCoords, maxCoords, numElementsCoarse, numElementsFine).BuildMesh();
                 XModel<IXMultiphaseElement> model = CreateModel(mesh.CoarseMesh);
                 model.FindConformingSubcells = true;
                 PhaseGeometryModel geometryModel = CreatePhases(lsmChoice, model, mesh);
@@ -289,7 +290,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
             for (int e = 0; e < mesh.NumElementsTotal; ++e)
             {
                 var nodes = new List<XNode>();
-                int[] connectivity = mesh.GetElementConnectivity(mesh.GetElementIdx(e));
+                int[] connectivity = mesh.GetElementConnectivity(e);
                 foreach (int n in connectivity)
                 {
                     nodes.Add(model.XNodes[n]);
@@ -303,7 +304,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
         }
 
         private static PhaseGeometryModel CreatePhases(DualMeshLsmChoice lsmChoice,
-            XModel<IXMultiphaseElement> model, DualMesh2D mesh)
+            XModel<IXMultiphaseElement> model, DualCartesianMesh2D mesh)
         {
             var geometricModel = new PhaseGeometryModel(model);
             model.GeometryModel = geometricModel;

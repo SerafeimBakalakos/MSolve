@@ -13,17 +13,5 @@ namespace MGroup.Geometry.Mesh
     public interface ICartesianMesh : IStructuredMesh
     {
         int[] NumElements { get; }
-
-        //TODO: This can be defined for structured meshes with Tri3/Tet4. The index will not be just the cartesian coords,
-        //      but also an extra integer that indicates which subcell (e.g. in Quad4 there are 2 subtriangles with indices 0 and 1).  
-        //      I could either keep 2 interfaces to specify that these indices are very different or have a general method with
-        //      whatever index the implementation uses and more specific methods e.g. IStructuredMesh.GetElementID(int[] index),
-        //      ICartesianMesh.GetElementID(int[] cartesianIndex), ISimplicialMesh.GetElementID(int[] augmentedIndex). Frankly this
-        //      is very similar to grouping int[2] and int[3] indices for 2D and 3 implementations. 
-        int GetElementID(int[] elementIdx);
-              
-        int[] GetElementIdx(int elementID); 
-
-        int[] GetElementConnectivity(int[] elementIdx);
     }
 }

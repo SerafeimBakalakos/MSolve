@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using MGroup.Geometry.Mesh;
 
 namespace MGroup.XFEM.Geometry.Mesh
 {

@@ -60,7 +60,7 @@ namespace MGroup.XFEM.Heat
 
         public void BuildModel()
         {
-            var dualMesh = new DualMesh3D(CoordsMin, CoordsMax, NumElementsCoarse, NumElementsFine);
+            var dualMesh = new DualCartesianMesh3D.Builder(CoordsMin, CoordsMax, NumElementsCoarse, NumElementsFine).BuildMesh();
             MGroup.Geometry.Mesh.IStructuredMesh mesh;
             if (cartesianMesh)
             {
@@ -194,7 +194,7 @@ namespace MGroup.XFEM.Heat
             return model;
         }
 
-        private PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model, DualMesh3D mesh)
+        private PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model, DualCartesianMesh3D mesh)
         {
             //IEnumerable<ISurface3D> inclusionGeometries = GenerateInclusionGeometries();
             IEnumerable<ISurface3D> inclusionGeometries = GeometryGenerator.GenerateInclusions();

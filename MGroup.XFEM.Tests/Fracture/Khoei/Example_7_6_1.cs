@@ -10,6 +10,7 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers.Direct;
+using MGroup.Geometry.Mesh;
 using MGroup.XFEM.Cracks;
 using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Cracks.Jintegral;
@@ -372,7 +373,7 @@ namespace MGroup.XFEM.Tests.Fracture.Khoei
             var factory = new XCrackElementFactory2D(material, thickness, bulkIntegration);
 
             // Mesh
-            var mesh = new UniformMesh2D(minCoords, maxCoords, numElements);
+            var mesh = new UniformCartesianMesh2D.Builder(minCoords, maxCoords, numElements).BuildMesh();
             Utilities.Models.AddNodesElements(model, mesh, factory);
 
             ApplyBoundaryConditions(model);

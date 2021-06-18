@@ -21,29 +21,22 @@ namespace MGroup.XFEM.Tests.Utilities
     public static class Models
     {
         public static void AddNodesElements<TElement>(
-            XModel<TElement> model, UniformMesh2D mesh, IXElementFactory<TElement> factory) 
+            XModel<TElement> model, IStructuredMesh mesh, IXElementFactory<TElement> factory) 
             where TElement : class, IXFiniteElement
         {
             int subdomainID = model.Subdomains.First().Key;
 
             // Nodes
-            for (int nodeID = 0; nodeID < mesh.NumNodesTotal; ++nodeID)
+            foreach ((int nodeID, double[] coords) in mesh.EnumerateNodes())
             {
-                int[] nodeIdx = mesh.GetNodeIdx(nodeID);
-                double[] coords = mesh.GetNodeCoordinates(nodeIdx);
                 model.XNodes.Add(new XNode(nodeID, coords));
             }
 
             // Elements
-            for (int elemID = 0; elemID < mesh.NumElementsTotal; ++elemID)
+            foreach ((int elementID, int[] connectivity) in mesh.EnumerateElements())
             {
-                var nodes = new List<XNode>();
-                int[] elemIdx = mesh.GetElementIdx(elemID);
-                foreach (int n in mesh.GetElementConnectivity(elemIdx))
-                {
-                    nodes.Add(model.XNodes[n]);
-                }
-                var element = factory.CreateElement(elemID, CellType.Quad4, nodes);
+                XNode[] nodes = connectivity.Select(n => model.XNodes[n]).ToArray();
+                var element = factory.CreateElement(elementID, CellType.Quad4, nodes);
                 model.Elements.Add(element);
                 model.Subdomains[subdomainID].Elements.Add(element);
             }

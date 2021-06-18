@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MGroup.Geometry.Mesh;
 using MGroup.XFEM.Cracks;
 using MGroup.XFEM.Cracks.Geometry;
 using MGroup.XFEM.Elements;
@@ -231,7 +232,7 @@ namespace MGroup.XFEM.Tests.Fracture.Observers
             double[] minCoords = { 0.0, 0.0 };
             double[] maxCoords = { 20.0, 20.0 };
             int[] numElements = { 20, 20 };
-            var mesh = new UniformMesh2D(minCoords, maxCoords, numElements);
+            var mesh = new UniformCartesianMesh2D.Builder(minCoords, maxCoords, numElements).BuildMesh();
             Utilities.Models.AddNodesElements(model, mesh, factory);
 
             // Fixed crack path

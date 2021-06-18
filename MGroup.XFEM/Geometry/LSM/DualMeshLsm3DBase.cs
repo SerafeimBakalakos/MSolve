@@ -16,10 +16,10 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         private const int dim = 3;
 
-        protected readonly DualMesh3D dualMesh;
+        protected readonly DualCartesianMesh3D dualMesh;
         private readonly ValueComparer comparer;
 
-        protected DualMeshLsm3DBase(int id, DualMesh3D dualMesh)
+        protected DualMeshLsm3DBase(int id, DualCartesianMesh3D dualMesh)
         {
             this.dualMesh = dualMesh;
             this.ID = id;

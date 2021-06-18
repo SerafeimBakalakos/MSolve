@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Commons;
+using MGroup.Geometry.Mesh;
 using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
@@ -21,7 +22,7 @@ namespace MGroup.XFEM.Geometry.LSM
         private readonly double farNodeDistance;
         protected readonly Dictionary<int, double> nodalLevelSets;
 
-        public LocalDualMeshLsm2D(int id, DualMesh2D dualMesh, ICurve2D closedCurve) : base(id, dualMesh)
+        public LocalDualMeshLsm2D(int id, DualCartesianMesh2D dualMesh, ICurve2D closedCurve) : base(id, dualMesh)
         {
             // Only keep the level sets of elements that are inside the initial geometry, intersected by it or conforming to it.
             IStructuredMesh fineMesh = dualMesh.FineMesh;

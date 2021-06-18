@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Commons;
+using MGroup.Geometry.Mesh;
 using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
@@ -17,7 +18,7 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         private readonly double[] nodalLevelSets;
 
-        public GlobalDualMeshLsm2D(int id, DualMesh2D dualMesh, ICurve2D closedCurve) : base(id, dualMesh)
+        public GlobalDualMeshLsm2D(int id, DualCartesianMesh2D dualMesh, ICurve2D closedCurve) : base(id, dualMesh)
         {
             IStructuredMesh fineMesh = dualMesh.FineMesh;
             nodalLevelSets = new double[fineMesh.NumNodesTotal];

@@ -29,7 +29,7 @@ namespace MGroup.XFEM.Tests.Multiscale
         private const double matrixE = 1, inclusionE = 1, v = 0.3;
 
 
-        [Fact]
+        //[Fact]
         public static void TestSolution()
         {
             var matrixMaterial = new ElasticMaterial3D() { YoungModulus = matrixE, PoissonRatio = v };
@@ -70,7 +70,7 @@ namespace MGroup.XFEM.Tests.Multiscale
             Utilities.Plotting.PlotDisplacementStrainStressFields(model, solution, computedFiles[4]);
         }
 
-        [Fact]
+        //[Fact]
         public static void TestHomogenization()
         {
             var matrixMaterial = new ElasticMaterial3D() { YoungModulus = matrixE, PoissonRatio = v };

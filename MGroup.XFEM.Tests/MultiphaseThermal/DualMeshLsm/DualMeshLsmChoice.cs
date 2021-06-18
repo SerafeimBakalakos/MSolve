@@ -15,7 +15,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
     internal static class DualMeshLsmChoiceExtensions
     {
         internal static DualMeshLsm2DBase Create(this DualMeshLsmChoice choice, 
-            int id, DualMesh2D dualMesh, ICurve2D closedCurve)
+            int id, DualCartesianMesh2D dualMesh, ICurve2D closedCurve)
         {
             if (choice == DualMeshLsmChoice.Global)
             {
@@ -36,7 +36,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
         }
 
         internal static DualMeshLsm3DBase Create(this DualMeshLsmChoice choice,
-            int id, DualMesh3D dualMesh, ISurface3D closedSurface)
+            int id, DualCartesianMesh3D dualMesh, ISurface3D closedSurface)
         {
             if (choice == DualMeshLsmChoice.Global)
             {

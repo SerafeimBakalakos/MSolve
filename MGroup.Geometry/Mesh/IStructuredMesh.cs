@@ -36,6 +36,14 @@ namespace MGroup.Geometry.Mesh
         /// </summary>
         IEnumerable<(int elementID, int[] nodeIDs)> EnumerateElements();
 
+        int GetElementID(int[] elementIdx);
+
+        int[] GetElementIdx(int elementID);
+
+        int[] GetElementConnectivity(int[] elementIdx);
+
+        int[] GetElementConnectivity(int elementID);
+
         int GetNodeID(int[] nodeIdx);
 
         int[] GetNodeIdx(int nodeID);
@@ -44,6 +52,5 @@ namespace MGroup.Geometry.Mesh
 
         double[] GetNodeCoordinates(int nodeID) => GetNodeCoordinates(GetNodeIdx(nodeID));
 
-        int[] GetElementConnectivity(int elementID);
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
+using MGroup.Geometry.Mesh;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Mesh;
@@ -28,7 +29,7 @@ namespace MGroup.XFEM.Tests.Geometry
             double[] minCoords = { 0, 0 };
             double[] maxCoords = { 10, 10 };
             int[] numElements = { 10, 10 };
-            var mesh = new UniformMesh2D(minCoords, maxCoords, numElements);
+            var mesh = new UniformCartesianMesh2D.Builder(minCoords, maxCoords, numElements).BuildMesh();
             Utilities.Models.AddNodesElements(model, mesh, new MockElement.Factory());
 
             model.ConnectDataStructures();

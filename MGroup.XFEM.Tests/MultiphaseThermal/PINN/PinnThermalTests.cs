@@ -40,7 +40,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
         private const double conductBoundaryMatrixInclusion = 1E0, conductBoundaryInclusionInclusion = 0;
         private const double specialHeatCoeff = 1.0;
 
-        [Fact]
+        //[Fact]
         public static void TestModel()
         {
             if (!Directory.Exists(outputDirectory))
@@ -82,7 +82,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.PINN
             model.Initialize();
         }
 
-        [Fact]
+        //[Fact]
         public static void TestSolution()
         {
             if (!Directory.Exists(outputDirectory))

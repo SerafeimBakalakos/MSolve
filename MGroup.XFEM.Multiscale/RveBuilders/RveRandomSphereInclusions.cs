@@ -11,6 +11,7 @@ using ISAAR.MSolve.Materials.Interfaces;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;
 using ISAAR.MSolve.Solvers.Direct;
+using MGroup.Geometry.Mesh;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Entities;
@@ -127,8 +128,8 @@ namespace MGroup.XFEM.Multiscale.RveBuilders
             model.Subdomains[0] = new XSubdomain(0);
 
             // Mesh generation
-            var mesh = new UniformMesh3D(minCoords, maxCoords, numElements);
-            
+            var mesh = new UniformCartesianMesh3D.Builder(minCoords, maxCoords, numElements).BuildMesh();
+
             // Nodes
             for (int n = 0; n < mesh.NumNodesTotal; ++n)
             {
@@ -163,7 +164,7 @@ namespace MGroup.XFEM.Multiscale.RveBuilders
             {
                 numElementsFine[d] = LsmMeshRefinementLevel * numElements[d];
             }
-            var dualMesh = new DualMesh3D(minCoords, maxCoords, numElements, numElementsFine);
+            var dualMesh = new DualCartesianMesh3D.Builder(minCoords, maxCoords, numElements, numElementsFine).BuildMesh();
 
             IList<ISurface3D> inclusionGeometries = CreateInclusionGeometries();
 
