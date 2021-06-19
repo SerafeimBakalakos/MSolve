@@ -8,29 +8,29 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Mesh;
 using MGroup.XFEM.Geometry.Primitives;
 
-//TODO: Shouldn't this extend DualMeshLsm3DBase directly and avoid any level set data?
-namespace MGroup.XFEM.Geometry.LSM
+//TODO: Shouldn't this extend DualMeshLsm2DBase directly and avoid any level set data?
+namespace MGroup.XFEM.Geometry.LSM.DualMesh
 {
     /// <summary>
     /// Only stores level set data in nodes that are inside the curve or belong to elements that are intersected by it.
     /// For signed distances of points away from the curve, the original geometry will be used, which may not be fast and able 
     /// to move.
     /// </summary>
-    public class FixedDualMeshLsm3D : LocalDualMeshLsm3D
+    public class FixedDualMeshLsm2D_OLD : LocalDualMeshLsm2D_OLD
     {
-        private readonly List<ISurface3D> closedSurfaces;
+        private readonly List<ICurve2D> closedCurves;
 
-        public FixedDualMeshLsm3D(int id, DualCartesianMesh3D dualMesh, ISurface3D closedSurface) : base(id, dualMesh, closedSurface)
+        public FixedDualMeshLsm2D_OLD(int id, IDualMesh dualMesh, ICurve2D closedCurve) : base(id, dualMesh, closedCurve)
         {
-            this.closedSurfaces = new List<ISurface3D>();
-            this.closedSurfaces.Add(closedSurface);
+            this.closedCurves = new List<ICurve2D>();
+            this.closedCurves.Add(closedCurve);
         }
 
         public override void UnionWith(IClosedGeometry otherGeometry)
         {
-            if (otherGeometry is FixedDualMeshLsm3D otherLsm)
+            if (otherGeometry is FixedDualMeshLsm2D_OLD otherLsm)
             {
-                this.closedSurfaces.AddRange(otherLsm.closedSurfaces);
+                this.closedCurves.AddRange(otherLsm.closedCurves);
             }
             else throw new ArgumentException("Incompatible Level Set geometry");
             base.UnionWith(otherGeometry);
@@ -43,10 +43,10 @@ namespace MGroup.XFEM.Geometry.LSM
             else
             {
                 double minDistance = double.MaxValue;
-                foreach (ISurface3D surface in closedSurfaces)
+                foreach (ICurve2D curve in closedCurves)
                 {
                     double[] coords = dualMesh.FineMesh.GetNodeCoordinates(fineNodeID);
-                    double distance = surface.SignedDistanceOf(coords);
+                    double distance = curve.SignedDistanceOf(coords);
                     if (distance < minDistance) minDistance = distance;
                 }
                 return minDistance;

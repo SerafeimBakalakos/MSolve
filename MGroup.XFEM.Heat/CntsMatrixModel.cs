@@ -14,6 +14,7 @@ using MGroup.XFEM.Elements;
 using MGroup.XFEM.Enrichment.Enrichers;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.LSM;
+using MGroup.XFEM.Geometry.LSM.DualMesh;
 using MGroup.XFEM.Geometry.Mesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Integration;
@@ -212,8 +213,8 @@ namespace MGroup.XFEM.Heat
 
                 IClosedGeometry geometry;
                 if (lsmType == 0) geometry = new SimpleLsm3D(phase.ID, model.XNodes, surface, !cartesianMesh);
-                else if (lsmType == 1) geometry = new GlobalDualMeshLsm3D(phase.ID, mesh, surface);
-                else if (lsmType == 2) geometry = new LocalDualMeshLsm3D(phase.ID, mesh, surface);
+                else if (lsmType == 1) geometry = new GlobalDualMeshLsm3D_OLD(phase.ID, mesh, surface);
+                else if (lsmType == 2) geometry = new LocalDualMeshLsm3D_OLD(phase.ID, mesh, surface);
                 else throw new NotImplementedException();
                 var boundary = new ClosedPhaseBoundary(phase.ID, geometry, defaultPhase, phase);
                 defaultPhase.ExternalBoundaries.Add(boundary);

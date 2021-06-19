@@ -9,16 +9,16 @@ using MGroup.XFEM.Geometry.Mesh;
 using MGroup.XFEM.Geometry.Primitives;
 
 //TODO: The global/local/fixed and 2D/3D hierarchies seem like a good candidate for Bridge pattern.
-namespace MGroup.XFEM.Geometry.LSM
+namespace MGroup.XFEM.Geometry.LSM.DualMesh
 {
-    public abstract class DualMeshLsm2DBase : IClosedGeometry
+    public abstract class DualMeshLsm2DBase_OLD : IClosedGeometry
     {
         private const int dim = 2;
 
         protected readonly IDualMesh dualMesh;
         private readonly ValueComparer comparer;
 
-        protected DualMeshLsm2DBase(int id, IDualMesh dualMesh)
+        protected DualMeshLsm2DBase_OLD(int id, IDualMesh dualMesh)
         {
             this.dualMesh = dualMesh;
             this.ID = id;

@@ -10,16 +10,16 @@ using MGroup.XFEM.Geometry.Mesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Interpolation;
 
-namespace MGroup.XFEM.Geometry.LSM
+namespace MGroup.XFEM.Geometry.LSM.DualMesh
 {
-    public abstract class DualMeshLsm3DBase : IClosedGeometry
+    public abstract class DualMeshLsm3DBase_OLD : IClosedGeometry
     {
         private const int dim = 3;
 
         protected readonly DualCartesianMesh3D dualMesh;
         private readonly ValueComparer comparer;
 
-        protected DualMeshLsm3DBase(int id, DualCartesianMesh3D dualMesh)
+        protected DualMeshLsm3DBase_OLD(int id, DualCartesianMesh3D dualMesh)
         {
             this.dualMesh = dualMesh;
             this.ID = id;

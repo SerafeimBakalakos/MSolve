@@ -9,29 +9,29 @@ using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Mesh;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Geometry.LSM
+namespace MGroup.XFEM.Geometry.LSM.DualMesh
 {
     /// <summary>
     /// Stores level set data in all nodes of the mesh.
     /// </summary>
-    public class GlobalDualMeshLsm2D : DualMeshLsm2DBase
+    public class GlobalDualMeshLsm3D_OLD : DualMeshLsm3DBase_OLD
     {
         private readonly double[] nodalLevelSets;
 
-        public GlobalDualMeshLsm2D(int id, IDualMesh dualMesh, ICurve2D closedCurve) : base(id, dualMesh)
+        public GlobalDualMeshLsm3D_OLD(int id, DualCartesianMesh3D dualMesh, ISurface3D closedSurface) : base(id, dualMesh)
         {
             IStructuredMesh fineMesh = dualMesh.FineMesh;
             nodalLevelSets = new double[fineMesh.NumNodesTotal];
             for (int n = 0; n < nodalLevelSets.Length; ++n)
             {
                 double[] node = fineMesh.GetNodeCoordinates(n);
-                nodalLevelSets[n] = closedCurve.SignedDistanceOf(node);
+                nodalLevelSets[n] = closedSurface.SignedDistanceOf(node);
             }
         }
 
         public override void UnionWith(IClosedGeometry otherGeometry)
         {
-            if (otherGeometry is GlobalDualMeshLsm2D otherLsm)
+            if (otherGeometry is GlobalDualMeshLsm3D_OLD otherLsm)
             {
                 if (this.nodalLevelSets.Length != otherLsm.nodalLevelSets.Length)
                 {

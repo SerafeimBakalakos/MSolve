@@ -11,18 +11,18 @@ using MGroup.XFEM.Geometry.Primitives;
 
 //TODO: perhaps instead of using a Dictionary<int, double> for the level sets, I could store them based on the node index:
 //      Dictionary<int, Dictionary<int, double>>. The aim is of course faster lookups and faster initialization.
-namespace MGroup.XFEM.Geometry.LSM
+namespace MGroup.XFEM.Geometry.LSM.DualMesh
 {
     /// <summary>
     /// Only stores level set data in nodes that are inside the curve or belong to elements that are intersected by it.
     /// Therefore the signed distances of points away from the curve will not be accurate, but will have the correct sign.
     /// </summary>
-    public class LocalDualMeshLsm3D : DualMeshLsm3DBase
+    public class LocalDualMeshLsm3D_OLD : DualMeshLsm3DBase_OLD
     {
         private readonly double farNodeDistance;
         protected readonly Dictionary<int, double> nodalLevelSets;
 
-        public LocalDualMeshLsm3D(int id, DualCartesianMesh3D dualMesh, ISurface3D closedSurface) : base(id, dualMesh)
+        public LocalDualMeshLsm3D_OLD(int id, DualCartesianMesh3D dualMesh, ISurface3D closedSurface) : base(id, dualMesh)
         {
             // Only keep the level sets of elements that are inside the initial geometry, intersected by it or conforming to it.
             IStructuredMesh fineMesh = dualMesh.FineMesh;
@@ -64,7 +64,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public override void UnionWith(IClosedGeometry otherGeometry)
         {
-            if (otherGeometry is LocalDualMeshLsm3D otherLsm)
+            if (otherGeometry is LocalDualMeshLsm3D_OLD otherLsm)
             {
                 foreach (var nodeValuePair in otherLsm.nodalLevelSets)
                 {
