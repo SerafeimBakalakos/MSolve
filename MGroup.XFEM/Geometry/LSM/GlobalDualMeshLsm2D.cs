@@ -18,13 +18,13 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         private readonly double[] nodalLevelSets;
 
-        public GlobalDualMeshLsm2D(int id, DualCartesianMesh2D dualMesh, ICurve2D closedCurve) : base(id, dualMesh)
+        public GlobalDualMeshLsm2D(int id, IDualMesh dualMesh, ICurve2D closedCurve) : base(id, dualMesh)
         {
             IStructuredMesh fineMesh = dualMesh.FineMesh;
             nodalLevelSets = new double[fineMesh.NumNodesTotal];
             for (int n = 0; n < nodalLevelSets.Length; ++n)
             {
-                double[] node = fineMesh.GetNodeCoordinates(fineMesh.GetNodeIdx(n));
+                double[] node = fineMesh.GetNodeCoordinates(n);
                 nodalLevelSets[n] = closedCurve.SignedDistanceOf(node);
             }
         }

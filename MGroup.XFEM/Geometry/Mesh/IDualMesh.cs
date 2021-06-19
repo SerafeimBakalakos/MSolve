@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using MGroup.Geometry.Mesh;
+using MGroup.XFEM.ElementGeometry;
 
 namespace MGroup.XFEM.Geometry.Mesh
 {
@@ -23,6 +24,8 @@ namespace MGroup.XFEM.Geometry.Mesh
         int MapElementFineToCoarse(int fineElementID);
 
         int[] MapElementCoarseToFine(int coarseElementID);
+
+        double[] MapPointFineNaturalToCoarseNatural(int[] fineElementIdx, double[] coordsFineNatural);
 
         DualMeshPoint CalcShapeFunctions(int coarseElementID, double[] coarseNaturalCoords);
     }

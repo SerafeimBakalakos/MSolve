@@ -89,12 +89,11 @@ namespace MGroup.XFEM.Geometry.Mesh
         public int[] MapElementCoarseToFine(int coarseElementID)
         {
             int[] coarseIdx = coarseMesh.GetElementIdx(coarseElementID);
-            List<int[]> elementNeighbors = ElementNeighbors;
-            var fineElementIDs = new int[elementNeighbors.Count];
-            for (int i = 0; i < elementNeighbors.Count; ++i)
+            List<int[]> elementOffsets = CoarseToFineElementOffsets;
+            var fineElementIDs = new int[elementOffsets.Count];
+            for (int i = 0; i < elementOffsets.Count; ++i)
             {
-                // Offset from the fine element that has the same first node as the coarse one
-                int[] offset = elementNeighbors[i];
+                int[] offset = elementOffsets[i];
                 var fineIdx = new int[dim];
                 for (int d = 0; d < dim; d++)
                 {
@@ -106,6 +105,7 @@ namespace MGroup.XFEM.Geometry.Mesh
             return fineElementIDs;
         }
 
+        //TODO: These mapping and its inverse must also work for points on edges of the fine and coarse mesh.
         public double[] MapPointFineNaturalToCoarseNatural(int[] fineElementIdx, double[] coordsFineNatural)
         {
             var coordsCoarseNatural = new double[dim];
@@ -129,6 +129,8 @@ namespace MGroup.XFEM.Geometry.Mesh
         }
 
         //TODO: Perhaps split this into a function that maps coarse -> fine and one that calculates shape functions. 
+        //      The shape functions should probably be done someplace else. No need to couple mesh classes with interpolations.
+        //      Do not expose this subElementsIdx. Instead use element IDs (which may need multiple conversions ID -> idx)
         public DualMeshPoint CalcShapeFunctions(int coarseElementID, double[] coarseNaturalCoords)
         {
             // Find the fine element containing that point and the natural coordinates in that element
@@ -173,10 +175,11 @@ namespace MGroup.XFEM.Geometry.Mesh
         protected abstract IIsoparametricInterpolation ElementInterpolation { get; }
 
         /// <summary>
-        /// A group of nearby fine elements, that correspond to the same coarse element. 
-        /// E.g. 2D-3x3: {0, 0}, {1, 0}, {2, 0}, {0, 1}, {1, 1}, {2, 1}, {0, 2}, {1, 2}, {2, 2}, ...
-        /// E.g. 3D-2x2: {0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {1, 1, 0}, {1, 0, 1}, {0, 1, 1}, {1, 1, 1}, ...
+        /// Let {i, j} (or {i, j, k} in 3D) be the index of a coarse element. Each entry of this list is the offset of the 
+        /// index of a fine element, which is included in the coarse element {i, j} (or {i, j, k} in 3D).
+        /// E.g. 2D-3x3: {0, 0}, {1, 0}, {2, 0}, {0, 1}, {1, 1}, {2, 1}, {0, 2}, {1, 2}, {2, 2}.
+        /// E.g. 3D-2x2: {0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {1, 1, 0}, {0, 0, 1}, {1, 0, 1}, {0, 1, 1}, {1, 1, 1}.
         /// </summary>
-        protected abstract List<int[]> ElementNeighbors { get; } 
+        protected abstract List<int[]> CoarseToFineElementOffsets { get; } 
     }
 }

@@ -147,7 +147,7 @@ namespace MGroup.Geometry.Mesh
         /// Example: Suppose a 3x4 mesh where there are 4 nodes with indices n7(1,2), n8(2,2), n10(1,3), n11(2,3) and 2 triangles 
         /// t10(n7,n8,n10), t11(n11,n10,n8). 
         /// t10 corresponds to <paramref name="elementIdx"/> = (1,2,0). 
-        /// t11 corresponds to <paramref name="cartesianCellIdx"/> = (1,2,1). 
+        /// t11 corresponds to <paramref name="elementIdx"/> = (1,2,1). 
         /// </summary>
         /// <param name="elementIdx">The index of the element. An integer array with length = 3.</param>
         /// <returns></returns>

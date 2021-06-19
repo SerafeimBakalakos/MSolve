@@ -12,7 +12,7 @@ namespace MGroup.XFEM.Geometry.Mesh
         private DualCartesianMesh2D(UniformCartesianMesh2D coarseMesh, UniformCartesianMesh2D fineMesh) 
             : base(2, coarseMesh, fineMesh)
         {
-            ElementNeighbors = FindElementNeighbors(base.multiple);
+            CoarseToFineElementOffsets = FindElementOffsets(base.multiple);
         }
 
         public Submesh FindFineNodesEdgesOfCoarseElement(int coarseElementID)
@@ -75,18 +75,21 @@ namespace MGroup.XFEM.Geometry.Mesh
 
         protected override IIsoparametricInterpolation ElementInterpolation => InterpolationQuad4.UniqueInstance;
 
-        protected override List<int[]> ElementNeighbors { get; }
+        /// <summary>
+        /// Let {i, j} (or {i, j, k} in 3D) be the index of a coarse element. Each entry of this list is the offset of the 
+        /// index of a fine element, which is included in the coarse element {i, j} (or {i, j, k} in 3D).
+        /// </summary>
+        protected override List<int[]> CoarseToFineElementOffsets { get; }
 
-        private List<int[]> FindElementNeighbors(int[] multiple)
+        private List<int[]> FindElementOffsets(int[] multiple)
         {
             var elementNeighbors = new List<int[]>();
             for (int j = 0; j < multiple[1]; ++j)
             {
                 for (int i = 0; i < multiple[0]; ++i)
                 {
-                    // Offset from the LSM element that has the same first node as the coarse element
-                    int[] offset = { i, j };
-                    elementNeighbors.Add(offset);
+                    // Offset from the fine element that has the same first node as the coarse element
+                    elementNeighbors.Add(new int[] { i, j });
                 }
             }
             return elementNeighbors;

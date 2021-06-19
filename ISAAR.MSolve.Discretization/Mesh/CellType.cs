@@ -22,10 +22,10 @@ namespace ISAAR.MSolve.Discretization.Mesh
 
         //      y
         //     /
-        //    1
+        //    2
         //   /  \
         //  /    \                           
-        // 2 ---  0 --x                           
+        // 0 ---  1 --x                           
         Tri3,
 
         //       y

@@ -15,10 +15,10 @@ namespace MGroup.XFEM.Geometry.LSM
     {
         private const int dim = 2;
 
-        protected readonly DualCartesianMesh2D dualMesh;
+        protected readonly IDualMesh dualMesh;
         private readonly ValueComparer comparer;
 
-        protected DualMeshLsm2DBase(int id, DualCartesianMesh2D dualMesh)
+        protected DualMeshLsm2DBase(int id, IDualMesh dualMesh)
         {
             this.dualMesh = dualMesh;
             this.ID = id;
@@ -78,16 +78,16 @@ namespace MGroup.XFEM.Geometry.LSM
         private List<double[]> IntersectFineElement(int fineElementID)
         {
             int[] fineElementIdx = dualMesh.FineMesh.GetElementIdx(fineElementID);
-            int[] fineNodes = dualMesh.FineMesh.GetElementConnectivity(fineElementIdx);
+            int[] fineElementNodes = dualMesh.FineMesh.GetElementConnectivity(fineElementIdx);
 
             var intersections = new List<double[]>();
-            if (IsFineElementDisjoint(fineElementIdx)) // Check this first, since it is faster and most elements are in this category 
+            if (IsFineElementDisjoint(fineElementNodes)) // Check this first, since it is faster and most elements are in this category 
             {
                 return intersections;
             }
 
             var elementGeometry = new ElementQuad4Geometry();
-            (ElementEdge[] edges, _)  = elementGeometry.FindEdgesFaces(fineNodes);
+            (ElementEdge[] edges, _)  = elementGeometry.FindEdgesFaces(fineElementNodes);
             for (int i = 0; i < edges.Length; ++i)
             {
                 int node0ID = edges[i].NodeIDs[0];
@@ -128,7 +128,7 @@ namespace MGroup.XFEM.Geometry.LSM
             }
 
             // Convert the coordinates of the intersection points from the natural system of the fine element to the natural
-            // system of the FEM element.
+            // system of the coarse element.
             for (int p = 0; p < intersections.Count; ++p)
             {
                 intersections[p] = dualMesh.MapPointFineNaturalToCoarseNatural(fineElementIdx, intersections[p]);
@@ -176,13 +176,12 @@ namespace MGroup.XFEM.Geometry.LSM
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        private bool IsFineElementDisjoint(int[] elementIdx)
+        private bool IsFineElementDisjoint(int[] fineElementNodes)
         {
             double minLevelSet = double.MaxValue;
             double maxLevelSet = double.MinValue;
 
-            int[] fineNodes = dualMesh.FineMesh.GetElementConnectivity(elementIdx);
-            foreach (int nodeId in fineNodes)
+            foreach (int nodeId in fineElementNodes)
             {
                 double levelSet = GetLevelSet(nodeId);
                 if (levelSet < minLevelSet) minLevelSet = levelSet;

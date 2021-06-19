@@ -24,7 +24,7 @@ namespace MGroup.XFEM.Geometry.LSM
             nodalLevelSets = new double[fineMesh.NumNodesTotal];
             for (int n = 0; n < nodalLevelSets.Length; ++n)
             {
-                double[] node = fineMesh.GetNodeCoordinates(fineMesh.GetNodeIdx(n));
+                double[] node = fineMesh.GetNodeCoordinates(n);
                 nodalLevelSets[n] = closedSurface.SignedDistanceOf(node);
             }
         }

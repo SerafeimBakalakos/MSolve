@@ -174,6 +174,11 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
             {
                 return fineNodeID;
             }
+
+            public double[] MapPointFineNaturalToCoarseNatural(int[] fineElementIdx, double[] coordsFineNatural)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class MockMesh1To3 : IDualMesh
@@ -454,6 +459,11 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
 
                 return fineToCoarseNodes[fineNodeID];
 
+            }
+
+            public double[] MapPointFineNaturalToCoarseNatural(int[] fineElementIdx, double[] coordsFineNatural)
+            {
+                throw new NotImplementedException();
             }
         }
     }

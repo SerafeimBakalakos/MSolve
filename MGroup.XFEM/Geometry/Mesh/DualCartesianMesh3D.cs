@@ -13,16 +13,16 @@ namespace MGroup.XFEM.Geometry.Mesh
         private DualCartesianMesh3D(UniformCartesianMesh3D coarseMesh, UniformCartesianMesh3D fineMesh) 
             : base(3, coarseMesh, fineMesh)
         {
-            ElementNeighbors = FindElementNeighbors(base.multiple);
+            CoarseToFineElementOffsets = FindElementOffsets(base.multiple);
         }
 
         protected override IIsoparametricInterpolation ElementInterpolation => InterpolationHexa8.UniqueInstance;
 
-        protected override List<int[]> ElementNeighbors { get; }
+        protected override List<int[]> CoarseToFineElementOffsets { get; }
 
-        private List<int[]> FindElementNeighbors(int[] multiple)
+        private List<int[]> FindElementOffsets(int[] multiple)
         {
-            var elementNeighbors = new List<int[]>();
+            var elementOffsets = new List<int[]>();
             for (int k = 0; k < multiple[2]; ++k)
             {
                 for (int j = 0; j < multiple[1]; ++j)
@@ -30,12 +30,11 @@ namespace MGroup.XFEM.Geometry.Mesh
                     for (int i = 0; i < multiple[0]; ++i)
                     {
                         // Offset from the fine element that has the same first node as the coarse element
-                        int[] offset = { i, j, k };
-                        elementNeighbors.Add(offset);
+                        elementOffsets.Add(new int[] { i, j, k});
                     }
                 }
             }
-            return elementNeighbors;
+            return elementOffsets;
         }
 
         public class Builder

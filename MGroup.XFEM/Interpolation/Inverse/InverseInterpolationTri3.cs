@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ISAAR.MSolve.Discretization.Interfaces;
 
 namespace MGroup.XFEM.Interpolation.Inverse
@@ -15,6 +16,8 @@ namespace MGroup.XFEM.Interpolation.Inverse
 
         public InverseInterpolationTri3(IReadOnlyList<INode> nodes)
         {
+            throw new NotImplementedException(
+                "This class needs to be updated. It worked for the following order of Tri3 nodes: (1,0) (0,1) (0,0), which has now changed to (0,0) (1,0) (0,1)");
             x1 = nodes[0].X;
             x2 = nodes[1].X;
             x3 = nodes[2].X;
