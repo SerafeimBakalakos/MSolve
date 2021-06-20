@@ -7,6 +7,8 @@ namespace MGroup.XFEM.Geometry
 {
     public interface IIntersectionMesh
     {
+        int Dimension { get; }
+
         IList<double[]> Vertices { get; }
 
         IList<(CellType type, int[] connectivity)> Cells { get; }

@@ -13,7 +13,7 @@ namespace MGroup.XFEM.Geometry.LSM
     /// </summary>
     public class LsmElementIntersection2D : IElementDiscontinuityInteraction
     {
-        private readonly IntersectionMesh2D intersectionMesh;
+        private readonly IIntersectionMesh intersectionMesh;
 
         public LsmElementIntersection2D(int parentGeometryID, RelativePositionCurveElement relativePosition,
             IXFiniteElement element, double[] startNatural, double[] endNatural)
@@ -26,19 +26,23 @@ namespace MGroup.XFEM.Geometry.LSM
             this.RelativePosition = relativePosition;
             this.Element = element;
 
-            this.intersectionMesh = new IntersectionMesh2D();
+            this.intersectionMesh = new IntersectionMesh2D_OLD();
             this.intersectionMesh.Vertices.Add(startNatural);
             this.intersectionMesh.Vertices.Add(endNatural);
             this.intersectionMesh.Cells.Add((CellType.Line, new int[] { 0, 1 }));
         }
 
         public LsmElementIntersection2D(int parentGeometryID, RelativePositionCurveElement relativePosition, 
-            IXFiniteElement element, IntersectionMesh2D intersectionMesh)
+            IXFiniteElement element, IIntersectionMesh intersectionMesh)
         {
             this.ParentGeometryID = parentGeometryID;
             if ((relativePosition == RelativePositionCurveElement.Disjoint) /*|| (relativePosition == RelativePositionCurveElement.Tangent)*/)
             {
                 throw new ArgumentException("There is no intersection between the curve and element");
+            }
+            if (intersectionMesh.Dimension != 2)
+            {
+                throw new ArgumentException("Only meshes in 2D space are allowed");
             }
             this.RelativePosition = relativePosition;
             this.Element = element;
@@ -55,7 +59,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IIntersectionMesh ApproximateGlobalCartesian()
         {
-            var meshCartesian = new IntersectionMesh2D();
+            var meshCartesian = new IntersectionMesh2D_OLD();
             foreach (double[] vertexNatural in intersectionMesh.Vertices)
             {
                 meshCartesian.Vertices.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, vertexNatural));
@@ -82,9 +86,10 @@ namespace MGroup.XFEM.Geometry.LSM
 
             for (int c = 0; c < intersectionMesh.Cells.Count; ++c)
             {
-                //TODO: It would be safer to find the vertices from the cells, instead of assuming that they are in order.
-                double[] startNatural = intersectionMesh.Vertices[c];
-                double[] endNatural = intersectionMesh.Vertices[c + 1];
+                int startIdx = intersectionMesh.Cells[c].connectivity[0];
+                int endIdx = intersectionMesh.Cells[c].connectivity[1];
+                double[] startNatural = intersectionMesh.Vertices[startIdx];
+                double[] endNatural = intersectionMesh.Vertices[endIdx];
 
                 // Conforming curves intersect 2 elements, thus the integral will be computed twice. Halve the weights to avoid 
                 // obtaining double the value of the integral.
@@ -94,7 +99,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 if (RelativePosition == RelativePositionCurveElement.Conforming) weightModifier = 0.5;
 
                 // Absolute determinant of Jacobian of mapping from auxiliary to cartesian system. Constant for all Gauss points.
-                double length = Utilities.Distance2D(intersectionsCartesian[c], intersectionsCartesian[c + 1]);
+                double length = Utilities.Distance2D(intersectionsCartesian[startIdx], intersectionsCartesian[endIdx]);
                 double detJ = Math.Abs(0.5 * length);
 
                 var quadrature1D = GaussLegendre1D.GetQuadratureWithOrder(order);

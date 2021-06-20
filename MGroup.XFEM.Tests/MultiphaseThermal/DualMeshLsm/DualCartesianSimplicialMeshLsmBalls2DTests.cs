@@ -143,7 +143,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
                 var mesh = new DualCartesianSimplicialMesh2D.Builder(minCoords, maxCoords, numNodesCoarse, numNodesFine)
                     .BuildMesh();
                 XModel<IXMultiphaseElement> coarseModel = CreateModel(mesh.CoarseMesh);
-                var dualMeshLsm = lsmChoice.Create(0, mesh, initialCurve);
+                var dualMeshLsm = lsmChoice.Create_OLD(0, mesh, initialCurve);
 
                 int numPointsPerElemPerAxis = 15;
                 var allPoints = new Dictionary<double[], double>();
@@ -226,7 +226,8 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
                 model.ModelObservers.Add(new PhasesSizeWriter(outputDirectory, model, geometryModel));
 
                 // Plot bulk and boundary integration points of each element
-                model.ModelObservers.Add(new IntegrationPointsPlotter(outputDirectory, model));
+                bool plotNormals = false;
+                model.ModelObservers.Add(new IntegrationPointsPlotter(outputDirectory, model, plotNormals));
 
                 // Plot enrichments
                 double elementSize = (maxCoords[0] - minCoords[0]) / numElementsCoarse[0];

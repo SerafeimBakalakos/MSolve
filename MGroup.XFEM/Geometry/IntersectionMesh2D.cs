@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 using ISAAR.MSolve.LinearAlgebra.Commons;
 
+//TODO: avoid storing CellType per cell. It is the same for all cells.
 namespace MGroup.XFEM.Geometry
 {
     public class IntersectionMesh2D : IIntersectionMesh
@@ -15,115 +17,112 @@ namespace MGroup.XFEM.Geometry
         {
         }
 
-        public static IntersectionMesh2D CreateMesh(Dictionary<int, List<double[]>> intersectionsOfElements)
-        {
-            var mesh = new IntersectionMesh2D();
-            if (intersectionsOfElements.Count == 0)
-            {
-                throw new ArgumentException("There must be at least 2 intersection points of at least 1 element");
-            }
-            else if (intersectionsOfElements.Count == 1)
-            {
-                if (intersectionsOfElements.First().Value.Count < 2)
-                {
-                    throw new ArgumentException("There must be at least 2 intersection points of at least 1 element");
-                }
-            }
-            else
-            {
-                List<double[]> orderedPoints = OrderPoints(intersectionsOfElements);
-                foreach (double[] point in orderedPoints) mesh.Vertices.Add(point);
-                for (int i = 0; i < orderedPoints.Count - 1; ++i)
-                {
-                    mesh.Cells.Add((CellType.Line, new int[] { i, i + 1 }));
-                }
-            }
-            return mesh;
-        }
+        public int Dimension { get; } = dim;
 
         public IList<(CellType, int[])> Cells { get; } = new List<(CellType, int[])>();
 
         public IList<double[]> Vertices { get; } = new List<double[]>();
 
         /// <summary>
-        /// This method just gathers all cells and renumbers the vertices accordingly, 
-        /// without taking intersecting cells into account. 
+        /// For each vertex v in <see cref="Vertices"/>: 
+        /// If v lies on the edge between nodes with IDs i, j (where i &lt; j) then <see cref="IntersectedEdges"/>[v] = {i, j}. 
+        /// If v coincides with node with ID = i, then <see cref="IntersectedEdges"/>[v] = {i}.
+        /// If v lies on the interior of the intersected element, then <see cref="IntersectedEdges"/>[v] = empty.
+        /// If not needed, it can be cleared to save memory.
+        /// </summary>
+        public IList<int[]> IntersectedEdges = new List<int[]>();
+
+        /// <summary>
         /// </summary>
         /// <param name="other"></param>
-        public void MergeWith(IntersectionMesh2D other)
+        /// <param name="isEdgeOrientationConsistent">
+        /// Enables optimizations if the orientation of edges is always the same. E.g. first: node with min ID, 
+        /// second: node with max ID.
+        /// </param>
+        public void MergeWith(IntersectionMesh2D other, bool isEdgeOrientationConsistent = false)
         {
-            int offset = this.Vertices.Count;
-            foreach (double[] vertex in other.Vertices) this.Vertices.Add(vertex);
-            foreach ((CellType cellType, int[] originalConnectivity) in other.Cells)
-            {
-                int[] offsetConnectivity = OffsetArray(originalConnectivity, offset);
-                this.Cells.Add((cellType, offsetConnectivity));
-            }
-        }
-
-        private static List<double[]> OrderPoints(Dictionary<int, List<double[]>> intersectionsOfElements)
-        {
-            var remainingSegments = new List<List<double[]>>(intersectionsOfElements.Values);
-            var orderedPoints = new LinkedList<double[]>();
-            List<double[]> firstSegment = remainingSegments[0];
-            remainingSegments.RemoveAt(0);
-            orderedPoints.AddLast(firstSegment[0]);
-            orderedPoints.AddLast(firstSegment[1]);
+            //TODO: If there are more than 2 coincident points, I should keep all of them in a separate dictionary and take the 
+            //      average at the end
+            //TODO: If there are identical cells, keep only 1 of them
 
             double tol = 1E-6;
             var comparer = new ValueComparer(tol);
-            while (remainingSegments.Count > 0)
+
+            // Process vertices
+            var otherVertexIndices = new int[other.Vertices.Count]; 
+            for (int p = 0; p < other.Vertices.Count; ++p)
             {
-                var nextRemainingSegments = new List<List<double[]>>(remainingSegments.Count);
-                foreach (List<double[]> segment in remainingSegments)
+                int[] otherEdge = other.IntersectedEdges[p];
+                int existingVertexIdx = -1;
+                if (otherEdge.Length == 0)
                 {
-                    double[] currentStart = orderedPoints.First.Value;
-                    double[] currentEnd = orderedPoints.Last.Value;
-                    if (PointsCoincide(segment[0], currentStart, comparer))
+                    // Internal point. Search existing vertices to see if it coincides with one of them.
+                    for (int v = 0; v < this.Vertices.Count; ++v)
                     {
-                        orderedPoints.AddFirst(segment[1]);
+                        if (PointsCoincide(this.Vertices[v], other.Vertices[p], comparer))
+                        {
+                            existingVertexIdx = v;
+                            break;
+                        }
                     }
-                    else if (PointsCoincide(segment[1], currentStart, comparer))
+                }
+                else
+                {
+                    Debug.Assert((otherEdge.Length == 1) || (otherEdge.Length == 2));
+
+                    // Point on the edge between 2 nodes or exactly on a node. 
+                    // Search existing vertices to see if it coincides with one of them.
+                    for (int v = 0; v < this.Vertices.Count; ++v)
                     {
-                        orderedPoints.AddFirst(segment[0]);
-                    }
-                    else if (PointsCoincide(segment[0], currentEnd, comparer))
-                    {
-                        orderedPoints.AddLast(segment[1]);
-                    }
-                    else if (PointsCoincide(segment[1], currentEnd, comparer))
-                    {
-                        orderedPoints.AddLast(segment[0]);
-                    }
-                    else
-                    {
-                        nextRemainingSegments.Add(segment);
+                        if (PointsCoincide(this.IntersectedEdges[v], other.IntersectedEdges[p], isEdgeOrientationConsistent))
+                        {
+                            existingVertexIdx = v;
+                            break;
+                        }
                     }
                 }
 
-                if (nextRemainingSegments.Count == remainingSegments.Count)
+                if (existingVertexIdx > -1) // keep existing vertex, but take the average
                 {
-                    throw new Exception("The linear segments provided do not form a continuous mesh");
+                    otherVertexIndices[p] = existingVertexIdx;
+                    AveragePoints(this.Vertices[existingVertexIdx], other.Vertices[p]);
                 }
-                remainingSegments = nextRemainingSegments;
+                else // add new vertex
+                {
+                    otherVertexIndices[p] = this.Vertices.Count;
+                    this.Vertices.Add(other.Vertices[p]);
+                    this.IntersectedEdges.Add(otherEdge);
+                }
             }
 
-            return orderedPoints.ToList();
+            // Process cells
+            foreach ((CellType type, int[] connectivity) in other.Cells)
+            {
+                // Associate cell with the new vertex indices
+                for (int i = 0; i < connectivity.Length; ++i)
+                {
+                    connectivity[i] = otherVertexIndices[connectivity[i]];
+                }
+                this.Cells.Add((type, connectivity));
+            }
         }
 
-        private static int[] OffsetArray(int[] original, int offset)
+        /// <summary>
+        /// </summary>
+        /// <param name="point">The result will be stored here</param>
+        /// <param name="otherPoint"></param>
+        private static void AveragePoints(double[] point, double[] otherPoint)
         {
-            var result = new int[original.Length];
-            for (int i = 0; i < original.Length; i++)
+            Debug.Assert(point.Length == dim);
+            Debug.Assert(otherPoint.Length == dim);
+            for (int d = 0; d < point.Length; ++d)
             {
-                result[i] = original[i] + offset;
+                point[d] = 0.5 * (point[d] + otherPoint[d]);
             }
-            return result;
         }
 
         private static bool PointsCoincide(double[] point0, double[] point1, ValueComparer comparer)
         {
-            //TODO: Possibly add some tolerance
             for (int d = 0; d < dim; ++d)
             {
                 if (!comparer.AreEqual(point0[d], point1[d]))
@@ -132,6 +131,28 @@ namespace MGroup.XFEM.Geometry
                 }
             }
             return true;
+        }
+
+        private static bool PointsCoincide(int[] edgeOfPoint0, int[] edgeOfPoint1, bool isEdgeOrientationConsistent)
+        {
+            if (edgeOfPoint0.Length != edgeOfPoint1.Length) return false;
+            if (edgeOfPoint0.Length == 1)
+            {
+                return edgeOfPoint0[0] == edgeOfPoint1[0];
+            }
+            else
+            {
+                Debug.Assert(edgeOfPoint0.Length == 2);
+                bool areSame = (edgeOfPoint0[0] == edgeOfPoint1[0]) && (edgeOfPoint0[1] == edgeOfPoint1[1]);
+                if (isEdgeOrientationConsistent)
+                {
+                    return areSame;
+                }
+                else // try both orientations
+                {
+                    return areSame || ((edgeOfPoint0[0] == edgeOfPoint1[1]) && (edgeOfPoint0[1] == edgeOfPoint1[0]));
+                }
+            }
         }
     }
 }

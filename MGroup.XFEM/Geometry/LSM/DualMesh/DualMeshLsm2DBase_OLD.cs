@@ -49,7 +49,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
             {
                 return new NullElementDiscontinuityInteraction(this.ID, element);
             }
-            var mesh = IntersectionMesh2D.CreateMesh(intersectionsOfElements);
+            var mesh = IntersectionMesh2D_OLD.CreateMesh(intersectionsOfElements);
             return new LsmElementIntersection2D(this.ID, RelativePositionCurveElement.Intersecting, element, mesh);
         }
 

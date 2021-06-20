@@ -141,7 +141,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
 
                 var mesh = new DualCartesianMesh2D.Builder(minCoords, maxCoords, numElementsCoarse, numElementsFine).BuildMesh();
                 XModel<IXMultiphaseElement> coarseModel = CreateModel(mesh.CoarseMesh);
-                var dualMeshLsm = lsmChoice.Create(0, mesh, initialCurve);
+                var dualMeshLsm = lsmChoice.Create_OLD(0, mesh, initialCurve);
 
                 int numPointsPerElemPerAxis = 10;
                 var allPoints = new Dictionary<double[], double>();
@@ -317,7 +317,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
             var phase = new LsmPhase(1, geometricModel, -1);
             geometricModel.Phases[phase.ID] = phase;
 
-            var dualMeshLsm = lsmChoice.Create(0, mesh, initialCurve);
+            var dualMeshLsm = lsmChoice.Create_OLD(0, mesh, initialCurve);
             var boundary = new ClosedPhaseBoundary(phase.ID, dualMeshLsm, defaultPhase, phase);
             defaultPhase.ExternalBoundaries.Add(boundary);
             defaultPhase.Neighbors.Add(phase);

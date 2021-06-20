@@ -108,6 +108,8 @@ namespace MGroup.XFEM.Geometry
             return jointMesh;
         }
 
+        public int Dimension { get; } = dim;
+
         public IList<(CellType, int[])> Cells { get; } = new List<(CellType, int[])>();
 
         public IList<double[]> Vertices { get; } = new List<double[]>();

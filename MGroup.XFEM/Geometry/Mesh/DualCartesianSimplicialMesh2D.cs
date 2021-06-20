@@ -174,7 +174,7 @@ namespace MGroup.XFEM.Geometry.Mesh
                 // x0 = i * dr + r0/m => x = i * dx / m + (1+r) / m - 1
 
                 int i = fineElementIdx[d] % multiple[d];
-                coordsCoarseNatural[d] = (i * 2.0 + coordsFineNatural[d] + 1.0) / multiple[d] - 1.0;
+                coordsCoarseNatural[d] = (i * 2.0 + coordsFineQuad[d] + 1.0) / multiple[d] - 1.0;
             }
             return coordsCoarseNatural;
         }
