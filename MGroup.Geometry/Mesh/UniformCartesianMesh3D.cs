@@ -67,6 +67,8 @@ namespace MGroup.Geometry.Mesh
 
         public CellType CellType => CellType.Hexa8;
 
+        public int Dimension => dim;
+
         public double[] MinCoordinates { get; }
 
         public double[] MaxCoordinates { get; }

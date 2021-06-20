@@ -150,6 +150,8 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
 
             public IStructuredMesh FineMesh => throw new NotImplementedException();
 
+            public int Dimension => 2;
+
             public DualMeshPoint CalcShapeFunctions(int coarseElementID, double[] coarseNaturalCoords)
             {
                 throw new NotImplementedException();
@@ -186,6 +188,8 @@ namespace MGroup.XFEM.Tests.Geometry.DualMesh
             public IStructuredMesh CoarseMesh => throw new NotImplementedException();
 
             public IStructuredMesh FineMesh => throw new NotImplementedException();
+
+            public int Dimension => 2;
 
             public DualMeshPoint CalcShapeFunctions(int coarseElementID, double[] coarseNaturalCoords)
             {

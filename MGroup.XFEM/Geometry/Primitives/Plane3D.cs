@@ -24,6 +24,8 @@ namespace MGroup.XFEM.Geometry.Primitives
 
         private readonly Vector pointOnPlane;
 
+        public int Dimension => dim;
+
         private Plane3D(double a, double b, double c, double d, Vector unitNormal, Vector pointOnPlane)
         {
             this.a = a;

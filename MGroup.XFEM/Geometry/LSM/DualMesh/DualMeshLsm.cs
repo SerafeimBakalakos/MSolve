@@ -3,48 +3,58 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
-using ISAAR.MSolve.LinearAlgebra.Commons;
-using MGroup.XFEM.ElementGeometry;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry.Mesh;
 using MGroup.XFEM.Geometry.Primitives;
 using MGroup.XFEM.Interpolation;
 
-//TODO: The global/local/fixed and 2D/3D hierarchies seem like a good candidate for Bridge pattern.
 namespace MGroup.XFEM.Geometry.LSM.DualMesh
 {
-    public abstract class DualMeshLsm2DBase : IClosedGeometry
+    public class DualMeshLsm : IClosedGeometry
     {
-        private const int dim = 2;
-
-        protected readonly IDualMesh dualMesh;
-        private readonly ValueComparer comparer;
-        private readonly bool isFineMeshSimplicial;
+        private readonly int dimension;
+        private readonly IDualMesh dualMesh;
         private readonly IIsoparametricInterpolation fineMeshInterpolation;
         private readonly LsmTri3Interaction intersectionStrategy;
+        private readonly ILsmStorage lsmStorage;
 
-        protected DualMeshLsm2DBase(int id, IDualMesh dualMesh)
+        public DualMeshLsm(int id, IClosedManifold originalGeometry, IDualMesh dualMesh, ILsmStorage lsmStorage)
         {
             this.dualMesh = dualMesh;
             this.ID = id;
-            this.comparer = new ValueComparer(1E-6);
+
+            int dimension = originalGeometry.Dimension;
+            if ((dimension != 2) && (dimension != 3))
+            {
+                throw new ArgumentException("Dimension must be 2 or 3");
+            }
+            this.dimension = originalGeometry.Dimension;
+
+            if ((originalGeometry.Dimension != dualMesh.Dimension) || (originalGeometry.Dimension != lsmStorage.Dimension))
+            {
+                throw new ArgumentException("The mesh, original geometry and LSM storage strategy" +
+                    " must belong to the spaces with the same dimensionality");
+            }
+            this.lsmStorage = lsmStorage;
 
             if (dualMesh.FineMesh.CellType == CellType.Tri3)
             {
-                this.isFineMeshSimplicial = true;
                 this.intersectionStrategy = new LsmTri3Interaction();
                 this.fineMeshInterpolation = InterpolationTri3.UniqueInstance;
             }
             else if (dualMesh.FineMesh.CellType == CellType.Quad4)
             {
-                this.isFineMeshSimplicial = false;
                 throw new NotImplementedException();
             }
             else
             {
                 throw new NotImplementedException();
             }
+
+            // Initialize the level set values, which may take a while.
+            //TODO: perhaps this should be done in a separate method, instead of the constructor.
+            lsmStorage.Initialize(originalGeometry, dualMesh.FineMesh);
         }
 
         public int ID { get; }
@@ -53,9 +63,6 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
         {
             // WARNING: This optimization must be avoided. Coarse elements may be flagged as disjoint incorrectly .
             //if (IsCoarseElementDisjoint(element)) return new NullElementDiscontinuityInteraction(this.ID, element);
-
-            //HERE: merge the individual meshes from each fine element. The normals of the segments will always point towards
-            //      the positive halfspace, thus the 2nd vertex of one segment will be the 1st segment of another.
 
             bool isIntersected = false;
             var totalIntersectionMesh = new IntersectionMesh2D();
@@ -70,7 +77,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
                 for (int n = 0; n < fineElementNodes.Length; ++n)
                 {
                     nodeCoords.Add(fineMeshInterpolation.NodalNaturalCoordinates[n]);
-                    nodeLevelSets.Add(GetLevelSet(fineElementNodes[n]));
+                    nodeLevelSets.Add(lsmStorage.GetLevelSet(fineElementNodes[n]));
                 }
 
                 (RelativePositionCurveElement relativePosition, IntersectionMesh2D intersectionMesh) =
@@ -115,7 +122,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
             }
         }
 
-        public double SignedDistanceOf(XNode node) => GetLevelSet(dualMesh.MapNodeIDCoarseToFine(node.ID));
+        public double SignedDistanceOf(XNode node) => lsmStorage.GetLevelSet(dualMesh.MapNodeIDCoarseToFine(node.ID));
 
         public double SignedDistanceOf(XPoint point)
         {
@@ -128,13 +135,22 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
             double result = 0;
             for (int n = 0; n < fineNodes.Length; ++n)
             {
-                result += shapeFunctions[n] * GetLevelSet(fineNodes[n]);
+                result += shapeFunctions[n] * lsmStorage.GetLevelSet(fineNodes[n]);
             }
             return result;
         }
 
-        public abstract void UnionWith(IClosedGeometry otherGeometry);
-
-        protected abstract double GetLevelSet(int fineNodeID);
+        public void UnionWith(IClosedGeometry otherGeometry)
+        {
+            if (otherGeometry is DualMeshLsm otherLsm)
+            {
+                if (this.dimension != otherLsm.dimension)
+                {
+                    throw new ArgumentException("Cannot merge a 2D with a 3D geometry");
+                }
+                this.lsmStorage.UnionWith(otherLsm.lsmStorage);
+            }
+            else throw new ArgumentException("Incompatible Level Set geometry");
+        }
     }
 }

@@ -12,20 +12,20 @@ namespace MGroup.XFEM.Geometry.Mesh
     /// </summary>
     public class DualCartesianSimplicialMesh2D : IDualMesh
     {
-        private const int dim = 2;
         private const int numSimplicesPerCartesianCell = 2;
         private readonly UniformCartesianMesh2D coarseMesh;
         private readonly UniformSimplicialMesh2D fineMesh;
         private readonly int[] multiple;
         private readonly int numFineElementsPerCoarseElement;
 
-        private DualCartesianSimplicialMesh2D(UniformCartesianMesh2D coarseMesh, UniformSimplicialMesh2D fineMesh) 
+        private DualCartesianSimplicialMesh2D(int dimension, UniformCartesianMesh2D coarseMesh, UniformSimplicialMesh2D fineMesh) 
         {
+            this.Dimension = dimension;
             this.coarseMesh = coarseMesh;
             this.fineMesh = fineMesh;
 
-            multiple = new int[dim];
-            for (int d = 0; d < dim; ++d)
+            multiple = new int[Dimension];
+            for (int d = 0; d < Dimension; ++d)
             {
                 if (fineMesh.NumNodes[d] < coarseMesh.NumNodes[d])
                 {
@@ -41,13 +41,15 @@ namespace MGroup.XFEM.Geometry.Mesh
             }
 
             numFineElementsPerCoarseElement = numSimplicesPerCartesianCell;
-            for (int d = 0; d < dim; ++d)
+            for (int d = 0; d < Dimension; ++d)
             {
                 numFineElementsPerCoarseElement *= multiple[d];
             }
 
             CoarseToFineElementOffsets = FindElementOffsets(multiple);
         }
+
+        public int Dimension { get; }
 
         public IStructuredMesh FineMesh => fineMesh;
 
@@ -70,8 +72,8 @@ namespace MGroup.XFEM.Geometry.Mesh
         public int MapNodeFineToCoarse(int fineNodeID)
         {
             int[] fineIdx = FineMesh.GetNodeIdx(fineNodeID);
-            var coarseIdx = new int[dim];
-            for (int d = 0; d < dim; d++)
+            var coarseIdx = new int[Dimension];
+            for (int d = 0; d < Dimension; d++)
             {
                 if (fineIdx[d] % multiple[d] != 0) return -1;
                 else coarseIdx[d] = fineIdx[d] / multiple[d];
@@ -88,8 +90,8 @@ namespace MGroup.XFEM.Geometry.Mesh
 
         public int[] MapNodeIdxCoarseToFine(int[] coarseNodeIdx)
         {
-            var fineIdx = new int[dim];
-            for (int d = 0; d < dim; d++)
+            var fineIdx = new int[Dimension];
+            for (int d = 0; d < Dimension; d++)
             {
                 fineIdx[d] = multiple[d] * coarseNodeIdx[d];
             }
@@ -100,8 +102,8 @@ namespace MGroup.XFEM.Geometry.Mesh
         {
             // The last entry is unused, since all sub-simplices belong to the same cartesian cell, defined by the first entries.
             int[] fineIdx = fineMesh.GetElementIdx(fineElementID);  
-            var coarseIdx = new int[dim];
-            for (int d = 0; d < dim; d++)
+            var coarseIdx = new int[Dimension];
+            for (int d = 0; d < Dimension; d++)
             {
                 coarseIdx[d] = fineIdx[d] / multiple[d];
             }
@@ -118,12 +120,12 @@ namespace MGroup.XFEM.Geometry.Mesh
             {
                 for (int j = 0; j < numSimplicesPerCartesianCell; ++j)
                 {
-                    var fineIdx = new int[dim + 1];
-                    for (int d = 0; d < dim; d++)
+                    var fineIdx = new int[Dimension + 1];
+                    for (int d = 0; d < Dimension; d++)
                     {
                         fineIdx[d] = multiple[d] * coarseIdx[d] + offset[d];
                     }
-                    fineIdx[dim] = j;
+                    fineIdx[Dimension] = j;
                     int fineID = fineMesh.GetElementID(fineIdx);
                     fineElementIDs[i++] = fineID;
                 }
@@ -159,8 +161,8 @@ namespace MGroup.XFEM.Geometry.Mesh
             }
 
             // Map from the fine quad to the coarse quad
-            var coordsCoarseNatural = new double[dim];
-            for (int d = 0; d < dim; ++d)
+            var coordsCoarseNatural = new double[Dimension];
+            for (int d = 0; d < Dimension; ++d)
             {
                 // Let: 
                 // x = coarse natural coordinate
@@ -182,9 +184,9 @@ namespace MGroup.XFEM.Geometry.Mesh
         public DualMeshPoint CalcShapeFunctions(int coarseElementID, double[] coarseNaturalCoords)
         {
             // Find the quad of the fine mesh containing that point and the natural coordinates in that quad
-            var subElementsIdx = new int[dim];
-            var coordsFineQuad = new double[dim];
-            for (int d = 0; d < dim; ++d)
+            var subElementsIdx = new int[Dimension];
+            var coordsFineQuad = new double[Dimension];
+            for (int d = 0; d < Dimension; ++d)
             {
                 // Let: 
                 // x = coarse natural coordinate
@@ -231,13 +233,13 @@ namespace MGroup.XFEM.Geometry.Mesh
             result.FineNaturalCoordinates = coordsFineTriangle;
             result.FineShapeFunctions = shapeFunctions;
 
-            result.FineElementIdx = new int[dim + 1];
+            result.FineElementIdx = new int[Dimension + 1];
             int[] coarseElementIdx = coarseMesh.GetElementIdx(coarseElementID);
-            for (int d = 0; d < dim; ++d)
+            for (int d = 0; d < Dimension; ++d)
             {
                 result.FineElementIdx[d] = coarseElementIdx[d] * multiple[d] + subElementsIdx[d];
             }
-            result.FineElementIdx[dim] = subtriangle;
+            result.FineElementIdx[Dimension] = subtriangle;
 
             return result;
         }
@@ -273,6 +275,7 @@ namespace MGroup.XFEM.Geometry.Mesh
 
             public DualCartesianSimplicialMesh2D BuildMesh()
             {
+                int dim = minCoordinates.Length;
                 int[] numElementsCoarse = { numNodesCoarse[0] - 1, numNodesCoarse[1] - 1 };
                 var coarseMesh = new UniformCartesianMesh2D.Builder(minCoordinates, maxCoordinates, numElementsCoarse)
                     .SetMajorAxis(0) //TODO: Implement the other options in the mesh class and the builder.
@@ -280,7 +283,7 @@ namespace MGroup.XFEM.Geometry.Mesh
                 var fineMesh = new UniformSimplicialMesh2D.Builder(minCoordinates, maxCoordinates, numNodesFine)
                     .SetMajorAxis(0)
                     .BuildMesh();
-                return new DualCartesianSimplicialMesh2D(coarseMesh, fineMesh);
+                return new DualCartesianSimplicialMesh2D(dim, coarseMesh, fineMesh);
             }
         }
     }

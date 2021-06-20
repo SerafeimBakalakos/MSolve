@@ -30,6 +30,8 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// </summary>
         public Vector DirectionUnit { get; set; }
 
+        public int Dimension => 3;
+
         public double SignedDistanceOf(double[] point)
         {
             // Find the projection P0 of P onto the cylider's axis AB

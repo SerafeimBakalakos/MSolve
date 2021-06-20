@@ -13,6 +13,8 @@ namespace MGroup.Geometry.Mesh
     {
         CellType CellType { get; }
 
+        int Dimension { get; }
+
         double[] MinCoordinates { get; } //TODO: These probably apply only to unrotated & unskewed rectilinear meshes 
 
         double[] MaxCoordinates { get; }

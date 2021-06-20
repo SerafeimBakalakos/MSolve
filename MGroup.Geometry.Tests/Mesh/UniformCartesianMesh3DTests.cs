@@ -209,6 +209,8 @@ namespace MGroup.Geometry.Tests.Mesh
 
         private class MockMesh2x3x4 : IStructuredMesh
         {
+            public int Dimension => 3;
+
             public CellType CellType => CellType.Hexa8;
 
             public double[] MinCoordinates => new double[] { 0.0, 0.0, 0.0 };

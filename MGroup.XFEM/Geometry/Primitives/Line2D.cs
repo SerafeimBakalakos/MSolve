@@ -33,6 +33,8 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// </summary>
         protected readonly double[] normalVector;
 
+        public int Dimension => 2;
+
         /// <summary>
         /// Directed from <paramref name="point0"/> to <paramref name="point1"/>.
         /// </summary>

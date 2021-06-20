@@ -34,6 +34,8 @@ namespace MGroup.XFEM.Geometry.Primitives
         public double[] Start => vertices[0];
         public IReadOnlyList<double[]> Vertices => vertices;
 
+        public int Dimension => 2;
+
         /// <summary>
         /// Counter-clockwise angle from global cartesian x axis to a vector which 1) starts at the end point of the 
         /// curve, 2) is tangent to the curve and 3) heads outwards from the curve.

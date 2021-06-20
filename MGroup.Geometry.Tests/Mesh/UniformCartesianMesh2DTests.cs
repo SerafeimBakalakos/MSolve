@@ -198,6 +198,8 @@ namespace MGroup.Geometry.Tests.Mesh
 
         private class MockMesh2x3 : ICartesianMesh
         {
+            public int Dimension => 2;
+
             public CellType CellType => CellType.Quad4;
 
             public double[] MinCoordinates => new double[] { 0.0, 0.0 };
@@ -214,6 +216,7 @@ namespace MGroup.Geometry.Tests.Mesh
 
             public int NumNodesPerElement => 4;
 
+
             public IEnumerable<(int elementID, int[] nodeIDs)> EnumerateElements()
             {
                 throw new NotImplementedException();
@@ -223,7 +226,6 @@ namespace MGroup.Geometry.Tests.Mesh
             {
                 throw new NotImplementedException();
             }
-
             public int[] GetElementConnectivity(int[] elementIdx)
             {
                 var elementNodes = new int[,][]

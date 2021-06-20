@@ -10,19 +10,18 @@ namespace MGroup.XFEM.Geometry.Mesh
 {
     public abstract class DualCartesianMeshBase : IDualMesh
     {
-        protected readonly int dim;
         protected readonly ICartesianMesh coarseMesh;
         protected readonly ICartesianMesh fineMesh;
         protected readonly int[] multiple;
 
         protected DualCartesianMeshBase(int dimension, ICartesianMesh coarseMesh, ICartesianMesh fineMesh)
         {
-            this.dim = dimension;
+            this.Dimension = dimension;
             this.coarseMesh = coarseMesh;
             this.fineMesh = fineMesh;
 
-            multiple = new int[dim];
-            for (int d = 0; d < dim; ++d)
+            multiple = new int[Dimension];
+            for (int d = 0; d < Dimension; ++d)
             {
                 if (fineMesh.NumElements[d] < coarseMesh.NumElements[d])
                 {
@@ -38,6 +37,8 @@ namespace MGroup.XFEM.Geometry.Mesh
             }
         }
 
+        public int Dimension { get; }
+
         public IStructuredMesh FineMesh => fineMesh;
 
         public IStructuredMesh CoarseMesh => coarseMesh;
@@ -49,8 +50,8 @@ namespace MGroup.XFEM.Geometry.Mesh
         public int MapNodeFineToCoarse(int fineNodeID)
         {
             int[] fineIdx = FineMesh.GetNodeIdx(fineNodeID);
-            var coarseIdx = new int[dim];
-            for (int d = 0; d < dim; d++)
+            var coarseIdx = new int[Dimension];
+            for (int d = 0; d < Dimension; d++)
             {
                 if (fineIdx[d] % multiple[d] != 0) return -1;
                 else coarseIdx[d] = fineIdx[d] / multiple[d];
@@ -67,8 +68,8 @@ namespace MGroup.XFEM.Geometry.Mesh
 
         public int[] MapNodeIdxCoarseToFine(int[] coarseNodeIdx)
         {
-            var fineIdx = new int[dim];
-            for (int d = 0; d < dim; d++)
+            var fineIdx = new int[Dimension];
+            for (int d = 0; d < Dimension; d++)
             {
                 fineIdx[d] = multiple[d] * coarseNodeIdx[d];
             }
@@ -78,8 +79,8 @@ namespace MGroup.XFEM.Geometry.Mesh
         public int MapElementFineToCoarse(int fineElementID)
         {
             int[] fineIdx = fineMesh.GetElementIdx(fineElementID);
-            var coarseIdx = new int[dim];
-            for (int d = 0; d < dim; d++)
+            var coarseIdx = new int[Dimension];
+            for (int d = 0; d < Dimension; d++)
             {
                 coarseIdx[d] = fineIdx[d] / multiple[d];
             }
@@ -94,8 +95,8 @@ namespace MGroup.XFEM.Geometry.Mesh
             for (int i = 0; i < elementOffsets.Count; ++i)
             {
                 int[] offset = elementOffsets[i];
-                var fineIdx = new int[dim];
-                for (int d = 0; d < dim; d++)
+                var fineIdx = new int[Dimension];
+                for (int d = 0; d < Dimension; d++)
                 {
                     fineIdx[d] = multiple[d] * coarseIdx[d] + offset[d];
                 }
@@ -108,8 +109,8 @@ namespace MGroup.XFEM.Geometry.Mesh
         //TODO: These mapping and its inverse must also work for points on edges of the fine and coarse mesh.
         public double[] MapPointFineNaturalToCoarseNatural(int[] fineElementIdx, double[] coordsFineNatural)
         {
-            var coordsCoarseNatural = new double[dim];
-            for (int d = 0; d < dim; ++d)
+            var coordsCoarseNatural = new double[Dimension];
+            for (int d = 0; d < Dimension; ++d)
             {
                 // Let: 
                 // x = coarse natural coordinate
@@ -134,9 +135,9 @@ namespace MGroup.XFEM.Geometry.Mesh
         public DualMeshPoint CalcShapeFunctions(int coarseElementID, double[] coarseNaturalCoords)
         {
             // Find the fine element containing that point and the natural coordinates in that element
-            var subElementsIdx = new int[dim];
-            var fineNaturalCoords = new double[dim];
-            for (int d = 0; d < dim; ++d)
+            var subElementsIdx = new int[Dimension];
+            var fineNaturalCoords = new double[Dimension];
+            for (int d = 0; d < Dimension; ++d)
             {
                 // Let: 
                 // x = coarse natural coordinate
@@ -162,9 +163,9 @@ namespace MGroup.XFEM.Geometry.Mesh
             result.FineNaturalCoordinates = fineNaturalCoords;
             result.FineShapeFunctions = shapeFunctions;
 
-            result.FineElementIdx = new int[dim];
+            result.FineElementIdx = new int[Dimension];
             int[] coarseElementIdx = coarseMesh.GetElementIdx(coarseElementID);
-            for (int d = 0; d < dim; ++d)
+            for (int d = 0; d < Dimension; ++d)
             {
                 result.FineElementIdx[d] = coarseElementIdx[d] * multiple[d] + subElementsIdx[d];
             }

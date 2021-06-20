@@ -28,6 +28,8 @@ namespace MGroup.XFEM.Geometry.Primitives
         /// </summary>
         private readonly double[] n;
 
+        public int Dimension => 2;
+
         /// <summary>
         /// Directed from <paramref name="point0"/> to <paramref name="point1"/>.
         /// </summary>

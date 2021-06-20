@@ -9,6 +9,8 @@ namespace MGroup.XFEM.Geometry.Mesh
 {
     public interface IDualMesh
     {
+        int Dimension { get; }
+
         IStructuredMesh CoarseMesh { get; }
 
         IStructuredMesh FineMesh { get; }

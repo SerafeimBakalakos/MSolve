@@ -6,7 +6,7 @@ using MGroup.XFEM.Geometry.LSM.DualMesh;
 using MGroup.XFEM.Geometry.Mesh;
 using MGroup.XFEM.Geometry.Primitives;
 
-namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
+namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMesh
 {
     public enum DualMeshLsmChoice
     {
@@ -15,22 +15,19 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMeshLsm
 
     internal static class DualMeshLsmChoiceExtensions
     {
-        internal static DualMeshLsm2DBase Create(this DualMeshLsmChoice choice,
-            int id, IDualMesh dualMesh, ICurve2D closedCurve)
+        internal static ILsmStorage Create(this DualMeshLsmChoice choice, int dimension)
         {
             if (choice == DualMeshLsmChoice.Global)
             {
-                return new GlobalDualMeshLsm2D(id, dualMesh, closedCurve);
+                return new LsmStorageGlobal(dimension);
             }
             else if (choice == DualMeshLsmChoice.Local)
             {
-                throw new NotImplementedException();
-                //return new LocalDualMeshLsm2D_OLD(id, dualMesh, closedCurve);
+                return new LsmStorageLocal(dimension);
             }
             else if (choice == DualMeshLsmChoice.Fixed)
             {
-                throw new NotImplementedException();
-                //return new FixedDualMeshLsm2D_OLD(id, dualMesh, closedCurve);
+                return new LsmStorageFixed(dimension);
             }
             else
             {

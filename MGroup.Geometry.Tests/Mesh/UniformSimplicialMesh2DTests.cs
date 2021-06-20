@@ -114,6 +114,8 @@ namespace MGroup.Geometry.Tests.Mesh
 
         private class MockMesh2x3 : IStructuredMesh
         {
+            public int Dimension => 2;
+
             public CellType CellType => CellType.Tri3;
 
             public double[] MinCoordinates => new double[] { 0.0, 0.0 };

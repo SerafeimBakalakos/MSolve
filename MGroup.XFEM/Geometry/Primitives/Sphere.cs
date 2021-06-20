@@ -21,6 +21,8 @@ namespace MGroup.XFEM.Geometry.Primitives
         public double[] Center { get; }
         public double Radius { get; }
 
+        public int Dimension => 3;
+
         public double SignedDistanceOf(double[] point) => Utilities.Distance3D(Center, point) - Radius;
 
         public double Volume() => 4.0 * Math.PI * Radius * Radius * Radius / 3.0;

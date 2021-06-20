@@ -64,6 +64,8 @@ namespace MGroup.Geometry.Mesh
 
         public CellType CellType => CellType.Quad4;
 
+        public int Dimension => dim;
+
         public double[] MinCoordinates { get; }
 
         public double[] MaxCoordinates { get; }

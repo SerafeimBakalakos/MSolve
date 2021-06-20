@@ -21,6 +21,8 @@ namespace MGroup.XFEM.Geometry.Primitives
         public double[] Center { get; }
         public double Radius { get; }
 
+        public int Dimension => 2;
+
         public IElementDiscontinuityInteraction IntersectPolygon(IList<double[]> nodes)
         {
             throw new NotImplementedException();

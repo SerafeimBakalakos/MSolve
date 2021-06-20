@@ -4,7 +4,10 @@ using System.Text;
 
 namespace MGroup.XFEM.Geometry.Primitives
 {
-    public interface ISurface3D : IClosedManifold
+    public interface IClosedManifold
     {
+        int Dimension { get; }
+
+        double SignedDistanceOf(double[] point);
     }
 }
