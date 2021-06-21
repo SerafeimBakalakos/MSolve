@@ -16,7 +16,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
         private readonly int dimension;
         private readonly IDualMesh dualMesh;
         private readonly IIsoparametricInterpolation fineMeshInterpolation;
-        private readonly LsmTri3Interaction intersectionStrategy;
+        private readonly ILsmElementInteraction interactionStrategy;
         private readonly ILsmStorage lsmStorage;
 
         public DualMeshLsm(int id, IClosedManifold originalGeometry, IDualMesh dualMesh, ILsmStorage lsmStorage)
@@ -40,12 +40,17 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
 
             if (dualMesh.FineMesh.CellType == CellType.Tri3)
             {
-                this.intersectionStrategy = new LsmTri3Interaction();
-                this.fineMeshInterpolation = InterpolationTri3.UniqueInstance;
+                this.interactionStrategy = new LsmTri3Interaction();
+                this.fineMeshInterpolation = InterpolationTri3.UniqueInstance; //TODO: read that from the mesh.
             }
             else if (dualMesh.FineMesh.CellType == CellType.Quad4)
             {
                 throw new NotImplementedException();
+            }
+            else if (dualMesh.FineMesh.CellType == CellType.Tet4)
+            {
+                this.interactionStrategy = new LsmTet4Interaction();
+                this.fineMeshInterpolation = InterpolationTet4.UniqueInstance;
             }
             else
             {
@@ -81,7 +86,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
                 }
 
                 (RelativePositionCurveElement relativePosition, IntersectionMesh2D intersectionMesh) =
-                    intersectionStrategy.FindIntersection(fineElementNodes, nodeCoords, nodeLevelSets);
+                    interactionStrategy.FindIntersection(fineElementNodes, nodeCoords, nodeLevelSets);
 
                 if ((relativePosition == RelativePositionCurveElement.Disjoint) 
                     || (relativePosition == RelativePositionCurveElement.Tangent))

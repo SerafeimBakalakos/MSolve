@@ -4,10 +4,9 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 using System.Diagnostics;
 
-//HERE: order of vertices must be so that the normal of each segment points towards the positive region.
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public class LsmTri3Interaction
+    public class LsmTri3Interaction : ILsmElementInteraction
     {
         public (RelativePositionCurveElement relativePosition, IntersectionMesh2D intersectionMesh) 
             FindIntersection(IList<int> nodeIDs, List<double[]> nodeCoords, List<double> nodeLevelSets)
