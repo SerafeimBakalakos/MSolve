@@ -247,6 +247,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMesh
                 computedFiles.Add(Path.Combine(outputDirectory, "phase_sizes_t0.txt"));
                 computedFiles.Add(Path.Combine(outputDirectory, "gauss_points_bulk_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "gauss_points_boundary_t0.vtk"));
+                computedFiles.Add(Path.Combine(outputDirectory, "gauss_points_boundary_normals_t0.vtk"));
                 computedFiles.Add(Path.Combine(outputDirectory, "enriched_nodes_heaviside_t0.vtk"));
 
                 var expectedFiles = new List<string>();
@@ -257,6 +258,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMesh
                 expectedFiles.Add(Path.Combine(expectedDirectory, "phase_sizes_t0.txt"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_bulk_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_boundary_t0.vtk"));
+                expectedFiles.Add(Path.Combine(expectedDirectory, "gauss_points_boundary_normals_t0.vtk"));
                 expectedFiles.Add(Path.Combine(expectedDirectory, "enriched_nodes_heaviside_t0.vtk"));
 
                 double tolerance = 1E-6;
