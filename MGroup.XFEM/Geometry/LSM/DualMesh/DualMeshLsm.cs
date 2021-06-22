@@ -66,6 +66,8 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
 
         public IElementDiscontinuityInteraction Intersect(IXFiniteElement element)
         {
+            
+
             // WARNING: This optimization must be avoided. Coarse elements may be flagged as disjoint incorrectly .
             //if (IsCoarseElementDisjoint(element)) return new NullElementDiscontinuityInteraction(this.ID, element);
 
@@ -85,8 +87,21 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
                     nodeLevelSets.Add(lsmStorage.GetLevelSet(fineElementNodes[n]));
                 }
 
-                (RelativePositionCurveElement relativePosition, IntersectionMesh intersectionMesh) =
-                    interactionStrategy.FindIntersection(fineElementNodes, nodeCoords, nodeLevelSets);
+                #region debug
+                RelativePositionCurveElement relativePosition;
+                IntersectionMesh intersectionMesh;
+                if (dualMesh.FineMesh.CellType == CellType.Tri3)
+                {
+                    var interactionStrategy = new LsmTri3Interaction_NEW(fineElementNodes, nodeCoords, nodeLevelSets);
+                    interactionStrategy.Resolve();
+                    relativePosition = interactionStrategy.Position;
+                    intersectionMesh = interactionStrategy.Mesh;
+                }
+                else throw new NotImplementedException();
+                #endregion
+
+                //(RelativePositionCurveElement relativePosition, IntersectionMesh intersectionMesh) =
+                //    interactionStrategy.FindIntersection(fineElementNodes, nodeCoords, nodeLevelSets);
 
                 if ((relativePosition == RelativePositionCurveElement.Disjoint) 
                     || (relativePosition == RelativePositionCurveElement.Tangent))

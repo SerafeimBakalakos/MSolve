@@ -29,7 +29,7 @@ namespace MGroup.XFEM.Geometry.LSM
             Debug.Assert(nodeCoords.Count == 4);
             Debug.Assert(nodeLevelSets.Count == 4);
 
-            var data = new Data();
+            var data = new CaseData();
             data.nodeIDs = nodeIDs;
             data.nodeCoords = nodeCoords;
             data.nodeLevelSets = nodeLevelSets;
@@ -154,7 +154,7 @@ namespace MGroup.XFEM.Geometry.LSM
             }
         }
 
-        private static void Process2Pos2NegCase(Data data)
+        private static void Process2Pos2NegCase(CaseData data)
         {
             // Intersection. 4 intersection points on edges of the 2 positive nodes that connect them with the 2 
             // negative nodes. The intersection mesh consists of 2 triangles.
@@ -252,7 +252,7 @@ namespace MGroup.XFEM.Geometry.LSM
             return triangles;
         }
 
-        private static int[] DefineIntersectedEdge(Data data, int nodeIdx0, int nodeIdx1)
+        private static int[] DefineIntersectedEdge(CaseData data, int nodeIdx0, int nodeIdx1)
         {
             IList<int> nodeIDs = data.nodeIDs;
             if (nodeIDs[nodeIdx0] < nodeIDs[nodeIdx1])
@@ -265,13 +265,13 @@ namespace MGroup.XFEM.Geometry.LSM
             }
         }
 
-        private static void AddConformingNode(Data data, int nodeIdx)
+        private static void AddConformingNode(CaseData data, int nodeIdx)
         {
             data.intersectionMesh.Vertices.Add(data.nodeCoords[nodeIdx]);
             data.intersectionMesh.IntersectedEdges.Add(new int[] { data.nodeIDs[nodeIdx] });
         }
 
-        private static void AddEdgeIntersections(Data data) 
+        private static void AddEdgeIntersections(CaseData data) 
         {
             List<double> nodeLevelSets = data.nodeLevelSets;
             List<double[]> nodeCoords = data.nodeCoords;
@@ -307,7 +307,7 @@ namespace MGroup.XFEM.Geometry.LSM
         /// halfspace defined by the level set surface.
         /// </summary>
         /// <param name="data"></param>
-        private static void FixTrianglesOrientation(Data data)
+        private static void FixTrianglesOrientation(CaseData data)
         {
             List<double[]> nodeCoords = data.nodeCoords;
             List<double> nodeLevelSets = data.nodeLevelSets;
@@ -395,7 +395,7 @@ namespace MGroup.XFEM.Geometry.LSM
             return result;
         }
 
-        private class Data //TODO: Perhaps I should use instance variables and clear them at the end.
+        private class CaseData //TODO: Perhaps I should use instance variables and clear them at the end.
         {
             public IList<int> nodeIDs;
             public List<double[]> nodeCoords;

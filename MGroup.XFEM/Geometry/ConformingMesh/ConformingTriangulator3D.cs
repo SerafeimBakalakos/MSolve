@@ -26,12 +26,6 @@ namespace MGroup.XFEM.Geometry.ConformingMesh
         public ElementSubtetrahedron3D[] FindConformingMesh(IXFiniteElement element, 
             IEnumerable<IElementDiscontinuityInteraction> intersections, IMeshTolerance meshTolerance)
         {
-            #region debug
-            if (element.ID == 167877)
-            {
-                Console.WriteLine();
-            }
-            #endregion
             //TODO: If an element is intersected by 2 surfaces which also intersect each other (inside the element) then this
             //      implementation is not sufficient to produce a conforming mesh.
             double pointProximityTolerance = meshTolerance.CalcTolerance(element);

@@ -126,9 +126,10 @@ namespace MGroup.XFEM.Geometry.LSM
             var allNormals = new List<double[]>();
             for (int c = 0; c < intersectionMesh.Cells.Count; ++c)
             {
-                //TODO: It would be safer to find the vertices from the cells, instead of assuming that they are in order.
-                double[] startCartesian = verticesCartesian[c];
-                double[] endCartesian = verticesCartesian[c + 1];
+                int startIdx = intersectionMesh.Cells[c].connectivity[0];
+                int endIdx = intersectionMesh.Cells[c].connectivity[1];
+                double[] startCartesian = verticesCartesian[startIdx];
+                double[] endCartesian = verticesCartesian[endIdx];
 
                 IList<double[]> normalsOfSegment = 
                     GetNormalVectorsOfSegment(numGaussPointsPerSegment, startCartesian, endCartesian);
