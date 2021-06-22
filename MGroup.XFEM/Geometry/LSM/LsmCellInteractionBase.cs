@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public abstract class LsmCellInteractionBase
+    public abstract class LsmCellInteractionBase : ILsmCellInteraction
     {
         private readonly int dimension;
         private readonly int numNodes;
@@ -19,9 +19,9 @@ namespace MGroup.XFEM.Geometry.LSM
         protected LsmCellInteractionBase(int dimension, int numNodes,
             IList<int> nodeIDs, List<double[]> nodeCoords, List<double> nodeLevelSets, double tolerance)
         {
-            Debug.Assert(nodeIDs.Count == 3);
-            Debug.Assert(nodeCoords.Count == 3);
-            Debug.Assert(nodeLevelSets.Count == 3);
+            Debug.Assert(nodeIDs.Count == numNodes);
+            Debug.Assert(nodeCoords.Count == numNodes);
+            Debug.Assert(nodeLevelSets.Count == numNodes);
 
             this.dimension = dimension;
             this.numNodes = numNodes;
@@ -38,6 +38,8 @@ namespace MGroup.XFEM.Geometry.LSM
         public RelativePositionCurveElement Position { get; protected set; } = RelativePositionCurveElement.Disjoint;
 
         protected abstract List<(int nodeIdx0, int nodeIdx1)> Edges { get; }
+
+        public abstract void Resolve();
 
         /// <summary>
         /// This will ensure machine precision will return the same result if this method is called with the same 
@@ -122,6 +124,31 @@ namespace MGroup.XFEM.Geometry.LSM
             Mesh.IntersectedEdges.Add(new int[] { nodeIDs[nodeIdx] });
         }
 
+        protected void AddEdgeIntersectionsToMesh()
+        {
+            foreach ((int nodeIdx0, int nodeIdx1) in Edges)
+            {
+                if (nodeLevelSets[nodeIdx0] * nodeLevelSets[nodeIdx1] < 0)
+                {
+                    int nodeNeg, nodePos;
+                    if (nodeLevelSets[nodeIdx0] < nodeLevelSets[nodeIdx1])
+                    {
+                        nodeNeg = nodeIdx0;
+                        nodePos = nodeIdx1;
+                    }
+                    else
+                    {
+                        nodeNeg = nodeIdx1;
+                        nodePos = nodeIdx0;
+                    }
+                    double[] intersection = Interpolate(nodeLevelSets[nodeNeg], nodeCoords[nodeNeg],
+                        nodeLevelSets[nodePos], nodeCoords[nodePos]);
+                    Mesh.Vertices.Add(intersection);
+                    Mesh.IntersectedEdges.Add(DefineIntersectedEdge(nodeIdx0, nodeIdx1));
+                }
+            }
+        }
+
         protected (int numZeroNodes, int numPosNodes, int numNegNodes) CountNodes()
         {
             int numZeroNodes = 0;
@@ -177,8 +204,13 @@ namespace MGroup.XFEM.Geometry.LSM
                     }
 
                     var q = nodeCoords[n];
-                    double[] vAQ = { q[0] - pA[0], q[1] - pA[1] };
-                    double signedDistance = vAQ[0] * normal[0] + vAQ[1] * normal[1];
+                    var vAQ = new double[dimension];
+                    double signedDistance = 0.0;
+                    for (int d = 0; d < dimension; ++d)
+                    {
+                        vAQ[d] = q[d] - pA[d];
+                        signedDistance += vAQ[d] * normal[d];
+                    }
                     double distance = Math.Abs(signedDistance);
                     if (distance > max)
                     {
@@ -211,6 +243,46 @@ namespace MGroup.XFEM.Geometry.LSM
             }
         }
 
-        protected abstract double[] CalcNormalOfCell(int[] connectivity);
+        protected abstract double[] CalcNormalOfCell(int[] cellConnectivity);
+
+        /// <summary>
+        /// Processes an interaction case that corresponds to the level set intersecting the cell, but carefully avoids 
+        /// degenerate intersections, such as 2 very close points in 2D, 3 very close points in 3D, 2 very close and 1 faraway 
+        /// point in 3D, etc. If there are intersection points too close to nodes, then the near-zero level sets will be set to 0
+        /// and the <see cref="Resolve"/> method will be rerun to process the new case. This is essentially recursive code, 
+        /// but the recursion depth is 0 or 1. To avoid hard-to-find bugs, after this method call return;.
+        /// </summary>
+        /// <param name="processCase"></param>
+        /// <param name="isOperationValidForZeroNodes"></param>
+        protected void ProcessIntersectionCase(Action processCase, bool isOperationValidForZeroNodes)
+        {
+            if (!areLevelSetsAdjusted)
+            {
+                AdjustLevelSetsToAvoidDegenerateIntersections();
+
+                if (areLevelSetsAdjusted)
+                {
+                    // Level sets needed adjusting. Find and process the new interaction case, based on the new level sets.
+                    //TODO: Now only some cases are possible, so I could optimize that determination.
+                    Resolve(); // recurse but only 1 level
+                }
+                else
+                {
+                    // Level sets were ok after all. Proceed to find intersections normally.
+                    processCase();
+                }
+            }
+            else if (isOperationValidForZeroNodes)
+            {
+                // It is possible to reach this point by adjusting the level sets in another case, thus some nodes have zero 
+                // level sets
+                processCase();
+            }
+            else
+            {
+                throw new InvalidOperationException("Nodal level sets have been adjusted, so that one or more of them are 0. " +
+                    "However this operation can only work if all nodal level sets are non-zero");
+            }
+        }
     }
 }

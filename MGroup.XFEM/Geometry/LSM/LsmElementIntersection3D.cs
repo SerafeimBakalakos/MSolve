@@ -177,13 +177,6 @@ namespace MGroup.XFEM.Geometry.LSM
             Vector normal = parallelVector0.CrossProduct(parallelVector1);
             normal.ScaleIntoThis(1.0 / normal.Norm2());
 
-            #region debug
-            if (double.IsNaN(normal[0]) || double.IsNaN(normal[1]) || double.IsNaN(normal[2]))
-            {
-                Console.WriteLine();
-            }
-            #endregion
-
             return normal.RawData;
         }
 

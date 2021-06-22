@@ -151,7 +151,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 nodeLevelSets.Add(NodalLevelSets[element.Nodes[n].ID]);
             }
 
-            var interactionStrategy = new LsmTri3Interaction_OLD();
+            var interactionStrategy = new LsmTri3Interaction_OLD_OLD();
             (RelativePositionCurveElement relativePosition, IntersectionMesh2D_OLD intersectionMesh)
                 = interactionStrategy.FindIntersection(nodeCoordinates, nodeLevelSets);
             if (relativePosition == RelativePositionCurveElement.Disjoint)

@@ -4,211 +4,212 @@ using System.Text;
 using ISAAR.MSolve.Discretization.Mesh;
 using System.Diagnostics;
 
+//TODO: Remove duplicate code between this and the Tet4 version.
+//TODO: Clean up recursion logic and use helper methods (with delegates). If possible, add these helepers to the base class.
 namespace MGroup.XFEM.Geometry.LSM
 {
-    public class LsmTri3Interaction : ILsmElementInteraction
+    public class LsmTri3Interaction  : LsmCellInteractionBase
     {
-        public (RelativePositionCurveElement relativePosition, IntersectionMesh intersectionMesh) 
-            FindIntersection(IList<int> nodeIDs, List<double[]> nodeCoords, List<double> nodeLevelSets)
+        public LsmTri3Interaction(IList<int> nodeIDs, List<double[]> nodeCoords, List<double> nodeLevelSets, double tolerance)
+            : base(2, 3, nodeIDs, nodeCoords, nodeLevelSets, tolerance)
         {
-            Debug.Assert(nodeCoords.Count == 3);
-            Debug.Assert(nodeLevelSets.Count == 3);
+            Edges = new List<(int nodeIdx0, int nodeIdx1)>();
+            Edges.Add((0, 1));
+            Edges.Add((1, 2));
+            Edges.Add((2, 0));
+        }
 
-            int numZeroNodes = 0;
-            int numPosNodes = 0;
-            int numNegNodes = 0;
-            for (int i = 0; i < 3; ++i)
-            {
-                if (nodeLevelSets[i] < 0) ++numNegNodes;
-                else if (nodeLevelSets[i] > 0) ++numPosNodes;
-                else ++numZeroNodes;
-            }
+        protected override List<(int nodeIdx0, int nodeIdx1)> Edges { get; }
 
-            var intersectionMesh = new IntersectionMesh(2);
+        public override void Resolve()
+        {
+            (int numZeroNodes, int numPosNodes, int numNegNodes) = CountNodes();
+
             if (numZeroNodes == 0)
             {
                 if ((numPosNodes == 0) || (numNegNodes == 0)) // Disjoint
                 {
-                    return (RelativePositionCurveElement.Disjoint, intersectionMesh);
+                    ProcessCase0Zeros3SameSigns();
                 }
                 else // 2 intersection points
                 {
-                    for (int i = 0; i < 3; ++i)
-                    {
-                        int j = (i + 1) % 3;
-                        if (nodeLevelSets[i] * nodeLevelSets[j] < 0)
-                        {
-                            int nodeNeg, nodePos;
-                            if (nodeLevelSets[i] < nodeLevelSets[j])
-                            {
-                                nodeNeg = i;
-                                nodePos = j;
-                            }
-                            else
-                            {
-                                nodeNeg = j;
-                                nodePos = i;
-                            }
-                            double[] intersection = Interpolate(nodeLevelSets[nodeNeg], nodeCoords[nodeNeg],
-                                nodeLevelSets[nodePos], nodeCoords[nodePos]);
-                            intersectionMesh.Vertices.Add(intersection);
-                            intersectionMesh.IntersectedEdges.Add(DefineIntersectedEdge(nodeIDs, i, j));
-                        }
-                    }
-                    Debug.Assert(intersectionMesh.Vertices.Count == 2);
+                    ProcessIntersectionCase(ProcessCase0Zeros2SameSigns1Different, false);
+                    return;
+                    //if (!areLevelSetsAdjusted)
+                    //{
+                    //    AdjustLevelSetsToAvoidDegenerateIntersections();
 
-                    // Find the orientation of the segment, such that its normal points towards the positive halfspace
-                    double[] pointA = intersectionMesh.Vertices[0];
-                    double[] pointB = intersectionMesh.Vertices[1];
-                    double[] pointPos = nodeCoords[FindIdxOfMostPositiveNode(nodeLevelSets)];
-                    int[] cell = IsNormalTowardsPositive(pointA, pointB, pointPos) ? new int[] { 0, 1 } : new int[] { 1, 0 };
-                    intersectionMesh.Cells.Add((CellType.Line, cell));
-
-                    return (RelativePositionCurveElement.Intersecting, intersectionMesh);
+                    //    if (areLevelSetsAdjusted)
+                    //    {
+                    //        // Level sets needed adjusting. Find and process the new interaction case, based on the new level sets.
+                    //        //TODO: Now only some cases are possible, so I could optimize that determination.
+                    //        Resolve(); // recurse but only 1 level
+                    //        return; // do not do anything else after finishing the recursive level.
+                    //    }
+                    //    else
+                    //    {
+                    //        // Level sets were ok after all. Proceed to find intersections normally.
+                    //        ProcessCase0Zeros2SameSigns1Different();
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    throw new Exception("This should not have happened. Reaching this means that level sets were modified," +
+                    //        " thus there is at least 1 zero node.");
+                    //}
                 }
             }
             else if (numZeroNodes == 1)
             {
-                int nodeZero = nodeLevelSets.FindIndex(phi => phi == 0);
-                intersectionMesh.Vertices.Add(nodeCoords[nodeZero]);
-                intersectionMesh.IntersectedEdges.Add(new int[] { nodeIDs[nodeZero] });
                 if ((numPosNodes == 0) || (numNegNodes == 0)) // Tangent (only 1 common point)
                 {
-                    return (RelativePositionCurveElement.Tangent, intersectionMesh);
+                    ProcessCase1Zero2SameSigns();
                 }
                 else // 1 intersection point and 1 node
                 {
-                    int nodeNeg = nodeLevelSets.FindIndex(phi => phi < 0);
-                    int nodePos = nodeLevelSets.FindIndex(phi => phi > 0);
-                    double[] intersection = Interpolate(nodeLevelSets[nodeNeg], nodeCoords[nodeNeg],
-                        nodeLevelSets[nodePos], nodeCoords[nodePos]);
-                    intersectionMesh.Vertices.Add(intersection);
-                    intersectionMesh.IntersectedEdges.Add(DefineIntersectedEdge(nodeIDs, nodeNeg, nodePos));
+                    ProcessIntersectionCase(ProcessCase1Zero1Pos1Neg, true);
+                    return;
 
-                    // Find the orientation of the segment, such that its normal points towards the positive halfspace
-                    double[] pointA = intersectionMesh.Vertices[0];
-                    double[] pointB = intersectionMesh.Vertices[1];
-                    double[] pointPos = nodeCoords[nodePos];
-                    int[] cell = IsNormalTowardsPositive(pointA, pointB, pointPos) ? new int[] { 0, 1 } : new int[] { 1, 0 };
-                    intersectionMesh.Cells.Add((CellType.Line, cell));
+                    //if (!areLevelSetsAdjusted)
+                    //{
+                    //    AdjustLevelSetsToAvoidDegenerateIntersections();
 
-                    return (RelativePositionCurveElement.Intersecting, intersectionMesh);
+                    //    if (areLevelSetsAdjusted)
+                    //    {
+                    //        // Level sets needed adjusting. Find and process the new interaction case, based on the new level sets.
+                    //        //TODO: Now only some cases are possible, so I could optimize that determination.
+                    //        Resolve(); // recurse but only 1 level
+                    //        return; // do not do anything else after finishing the recursive level.
+                    //    }
+                    //    else
+                    //    {
+                    //        // Level sets were ok after all. Proceed to find intersections normally.
+                    //        ProcessCase1Zero1Pos1Neg();
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    // It is possible to reach this point by adjusting the level sets in another case.
+                    //    ProcessCase1Zero1Pos1Neg();
+                    //}
                 }
             }
             else if (numZeroNodes == 2) // 1 conforming edge
             {
-                int node0 = nodeLevelSets.FindIndex(phi => phi == 0);
-                int node1 = nodeLevelSets.FindIndex(phi => phi == 0);
-                intersectionMesh.Vertices.Add(nodeCoords[node0]);
-                intersectionMesh.Vertices.Add(nodeCoords[node1]);
-                intersectionMesh.IntersectedEdges.Add(DefineIntersectedEdge(nodeIDs, node0, node1));
-
-                // Find the orientation of the segment, such that its normal points towards the positive halfspace
-                double[] pointA = intersectionMesh.Vertices[0];
-                double[] pointB = intersectionMesh.Vertices[1];
-                int node2 = nodeLevelSets.FindIndex(phi => phi != 0);
-                double[] pointPos = nodeCoords[node2]; // assume it is positive and correct later
-                bool isNormalPositive = IsNormalTowardsPositive(pointA, pointB, pointPos);
-                if (nodeLevelSets[node2] < 0) isNormalPositive = !isNormalPositive; // now correct the original assumption
-                int[] cell = isNormalPositive ? new int[] { 0, 1 } : new int[] { 1, 0 };
-                intersectionMesh.Cells.Add((CellType.Line, cell));
-
-                return (RelativePositionCurveElement.Conforming, intersectionMesh);
+                ProcessCase2Zeros1Nonzero();
             }
             else // 3 conforming edges
             {
                 Debug.Assert(numZeroNodes == 3);
-                //TODO: The client should decide whether to log this msg or throw an exception
-                Debug.WriteLine(
-                    $"Found element that has all its edges conforming to level set curve with ID {int.MinValue}." +
-                    $" This usually indicates an error. It may also cause problems if the triangle nodes are not given in" +
-                    $" counter-clockwise order.");
-                for (int i = 0; i < 3; ++i)
-                {
-                    int j = (i + 1) % 3;
-                    intersectionMesh.Vertices.Add(nodeCoords[i]);
-                    intersectionMesh.IntersectedEdges.Add(DefineIntersectedEdge(nodeIDs, i, j));
-
-                    // We assume that i) the level set encircles this element and intersects no other, ii) the interior is 
-                    // negative and the exterior positive, iii) the triangle's nodes are in counter-clockwise order. 
-                    // Thus if we traverse each edge is i+1 -> i, then the normal will point outside, meaning towards positive.
-                    intersectionMesh.Cells.Add((CellType.Line, new int[] { j, i })); 
-                }
-                return (RelativePositionCurveElement.Conforming, intersectionMesh);
+                ProcessCase3Zeros();
             }
         }
+
+        
 
         /// <summary>
-        /// Returns -1, if there is no positive node
+        /// The returned normal is not necessarily unit, but uniquely defines the orientation of the cell.
         /// </summary>
-        /// <param name="nodeLevelSets"></param>
-        /// <returns></returns>
-        private static int FindIdxOfMostPositiveNode(List<double> nodeLevelSets)
+        protected override double[] CalcNormalOfCell(int[] cellConnectivity)
         {
-            double max = 0;
-            int target = -1;
-            for (int n = 0; n < nodeLevelSets.Count; ++n)
+            double[] pA = Mesh.Vertices[cellConnectivity[0]];
+            double[] pB = Mesh.Vertices[cellConnectivity[1]];
+            double[] normal = { -(pB[1] - pA[1]), pB[0] - pA[0] }; // normal to AB, pi/2 counter-clockwise
+            //normal.ScaleIntoThis(1.0 / normal.Norm2()); // Not needed here
+            return normal;
+        }
+
+        private void ProcessCase0Zeros3SameSigns()
+        {
+            Position = RelativePositionCurveElement.Disjoint;
+        }
+
+        private void ProcessCase0Zeros2SameSigns1Different()
+        {
+            Position = RelativePositionCurveElement.Intersecting;
+
+            AddEdgeIntersectionsToMesh();
+            Debug.Assert(Mesh.Vertices.Count == 2);
+
+            Mesh.Cells.Add((CellType.Line, new int[] { 0, 1 }));
+            FixCellsOrientation();
+        }
+
+        private void ProcessCase1Zero2SameSigns()
+        {
+            Position = RelativePositionCurveElement.Tangent;
+        }
+
+        private void ProcessCase1Zero1Pos1Neg()
+        {
+            if (!areLevelSetsAdjusted)
             {
-                if (nodeLevelSets[n] > max)
+                AdjustLevelSetsToAvoidDegenerateIntersections();
+
+                if (areLevelSetsAdjusted)
                 {
-                    max = nodeLevelSets[n];
-                    target = n;
+                    // Level sets needed adjusting. Find and process the new interaction case, based on the new level sets.
+                    //TODO: Now only some cases are possible, so I could optimize that determination.
+                    Resolve();
                 }
             }
-            if (max > 0) return target;
-            else return -1;
+
+            Position = RelativePositionCurveElement.Intersecting;
+
+            int nodeZero = nodeLevelSets.FindIndex(phi => phi == 0);
+            AddConformingNodeToMesh(nodeZero);
+
+            int nodeNeg = nodeLevelSets.FindIndex(phi => phi < 0);
+            int nodePos = nodeLevelSets.FindIndex(phi => phi > 0);
+            double[] intersection = Interpolate(nodeLevelSets[nodeNeg], nodeCoords[nodeNeg],
+                nodeLevelSets[nodePos], nodeCoords[nodePos]);
+            Mesh.Vertices.Add(intersection);
+            Mesh.IntersectedEdges.Add(DefineIntersectedEdge(nodeNeg, nodePos));
+
+            Mesh.Cells.Add((CellType.Line, new int[] { 0, 1 }));
+            FixCellsOrientation();
         }
 
-        /// <summary>
-        /// </summary>
-        /// <param name="pointA"></param>
-        /// <param name="pointB"></param>
-        /// <param name="pointPositive">A point in the positive halfspace</param>
-        private static bool IsNormalTowardsPositive(double[] pointA, double[] pointB, double[] pointPositive)
+        private void ProcessCase2Zeros1Nonzero()
         {
-            double[] normal = { -(pointB[1] - pointA[1]), pointB[0] - pointA[0] }; // normal to AB, pi/2 counter-clockwise
-            double[] vectorAP = { pointPositive[0] - pointA[0], pointPositive[1] - pointA[1] };
-            double dot = normal[0] * vectorAP[0] + normal[1] * vectorAP[1];
-            if (dot > 0) return true;
-            else if (dot < 0) return false;
-            else
+            Position = RelativePositionCurveElement.Conforming;
+            int nodeZero0 = nodeLevelSets.FindIndex(phi => phi == 0);
+            int nodeZero1 = nodeLevelSets.FindLastIndex(phi => phi == 0);
+            AddConformingNodeToMesh(nodeZero0);
+            AddConformingNodeToMesh(nodeZero1);
+            Mesh.Cells.Add((CellType.Line, new int[] { 0, 1 }));
+            FixCellsOrientation();
+        }
+
+        private void ProcessCase3Zeros()
+        {
+            //TODO: The client should decide whether to log this msg or throw an exception
+            Debug.WriteLine(
+                $"Found element that has all its edges conforming to level set curve with ID {int.MinValue}." +
+                $" This usually indicates an error. It may also cause problems if the triangle nodes are not given in" +
+                $" counter-clockwise order.");
+            Position = RelativePositionCurveElement.Conforming;
+            for (int i = 0; i < 3; ++i)
             {
-                throw new ArgumentException("The 3 points are colinear");
+                AddConformingNodeToMesh(i);
+
+                // We assume that i) the level set encircles this element and intersects no other, ii) the interior is 
+                // negative and the exterior positive, iii) the triangle's nodes are in counter-clockwise order. 
+                // Thus if we traverse each edge is i+1 -> i, then the normal will point outside, meaning towards positive.
+                int j = (i + 1) % 3;
+                Mesh.Cells.Add((CellType.Line, new int[] { j, i }));
             }
         }
 
-        private static int[] DefineIntersectedEdge(IList<int> nodeIDs, int nodeIdx0, int nodeIdx1)
+        public class Factory : ILsmElementInteractionFactory
         {
-            if (nodeIDs[nodeIdx0] < nodeIDs[nodeIdx1])
+            public ILsmCellInteraction CreateNewInteraction(
+                IList<int> nodeIDs, List<double[]> nodeCoords, List<double> nodeLevelSets, double tolerance)
             {
-                return new int[] { nodeIDs[nodeIdx0], nodeIDs[nodeIdx1] };
+                var interaction = new LsmTri3Interaction(nodeIDs, nodeCoords, nodeLevelSets, tolerance);
+                interaction.Resolve();
+                return interaction;
             }
-            else
-            {
-                return new int[] { nodeIDs[nodeIdx1], nodeIDs[nodeIdx0] };
-            }
-        }
-
-        private static double[] Interpolate(double levelSetNeg, double[] valuesNeg, double levelSetPos, double[] valuesPos)
-        {
-            Debug.Assert(valuesNeg.Length == valuesPos.Length);
-            if (levelSetNeg >= levelSetPos)
-            {
-                // This will ensure machine precision will return the same result if this method is called with the same 
-                // arguments more than once.
-                throw new ArgumentException("Always provide the negative level set and corresponding values first");
-            }
-
-            // The intersection point between these nodes can be found using the linear interpolation, see Sukumar 2001
-            // The same interpolation can be used for coordinates or any other values.
-            //
-            double k = -levelSetNeg / (levelSetPos - levelSetNeg);
-            var result = new double[valuesNeg.Length];
-            for (int i = 0; i < valuesNeg.Length; ++i)
-            {
-                result[i] = valuesNeg[i] + k * (valuesPos[i] - valuesNeg[i]);
-            }
-            return result;
         }
     }
 }

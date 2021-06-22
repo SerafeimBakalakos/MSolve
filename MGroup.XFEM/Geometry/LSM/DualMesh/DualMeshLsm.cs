@@ -16,7 +16,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
         private readonly int dimension;
         private readonly IDualMesh dualMesh;
         private readonly IIsoparametricInterpolation fineMeshInterpolation;
-        private readonly ILsmElementInteraction interactionStrategy;
+        private readonly ILsmElementInteractionFactory interactionStrategy;
         private readonly ILsmStorage lsmStorage;
         private readonly double intersectionNodeProximityTolerance;
 
@@ -43,7 +43,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
 
             if (dualMesh.FineMesh.CellType == CellType.Tri3)
             {
-                this.interactionStrategy = new LsmTri3Interaction();
+                this.interactionStrategy = new LsmTri3Interaction.Factory();
                 this.fineMeshInterpolation = InterpolationTri3.UniqueInstance; //TODO: read that from the mesh.
             }
             else if (dualMesh.FineMesh.CellType == CellType.Quad4)
@@ -52,7 +52,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
             }
             else if (dualMesh.FineMesh.CellType == CellType.Tet4)
             {
-                this.interactionStrategy = new LsmTet4Interaction();
+                this.interactionStrategy = new LsmTet4Interaction.Factory();
                 this.fineMeshInterpolation = InterpolationTet4.UniqueInstance;
             }
             else
@@ -88,30 +88,10 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
                     nodeLevelSets.Add(lsmStorage.GetLevelSet(fineElementNodes[n]));
                 }
 
-                #region debug
-                RelativePositionCurveElement relativePosition;
-                IntersectionMesh intersectionMesh;
-                if (dualMesh.FineMesh.CellType == CellType.Tri3)
-                {
-                    var interactionStrategy = new LsmTri3Interaction_NEW(
-                        fineElementNodes, nodeCoords, nodeLevelSets, intersectionNodeProximityTolerance);
-                    interactionStrategy.Resolve();
-                    relativePosition = interactionStrategy.Position;
-                    intersectionMesh = interactionStrategy.Mesh;
-                }
-                else if (dualMesh.FineMesh.CellType == CellType.Tet4)
-                {
-                    var interactionStrategy = new LsmTet4Interaction_NEW(
-                        fineElementNodes, nodeCoords, nodeLevelSets, intersectionNodeProximityTolerance);
-                    interactionStrategy.Resolve();
-                    relativePosition = interactionStrategy.Position;
-                    intersectionMesh = interactionStrategy.Mesh;
-                }
-                else throw new NotImplementedException();
-                #endregion
-
-                //(RelativePositionCurveElement relativePosition, IntersectionMesh intersectionMesh) =
-                //    interactionStrategy.FindIntersection(fineElementNodes, nodeCoords, nodeLevelSets);
+                ILsmCellInteraction interaction = interactionStrategy.CreateNewInteraction(
+                    fineElementNodes, nodeCoords, nodeLevelSets, intersectionNodeProximityTolerance);
+                RelativePositionCurveElement relativePosition = interaction.Position;
+                IntersectionMesh intersectionMesh = interaction.Mesh;
 
                 if ((relativePosition == RelativePositionCurveElement.Disjoint) 
                     || (relativePosition == RelativePositionCurveElement.Tangent))
