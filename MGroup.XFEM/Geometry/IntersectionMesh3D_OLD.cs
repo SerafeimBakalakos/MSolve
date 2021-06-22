@@ -10,17 +10,17 @@ using MGroup.XFEM.Exceptions;
 //TODO: Specialization that only uses triangles, thus requiring less memory and checks
 namespace MGroup.XFEM.Geometry
 {
-    public class IntersectionMesh3D : IIntersectionMesh
+    public class IntersectionMesh3D_OLD : IIntersectionMesh
     {
         private const int dim = 3;
 
-        public IntersectionMesh3D()
+        public IntersectionMesh3D_OLD()
         {
         }
 
-        public static IntersectionMesh3D CreateMultiCellMesh3D(Dictionary<double[], HashSet<ElementFace>> intersectionPoints)
+        public static IntersectionMesh3D_OLD CreateMultiCellMesh3D(Dictionary<double[], HashSet<ElementFace>> intersectionPoints)
         {
-            var mesh = new IntersectionMesh3D();
+            var mesh = new IntersectionMesh3D_OLD();
             if (intersectionPoints.Count < 3) throw new ArgumentException("There must be at least 3 points");
             else if (intersectionPoints.Count == 3)
             {
@@ -41,9 +41,9 @@ namespace MGroup.XFEM.Geometry
             return mesh;
         }
 
-        public static IntersectionMesh3D CreateSingleCellMesh(CellType cellType, IReadOnlyList<double[]> intersectionPoints)
+        public static IntersectionMesh3D_OLD CreateSingleCellMesh(CellType cellType, IReadOnlyList<double[]> intersectionPoints)
         {
-            var mesh = new IntersectionMesh3D();
+            var mesh = new IntersectionMesh3D_OLD();
             for (int i = 0; i < intersectionPoints.Count; ++i)
             {
                 mesh.Vertices.Add(intersectionPoints[i]);
@@ -53,10 +53,10 @@ namespace MGroup.XFEM.Geometry
             return mesh;
         }
 
-        public static IntersectionMesh3D JoinMeshes(Dictionary<int, IntersectionMesh3D> intersectionsOfElements)
+        public static IntersectionMesh3D_OLD JoinMeshes(Dictionary<int, IntersectionMesh3D_OLD> intersectionsOfElements)
         {
-            var jointMesh = new IntersectionMesh3D();
-            foreach (IntersectionMesh3D mesh in intersectionsOfElements.Values)
+            var jointMesh = new IntersectionMesh3D_OLD();
+            foreach (IntersectionMesh3D_OLD mesh in intersectionsOfElements.Values)
             {
                 int startVertices = jointMesh.Vertices.Count;
                 var vertexIndicesOldToNew = new int[mesh.Vertices.Count];
@@ -114,12 +114,26 @@ namespace MGroup.XFEM.Geometry
 
         public IList<double[]> Vertices { get; } = new List<double[]>();
 
+        public IIntersectionMesh MapToOtherSpace(Func<double[], double[]> mapVertex)
+        {
+            var result = new IntersectionMesh3D_OLD();
+            foreach (double[] vertex in this.Vertices)
+            {
+                result.Vertices.Add(mapVertex(vertex));
+            }
+            foreach ((CellType, int[]) cell in this.Cells)
+            {
+                result.Cells.Add(cell);
+            }
+            return result;
+        }
+
         /// <summary>
         /// This method just gathers all cells and renumbers the vertices accordingly, 
         /// without taking intersecting cells into account. 
         /// </summary>
         /// <param name="other"></param>
-        public void MergeWith(IntersectionMesh3D other)
+        public void MergeWith(IntersectionMesh3D_OLD other)
         {
             int offset = this.Vertices.Count;
             foreach (double[] vertex in other.Vertices) this.Vertices.Add(vertex);

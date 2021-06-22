@@ -59,17 +59,8 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IIntersectionMesh ApproximateGlobalCartesian()
         {
-            var meshCartesian = new IntersectionMesh2D_OLD();
-            foreach (double[] vertexNatural in intersectionMesh.Vertices)
-            {
-                meshCartesian.Vertices.Add(Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, vertexNatural));
-            }
-
-            foreach ((CellType, int[]) cell in intersectionMesh.Cells) // same connectivity
-            {
-                meshCartesian.Cells.Add(cell);
-            }
-            return meshCartesian;
+            return intersectionMesh.MapToOtherSpace(
+                vertexNatural => Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, vertexNatural));
         }
 
         //TODO: Perhaps a dedicated IBoundaryIntegration component is needed

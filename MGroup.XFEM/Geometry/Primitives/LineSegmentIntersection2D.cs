@@ -81,7 +81,7 @@ namespace MGroup.XFEM.Geometry.Primitives
 
         public IIntersectionMesh ApproximateGlobalCartesian()
         {
-            var meshCartesian = new IntersectionMesh3D();
+            var meshCartesian = new IntersectionMesh3D_OLD();
             meshCartesian.Vertices.Add(StartGlobalCartesian);
             meshCartesian.Vertices.Add(EndGlobalCartesian);
             meshCartesian.Cells.Add((CellType.Line, new int[] { 0, 1 }));

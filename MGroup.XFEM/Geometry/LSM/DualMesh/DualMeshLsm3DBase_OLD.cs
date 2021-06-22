@@ -35,7 +35,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
             //if (IsCoarseElementDisjoint(element)) return new NullElementDiscontinuityInteraction(this.ID, element);
 
             int[] fineElementIDs = dualMesh.MapElementCoarseToFine(element.ID);
-            var intersectionsOfElements = new Dictionary<int, IntersectionMesh3D>();
+            var intersectionsOfElements = new Dictionary<int, IntersectionMesh3D_OLD>();
             foreach (int fineElementID in fineElementIDs)
             {
                 int[] fineElementIdx = dualMesh.FineMesh.GetElementIdx(fineElementID);
@@ -48,7 +48,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
                 }
                 else if (position == RelativePositionCurveElement.Intersecting)
                 {
-                    IntersectionMesh3D intersectionMesh = FindInteractionIntersecting(fineElementIdx, fineElementNodes);
+                    IntersectionMesh3D_OLD intersectionMesh = FindInteractionIntersecting(fineElementIdx, fineElementNodes);
                     intersectionsOfElements[fineElementID] = intersectionMesh;
                 }
                 else if (position == RelativePositionCurveElement.Conforming)
@@ -68,7 +68,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
             {
                 return new NullElementDiscontinuityInteraction(this.ID, element);
             }
-            var jointIntersectionMesh = IntersectionMesh3D.JoinMeshes(intersectionsOfElements);
+            var jointIntersectionMesh = IntersectionMesh3D_OLD.JoinMeshes(intersectionsOfElements);
             return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Intersecting, element, jointIntersectionMesh);
         }
 
@@ -94,7 +94,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
 
         protected abstract double GetLevelSet(int fineNodeID);
 
-        private IntersectionMesh3D FindInteractionIntersecting(int[] fineElementIdx, int[] fineNodeIDs)
+        private IntersectionMesh3D_OLD FindInteractionIntersecting(int[] fineElementIdx, int[] fineNodeIDs)
         {
             var elementGeometry = new ElementHexa8Geometry();
             (ElementEdge[] edges, ElementFace[] allFaces) = elementGeometry.FindEdgesFaces(fineNodeIDs);
@@ -143,7 +143,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
             }
 
             // Create mesh
-            return IntersectionMesh3D.CreateMultiCellMesh3D(intersectionPointsCoarse);
+            return IntersectionMesh3D_OLD.CreateMultiCellMesh3D(intersectionPointsCoarse);
         }
 
         private RelativePositionCurveElement FindRelativePosition(int[] fineElementNodes)

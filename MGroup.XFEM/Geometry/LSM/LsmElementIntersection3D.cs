@@ -19,10 +19,10 @@ namespace MGroup.XFEM.Geometry.LSM
     /// </summary>
     public class LsmElementIntersection3D : IElementDiscontinuityInteraction
     {
-        private readonly IntersectionMesh3D intersectionMeshNatural;
+        private readonly IIntersectionMesh intersectionMeshNatural;
 
         public LsmElementIntersection3D(int parentGeometryID, RelativePositionCurveElement relativePosition, 
-            IXFiniteElement element, IntersectionMesh3D intersectionMeshNatural)
+            IXFiniteElement element, IIntersectionMesh intersectionMeshNatural)
         {
             this.ParentGeometryID = parentGeometryID;
             this.RelativePosition = relativePosition;
@@ -40,18 +40,8 @@ namespace MGroup.XFEM.Geometry.LSM
 
         public IIntersectionMesh ApproximateGlobalCartesian()
         {
-            var meshCartesian = new IntersectionMesh3D();
-            foreach (double[] vertexNatural in intersectionMeshNatural.Vertices)
-            {
-                double[] vertexCartesian = Element.Interpolation.TransformNaturalToCartesian(
-                    Element.Nodes, vertexNatural);
-                meshCartesian.Vertices.Add(vertexCartesian);
-            }
-            foreach ((CellType cellType, int[] connectivity) in intersectionMeshNatural.Cells)
-            {
-                meshCartesian.Cells.Add((cellType, connectivity));
-            }
-            return meshCartesian;
+            return intersectionMeshNatural.MapToOtherSpace(
+                vertexNatural => Element.Interpolation.TransformNaturalToCartesian(Element.Nodes, vertexNatural));
         }
 
         //TODO: Perhaps a dedicated IBoundaryIntegration component is needed,
@@ -175,16 +165,26 @@ namespace MGroup.XFEM.Geometry.LSM
         private double[] CalcNormalOfPlaneThrough(double[] point0, double[] point1, double[] point2)
         {
             // Find 2 vectors parallel to plane
-            var parallelVector0 = new double[3];
-            var parallelVector1 = new double[3];
+            var parallelVector0 = Vector.CreateZero(3);
+            var parallelVector1 = Vector.CreateZero(3);
             for (int d = 0; d < 3; ++d)
             {
                 parallelVector0[d] = point1[d] - point0[d];
-                parallelVector0[d] = point2[d] - point0[d];
+                parallelVector1[d] = point2[d] - point0[d];
             }
 
             // The normal vector is their cross-product
-            return parallelVector0.CrossProduct(parallelVector1);
+            Vector normal = parallelVector0.CrossProduct(parallelVector1);
+            normal.ScaleIntoThis(1.0 / normal.Norm2());
+
+            #region debug
+            if (double.IsNaN(normal[0]) || double.IsNaN(normal[1]) || double.IsNaN(normal[2]))
+            {
+                Console.WriteLine();
+            }
+            #endregion
+
+            return normal.RawData;
         }
 
         private TriangleQuadratureSymmetricGaussian ChooseQuadrature(int order)

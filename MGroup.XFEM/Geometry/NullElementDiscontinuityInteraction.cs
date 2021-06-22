@@ -37,6 +37,6 @@ namespace MGroup.XFEM.Geometry
             return new double[0][];
         }
 
-        IIntersectionMesh IElementDiscontinuityInteraction.ApproximateGlobalCartesian() => new IntersectionMesh3D();
+        IIntersectionMesh IElementDiscontinuityInteraction.ApproximateGlobalCartesian() => new IntersectionMesh3D_OLD();
     }
 }

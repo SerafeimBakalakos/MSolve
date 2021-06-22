@@ -12,5 +12,7 @@ namespace MGroup.XFEM.Geometry
         IList<double[]> Vertices { get; }
 
         IList<(CellType type, int[] connectivity)> Cells { get; }
+
+        IIntersectionMesh MapToOtherSpace(Func<double[], double[]> mapVertex);
     }
 }

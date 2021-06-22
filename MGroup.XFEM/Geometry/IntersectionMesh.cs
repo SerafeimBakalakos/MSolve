@@ -9,17 +9,20 @@ using ISAAR.MSolve.LinearAlgebra.Commons;
 //TODO: avoid storing CellType per cell. It is the same for all cells.
 namespace MGroup.XFEM.Geometry
 {
-    public class IntersectionMesh2D : IIntersectionMesh
+    public class IntersectionMesh : IIntersectionMesh
     {
-        private const int dim = 2;
-
-        public IntersectionMesh2D()
+        public IntersectionMesh(int dimension)
         {
+            if ((dimension != 2) && (dimension != 3))
+            {
+                throw new ArgumentException("Dimension must be 2 or 3");
+            }
+            this.Dimension = dimension;
         }
 
-        public int Dimension { get; } = dim;
+        public int Dimension { get; } //TODO: DEBUG only check of added vertices and cells based on this.
 
-        public IList<(CellType, int[])> Cells { get; } = new List<(CellType, int[])>();
+        public IList<(CellType type, int[] connectivity)> Cells { get; } = new List<(CellType, int[])>();
 
         public IList<double[]> Vertices { get; } = new List<double[]>();
 
@@ -32,6 +35,24 @@ namespace MGroup.XFEM.Geometry
         /// </summary>
         public IList<int[]> IntersectedEdges = new List<int[]>();
 
+        public IIntersectionMesh MapToOtherSpace(Func<double[], double[]> mapVertex)
+        {
+            var result = new IntersectionMesh(Dimension);
+            foreach (double[] vertex in this.Vertices)
+            {
+                result.Vertices.Add(mapVertex(vertex));
+            }
+            foreach ((CellType, int[]) cell in this.Cells)
+            {
+                result.Cells.Add(cell);
+            }
+            foreach (int[] edge in this.IntersectedEdges)
+            {
+                result.IntersectedEdges.Add(edge);
+            }
+            return result;
+        }
+
         /// <summary>
         /// </summary>
         /// <param name="other"></param>
@@ -39,7 +60,7 @@ namespace MGroup.XFEM.Geometry
         /// Enables optimizations if the orientation of edges is always the same. E.g. first: node with min ID, 
         /// second: node with max ID.
         /// </param>
-        public void MergeWith(IntersectionMesh2D other, bool isEdgeOrientationConsistent = false)
+        public void MergeWith(IntersectionMesh other, bool isEdgeOrientationConsistent = false)
         {
             //TODO: If there are more than 2 coincident points, I should keep all of them in a separate dictionary and take the 
             //      average at the end
@@ -111,19 +132,19 @@ namespace MGroup.XFEM.Geometry
         /// </summary>
         /// <param name="point">The result will be stored here</param>
         /// <param name="otherPoint"></param>
-        private static void AveragePoints(double[] point, double[] otherPoint)
+        private void AveragePoints(double[] point, double[] otherPoint)
         {
-            Debug.Assert(point.Length == dim);
-            Debug.Assert(otherPoint.Length == dim);
-            for (int d = 0; d < point.Length; ++d)
+            Debug.Assert(point.Length == Dimension);
+            Debug.Assert(otherPoint.Length == Dimension);
+            for (int d = 0; d < Dimension; ++d)
             {
                 point[d] = 0.5 * (point[d] + otherPoint[d]);
             }
         }
 
-        private static bool PointsCoincide(double[] point0, double[] point1, ValueComparer comparer)
+        private bool PointsCoincide(double[] point0, double[] point1, ValueComparer comparer)
         {
-            for (int d = 0; d < dim; ++d)
+            for (int d = 0; d < Dimension; ++d)
             {
                 if (!comparer.AreEqual(point0[d], point1[d]))
                 {

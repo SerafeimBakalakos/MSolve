@@ -47,6 +47,20 @@ namespace MGroup.XFEM.Geometry
 
         public IList<double[]> Vertices { get; } = new List<double[]>();
 
+        public IIntersectionMesh MapToOtherSpace(Func<double[], double[]> mapVertex)
+        {
+            var result = new IntersectionMesh2D_OLD();
+            foreach (double[] vertex in this.Vertices)
+            {
+                result.Vertices.Add(mapVertex(vertex));
+            }
+            foreach ((CellType, int[]) cell in this.Cells)
+            {
+                result.Cells.Add(cell);
+            }
+            return result;
+        }
+
         /// <summary>
         /// This method just gathers all cells and renumbers the vertices accordingly, 
         /// without taking intersecting cells into account. 

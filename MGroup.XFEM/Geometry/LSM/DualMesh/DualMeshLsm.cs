@@ -70,7 +70,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
             //if (IsCoarseElementDisjoint(element)) return new NullElementDiscontinuityInteraction(this.ID, element);
 
             bool isIntersected = false;
-            var totalIntersectionMesh = new IntersectionMesh2D();
+            var totalIntersectionMesh = new IntersectionMesh(dimension);
             int[] fineElementIDs = dualMesh.MapElementCoarseToFine(element.ID);
             foreach (int fineElementID in fineElementIDs)
             {
@@ -85,7 +85,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
                     nodeLevelSets.Add(lsmStorage.GetLevelSet(fineElementNodes[n]));
                 }
 
-                (RelativePositionCurveElement relativePosition, IntersectionMesh2D intersectionMesh) =
+                (RelativePositionCurveElement relativePosition, IntersectionMesh intersectionMesh) =
                     interactionStrategy.FindIntersection(fineElementNodes, nodeCoords, nodeLevelSets);
 
                 if ((relativePosition == RelativePositionCurveElement.Disjoint) 
@@ -109,7 +109,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
                     }
 
                     // Combine the line segments into a mesh
-                    totalIntersectionMesh.MergeWith(intersectionMesh);
+                    totalIntersectionMesh.MergeWith(intersectionMesh, true);
                 }
                 else
                 {
@@ -119,7 +119,7 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
 
             if (isIntersected)
             {
-                return new LsmElementIntersection2D(this.ID, RelativePositionCurveElement.Intersecting, element, totalIntersectionMesh);
+                return InstantiateIntersection(RelativePositionCurveElement.Intersecting, element, totalIntersectionMesh);
             }
             else 
             {
@@ -156,6 +156,13 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
                 this.lsmStorage.UnionWith(otherLsm.lsmStorage);
             }
             else throw new ArgumentException("Incompatible Level Set geometry");
+        }
+
+        private IElementDiscontinuityInteraction InstantiateIntersection(
+            RelativePositionCurveElement pos, IXFiniteElement element, IntersectionMesh intersectionMesh)
+        {
+            if (dimension == 2) return new LsmElementIntersection2D(this.ID, pos, element, intersectionMesh);
+            else return new LsmElementIntersection3D(this.ID, pos, element, intersectionMesh);
         }
     }
 }

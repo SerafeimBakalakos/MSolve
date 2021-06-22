@@ -8,7 +8,7 @@ namespace MGroup.XFEM.Geometry.LSM
 {
     public class LsmTri3Interaction : ILsmElementInteraction
     {
-        public (RelativePositionCurveElement relativePosition, IntersectionMesh2D intersectionMesh) 
+        public (RelativePositionCurveElement relativePosition, IntersectionMesh intersectionMesh) 
             FindIntersection(IList<int> nodeIDs, List<double[]> nodeCoords, List<double> nodeLevelSets)
         {
             Debug.Assert(nodeCoords.Count == 3);
@@ -24,7 +24,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 else ++numZeroNodes;
             }
 
-            var intersectionMesh = new IntersectionMesh2D();
+            var intersectionMesh = new IntersectionMesh(2);
             if (numZeroNodes == 0)
             {
                 if ((numPosNodes == 0) || (numNegNodes == 0)) // Disjoint

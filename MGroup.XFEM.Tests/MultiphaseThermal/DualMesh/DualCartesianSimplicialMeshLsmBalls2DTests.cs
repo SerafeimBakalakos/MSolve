@@ -228,7 +228,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMesh
                 model.ModelObservers.Add(new PhasesSizeWriter(outputDirectory, model, geometryModel));
 
                 // Plot bulk and boundary integration points of each element
-                bool plotNormals = false;
+                bool plotNormals = true;
                 model.ModelObservers.Add(new IntegrationPointsPlotter(outputDirectory, model, plotNormals));
 
                 // Plot enrichments
@@ -293,7 +293,8 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMesh
             var subcellQuadrature = TriangleQuadratureSymmetricGaussian.Order2Points3;
             var integrationBulk = new IntegrationWithConformingSubtriangles2D(subcellQuadrature);
 
-            var elemFactory = new XThermalElement2DFactory(materialField, 1, integrationBulk, boundaryIntegrationOrder, true);
+            var elemFactory = new MockElement.Factory(boundaryIntegrationOrder);
+            //var elemFactory = new XThermalElement2DFactory(materialField, 1, integrationBulk, boundaryIntegrationOrder, true);
             for (int e = 0; e < mesh.NumElementsTotal; ++e)
             {
                 var nodes = new List<XNode>();
@@ -302,7 +303,7 @@ namespace MGroup.XFEM.Tests.MultiphaseThermal.DualMesh
                 {
                     nodes.Add(model.XNodes[n]);
                 }
-                XThermalElement2D element = elemFactory.CreateElement(e, mesh.CellType, nodes);
+                MockElement element = elemFactory.CreateElement(e, mesh.CellType, nodes);
                 model.Elements.Add(element);
                 model.Subdomains[0].Elements.Add(element);
             }

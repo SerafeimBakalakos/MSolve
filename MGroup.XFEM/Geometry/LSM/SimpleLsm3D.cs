@@ -84,7 +84,7 @@ namespace MGroup.XFEM.Geometry.LSM
             else throw new ArgumentException("Incompatible Level Set geometry");
         }
 
-        protected IntersectionMesh3D FindInteractionConforming(IXFiniteElement element)
+        protected IntersectionMesh3D_OLD FindInteractionConforming(IXFiniteElement element)
         {
             // Find the nodes that lie on the surface
             var zeroNodes = new HashSet<int>();
@@ -100,7 +100,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 if (zeroNodes.SetEquals(face.NodeIDs))
                 {
                     // Intersection segment is a single cell with the same shape, nodes, etc as the face.
-                    return IntersectionMesh3D.CreateSingleCellMesh(face.CellType, face.NodesNatural);
+                    return IntersectionMesh3D_OLD.CreateSingleCellMesh(face.CellType, face.NodesNatural);
                 }
             }
 
@@ -109,7 +109,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 "Element marked as conforming, but the zero nodes of the element do not belong to a single face.");
         }
 
-        protected IntersectionMesh3D FindInteractionIntersecting(IXFiniteElement element, Dictionary<int, double> levelSetSubset)
+        protected IntersectionMesh3D_OLD FindInteractionIntersecting(IXFiniteElement element, Dictionary<int, double> levelSetSubset)
         {
             ElementFace[] allFaces = element.Faces;
             var intersectionPoints = new Dictionary<double[], HashSet<ElementFace>>();
@@ -137,7 +137,7 @@ namespace MGroup.XFEM.Geometry.LSM
             }
 
             // Create mesh
-            return IntersectionMesh3D.CreateMultiCellMesh3D(intersectionPoints);
+            return IntersectionMesh3D_OLD.CreateMultiCellMesh3D(intersectionPoints);
         }
 
         protected static Dictionary<int, double> FindLevelSetsOfElementNodes(IXFiniteElement element, double[] nodalLevelSets)
@@ -219,7 +219,7 @@ namespace MGroup.XFEM.Geometry.LSM
             }
             else if (position == RelativePositionCurveElement.Conforming)
             {
-                IntersectionMesh3D intersectionMesh = FindInteractionConforming(element);
+                IntersectionMesh3D_OLD intersectionMesh = FindInteractionConforming(element);
                 return new LsmElementIntersection3D(ID, RelativePositionCurveElement.Conforming, element, intersectionMesh);
             }
             else if (position == RelativePositionCurveElement.Intersecting)
@@ -243,7 +243,7 @@ namespace MGroup.XFEM.Geometry.LSM
             }
 
             var interactionStrategy = new LsmTet4Interaction_OLD();
-            (RelativePositionCurveElement relativePosition, IntersectionMesh3D intersectionMesh)
+            (RelativePositionCurveElement relativePosition, IntersectionMesh3D_OLD intersectionMesh)
                 = interactionStrategy.FindIntersection(nodeCoordinates, nodeLevelSets);
             if (relativePosition == RelativePositionCurveElement.Disjoint)
             {

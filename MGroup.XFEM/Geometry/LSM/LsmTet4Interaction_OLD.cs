@@ -20,7 +20,7 @@ namespace MGroup.XFEM.Geometry.LSM
 {
     public class LsmTet4Interaction_OLD
     {
-        public (RelativePositionCurveElement relativePosition, IntersectionMesh3D intersectionMesh) FindIntersection(
+        public (RelativePositionCurveElement relativePosition, IntersectionMesh3D_OLD intersectionMesh) FindIntersection(
             List<double[]> nodeCoords, List<double> nodeLevelSets)
         {
             Debug.Assert(nodeCoords.Count == 4);
@@ -41,14 +41,14 @@ namespace MGroup.XFEM.Geometry.LSM
                 if ((numPosNodes == 0) || (numNegNodes == 0))
                 {
                     // Disjoint
-                    var intersectionMesh = new IntersectionMesh3D();
+                    var intersectionMesh = new IntersectionMesh3D_OLD();
                     return (RelativePositionCurveElement.Disjoint, intersectionMesh);
                 }
                 else if((numPosNodes == 1) || (numNegNodes == 1))
                 {
                     // Intersection. 3 intersection points on edges of the single positive/negative node.
                     // The intersection mesh consists of a single triangle.
-                    var intersectionMesh = new IntersectionMesh3D();
+                    var intersectionMesh = new IntersectionMesh3D_OLD();
                     List<double[]> intersections = FindEdgeIntersections(nodeCoords, nodeLevelSets);
                     Debug.Assert(intersections.Count == 3);
                     foreach (double[] point in intersections)
@@ -63,14 +63,14 @@ namespace MGroup.XFEM.Geometry.LSM
                     // Intersection. 4 intersection points on edges of the 2 positive nodes that connect them with the 2 
                     // negative nodes. The intersection mesh consists of 2 triangles.
                     Debug.Assert((numPosNodes == 2) && (numNegNodes == 2));
-                    IntersectionMesh3D intersectionMesh = Process2Pos2NegCase(nodeCoords, nodeLevelSets);
+                    IntersectionMesh3D_OLD intersectionMesh = Process2Pos2NegCase(nodeCoords, nodeLevelSets);
                     return (RelativePositionCurveElement.Intersecting, intersectionMesh);
                     
                 }
             }
             else if (numZeroNodes == 1)
             {
-                var intersectionMesh = new IntersectionMesh3D();
+                var intersectionMesh = new IntersectionMesh3D_OLD();
                 int nodeZero = nodeLevelSets.FindIndex(phi => phi == 0);
                 intersectionMesh.Vertices.Add(nodeCoords[nodeZero]);
 
@@ -94,7 +94,7 @@ namespace MGroup.XFEM.Geometry.LSM
             }
             else if (numZeroNodes == 2)
             {
-                var intersectionMesh = new IntersectionMesh3D();
+                var intersectionMesh = new IntersectionMesh3D_OLD();
                 int nodeZero0 = nodeLevelSets.FindIndex(phi => phi == 0);
                 int nodeZero1 = nodeLevelSets.FindLastIndex(phi => phi == 0);
                 intersectionMesh.Vertices.Add(nodeCoords[nodeZero0]);
@@ -121,7 +121,7 @@ namespace MGroup.XFEM.Geometry.LSM
             else if (numZeroNodes == 3)
             {
                 // Conforming. The intersection mesh consists of the face connecting the 3 zero nodes.
-                var intersectionMesh = new IntersectionMesh3D();
+                var intersectionMesh = new IntersectionMesh3D_OLD();
                 for (int i = 0; i < 4; ++i)
                 {
                     if (nodeLevelSets[i] == 0)
@@ -139,7 +139,7 @@ namespace MGroup.XFEM.Geometry.LSM
                 //TODO: The client should decide whether to log this msg or throw an exception
                 Debug.WriteLine(
                     $"Found element that has all its faces conforming to level set surface with ID {int.MinValue}");
-                var intersectionMesh = new IntersectionMesh3D();
+                var intersectionMesh = new IntersectionMesh3D_OLD();
                 for (int i = 0; i < 4; ++i)
                 {
                     intersectionMesh.Vertices.Add(nodeCoords[i]);
@@ -149,7 +149,7 @@ namespace MGroup.XFEM.Geometry.LSM
             }
         }
 
-        private IntersectionMesh3D Process2Pos2NegCase(List<double[]> nodeCoords, List<double> nodeLevelSets)
+        private IntersectionMesh3D_OLD Process2Pos2NegCase(List<double[]> nodeCoords, List<double> nodeLevelSets)
         {
             // Intersection. 4 intersection points on edges of the 2 positive nodes that connect them with the 2 
             // negative nodes. The intersection mesh consists of 2 triangles.
@@ -183,7 +183,7 @@ namespace MGroup.XFEM.Geometry.LSM
 
             //List<double[]> intersections = FindEdgeIntersections(nodeCoords, nodeLevelSets);
             //Debug.Assert(intersections.Count == 4);
-            var intersectionMesh = new IntersectionMesh3D();
+            var intersectionMesh = new IntersectionMesh3D_OLD();
             foreach (double[] point in intersections)
             {
                 intersectionMesh.Vertices.Add(point);
