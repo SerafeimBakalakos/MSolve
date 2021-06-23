@@ -18,10 +18,12 @@ namespace MGroup.XFEM.Output.Fields
     public class HeatFluxAtGaussPointsField
     {
         private readonly XModel<IXMultiphaseElement> model;
+        private readonly bool ignoreIntersectedElements;
 
-        public HeatFluxAtGaussPointsField(XModel<IXMultiphaseElement> model)
+        public HeatFluxAtGaussPointsField(XModel<IXMultiphaseElement> model, bool ignoreIntersectedElements = false)
         {
             this.model = model;
+            this.ignoreIntersectedElements = ignoreIntersectedElements;
         }
 
         public Dictionary<double[], double[]> CalcValuesAtVertices(IVectorView solution)
@@ -33,6 +35,11 @@ namespace MGroup.XFEM.Output.Fields
             var result = new Dictionary<double[], double[]>();
             foreach (IXThermalElement element in model.Elements)
             {
+                if (ignoreIntersectedElements && (element.InteractingDiscontinuities.Count > 0))
+                {
+                    continue;
+                }
+
                 (IReadOnlyList<GaussPoint> gaussPoints, IReadOnlyList<ThermalMaterial> materials)
                     = element.GetMaterialsForBulkIntegration();
                 double[] nodalTemperatures = Utilities.ExtractNodalTemperatures(element, subdomain, solution);

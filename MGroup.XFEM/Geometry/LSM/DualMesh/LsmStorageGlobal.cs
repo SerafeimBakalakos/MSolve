@@ -34,6 +34,30 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
             }
         }
 
+        public bool OverlapsWith(ILsmStorage otherGeometry)
+        {
+            if (otherGeometry is LsmStorageGlobal casted)
+            {
+                if (this.Dimension != casted.Dimension)
+                {
+                    throw new ArgumentException("Cannot merge a 2D with a 3D geometry");
+                }
+                if (this.nodalLevelSets.Length != casted.nodalLevelSets.Length)
+                {
+                    throw new ArgumentException("Incompatible Level Set geometry");
+                }
+                for (int i = 0; i < this.nodalLevelSets.Length; ++i)
+                {
+                    if ((this.nodalLevelSets[i] <= 0) && (casted.nodalLevelSets[i] <= 0))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            else throw new ArgumentException("Incompatible Level Set geometry");
+        }
+
         public void UnionWith(ILsmStorage otherGeometry)
         {
             if (otherGeometry is LsmStorageGlobal casted)

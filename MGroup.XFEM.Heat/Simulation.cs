@@ -11,7 +11,7 @@ namespace MGroup.XFEM.Heat
 
         public double[] DimensionsSVE { get; set; }
 
-        public double InterfaceConductivity { get; set; }
+        public double InterfaceConductivity { get; set; } = 1E10;
         #endregion
 
 
@@ -38,15 +38,6 @@ namespace MGroup.XFEM.Heat
 
         public void Run()
         {
-            //TODO: this causes geometric bug
-            //var geometryGenerator = new CntGeometryGenerator();
-            //geometryGenerator.RngSeed = 0;
-            //geometryGenerator.CoordsMin = new double[] { -1.0, -1.0, -1.0 };
-            //geometryGenerator.CoordsMax = new double[] { +1.0, +1.0, +1.0 };
-            //geometryGenerator.NumCNTs = 6;
-            //geometryGenerator.CntLength = 0.5;
-            //geometryGenerator.CntRadius = 0.1;
-
             var geometryGenerator = new CntGeometryGeneratorPeriodic();
             geometryGenerator.RngSeed = 13;
             geometryGenerator.CoordsMin = new double[] { -1.0, -1.0, -1.0 };
@@ -73,6 +64,14 @@ namespace MGroup.XFEM.Heat
 
             composite.BuildModel();
             composite.PlotModel();
+            //composite.RunAnalysisAndPlot();
+
+            //this.EffectiveConductivity = composite.RunHomogenization();
+            //double[,] c = EffectiveConductivity;
+            //Console.WriteLine(
+            //    $"conductivity = [ {c[0, 0]} {c[0, 1]} {c[0, 2]};" +
+            //    $" {c[1, 0]} {c[1, 1]} {c[1, 2]};" +
+            //    $" {c[2, 0]} {c[2, 1]} {c[2, 2]}]");
         }
     }
 }

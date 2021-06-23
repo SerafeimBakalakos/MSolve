@@ -312,6 +312,7 @@ namespace MGroup.XFEM.Elements
 
                 var gaussPointAlt = new XPoint(2);
                 gaussPointAlt.Element = this;
+                gaussPointAlt.Coordinates[CoordinateSystem.ElementNatural] = gaussPoint.Coordinates;
                 gaussPointAlt.ShapeFunctions = evalInterpolation.ShapeFunctions;
                 gaussPointAlt.ShapeFunctionDerivatives = evalInterpolationsAtGPsBulk[i].ShapeGradientsCartesian;
 

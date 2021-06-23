@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.Analyzers;
+using ISAAR.MSolve.Analyzers.Multiscale;
 using ISAAR.MSolve.Discretization;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
+using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using ISAAR.MSolve.Problems;
 using ISAAR.MSolve.Solvers;
@@ -34,7 +36,7 @@ namespace MGroup.XFEM.Heat
         private const int defaultPhaseID = 0;
         private const int lsmType = 1; // 0 = simple, 1 = dual global, 2 = dual local (saves a few MB, but is currently much slower)
         private const bool cartesianMesh = false;
-        private const bool mergeIntersectingCNTs = true;
+        private const bool mergeIntersectingCNTs = false;
         private static readonly string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Phase3\CntsMatrix";
         private readonly int boundaryIntegrationOrder = 2;
 
@@ -105,16 +107,23 @@ namespace MGroup.XFEM.Heat
             // Plot bulk and boundary integration points of each element
             model.ModelObservers.Add(new IntegrationPointsPlotter(outputDirectory, model));
 
+            // Plot intersected elements
+            model.ModelObservers.Add(new PhaseInteractingElementsPlotter(outputDirectory, model));
+
             // Plot enrichments
             double elementSize = (CoordsMax[0] - CoordsMin[0]) / NumHexaCoarse[0];
-            //model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 2));
+            model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 3));
 
             // Initialize model state so that everything described above can be tracked
             model.Initialize();
         }
 
-        public void RunAnalysisAndPlot(ISolverBuilder solverBuilder)
+        public void RunAnalysisAndPlot(ISolverBuilder solverBuilder = null)
         {
+            if (solverBuilder == null)
+            {
+                solverBuilder = new SuiteSparseSolver.Builder();
+            }
 
             ApplyBoundaryConditions();
             model.Initialize();
@@ -132,15 +141,33 @@ namespace MGroup.XFEM.Heat
             // Heat flux at Gauss Points
             using (var writer = new VtkPointWriter(outputDirectory + "//heat_flux_at_GPs.vtk"))
             {
-                var fluxField = new HeatFluxAtGaussPointsField(model);
+                var fluxField = new HeatFluxAtGaussPointsField(model, true);
                 writer.WriteVectorField("heat_flux", fluxField.CalcValuesAtVertices(solution));
             }
         }
 
-        //public double[,] RunHomogenization()
-        //{
+        public double[,] RunHomogenization(ISolverBuilder solverBuilder = null)
+        {
+            if (solverBuilder == null)
+            {
+                solverBuilder = new SuiteSparseSolver.Builder();
+            }
 
-        //}
+            // Run homogenization analysis
+            model.Initialize();
+            Console.WriteLine("Starting homogenization analysis");
+            ISolver solver = solverBuilder.BuildSolver(model);
+            var provider = new ProblemThermalSteadyState(model, solver);
+            var rve = new ThermalCubicRve(model, CoordsMin, CoordsMax);
+            var homogenization = new HomogenizationAnalyzer(model, solver, provider, rve);
+
+            homogenization.Initialize();
+            homogenization.Solve();
+            IMatrix conductivity = homogenization.MacroscopicModulus;
+            Console.WriteLine("Analysis finished");
+
+            return conductivity.CopytoArray2D();
+        }
 
         private void ApplyBoundaryConditions()
         {
@@ -171,10 +198,10 @@ namespace MGroup.XFEM.Heat
                 model.XNodes.Add(new XNode(n, mesh.GetNodeCoordinates(mesh.GetNodeIdx(n))));
             }
 
-            var matrixMaterial = new ThermalMaterial(1, 1);
-            var inclusionMaterial = new ThermalMaterial(1, 1);
+            var matrixMaterial = new ThermalMaterial(ConductivityMatrix, 1);
+            var inclusionMaterial = new ThermalMaterial(ConductivityCNT, 1);
             var materialField = new MatrixInclusionsThermalMaterialField(matrixMaterial, inclusionMaterial,
-                1, 1, defaultPhaseID);
+                ConductivityInterface, 0, defaultPhaseID);
 
             var subcellQuadrature = TetrahedronQuadrature.Order2Points4;
             var integrationBulk = new IntegrationWithConformingSubtetrahedra3D(subcellQuadrature);
@@ -204,14 +231,14 @@ namespace MGroup.XFEM.Heat
 
             var geometricModel = new PhaseGeometryModel(model);
             geometricModel.Enricher = NodeEnricherMultiphaseNoJunctions.CreateThermalStep(geometricModel);
+            geometricModel.MergeOverlappingPhases = mergeIntersectingCNTs;
 
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;
 
             foreach (ISurface3D surface in inclusionGeometries)
             {
-                int mergeLevel = mergeIntersectingCNTs ? 0 : -1;
-                var phase = new LsmPhase(geometricModel.Phases.Count, geometricModel, mergeLevel);
+                var phase = new LsmPhase(geometricModel.Phases.Count, geometricModel, 0);
                 geometricModel.Phases[phase.ID] = phase;
 
                 IClosedGeometry geometry;
@@ -262,24 +289,26 @@ namespace MGroup.XFEM.Heat
             //double radius = 0.1; // breaks for 0.09
             #endregion
 
+            double[] centroid = { 0.0, 0.0, 0.0 };
             double theta = 1.0 / 2.0 * Math.PI; // 0 <= theta <= pi
-            double phi = 1.0 / 6.0 * Math.PI; // 0 <= phi < 2*pi
+            //double phi = 1.0 / 6.0 * Math.PI; // 0 <= phi < 2*pi
+            double phi = 0.0 / 6.0 * Math.PI; // 0 <= phi < 2*pi
 
-            double length = 0.5;
-            double radius = 0.1; // breaks for 0.09
+            double length = 0.9;
+            double radius = 0.4; // breaks for 0.09
 
             double[] start = 
-            { 
-                -0.5 * length * Math.Cos(phi) * Math.Sin(theta),
-                -0.5 * length * Math.Sin(phi) * Math.Sin(theta),
-                -0.5 * length * Math.Cos(theta)
+            {
+                centroid[0] - 0.5 * length * Math.Cos(phi) * Math.Sin(theta),
+                centroid[1] - 0.5 * length * Math.Sin(phi) * Math.Sin(theta),
+                centroid[2] - 0.5 * length * Math.Cos(theta)
             };
 
             double[] end = 
             {
-                +0.5 * length * Math.Cos(phi) * Math.Sin(theta),
-                +0.5 * length * Math.Sin(phi) * Math.Sin(theta),
-                +0.5 * length * Math.Cos(theta)
+                centroid[0] + 0.5 * length * Math.Cos(phi) * Math.Sin(theta),
+                centroid[1] + 0.5 * length * Math.Sin(phi) * Math.Sin(theta),
+                centroid[2] + 0.5 * length * Math.Cos(theta)
             };
 
             inclusions.Add(new Cylinder3D(start, end, radius));

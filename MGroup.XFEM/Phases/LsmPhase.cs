@@ -4,6 +4,7 @@ using System.Diagnostics;
 using MGroup.XFEM.Elements;
 using MGroup.XFEM.Entities;
 using MGroup.XFEM.Geometry;
+using MGroup.XFEM.Geometry.LSM.DualMesh;
 using MGroup.XFEM.Geometry.Primitives;
 
 namespace MGroup.XFEM.Phases
@@ -137,21 +138,34 @@ namespace MGroup.XFEM.Phases
 
             if (otherPhase is LsmPhase otherLsmPhase)
             {
-                if (this.Overlaps(otherPhase))
+                // TODO: These should be enforced by this class.
+                if ((this.ExternalBoundaries.Count != 1) && (otherPhase.ExternalBoundaries.Count != 1))
                 {
-                    // TODO: These should be enforced by this class.
-                    if ((this.ExternalBoundaries.Count != 1) && (otherPhase.ExternalBoundaries.Count != 1))
-                    {
-                        throw new InvalidOperationException();
-                    }
-                    if (this.ExternalBoundaries[0].NegativePhase != this) throw new NotImplementedException();
-                    if (otherPhase.ExternalBoundaries[0].NegativePhase != otherPhase) throw new NotImplementedException();
-                    IPhase externalPhase = this.ExternalBoundaries[0].PositivePhase;
-                    if (externalPhase != otherPhase.ExternalBoundaries[0].PositivePhase)
-                    {
-                        throw new NotImplementedException();
-                    }
+                    throw new InvalidOperationException();
+                }
+                if (this.ExternalBoundaries[0].NegativePhase != this) throw new NotImplementedException();
+                if (otherPhase.ExternalBoundaries[0].NegativePhase != otherPhase) throw new NotImplementedException();
+                IPhase externalPhase = this.ExternalBoundaries[0].PositivePhase;
+                if (externalPhase != otherPhase.ExternalBoundaries[0].PositivePhase)
+                {
+                    throw new NotImplementedException();
+                }
 
+                //TODO: Unfuck this code
+                bool overlaps = false;
+                if (this.ExternalBoundaries[0].Geometry is DualMeshLsm lsmBoundary)
+                {
+                    // When working with a coarse mesh for XFEM and a fine mesh for LSM, we need to check the nodes of the fine 
+                    // mesh.
+                    overlaps = lsmBoundary.OverlapsWith(otherPhase.ExternalBoundaries[0].Geometry);
+                }
+                else
+                {
+                    overlaps = this.Overlaps(otherPhase);
+                }
+
+                if (overlaps)
+                {
                     // Merge level sets
                     this.ExternalBoundaries[0].Geometry.UnionWith(otherPhase.ExternalBoundaries[0].Geometry);
 

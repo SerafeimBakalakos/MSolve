@@ -25,6 +25,30 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
             else return farNodeDistance;
         }
 
+        public bool OverlapsWith(ILsmStorage otherGeometry)
+        {
+            if (otherGeometry is LsmStorageLocal casted)
+            {
+                if (this.Dimension != casted.Dimension)
+                {
+                    throw new ArgumentException("Cannot merge a 2D with a 3D geometry");
+                }
+
+                foreach (var nodeValuePair in casted.nodalLevelSets)
+                {
+                    int nodeID = nodeValuePair.Key;
+                    double otherLevelSet = nodeValuePair.Value;
+                    bool isCommonNode = this.nodalLevelSets.TryGetValue(nodeID, out double thisLevelSet);
+                    if (isCommonNode)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            else throw new ArgumentException("Incompatible Level Set geometry");
+        }
+
         public virtual void Initialize(IClosedManifold originalGeometry, IStructuredMesh mesh)
         {
             if (originalGeometry.Dimension != mesh.Dimension)

@@ -80,6 +80,7 @@ namespace MGroup.XFEM.Output.Fields
             double[] centroidNatural = subcell.FindCentroidNatural();
             var centroid = new XPoint(centroidNatural.Length);
             centroid.Element = element;
+            centroid.Coordinates[CoordinateSystem.ElementNatural] = centroidNatural;
             centroid.ShapeFunctions = element.Interpolation.EvaluateFunctionsAt(centroidNatural);
 
             // Evaluate enrichment functions at triangle centroid and assume it also holds for its vertices

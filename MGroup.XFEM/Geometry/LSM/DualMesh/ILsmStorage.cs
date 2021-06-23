@@ -14,6 +14,8 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
 
         void Initialize(IClosedManifold originalGeometry, IStructuredMesh mesh); //TODO: Also for unstruvtured meshes
 
+        bool OverlapsWith(ILsmStorage otherGeometry);
+
         void UnionWith(ILsmStorage otherGeometry);
     }
 }

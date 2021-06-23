@@ -75,7 +75,6 @@ namespace MGroup.XFEM.Output.Writers
                         nodesToPlot[point] = enrichments[e].ID;
                     }
                 }
-
             }
             if (nodesToPlot.Count > 0)
             {
@@ -88,7 +87,7 @@ namespace MGroup.XFEM.Output.Writers
 
         private double[][] DuplicateNodeForBetterViewing(XNode node, int numInstances)
         {
-            //TODO: Add more.
+            //TODO: Add more. If numInstances > 4 (or 8) for 2D (or 3D), then scatter points in a cloud around the node with radius = offset
 
             double[][] possibilites; // The further ones apart go to top
             if (dimension == 2)

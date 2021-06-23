@@ -132,6 +132,21 @@ namespace MGroup.XFEM.Geometry.LSM.DualMesh
             }
         }
 
+        //TODO: This should be part of the Union() method. But then, the Union would have to check each node all the time, 
+        //      even when the client is sure that the 2 geometries can be merged.
+        public bool OverlapsWith(IClosedGeometry otherGeometry)
+        {
+            if (otherGeometry is DualMeshLsm otherLsm)
+            {
+                if (this.dimension != otherLsm.dimension)
+                {
+                    throw new ArgumentException("Cannot merge a 2D with a 3D geometry");
+                }
+                return this.lsmStorage.OverlapsWith(otherLsm.lsmStorage);
+            }
+            else throw new ArgumentException("Incompatible Level Set geometry");
+        }
+
         public double SignedDistanceOf(XNode node) => lsmStorage.GetLevelSet(dualMesh.MapNodeIDCoarseToFine(node.ID));
 
         public double SignedDistanceOf(XPoint point)
