@@ -32,8 +32,9 @@ namespace MGroup.XFEM.Heat
     public class CntsMatrixModel
     {
         private const int defaultPhaseID = 0;
-        private const int lsmType = 0; // 0 = simple, 1 = dual global, 2 = dual local
+        private const int lsmType = 1; // 0 = simple, 1 = dual global, 2 = dual local (saves a few MB, but is currently much slower)
         private const bool cartesianMesh = false;
+        private const bool mergeIntersectingCNTs = true;
         private static readonly string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Phase3\CntsMatrix";
         private readonly int boundaryIntegrationOrder = 2;
 
@@ -47,9 +48,9 @@ namespace MGroup.XFEM.Heat
 
         public double[] CoordsMax { get; set; }
 
-        public int[] NumElementsCoarse { get; set; } = { 60, 60, 60 };
+        public int[] NumHexaCoarse { get; set; } = { 10, 10, 10 };
 
-        public int[] NumElementsFine { get; set; } = { 60, 60, 60 };
+        public int[] NumHexaFine { get; set; } = { 60, 60, 60 };
 
         public double ConductivityMatrix { get; set; }
 
@@ -61,19 +62,20 @@ namespace MGroup.XFEM.Heat
 
         public void BuildModel()
         {
-            var dualMesh = new DualCartesianMesh3D.Builder(CoordsMin, CoordsMax, NumElementsCoarse, NumElementsFine).BuildMesh();
-            MGroup.Geometry.Mesh.IStructuredMesh mesh;
+            IDualMesh dualMesh = new DualCartesianMesh3D.Builder(CoordsMin, CoordsMax, NumHexaCoarse, NumHexaFine).BuildMesh();
             if (cartesianMesh)
             {
-                mesh = new UniformCartesianMesh3D.Builder(CoordsMin, CoordsMax, NumElementsCoarse).BuildMesh();
+                dualMesh = new DualCartesianMesh3D.Builder(CoordsMin, CoordsMax, NumHexaCoarse, NumHexaFine).BuildMesh();
             }
             else
             {
-                mesh = new UniformSimplicialMesh3D.Builder(CoordsMin, CoordsMax,
-                    new int[] { NumElementsCoarse[0] + 1, NumElementsCoarse[1] + 1, NumElementsCoarse[2] + 1 }).BuildMesh();
+                int[] numNodesCoarse = { NumHexaCoarse[0] + 1, NumHexaCoarse[1] + 1, NumHexaCoarse[2] + 1 };
+                int[] numNodesFine = { NumHexaFine[0] + 1, NumHexaFine[1] + 1, NumHexaFine[2] + 1 };
+                dualMesh = new DualCartesianSimplicialMesh3D.Builder(
+                    CoordsMin, CoordsMax, numNodesCoarse, numNodesFine).BuildMesh();
             }
 
-            model = BuildPhysicalModel(mesh/*dualMesh.CoarseMesh*/);
+            model = BuildPhysicalModel(dualMesh.CoarseMesh);
             PhaseGeometryModel geometryModel = CreatePhases(model, dualMesh);
             model.GeometryModel = geometryModel;
         }
@@ -104,8 +106,8 @@ namespace MGroup.XFEM.Heat
             model.ModelObservers.Add(new IntegrationPointsPlotter(outputDirectory, model));
 
             // Plot enrichments
-            double elementSize = (CoordsMax[0] - CoordsMin[0]) / NumElementsCoarse[0];
-            model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 2));
+            double elementSize = (CoordsMax[0] - CoordsMin[0]) / NumHexaCoarse[0];
+            //model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 2));
 
             // Initialize model state so that everything described above can be tracked
             model.Initialize();
@@ -160,7 +162,7 @@ namespace MGroup.XFEM.Heat
             }
         }
 
-        private XModel<IXMultiphaseElement> BuildPhysicalModel(MGroup.Geometry.Mesh.IStructuredMesh/*IStructuredMesh*/ mesh)
+        private XModel<IXMultiphaseElement> BuildPhysicalModel(IStructuredMesh mesh)
         {
             var model = new XModel<IXMultiphaseElement>(3);
             model.Subdomains[0] = new XSubdomain(0);
@@ -195,7 +197,7 @@ namespace MGroup.XFEM.Heat
             return model;
         }
 
-        private PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model, DualCartesianMesh3D mesh)
+        private PhaseGeometryModel CreatePhases(XModel<IXMultiphaseElement> model, IDualMesh mesh)
         {
             //IEnumerable<ISurface3D> inclusionGeometries = GenerateInclusionGeometries();
             IEnumerable<ISurface3D> inclusionGeometries = GeometryGenerator.GenerateInclusions();
@@ -208,13 +210,14 @@ namespace MGroup.XFEM.Heat
 
             foreach (ISurface3D surface in inclusionGeometries)
             {
-                var phase = new LsmPhase(geometricModel.Phases.Count, geometricModel, -1);
+                int mergeLevel = mergeIntersectingCNTs ? 0 : -1;
+                var phase = new LsmPhase(geometricModel.Phases.Count, geometricModel, mergeLevel);
                 geometricModel.Phases[phase.ID] = phase;
 
                 IClosedGeometry geometry;
                 if (lsmType == 0) geometry = new SimpleLsm3D(phase.ID, model.XNodes, surface, !cartesianMesh);
-                else if (lsmType == 1) geometry = new GlobalDualMeshLsm3D_OLD(phase.ID, mesh, surface);
-                else if (lsmType == 2) geometry = new LocalDualMeshLsm3D_OLD(phase.ID, mesh, surface);
+                else if (lsmType == 1) geometry = new DualMeshLsm(phase.ID, surface, mesh, new LsmStorageGlobal(3));
+                else if (lsmType == 2) geometry = new DualMeshLsm(phase.ID, surface, mesh, new LsmStorageLocal(3));
                 else throw new NotImplementedException();
                 var boundary = new ClosedPhaseBoundary(phase.ID, geometry, defaultPhase, phase);
                 defaultPhase.ExternalBoundaries.Add(boundary);

@@ -51,9 +51,9 @@ namespace MGroup.XFEM.Heat
             geometryGenerator.RngSeed = 13;
             geometryGenerator.CoordsMin = new double[] { -1.0, -1.0, -1.0 };
             geometryGenerator.CoordsMax = new double[] { +1.0, +1.0, +1.0 };
-            geometryGenerator.NumCNTs = 3;
-            geometryGenerator.CntLength = 0.8;
-            geometryGenerator.CntRadius = 0.1;
+            geometryGenerator.NumCNTs = 60;
+            geometryGenerator.CntLength = 0.4;
+            geometryGenerator.CntRadius = 0.05;
 
             //var geometryGenerator = new CntGeometryGenerator();
             //geometryGenerator.RngSeed = this.RngSeed;
