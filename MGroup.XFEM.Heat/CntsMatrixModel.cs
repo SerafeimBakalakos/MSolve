@@ -36,8 +36,6 @@ namespace MGroup.XFEM.Heat
         private const int defaultPhaseID = 0;
         private const int lsmType = 1; // 0 = simple, 1 = dual global, 2 = dual local (saves a few MB, but is currently much slower)
         private const bool cartesianMesh = false;
-        private const bool mergeIntersectingCNTs = false;
-        private static readonly string outputDirectory = @"C:\Users\Serafeim\Desktop\HEAT\Phase3\CntsMatrix";
         private readonly int boundaryIntegrationOrder = 2;
 
         private XModel<IXMultiphaseElement> model;
@@ -46,21 +44,38 @@ namespace MGroup.XFEM.Heat
         {
         }
 
-        public double[] CoordsMin { get; set; }
-
-        public double[] CoordsMax { get; set; }
-
-        public int[] NumHexaCoarse { get; set; } = { 10, 10, 10 };
-
-        public int[] NumHexaFine { get; set; } = { 60, 60, 60 };
-
         public double ConductivityMatrix { get; set; }
 
         public double ConductivityCNT { get; set; }
 
         public double ConductivityInterface { get; set; }
 
+        public double[] CoordsMin { get; set; }
+
+        public double[] CoordsMax { get; set; }
+
+        public bool MergeIntersectingCNTs { get; set; } = false;
+
         public ICntGeometryGenerator GeometryGenerator { get; set; }
+
+        private int[] NumHexaCoarse { get; set; } = { 20, 20, 20 };
+
+        private int[] NumHexaFine { get; set; } = { 60, 60, 60 };
+
+        public void SetNumElements(int numCoarseElementsPerAxis, int fineMeshMultiplicity)
+        {
+
+            NumHexaCoarse = new int[3];
+            NumHexaFine = new int[3];
+            for (int d = 0; d < 3; ++d)
+            {
+                NumHexaCoarse[d] = numCoarseElementsPerAxis;
+                NumHexaFine[d] = numCoarseElementsPerAxis * fineMeshMultiplicity;
+            }
+
+        }
+
+        private string OutputDirectory { get; set; } = @"C:\Users\Serafeim\Desktop\HEAT\Phase3\CntsMatrix";
 
         public void BuildModel()
         {
@@ -87,32 +102,32 @@ namespace MGroup.XFEM.Heat
             var geometryModel = (PhaseGeometryModel)model.GeometryModel;
 
             // Plot level sets
-            geometryModel.GeometryObservers.Add(new PhaseLevelSetPlotter(outputDirectory, model, geometryModel));
+            geometryModel.GeometryObservers.Add(new PhaseLevelSetPlotter(OutputDirectory, model, geometryModel));
 
             // Plot phases of nodes
-            geometryModel.InteractionObservers.Add(new NodalPhasesPlotter(outputDirectory, model));
+            geometryModel.InteractionObservers.Add(new NodalPhasesPlotter(OutputDirectory, model));
 
             // Plot element - phase boundaries interactions
-            geometryModel.InteractionObservers.Add(new LsmElementIntersectionsPlotter(outputDirectory, model));
+            geometryModel.InteractionObservers.Add(new LsmElementIntersectionsPlotter(OutputDirectory, model));
 
             // Plot element subcells
-            model.ModelObservers.Add(new ConformingMeshPlotter(outputDirectory, model));
+            model.ModelObservers.Add(new ConformingMeshPlotter(OutputDirectory, model));
 
             // Plot phases of each element subcell
-            model.ModelObservers.Add(new ElementPhasePlotter(outputDirectory, model, geometryModel, defaultPhaseID));
+            model.ModelObservers.Add(new ElementPhasePlotter(OutputDirectory, model, geometryModel, defaultPhaseID));
 
             // Write the size of each phase
-            model.ModelObservers.Add(new PhasesSizeWriter(outputDirectory, model, geometryModel));
+            model.ModelObservers.Add(new PhasesSizeWriter(OutputDirectory, model, geometryModel));
 
             // Plot bulk and boundary integration points of each element
-            model.ModelObservers.Add(new IntegrationPointsPlotter(outputDirectory, model));
+            model.ModelObservers.Add(new IntegrationPointsPlotter(OutputDirectory, model));
 
             // Plot intersected elements
-            model.ModelObservers.Add(new PhaseInteractingElementsPlotter(outputDirectory, model));
+            model.ModelObservers.Add(new PhaseInteractingElementsPlotter(OutputDirectory, model));
 
             // Plot enrichments
             double elementSize = (CoordsMax[0] - CoordsMin[0]) / NumHexaCoarse[0];
-            model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(outputDirectory, model, elementSize, 3));
+            model.RegisterEnrichmentObserver(new PhaseEnrichmentPlotter(OutputDirectory, model, elementSize, 3));
 
             // Initialize model state so that everything described above can be tracked
             model.Initialize();
@@ -131,7 +146,7 @@ namespace MGroup.XFEM.Heat
 
             // Temperature field
             var conformingMesh = new ConformingOutputMesh(model);
-            using (var writer = new VtkFileWriter(outputDirectory + "//temperature_field.vtk"))
+            using (var writer = new VtkFileWriter(OutputDirectory + "//temperature_field.vtk"))
             {
                 var temperatureField = new TemperatureField(model, conformingMesh);
                 writer.WriteMesh(conformingMesh);
@@ -139,7 +154,7 @@ namespace MGroup.XFEM.Heat
             }
 
             // Heat flux at Gauss Points
-            using (var writer = new VtkPointWriter(outputDirectory + "//heat_flux_at_GPs.vtk"))
+            using (var writer = new VtkPointWriter(OutputDirectory + "//heat_flux_at_GPs.vtk"))
             {
                 var fluxField = new HeatFluxAtGaussPointsField(model, true);
                 writer.WriteVectorField("heat_flux", fluxField.CalcValuesAtVertices(solution));
@@ -231,7 +246,7 @@ namespace MGroup.XFEM.Heat
 
             var geometricModel = new PhaseGeometryModel(model);
             geometricModel.Enricher = NodeEnricherMultiphaseNoJunctions.CreateThermalStep(geometricModel);
-            geometricModel.MergeOverlappingPhases = mergeIntersectingCNTs;
+            geometricModel.MergeOverlappingPhases = MergeIntersectingCNTs;
 
             var defaultPhase = new DefaultPhase();
             geometricModel.Phases[defaultPhase.ID] = defaultPhase;
