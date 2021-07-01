@@ -8,12 +8,12 @@ using MGroup.Solvers.LinearSystems;
 
 namespace MGroup.Solvers.DomainDecomposition.StiffnessMatrices
 {
-	public class SubdomainMatrixManagerCscSymmetric : ISubdomainMatrixManager
+	public class SubdomainMatrixManagerSymmetricCsc : ISubdomainMatrixManager
 	{
 		private readonly SymmetricCscAssembler assembler;
 		private readonly SingleSubdomainSystem<SymmetricCscMatrix> linearSystem;
 
-		public SubdomainMatrixManagerCscSymmetric(ISubdomain subdomain)
+		public SubdomainMatrixManagerSymmetricCsc(ISubdomain subdomain)
 		{
 			assembler = new SymmetricCscAssembler(true);
 			linearSystem = new SingleSubdomainSystem<SymmetricCscMatrix>(subdomain);

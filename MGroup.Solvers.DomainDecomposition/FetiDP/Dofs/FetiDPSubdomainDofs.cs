@@ -37,12 +37,7 @@ namespace MGroup.Solvers.DomainDecomposition.FetiDP.Dofs
 			}
 		}
 
-		public void SeparateBoundaryRemainderAndInternalDofs()
-		{
-			throw new NotImplementedException("Useful in FETI-DP, but not in P-FETI-DP");
-		}
-
-		public void SeparateCornerRemainderDofs(ICornerDofSelection cornerDofSelection)
+		public void SeparateFreeDofsIntoCornerAndRemainder(ICornerDofSelection cornerDofSelection)
 		{
 			var cornerDofOrdering = new DofTable();
 			var cornerToFree = new List<int>();
@@ -72,6 +67,11 @@ namespace MGroup.Solvers.DomainDecomposition.FetiDP.Dofs
 			this.DofOrderingCorner = cornerDofOrdering;
 			this.DofsCornerToFree = cornerToFree.ToArray();
 			this.DofsRemainderToFree = remainderToFree.ToArray();
+		}
+
+		public void SeparateRemainderDofsIntoBoundaryAndInternalDofs()
+		{
+			throw new NotImplementedException("Useful in FETI-DP, but not in P-FETI-DP");
 		}
 	}
 }

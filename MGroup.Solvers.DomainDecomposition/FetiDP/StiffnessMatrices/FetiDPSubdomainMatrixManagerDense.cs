@@ -60,8 +60,8 @@ namespace MGroup.Solvers.DomainDecomposition.FetiDP.StiffnessMatrices
 
 		public void InvertKrr()
 		{
-			inverseKrr = Krr.Invert(); ;
-			Krr = null;
+			inverseKrr = Krr.Invert();
+			Krr = null; // Krr has been overwritten
 		}
 
 		public Vector MultiplyInverseKrrTimes(Vector vector) => inverseKrr * vector;

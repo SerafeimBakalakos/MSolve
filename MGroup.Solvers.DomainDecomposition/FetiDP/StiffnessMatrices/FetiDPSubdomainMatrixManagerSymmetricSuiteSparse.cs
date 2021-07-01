@@ -11,23 +11,24 @@ using MGroup.Solvers.DomainDecomposition.StiffnessMatrices;
 using MGroup.Solvers.DomainDecomposition.LinearAlgebraExtensions;
 using MGroup.Solvers.DomainDecomposition.Commons;
 
+//TODO: a lot of duplication with the CSparse version
 namespace MGroup.Solvers.DomainDecomposition.FetiDP.StiffnessMatrices
 {
-	public class FetiDPSubdomainMatrixManagerCSparseSymmetric : IFetiDPSubdomainMatrixManager
+	public class FetiDPSubdomainMatrixManagerSymmetricSuiteSparse : IFetiDPSubdomainMatrixManager
 	{
 		private readonly FetiDPSubdomainDofs subdomainDofs;
-		private readonly SubdomainMatrixManagerCscSymmetric managerBasic;
-		private readonly OrderingAmdCSparseNet reordering = new OrderingAmdCSparseNet();
+		private readonly SubdomainMatrixManagerSymmetricCsc managerBasic;
+		private readonly OrderingAmdSuiteSparse reordering = new OrderingAmdSuiteSparse();
 		private readonly SubmatrixExtractorPckCsrCscSym submatrixExtractor = new SubmatrixExtractorPckCsrCscSym();
 
 		private SymmetricMatrix Kcc;
 		private SymmetricMatrix KccStar;
 		private CsrMatrix Kcr;
 		private SymmetricCscMatrix Krr;
-		private CholeskyCSparseNet inverseKrr;
+		private CholeskySuiteSparse inverseKrr;
 
-		public FetiDPSubdomainMatrixManagerCSparseSymmetric(FetiDPSubdomainDofs subdomainDofs,
-			SubdomainMatrixManagerCscSymmetric managerBasic)
+		public FetiDPSubdomainMatrixManagerSymmetricSuiteSparse(FetiDPSubdomainDofs subdomainDofs,
+			SubdomainMatrixManagerSymmetricCsc managerBasic)
 		{
 			this.subdomainDofs = subdomainDofs;
 			this.managerBasic = managerBasic;
@@ -43,6 +44,10 @@ namespace MGroup.Solvers.DomainDecomposition.FetiDP.StiffnessMatrices
 
 		public void ClearSubMatrices()
 		{
+			if (inverseKrr != null)
+			{
+				inverseKrr.Dispose();
+			}
 			inverseKrr = null;
 			Kcc = null;
 			Kcr = null;
@@ -59,10 +64,7 @@ namespace MGroup.Solvers.DomainDecomposition.FetiDP.StiffnessMatrices
 			submatrixExtractor.ExtractSubmatrices(Kff, cornerToFree, remainderToFree);
 			Kcc = submatrixExtractor.Submatrix00;
 			Kcr = submatrixExtractor.Submatrix01;
-			Krr = submatrixExtractor.Submatrix11; 
-
-			//TODO: It would be better if these were returned by the extractor, instead of stored in its properties. 
-			//		The only state that the extractor needs is its private mapping arrays
+			Krr = submatrixExtractor.Submatrix11;
 		}
 
 		public void HandleDofsWereModified()
@@ -73,8 +75,11 @@ namespace MGroup.Solvers.DomainDecomposition.FetiDP.StiffnessMatrices
 
 		public void InvertKrr()
 		{
-			var factorization = CholeskyCSparseNet.Factorize(Krr);
-			inverseKrr = factorization;
+			if (inverseKrr != null)
+			{
+				inverseKrr.Dispose();
+			}
+			inverseKrr = CholeskySuiteSparse.Factorize(Krr, true);
 			Krr = null; // It has not been mutated, but it is no longer needed
 		}
 
@@ -91,19 +96,20 @@ namespace MGroup.Solvers.DomainDecomposition.FetiDP.StiffnessMatrices
 			int[] remainderDofs = subdomainDofs.DofsRemainderToFree;
 			SymmetricCscMatrix Kff = managerBasic.MatrixKff;
 			(int[] rowIndicesKrr, int[] colOffsetsKrr) = submatrixExtractor.ExtractSparsityPattern(Kff, remainderDofs);
-			(int[] permutation, bool oldToNew) = reordering.FindPermutation(
-				remainderDofs.Length, rowIndicesKrr, colOffsetsKrr);
+
+			bool oldToNew = false; //TODO: This should be provided by the reordering algorithm
+			(int[] permutation, ReorderingStatistics stats) = reordering.FindPermutation(
+				remainderDofs.Length, rowIndicesKrr.Length, rowIndicesKrr, colOffsetsKrr);
 
 			subdomainDofs.ReorderRemainderDofs(DofPermutation.Create(permutation, oldToNew));
 		}
-
 		public class Factory : IFetiDPSubdomainMatrixManagerFactory
 		{
 			public (ISubdomainMatrixManager, IFetiDPSubdomainMatrixManager) CreateMatrixManagers(
 				ISubdomain subdomain, FetiDPSubdomainDofs subdomainDofs)
 			{
-				var basicMatrixManager = new SubdomainMatrixManagerCscSymmetric(subdomain);
-				var fetiDPMatrixManager = new FetiDPSubdomainMatrixManagerCSparseSymmetric(subdomainDofs, basicMatrixManager);
+				var basicMatrixManager = new SubdomainMatrixManagerSymmetricCsc(subdomain);
+				var fetiDPMatrixManager = new FetiDPSubdomainMatrixManagerSymmetricSuiteSparse(subdomainDofs, basicMatrixManager);
 				return (basicMatrixManager, fetiDPMatrixManager);
 			}
 		}
