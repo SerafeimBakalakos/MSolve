@@ -22,13 +22,13 @@ namespace MGroup.Solvers.DomainDecomposition.Tests
 
                 MpiDebugUtilities.DoSerially(MPI.Communicator.world,
                     () => Console.WriteLine(
-                        $"Process {MPI.Communicator.world.Rank}: Now running DofSeparatorTests.TestForLine1DInternal"));
-                PsmDofSeparatorTests.TestForLine1DInternal(mpiEnvironment);
+                        $"Process {MPI.Communicator.world.Rank}: Now running dofManagerTests.TestForLine1DInternal"));
+                PsmDofManagerTests.TestForLine1DInternal(mpiEnvironment);
 
                 MpiDebugUtilities.DoSerially(MPI.Communicator.world,
                     () => Console.WriteLine(
-                        $"Process {MPI.Communicator.world.Rank}: Now running DofSeparatorTests.TestForPlane2DInternal"));
-                PsmDofSeparatorTests.TestForPlane2DInternal(mpiEnvironment);
+                        $"Process {MPI.Communicator.world.Rank}: Now running dofManagerTests.TestForPlane2DInternal"));
+                PsmDofManagerTests.TestForPlane2DInternal(mpiEnvironment);
 
                 MpiDebugUtilities.DoSerially(MPI.Communicator.world,
                     () => Console.WriteLine(

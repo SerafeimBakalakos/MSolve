@@ -13,7 +13,7 @@ using Xunit;
 
 namespace MGroup.Solvers.DomainDecomposition.Tests.PSM
 {
-    public class PsmDofSeparatorTests
+    public class PsmDofManagerTests
     {
         [Theory]
         [InlineData(EnvironmentChoice.SequentialSharedEnvironment)]
@@ -31,10 +31,10 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.PSM
             var subdomainTopology = new SubdomainTopology(environment, model);
             ModelUtilities.OrderDofs(model);
 
-            var dofSeparator = new PsmDofSeparator(environment, model, subdomainTopology, true);
-            dofSeparator.SeparateSubdomainDofsIntoBoundaryInternal();
-            dofSeparator.FindCommonDofsBetweenSubdomains();
-            DistributedOverlappingIndexer indexer = dofSeparator.CreateDistributedVectorIndexer();
+            var dofManager = new PsmDofManager(environment, model, subdomainTopology, true);
+            environment.DoPerNode(s => dofManager.GetSubdomainDofs(s).SeparateFreeDofsIntoBoundaryAndInternal());
+            dofManager.FindCommonDofsBetweenSubdomains();
+            DistributedOverlappingIndexer indexer = dofManager.CreateDistributedVectorIndexer();
 
             // Check
             Line1DExample.CheckDistributedIndexer(environment, nodeTopology, indexer);
@@ -56,10 +56,10 @@ namespace MGroup.Solvers.DomainDecomposition.Tests.PSM
             var subdomainTopology = new SubdomainTopology(environment, model);
             ModelUtilities.OrderDofs(model);
 
-            var dofSeparator = new PsmDofSeparator(environment, model, subdomainTopology, true);
-            dofSeparator.SeparateSubdomainDofsIntoBoundaryInternal();
-            dofSeparator.FindCommonDofsBetweenSubdomains();
-            DistributedOverlappingIndexer indexer = dofSeparator.CreateDistributedVectorIndexer();
+            var dofManager = new PsmDofManager(environment, model, subdomainTopology, true);
+            environment.DoPerNode(s => dofManager.GetSubdomainDofs(s).SeparateFreeDofsIntoBoundaryAndInternal());
+            dofManager.FindCommonDofsBetweenSubdomains();
+            DistributedOverlappingIndexer indexer = dofManager.CreateDistributedVectorIndexer();
 
             // Check
             Plane2DExample.CheckDistributedIndexer(environment, nodeTopology, indexer);

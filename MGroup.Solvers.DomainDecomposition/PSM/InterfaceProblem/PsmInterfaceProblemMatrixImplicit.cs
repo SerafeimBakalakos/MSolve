@@ -19,15 +19,15 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.InterfaceProblem
 	public class PsmInterfaceProblemMatrixImplicit : IPsmInterfaceProblemMatrix
 	{
 		private readonly IComputeEnvironment environment;
-		private readonly IPsmDofSeparator dofSeparator;
-		private readonly IPsmMatrixManager matrixManager;
+		private readonly PsmDofManager dofManager;
+		private readonly IDictionary<int, IPsmSubdomainMatrixManager> matrixManagers;
 
-		public PsmInterfaceProblemMatrixImplicit(IComputeEnvironment environment, IPsmDofSeparator dofSeparator, 
-			IPsmMatrixManager matrixManager)
+		public PsmInterfaceProblemMatrixImplicit(IComputeEnvironment environment, PsmDofManager dofManager,
+			IDictionary<int, IPsmSubdomainMatrixManager> matrixManagers)
 		{
 			this.environment = environment;
-			this.dofSeparator = dofSeparator;
-			this.matrixManager = matrixManager;
+			this.dofManager = dofManager;
+			this.matrixManagers = matrixManagers;
 		}
 
 		public DistributedOverlappingMatrix Matrix { get; private set; }
@@ -39,14 +39,14 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.InterfaceProblem
 
 		//TODO: this looks like it belongs to LinearAlgebra. Perhaps in an implicit matrix class.
 		//TODO: There should be a way to learn the number of boundary dofs from Kbb, without depending on DofSeparator
-		//TODO: This is very inefficient. Forming Sbb explicitly should be faster, especially since it is done by the 
+		//TODO: This is extremely inefficient. Forming Sbb explicitly should be faster, especially since it is done by the 
 		//		MatrixManager classes, which have access to the concrete type of the submatrices. And then matrix vector 
 		//		multiplications during PCG will be much faster. Perhaps Sbb * vector should be delegated to MatrixManager, which
 		//		will do it implicitly, unless CalcSchurComplement was called.
 		public double[] ExtractDiagonal(int subdomainID) 
 		{
 			// Multiply with the columns of identity matrix and keep the corresponding entries.
-			int numBoundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID).Length; 
+			int numBoundaryDofs = dofManager.GetSubdomainDofs(subdomainID).DofsBoundaryToFree.Length; 
 			var lhs = Vector.CreateZero(numBoundaryDofs);
 			var rhs = Vector.CreateZero(numBoundaryDofs);
 			var diagonal = new double[numBoundaryDofs];
@@ -77,10 +77,10 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.InterfaceProblem
 		/// <param name="output">The forces that correspond to boundary dofs of this subdomain.</param>
 		private void MultiplySubdomainSchurComplement(int subdomainID, Vector input, Vector output)
 		{
-			Vector forces = matrixManager.MultiplyKbb(subdomainID, input);
-			Vector temp = matrixManager.MultiplyKib(subdomainID, input);
-			temp = matrixManager.MultiplyInverseKii(subdomainID, temp);
-			temp = matrixManager.MultiplyKbi(subdomainID, temp);
+			Vector forces = matrixManagers[subdomainID].MultiplyKbb(input);
+			Vector temp = matrixManagers[subdomainID].MultiplyKib(input);
+			temp = matrixManagers[subdomainID].MultiplyInverseKii(temp);
+			temp = matrixManagers[subdomainID].MultiplyKbi(temp);
 			forces.SubtractIntoThis(temp);
 			output.CopyFrom(forces);
 		}

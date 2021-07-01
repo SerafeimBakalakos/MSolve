@@ -1,47 +1,42 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ISAAR.MSolve.Discretization.FreedomDegrees;
 using ISAAR.MSolve.Discretization.Interfaces;
 using MGroup.Environments;
 using MGroup.LinearAlgebra.Distributed.Overlapping;
 using MGroup.Solvers.Commons;
-using MGroup.Solvers.DomainDecomposition.Commons;
 
-//TODOMPI: Replace DofTable with an equivalent class that uses integers. Also allow clients to choose sorted versions
-//TODOMPI: Instead of going to asking ComputeNode for its neighbors, ISubdomain should contain this info. 
+//TODOMPI: Instead of asking ComputeNode for its neighbors, ISubdomain should contain this info. 
+//TODOMPI: I should decouple the code, such that there are classes that define operations on data, classes that define transfer of data,
+//		and classes that define the order of such operations and transfers (sequential, shared parallel or distributed parallel)
+//		and any synchronization (e.g. locks in IDofSeparator classes). This should probably be done for each component 
+//		(e.g. IDofSeparator, IMatrixManager, etc.). However if I can find common code (boilerplate), I could probably avoid some 
+//		duplication.
 namespace MGroup.Solvers.DomainDecomposition.PSM.Dofs
 {
-	public class PsmDofSeparator : IPsmDofSeparator
+	public class PsmDofManager
 	{
 		private readonly IComputeEnvironment environment;
 		private readonly IStructuralModel model;
-
-		//TODO: This is essential for testing and very useful for debugging, but not production code. Should I remove it?
-		private readonly bool sortDofsWhenPossible;
-
 		private readonly SubdomainTopology subdomainTopology;
-		private readonly ConcurrentDictionary<int, DofTable> subdomainDofOrderingsBoundary = 
-			new ConcurrentDictionary<int, DofTable>();
-		private readonly ConcurrentDictionary<int, int[]> subdomainDofsBoundaryToFree = new ConcurrentDictionary<int, int[]>();
-		private readonly ConcurrentDictionary<int, int[]> subdomainDofsInternalToFree = new ConcurrentDictionary<int, int[]>();
-		private readonly ConcurrentDictionary<int, int> subdomainNumFreeDofs = new ConcurrentDictionary<int, int>();
+		private readonly Dictionary<int, PsmSubdomainDofs> subdomainDofs;
 
+		//TODOMPI: should this be stored in each PsmSubdomainDofs object instead? Or maybe not stored at all, since it is only used when creating the indexer.
 		/// <summary>
 		/// First key: current subdomain. Second key: neighbor subdomain. Value: dofs at common nodes between these 2 subdomains
 		/// </summary>
 		private readonly ConcurrentDictionary<int, Dictionary<int, DofSet>> commonDofsBetweenSubdomains
 			= new ConcurrentDictionary<int, Dictionary<int, DofSet>>();
 
-		public PsmDofSeparator(IComputeEnvironment environment, IStructuralModel model, SubdomainTopology subdomainTopology,
+		public PsmDofManager(IComputeEnvironment environment, IStructuralModel model, SubdomainTopology subdomainTopology, 
 			bool sortDofsWhenPossible = false)
 		{
 			this.environment = environment;
 			this.model = model;
 			this.subdomainTopology = subdomainTopology;
-			this.sortDofsWhenPossible = sortDofsWhenPossible;
+			this.subdomainDofs = environment.CreateDictionaryPerNode(
+				s => new PsmSubdomainDofs(model.GetSubdomain(s), sortDofsWhenPossible));
 		}
 
 		public DistributedOverlappingIndexer CreateDistributedVectorIndexer()
@@ -50,8 +45,8 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.Dofs
 			Action<int> initializeIndexer = subdomainID =>
 			{
 				ISubdomain subdomain = model.GetSubdomain(subdomainID);
-				int numBoundaryDofs = subdomainDofsBoundaryToFree[subdomainID].Length;
-				DofTable boundaryDofs = subdomainDofOrderingsBoundary[subdomainID];
+				int numBoundaryDofs = subdomainDofs[subdomainID].DofsBoundaryToFree.Length;
+				DofTable boundaryDofs = subdomainDofs[subdomainID].DofOrderingBoundary;
 
 				var allCommonDofIndices = new Dictionary<int, int[]>();
 				foreach (int neighborID in subdomainTopology.GetNeighborsOfSubdomain(subdomainID))
@@ -122,40 +117,7 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.Dofs
 			environment.DoPerNode(processReceivedDofs);
 		}
 
-		public DofTable GetSubdomainDofOrderingBoundary(int subdomainID) => subdomainDofOrderingsBoundary[subdomainID];
-
-		public int[] GetSubdomainDofsBoundaryToFree(int subdomainID) => subdomainDofsBoundaryToFree[subdomainID];
-
-		public int[] GetSubdomainDofsInternalToFree(int subdomainID) => subdomainDofsInternalToFree[subdomainID];
-
-		public int GetNumSubdomainFreeDofs(int subdomainID) => subdomainNumFreeDofs[subdomainID];
-
-		public void ReorderSubdomainInternalDofs(int subdomainID, DofPermutation permutation)
-		{
-			if (permutation.IsBetter)
-			{
-				int[] internalDofs = permutation.ReorderKeysOfDofIndicesMap(subdomainDofsInternalToFree[subdomainID]);
-				subdomainDofsInternalToFree[subdomainID] = internalDofs; 
-			}
-		}
-
-		/// <summary>
-		/// Boundary/internal dofs
-		/// </summary>
-		public void SeparateSubdomainDofsIntoBoundaryInternal()
-		{
-			Action<int> subdomainAction = subdomainID =>
-			{
-				ISubdomain subdomain = model.GetSubdomain(subdomainID);
-				(DofTable boundaryDofOrdering, int[] boundaryToFree, int[] internalToFree) = SeparateSubdomainDofs(subdomain);
-
-				subdomainNumFreeDofs[subdomainID] = subdomain.FreeDofOrdering.NumFreeDofs;
-				subdomainDofOrderingsBoundary[subdomainID] = boundaryDofOrdering;
-				subdomainDofsBoundaryToFree[subdomainID] = boundaryToFree;
-				subdomainDofsInternalToFree[subdomainID] = internalToFree;
-			};
-			environment.DoPerNode(subdomainAction);
-		}
+		public PsmSubdomainDofs GetSubdomainDofs(int subdomainID) => subdomainDofs[subdomainID];
 
 		private Dictionary<int, DofSet> FindSubdomainDofsAtCommonNodes(int subdomainID)
 		{
@@ -175,61 +137,6 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.Dofs
 			return commonDofsOfSubdomain;
 		}
 
-		private (DofTable boundaryDofOrdering, int[] boundaryToFree, int[] internalToFree) SeparateSubdomainDofs(
-			ISubdomain subdomain)
-		{
-			//TODOMPI: force sorting per node and dof
-			var boundaryDofOrdering = new DofTable();
-			var boundaryToFree = new List<int>();
-			var internalToFree = new HashSet<int>();
-			int subdomainBoundaryIdx = 0;
-
-			DofTable freeDofs = subdomain.FreeDofOrdering.FreeDofs;
-			IEnumerable<INode> nodes = freeDofs.GetRows();
-			if (sortDofsWhenPossible)
-			{
-				nodes = nodes.OrderBy(node => node.ID);
-			}
-
-			foreach (INode node in nodes) //TODO: Optimize access: Directly get INode, Dictionary<IDof, int>
-			{
-				IReadOnlyDictionary<IDofType, int> dofsOfNode = freeDofs.GetDataOfRow(node);
-				if (sortDofsWhenPossible)
-				{
-					var sortedDofsOfNode = new SortedDictionary<IDofType, int>(new DofTypeComparer());
-					foreach (var dofTypeIdxPair in dofsOfNode)
-					{
-						sortedDofsOfNode[dofTypeIdxPair.Key] = dofTypeIdxPair.Value;
-					}
-					dofsOfNode = sortedDofsOfNode;
-				}
-
-				if (node.SubdomainsDictionary.Count > 1)
-				{
-					foreach (var dofTypeIdxPair in dofsOfNode)
-					{
-						boundaryDofOrdering[node, dofTypeIdxPair.Key] = subdomainBoundaryIdx++;
-						boundaryToFree.Add(dofTypeIdxPair.Value);
-					}
-				}
-				else
-				{
-					foreach (var dofTypeIdxPair in dofsOfNode)
-					{
-						internalToFree.Add(dofTypeIdxPair.Value);
-					}
-				}
-			}
-
-			return (boundaryDofOrdering, boundaryToFree.ToArray(), internalToFree.ToArray());
-		}
-
-		private class DofTypeComparer : IComparer<IDofType>
-		{
-			public int Compare(IDofType x, IDofType y)
-			{
-				return AllDofs.GetIdOfDof(x) - AllDofs.GetIdOfDof(y);
-			}
-		}
+		
 	}
 }

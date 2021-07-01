@@ -18,17 +18,17 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution
 	{
 		private readonly IComputeEnvironment environment;
 		private readonly IStructuralModel model;
-		private readonly IPsmDofSeparator dofSeparator;
+		private readonly PsmDofManager dofManager;
 		private readonly ConcurrentDictionary<int, double[]> inverseMultiplicities = new ConcurrentDictionary<int, double[]>();
 		//private readonly ConcurrentDictionary<int, IMappingMatrix> dofMappingBoundaryClusterToSubdomain = 
 		//	new ConcurrentDictionary<int, IMappingMatrix>();
 
-		public HomogeneousStiffnessDistribution(IComputeEnvironment environment, IStructuralModel model, 
-			IPsmDofSeparator dofSeparator)
+		public HomogeneousStiffnessDistribution(IComputeEnvironment environment, IStructuralModel model,
+			PsmDofManager dofManager)
 		{
 			this.environment = environment;
 			this.model = model;
-			this.dofSeparator = dofSeparator;
+			this.dofManager = dofManager;
 		}
 
 		public void CalcSubdomainScaling(DistributedOverlappingIndexer indexer)
@@ -36,7 +36,7 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution
 			Action<int> calcSubdomainScaling = subdomainID =>
 			{
 				ISubdomain subdomain = model.GetSubdomain(subdomainID);
-				int numBoundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID).Length;
+				int numBoundaryDofs = dofManager.GetSubdomainDofs(subdomainID).DofsBoundaryToFree.Length;
 
 				var subdomainW = new double[numBoundaryDofs];
 				int[] multiplicites = indexer.GetLocalComponent(subdomainID).Multiplicities;
@@ -92,7 +92,7 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution
 
 		public void ScaleForceVector(int subdomainID, Vector subdomainForces)
 		{
-			int[] boundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID);
+			int[] boundaryDofs = dofManager.GetSubdomainDofs(subdomainID).DofsBoundaryToFree;
 			double[] coefficients = inverseMultiplicities[subdomainID];
 			for (int i = 0; i < boundaryDofs.Length; i++)
 			{

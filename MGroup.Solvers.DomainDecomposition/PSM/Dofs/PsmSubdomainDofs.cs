@@ -7,8 +7,11 @@ using ISAAR.MSolve.Discretization.Interfaces;
 using MGroup.Solvers.Commons;
 using MGroup.Solvers.DomainDecomposition.Commons;
 
+//TODOMPI: DofTable should be replaced with an IntTable that stores ids, instead of actual references to nodes and dofs. 
+//		This will make transfering it via MPI much faster.
+//TODO: Naming convention for dofs (free/constrained, boundary/internal/corner/intercluster, subdomain/cluster/global) that will
+//		be followed across all components
 //TODOMPI: Replace DofTable with an equivalent class that uses integers. Also allow clients to choose sorted versions
-//TODOMPI: Instead of going to asking ComputeNode for its neighbors, ISubdomain should contain this info. 
 namespace MGroup.Solvers.DomainDecomposition.PSM.Dofs
 {
 	public class PsmSubdomainDofs

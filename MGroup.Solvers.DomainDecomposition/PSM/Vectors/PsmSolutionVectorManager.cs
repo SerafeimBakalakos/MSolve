@@ -13,18 +13,19 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.Vectors
 	public class PsmSolutionVectorManager : IPsmSolutionVectorManager
 	{
 		private readonly IComputeEnvironment environment;
-		private readonly IPsmDofSeparator dofSeparator;
-		private readonly IMatrixManager matrixManagerBasic;
-		private readonly IPsmMatrixManager matrixManagerPsm;
+		private readonly PsmDofManager dofManager;
+		private readonly IDictionary<int, ISubdomainMatrixManager> matrixManagersBasic;
+		private readonly IDictionary<int, IPsmSubdomainMatrixManager> matrixManagersPsm;
 		private readonly IPsmRhsVectorManager rhsManager;
 
-		public PsmSolutionVectorManager(IComputeEnvironment environment, IPsmDofSeparator dofSeparator,
-			IMatrixManager matrixManagerBasic, IPsmMatrixManager matrixManagerPsm, IPsmRhsVectorManager rhsManager)
+		public PsmSolutionVectorManager(IComputeEnvironment environment, PsmDofManager dofManager,
+			IDictionary<int, ISubdomainMatrixManager> matrixManagersBasic, 
+			IDictionary<int, IPsmSubdomainMatrixManager> matrixManagersPsm, IPsmRhsVectorManager rhsManager)
 		{
 			this.environment = environment;
-			this.dofSeparator = dofSeparator;
-			this.matrixManagerBasic = matrixManagerBasic;
-			this.matrixManagerPsm = matrixManagerPsm;
+			this.dofManager = dofManager;
+			this.matrixManagersBasic = matrixManagersBasic;
+			this.matrixManagersPsm = matrixManagersPsm;
 			this.rhsManager = rhsManager;
 		}
 
@@ -35,7 +36,7 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.Vectors
 			Action<int> updateSubdomainSolution = subdomainID =>
 			{
 				Vector uf = CalcUf(subdomainID);
-				matrixManagerBasic.SetSolution(subdomainID, uf);
+				matrixManagersBasic[subdomainID].SetSolution(uf);
 			};
 			environment.DoPerNode(updateSubdomainSolution);
 		}
@@ -49,9 +50,9 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.Vectors
 		private Vector CalcUf(int subdomainID)
 		{
 			// Extract internal and boundary parts of rhs vector 
-			int numFreeDofs = dofSeparator.GetNumSubdomainFreeDofs(subdomainID);
-			int[] boundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID);
-			int[] internalDofs = dofSeparator.GetSubdomainDofsInternalToFree(subdomainID);
+			int numFreeDofs = dofManager.GetSubdomainDofs(subdomainID).NumFreeDofs;
+			int[] boundaryDofs = dofManager.GetSubdomainDofs(subdomainID).DofsBoundaryToFree;
+			int[] internalDofs = dofManager.GetSubdomainDofs(subdomainID).DofsInternalToFree;
 
 			//TODOMPI: These are no longer necessary with distributed vectors.
 			// ub[s] = Lb * ubGlob
@@ -60,10 +61,10 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.Vectors
 
 			// ui[s] = inv(Kii[s]) * (fi[s] - Kib[s] * ub[s])
 			Vector ub = InterfaceProblemSolution.LocalVectors[subdomainID];
-			Vector temp = matrixManagerPsm.MultiplyKib(subdomainID, ub);
+			Vector temp = matrixManagersPsm[subdomainID].MultiplyKib(ub);
 			Vector fi = rhsManager.GetInternalRhs(subdomainID);
 			temp.LinearCombinationIntoThis(-1.0, fi, +1);
-			Vector ui = matrixManagerPsm.MultiplyInverseKii(subdomainID, temp);
+			Vector ui = matrixManagersPsm[subdomainID].MultiplyInverseKii(temp);
 
 			// Gather ub[s], ui[s] into uf[s]
 			var uf = Vector.CreateZero(numFreeDofs);

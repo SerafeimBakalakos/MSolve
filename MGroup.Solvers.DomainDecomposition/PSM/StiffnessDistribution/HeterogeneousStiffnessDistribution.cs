@@ -11,7 +11,6 @@ using System.Collections.Concurrent;
 using MGroup.Environments;
 using MGroup.Solvers.DomainDecomposition.PSM.Dofs;
 using MGroup.Solvers.DomainDecomposition.StiffnessMatrices;
-using MGroup.Solvers.DomainDecomposition.Mappings;
 using MGroup.LinearAlgebra.Distributed.Overlapping;
 
 //TODO: If Jacobi preconditioning is used, then the most time consuming part of finding the relative stiffnesses 
@@ -22,19 +21,19 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution
 	{
 		private readonly IComputeEnvironment environment;
 		private readonly IStructuralModel model;
-		private readonly IPsmDofSeparator dofSeparator;
-		private readonly IMatrixManager matrixManagerBasic;
+		private readonly PsmDofManager dofManager;
+		private readonly IDictionary<int, ISubdomainMatrixManager> matrixManagers;
 		private readonly ConcurrentDictionary<int, double[]> relativeStiffnesses = new ConcurrentDictionary<int, double[]>();
 		//private readonly ConcurrentDictionary<int, IMappingMatrix> dofMappingBoundaryClusterToSubdomain = 
 		//new ConcurrentDictionary<int, IMappingMatrix>();
 
 		public HeterogeneousStiffnessDistribution(IComputeEnvironment environment, IStructuralModel model,
-			IPsmDofSeparator dofSeparator, IMatrixManager matrixManagerBasic)
+			PsmDofManager dofManager, IDictionary<int, ISubdomainMatrixManager> matrixManagers)
 		{
 			this.environment = environment;
 			this.model = model;
-			this.dofSeparator = dofSeparator;
-			this.matrixManagerBasic = matrixManagerBasic;
+			this.dofManager = dofManager;
+			this.matrixManagers = matrixManagers;
 		}
 
 		/// <summary>
@@ -47,7 +46,7 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution
 			Func<int, Vector> calcSubdomainDb = subdomainID =>
 			{
 				//ISubdomain subdomain = model.GetSubdomain(subdomainID);
-				IMatrixView Kff = matrixManagerBasic.GetLinearSystem(subdomainID).Matrix;
+				IMatrixView Kff = matrixManagers[subdomainID].LinearSystem.Matrix;
 
 				//TODO: This should be a polymorphic method in the LinearAlgebra project. Interface IDiagonalizable 
 				//		with methods: GetDiagonal() and GetSubdiagonal(int[] indices). Optimized versions for most storage
@@ -57,7 +56,7 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution
 				//TODO: It would be better to extract the diagonal from Kbb directly.
 				Vector Df = Kff.GetDiagonal(); 
 				
-				int[] boundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID);
+				int[] boundaryDofs = dofManager.GetSubdomainDofs(subdomainID).DofsBoundaryToFree;
 				Vector Db = Df.GetSubvector(boundaryDofs);
 				
 				return Db;
@@ -91,7 +90,7 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution
 			{
 				ISubdomain subdomain = model.GetSubdomain(subdomainID);
 				DofTable freeDofs = subdomain.FreeDofOrdering.FreeDofs;
-				DofTable boundaryDofs = dofSeparator.GetSubdomainDofOrderingBoundary(subdomainID);
+				DofTable boundaryDofs = dofManager.GetSubdomainDofs(subdomainID).DofOrderingBoundary;
 				double[] coefficients = relativeStiffnesses[subdomainID];
 
 				//TODO: I go through every node and ignore the ones that are not loaded. 
@@ -128,7 +127,7 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution
 
 		public void ScaleForceVector(int subdomainID, Vector subdomainForces)
 		{
-			int[] boundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID);
+			int[] boundaryDofs = dofManager.GetSubdomainDofs(subdomainID).DofsBoundaryToFree;
 			double[] coefficients = relativeStiffnesses[subdomainID];
 			for (int i = 0; i < boundaryDofs.Length; i++)
 			{

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 using MGroup.Solvers.LinearSystems;
 using MGroup.Environments;
@@ -15,18 +14,18 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.Vectors
 	{
 		private readonly IComputeEnvironment environment;
 		private readonly Dictionary<int, ILinearSystem> linearSystems;
-		private readonly IPsmDofSeparator dofSeparator;
-		private readonly IPsmMatrixManager matrixManager;
+		private readonly PsmDofManager dofManager;
+		private readonly IDictionary<int, IPsmSubdomainMatrixManager> matrixManagers;
 
 		private readonly ConcurrentDictionary<int, Vector> vectorsFi = new ConcurrentDictionary<int, Vector>();
 
-		public PsmRhsVectorManager(IComputeEnvironment environment, IPsmDofSeparator dofSeparator,
-			Dictionary<int, ILinearSystem> linearSystems, IPsmMatrixManager matrixManager)
+		public PsmRhsVectorManager(IComputeEnvironment environment, PsmDofManager dofManager,
+			Dictionary<int, ILinearSystem> linearSystems, IDictionary<int, IPsmSubdomainMatrixManager> matrixManagers)
 		{
 			this.environment = environment;
-			this.dofSeparator = dofSeparator;
+			this.dofManager = dofManager;
 			this.linearSystems = linearSystems;
-			this.matrixManager = matrixManager;
+			this.matrixManagers = matrixManagers;
 		}
 
 		public DistributedOverlappingVector InterfaceProblemRhs { get; private set; }
@@ -52,14 +51,14 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.Vectors
 		private Vector CalcCondensedRhsVector(int subdomainID)
 		{
 			// Extract boundary part of rhs vector 
-			int[] boundaryDofs = dofSeparator.GetSubdomainDofsBoundaryToFree(subdomainID);
+			int[] boundaryDofs = dofManager.GetSubdomainDofs(subdomainID).DofsBoundaryToFree;
 			Vector ff = (Vector)linearSystems[subdomainID].RhsVector;
 			Vector fb = ff.GetSubvector(boundaryDofs);
 
 			// Static condensation: fbCondensed[s] = fb[s] - Kbi[s] * inv(Kii[s]) * fi[s]
 			Vector fi = vectorsFi[subdomainID];
-			Vector temp = matrixManager.MultiplyInverseKii(subdomainID, fi);
-			temp = matrixManager.MultiplyKbi(subdomainID, temp);
+			Vector temp = matrixManagers[subdomainID].MultiplyInverseKii(fi);
+			temp = matrixManagers[subdomainID].MultiplyKbi(temp);
 			fb.SubtractIntoThis(temp);
 
 			return fb;
@@ -67,7 +66,7 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.Vectors
 
 		private void ExtractInternalRhsVector(int subdomainID)
 		{
-			int[] internalDofs = dofSeparator.GetSubdomainDofsInternalToFree(subdomainID);
+			int[] internalDofs = dofManager.GetSubdomainDofs(subdomainID).DofsInternalToFree;
 			Vector ff = (Vector)linearSystems[subdomainID].RhsVector;
 			Vector fi = ff.GetSubvector(internalDofs);
 			vectorsFi[subdomainID] = fi;

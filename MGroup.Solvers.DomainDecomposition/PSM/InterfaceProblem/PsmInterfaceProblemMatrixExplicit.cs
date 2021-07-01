@@ -18,14 +18,15 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.InterfaceProblem
 	public class PsmInterfaceProblemMatrixExplicit : IPsmInterfaceProblemMatrix
 	{
 		private readonly IComputeEnvironment environment;
-		private readonly IPsmMatrixManager matrixManager;
+		private readonly IDictionary<int, IPsmSubdomainMatrixManager> matrixManagers;
 		private readonly ConcurrentDictionary<int, IMatrixView> schurComplementsPerSubdomain 
 			= new ConcurrentDictionary<int, IMatrixView>();
 
-		public PsmInterfaceProblemMatrixExplicit(IComputeEnvironment environment, IPsmMatrixManager matrixManager)
+		public PsmInterfaceProblemMatrixExplicit(IComputeEnvironment environment, 
+			IDictionary<int, IPsmSubdomainMatrixManager> matrixManagers)
 		{
 			this.environment = environment;
-			this.matrixManager = matrixManager;
+			this.matrixManagers = matrixManagers;
 		}
 
 		public DistributedOverlappingMatrix Matrix { get; private set; }
@@ -36,7 +37,7 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.InterfaceProblem
 			schurComplementsPerSubdomain.Clear();
 			Action<int> calcSchurComplement = subdomainID =>
 			{
-				IMatrixView Sbb = matrixManager.CalcSchurComplement(subdomainID);
+				IMatrixView Sbb = matrixManagers[subdomainID].CalcSchurComplement();
 				schurComplementsPerSubdomain[subdomainID] = Sbb;
 			};
 			environment.DoPerNode(calcSchurComplement);
