@@ -32,13 +32,16 @@ namespace MGroup.Solvers.DomainDecomposition.Psm
 		protected readonly IComputeEnvironment environment;
 		protected readonly IPsmInterfaceProblemMatrix interfaceProblemMatrix;
 		protected readonly IDistributedIterativeMethod interfaceProblemSolver;
+		protected readonly PsmInterfaceProblemVectors interfaceProblemVectors;
 		protected readonly ConcurrentDictionary<int, ISubdomainMatrixManager> matrixManagersBasic;
 		protected readonly ConcurrentDictionary<int, IPsmSubdomainMatrixManager> matrixManagersPsm;
 		protected readonly IStructuralModel model;
 		protected readonly string name;
 		protected readonly IPsmPreconditioner preconditioner;
-		protected readonly IPsmRhsVectorManager rhsVectorManager;
-		protected readonly IPsmSolutionVectorManager solutionVectorManager;
+
+		protected readonly Dictionary<int, PsmSubdomainVectors> subdomainVectors;
+		//protected readonly IPsmRhsVectorManager rhsVectorManager;
+		//protected readonly IPsmSolutionVectorManager solutionVectorManager;
 		protected readonly IStiffnessDistribution stiffnessDistribution;
 		protected readonly SubdomainTopology subdomainTopology;
 
@@ -91,13 +94,14 @@ namespace MGroup.Solvers.DomainDecomposition.Psm
 					environment, model, dofManagerPsm, matrixManagersBasic);
 			}
 
-			Dictionary<int, ILinearSystem> linearSystems = environment.CreateDictionaryPerNode(
+			LinearSystems = environment.CreateDictionaryPerNode(
 				subdomainID => matrixManagersBasic[subdomainID].LinearSystem);
-			LinearSystems = linearSystems;
 
-			this.rhsVectorManager = new PsmRhsVectorManager(environment, dofManagerPsm, linearSystems, matrixManagersPsm);
-			this.solutionVectorManager = new PsmSolutionVectorManager(environment, dofManagerPsm,
-				matrixManagersBasic, matrixManagersPsm, rhsVectorManager);
+			this.subdomainVectors = environment.CreateDictionaryPerNode(subdomainID => new PsmSubdomainVectors(
+					dofManagerPsm.GetSubdomainDofs(subdomainID), LinearSystems[subdomainID], 
+					matrixManagersBasic[subdomainID], matrixManagersPsm[subdomainID]));
+
+			this.interfaceProblemVectors = new PsmInterfaceProblemVectors(environment, subdomainVectors);
 
 			Logger = new SolverLogger(name);
 		}
@@ -179,11 +183,14 @@ namespace MGroup.Solvers.DomainDecomposition.Psm
 			Action<int> calcSubdomainMatrices = subdomainID =>
 			{
 				//TODO: This should only happen if the connectivity of the subdomain changes. 
-				environment.DoPerNode(subdomainID => matrixManagersPsm[subdomainID].ReorderInternalDofs());
+				matrixManagersPsm[subdomainID].ReorderInternalDofs();
 
 				//TODO: These should happen if the connectivity or stiffness of the subdomain changes
 				matrixManagersPsm[subdomainID].ExtractKiiKbbKib();
 				matrixManagersPsm[subdomainID].InvertKii();
+
+				subdomainVectors[subdomainID].Clear();
+				subdomainVectors[subdomainID].ExtractInternalRhsVector();
 			};
 			environment.DoPerNode(calcSubdomainMatrices);
 
@@ -191,26 +198,30 @@ namespace MGroup.Solvers.DomainDecomposition.Psm
 			preconditioner.Calculate(environment, indexer, interfaceProblemMatrix);
 
 			SolveInterfaceProblem();
+
+			environment.DoPerNode(subdomainID =>
+			{
+				Vector subdomainBoundarySolution = interfaceProblemVectors.InterfaceProblemSolution.LocalVectors[subdomainID];
+				subdomainVectors[subdomainID].CalcSubdomainFreeSolution(subdomainBoundarySolution);
+			});
+
+			Logger.IncrementAnalysisStep();
 		}
 
 		protected void SolveInterfaceProblem()
 		{
-			rhsVectorManager.Clear();
-			rhsVectorManager.CalcRhsVectors(indexer);
-
+			interfaceProblemVectors.Clear();
+			interfaceProblemVectors.CalcInterfaceRhsVector(indexer);
 			bool initalGuessIsZero = !StartIterativeSolverFromPreviousSolution;
 			if (!StartIterativeSolverFromPreviousSolution)
 			{
-				solutionVectorManager.Initialize(indexer);
+				interfaceProblemVectors.InterfaceProblemSolution = new DistributedOverlappingVector(environment, indexer);
 			}
 			IterativeStatistics stats = interfaceProblemSolver.Solve(
-				interfaceProblemMatrix.Matrix, preconditioner.Preconditioner, rhsVectorManager.InterfaceProblemRhs, 
-				solutionVectorManager.InterfaceProblemSolution, initalGuessIsZero);
+				interfaceProblemMatrix.Matrix, preconditioner.Preconditioner, interfaceProblemVectors.InterfaceProblemRhs,
+				interfaceProblemVectors.InterfaceProblemSolution, initalGuessIsZero);
 			Logger.LogIterativeAlgorithm(stats.NumIterationsRequired, stats.ResidualNormRatioEstimation);
 			Debug.WriteLine("Iterations for boundary problem = " + stats.NumIterationsRequired);
-
-			solutionVectorManager.CalcSubdomainDisplacements();
-			Logger.IncrementAnalysisStep();
 		}
 
 		public class Builder
