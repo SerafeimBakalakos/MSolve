@@ -12,9 +12,9 @@ using MGroup.Solvers.DomainDecomposition.PSM.Dofs;
 using MGroup.Solvers.DomainDecomposition.Mappings;
 using MGroup.LinearAlgebra.Distributed.Overlapping;
 
-namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution
+namespace MGroup.Solvers.DomainDecomposition.PSM.Scaling
 {
-	public class HomogeneousStiffnessDistribution : IStiffnessDistribution
+	public class HomogeneousScaling : IBoundaryDofScaling
 	{
 		private readonly IComputeEnvironment environment;
 		private readonly IStructuralModel model;
@@ -23,7 +23,7 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution
 		//private readonly ConcurrentDictionary<int, IMappingMatrix> dofMappingBoundaryClusterToSubdomain = 
 		//	new ConcurrentDictionary<int, IMappingMatrix>();
 
-		public HomogeneousStiffnessDistribution(IComputeEnvironment environment, IStructuralModel model,
+		public HomogeneousScaling(IComputeEnvironment environment, IStructuralModel model,
 			PsmDofManager dofManager)
 		{
 			this.environment = environment;

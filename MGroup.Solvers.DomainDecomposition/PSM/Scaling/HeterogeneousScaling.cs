@@ -15,9 +15,9 @@ using MGroup.LinearAlgebra.Distributed.Overlapping;
 
 //TODO: If Jacobi preconditioning is used, then the most time consuming part of finding the relative stiffnesses 
 //		(distributedVector.SumOverlappingEntries()) is done there too. The two objects should synchronize to only do that once. 
-namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution
+namespace MGroup.Solvers.DomainDecomposition.PSM.Scaling
 {
-	public class HeterogeneousStiffnessDistribution : IStiffnessDistribution
+	public class HeterogeneousScaling : IBoundaryDofScaling
 	{
 		private readonly IComputeEnvironment environment;
 		private readonly IStructuralModel model;
@@ -27,7 +27,7 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution
 		//private readonly ConcurrentDictionary<int, IMappingMatrix> dofMappingBoundaryClusterToSubdomain = 
 		//new ConcurrentDictionary<int, IMappingMatrix>();
 
-		public HeterogeneousStiffnessDistribution(IComputeEnvironment environment, IStructuralModel model,
+		public HeterogeneousScaling(IComputeEnvironment environment, IStructuralModel model,
 			PsmDofManager dofManager, IDictionary<int, ISubdomainMatrixManager> matrixManagers)
 		{
 			this.environment = environment;

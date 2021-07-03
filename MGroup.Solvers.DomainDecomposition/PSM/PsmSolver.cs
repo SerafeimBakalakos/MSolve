@@ -15,7 +15,7 @@ using MGroup.LinearAlgebra.Distributed.Overlapping;
 using MGroup.Solvers.DomainDecomposition.PSM.Dofs;
 using MGroup.Solvers.DomainDecomposition.PSM.InterfaceProblem;
 using MGroup.Solvers.DomainDecomposition.PSM.Preconditioning;
-using MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution;
+using MGroup.Solvers.DomainDecomposition.PSM.Scaling;
 using MGroup.Solvers.DomainDecomposition.PSM.StiffnessMatrices;
 using MGroup.Solvers.DomainDecomposition.PSM.Vectors;
 using MGroup.Solvers.DomainDecomposition.StiffnessMatrices;
@@ -42,7 +42,7 @@ namespace MGroup.Solvers.DomainDecomposition.Psm
 		protected readonly Dictionary<int, PsmSubdomainVectors> subdomainVectors;
 		//protected readonly IPsmRhsVectorManager rhsVectorManager;
 		//protected readonly IPsmSolutionVectorManager solutionVectorManager;
-		protected readonly IStiffnessDistribution stiffnessDistribution;
+		protected readonly IBoundaryDofScaling stiffnessDistribution;
 		protected readonly SubdomainTopology subdomainTopology;
 
 		private DistributedOverlappingIndexer indexer; //TODOMPI: Perhaps this should be accessed from DofSeparator
@@ -86,11 +86,11 @@ namespace MGroup.Solvers.DomainDecomposition.Psm
 
 			if (isHomogeneous)
 			{
-				this.stiffnessDistribution = new HomogeneousStiffnessDistribution(environment, model, dofManagerPsm);
+				this.stiffnessDistribution = new HomogeneousScaling(environment, model, dofManagerPsm);
 			}
 			else
 			{
-				this.stiffnessDistribution = new HeterogeneousStiffnessDistribution(
+				this.stiffnessDistribution = new HeterogeneousScaling(
 					environment, model, dofManagerPsm, matrixManagersBasic);
 			}
 

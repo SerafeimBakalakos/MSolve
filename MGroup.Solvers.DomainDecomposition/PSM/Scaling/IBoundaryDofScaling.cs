@@ -8,9 +8,9 @@ using ISAAR.MSolve.Discretization.FreedomDegrees;
 using MGroup.Solvers.DomainDecomposition.Mappings;
 using MGroup.LinearAlgebra.Distributed.Overlapping;
 
-namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution
+namespace MGroup.Solvers.DomainDecomposition.PSM.Scaling
 {
-	public interface IStiffnessDistribution
+	public interface IBoundaryDofScaling
 	{
 		void CalcSubdomainScaling(DistributedOverlappingIndexer indexer);
 
@@ -22,8 +22,6 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.StiffnessDistribution
 
 		Dictionary<int, SparseVector> DistributeNodalLoads(Table<INode, IDofType, double> nodalLoads);
 
-		//TODOMPI: remove this. It is only needed to convert global force vectors to subdomain force vectors. 
-		//		In the current design global vectors are to be avoided.
 		void ScaleForceVector(int subdomainID, Vector subdomainForces); 
 	}
 }

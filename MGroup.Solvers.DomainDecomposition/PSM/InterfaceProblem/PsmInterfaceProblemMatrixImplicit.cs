@@ -76,13 +76,6 @@ namespace MGroup.Solvers.DomainDecomposition.PSM.InterfaceProblem
 		/// <param name="input">The displacements that correspond to boundary dofs of this subdomain.</param>
 		/// <param name="output">The forces that correspond to boundary dofs of this subdomain.</param>
 		private void MultiplySubdomainSchurComplement(int subdomainID, Vector input, Vector output)
-		{
-			Vector forces = matrixManagers[subdomainID].MultiplyKbb(input);
-			Vector temp = matrixManagers[subdomainID].MultiplyKib(input);
-			temp = matrixManagers[subdomainID].MultiplyInverseKii(temp);
-			temp = matrixManagers[subdomainID].MultiplyKbi(temp);
-			forces.SubtractIntoThis(temp);
-			output.CopyFrom(forces);
-		}
+			=> matrixManagers[subdomainID].MultiplySchurComplementImplicitly(input, output);
 	}
 }
