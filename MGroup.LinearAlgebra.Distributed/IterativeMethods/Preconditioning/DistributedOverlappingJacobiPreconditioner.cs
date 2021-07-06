@@ -68,6 +68,9 @@ namespace MGroup.LinearAlgebra.Distributed.IterativeMethods.Preconditioning
                 localY.MultiplyEntrywiseIntoThis(localDiagonal);
             };
             environment.DoPerNode(multiplyLocal);
+
+            //TODOMPI: do we need to call output.SumOverlappingEntries() here? Is this need covered by the fact that 
+            //      LocalInverseDiagonals already have the total stiffnesses?
         }
     }
 }
