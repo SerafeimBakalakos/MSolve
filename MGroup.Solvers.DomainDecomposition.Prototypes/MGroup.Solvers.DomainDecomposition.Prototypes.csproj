@@ -1,13 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="FetiDP\" />
     <Folder Include="PFetiDP\" />
-    <Folder Include="PSM\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ISAAR.MSolve.Discretization\ISAAR.MSolve.Discretization.csproj" />
+    <ProjectReference Include="..\ISAAR.MSolve.Solvers\ISAAR.MSolve.Solvers.csproj" />
+    <ProjectReference Include="..\MGroup.Solvers\MGroup.Solvers.csproj" />
   </ItemGroup>
 
 </Project>
