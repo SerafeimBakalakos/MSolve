@@ -1,13 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Iterative;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
+using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
 {
-    public class ExpandedBlockDiagonalMatrix
+    public class ExpandedBlockDiagonalMatrix : IVectorMultipliable
     {
         public SortedDictionary<int, Matrix> SubdomainMatrices = new SortedDictionary<int, Matrix>();
+
+        public int NumColumns
+        {
+            get
+            {
+                int numColsTotal = 0;
+                foreach (int s in SubdomainMatrices.Keys)
+                {
+                    numColsTotal += SubdomainMatrices[s].NumColumns;
+                }
+                return numColsTotal;
+            }
+        }
+
+        public int NumRows
+        {
+            get
+            {
+                int numRowsTotal = 0;
+                foreach (int s in SubdomainMatrices.Keys)
+                {
+                    numRowsTotal += SubdomainMatrices[s].NumRows;
+                }
+                return numRowsTotal;
+            }
+        }
 
         public static ExpandedVector operator *(ExpandedBlockDiagonalMatrix matrix, ExpandedVector vector)
         {
@@ -29,17 +57,9 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
             return result;
         }
 
-        public Matrix ToFullMatrix()
+        public Matrix CopyToFullMatrix()
         {
-            int numRowsTotal = 0;
-            int numColsTotal = 0;
-            foreach (int s in SubdomainMatrices.Keys)
-            {
-                numRowsTotal += SubdomainMatrices[s].NumRows;
-                numColsTotal += SubdomainMatrices[s].NumColumns;
-            }
-
-            var result = Matrix.CreateZero(numRowsTotal, numColsTotal);
+            var result = Matrix.CreateZero(NumRows, NumColumns);
             int rowStart = 0;
             int colStart = 0;
             foreach (int s in SubdomainMatrices.Keys)
@@ -51,6 +71,20 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
 
             return result;
         }
+
+        public void Multiply(IVectorView lhsVector, IVector rhsVector)
+        {
+            var input = (ExpandedVector)lhsVector;
+            var output = (ExpandedVector)rhsVector;
+            output.Clear();
+            foreach (int s in this.SubdomainMatrices.Keys)
+            {
+                output.SubdomainVectors[s] = this.SubdomainMatrices[s] * input.SubdomainVectors[s];
+            }
+        }
+
+        public IVector Multiply(IVectorView lhsVector) => this * (ExpandedVector)lhsVector;
+
 
         public ExpandedBlockDiagonalMatrix Transpose()
         {

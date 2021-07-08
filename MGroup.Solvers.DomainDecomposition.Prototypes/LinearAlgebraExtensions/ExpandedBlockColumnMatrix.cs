@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ISAAR.MSolve.LinearAlgebra.Iterative;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
 {
-    public class ExpandedBlockColumnMatrix
+    public class ExpandedBlockColumnMatrix : IVectorMultipliable
     {
         public ExpandedBlockColumnMatrix(int numColumns)
         {
@@ -16,6 +17,19 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
         public SortedDictionary<int, Matrix> SubdomainMatrices = new SortedDictionary<int, Matrix>();
 
         public int NumColumns { get; }
+
+        public int NumRows
+        {
+            get
+            {
+                int numRowsTotal = 0;
+                foreach (int s in SubdomainMatrices.Keys)
+                {
+                    numRowsTotal += SubdomainMatrices[s].NumRows;
+                }
+                return numRowsTotal;
+            }
+        }
 
         public static ExpandedVector operator *(ExpandedBlockColumnMatrix matrix, Vector vector)
         {
@@ -27,15 +41,9 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
             return result;
         }
 
-        public Matrix ToFullMatrix()
+        public Matrix CopyToFullMatrix()
         {
-            int numRowsTotal = 0;
-            foreach (int s in SubdomainMatrices.Keys)
-            {
-                numRowsTotal += SubdomainMatrices[s].NumRows;
-            }
-
-            var result = Matrix.CreateZero(numRowsTotal, NumColumns);
+            var result = Matrix.CreateZero(NumRows, NumColumns);
             int rowStart = 0;
             foreach (int s in SubdomainMatrices.Keys)
             {
@@ -45,6 +53,19 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
 
             return result;
         }
+
+        public void Multiply(IVectorView lhsVector, IVector rhsVector)
+        {
+            var input = (Vector)lhsVector;
+            var output = (ExpandedVector)rhsVector;
+            output.Clear();
+            foreach (int s in this.SubdomainMatrices.Keys)
+            {
+                output.SubdomainVectors[s] = this.SubdomainMatrices[s] * input;
+            }
+        }
+
+        public IVector Multiply(IVectorView lhsVector) => this * (Vector)lhsVector;
 
         public ExpandedBlockRowMatrix Transpose()
         {
