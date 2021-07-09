@@ -11,7 +11,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes
 {
     public class PsmDofs
     {
-        private readonly IStructuralModel model;
+        protected readonly IStructuralModel model;
 
         public PsmDofs(IStructuralModel model)
         {
@@ -35,8 +35,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes
 
 		public Dictionary<int, Matrix> SubdomainMatricesLb { get; } = new Dictionary<int, Matrix>();
 
-
-		public void FindDofs()
+		public virtual void FindDofs()
         {
 			foreach (ISubdomain subdomain in model.Subdomains)
 			{
@@ -57,23 +56,32 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes
 			}
 		}
 
-		private void FindGlobalBoundaryDofs()
+		protected void FindGlobalBoundaryDofs()
 		{
 			var globalBoundaryDofs = new SortedDofTable();
 			int numBoundaryDofs = 0;
-			foreach (ISubdomain subdomain in model.Subdomains) // Not worth the parallelization difficulty
+			foreach (ISubdomain subdomain in model.Subdomains)
 			{
-				foreach ((INode node, IDofType dof, int idx) in subdomain.FreeDofOrdering.FreeDofs)
+				foreach ((INode node, IDofType dof, int idx) in SubdomainDofOrderingBoundary[subdomain.ID])
 				{
-					if (node.SubdomainsDictionary.Count > 1)
+					bool didNotExist = globalBoundaryDofs.TryAdd(node.ID, AllDofs.GetIdOfDof(dof), numBoundaryDofs);
+					if (didNotExist)
 					{
-						bool didNotExist = globalBoundaryDofs.TryAdd(node.ID, AllDofs.GetIdOfDof(dof), numBoundaryDofs);
-						if (didNotExist)
-						{
-							numBoundaryDofs++;
-						}
+						numBoundaryDofs++;
 					}
 				}
+
+				//foreach ((INode node, IDofType dof, int idx) in subdomain.FreeDofOrdering.FreeDofs)
+				//{
+				//	if (node.SubdomainsDictionary.Count > 1)
+				//	{
+				//		bool didNotExist = globalBoundaryDofs.TryAdd(node.ID, AllDofs.GetIdOfDof(dof), numBoundaryDofs);
+				//		if (didNotExist)
+				//		{
+				//			numBoundaryDofs++;
+				//		}
+				//	}
+				//}
 			}
 
 			var boundaryDofOrdering = new DofTable();

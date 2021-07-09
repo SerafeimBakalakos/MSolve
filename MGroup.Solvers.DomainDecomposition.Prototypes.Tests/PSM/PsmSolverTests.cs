@@ -47,8 +47,15 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.Tests.PSM
                 Utilities.AssertEqual(expectedResults, computedResults, tolerance);
             }
 
-            Debug.WriteLine($"Num PCG iterations = {solver.PcgStats.NumIterationsRequired}," +
-                $" final residual norm ratio = {solver.PcgStats.ResidualNormRatioEstimation}");
+            //Debug.WriteLine($"Num PCG iterations = {solver.PcgStats.NumIterationsRequired}," +
+            //    $" final residual norm ratio = {solver.PcgStats.ResidualNormRatioEstimation}");
+
+            // Check convergence
+            int precision = 10;
+            int pcgIterationsExpected = 160;
+            double pcgResidualNormRatioExpected = 7.487370033127084E-11;
+            Assert.Equal(pcgIterationsExpected, solver.PcgStats.NumIterationsRequired);
+            Assert.Equal(pcgResidualNormRatioExpected, solver.PcgStats.ResidualNormRatioEstimation, precision);
         }
 
         [Fact]
@@ -80,8 +87,15 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.Tests.PSM
                 Utilities.AssertEqual(expectedResults, computedResults, tolerance);
             }
 
-            Debug.WriteLine($"Num PCG iterations = {solver.PcgStats.NumIterationsRequired}," +
-                $" final residual norm ratio = {solver.PcgStats.ResidualNormRatioEstimation}");
+            //Debug.WriteLine($"Num PCG iterations = {solver.PcgStats.NumIterationsRequired}," +
+            //    $" final residual norm ratio = {solver.PcgStats.ResidualNormRatioEstimation}");
+
+            // Check convergence
+            int precision = 10;
+            int pcgIterationsExpected = 7;
+            double pcgResidualNormRatioExpected = 0;
+            Assert.Equal(pcgIterationsExpected, solver.PcgStats.NumIterationsRequired);
+            Assert.Equal(pcgResidualNormRatioExpected, solver.PcgStats.ResidualNormRatioEstimation, precision);
         }
 
         [Fact]
@@ -113,8 +127,15 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.Tests.PSM
                 Utilities.AssertEqual(expectedResults, computedResults, tolerance);
             }
 
-            Debug.WriteLine($"Num PCG iterations = {solver.PcgStats.NumIterationsRequired}," +
-                $" final residual norm ratio = {solver.PcgStats.ResidualNormRatioEstimation}");
+            //Debug.WriteLine($"Num PCG iterations = {solver.PcgStats.NumIterationsRequired}," +
+            //    $" final residual norm ratio = {solver.PcgStats.ResidualNormRatioEstimation}");
+
+            // Check convergence
+            int precision = 10;
+            int pcgIterationsExpected = 63;
+            double pcgResidualNormRatioExpected = 4.859075883397028E-11;
+            Assert.Equal(pcgIterationsExpected, solver.PcgStats.NumIterationsRequired);
+            Assert.Equal(pcgResidualNormRatioExpected, solver.PcgStats.ResidualNormRatioEstimation, precision);
         }
     }
 }

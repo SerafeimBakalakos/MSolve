@@ -1,28 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Reduction;
 using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
 {
-    public class ExpandedVector : IVector
+    public class BlockVector : IVector
     {
-        public SortedDictionary<int, Vector> SubdomainVectors = new SortedDictionary<int, Vector>();
+        private readonly Dictionary<int, int> lengthPerBlock;
+        private readonly int numBlocks;
+
+        public BlockVector(IDictionary<int, int> lengthPerBlock)
+        {
+            if (!Utilities.AreIndices(lengthPerBlock.Keys))
+            {
+                throw new ArgumentException(
+                    "The keys of the provided dictionary must be indices, namely be unique and belong to [0, count)");
+            }
+
+
+            this.lengthPerBlock = new Dictionary<int, int>();
+            foreach (var blockIdxLengthPair in lengthPerBlock)
+            {
+                int blockIdx = blockIdxLengthPair.Key;
+                int blockLength = blockIdxLengthPair.Value;
+                ++this.numBlocks;
+                this.lengthPerBlock[blockIdx] = blockLength;
+                this.Length += blockLength;
+
+            }
+            this.Blocks = new Vector[numBlocks];
+        }
 
         public double this[int index] => throw new NotImplementedException();
 
-        public int Length
+        public Vector[] Blocks { get; }
+
+        public int Length { get; }
+
+        public void AddBlock(int blockIdx, Vector block)
         {
-            get
-            {
-                int totalLength = 0;
-                foreach (int s in SubdomainVectors.Keys)
-                {
-                    totalLength += SubdomainVectors[s].Length;
-                }
-                return totalLength;
-            }
+            Blocks[blockIdx] = block;
         }
 
         public void AddIntoThisNonContiguouslyFrom(int[] thisIndices, IVectorView otherVector, int[] otherIndices)
@@ -44,10 +64,10 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
 
         public void AxpyIntoThis(IVectorView otherVector, double otherCoefficient)
         {
-            var otherCasted = (ExpandedVector)otherVector;
-            foreach (int s in this.SubdomainVectors.Keys)
+            var otherCasted = (BlockVector)otherVector;
+            for (int b = 0; b < this.Blocks.Length; ++b)
             {
-                this.SubdomainVectors[s].AxpyIntoThis(otherCasted.SubdomainVectors[s], otherCoefficient);
+                this.Blocks[b].AxpyIntoThis(otherCasted.Blocks[b], otherCoefficient);
             }
         }
 
@@ -58,28 +78,28 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
 
         public void Clear()
         {
-            foreach (int s in this.SubdomainVectors.Keys)
+            for (int b = 0; b < this.Blocks.Length; ++b)
             {
-                SubdomainVectors[s].Clear();
+                Blocks[b].Clear();
             }
         }
 
         public IVector Copy(bool copyIndexingData = false)
         {
-            var result = new ExpandedVector();
-            foreach (int s in this.SubdomainVectors.Keys)
+            var result = new BlockVector(this.lengthPerBlock);
+            for (int b = 0; b < this.Blocks.Length; ++b)
             {
-                result.SubdomainVectors[s] = this.SubdomainVectors[s].Copy();
+                result.Blocks[b] = this.Blocks[b].Copy();
             }
             return result;
         }
 
         public void CopyFrom(IVectorView sourceVector)
         {
-            var otherCasted = (ExpandedVector)sourceVector;
-            foreach (int s in this.SubdomainVectors.Keys)
+            var otherCasted = (BlockVector)sourceVector;
+            for (int b = 0; b < this.Blocks.Length; ++b)
             {
-                this.SubdomainVectors[s].CopyFrom(otherCasted.SubdomainVectors[s]);
+                this.Blocks[b].CopyFrom(otherCasted.Blocks[b]);
             }
         }
 
@@ -102,18 +122,12 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
 
         public Vector CopyToFullVector()
         {
-            int totalLength = 0;
-            foreach (int s in SubdomainVectors.Keys)
-            {
-                totalLength += SubdomainVectors[s].Length;
-            }
-
             var result = Vector.CreateZero(this.Length);
             int start = 0;
-            foreach (int s in SubdomainVectors.Keys)
+            for (int b = 0; b < this.Blocks.Length; ++b)
             {
-                result.CopySubvectorFrom(start, SubdomainVectors[s], 0, SubdomainVectors[s].Length);
-                start += SubdomainVectors[s].Length;
+                result.CopySubvectorFrom(start, Blocks[b], 0, Blocks[b].Length);
+                start += Blocks[b].Length;
             }
 
             return result;
@@ -163,10 +177,10 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
 
         public void LinearCombinationIntoThis(double thisCoefficient, IVectorView otherVector, double otherCoefficient)
         {
-            var otherCasted = (ExpandedVector)otherVector;
-            foreach (int s in this.SubdomainVectors.Keys)
+            var otherCasted = (BlockVector)otherVector;
+            for (int b = 0; b < this.Blocks.Length; ++b)
             {
-                this.SubdomainVectors[s].LinearCombinationIntoThis(thisCoefficient, otherCasted.SubdomainVectors[s], otherCoefficient);
+                this.Blocks[b].LinearCombinationIntoThis(thisCoefficient, otherCasted.Blocks[b], otherCoefficient);
             }
         }
 
@@ -189,9 +203,9 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
 
         public void ScaleIntoThis(double scalar)
         {
-            foreach (int s in this.SubdomainVectors.Keys)
+            for (int b = 0; b < this.Blocks.Length; ++b)
             {
-                this.SubdomainVectors[s].ScaleIntoThis(scalar);
+                this.Blocks[b].ScaleIntoThis(scalar);
             }
         }
 
@@ -199,7 +213,5 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
         {
             throw new NotImplementedException();
         }
-
-        
     }
 }

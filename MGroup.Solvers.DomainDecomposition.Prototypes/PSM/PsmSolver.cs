@@ -115,9 +115,9 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 
         public virtual void Solve()
         {
-            ExpandedBlockColumnMatrix Lbe = PrepareDofs();
-            ExpandedBlockDiagonalMatrix Sbbe = PrepareMatrices();
-            ExpandedVector FbeCondensed = PrepareRhsVectors();
+            BlockMatrix Lbe = PrepareDofs();
+            BlockMatrix Sbbe = PrepareMatrices();
+            BlockVector FbeCondensed = PrepareRhsVectors();
 
             // Interface problem
             Matrix fullLbe = Lbe.CopyToFullMatrix();
@@ -138,38 +138,38 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
             FindFreeDisplacements(interfaceSolution);
         }
 
-        protected virtual ExpandedBlockColumnMatrix PrepareDofs()
+        protected virtual BlockMatrix PrepareDofs()
         {
             dofs.FindDofs();
-            var Lbe = new ExpandedBlockColumnMatrix(dofs.NumGlobalDofsBoundary);
+            var Lbe = BlockMatrix.CreateCol(dofs.NumSubdomainDofsBoundary, dofs.NumGlobalDofsBoundary);
             foreach (ISubdomain subdomain in model.Subdomains)
             {
                 int s = subdomain.ID;
-                Lbe.SubdomainMatrices[s] = dofs.SubdomainMatricesLb[s];
+                Lbe.AddBlock(s, 0, dofs.SubdomainMatricesLb[s]);
             }
             return Lbe;
         }
 
-        protected virtual ExpandedBlockDiagonalMatrix PrepareMatrices()
+        protected virtual BlockMatrix PrepareMatrices()
         {
-            var Sbbe = new ExpandedBlockDiagonalMatrix();
+            var Sbbe = BlockMatrix.Create(dofs.NumSubdomainDofsBoundary, dofs.NumSubdomainDofsBoundary);
             foreach (ISubdomain subdomain in model.Subdomains)
             {
                 int s = subdomain.ID;
                 stiffnesses.CalcSchurComplements(s, InternalLinearSystems[s].Matrix);
-                Sbbe.SubdomainMatrices[s] = stiffnesses.Sbb[s];
+                Sbbe.AddBlock(s, s, stiffnesses.Sbb[s]);
             }
             return Sbbe;
         }
 
-        protected virtual ExpandedVector PrepareRhsVectors()
+        protected virtual BlockVector PrepareRhsVectors()
         {
-            var FbeCondensed = new ExpandedVector();
+            var FbeCondensed = new BlockVector(dofs.NumSubdomainDofsBoundary);
             foreach (ISubdomain subdomain in model.Subdomains)
             {
                 int s = subdomain.ID;
                 vectors.CalcSubdomainForces(s, InternalLinearSystems[s].RhsConcrete);
-                FbeCondensed.SubdomainVectors[s] = vectors.FbCondensed[s];
+                FbeCondensed.AddBlock(s, vectors.FbCondensed[s]);
             }
             return FbeCondensed;
         }
