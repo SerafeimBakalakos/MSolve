@@ -6,11 +6,11 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
 {
-    public class ChainVectorMultiplieable : IVectorMultipliable
+    public class ChainVectorMultipliable : IVectorMultipliable
     {
         private readonly IVectorMultipliable[] matrices;
 
-        public ChainVectorMultiplieable(params IVectorMultipliable[] individualMatrices)
+        public ChainVectorMultipliable(params IVectorMultipliable[] individualMatrices)
         {
             this.matrices = individualMatrices;
         }

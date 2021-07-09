@@ -59,7 +59,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.Tests.PSM
         }
 
         [Fact]
-        public static void TestForLine1DInternal()
+        public static void TestForLine1D()
         {
             // Model
             IStructuralModel model = Line1DExample.CreateMultiSubdomainModel();
@@ -99,7 +99,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.Tests.PSM
         }
 
         [Fact]
-        public static void TestForPlane2DInternal()
+        public static void TestForPlane2D()
         {
             // Model
             IStructuralModel model = Plane2DExample.CreateMultiSubdomainModel();

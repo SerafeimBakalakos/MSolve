@@ -174,7 +174,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
             return FbeCondensed;
         }
 
-        protected virtual void FindFreeDisplacements(Vector globalBoundaryDisplacements)
+        private void FindFreeDisplacements(Vector globalBoundaryDisplacements)
         {
             foreach (ISubdomain subdomain in model.Subdomains)
             {

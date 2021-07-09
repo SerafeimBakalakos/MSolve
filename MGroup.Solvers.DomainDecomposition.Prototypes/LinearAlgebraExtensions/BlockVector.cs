@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ISAAR.MSolve.LinearAlgebra.Reduction;
@@ -31,6 +32,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
                 this.Length += blockLength;
 
             }
+
             this.Blocks = new Vector[numBlocks];
         }
 
@@ -39,6 +41,8 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
         public Vector[] Blocks { get; }
 
         public int Length { get; }
+
+        public int[][] Multiplicities { get; set; }
 
         public void AddBlock(int blockIdx, Vector block)
         {
@@ -87,6 +91,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
         public IVector Copy(bool copyIndexingData = false)
         {
             var result = new BlockVector(this.lengthPerBlock);
+            result.Multiplicities = this.Multiplicities;
             for (int b = 0; b < this.Blocks.Length; ++b)
             {
                 result.Blocks[b] = this.Blocks[b].Copy();
@@ -97,6 +102,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
         public void CopyFrom(IVectorView sourceVector)
         {
             var otherCasted = (BlockVector)sourceVector;
+            this.Multiplicities = otherCasted.Multiplicities;
             for (int b = 0; b < this.Blocks.Length; ++b)
             {
                 this.Blocks[b].CopyFrom(otherCasted.Blocks[b]);
@@ -133,9 +139,17 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
             return result;
         }
 
-        public IVector CreateZeroVectorWithSameFormat()
+        IVector IVectorView.CreateZeroVectorWithSameFormat() => CreateZeroVectorWithSameFormat();
+
+        public BlockVector CreateZeroVectorWithSameFormat()
         {
-            throw new NotImplementedException();
+            var result = new BlockVector(this.lengthPerBlock);
+            result.Multiplicities = this.Multiplicities;
+            for (int b = 0; b < result.numBlocks; ++b)
+            {
+                result.Blocks[b] = Vector.CreateZero(result.lengthPerBlock[b]);
+            }
+            return result;
         }
 
         public IVector DoEntrywise(IVectorView vector, Func<double, double, double> binaryOperation)
@@ -160,12 +174,40 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
 
         public double DotProduct(IVectorView vector)
         {
-            throw new NotImplementedException();
+            var otherCasted = (BlockVector)vector;
+            if (this.numBlocks == 1)
+            {
+                return this.Blocks[0] * otherCasted.Blocks[0];
+            }
+            else
+            {
+                Debug.Assert(this.Multiplicities == otherCasted.Multiplicities);
+                double sum = 0.0;
+                for (int b = 0; b < numBlocks; ++b)
+                {
+                    for (int i = 0; i < Multiplicities[b].Length; ++i)
+                    {
+                        sum += this.Blocks[b][i] * otherCasted.Blocks[b][i] / Multiplicities[b][i];
+                    }
+                }
+                return sum;
+            }
         }
 
         public bool Equals(IIndexable1D other, double tolerance = 1E-13)
         {
-            throw new NotImplementedException();
+            if (other is BlockVector otherCasted)
+            {
+                for (int b = 0; b < this.numBlocks; ++b)
+                {
+                    if (!this.Blocks[b].Equals(otherCasted.Blocks[b], tolerance))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            else return false;
         }
 
         public IVector LinearCombination(double thisCoefficient, IVectorView otherVector, double otherCoefficient)
@@ -184,10 +226,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
             }
         }
 
-        public double Norm2()
-        {
-            throw new NotImplementedException();
-        }
+        public double Norm2() => Math.Sqrt(DotProduct(this));
 
         public double Reduce(double identityValue, ProcessEntry processEntry, ProcessZeros processZeros, Finalize finalize)
         {

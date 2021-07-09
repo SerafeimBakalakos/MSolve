@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Xml.XPath;
 using ISAAR.MSolve.LinearAlgebra.Commons;
 using ISAAR.MSolve.LinearAlgebra.Exceptions;
 using ISAAR.MSolve.LinearAlgebra.Matrices;
@@ -60,11 +62,16 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
 
         public int NumRows { get; }
 
+        public int[][] RowMultiplicities { get; set; }
+
+        public int[][] ColMultiplicities { get; set; }
+
         public static BlockVector operator *(BlockMatrix matrix, BlockVector vector)
         {
             Preconditions.CheckMultiplicationDimensions(matrix.numColBlocks, vector.Blocks.Length);
             Preconditions.CheckMultiplicationDimensions(matrix.NumColumns, vector.Length);
             var result = new BlockVector(matrix.rowsPerBlock);
+            result.Multiplicities = matrix.RowMultiplicities;
             for (int i = 0; i < matrix.numRowBlocks; ++i)
             {
                 var rowResult = Vector.CreateZero(matrix.rowsPerBlock[i]);
@@ -163,6 +170,8 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
         public BlockMatrix Transpose()
         {
             var result = new BlockMatrix(colsPerBlock, rowsPerBlock);
+            result.ColMultiplicities = this.RowMultiplicities;
+            result.RowMultiplicities = this.ColMultiplicities;
             for (int i = 0; i < numRowBlocks; ++i)
             {
                 for (int j = 0; j < numColBlocks; ++j)
