@@ -5,10 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="PFetiDP\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\ISAAR.MSolve.Discretization\ISAAR.MSolve.Discretization.csproj" />
     <ProjectReference Include="..\ISAAR.MSolve.Solvers\ISAAR.MSolve.Solvers.csproj" />
     <ProjectReference Include="..\MGroup.Solvers\MGroup.Solvers.csproj" />
