@@ -8,12 +8,10 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 {
     public class PsmStiffnesses
     {
-        private readonly IStructuralModel model;
         private readonly PsmDofs dofs;
 
-        public PsmStiffnesses(IStructuralModel model, PsmDofs dofs)
+        public PsmStiffnesses(PsmDofs dofs)
         {
-            this.model = model;
             this.dofs = dofs;
         }
 

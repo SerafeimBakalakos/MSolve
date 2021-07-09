@@ -33,7 +33,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
             this.pcgTolerance = pcgTolerance;
             this.maxPcgIterations = maxPcgIterations;
             this.dofs = new PsmDofs(model);
-            this.stiffnesses = new PsmStiffnesses(model, dofs);
+            this.stiffnesses = new PsmStiffnesses(dofs);
             this.vectors = new PsmVectors(dofs, stiffnesses);
 
             var externalLinearSystems = new Dictionary<int, ILinearSystem>();

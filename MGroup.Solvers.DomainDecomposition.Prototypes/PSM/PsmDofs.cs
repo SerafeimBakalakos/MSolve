@@ -17,6 +17,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes
         {
             this.model = model;
         }
+
 		public DofTable GlobalDofOrderingBoundary { get; set; }
 
 		public int NumGlobalDofsBoundary { get; set; }
@@ -43,17 +44,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes
 			}
 
 			FindGlobalBoundaryDofs();
-			foreach (ISubdomain subdomain in model.Subdomains)
-			{
-				DofTable subdomainDofs = SubdomainDofOrderingBoundary[subdomain.ID];
-				var Lb = Matrix.CreateZero(NumSubdomainDofsBoundary[subdomain.ID], NumGlobalDofsBoundary);
-				foreach ((INode node, IDofType dof, int subdomainIdx) in subdomainDofs)
-				{
-					int globalIdx = GlobalDofOrderingBoundary[node, dof];
-					Lb[subdomainIdx, globalIdx] = 1.0;
-				}
-				SubdomainMatricesLb[subdomain.ID] = Lb;
-			}
+			MapBoundaryDofsGlobalToSubdomains();
 		}
 
 		protected void FindGlobalBoundaryDofs()
@@ -70,18 +61,6 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes
 						numBoundaryDofs++;
 					}
 				}
-
-				//foreach ((INode node, IDofType dof, int idx) in subdomain.FreeDofOrdering.FreeDofs)
-				//{
-				//	if (node.SubdomainsDictionary.Count > 1)
-				//	{
-				//		bool didNotExist = globalBoundaryDofs.TryAdd(node.ID, AllDofs.GetIdOfDof(dof), numBoundaryDofs);
-				//		if (didNotExist)
-				//		{
-				//			numBoundaryDofs++;
-				//		}
-				//	}
-				//}
 			}
 
 			var boundaryDofOrdering = new DofTable();
@@ -94,9 +73,23 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes
 			NumGlobalDofsBoundary = numBoundaryDofs;
 		}
 
+		protected void MapBoundaryDofsGlobalToSubdomains()
+		{
+			foreach (ISubdomain subdomain in model.Subdomains)
+			{
+				DofTable subdomainDofs = SubdomainDofOrderingBoundary[subdomain.ID];
+				var Lb = Matrix.CreateZero(NumSubdomainDofsBoundary[subdomain.ID], NumGlobalDofsBoundary);
+				foreach ((INode node, IDofType dof, int subdomainIdx) in subdomainDofs)
+				{
+					int globalIdx = GlobalDofOrderingBoundary[node, dof];
+					Lb[subdomainIdx, globalIdx] = 1.0;
+				}
+				SubdomainMatricesLb[subdomain.ID] = Lb;
+			}
+		}
+
 		protected void SeparateFreeDofsIntoBoundaryAndInternal(ISubdomain subdomain)
 		{
-			//TODOMPI: force sorting per node and dof
 			var boundaryDofOrdering = new DofTable();
 			var boundaryToFree = new List<int>();
 			var internalToFree = new HashSet<int>();
@@ -106,7 +99,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes
 			IEnumerable<INode> nodes = freeDofs.GetRows();
 			nodes = nodes.OrderBy(node => node.ID);
 
-			foreach (INode node in nodes) //TODO: Optimize access: Directly get INode, Dictionary<IDof, int>
+			foreach (INode node in nodes)
 			{
 				IReadOnlyDictionary<IDofType, int> dofsOfNode = freeDofs.GetDataOfRow(node);
 				var sortedDofsOfNode = new SortedDictionary<IDofType, int>(new DofTypeComparer());
