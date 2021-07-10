@@ -14,23 +14,24 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 {
 	public class PsmInterfaceProblemGlobal : IPsmInterfaceProblem
 	{
-		public PsmInterfaceProblemGlobal()
-		{
-		}
+		private readonly IStructuralModel model;
+		private readonly PsmSubdomainDofs dofs;
 
-		public PsmSubdomainDofs Dofs { get; set; }
+		public PsmInterfaceProblemGlobal(IStructuralModel model, PsmSubdomainDofs dofs)
+		{
+			this.model = model;
+			this.dofs = dofs;
+		}
 
 		public DofTable GlobalDofOrderingBoundary { get; set; }
 
 		public BlockMatrix MatrixLbe { get; set; }
 
-		public IStructuralModel Model { get; set; }
-
 		public int NumGlobalDofsBoundary { get; set; }
 
 		public Dictionary<int, Matrix> SubdomainMatricesLb { get; } = new Dictionary<int, Matrix>();
 
-		public void CalcMappingMatrices()
+		public void FindDofs()
 		{
 			FindGlobalBoundaryDofs();
 			MapBoundaryDofsGlobalToSubdomains();
@@ -60,8 +61,8 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 
 		private void CalcLbe()
 		{
-			MatrixLbe = BlockMatrix.CreateCol(Dofs.NumSubdomainDofsBoundary, NumGlobalDofsBoundary);
-			foreach (ISubdomain subdomain in Model.Subdomains)
+			MatrixLbe = BlockMatrix.CreateCol(dofs.NumSubdomainDofsBoundary, NumGlobalDofsBoundary);
+			foreach (ISubdomain subdomain in model.Subdomains)
 			{
 				int s = subdomain.ID;
 				MatrixLbe.AddBlock(s, 0, SubdomainMatricesLb[s]);
@@ -72,9 +73,9 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 		{
 			var globalBoundaryDofs = new SortedDofTable();
 			int numBoundaryDofs = 0;
-			foreach (ISubdomain subdomain in Model.Subdomains)
+			foreach (ISubdomain subdomain in model.Subdomains)
 			{
-				foreach ((INode node, IDofType dof, int idx) in Dofs.SubdomainDofOrderingBoundary[subdomain.ID])
+				foreach ((INode node, IDofType dof, int idx) in dofs.SubdomainDofOrderingBoundary[subdomain.ID])
 				{
 					bool didNotExist = globalBoundaryDofs.TryAdd(node.ID, AllDofs.GetIdOfDof(dof), numBoundaryDofs);
 					if (didNotExist)
@@ -87,7 +88,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 			var boundaryDofOrdering = new DofTable();
 			foreach ((int nodeID, int dofID, int idx) in globalBoundaryDofs)
 			{
-				boundaryDofOrdering[Model.GetNode(nodeID), AllDofs.GetDofWithId(dofID)] = idx;
+				boundaryDofOrdering[model.GetNode(nodeID), AllDofs.GetDofWithId(dofID)] = idx;
 			}
 
 			GlobalDofOrderingBoundary = boundaryDofOrdering;
@@ -96,10 +97,10 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 
 		private void MapBoundaryDofsGlobalToSubdomains()
 		{
-			foreach (ISubdomain subdomain in Model.Subdomains)
+			foreach (ISubdomain subdomain in model.Subdomains)
 			{
-				DofTable subdomainDofs = Dofs.SubdomainDofOrderingBoundary[subdomain.ID];
-				var Lb = Matrix.CreateZero(Dofs.NumSubdomainDofsBoundary[subdomain.ID], NumGlobalDofsBoundary);
+				DofTable subdomainDofs = dofs.SubdomainDofOrderingBoundary[subdomain.ID];
+				var Lb = Matrix.CreateZero(dofs.NumSubdomainDofsBoundary[subdomain.ID], NumGlobalDofsBoundary);
 				foreach ((INode node, IDofType dof, int subdomainIdx) in subdomainDofs)
 				{
 					int globalIdx = GlobalDofOrderingBoundary[node, dof];

@@ -7,7 +7,6 @@ using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.Interfaces;
 using ISAAR.MSolve.Problems;
 using MGroup.Solvers.DomainDecomposition.Prototypes.PSM;
-using MGroup.Solvers.DomainDecomposition.Prototypes.Tests.Enums;
 using MGroup.Solvers.DomainDecomposition.Prototypes.Tests.ExampleModels;
 using Xunit;
 
@@ -15,17 +14,18 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.Tests.PSM
 {
     public static class PsmSolverTests
     {
+        //TODO: Also check with homogeneous and heterogeneous scaling
         [Theory]
-        [InlineData(PsmInterfaceProblem.Global)]
-        [InlineData(PsmInterfaceProblem.Distributed)]
-        public static void TestForBrick3D(PsmInterfaceProblem psmInterfaceProblem)
+        [InlineData(false)]
+        [InlineData(true)]
+        public static void TestForBrick3D(bool isInterfaceProblemDistributed)
         {
             // Model
             IStructuralModel model = Brick3DExample.CreateMultiSubdomainModel();
             model.ConnectDataStructures(); //TODOMPI: this is also done in the analyzer
 
             // Solver
-            var solver = new PsmSolver(model, true, 1E-10, 200, psmInterfaceProblem.Create());
+            var solver = new PsmSolver(model, true, 1E-10, 200, isInterfaceProblemDistributed);
 
             // Linear static analysis
             var problem = new ProblemThermalSteadyState(model, solver);
@@ -58,16 +58,16 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.Tests.PSM
         }
 
         [Theory]
-        [InlineData(PsmInterfaceProblem.Global)]
-        [InlineData(PsmInterfaceProblem.Distributed)]
-        public static void TestForLine1D(PsmInterfaceProblem psmInterfaceProblem)
+        [InlineData(false)]
+        [InlineData(true)]
+        public static void TestForLine1D(bool isInterfaceProblemDistributed)
         {
             // Model
             IStructuralModel model = Line1DExample.CreateMultiSubdomainModel();
             model.ConnectDataStructures(); //TODOMPI: this is also done in the analyzer
 
             // Solver
-            var solver = new PsmSolver(model, true, 1E-10, 200, psmInterfaceProblem.Create());
+            var solver = new PsmSolver(model, true, 1E-10, 200, isInterfaceProblemDistributed);
 
             // Linear static analysis
             var problem = new ProblemThermalSteadyState(model, solver);
@@ -100,16 +100,16 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.Tests.PSM
         }
 
         [Theory]
-        [InlineData(PsmInterfaceProblem.Global)]
-        [InlineData(PsmInterfaceProblem.Distributed)]
-        public static void TestForPlane2D(PsmInterfaceProblem psmInterfaceProblem)
+        [InlineData(false)]
+        [InlineData(true)]
+        public static void TestForPlane2D(bool isInterfaceProblemDistributed)
         {
             // Model
             IStructuralModel model = Plane2DExample.CreateMultiSubdomainModel();
             model.ConnectDataStructures(); //TODOMPI: this is also done in the analyzer
 
             // Solver
-            var solver = new PsmSolver(model, true, 1E-10, 200, psmInterfaceProblem.Create());
+            var solver = new PsmSolver(model, true, 1E-10, 200, isInterfaceProblemDistributed);
 
             // Linear static analysis
             var problem = new ProblemThermalSteadyState(model, solver);

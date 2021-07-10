@@ -6,11 +6,11 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 
 namespace MGroup.Solvers.DomainDecomposition.Prototypes.FetiDP
 {
-    public class FetiDPStiffnesses
+    public class FetiDPSubdomainStiffnesses
     {
-        private readonly FetiDPDofs dofs;
+        private readonly FetiDPSubdomainDofs dofs;
 
-        public FetiDPStiffnesses(FetiDPDofs dofs)
+        public FetiDPSubdomainStiffnesses(FetiDPSubdomainDofs dofs)
         {
             this.dofs = dofs;
         }

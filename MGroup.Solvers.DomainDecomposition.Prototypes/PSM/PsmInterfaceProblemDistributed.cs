@@ -13,31 +13,32 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 {
 	public class PsmInterfaceProblemDistributed : IPsmInterfaceProblem
 	{
-		public PsmInterfaceProblemDistributed()
+		private readonly IStructuralModel model;
+		private readonly PsmSubdomainDofs dofs;
+
+		public PsmInterfaceProblemDistributed(IStructuralModel model, PsmSubdomainDofs dofs)
 		{
+			this.model = model;
+			this.dofs = dofs;
 		}
 
-		public PsmSubdomainDofs Dofs { get; set; }
-
 		public BlockMatrix MatrixMbe { get; set; }
-
-		public IStructuralModel Model { get; set; }
 
 		public Dictionary<int, int[]> SubdomainBoundaryDofMultiplicities { get; } = new Dictionary<int, int[]>();
 
 		public Dictionary<int, Dictionary<int, Matrix>> SubdomainMatricesMb { get; }
 			= new Dictionary<int, Dictionary<int, Matrix>>();
 
-		public void CalcMappingMatrices()
+		public void FindDofs()
 		{
-			MatrixMbe = BlockMatrix.Create(Dofs.NumSubdomainDofsBoundary, Dofs.NumSubdomainDofsBoundary);
-			foreach (ISubdomain subdomain in Model.Subdomains)
+			MatrixMbe = BlockMatrix.Create(dofs.NumSubdomainDofsBoundary, dofs.NumSubdomainDofsBoundary);
+			foreach (ISubdomain subdomain in model.Subdomains)
 			{
 				SubdomainBoundaryDofMultiplicities[subdomain.ID] = FindBoundaryDofMultiplicities(subdomain);
 
 				var subdomainMb = new Dictionary<int, Matrix>();
 				SubdomainMatricesMb[subdomain.ID] = subdomainMb;
-				foreach (ISubdomain other in Model.Subdomains)
+				foreach (ISubdomain other in model.Subdomains)
 				{
 					Matrix Mb = MapInterSubdomainDofs(subdomain, other);
 					subdomainMb[other.ID] = Mb;
@@ -70,8 +71,8 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 
 		private int[] FindBoundaryDofMultiplicities(ISubdomain subdomain)
 		{
-			var result = new int[Dofs.NumSubdomainDofsBoundary[subdomain.ID]];
-			foreach ((INode node, IDofType dof, int idx) in Dofs.SubdomainDofOrderingBoundary[subdomain.ID])
+			var result = new int[dofs.NumSubdomainDofsBoundary[subdomain.ID]];
+			foreach ((INode node, IDofType dof, int idx) in dofs.SubdomainDofOrderingBoundary[subdomain.ID])
 			{
 				result[idx] = node.SubdomainsDictionary.Count;
 			}
@@ -82,9 +83,9 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 		{
 			int sR = rowSubdomain.ID;
 			int sC = colSubdomain.ID;
-			var result = Matrix.CreateZero(Dofs.NumSubdomainDofsBoundary[sR], Dofs.NumSubdomainDofsBoundary[sC]);
-			DofTable rowBoundaryDofs = Dofs.SubdomainDofOrderingBoundary[sR];
-			DofTable colBoundaryDofs = Dofs.SubdomainDofOrderingBoundary[sC];
+			var result = Matrix.CreateZero(dofs.NumSubdomainDofsBoundary[sR], dofs.NumSubdomainDofsBoundary[sC]);
+			DofTable rowBoundaryDofs = dofs.SubdomainDofOrderingBoundary[sR];
+			DofTable colBoundaryDofs = dofs.SubdomainDofOrderingBoundary[sC];
 			foreach ((INode node, IDofType dof, int row) in rowBoundaryDofs)
 			{
 				bool isCommonDof = colBoundaryDofs.TryGetValue(node, dof, out int col);
@@ -98,8 +99,8 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 
 		private int[][] CalcMultiplicities()
 		{
-			var multiplicities = new int[Model.Subdomains.Count][];
-			foreach (ISubdomain subdomain in Model.Subdomains)
+			var multiplicities = new int[model.Subdomains.Count][];
+			foreach (ISubdomain subdomain in model.Subdomains)
 			{
 				int s = subdomain.ID;
 				multiplicities[s] = SubdomainBoundaryDofMultiplicities[s];

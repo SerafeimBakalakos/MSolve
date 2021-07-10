@@ -29,16 +29,12 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
         protected readonly DenseMatrixAssembler assembler = new DenseMatrixAssembler();
 
         public PsmSolver(IStructuralModel model, bool homogeneousProblem, double pcgTolerance, int maxPcgIterations, 
-            IPsmInterfaceProblem interfaceProblem)
+            bool isInterfaceProblemDistributed)
         {
             this.model = model;
             this.pcgTolerance = pcgTolerance;
             this.maxPcgIterations = maxPcgIterations;
-
             this.dofs = new PsmSubdomainDofs(model);
-            this.interfaceProblem = interfaceProblem;
-            this.interfaceProblem.Model = model;
-            this.interfaceProblem.Dofs = dofs;
             this.stiffnesses = new PsmSubdomainStiffnesses(dofs);
             this.vectors = new PsmSubdomainVectors(dofs, stiffnesses);
 
@@ -50,6 +46,15 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
                 var system = new SingleSubdomainSystem<Matrix>(subdomain);
                 externalLinearSystems[subdomain.ID] = system;
                 InternalLinearSystems[subdomain.ID] = system;
+            }
+
+            if (isInterfaceProblemDistributed)
+            {
+                this.interfaceProblem = new PsmInterfaceProblemDistributed(model, dofs);
+            }
+            else
+            {
+                this.interfaceProblem = new PsmInterfaceProblemGlobal(model, dofs);
             }
 
             if (homogeneousProblem)
@@ -127,7 +132,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
             BlockVector Ube = FbeCondensed.CreateZeroVectorWithSameFormat();
 
             // Interface problem solution using CG
-            interfaceProblem.CalcMappingMatrices();
+            interfaceProblem.FindDofs();
             var pcgBuilder = new PcgAlgorithm.Builder();
             pcgBuilder.ResidualTolerance = pcgTolerance;
             pcgBuilder.MaxIterationsProvider = new FixedMaxIterationsProvider(maxPcgIterations);

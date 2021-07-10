@@ -11,11 +11,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 {
     public interface IPsmInterfaceProblem
     {
-        PsmSubdomainDofs Dofs { get; set; }
-
-        IStructuralModel Model { get; set; }
-
-        void CalcMappingMatrices();
+        void FindDofs();
 
         IterativeStatistics Solve(PcgAlgorithm pcg, IPreconditioner preconditioner, 
             BlockMatrix expandedDomainMatrix, BlockVector expandedDomainRhs, BlockVector expandedDomainSolution);
