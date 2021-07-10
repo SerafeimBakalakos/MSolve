@@ -5,12 +5,12 @@ using ISAAR.MSolve.LinearAlgebra.Vectors;
 
 namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 {
-    public class PsmVectors
+    public class PsmSubdomainVectors
     {
-        private readonly PsmDofs dofs;
-        private readonly PsmStiffnesses stiffnesses;
+        private readonly PsmSubdomainDofs dofs;
+        private readonly PsmSubdomainStiffnesses stiffnesses;
 
-        public PsmVectors(PsmDofs dofs, PsmStiffnesses stiffnesses)
+        public PsmSubdomainVectors(PsmSubdomainDofs dofs, PsmSubdomainStiffnesses stiffnesses)
         {
             this.dofs = dofs;
             this.stiffnesses = stiffnesses;

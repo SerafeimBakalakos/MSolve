@@ -87,6 +87,8 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
             return result;
         }
 
+        public static BlockVector operator *(BlockMatrix matrix, Vector vector) => matrix * new BlockVector(vector);
+
         public static BlockMatrix Create(IDictionary<int, int> rowsPerBlock, IDictionary<int, int> colsPerBlock)
             => new BlockMatrix(rowsPerBlock, colsPerBlock);
 

@@ -21,20 +21,26 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
         protected readonly IStructuralModel model;
         protected readonly double pcgTolerance;
         protected readonly int maxPcgIterations;
-        protected readonly PsmDofs dofs;
+        private readonly IPsmInterfaceProblem interfaceProblem;
+        protected readonly PsmSubdomainDofs dofs;
         protected readonly IPrimalScaling scaling;
-        protected readonly PsmStiffnesses stiffnesses;
-        protected readonly PsmVectors vectors;
+        protected readonly PsmSubdomainStiffnesses stiffnesses;
+        protected readonly PsmSubdomainVectors vectors;
         protected readonly DenseMatrixAssembler assembler = new DenseMatrixAssembler();
 
-        public PsmSolver(IStructuralModel model, bool homogeneousProblem, double pcgTolerance, int maxPcgIterations)
+        public PsmSolver(IStructuralModel model, bool homogeneousProblem, double pcgTolerance, int maxPcgIterations, 
+            IPsmInterfaceProblem interfaceProblem)
         {
             this.model = model;
             this.pcgTolerance = pcgTolerance;
             this.maxPcgIterations = maxPcgIterations;
-            this.dofs = new PsmDofs(model);
-            this.stiffnesses = new PsmStiffnesses(dofs);
-            this.vectors = new PsmVectors(dofs, stiffnesses);
+
+            this.dofs = new PsmSubdomainDofs(model);
+            this.interfaceProblem = interfaceProblem;
+            this.interfaceProblem.Model = model;
+            this.interfaceProblem.Dofs = dofs;
+            this.stiffnesses = new PsmSubdomainStiffnesses(dofs);
+            this.vectors = new PsmSubdomainVectors(dofs, stiffnesses);
 
             var externalLinearSystems = new Dictionary<int, ILinearSystem>();
             LinearSystems = externalLinearSystems;
@@ -115,42 +121,35 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 
         public virtual void Solve()
         {
-            BlockMatrix Lbe = PrepareDofs();
+            dofs.FindDofs();
             BlockMatrix Sbbe = PrepareMatrices();
             BlockVector FbeCondensed = PrepareRhsVectors();
-
-            // Interface problem
-            Matrix fullLbe = Lbe.CopyToFullMatrix();
-            Matrix fullSbbe = Sbbe.CopyToFullMatrix();
-            Vector fullFbeCond = FbeCondensed.CopyToFullVector();
-            Matrix interfaceMatrix = fullLbe.Transpose() * fullSbbe * fullLbe;
-            Vector interfaceRhs = fullLbe.Transpose() * fullFbeCond;
-            var interfaceSolution = Vector.CreateZero(interfaceRhs.Length);
+            BlockVector Ube = FbeCondensed.CreateZeroVectorWithSameFormat();
 
             // Interface problem solution using CG
+            interfaceProblem.CalcMappingMatrices();
             var pcgBuilder = new PcgAlgorithm.Builder();
             pcgBuilder.ResidualTolerance = pcgTolerance;
             pcgBuilder.MaxIterationsProvider = new FixedMaxIterationsProvider(maxPcgIterations);
             PcgAlgorithm pcg = pcgBuilder.Build();
-            this.PcgStats = pcg.Solve(interfaceMatrix, new IdentityPreconditioner(), interfaceRhs, interfaceSolution, true,
-                () => Vector.CreateZero(interfaceRhs.Length));
+            IPreconditioner preconditioner = new IdentityPreconditioner();
+            this.PcgStats = interfaceProblem.Solve(pcg, preconditioner, Sbbe, FbeCondensed, Ube);
 
-            FindFreeDisplacements(interfaceSolution);
+            FindFreeDisplacements(Ube);
         }
 
-        protected virtual BlockMatrix PrepareDofs()
+        private void FindFreeDisplacements(BlockVector Ube)
         {
-            dofs.FindDofs();
-            var Lbe = BlockMatrix.CreateCol(dofs.NumSubdomainDofsBoundary, dofs.NumGlobalDofsBoundary);
             foreach (ISubdomain subdomain in model.Subdomains)
             {
                 int s = subdomain.ID;
-                Lbe.AddBlock(s, 0, dofs.SubdomainMatricesLb[s]);
+                Vector Ub = Ube.Blocks[s];
+                vectors.CalcFreeDisplacements(s, Ub);
+                InternalLinearSystems[s].SolutionConcrete = vectors.Uf[s];
             }
-            return Lbe;
         }
 
-        protected virtual BlockMatrix PrepareMatrices()
+        private BlockMatrix PrepareMatrices()
         {
             var Sbbe = BlockMatrix.Create(dofs.NumSubdomainDofsBoundary, dofs.NumSubdomainDofsBoundary);
             foreach (ISubdomain subdomain in model.Subdomains)
@@ -162,7 +161,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
             return Sbbe;
         }
 
-        protected virtual BlockVector PrepareRhsVectors()
+        private BlockVector PrepareRhsVectors()
         {
             var FbeCondensed = new BlockVector(dofs.NumSubdomainDofsBoundary);
             foreach (ISubdomain subdomain in model.Subdomains)
@@ -172,17 +171,6 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
                 FbeCondensed.AddBlock(s, vectors.FbCondensed[s]);
             }
             return FbeCondensed;
-        }
-
-        private void FindFreeDisplacements(Vector globalBoundaryDisplacements)
-        {
-            foreach (ISubdomain subdomain in model.Subdomains)
-            {
-                int s = subdomain.ID;
-                Vector Ub = dofs.SubdomainMatricesLb[s] * globalBoundaryDisplacements;
-                vectors.CalcFreeDisplacements(s, Ub);
-                InternalLinearSystems[s].SolutionConcrete = vectors.Uf[s];
-            }
         }
     }
 }

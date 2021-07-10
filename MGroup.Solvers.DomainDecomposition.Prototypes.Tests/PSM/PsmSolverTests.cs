@@ -5,12 +5,9 @@ using System.Text;
 using ISAAR.MSolve.Analyzers;
 using ISAAR.MSolve.Discretization.Commons;
 using ISAAR.MSolve.Discretization.Interfaces;
-using ISAAR.MSolve.LinearAlgebra.Iterative.Termination;
 using ISAAR.MSolve.Problems;
-using ISAAR.MSolve.Solvers.Direct;
-using MGroup.Environments;
-using MGroup.LinearAlgebra.Distributed.IterativeMethods;
 using MGroup.Solvers.DomainDecomposition.Prototypes.PSM;
+using MGroup.Solvers.DomainDecomposition.Prototypes.Tests.Enums;
 using MGroup.Solvers.DomainDecomposition.Prototypes.Tests.ExampleModels;
 using Xunit;
 
@@ -18,15 +15,17 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.Tests.PSM
 {
     public static class PsmSolverTests
     {
-        [Fact]
-        public static void TestForBrick3D()
+        [Theory]
+        [InlineData(PsmInterfaceProblem.Global)]
+        [InlineData(PsmInterfaceProblem.Distributed)]
+        public static void TestForBrick3D(PsmInterfaceProblem psmInterfaceProblem)
         {
             // Model
             IStructuralModel model = Brick3DExample.CreateMultiSubdomainModel();
             model.ConnectDataStructures(); //TODOMPI: this is also done in the analyzer
 
             // Solver
-            var solver = new PsmSolver(model, true, 1E-10, 200);
+            var solver = new PsmSolver(model, true, 1E-10, 200, psmInterfaceProblem.Create());
 
             // Linear static analysis
             var problem = new ProblemThermalSteadyState(model, solver);
@@ -58,15 +57,17 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.Tests.PSM
             Assert.Equal(pcgResidualNormRatioExpected, solver.PcgStats.ResidualNormRatioEstimation, precision);
         }
 
-        [Fact]
-        public static void TestForLine1D()
+        [Theory]
+        [InlineData(PsmInterfaceProblem.Global)]
+        [InlineData(PsmInterfaceProblem.Distributed)]
+        public static void TestForLine1D(PsmInterfaceProblem psmInterfaceProblem)
         {
             // Model
             IStructuralModel model = Line1DExample.CreateMultiSubdomainModel();
             model.ConnectDataStructures(); //TODOMPI: this is also done in the analyzer
 
             // Solver
-            var solver = new PsmSolver(model, true, 1E-10, 200);
+            var solver = new PsmSolver(model, true, 1E-10, 200, psmInterfaceProblem.Create());
 
             // Linear static analysis
             var problem = new ProblemThermalSteadyState(model, solver);
@@ -98,15 +99,17 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.Tests.PSM
             Assert.Equal(pcgResidualNormRatioExpected, solver.PcgStats.ResidualNormRatioEstimation, precision);
         }
 
-        [Fact]
-        public static void TestForPlane2D()
+        [Theory]
+        [InlineData(PsmInterfaceProblem.Global)]
+        [InlineData(PsmInterfaceProblem.Distributed)]
+        public static void TestForPlane2D(PsmInterfaceProblem psmInterfaceProblem)
         {
             // Model
             IStructuralModel model = Plane2DExample.CreateMultiSubdomainModel();
             model.ConnectDataStructures(); //TODOMPI: this is also done in the analyzer
 
             // Solver
-            var solver = new PsmSolver(model, true, 1E-10, 200);
+            var solver = new PsmSolver(model, true, 1E-10, 200, psmInterfaceProblem.Create());
 
             // Linear static analysis
             var problem = new ProblemThermalSteadyState(model, solver);

@@ -36,6 +36,11 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.LinearAlgebraExtensions
             this.Blocks = new Vector[numBlocks];
         }
 
+        public BlockVector(Vector singleVector) : this(new Dictionary<int, int> { { 0, singleVector.Length } })
+        {
+            this.Blocks[0] = singleVector;
+        }
+
         public double this[int index] => throw new NotImplementedException();
 
         public Vector[] Blocks { get; }

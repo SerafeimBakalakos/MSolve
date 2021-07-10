@@ -11,10 +11,10 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PFetiDP
     public abstract class PFetiDPDofsBase
     {
         protected readonly IStructuralModel model;
-        protected readonly PsmDofs psmDofs;
+        protected readonly PsmDofs_OLD psmDofs;
         protected readonly FetiDPDofs fetiDPDofs;
 
-        public PFetiDPDofsBase(IStructuralModel model, PsmDofs psmDofs, FetiDPDofs fetiDPDofs)
+        public PFetiDPDofsBase(IStructuralModel model, PsmDofs_OLD psmDofs, FetiDPDofs fetiDPDofs)
         {
             this.model = model;
             this.psmDofs = psmDofs;

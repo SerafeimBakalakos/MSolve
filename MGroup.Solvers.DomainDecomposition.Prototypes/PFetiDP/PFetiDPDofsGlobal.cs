@@ -10,7 +10,7 @@ namespace MGroup.Solvers.DomainDecomposition.Prototypes.PFetiDP
 {
     public class PFetiDPDofsGlobal : PFetiDPDofsBase
     {
-        public PFetiDPDofsGlobal(IStructuralModel model, PsmDofs psmDofs, FetiDPDofs fetiDPDofs) 
+        public PFetiDPDofsGlobal(IStructuralModel model, PsmDofs_OLD psmDofs, FetiDPDofs fetiDPDofs) 
             : base (model, psmDofs, fetiDPDofs)
         {
         }

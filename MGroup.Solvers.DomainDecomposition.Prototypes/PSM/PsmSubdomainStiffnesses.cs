@@ -6,11 +6,11 @@ using ISAAR.MSolve.LinearAlgebra.Matrices;
 
 namespace MGroup.Solvers.DomainDecomposition.Prototypes.PSM
 {
-    public class PsmStiffnesses
+    public class PsmSubdomainStiffnesses
     {
-        private readonly PsmDofs dofs;
+        private readonly PsmSubdomainDofs dofs;
 
-        public PsmStiffnesses(PsmDofs dofs)
+        public PsmSubdomainStiffnesses(PsmSubdomainDofs dofs)
         {
             this.dofs = dofs;
         }
